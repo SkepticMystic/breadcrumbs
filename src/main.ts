@@ -3,7 +3,6 @@ import {
   EventRef,
   ItemView,
   Modal,
-  Notice,
   Plugin,
   TFile,
   WorkspaceLeaf,
@@ -79,12 +78,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.loadSettings();
 
     this.addRibbonIcon("dice", "Breadcrumbs", async () =>
-      console.log(this.getBreadcrumbs(await this.initialiseGraph()))
+      console.log(this.getBreadcrumbs(await this.initialiseGraph(this.settings)))
     );
 
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", async () =>
-        console.log(this.getBreadcrumbs(await this.initialiseGraph()))
+        console.log(this.getBreadcrumbs(await this.initialiseGraph(this.settings)))
       )
     );
 
@@ -109,9 +108,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   // Grab parent fields from note content
   // Currently, this doesn't wait until the cachedRead is complete for all files
 
-  getChildParentArr(nameContentArr: nameContent[]) {
+  getChildParentArr(nameContentArr: nameContent[], settings: BreadcrumbsPluginSettings) {
     // Regex to match the `parent` metadata field
-    const parentFieldName = this.plugin.settings.parentFieldName;
+    const parentFieldName = settings.parentFieldName;
     const yamlOrInlineParent = new RegExp(`${parentFieldName}::? (.+)`, "i");
 
     const childParentArr: childParent[] = nameContentArr.map(
@@ -129,9 +128,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   // Graph stuff...
-  async initialiseGraph() {
+  async initialiseGraph(settings: BreadcrumbsPluginSettings) {
     const nameContentArr = await this.getNameContentArr();
-    const childParentArr = this.getChildParentArr(nameContentArr);
+    const childParentArr = this.getChildParentArr(nameContentArr, settings);
     const g = new Graph();
     g.setNode("Index", "Index");
 

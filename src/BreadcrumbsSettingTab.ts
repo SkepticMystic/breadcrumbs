@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type BreadcrumbsPlugin from "../main";
+import type BreadcrumbsPlugin from "src/main";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -18,15 +18,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Parent Metadata Field")
-      .setDesc("The key name you use as the parent field. For example, if you use \"parent: [[Note]]\", then the value of this setting should be \"parent\"")
+      .setDesc(
+        'The key name you use as the parent field. For example, if you use "parent: [[Note]]", then the value of this setting should be "parent"'
+      )
       .addText((text) =>
         text
           .setPlaceholder("Field name")
           .setValue(this.plugin.settings.parentFieldName)
           .onChange(async (value) => {
-            // console.log("Secret: " + value);
             this.plugin.settings.parentFieldName = value;
             await this.plugin.saveSettings();
+            console.log(this.plugin.settings.parentFieldName);
           })
       );
   }
