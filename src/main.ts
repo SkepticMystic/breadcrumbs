@@ -10,14 +10,15 @@ import {
 import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
-import type BreadcrumbsComponent from "src/BreadcrumbsView.svelte";
 
 interface BreadcrumbsPluginSettings {
   parentFieldName: string;
+  indexNote: string;
 }
 
 const DEFAULT_SETTINGS: BreadcrumbsPluginSettings = {
   parentFieldName: "parent",
+  indexNote: "Index",
 };
 
 interface nameContent {
@@ -33,22 +34,20 @@ interface childParent {
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
 class BreadcrumbsView extends ItemView {
   plugin: BreadcrumbsPlugin;
-  changeRef: EventRef = null;
-  view: BreadcrumbsComponent;
-  crumbs: string[];
   settings: BreadcrumbsPluginSettings;
 
   constructor(
     leaf: WorkspaceLeaf,
     plugin: BreadcrumbsPlugin,
-    settings: BreadcrumbsPluginSettings,
+    settings: BreadcrumbsPluginSettings
   ) {
     super(leaf);
     this.plugin = plugin;
     this.settings = settings;
-    this.registerEvent(this.app.workspace.on('active-leaf-change', async () => await this.draw()));
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", async () => await this.draw())
+    );
   }
-
 
   onload() {
     super.onload();
@@ -62,7 +61,6 @@ class BreadcrumbsView extends ItemView {
     return "Breadcrumbs";
   }
 
-
   async getNameContentArr(): Promise<nameContent[]> {
     const nameContentArr: nameContent[] = [];
     const files: TFile[] = this.app.vault.getMarkdownFiles();
@@ -74,7 +72,6 @@ class BreadcrumbsView extends ItemView {
   }
 
   // Grab parent fields from note content
-  // Currently, this doesn't wait until the cachedRead is complete for all files
   getChildParentArr(
     nameContentArr: nameContent[],
     settings: BreadcrumbsPluginSettings
@@ -102,19 +99,20 @@ class BreadcrumbsView extends ItemView {
     const nameContentArr = await this.getNameContentArr();
     const childParentArr = this.getChildParentArr(nameContentArr, settings);
     const g = new Graph();
-    g.setNode("Index", "Index");
+    const indexNote = settings.indexNote;
+    g.setNode(indexNote, indexNote);
 
     childParentArr.forEach((edge) => {
       g.setNode(edge.child, edge.child);
       if (edge.parent !== "") {
-        // const label = `${edge.child} -> ${edge.parent}`;
         g.setEdge(edge.child, edge.parent);
       }
     });
     return g;
   }
 
-  getBreadcrumbs(g: Graph, to: string = "Index") {
+  getBreadcrumbs(g: Graph, settings: BreadcrumbsPluginSettings) {
+    const to = settings.indexNote;
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     console.log({ paths });
@@ -130,20 +128,26 @@ class BreadcrumbsView extends ItemView {
     return breadcrumbs;
   }
 
-
   async draw() {
     const g = await this.initialiseGraph(this.settings);
-    console.log({g});
-    const crumbs = this.getBreadcrumbs(g);
+    console.log({ g });
+    const crumbs = this.getBreadcrumbs(g, this.settings);
+
 
     this.contentEl.empty();
 
-    this.contentEl.createDiv("breadcrumb-trail", (trailEl) => {
+    const breadcrumbTrail = this.contentEl.createDiv("breadcrumb-trail", (trailEl) => {
       crumbs.forEach((crumb) => {
-        trailEl.createSpan({ cls: "crumb", text: crumb });
-        trailEl.createSpan({ text: " > " });
+        const link = trailEl.createEl('a', { cls: "internal-link", text: crumb });
+        link.href = null;
+        link.addEventListener('click', () => {
+          this.app.workspace.openLinkText(crumb, this.app.workspace.getActiveFile().path)
+        })
+        trailEl.createDiv({ text: " ^ " });
       });
     });
+
+    breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
   }
 
   async onOpen(): Promise<void> {
@@ -163,7 +167,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.addRibbonIcon("dice", "Breadcrumbs", async () => {
       const crumbs = this.view.getBreadcrumbs(
-        await this.view.initialiseGraph(this.settings)
+        await this.view.initialiseGraph(this.settings),
+        this.settings
       );
     });
 
@@ -195,7 +200,11 @@ export default class BreadcrumbsPlugin extends Plugin {
       // const crumbs = this.getBreadcrumbs(
       //   await this.initialiseGraph(this.settings)
       // );
-      return this.view = new BreadcrumbsView(leaf, this.plugin, this.settings);
+      return (this.view = new BreadcrumbsView(
+        leaf,
+        this.plugin,
+        this.settings
+      ));
     });
   }
 
@@ -207,8 +216,6 @@ export default class BreadcrumbsPlugin extends Plugin {
       type: VIEW_TYPE_BREADCRUMBS,
     });
   }
-
-  
 
   onunload() {
     console.log("unloading plugin");

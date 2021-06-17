@@ -31,5 +31,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             console.log(this.plugin.settings.parentFieldName);
           })
       );
+
+    new Setting(containerEl)
+      .setName("Index/Home Note")
+      .setDesc(
+        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Index Note")
+          .setValue(this.plugin.settings.indexNote)
+          .onChange(async (value) => {
+            this.plugin.settings.indexNote = value;
+            await this.plugin.saveSettings();
+            console.log(this.plugin.settings.indexNote);
+          })
+      );
   }
 }
