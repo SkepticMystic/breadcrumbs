@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let levels: string[] = ['1', '2'];
+  export let levels: string[];
 </script>
 
 <div class="breadcrumb-trail">

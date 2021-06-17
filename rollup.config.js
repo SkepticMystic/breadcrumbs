@@ -6,7 +6,7 @@ import autoPreprocess from "svelte-preprocess";
 import { env } from "process";
 
 export default {
-  input: "main.ts",
+  input: "src/main.ts",
   output: {
     format: "cjs",
     file: "main.js",

@@ -1,7 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import BreadcrumbsPlugin from "./main";
+import type BreadcrumbsPlugin from "../main";
 
-export class SampleSettingTab extends PluginSettingTab {
+export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
 
   constructor(app: App, plugin: BreadcrumbsPlugin) {
@@ -17,15 +17,15 @@ export class SampleSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
 
     new Setting(containerEl)
-      .setName("Setting #1")
-      .setDesc("It's a secret")
+      .setName("Parent Metadata Field")
+      .setDesc("The key name you use as the parent field. For example, if you use \"parent: [[Note]]\", then the value of this setting should be \"parent\"")
       .addText((text) =>
         text
-          .setPlaceholder("Enter your secret")
-          .setValue("")
+          .setPlaceholder("Field name")
+          .setValue(this.plugin.settings.parentFieldName)
           .onChange(async (value) => {
-            console.log("Secret: " + value);
-            this.plugin.settings.mySetting = value;
+            // console.log("Secret: " + value);
+            this.plugin.settings.parentFieldName = value;
             await this.plugin.saveSettings();
           })
       );
