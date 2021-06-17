@@ -1,14 +1,7 @@
-import {
-  App,
-  Modal,
-  Notice,
-  Plugin,
-  PluginSettingTab,
-  Setting,
-  TFile,
-} from "obsidian";
+import { App, Modal, Notice, Plugin, TFile } from "obsidian";
 import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
+import { SampleSettingTab } from "./SampleSettingTab";
 
 interface MyPluginSettings {
   mySetting: string;
@@ -36,92 +29,84 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
-    this.addRibbonIcon("dice", "Breadcrumbs", () => {
-      new Notice("This is a notice!");
-    });
+    this.addRibbonIcon("dice", "Breadcrumbs", async () =>
+      console.log(this.getBreadcrumbs(await this.initialiseGraph()))
+    );
 
-    this.addCommand({
-      id: "open-sample-modal",
-      name: "Open Sample Modal",
-      // callback: () => {
-      // 	console.log('Simple Callback');
-      // },
-      checkCallback: (checking: boolean) => {
-        let leaf = this.app.workspace.activeLeaf;
-        if (leaf) {
-          if (!checking) {
-            new SampleModal(this.app).open();
-          }
-          return true;
-        }
-        return false;
-      },
-    });
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", async () =>
+        console.log(this.getBreadcrumbs(await this.initialiseGraph()))
+      )
+    );
 
     this.addSettingTab(new SampleSettingTab(this.app, this));
 
-    this.registerCodeMirror((cm: CodeMirror.Editor) => {
-      console.log("codemirror", cm);
-    });
-
-    this.registerDomEvent(document, "click", (evt: MouseEvent) => {
-      console.log("click", evt);
-    });
+    // this.registerDomEvent(document, "click", (evt: MouseEvent) => {
+    //   console.log("click", evt);
+    // });
 
     this.registerInterval(
       window.setInterval(() => console.log("setInterval"), 5 * 60 * 1000)
     );
   }
 
-  files: TFile[];
-
-  init() {
-    let nameContentArr: nameContent[];
-    let files: TFile[] = this.app.vault.getMarkdownFiles();
+  async getNameContentArr(): Promise<nameContent[]> {
+    const nameContentArr: nameContent[] = [];
+    const files: TFile[] = this.app.vault.getMarkdownFiles();
     files.forEach(async (file) => {
-      const eachContent = await this.app.vault.cachedRead(file);
-      nameContentArr.push({ fileName: file.basename, content: eachContent });
+      const content = await this.app.vault.cachedRead(file);
+      nameContentArr.push({ fileName: file.basename, content });
     });
-
-    // Regex to match the `parent` metadata field
-    const parentField = "yz-parent";
-    const yamlOrInlineParent = new RegExp(`${parentField}::? (.+)`, "i");
+    return nameContentArr;
   }
+
   // Grab parent fields from note content
   // Currently, this doesn't wait until the cachedRead is complete for all files
 
-  test(nameContentArr: nameContent[], yamlOrInlineParent: RegExp) {
-    let childParentArr = nameContentArr.map((arr: string[]) => {
-      const matches = arr[1].match(yamlOrInlineParent);
-      if (matches) {
-        const dropBrackets = matches[1].replace("[[", "").replace("]]", "");
-        return [arr[0], dropBrackets];
-      } else {
-        return [arr[0], ""];
-      }
-    });
-  }
-  // Graph stuff...
+  getChildParentArr(nameContentArr: nameContent[]) {
+    // Regex to match the `parent` metadata field
+    const parentField = "yz-parent";
+    const yamlOrInlineParent = new RegExp(`${parentField}::? (.+)`, "i");
 
-  initialiseGraph(data: string[][]) {
-    let g = new Graph();
+    const childParentArr: childParent[] = nameContentArr.map(
+      (arr: nameContent) => {
+        const matches = arr.content.match(yamlOrInlineParent);
+        if (matches) {
+          const dropBrackets = matches[1].replace("[[", "").replace("]]", "");
+          return { child: arr.fileName, parent: dropBrackets };
+        } else {
+          return { child: arr.fileName, parent: "" };
+        }
+      }
+    );
+    return childParentArr;
+  }
+
+  // Graph stuff...
+  async initialiseGraph() {
+    const nameContentArr = await this.getNameContentArr();
+    const childParentArr = this.getChildParentArr(nameContentArr);
+    const g = new Graph();
     g.setNode("Index", "Index");
 
-    data.forEach((edge) => g.setNode(edge[0], edge[0]));
-
-    data.forEach((edge) => {
-      if (edge[1] !== "") {
-        g.setEdge(...edge, "child");
+    childParentArr.forEach((edge) => {
+      g.setNode(edge.child, edge.child);
+      if (edge.parent !== "") {
+        // const label = `${edge.child} -> ${edge.parent}`;
+        g.setEdge(edge.child, edge.parent);
       }
     });
+    return g;
   }
 
-  getBreadcrumbs(g: Graph, from: string, to: string = "Index") {
+  getBreadcrumbs(g: Graph, to: string = "Index") {
+    const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
+    console.log({ paths });
     let step = to;
     const breadcrumbs: string[] = [];
 
-    while (paths[step].predecessor !== from) {
+    while (paths[step].distance !== 0) {
       breadcrumbs.push(step);
       step = paths[step].predecessor;
     }
@@ -156,36 +141,5 @@ class SampleModal extends Modal {
   onClose() {
     let { contentEl } = this;
     contentEl.empty();
-  }
-}
-
-class SampleSettingTab extends PluginSettingTab {
-  plugin: BreadcrumbsPlugin;
-
-  constructor(app: App, plugin: BreadcrumbsPlugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
-  display(): void {
-    let { containerEl } = this;
-
-    containerEl.empty();
-
-    containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
-
-    new Setting(containerEl)
-      .setName("Setting #1")
-      .setDesc("It's a secret")
-      .addText((text) =>
-        text
-          .setPlaceholder("Enter your secret")
-          .setValue("")
-          .onChange(async (value) => {
-            console.log("Secret: " + value);
-            this.plugin.settings.mySetting = value;
-            await this.plugin.saveSettings();
-          })
-      );
   }
 }
