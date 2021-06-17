@@ -20,5 +20,8 @@
     "rollup": "^2.32.1",
     "tslib": "^2.2.0",
     "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@tsconfig/svelte": "^2.0.1"
   }
 }
