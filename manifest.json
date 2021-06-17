@@ -1,5 +1,5 @@
 {
-	"id": "obsidian-sample-plugin",
+	"id": "breadcrumbs-plugin",
 	"name": "Sample Plugin",
 	"version": "1.0.1",
 	"minAppVersion": "0.9.12",
