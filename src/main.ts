@@ -96,7 +96,7 @@ class BreadcrumbsView extends ItemView {
         }
       }
     );
-    console.log(childParentArr);
+    // console.log(childParentArr);
     return childParentArr;
   }
 
@@ -255,7 +255,7 @@ class BreadcrumbsView extends ItemView {
     let step = to;
     const breadcrumbs: string[] = [];
 
-    console.log({ paths });
+    // console.log({ paths });
     if (paths[step].distance === Infinity) {
       return [
         `No path to ${this.settings.indexNote} was found from the current note`,
@@ -273,9 +273,9 @@ class BreadcrumbsView extends ItemView {
 
   async draw() {
     const g = await this.initialiseGraph(this.settings);
-    console.log({ g });
+    // console.log({ g });
     const crumbs = this.getBreadcrumbs(g);
-    console.log({ crumbs });
+    // console.log({ crumbs });
     this.contentEl.empty();
 
     if (crumbs[0].includes("No path to")) {
