@@ -105,7 +105,7 @@ class BreadcrumbsView extends ItemView {
     // General use
     const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
     const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-    
+
     function splitAndDrop(str: string | undefined): string[] | [] {
       if (str === undefined || str === "") {
         return [];
@@ -144,6 +144,8 @@ class BreadcrumbsView extends ItemView {
           arr.content.match(getSiblingLinksRegex)?.[1];
         const childLinks: string | undefined =
           arr.content.match(getChildLinksRegex)?.[1];
+
+        console.log({workingOn: arr.fileName})
 
         const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
           splitAndDrop(parentLinks),
