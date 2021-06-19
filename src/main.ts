@@ -296,46 +296,42 @@ class BreadcrumbsView extends ItemView {
     const graphs = await this.initialiseNeighbourGraph();
     const { gParents, gSiblings, gChildren } = graphs;
     console.log({ graphs });
-    // const g = await this.initialiseGraph(this.settings);
-    // console.log({ g });
     const crumbs = this.getPaths(gParents);
     console.log({ crumbs });
 
     const currFile = this.app.workspace.getActiveFile();
     this.contentEl.empty();
 
-    const matrix = this.contentEl.createDiv({ cls: "matrix" });
+    const matrix = this.contentEl.createDiv({ cls: "breadcrumbs-grid" });
 
-    const topRow = matrix.createDiv({ cls: "matrixRow topRow" });
+    const headingLevel = "strong";
 
-    const fillerUpDiv = topRow.createDiv({ cls: "fillerDiv" });
-    const upDiv = topRow.createDiv({
-      cls: "up breadcrumbDiv",
-      text: this.settings.parentFieldName,
+    const fillerTopLeftDiv = matrix.createDiv({ cls: "item-11 fillerDiv" });
+    const upDiv = matrix.createDiv({
+      cls: "item-12 breadcrumbDiv",
     });
+    upDiv.createEl(headingLevel, { text: this.settings.parentFieldName });
+    const fillerTopRightDiv = matrix.createDiv({ cls: "item-13 fillerDiv" });
 
-    const middleRow = matrix.createDiv({ cls: "matrixRow middleRow" });
-    const leftDiv = middleRow.createDiv({
-      cls: "left breadcrumbDiv",
-      text: "Top",
+    const leftDiv = matrix.createDiv({
+      cls: "item-21 breadcrumbDiv",
     });
-    const currDiv = middleRow.createDiv({
-      cls: "curr breadcrumbDiv",
-      text: "Current",
+    leftDiv.createEl(headingLevel, { text: "Top" });
+    const currDiv = matrix.createDiv({
+      cls: "item-22 breadcrumbDiv",
     });
-    const rightDiv = middleRow.createDiv({
-      cls: "right breadcrumbDiv",
-      text: this.settings.siblingFieldName,
+    currDiv.createEl(headingLevel, { text: "Current" });
+    const rightDiv = matrix.createDiv({
+      cls: "item-23 breadcrumbDiv",
     });
+    rightDiv.createEl(headingLevel, { text: this.settings.siblingFieldName });
 
-    const bottomRow = matrix.createDiv({
-      cls: "matrixRow bottomRow",
+    const fillerBotLeftDiv = matrix.createDiv({ cls: "item-31 fillerDiv" });
+    const downDiv = matrix.createDiv({
+      cls: "item-32 breadcrumbDiv",
     });
-    const fillerBottomDiv = bottomRow.createDiv({ cls: "fillerDiv" });
-    const downDiv = bottomRow.createDiv({
-      cls: "down breadcrumbDiv",
-      text: this.settings.childFieldName,
-    });
+    downDiv.createEl(headingLevel, { text: this.settings.childFieldName });
+    const fillerBotRightDiv = matrix.createDiv({ cls: "item-33 fillerDiv" });
 
     // Breadcrum trail:
     if (crumbs[0].includes("No path to")) {
