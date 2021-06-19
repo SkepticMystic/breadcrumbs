@@ -131,50 +131,61 @@ class BreadcrumbsView extends ItemView {
     return g;
   }
 
-  getBreadcrumbs(g: Graph, settings: BreadcrumbsPluginSettings) {
-    const to = settings.indexNote;
+  getBreadcrumbs(g: Graph) {
+    const to = this.settings.indexNote;
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     let step = to;
     const breadcrumbs: string[] = [];
 
-    while (paths[step].distance !== 0) {
-      breadcrumbs.push(step);
-      step = paths[step].predecessor;
-    }
+    console.log({ paths });
+    if (paths[step].distance === Infinity) {
+      return [
+        `No path to ${this.settings.indexNote} was found from the current note`,
+      ];
+    } else {
+      while (paths[step].distance !== 0) {
+        breadcrumbs.push(step);
+        step = paths[step].predecessor;
+      }
 
-    breadcrumbs.push(from);
-    return breadcrumbs;
+      breadcrumbs.push(from);
+      return breadcrumbs;
+    }
   }
 
   async draw() {
     const g = await this.initialiseGraph(this.settings);
     console.log({ g });
-    const crumbs = this.getBreadcrumbs(g, this.settings);
-
+    const crumbs = this.getBreadcrumbs(g);
+    console.log({ crumbs });
     this.contentEl.empty();
 
-    const breadcrumbTrail = this.contentEl.createDiv(
-      "breadcrumb-trail",
-      (trailEl) => {
-        crumbs.forEach((crumb) => {
-          const link = trailEl.createEl("a", {
-            cls: "internal-link",
-            text: crumb,
+    if (crumbs[0].includes("No path to")) {
+      this.contentEl.createDiv({ text: crumbs[0] });
+    } else {
+      const breadcrumbTrail = this.contentEl.createDiv(
+        "breadcrumb-trail",
+        (trailEl) => {
+          crumbs.forEach((crumb) => {
+            const link = trailEl.createEl("a", {
+              cls: "internal-link",
+              text: crumb,
+            });
+            link.href = null;
+            link.addEventListener("click", () => {
+              this.app.workspace.openLinkText(
+                crumb,
+                this.app.workspace.getActiveFile().path
+              );
+            });
+            trailEl.createDiv({ text: " ^ " });
           });
-          link.href = null;
-          link.addEventListener("click", () => {
-            this.app.workspace.openLinkText(
-              crumb,
-              this.app.workspace.getActiveFile().path
-            );
-          });
-          trailEl.createDiv({ text: " ^ " });
-        });
-      }
-    );
+        }
+      );
 
-    breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
+      breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
+    }
   }
 
   async onOpen(): Promise<void> {
