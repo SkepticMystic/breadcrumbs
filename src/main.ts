@@ -118,20 +118,20 @@ class BreadcrumbsView extends ItemView {
     // Regex to match the `parent` metadata field
     const parentField = this.settings.parentFieldName;
     const getParentLinksRegex = new RegExp(
-      `.*?${parentField}::? ?(\\[\\[.*\\]\\])`
+      `.*?${parentField}::? ?(\\[\\[.+\\]\\])`
     );
 
     // Regex to match the `child` metadata field
     const childField = this.settings.childFieldName;
     const getChildLinksRegex = new RegExp(
-      `.*?${childField}::? ?(\\[\\[.*\\]\\])`,
+      `.*?${childField}::? ?(\\[\\[.+\\]\\])`,
       "i"
     );
 
     // Regex to match the `sibling` metadata field
     const siblingField = this.settings.siblingFieldName;
     const getSiblingLinksRegex = new RegExp(
-      `.*?${siblingField}::? ?(\\[\\[.*\\]\\])`,
+      `.*?${siblingField}::? ?(\\[\\[.+\\]\\])`,
       "i"
     );
 
