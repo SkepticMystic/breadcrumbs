@@ -1,12 +1,4 @@
-import {
-  App,
-  EventRef,
-  ItemView,
-  Modal,
-  Plugin,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
+import { ItemView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
@@ -98,6 +90,30 @@ class BreadcrumbsView extends ItemView {
     return childParentArr;
   }
 
+  // Grab parent fields from note content
+  getNeighbourArr(nameContentArr: nameContent[]) {
+    // Regex to match the `parent` metadata field
+    const parentFieldName = this.settings.parentFieldName;
+    const yamlOrInlineParent = new RegExp(
+      `.*?${parentFieldName}::? \\[\\[(.+)\\]\\].*?`,
+      "i"
+    );
+
+    const childParentArr: childParent[] = nameContentArr.map(
+      (arr: nameContent) => {
+        const match = arr.content.match(yamlOrInlineParent);
+        if (match) {
+          const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
+          return { child: arr.fileName, parent };
+        } else {
+          return { child: arr.fileName, parent: "" };
+        }
+      }
+    );
+    console.log(childParentArr);
+    return childParentArr;
+  }
+
   // Graph stuff...
   async initialiseGraph(settings: BreadcrumbsPluginSettings) {
     const nameContentArr = await this.getNameContentArr();
@@ -109,7 +125,7 @@ class BreadcrumbsView extends ItemView {
     childParentArr.forEach((edge) => {
       g.setNode(edge.child, edge.child);
       if (edge.parent !== "") {
-        g.setEdge(edge.child, edge.parent);
+        g.setEdge(edge.child, edge.parent, "parent");
       }
     });
     return g;
@@ -119,7 +135,6 @@ class BreadcrumbsView extends ItemView {
     const to = settings.indexNote;
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
-    console.log({ paths });
     let step = to;
     const breadcrumbs: string[] = [];
 
@@ -172,17 +187,17 @@ export default class BreadcrumbsPlugin extends Plugin {
   plugin: BreadcrumbsPlugin;
   view: BreadcrumbsView;
 
-  async onload() {
+  async onload(): Promise<void> {
     console.log("loading plugin");
 
     await this.loadSettings();
 
-    this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-      const crumbs = this.view.getBreadcrumbs(
-        await this.view.initialiseGraph(this.settings),
-        this.settings
-      );
-    });
+    // this.addRibbonIcon("dice", "Breadcrumbs", async () => {
+    //   const crumbs = this.view.getBreadcrumbs(
+    //     await this.view.initialiseGraph(this.settings),
+    //     this.settings
+    //   );
+    // });
 
     this.addCommand({
       id: "show-breadcrumb-view",
@@ -229,31 +244,31 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
-  onunload() {
-    console.log("unloading plugin");
-  }
+  // onunload(): Promise<void> {
+  //   console.log("unloading plugin");
+  // }
 
-  async loadSettings() {
+  async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
-  async saveSettings() {
+  async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
   }
 }
 
-class SampleModal extends Modal {
-  constructor(app: App) {
-    super(app);
-  }
+// class SampleModal extends Modal {
+//   constructor(app: App) {
+//     super(app);
+//   }
 
-  onOpen() {
-    let { contentEl } = this;
-    contentEl.setText("Woah!");
-  }
+//   onOpen() {
+//     const { contentEl } = this;
+//     contentEl.setText("Woah!");
+//   }
 
-  onClose() {
-    let { contentEl } = this;
-    contentEl.empty();
-  }
-}
+//   onClose() {
+//     const { contentEl } = this;
+//     contentEl.empty();
+//   }
+// }
