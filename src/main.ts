@@ -78,19 +78,23 @@ class BreadcrumbsView extends ItemView {
   ) {
     // Regex to match the `parent` metadata field
     const parentFieldName = settings.parentFieldName;
-    const yamlOrInlineParent = new RegExp(`${parentFieldName}::? (.+)`, "i");
+    const yamlOrInlineParent = new RegExp(
+      `.*?${parentFieldName}::? \\[\\[(.+)\\]\\].*?`,
+      "i"
+    );
 
     const childParentArr: childParent[] = nameContentArr.map(
       (arr: nameContent) => {
-        const matches = arr.content.match(yamlOrInlineParent);
-        if (matches) {
-          const dropBrackets = matches[1].replace("[[", "").replace("]]", "");
-          return { child: arr.fileName, parent: dropBrackets };
+        const match = arr.content.match(yamlOrInlineParent);
+        if (match) {
+          const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
+          return { child: arr.fileName, parent };
         } else {
           return { child: arr.fileName, parent: "" };
         }
       }
     );
+    console.log(childParentArr);
     return childParentArr;
   }
 
@@ -133,19 +137,27 @@ class BreadcrumbsView extends ItemView {
     console.log({ g });
     const crumbs = this.getBreadcrumbs(g, this.settings);
 
-
     this.contentEl.empty();
 
-    const breadcrumbTrail = this.contentEl.createDiv("breadcrumb-trail", (trailEl) => {
-      crumbs.forEach((crumb) => {
-        const link = trailEl.createEl('a', { cls: "internal-link", text: crumb });
-        link.href = null;
-        link.addEventListener('click', () => {
-          this.app.workspace.openLinkText(crumb, this.app.workspace.getActiveFile().path)
-        })
-        trailEl.createDiv({ text: " ^ " });
-      });
-    });
+    const breadcrumbTrail = this.contentEl.createDiv(
+      "breadcrumb-trail",
+      (trailEl) => {
+        crumbs.forEach((crumb) => {
+          const link = trailEl.createEl("a", {
+            cls: "internal-link",
+            text: crumb,
+          });
+          link.href = null;
+          link.addEventListener("click", () => {
+            this.app.workspace.openLinkText(
+              crumb,
+              this.app.workspace.getActiveFile().path
+            );
+          });
+          trailEl.createDiv({ text: " ^ " });
+        });
+      }
+    );
 
     breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
   }
