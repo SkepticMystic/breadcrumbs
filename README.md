@@ -20,3 +20,11 @@ If the index is nested inside folders, still just use the name of the note. `Fol
 ### Parent Field
 
 You also need to give the name of the field you use to indicate parent notes. For example, if you use `parent: [[Note]]`, then enter `parent` into the setting field.
+
+### Sibling Field
+
+The name of the field used to indicate notes on the same level as the current one. `Related Notes: [[Note]]` -> `Related Notes`, for example.
+
+### Child Field
+
+The field used to show "narrower" notes, like `Subtopic: [[Note]]`, or `child:: [[Note]]`
