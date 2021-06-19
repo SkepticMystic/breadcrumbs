@@ -105,13 +105,14 @@ class BreadcrumbsView extends ItemView {
     // General use
     const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
     const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+    
     function splitAndDrop(str: string | undefined): string[] | [] {
       if (str === undefined || str === "") {
         return [];
       } else {
         return str
           .match(splitLinksRegex)
-          .map((link) => link.match(dropHeaderOrAlias)[1]);
+          .map((link) => link.replace(dropHeaderOrAlias, "$1"));
       }
     }
 
@@ -144,8 +145,6 @@ class BreadcrumbsView extends ItemView {
         const childLinks: string | undefined =
           arr.content.match(getChildLinksRegex)?.[1];
 
-        
-
         const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
           splitAndDrop(parentLinks),
           splitAndDrop(siblingLinks),
@@ -160,7 +159,7 @@ class BreadcrumbsView extends ItemView {
         };
 
         console.log(currentNeighbourObj);
-        return currentNeighbourObj
+        return currentNeighbourObj;
       }
     );
     // console.log(neighbourArr);
@@ -178,7 +177,7 @@ class BreadcrumbsView extends ItemView {
     const gSiblings = new Graph();
     const gChildren = new Graph();
 
-    neighbourArr.forEach(neighbourObj => {
+    neighbourArr.forEach((neighbourObj) => {
       gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
       gParents.setNode(neighbourObj.current, neighbourObj.current);
       gSiblings.setNode(neighbourObj.current, neighbourObj.current);
@@ -201,10 +200,7 @@ class BreadcrumbsView extends ItemView {
           gChildren.setEdge(neighbourObj.current, child, "child")
         );
       }
-
     });
-
-
 
     neighbourArr.forEach((neighbourObj) => {
       gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
@@ -228,7 +224,7 @@ class BreadcrumbsView extends ItemView {
       }
     });
 
-    return {gAllInOne, gParents, gChildren, gSiblings};
+    return { gAllInOne, gParents, gChildren, gSiblings };
   }
 
   // Graph stuff...

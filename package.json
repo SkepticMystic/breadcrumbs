@@ -1,6 +1,6 @@
 {
   "name": "breadcrumbs-plugin",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Visualise the hierarchy of your vault using a breadcrumb trail",
   "main": "main.js",
   "scripts": {
