@@ -100,22 +100,16 @@ class BreadcrumbsView extends ItemView {
     return childParentArr;
   }
 
-  // Grab parent fields from note content
+  // General use
+  splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+  dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+  splitAndDrop(str: string): string[] | [] {
+    return str
+      ?.match(this.splitLinksRegex)
+      ?.map((link) => link.match(this.dropHeaderOrAlias)?.[1]);
+  }
+
   getNeighbourArr(nameContentArr: nameContent[]) {
-    // General use
-    const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
-    const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-
-    function splitAndDrop(str: string | undefined): string[] | [] {
-      if (str === undefined || str === "") {
-        return [];
-      } else {
-        return str
-          .match(splitLinksRegex)
-          .map((link) => link.replace(dropHeaderOrAlias, "$1"));
-      }
-    }
-
     // Regex to match the `parent` metadata field
     const parentField = this.settings.parentFieldName;
     const getParentLinksRegex = new RegExp(
@@ -136,34 +130,27 @@ class BreadcrumbsView extends ItemView {
       "i"
     );
 
-    const neighbourArr: neighbourObj[] = nameContentArr.map(
-      (arr: nameContent) => {
-        const parentLinks: string | undefined =
-          arr.content.match(getParentLinksRegex)?.[1];
-        const siblingLinks: string | undefined =
-          arr.content.match(getSiblingLinksRegex)?.[1];
-        const childLinks: string | undefined =
-          arr.content.match(getChildLinksRegex)?.[1];
+    const neighbourArr: neighbourObj[] = nameContentArr.map((arr) => {
+      const parentLinks = arr.content.match(getParentLinksRegex)?.[1];
+      const siblingLinks = arr.content.match(getSiblingLinksRegex)?.[1];
+      const childLinks = arr.content.match(getChildLinksRegex)?.[1];
 
-        console.log({workingOn: arr.fileName})
+      const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
+        this.splitAndDrop(parentLinks) ?? [],
+        this.splitAndDrop(siblingLinks) ?? [],
+        this.splitAndDrop(childLinks) ?? [],
+      ];
 
-        const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
-          splitAndDrop(parentLinks),
-          splitAndDrop(siblingLinks),
-          splitAndDrop(childLinks),
-        ];
+      const currentNeighbourObj: neighbourObj = {
+        current: arr.fileName,
+        parents: splitParentLinks,
+        siblings: splitSiblingLinks,
+        children: splitChildLinks,
+      };
 
-        const currentNeighbourObj: neighbourObj = {
-          current: arr.fileName,
-          parents: splitParentLinks,
-          siblings: splitSiblingLinks,
-          children: splitChildLinks,
-        };
-
-        console.log(currentNeighbourObj);
-        return currentNeighbourObj;
-      }
-    );
+      // console.log(currentNeighbourObj);
+      return currentNeighbourObj;
+    });
     // console.log(neighbourArr);
     return neighbourArr;
   }
@@ -174,90 +161,81 @@ class BreadcrumbsView extends ItemView {
     const neighbourArr: neighbourObj[] = this.getNeighbourArr(nameContentArr);
     // const indexNote = this.settings.indexNote;
 
-    const gAllInOne = new Graph();
+    // const gAllInOne = new Graph();
     const gParents = new Graph();
     const gSiblings = new Graph();
     const gChildren = new Graph();
 
     neighbourArr.forEach((neighbourObj) => {
-      gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
+      // gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
       gParents.setNode(neighbourObj.current, neighbourObj.current);
       gSiblings.setNode(neighbourObj.current, neighbourObj.current);
       gChildren.setNode(neighbourObj.current, neighbourObj.current);
 
-      if (neighbourObj.parents.length > 0) {
-        neighbourObj.parents.forEach((parent) =>
-          gParents.setEdge(neighbourObj.current, parent, "parent")
-        );
-      }
+      neighbourObj.parents.forEach((parent) =>
+        gParents.setEdge(neighbourObj.current, parent, "parent")
+      );
 
-      if (neighbourObj.siblings.length > 0) {
-        neighbourObj.siblings.forEach((sibling) =>
-          gSiblings.setEdge(neighbourObj.current, sibling, "sibling")
-        );
-      }
+      neighbourObj.siblings.forEach((sibling) =>
+        gSiblings.setEdge(neighbourObj.current, sibling, "sibling")
+      );
 
-      if (neighbourObj.children.length > 0) {
-        neighbourObj.children.forEach((child) =>
-          gChildren.setEdge(neighbourObj.current, child, "child")
-        );
-      }
+      neighbourObj.children.forEach((child) =>
+        gChildren.setEdge(neighbourObj.current, child, "child")
+      );
     });
 
-    neighbourArr.forEach((neighbourObj) => {
-      gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
+    // neighbourArr.forEach((neighbourObj) => {
+    //   gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
 
-      if (neighbourObj.parents.length > 0) {
-        neighbourObj.parents.forEach((parent) =>
-          gAllInOne.setEdge(neighbourObj.current, parent, "parent")
-        );
-      }
+    //   if (neighbourObj.parents.length > 0) {
+    //     neighbourObj.parents.forEach((parent) =>
+    //       gAllInOne.setEdge(neighbourObj.current, parent, "parent")
+    //     );
+    //   }
 
-      if (neighbourObj.siblings.length > 0) {
-        neighbourObj.siblings.forEach((sibling) =>
-          gAllInOne.setEdge(neighbourObj.current, sibling, "sibling")
-        );
-      }
+    //   if (neighbourObj.siblings.length > 0) {
+    //     neighbourObj.siblings.forEach((sibling) =>
+    //       gAllInOne.setEdge(neighbourObj.current, sibling, "sibling")
+    //     );
+    //   }
 
-      if (neighbourObj.children.length > 0) {
-        neighbourObj.children.forEach((child) =>
-          gAllInOne.setEdge(neighbourObj.current, child, "child")
-        );
-      }
-    });
+    //   if (neighbourObj.children.length > 0) {
+    //     neighbourObj.children.forEach((child) =>
+    //       gAllInOne.setEdge(neighbourObj.current, child, "child")
+    //     );
+    //   }
+    // });
 
-    return { gAllInOne, gParents, gChildren, gSiblings };
+    return { gParents, gSiblings, gChildren };
   }
 
-  // Graph stuff...
-  async initialiseGraph(settings: BreadcrumbsPluginSettings) {
-    const nameContentArr = await this.getNameContentArr();
-    const childParentArr = this.getChildParentArr(nameContentArr, settings);
-    const g = new Graph();
-    const indexNote = settings.indexNote;
-    g.setNode(indexNote, indexNote);
+  // // Graph stuff...
+  // async initialiseGraph(settings: BreadcrumbsPluginSettings) {
+  //   const nameContentArr = await this.getNameContentArr();
+  //   const childParentArr = this.getChildParentArr(nameContentArr, settings);
+  //   const g = new Graph();
+  //   const indexNote = settings.indexNote;
+  //   g.setNode(indexNote, indexNote);
 
-    childParentArr.forEach((edge) => {
-      g.setNode(edge.child, edge.child);
-      if (edge.parent !== "") {
-        g.setEdge(edge.child, edge.parent, "parent");
-      }
-    });
-    return g;
-  }
+  //   childParentArr.forEach((edge) => {
+  //     g.setNode(edge.child, edge.child);
+  //     if (edge.parent !== "") {
+  //       g.setEdge(edge.child, edge.parent, "parent");
+  //     }
+  //   });
+  //   return g;
+  // }
 
-  getBreadcrumbs(g: Graph) {
-    const to = this.settings.indexNote;
+  getPaths(g: Graph, userTo: string = this.settings.indexNote) {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
-    let step = to;
+    let step = userTo;
     const breadcrumbs: string[] = [];
 
     // console.log({ paths });
     if (paths[step].distance === Infinity) {
-      return [
-        `No path to ${this.settings.indexNote} was found from the current note`,
-      ];
+      return [`No path to ${userTo} was found from the current note`];
     } else {
       while (paths[step].distance !== 0) {
         breadcrumbs.push(step);
@@ -269,13 +247,97 @@ class BreadcrumbsView extends ItemView {
     }
   }
 
+  // getBreadcrumbs(g: Graph) {
+  //   const to = this.settings.indexNote;
+  //   const from = this.app.workspace.getActiveFile().basename;
+  //   const paths = graphlib.alg.dijkstra(g, from);
+  //   let step = to;
+  //   const breadcrumbs: string[] = [];
+
+  //   console.log({ paths });
+  //   if (paths[step].distance === Infinity) {
+  //     return [
+  //       `No path to ${this.settings.indexNote} was found from the current note`,
+  //     ];
+  //   } else {
+  //     while (paths[step].distance !== 0) {
+  //       breadcrumbs.push(step);
+  //       step = paths[step].predecessor;
+  //     }
+
+  //     breadcrumbs.push(from);
+  //     return breadcrumbs;
+  //   }
+  // }
+
+  makeInternalLinkInEl(
+    el: HTMLSpanElement | HTMLDivElement,
+    text: string,
+    count: number = undefined
+  ) {
+    const innerDiv = el.createDiv();
+    if (count) {
+      innerDiv.createSpan({ text: `${count}. ` });
+    }
+    const link = innerDiv.createEl("a", {
+      cls: "internal-link",
+      text,
+    });
+    link.href = null;
+    link.addEventListener("click", () => {
+      this.app.workspace.openLinkText(
+        text,
+        this.app.workspace.getActiveFile().path
+      );
+    });
+  }
+
   async draw() {
-    const g = await this.initialiseGraph(this.settings);
+    const graphs = await this.initialiseNeighbourGraph();
+    const { gParents, gSiblings, gChildren } = graphs;
+    console.log({ graphs });
+    // const g = await this.initialiseGraph(this.settings);
     // console.log({ g });
-    const crumbs = this.getBreadcrumbs(g);
-    // console.log({ crumbs });
+    const crumbs = this.getPaths(gParents);
+    console.log({ crumbs });
+
+    const currFile = this.app.workspace.getActiveFile();
     this.contentEl.empty();
 
+    const matrix = this.contentEl.createDiv({ cls: "matrix" });
+
+    const topRow = matrix.createDiv({ cls: "matrixRow topRow" });
+
+    const fillerUpDiv = topRow.createDiv({ cls: "fillerDiv" });
+    const upDiv = topRow.createDiv({
+      cls: "up breadcrumbDiv",
+      text: this.settings.parentFieldName,
+    });
+
+    const middleRow = matrix.createDiv({ cls: "matrixRow middleRow" });
+    const leftDiv = middleRow.createDiv({
+      cls: "left breadcrumbDiv",
+      text: "Top",
+    });
+    const currDiv = middleRow.createDiv({
+      cls: "curr breadcrumbDiv",
+      text: "Current",
+    });
+    const rightDiv = middleRow.createDiv({
+      cls: "right breadcrumbDiv",
+      text: this.settings.siblingFieldName,
+    });
+
+    const bottomRow = matrix.createDiv({
+      cls: "matrixRow bottomRow",
+    });
+    const fillerBottomDiv = bottomRow.createDiv({ cls: "fillerDiv" });
+    const downDiv = bottomRow.createDiv({
+      cls: "down breadcrumbDiv",
+      text: this.settings.childFieldName,
+    });
+
+    // Breadcrum trail:
     if (crumbs[0].includes("No path to")) {
       this.contentEl.createDiv({ text: crumbs[0] });
     } else {
@@ -289,10 +351,7 @@ class BreadcrumbsView extends ItemView {
             });
             link.href = null;
             link.addEventListener("click", () => {
-              this.app.workspace.openLinkText(
-                crumb,
-                this.app.workspace.getActiveFile().path
-              );
+              this.app.workspace.openLinkText(crumb, currFile.path);
             });
             trailEl.createDiv({ text: " ^ " });
           });
@@ -301,6 +360,30 @@ class BreadcrumbsView extends ItemView {
 
       breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
     }
+
+    // upDiv
+    const parents: string[] = gParents.successors(currFile.basename) ?? [];
+    parents.forEach((successor: string, i) => {
+      this.makeInternalLinkInEl(upDiv, successor, i + 1);
+    });
+
+    // currDiv
+    this.makeInternalLinkInEl(currDiv, currFile.basename);
+
+    // leftDiv
+    this.makeInternalLinkInEl(leftDiv, this.settings.indexNote);
+
+    // rightDiv
+    const siblings: string[] = gSiblings.successors(currFile.basename) ?? [];
+    siblings.forEach((successor: string, i) => {
+      this.makeInternalLinkInEl(rightDiv, successor, i + 1);
+    });
+
+    // bottomDiv
+    const children: string[] = gChildren.successors(currFile.basename) ?? [];
+    children.forEach((successor: string, i) => {
+      this.makeInternalLinkInEl(downDiv, successor, i + 1);
+    });
   }
 
   async onOpen(): Promise<void> {

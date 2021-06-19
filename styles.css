@@ -1,4 +1,24 @@
-/* Sets all the text color to red!
-body {
-    color: red;
-} */
+.breadcrumbDiv {
+    width: fit-content;
+    height: fit-content;
+    min-height: 50px;
+    min-width: 50px;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid rgb(218, 215, 215);
+    border-radius: 5px;
+    background-color: rgb(17, 19, 19);
+    color: rgb(226, 226, 226);
+}
+
+.fillerDiv {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    opacity: 0;
+}
+
+.matrixRow {
+    display: flex;
+    flex-direction: row;
+}
