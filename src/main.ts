@@ -29,9 +29,9 @@ interface childParent {
 
 interface neighbourObj {
   current: string;
-  parent: string[];
-  sibling: string[];
-  child: string[];
+  parents: string[];
+  siblings: string[];
+  children: string[];
 }
 
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
@@ -117,15 +117,23 @@ class BreadcrumbsView extends ItemView {
 
     // Regex to match the `parent` metadata field
     const parentField = this.settings.parentFieldName;
-    const getParentLinksRegex = new RegExp(`.*?${parentField}::? ?(.*)`);
+    const getParentLinksRegex = new RegExp(
+      `.*?${parentField}::? ?(\\[\\[.*\\]\\])`
+    );
 
     // Regex to match the `child` metadata field
     const childField = this.settings.childFieldName;
-    const getChildLinksRegex = new RegExp(`.*?${childField}::? ?(.*)`, "i");
+    const getChildLinksRegex = new RegExp(
+      `.*?${childField}::? ?(\\[\\[.*\\]\\])`,
+      "i"
+    );
 
     // Regex to match the `sibling` metadata field
     const siblingField = this.settings.siblingFieldName;
-    const getSiblingLinksRegex = new RegExp(`.*?${siblingField}::? ?(.*)`, "i");
+    const getSiblingLinksRegex = new RegExp(
+      `.*?${siblingField}::? ?(\\[\\[.*\\]\\])`,
+      "i"
+    );
 
     const neighbourArr: neighbourObj[] = nameContentArr.map(
       (arr: nameContent) => {
@@ -136,7 +144,7 @@ class BreadcrumbsView extends ItemView {
         const childLinks: string | undefined =
           arr.content.match(getChildLinksRegex)?.[1];
 
-        console.log({current: arr.fileName, parentLinks, siblingLinks, childLinks})
+        
 
         const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
           splitAndDrop(parentLinks),
@@ -144,16 +152,83 @@ class BreadcrumbsView extends ItemView {
           splitAndDrop(childLinks),
         ];
 
-        return {
+        const currentNeighbourObj: neighbourObj = {
           current: arr.fileName,
-          parent: splitParentLinks,
-          sibling: splitSiblingLinks,
-          child: splitChildLinks,
+          parents: splitParentLinks,
+          siblings: splitSiblingLinks,
+          children: splitChildLinks,
         };
+
+        console.log(currentNeighbourObj);
+        return currentNeighbourObj
       }
     );
-    console.log(neighbourArr);
+    // console.log(neighbourArr);
     return neighbourArr;
+  }
+
+  // Graph stuff...
+  async initialiseNeighbourGraph() {
+    const nameContentArr = await this.getNameContentArr();
+    const neighbourArr: neighbourObj[] = this.getNeighbourArr(nameContentArr);
+    // const indexNote = this.settings.indexNote;
+
+    const gAllInOne = new Graph();
+    const gParents = new Graph();
+    const gSiblings = new Graph();
+    const gChildren = new Graph();
+
+    neighbourArr.forEach(neighbourObj => {
+      gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
+      gParents.setNode(neighbourObj.current, neighbourObj.current);
+      gSiblings.setNode(neighbourObj.current, neighbourObj.current);
+      gChildren.setNode(neighbourObj.current, neighbourObj.current);
+
+      if (neighbourObj.parents.length > 0) {
+        neighbourObj.parents.forEach((parent) =>
+          gParents.setEdge(neighbourObj.current, parent, "parent")
+        );
+      }
+
+      if (neighbourObj.siblings.length > 0) {
+        neighbourObj.siblings.forEach((sibling) =>
+          gSiblings.setEdge(neighbourObj.current, sibling, "sibling")
+        );
+      }
+
+      if (neighbourObj.children.length > 0) {
+        neighbourObj.children.forEach((child) =>
+          gChildren.setEdge(neighbourObj.current, child, "child")
+        );
+      }
+
+    });
+
+
+
+    neighbourArr.forEach((neighbourObj) => {
+      gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
+
+      if (neighbourObj.parents.length > 0) {
+        neighbourObj.parents.forEach((parent) =>
+          gAllInOne.setEdge(neighbourObj.current, parent, "parent")
+        );
+      }
+
+      if (neighbourObj.siblings.length > 0) {
+        neighbourObj.siblings.forEach((sibling) =>
+          gAllInOne.setEdge(neighbourObj.current, sibling, "sibling")
+        );
+      }
+
+      if (neighbourObj.children.length > 0) {
+        neighbourObj.children.forEach((child) =>
+          gAllInOne.setEdge(neighbourObj.current, child, "child")
+        );
+      }
+    });
+
+    return {gAllInOne, gParents, gChildren, gSiblings};
   }
 
   // Graph stuff...
@@ -246,9 +321,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.loadSettings();
 
     this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-      console.log(
-        this.view.getNeighbourArr(await this.view.getNameContentArr())
-      );
+      console.log({
+        neighbourArr: this.view.getNeighbourArr(
+          await this.view.getNameContentArr()
+        ),
+        graph: await this.view.initialiseNeighbourGraph(),
+      });
     });
 
     this.addCommand({
