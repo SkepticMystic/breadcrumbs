@@ -10,11 +10,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    let { containerEl } = this;
+    const { containerEl } = this;
 
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Settings for my awesome plugin." });
+    containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin." });
 
     new Setting(containerEl)
       .setName("Parent Metadata Field")
@@ -29,6 +29,38 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             this.plugin.settings.parentFieldName = value;
             await this.plugin.saveSettings();
             console.log(this.plugin.settings.parentFieldName);
+          })
+      );
+
+      new Setting(containerEl)
+      .setName("Sibling Metadata Field")
+      .setDesc(
+        'The key name you use as the sibling field. For example, if you use "sibling: [[Note]]", then the value of this setting should be "sibling"'
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Field name")
+          .setValue(this.plugin.settings.siblingFieldName)
+          .onChange(async (value) => {
+            this.plugin.settings.siblingFieldName = value;
+            await this.plugin.saveSettings();
+            console.log(this.plugin.settings.siblingFieldName);
+          })
+      );
+
+      new Setting(containerEl)
+      .setName("Child Metadata Field")
+      .setDesc(
+        'The key name you use as the child field. For example, if you use "child: [[Note]]", then the value of this setting should be "child"'
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Field name")
+          .setValue(this.plugin.settings.childFieldName)
+          .onChange(async (value) => {
+            this.plugin.settings.childFieldName = value;
+            await this.plugin.saveSettings();
+            console.log(this.plugin.settings.childFieldName);
           })
       );
 

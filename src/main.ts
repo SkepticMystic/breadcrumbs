@@ -5,11 +5,15 @@ import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 
 interface BreadcrumbsPluginSettings {
   parentFieldName: string;
+  siblingFieldName: string;
+  childFieldName: string;
   indexNote: string;
 }
 
 const DEFAULT_SETTINGS: BreadcrumbsPluginSettings = {
   parentFieldName: "parent",
+  siblingFieldName: "sibling",
+  childFieldName: "child",
   indexNote: "Index",
 };
 
@@ -21,6 +25,13 @@ interface nameContent {
 interface childParent {
   child: string;
   parent: string;
+}
+
+interface neighbourObj {
+  current: string;
+  parent: string[];
+  sibling: string[];
+  child: string[];
 }
 
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
@@ -70,17 +81,16 @@ class BreadcrumbsView extends ItemView {
   ) {
     // Regex to match the `parent` metadata field
     const parentFieldName = settings.parentFieldName;
-    const yamlOrInlineParent = new RegExp(
-      `.*?${parentFieldName}::? \\[\\[(.+)\\]\\].*?`,
-      "i"
+    const parentRegex = new RegExp(
+      `.*?${parentFieldName}::? \\[\\[([^#\\|\\]]*)(#|\\|)?.*\\]\\][^\\]]*?`
     );
 
     const childParentArr: childParent[] = nameContentArr.map(
       (arr: nameContent) => {
-        const match = arr.content.match(yamlOrInlineParent);
+        const match = arr.content.match(parentRegex);
         if (match) {
-          const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
-          return { child: arr.fileName, parent };
+          // const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
+          return { child: arr.fileName, parent: match[1] };
         } else {
           return { child: arr.fileName, parent: "" };
         }
@@ -92,26 +102,58 @@ class BreadcrumbsView extends ItemView {
 
   // Grab parent fields from note content
   getNeighbourArr(nameContentArr: nameContent[]) {
-    // Regex to match the `parent` metadata field
-    const parentFieldName = this.settings.parentFieldName;
-    const yamlOrInlineParent = new RegExp(
-      `.*?${parentFieldName}::? \\[\\[(.+)\\]\\].*?`,
-      "i"
-    );
+    // General use
+    const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+    const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+    function splitAndDrop(str: string | undefined): string[] | [] {
+      if (str === undefined || str === "") {
+        return [];
+      } else {
+        return str
+          .match(splitLinksRegex)
+          .map((link) => link.match(dropHeaderOrAlias)[1]);
+      }
+    }
 
-    const childParentArr: childParent[] = nameContentArr.map(
+    // Regex to match the `parent` metadata field
+    const parentField = this.settings.parentFieldName;
+    const getParentLinksRegex = new RegExp(`.*?${parentField}::? ?(.*)`);
+
+    // Regex to match the `child` metadata field
+    const childField = this.settings.childFieldName;
+    const getChildLinksRegex = new RegExp(`.*?${childField}::? ?(.*)`, "i");
+
+    // Regex to match the `sibling` metadata field
+    const siblingField = this.settings.siblingFieldName;
+    const getSiblingLinksRegex = new RegExp(`.*?${siblingField}::? ?(.*)`, "i");
+
+    const neighbourArr: neighbourObj[] = nameContentArr.map(
       (arr: nameContent) => {
-        const match = arr.content.match(yamlOrInlineParent);
-        if (match) {
-          const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
-          return { child: arr.fileName, parent };
-        } else {
-          return { child: arr.fileName, parent: "" };
-        }
+        const parentLinks: string | undefined =
+          arr.content.match(getParentLinksRegex)?.[1];
+        const siblingLinks: string | undefined =
+          arr.content.match(getSiblingLinksRegex)?.[1];
+        const childLinks: string | undefined =
+          arr.content.match(getChildLinksRegex)?.[1];
+
+        console.log({current: arr.fileName, parentLinks, siblingLinks, childLinks})
+
+        const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
+          splitAndDrop(parentLinks),
+          splitAndDrop(siblingLinks),
+          splitAndDrop(childLinks),
+        ];
+
+        return {
+          current: arr.fileName,
+          parent: splitParentLinks,
+          sibling: splitSiblingLinks,
+          child: splitChildLinks,
+        };
       }
     );
-    console.log(childParentArr);
-    return childParentArr;
+    console.log(neighbourArr);
+    return neighbourArr;
   }
 
   // Graph stuff...
@@ -203,12 +245,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
-    // this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-    //   const crumbs = this.view.getBreadcrumbs(
-    //     await this.view.initialiseGraph(this.settings),
-    //     this.settings
-    //   );
-    // });
+    this.addRibbonIcon("dice", "Breadcrumbs", async () => {
+      console.log(
+        this.view.getNeighbourArr(await this.view.getNameContentArr())
+      );
+    });
 
     this.addCommand({
       id: "show-breadcrumb-view",
