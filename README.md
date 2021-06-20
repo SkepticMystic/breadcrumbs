@@ -2,7 +2,7 @@
 
 This plugin adds a new view to Obsidian, the breadcrumb trail. In this view, you can see a hieracrchy going from your current note, all the way up to your chosen Index/Home note.
 
-![](https://i.imgur.com/sZFeosp.png)
+![](https://i.imgur.com/dONnvdu.png)
 
 To get this structure, the plugin requires that you use some type of metadata indicating the hierarchy of notes.
 For example, you may have a yaml field called `parent`, which links to the current note's "parent" note: `parent: [[Parent Note]]`. (You can also use inline Dataview fields `parent:: [[Parent Note]]`).
