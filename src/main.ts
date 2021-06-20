@@ -1,4 +1,10 @@
-import { ItemView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import {
+  FrontMatterCache,
+  ItemView,
+  Plugin,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
@@ -34,6 +40,11 @@ interface neighbourObj {
   children: string[];
 }
 
+interface fileFrontmatter {
+  file: TFile;
+  frontmatter: FrontMatterCache;
+}
+
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
 class BreadcrumbsView extends ItemView {
   plugin: BreadcrumbsPlugin;
@@ -62,6 +73,15 @@ class BreadcrumbsView extends ItemView {
 
   getDisplayText(): string {
     return "Breadcrumbs";
+  }
+
+  getFileFrontmatterObsidian(): fileFrontmatter[] {
+    const files: TFile[] = this.app.vault.getMarkdownFiles();
+    return files.map((file) => {
+      const frontmatter: FrontMatterCache =
+        this.app.metadataCache.getFileCache(file).frontmatter ?? [];
+      return { file, frontmatter };
+    });
   }
 
   async getNameContentArr(): Promise<nameContent[]> {
