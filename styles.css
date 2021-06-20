@@ -5,7 +5,7 @@ div.breadcrumbs-grid {
     align-items: stretch;
 }
 
-.breadcrumbDiv {
+.breadcrumbsDiv {
     /* width: fit-content;
     height: fit-content; */
     /* min-height: 50px;
@@ -18,7 +18,7 @@ div.breadcrumbs-grid {
     color: rgb(226, 226, 226);
 }
 
-.fillerDiv {
+.breadcrumbs-fillerDiv {
     /* width: 50px;
     height: 50px; */
     margin: 10px;

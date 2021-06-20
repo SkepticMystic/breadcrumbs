@@ -306,32 +306,40 @@ class BreadcrumbsView extends ItemView {
 
     const headingLevel = "strong";
 
-    const fillerTopLeftDiv = matrix.createDiv({ cls: "item-11 fillerDiv" });
+    const fillerTopLeftDiv = matrix.createDiv({
+      cls: "breadcrumbs-item-11 breadcrumbs-fillerDiv",
+    });
     const upDiv = matrix.createDiv({
-      cls: "item-12 breadcrumbDiv",
+      cls: "item-12 breadcrumbsDiv",
     });
     upDiv.createEl(headingLevel, { text: this.settings.parentFieldName });
-    const fillerTopRightDiv = matrix.createDiv({ cls: "item-13 fillerDiv" });
+    const fillerTopRightDiv = matrix.createDiv({
+      cls: "breadcrumbs-item-13 breadcrumbs-fillerDiv",
+    });
 
     const leftDiv = matrix.createDiv({
-      cls: "item-21 breadcrumbDiv",
+      cls: "breadcrumbs-item-21 breadcrumbsDiv",
     });
     leftDiv.createEl(headingLevel, { text: "Top" });
     const currDiv = matrix.createDiv({
-      cls: "item-22 breadcrumbDiv",
+      cls: "breadcrumbs-item-22 breadcrumbsDiv",
     });
     currDiv.createEl(headingLevel, { text: "Current" });
     const rightDiv = matrix.createDiv({
-      cls: "item-23 breadcrumbDiv",
+      cls: "breadcrumbs-item-23 breadcrumbsDiv",
     });
     rightDiv.createEl(headingLevel, { text: this.settings.siblingFieldName });
 
-    const fillerBotLeftDiv = matrix.createDiv({ cls: "item-31 fillerDiv" });
+    const fillerBotLeftDiv = matrix.createDiv({
+      cls: "breadcrumbs-item-31 breadcrumbs-fillerDiv",
+    });
     const downDiv = matrix.createDiv({
-      cls: "item-32 breadcrumbDiv",
+      cls: "breadcrumbs-item-32 breadcrumbsDiv",
     });
     downDiv.createEl(headingLevel, { text: this.settings.childFieldName });
-    const fillerBotRightDiv = matrix.createDiv({ cls: "item-33 fillerDiv" });
+    const fillerBotRightDiv = matrix.createDiv({
+      cls: "breadcrumbs-item-33 breadcrumbs-fillerDiv",
+    });
 
     // Breadcrum trail:
     if (crumbs[0].includes("No path to")) {
