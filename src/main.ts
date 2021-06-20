@@ -40,9 +40,10 @@ interface neighbourObj {
   children: string[];
 }
 
-interface fileFrontmatter {
+interface fileObsDv {
   file: TFile;
-  frontmatter: FrontMatterCache;
+  obs: FrontMatterCache;
+  dv?: FrontMatterCache;
 }
 
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
@@ -75,13 +76,23 @@ class BreadcrumbsView extends ItemView {
     return "Breadcrumbs";
   }
 
-  getFileFrontmatterObsidian(): fileFrontmatter[] {
+  getFileObsDv(): fileObsDv[] {
     const files: TFile[] = this.app.vault.getMarkdownFiles();
-    return files.map((file) => {
-      const frontmatter: FrontMatterCache =
-        this.app.metadataCache.getFileCache(file).frontmatter ?? [];
-      return { file, frontmatter };
+    const fileObsDvArr: fileObsDv[] = [];
+
+    files.forEach((tFile) => {
+      const currObj: fileObsDv = { file: tFile, obs: undefined };
+      const obs: FrontMatterCache =
+        this.app.metadataCache.getFileCache(tFile).frontmatter;
+
+      currObj.obs = obs;
+
+      const dv = this.app.plugins.plugins.dataview.api.page(tFile.path);
+      currObj.dv = dv;
+
+      fileObsDvArr.push(currObj);
     });
+    return fileObsDvArr;
   }
 
   async getNameContentArr(): Promise<nameContent[]> {
@@ -205,47 +216,8 @@ class BreadcrumbsView extends ItemView {
       );
     });
 
-    // neighbourArr.forEach((neighbourObj) => {
-    //   gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
-
-    //   if (neighbourObj.parents.length > 0) {
-    //     neighbourObj.parents.forEach((parent) =>
-    //       gAllInOne.setEdge(neighbourObj.current, parent, "parent")
-    //     );
-    //   }
-
-    //   if (neighbourObj.siblings.length > 0) {
-    //     neighbourObj.siblings.forEach((sibling) =>
-    //       gAllInOne.setEdge(neighbourObj.current, sibling, "sibling")
-    //     );
-    //   }
-
-    //   if (neighbourObj.children.length > 0) {
-    //     neighbourObj.children.forEach((child) =>
-    //       gAllInOne.setEdge(neighbourObj.current, child, "child")
-    //     );
-    //   }
-    // });
-
     return { gParents, gSiblings, gChildren };
   }
-
-  // // Graph stuff...
-  // async initialiseGraph(settings: BreadcrumbsPluginSettings) {
-  //   const nameContentArr = await this.getNameContentArr();
-  //   const childParentArr = this.getChildParentArr(nameContentArr, settings);
-  //   const g = new Graph();
-  //   const indexNote = settings.indexNote;
-  //   g.setNode(indexNote, indexNote);
-
-  //   childParentArr.forEach((edge) => {
-  //     g.setNode(edge.child, edge.child);
-  //     if (edge.parent !== "") {
-  //       g.setEdge(edge.child, edge.parent, "parent");
-  //     }
-  //   });
-  //   return g;
-  // }
 
   getPaths(g: Graph, userTo: string = this.settings.indexNote) {
     const from = this.app.workspace.getActiveFile().basename;
@@ -266,29 +238,6 @@ class BreadcrumbsView extends ItemView {
       return breadcrumbs;
     }
   }
-
-  // getBreadcrumbs(g: Graph) {
-  //   const to = this.settings.indexNote;
-  //   const from = this.app.workspace.getActiveFile().basename;
-  //   const paths = graphlib.alg.dijkstra(g, from);
-  //   let step = to;
-  //   const breadcrumbs: string[] = [];
-
-  //   console.log({ paths });
-  //   if (paths[step].distance === Infinity) {
-  //     return [
-  //       `No path to ${this.settings.indexNote} was found from the current note`,
-  //     ];
-  //   } else {
-  //     while (paths[step].distance !== 0) {
-  //       breadcrumbs.push(step);
-  //       step = paths[step].predecessor;
-  //     }
-
-  //     breadcrumbs.push(from);
-  //     return breadcrumbs;
-  //   }
-  // }
 
   makeInternalLinkInEl(
     el: HTMLSpanElement | HTMLDivElement,
@@ -426,12 +375,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.loadSettings();
 
     this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-      console.log({
-        neighbourArr: this.view.getNeighbourArr(
-          await this.view.getNameContentArr()
-        ),
-        graph: await this.view.initialiseNeighbourGraph(),
-      });
+      console.log(this.view.getFileObsDv());
     });
 
     this.addCommand({
@@ -448,14 +392,6 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
-    // this.registerEvent(
-    //   this.app.workspace.on("active-leaf-change", async () =>
-    //     console.log(
-    //       this.view.getBreadcrumbs(await this.view.initialiseGraph(this.settings))
-    //     )
-    //   )
-    // );
-
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
     this.registerView(VIEW_TYPE_BREADCRUMBS, (leaf: WorkspaceLeaf) => {
@@ -471,17 +407,10 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   initLeaf(): void {
-    // if (this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS).length) {
-    //   return;
-    // }
     this.app.workspace.getRightLeaf(false).setViewState({
       type: VIEW_TYPE_BREADCRUMBS,
     });
   }
-
-  // onunload(): Promise<void> {
-  //   console.log("unloading plugin");
-  // }
 
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -491,19 +420,3 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.saveData(this.settings);
   }
 }
-
-// class SampleModal extends Modal {
-//   constructor(app: App) {
-//     super(app);
-//   }
-
-//   onOpen() {
-//     const { contentEl } = this;
-//     contentEl.setText("Woah!");
-//   }
-
-//   onClose() {
-//     const { contentEl } = this;
-//     contentEl.empty();
-//   }
-// }
