@@ -29,3 +29,7 @@ div.breadcrumbs-grid {
     display: flex;
     flex-direction: row;
 }
+
+a.is-unresolved-breadcrumbs {
+    opacity: 0.5
+}

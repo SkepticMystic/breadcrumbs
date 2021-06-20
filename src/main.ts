@@ -23,27 +23,16 @@ const DEFAULT_SETTINGS: BreadcrumbsPluginSettings = {
   indexNote: "Index",
 };
 
-interface nameContent {
-  fileName: string;
-  content: string;
-}
-
-interface childParent {
-  child: string;
-  parent: string;
-}
-
 interface neighbourObj {
-  current: string;
+  current: TFile;
   parents: string[];
   siblings: string[];
   children: string[];
 }
 
-interface fileObsDv {
+interface fileFrontmatter {
   file: TFile;
-  obs: FrontMatterCache;
-  dv?: FrontMatterCache;
+  frontmatter: FrontMatterCache;
 }
 
 const VIEW_TYPE_BREADCRUMBS = "breadcrumbs";
@@ -76,159 +65,101 @@ class BreadcrumbsView extends ItemView {
     return "Breadcrumbs";
   }
 
-  getFileObsDv(): fileObsDv[] {
+  getFileFrontmatter(): fileFrontmatter[] {
     const files: TFile[] = this.app.vault.getMarkdownFiles();
-    const fileObsDvArr: fileObsDv[] = [];
+    const fileObsDvArr: fileFrontmatter[] = [];
 
-    files.forEach((tFile) => {
-      const currObj: fileObsDv = { file: tFile, obs: undefined };
-      const obs: FrontMatterCache =
-        this.app.metadataCache.getFileCache(tFile).frontmatter;
-
-      currObj.obs = obs;
-
-      const dv = this.app.plugins.plugins.dataview.api.page(tFile.path);
-      currObj.dv = dv;
-
-      fileObsDvArr.push(currObj);
-    });
+    if (this.app.plugins.plugins.dataview !== undefined) {
+      files.forEach((tFile) => {
+        const dv: FrontMatterCache = this.app.plugins.plugins.dataview.api.page(
+          tFile.path
+        );
+        fileObsDvArr.push({ file: tFile, frontmatter: dv });
+      });
+    } else {
+      files.forEach((tFile) => {
+        const obs: FrontMatterCache =
+          this.app.metadataCache.getFileCache(tFile).frontmatter;
+        fileObsDvArr.push({
+          file: tFile,
+          frontmatter: obs,
+        });
+      });
+    }
     return fileObsDvArr;
   }
-
-  async getNameContentArr(): Promise<nameContent[]> {
-    const nameContentArr: nameContent[] = [];
-    const files: TFile[] = this.app.vault.getMarkdownFiles();
-    files.forEach(async (file) => {
-      const content = await this.app.vault.cachedRead(file);
-      nameContentArr.push({ fileName: file.basename, content });
-    });
-    return nameContentArr;
-  }
-
-  // Grab parent fields from note content
-  getChildParentArr(
-    nameContentArr: nameContent[],
-    settings: BreadcrumbsPluginSettings
-  ) {
-    // Regex to match the `parent` metadata field
-    const parentFieldName = settings.parentFieldName;
-    const parentRegex = new RegExp(
-      `.*?${parentFieldName}::? \\[\\[([^#\\|\\]]*)(#|\\|)?.*\\]\\][^\\]]*?`
-    );
-
-    const childParentArr: childParent[] = nameContentArr.map(
-      (arr: nameContent) => {
-        const match = arr.content.match(parentRegex);
-        if (match) {
-          // const parent = match[1].replace(/(.+)(#|\|).+/g, "$1");
-          return { child: arr.fileName, parent: match[1] };
-        } else {
-          return { child: arr.fileName, parent: "" };
-        }
-      }
-    );
-    // console.log(childParentArr);
-    return childParentArr;
-  }
-
   // General use
   splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
   dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+
   splitAndDrop(str: string): string[] | [] {
     return str
       ?.match(this.splitLinksRegex)
       ?.map((link) => link.match(this.dropHeaderOrAlias)?.[1]);
   }
 
-  getNeighbourArr(nameContentArr: nameContent[]) {
-    // Regex to match the `parent` metadata field
-    const parentField = this.settings.parentFieldName;
-    const getParentLinksRegex = new RegExp(
-      `.*?${parentField}::? ?(\\[\\[.+\\]\\])`
-    );
+  getFields(obj: fileFrontmatter, field: string) {
+    const fieldItems: string | [] = obj.frontmatter[field] ?? [];
+    if (typeof fieldItems === "string") {
+      return this.splitAndDrop(fieldItems);
+    } else {
+      return [fieldItems].flat().map((link) => link.path);
+    }
+  }
 
-    // Regex to match the `child` metadata field
-    const childField = this.settings.childFieldName;
-    const getChildLinksRegex = new RegExp(
-      `.*?${childField}::? ?(\\[\\[.+\\]\\])`,
-      "i"
-    );
+  getNeighbourObjArr(fileFrontmatterArr: fileFrontmatter[]): neighbourObj[] {
+    return fileFrontmatterArr.map((obj) => {
+      const parents = this.getFields(obj, this.settings.parentFieldName);
+      const siblings = this.getFields(obj, this.settings.siblingFieldName);
+      const children = this.getFields(obj, this.settings.childFieldName);
 
-    // Regex to match the `sibling` metadata field
-    const siblingField = this.settings.siblingFieldName;
-    const getSiblingLinksRegex = new RegExp(
-      `.*?${siblingField}::? ?(\\[\\[.+\\]\\])`,
-      "i"
-    );
-
-    const neighbourArr: neighbourObj[] = nameContentArr.map((arr) => {
-      const parentLinks = arr.content.match(getParentLinksRegex)?.[1];
-      const siblingLinks = arr.content.match(getSiblingLinksRegex)?.[1];
-      const childLinks = arr.content.match(getChildLinksRegex)?.[1];
-
-      const [splitParentLinks, splitSiblingLinks, splitChildLinks] = [
-        this.splitAndDrop(parentLinks) ?? [],
-        this.splitAndDrop(siblingLinks) ?? [],
-        this.splitAndDrop(childLinks) ?? [],
-      ];
-
-      const currentNeighbourObj: neighbourObj = {
-        current: arr.fileName,
-        parents: splitParentLinks,
-        siblings: splitSiblingLinks,
-        children: splitChildLinks,
-      };
-
-      // console.log(currentNeighbourObj);
-      return currentNeighbourObj;
+      return { current: obj.file, parents, siblings, children };
     });
-    // console.log(neighbourArr);
-    return neighbourArr;
   }
 
   // Graph stuff...
   async initialiseNeighbourGraph() {
-    const nameContentArr = await this.getNameContentArr();
-    const neighbourArr: neighbourObj[] = this.getNeighbourArr(nameContentArr);
-    // const indexNote = this.settings.indexNote;
-
-    // const gAllInOne = new Graph();
-    const gParents = new Graph();
-    const gSiblings = new Graph();
-    const gChildren = new Graph();
+    const fileFrontmatterArr = this.getFileFrontmatter();
+    const neighbourArr = this.getNeighbourObjArr(fileFrontmatterArr);
+    const [gParents, gSiblings, gChildren] = [
+      new Graph(),
+      new Graph(),
+      new Graph(),
+    ];
 
     neighbourArr.forEach((neighbourObj) => {
-      // gAllInOne.setNode(neighbourObj.current, neighbourObj.current);
-      gParents.setNode(neighbourObj.current, neighbourObj.current);
-      gSiblings.setNode(neighbourObj.current, neighbourObj.current);
-      gChildren.setNode(neighbourObj.current, neighbourObj.current);
+      const currFileName = neighbourObj.current.basename;
+      gParents.setNode(currFileName, neighbourObj.current);
+      gSiblings.setNode(currFileName, neighbourObj.current);
+      gChildren.setNode(currFileName, neighbourObj.current);
 
       neighbourObj.parents.forEach((parent) =>
-        gParents.setEdge(neighbourObj.current, parent, "parent")
+        gParents.setEdge(currFileName, parent, "parent")
       );
 
       neighbourObj.siblings.forEach((sibling) =>
-        gSiblings.setEdge(neighbourObj.current, sibling, "sibling")
+        gSiblings.setEdge(currFileName, sibling, "sibling")
       );
 
       neighbourObj.children.forEach((child) =>
-        gChildren.setEdge(neighbourObj.current, child, "child")
+        gChildren.setEdge(currFileName, child, "child")
       );
     });
 
     return { gParents, gSiblings, gChildren };
   }
 
-  getPaths(g: Graph, userTo: string = this.settings.indexNote) {
+  getBreadcrumbs(g: Graph, userTo: string = this.settings.indexNote) {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     let step = userTo;
     const breadcrumbs: string[] = [];
 
-    // console.log({ paths });
+    // Check if a path even exists
     if (paths[step].distance === Infinity) {
       return [`No path to ${userTo} was found from the current note`];
     } else {
+      // If it does, walk it until arriving at `from`
       while (paths[step].distance !== 0) {
         breadcrumbs.push(step);
         step = paths[step].predecessor;
@@ -242,47 +173,50 @@ class BreadcrumbsView extends ItemView {
   makeInternalLinkInEl(
     el: HTMLSpanElement | HTMLDivElement,
     text: string,
-    count: number = undefined
+    currFile: TFile,
+    count: number = undefined,
   ) {
     const innerDiv = el.createDiv();
     if (count) {
       innerDiv.createSpan({ text: `${count}. ` });
     }
+
+    // Check if link is resolved
+    /// Doesn't seem to actually work
+    const linkCls =
+      this.app.metadataCache.unresolvedLinks[currFile.path][text] > 0
+        ? "internal-link is-unresolved-breadcrumbs"
+        : "internal-link";
     const link = innerDiv.createEl("a", {
-      cls: "internal-link",
+      cls: linkCls,
       text,
     });
     link.href = null;
     link.addEventListener("click", () => {
-      this.app.workspace.openLinkText(
-        text,
-        this.app.workspace.getActiveFile().path
-      );
+      this.app.workspace.openLinkText(text, currFile.path);
     });
   }
 
   async draw() {
     const graphs = await this.initialiseNeighbourGraph();
     const { gParents, gSiblings, gChildren } = graphs;
-    console.log({ graphs });
-    const crumbs = this.getPaths(gParents);
-    console.log({ crumbs });
-
+    const crumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
+
+    const headingLevel = "strong";
+
     this.contentEl.empty();
 
     const matrix = this.contentEl.createDiv({ cls: "breadcrumbs-grid" });
 
-    const headingLevel = "strong";
-
-    const fillerTopLeftDiv = matrix.createDiv({
+    matrix.createDiv({
       cls: "breadcrumbs-item-11 breadcrumbs-fillerDiv",
     });
     const upDiv = matrix.createDiv({
       cls: "item-12 breadcrumbsDiv",
     });
     upDiv.createEl(headingLevel, { text: this.settings.parentFieldName });
-    const fillerTopRightDiv = matrix.createDiv({
+    matrix.createDiv({
       cls: "breadcrumbs-item-13 breadcrumbs-fillerDiv",
     });
 
@@ -299,14 +233,14 @@ class BreadcrumbsView extends ItemView {
     });
     rightDiv.createEl(headingLevel, { text: this.settings.siblingFieldName });
 
-    const fillerBotLeftDiv = matrix.createDiv({
+    matrix.createDiv({
       cls: "breadcrumbs-item-31 breadcrumbs-fillerDiv",
     });
     const downDiv = matrix.createDiv({
       cls: "breadcrumbs-item-32 breadcrumbsDiv",
     });
     downDiv.createEl(headingLevel, { text: this.settings.childFieldName });
-    const fillerBotRightDiv = matrix.createDiv({
+    matrix.createDiv({
       cls: "breadcrumbs-item-33 breadcrumbs-fillerDiv",
     });
 
@@ -337,25 +271,30 @@ class BreadcrumbsView extends ItemView {
     // upDiv
     const parents: string[] = gParents.successors(currFile.basename) ?? [];
     parents.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(upDiv, successor, i + 1);
+      this.makeInternalLinkInEl(upDiv, successor, currFile, i + 1);
     });
 
     // currDiv
-    this.makeInternalLinkInEl(currDiv, currFile.basename);
+    this.makeInternalLinkInEl(currDiv, currFile.basename, currFile);
 
     // leftDiv
-    this.makeInternalLinkInEl(leftDiv, this.settings.indexNote);
+    this.makeInternalLinkInEl(leftDiv, this.settings.indexNote, currFile);
 
     // rightDiv
     const siblings: string[] = gSiblings.successors(currFile.basename) ?? [];
     siblings.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(rightDiv, successor, i + 1);
+      this.makeInternalLinkInEl(rightDiv, successor, currFile, i + 1);
     });
 
     // bottomDiv
     const children: string[] = gChildren.successors(currFile.basename) ?? [];
     children.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(downDiv, successor, i + 1);
+      this.makeInternalLinkInEl(downDiv, successor, currFile, i + 1);
+    });
+
+    const impliedChildren: string[] = gParents.predecessors(currFile.basename) ?? [];
+    impliedChildren.forEach((predecessor: string, i) => {
+      this.makeInternalLinkInEl(downDiv, predecessor, currFile, i + 1);
     });
   }
 
@@ -375,7 +314,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.loadSettings();
 
     this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-      console.log(this.view.getFileObsDv());
+      console.log({
+        fileObsDv: this.view.getFileFrontmatter(),
+        userFields: this.view.getNeighbourObjArr(
+          this.view.getFileFrontmatter()
+        ),
+      });
     });
 
     this.addCommand({
