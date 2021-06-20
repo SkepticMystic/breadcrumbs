@@ -273,6 +273,10 @@ class BreadcrumbsView extends ItemView {
     parents.forEach((successor: string, i) => {
       this.makeInternalLinkInEl(upDiv, successor, currFile, i + 1);
     });
+    const impliedParents: string[] = gChildren.predecessors(currFile.basename) ?? [];
+    impliedParents.forEach((predecessor: string, i) => {
+      this.makeInternalLinkInEl(upDiv, predecessor, currFile, i + 1);
+    });
 
     // currDiv
     this.makeInternalLinkInEl(currDiv, currFile.basename, currFile);
@@ -285,6 +289,7 @@ class BreadcrumbsView extends ItemView {
     siblings.forEach((successor: string, i) => {
       this.makeInternalLinkInEl(rightDiv, successor, currFile, i + 1);
     });
+    
 
     // bottomDiv
     const children: string[] = gChildren.successors(currFile.basename) ?? [];
