@@ -67,27 +67,28 @@ class BreadcrumbsView extends ItemView {
 
   getFileFrontmatter(): fileFrontmatter[] {
     const files: TFile[] = this.app.vault.getMarkdownFiles();
-    const fileObsDvArr: fileFrontmatter[] = [];
+    const fileFrontMatterArr: fileFrontmatter[] = [];
 
     if (this.app.plugins.plugins.dataview !== undefined) {
-      files.forEach((tFile) => {
+      files.forEach((file) => {
         const dv: FrontMatterCache = this.app.plugins.plugins.dataview.api.page(
-          tFile.path
+          file.path
         );
-        fileObsDvArr.push({ file: tFile, frontmatter: dv });
+        fileFrontMatterArr.push({ file, frontmatter: dv });
       });
     } else {
-      files.forEach((tFile) => {
+      files.forEach((file) => {
         const obs: FrontMatterCache =
-          this.app.metadataCache.getFileCache(tFile).frontmatter;
-        fileObsDvArr.push({
-          file: tFile,
+          this.app.metadataCache.getFileCache(file).frontmatter;
+        fileFrontMatterArr.push({
+          file,
           frontmatter: obs,
         });
       });
     }
-    return fileObsDvArr;
+    return fileFrontMatterArr;
   }
+
   // General use
   splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
   dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
@@ -98,8 +99,8 @@ class BreadcrumbsView extends ItemView {
       ?.map((link) => link.match(this.dropHeaderOrAlias)?.[1]);
   }
 
-  getFields(obj: fileFrontmatter, field: string) {
-    const fieldItems: string | [] = obj.frontmatter[field] ?? [];
+  getFields(fileFrontmatter: fileFrontmatter, field: string) {
+    const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
     if (typeof fieldItems === "string") {
       return this.splitAndDrop(fieldItems);
     } else {
@@ -108,17 +109,39 @@ class BreadcrumbsView extends ItemView {
   }
 
   getNeighbourObjArr(fileFrontmatterArr: fileFrontmatter[]): neighbourObj[] {
-    return fileFrontmatterArr.map((obj) => {
-      const parents = this.getFields(obj, this.settings.parentFieldName);
-      const siblings = this.getFields(obj, this.settings.siblingFieldName);
-      const children = this.getFields(obj, this.settings.childFieldName);
+    return fileFrontmatterArr.map((fileFrontmatter) => {
+      const parents = this.getFields(
+        fileFrontmatter,
+        this.settings.parentFieldName
+      );
+      const siblings = this.getFields(
+        fileFrontmatter,
+        this.settings.siblingFieldName
+      );
+      const children = this.getFields(
+        fileFrontmatter,
+        this.settings.childFieldName
+      );
 
-      return { current: obj.file, parents, siblings, children };
+      return { current: fileFrontmatter.file, parents, siblings, children };
     });
   }
 
+  populateGraph(
+    g: Graph,
+    currFileName: string,
+    neighbourObj: neighbourObj,
+    relationship: string
+  ) {
+    if (neighbourObj[relationship]) {
+      g.setNode(currFileName, currFileName);
+      neighbourObj[relationship].forEach((node) =>
+        g.setEdge(currFileName, node, relationship)
+      );
+    }
+  }
   // Graph stuff...
-  async initialiseNeighbourGraph() {
+  async initialiseGraphs() {
     const fileFrontmatterArr = this.getFileFrontmatter();
     const neighbourArr = this.getNeighbourObjArr(fileFrontmatterArr);
     const [gParents, gSiblings, gChildren] = [
@@ -129,25 +152,10 @@ class BreadcrumbsView extends ItemView {
 
     neighbourArr.forEach((neighbourObj) => {
       const currFileName = neighbourObj.current.basename;
-      gParents.setNode(currFileName, neighbourObj.current);
-      gSiblings.setNode(currFileName, neighbourObj.current);
-      gChildren.setNode(currFileName, neighbourObj.current);
 
-      if (neighbourObj.parents) {
-        neighbourObj.parents.forEach((parent) =>
-          gParents.setEdge(currFileName, parent, "parent")
-        );
-      }
-      if (neighbourObj.siblings) {
-        neighbourObj.siblings.forEach((sibling) =>
-          gSiblings.setEdge(currFileName, sibling, "sibling")
-        );
-      }
-      if (neighbourObj.children) {
-        neighbourObj.children.forEach((child) =>
-          gChildren.setEdge(currFileName, child, "child")
-        );
-      }
+      this.populateGraph(gParents, currFileName, neighbourObj, "parents");
+      this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
+      this.populateGraph(gChildren, currFileName, neighbourObj, "children");
     });
 
     return { gParents, gSiblings, gChildren };
@@ -186,7 +194,6 @@ class BreadcrumbsView extends ItemView {
     }
 
     // Check if link is resolved
-    /// Doesn't seem to actually work
     const linkCls =
       this.app.metadataCache.unresolvedLinks[currFile.path][text] > 0
         ? "internal-link is-unresolved"
@@ -222,7 +229,7 @@ class BreadcrumbsView extends ItemView {
   }
 
   async draw() {
-    const graphs = await this.initialiseNeighbourGraph();
+    const graphs = await this.initialiseGraphs();
     const { gParents, gSiblings, gChildren } = graphs;
     const crumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
@@ -233,6 +240,7 @@ class BreadcrumbsView extends ItemView {
 
     const matrix = this.contentEl.createDiv({ cls: "breadcrumbs-grid" });
 
+    // ANCHOR Top row
     matrix.createDiv({
       cls: "breadcrumbs-item-11 breadcrumbs-fillerDiv",
     });
@@ -247,6 +255,7 @@ class BreadcrumbsView extends ItemView {
       cls: "breadcrumbs-item-13 breadcrumbs-fillerDiv",
     });
 
+    // ANCHOR Middle row
     const leftDiv = matrix.createDiv({
       cls: "breadcrumbs-item-21 breadcrumbsDiv markdown-preview-view",
     });
@@ -266,6 +275,7 @@ class BreadcrumbsView extends ItemView {
       cls: "breadcrumbs-heading",
     });
 
+    // ANCHOR Bottom row
     matrix.createDiv({
       cls: "breadcrumbs-item-31 breadcrumbs-fillerDiv",
     });
@@ -295,18 +305,17 @@ class BreadcrumbsView extends ItemView {
 
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
-    const indexCurrFile = currParents.indexOf(currFile.basename);
-    let currParentsNotCurrFile = currParents;
-    if (indexCurrFile >= 0) {
-      currParentsNotCurrFile = currParents.splice(indexCurrFile, 1);
+    // console.log(currParents);
+    const impliedSiblingsArr: string[] = [];
+    if (currParents.length) {
+      currParents.forEach((parent) => {
+        const impliedSiblings = gParents.predecessors(parent) ?? [];
+        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+        impliedSiblings.splice(indexCurrNote, 1);
+        impliedSiblingsArr.push(impliedSiblings);
+      });
     }
-    const impliedSiblings: string[] = [];
-    if (currParentsNotCurrFile.length) {
-      currParentsNotCurrFile.forEach((parent) =>
-        impliedSiblings.push(gParents.predecessors(parent) ?? [])
-      );
-    }
-    const flatImpliedSiblings = impliedSiblings.flat();
+    const flatImpliedSiblings = impliedSiblingsArr.flat();
     if (flatImpliedSiblings.length) {
       rightDiv.createDiv({ text: "Implied" });
       flatImpliedSiblings.forEach((item: string, i) => {
