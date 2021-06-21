@@ -368,14 +368,6 @@ class BreadcrumbsMatrixView extends ItemView {
         (trailEl) => {
           crumbs.forEach((crumb) => {
             this.makeInternalLinkInEl(trailEl, crumb, currFile);
-            // const link = trailEl.createEl("a", {
-            //   cls: "internal-link",
-            //   text: crumb,
-            // });
-            // link.href = null;
-            // link.addEventListener("click", () => {
-            //   this.app.workspace.openLinkText(crumb, currFile.path);
-            // });
             trailEl.createDiv({ text: " ^ " });
           });
         }
@@ -423,6 +415,12 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
+    if (this.app.workspace.layoutReady) {
+      this.initView();
+    } else {
+      this.registerEvent(this.app.workspace.on("layout-ready", this.initView));
+    }
+
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
     this.registerView(VIEW_TYPE_BREADCRUMBS_MATRIX, (leaf: WorkspaceLeaf) => {
@@ -433,6 +431,21 @@ export default class BreadcrumbsPlugin extends Plugin {
       ));
     });
   }
+
+  initView = async (): Promise<void> => {
+    let leaf: WorkspaceLeaf = null;
+    for (leaf of this.app.workspace.getLeavesOfType(
+      VIEW_TYPE_BREADCRUMBS_MATRIX
+    )) {
+      if (leaf.view instanceof BreadcrumbsMatrixView) return;
+      await leaf.setViewState({ type: "empty" });
+      break;
+    }
+    (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
+      type: VIEW_TYPE_BREADCRUMBS_MATRIX,
+      active: true,
+    });
+  };
 
   initLeaf(): void {
     this.app.workspace.getRightLeaf(false).setViewState({
