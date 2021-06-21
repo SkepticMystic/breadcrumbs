@@ -174,7 +174,7 @@ class BreadcrumbsView extends ItemView {
     el: HTMLSpanElement | HTMLDivElement,
     text: string,
     currFile: TFile,
-    count: number = undefined,
+    count: number = undefined
   ) {
     const innerDiv = el.createDiv();
     if (count) {
@@ -185,7 +185,7 @@ class BreadcrumbsView extends ItemView {
     /// Doesn't seem to actually work
     const linkCls =
       this.app.metadataCache.unresolvedLinks[currFile.path][text] > 0
-        ? "internal-link is-unresolved-breadcrumbs"
+        ? "internal-link is-unresolved"
         : "internal-link";
     const link = innerDiv.createEl("a", {
       cls: linkCls,
@@ -195,6 +195,26 @@ class BreadcrumbsView extends ItemView {
     link.addEventListener("click", () => {
       this.app.workspace.openLinkText(text, currFile.path);
     });
+  }
+
+  popMatrixSquareReal(g: Graph, currFile: TFile, div: HTMLDivElement) {
+    const items: string[] = g.successors(currFile.basename) ?? [];
+    if (items.length) {
+      div.createDiv({ text: "Real" });
+      items.forEach((item: string, i) => {
+        this.makeInternalLinkInEl(div, item, currFile, i + 1);
+      });
+    }
+  }
+
+  popMatrixSquareImplied(g: Graph, currFile: TFile, div: HTMLDivElement) {
+    const items: string[] = g.predecessors(currFile.basename) ?? [];
+    if (items.length) {
+      div.createDiv({ text: "Implied" });
+      items.forEach((item: string, i) => {
+        this.makeInternalLinkInEl(div, item, currFile, i + 1);
+      });
+    }
   }
 
   async draw() {
@@ -213,36 +233,81 @@ class BreadcrumbsView extends ItemView {
       cls: "breadcrumbs-item-11 breadcrumbs-fillerDiv",
     });
     const upDiv = matrix.createDiv({
-      cls: "item-12 breadcrumbsDiv",
+      cls: "breadcrumbs-item-12 breadcrumbsDiv markdown-preview-view",
     });
-    upDiv.createEl(headingLevel, { text: this.settings.parentFieldName });
+    upDiv.createEl(headingLevel, {
+      text: this.settings.parentFieldName,
+      cls: "breadcrumbs-heading",
+    });
     matrix.createDiv({
       cls: "breadcrumbs-item-13 breadcrumbs-fillerDiv",
     });
 
     const leftDiv = matrix.createDiv({
-      cls: "breadcrumbs-item-21 breadcrumbsDiv",
+      cls: "breadcrumbs-item-21 breadcrumbsDiv markdown-preview-view",
     });
-    leftDiv.createEl(headingLevel, { text: "Top" });
+    leftDiv.createEl(headingLevel, { text: "Top", cls: "breadcrumbs-heading" });
     const currDiv = matrix.createDiv({
-      cls: "breadcrumbs-item-22 breadcrumbsDiv",
+      cls: "breadcrumbs-item-22 breadcrumbsDiv markdown-preview-view",
     });
-    currDiv.createEl(headingLevel, { text: "Current" });
+    currDiv.createEl(headingLevel, {
+      text: "Current",
+      cls: "breadcrumbs-heading",
+    });
     const rightDiv = matrix.createDiv({
-      cls: "breadcrumbs-item-23 breadcrumbsDiv",
+      cls: "breadcrumbs-item-23 breadcrumbsDiv markdown-preview-view",
     });
-    rightDiv.createEl(headingLevel, { text: this.settings.siblingFieldName });
+    rightDiv.createEl(headingLevel, {
+      text: this.settings.siblingFieldName,
+      cls: "breadcrumbs-heading",
+    });
 
     matrix.createDiv({
       cls: "breadcrumbs-item-31 breadcrumbs-fillerDiv",
     });
     const downDiv = matrix.createDiv({
-      cls: "breadcrumbs-item-32 breadcrumbsDiv",
+      cls: "breadcrumbs-item-32 breadcrumbsDiv markdown-preview-view",
     });
-    downDiv.createEl(headingLevel, { text: this.settings.childFieldName });
+    downDiv.createEl(headingLevel, {
+      text: this.settings.childFieldName,
+      cls: "breadcrumbs-heading",
+    });
     matrix.createDiv({
       cls: "breadcrumbs-item-33 breadcrumbs-fillerDiv",
     });
+
+    // upDiv
+    this.popMatrixSquareReal(gParents, currFile, upDiv);
+    this.popMatrixSquareImplied(gChildren, currFile, upDiv);
+
+    // currDiv
+    this.makeInternalLinkInEl(currDiv, currFile.basename, currFile);
+
+    // leftDiv
+    this.makeInternalLinkInEl(leftDiv, this.settings.indexNote, currFile);
+
+    // rightDiv
+    this.popMatrixSquareReal(gSiblings, currFile, rightDiv);
+
+    /// Implied Siblings
+    const currParents = gParents.successors(currFile.basename) ?? [];
+    const impliedSiblings: string[] = [];
+    if (currParents.length) {
+      currParents.forEach((parent) =>
+        impliedSiblings.push(gParents.predecessors(parent) ?? [])
+      );
+    }
+    const flatImpliedSiblings = impliedSiblings.flat()
+    if (flatImpliedSiblings.length) {
+      rightDiv.createDiv({ text: "Implied" });
+      flatImpliedSiblings.forEach((item: string, i) => {
+        this.makeInternalLinkInEl(rightDiv, item, currFile, i + 1);
+      });
+    }
+
+    // downDiv
+    this.popMatrixSquareReal(gChildren, currFile, downDiv);
+    this.popMatrixSquareImplied(gParents, currFile, downDiv);
 
     // Breadcrum trail:
     if (crumbs[0].includes("No path to")) {
@@ -267,40 +332,6 @@ class BreadcrumbsView extends ItemView {
 
       breadcrumbTrail.removeChild(breadcrumbTrail.lastChild);
     }
-
-    // upDiv
-    const parents: string[] = gParents.successors(currFile.basename) ?? [];
-    parents.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(upDiv, successor, currFile, i + 1);
-    });
-    const impliedParents: string[] = gChildren.predecessors(currFile.basename) ?? [];
-    impliedParents.forEach((predecessor: string, i) => {
-      this.makeInternalLinkInEl(upDiv, predecessor, currFile, i + 1);
-    });
-
-    // currDiv
-    this.makeInternalLinkInEl(currDiv, currFile.basename, currFile);
-
-    // leftDiv
-    this.makeInternalLinkInEl(leftDiv, this.settings.indexNote, currFile);
-
-    // rightDiv
-    const siblings: string[] = gSiblings.successors(currFile.basename) ?? [];
-    siblings.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(rightDiv, successor, currFile, i + 1);
-    });
-    
-
-    // bottomDiv
-    const children: string[] = gChildren.successors(currFile.basename) ?? [];
-    children.forEach((successor: string, i) => {
-      this.makeInternalLinkInEl(downDiv, successor, currFile, i + 1);
-    });
-
-    const impliedChildren: string[] = gParents.predecessors(currFile.basename) ?? [];
-    impliedChildren.forEach((predecessor: string, i) => {
-      this.makeInternalLinkInEl(downDiv, predecessor, currFile, i + 1);
-    });
   }
 
   async onOpen(): Promise<void> {

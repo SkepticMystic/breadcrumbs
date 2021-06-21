@@ -30,6 +30,10 @@ div.breadcrumbs-grid {
     flex-direction: row;
 }
 
+strong.breadcrumbs-heading {
+    font-size: larger;
+}
+
 a.is-unresolved-breadcrumbs {
     opacity: 0.5
 }
