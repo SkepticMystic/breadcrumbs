@@ -133,17 +133,21 @@ class BreadcrumbsView extends ItemView {
       gSiblings.setNode(currFileName, neighbourObj.current);
       gChildren.setNode(currFileName, neighbourObj.current);
 
-      neighbourObj.parents.forEach((parent) =>
-        gParents.setEdge(currFileName, parent, "parent")
-      );
-
-      neighbourObj.siblings.forEach((sibling) =>
-        gSiblings.setEdge(currFileName, sibling, "sibling")
-      );
-
-      neighbourObj.children.forEach((child) =>
-        gChildren.setEdge(currFileName, child, "child")
-      );
+      if (neighbourObj.parents) {
+        neighbourObj.parents.forEach((parent) =>
+          gParents.setEdge(currFileName, parent, "parent")
+        );
+      }
+      if (neighbourObj.siblings) {
+        neighbourObj.siblings.forEach((sibling) =>
+          gSiblings.setEdge(currFileName, sibling, "sibling")
+        );
+      }
+      if (neighbourObj.children) {
+        neighbourObj.children.forEach((child) =>
+          gChildren.setEdge(currFileName, child, "child")
+        );
+      }
     });
 
     return { gParents, gSiblings, gChildren };
@@ -291,13 +295,18 @@ class BreadcrumbsView extends ItemView {
 
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
+    const indexCurrFile = currParents.indexOf(currFile.basename);
+    let currParentsNotCurrFile = currParents;
+    if (indexCurrFile >= 0) {
+      currParentsNotCurrFile = currParents.splice(indexCurrFile, 1);
+    }
     const impliedSiblings: string[] = [];
-    if (currParents.length) {
-      currParents.forEach((parent) =>
+    if (currParentsNotCurrFile.length) {
+      currParentsNotCurrFile.forEach((parent) =>
         impliedSiblings.push(gParents.predecessors(parent) ?? [])
       );
     }
-    const flatImpliedSiblings = impliedSiblings.flat()
+    const flatImpliedSiblings = impliedSiblings.flat();
     if (flatImpliedSiblings.length) {
       rightDiv.createDiv({ text: "Implied" });
       flatImpliedSiblings.forEach((item: string, i) => {
