@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { App } from "obsidian";
+import type { internalLinkObj, SquareProps } from "src/ListView";
 
-  import type internalLinkObj from "./MatrixView";
 
   export let realItems: internalLinkObj[];
   export let impliedItems: internalLinkObj[];
@@ -20,14 +20,14 @@ import type { App } from "obsidian";
     <h5 class="header">Real</h5>
     {#if realItems.length > 1}
       <ol>
-        {#each realItems as item}
+        {#each realItems as realItem}
           <li>
-            <a href=null class={item.cls} on:click={async () => openLink(item)}>{item.to}</a>
+            <a href=null class={realItem.cls} on:click={async () => openLink(realItem)}>{realItem.to}</a>
           </li>
         {/each}
       </ol>
     {:else}
-    <a href=null on:click={async () => openLink(realItems[0].to)}>{realItems[0].to}</a>
+    <a href=null class={realItems[0].cls} on:click={async () => openLink(realItems[0])}>{realItems[0].to}</a>
     {/if}
   {/if}
 
@@ -35,14 +35,14 @@ import type { App } from "obsidian";
     <h5 class="header">Implied</h5>
     {#if impliedItems.length > 1}
       <ol>
-        {#each impliedItems as item}
+        {#each impliedItems as impliedItem}
           <li>
-            <a href=null on:click={async () => openLink(item)}>{item.to}</a>
+            <a href=null class={impliedItem.cls} on:click={async () => openLink(impliedItem)}>{impliedItem.to}</a>
           </li>
         {/each}
       </ol>
     {:else}
-    <a href=null on:click={async () => openLink(impliedItems[0].to)}>{impliedItems[0].to}</a>
+    <a href=null class={impliedItems[0].cls} on:click={async () => openLink(impliedItems[0])}>{impliedItems[0].to}</a>
     {/if}
   {/if}
 </div>

@@ -14,6 +14,7 @@ import {
 } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
 import Matrix from "./Matrix.svelte";
+import Lists from "./Lists.svelte"
 
 interface neighbourObj {
   current: TFile;
@@ -42,7 +43,8 @@ export interface SquareProps {
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
-  private matrix: Matrix;
+  private view: Matrix;
+  matrixQ: boolean;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
@@ -52,8 +54,10 @@ export default class MatrixView extends ItemView {
     );
   }
 
-  onload(): void {
+  async onload(): Promise<void> {
     super.onload();
+    this.draw();
+    await this.plugin.saveSettings();
   }
 
   getViewType(): string {
@@ -65,8 +69,8 @@ export default class MatrixView extends ItemView {
   }
 
   onClose(): Promise<void> {
-    if (this.matrix) {
-      this.matrix.$destroy();
+    if (this.view) {
+      this.view.$destroy();
     }
     return Promise.resolve();
   }
@@ -111,10 +115,14 @@ export default class MatrixView extends ItemView {
   }
 
   getNeighbourObjArr(fileFrontmatterArr: fileFrontmatter[]): neighbourObj[] {
+    const settings = this.plugin.settings;
     return fileFrontmatterArr.map((fileFrontmatter) => {
-      const parents = this.getFields(fileFrontmatter, "yz-parent");
-      const siblings = this.getFields(fileFrontmatter, "sibling");
-      const children = this.getFields(fileFrontmatter, "child");
+      const parents = this.getFields(fileFrontmatter, settings.parentFieldName);
+      const siblings = this.getFields(
+        fileFrontmatter,
+        settings.siblingFieldName
+      );
+      const children = this.getFields(fileFrontmatter, settings.childFieldName);
 
       return { current: fileFrontmatter.file, parents, siblings, children };
     });
@@ -162,7 +170,7 @@ export default class MatrixView extends ItemView {
   getBreadcrumbs(
     g: Graph,
     // TODO Settings bug
-    userTo: string = "Index"
+    userTo: string = this.plugin.settings.indexNote
   ): string[] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
@@ -218,6 +226,16 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
+    const button = this.contentEl.createEl("button", {
+      text: this.matrixQ ? "Matrix" : "List",
+    });
+    button.addEventListener("click", async () => {
+      this.matrixQ = !this.matrixQ;
+      button.innerText = this.matrixQ ? "Matrix" : "List";
+      console.log(this.matrixQ);
+      await this.draw()
+    });
+
     // const { parentFieldName, siblingFieldName, childFieldName, indexNote } =
     //   this.plugin.settings;
 
@@ -237,6 +255,8 @@ export default class MatrixView extends ItemView {
       this.squareItems(gChildren, false),
     ];
 
+    const settings = this.plugin.settings;
+
     // TODO finish
     const impliedSiblings = [];
 
@@ -245,16 +265,16 @@ export default class MatrixView extends ItemView {
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
-      fieldName: "parent",
+      fieldName: settings.parentFieldName,
       app: this.app,
     };
 
     const topSquare: SquareProps = {
       realItems: [
         {
-          to: "Index",
+          to: settings.indexNote,
           currFile: currFile,
-          cls: this.resolvedClass("Index", currFile),
+          cls: this.resolvedClass(settings.indexNote, currFile),
         },
       ],
       impliedItems: [{ to: undefined, currFile: undefined, cls: undefined }],
@@ -278,32 +298,47 @@ export default class MatrixView extends ItemView {
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
       impliedItems: impliedSiblings,
-      fieldName: "sibling",
+      fieldName: settings.siblingFieldName,
       app: this.app,
     };
 
     const childrenSquare: SquareProps = {
       realItems: realChildren,
       impliedItems: impliedChildren,
-      fieldName: "child",
+      fieldName: settings.childFieldName,
       app: this.app,
     };
 
-    this.matrix = new Matrix({
-      target: this.contentEl,
-      props: {
-        parents: parentsSquare,
-        top: topSquare,
-        current: currSquare,
-        siblings: siblingSquare,
-        children: childrenSquare,
-      },
-    });
+    if (this.matrixQ) {
+      this.view = new Matrix({
+        target: this.contentEl,
+        props: {
+          parents: parentsSquare,
+          top: topSquare,
+          current: currSquare,
+          siblings: siblingSquare,
+          children: childrenSquare,
+        },
+      });
+    } else {
+      this.view = new Lists({
+        target: this.contentEl,
+        props: {
+          parents: parentsSquare,
+          top: topSquare,
+          siblings: siblingSquare,
+          children: childrenSquare,
+        },
+      });
+    }
+
+
   }
 
   async onOpen(): Promise<void> {
     // Liam uses this here: https://github.com/liamcain/obsidian-calendar-plugin/blob/d620bbac628ac8ac5e1f176ac1bb7be64dc2846e/src/view.ts#L100
     // this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
     // this.draw();
+    await this.plugin.saveSettings();
   }
 }

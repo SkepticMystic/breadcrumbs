@@ -2,9 +2,11 @@ import { Plugin, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
+  VIEW_TYPE_BREADCRUMBS_LIST,
   VIEW_TYPE_BREADCRUMBS_TRAIL,
 } from "src/constants";
 import MatrixView from "src/MatrixView";
+// import ListView from "src/ListView";
 
 interface BreadcrumbsSettings {
   parentFieldName: string;
@@ -22,7 +24,8 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
-  plugin: BreadcrumbsPlugin;
+  // listView: ListView;
+  // plugin: BreadcrumbsPlugin;
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -31,20 +34,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
-      (leaf: WorkspaceLeaf) => (this.matrixView = new MatrixView(leaf, this.plugin))
+      (leaf: WorkspaceLeaf) =>
+        (this.matrixView = new MatrixView(leaf, this))
     );
 
-    this.addRibbonIcon("dice", "Breadcrumbs", async () => {
-      console.log({
-        fileObsDv: this.matrixView.getFileFrontmatterArr(),
-        userFields: this.matrixView.getNeighbourObjArr(
-          this.matrixView.getFileFrontmatterArr()
-        ),
-      });
-    });
+    // this.registerView(
+    //   VIEW_TYPE_BREADCRUMBS_LIST,
+    //   (leaf: WorkspaceLeaf) =>
+    //     (this.listView = new ListView(leaf, this))
+    // );
 
     this.addCommand({
-      id: "show-breadcrumb-view",
+      id: "show-breadcrumb-matrix-view",
       name: "Open Matrix View",
       checkCallback: (checking: boolean) => {
         if (checking) {
@@ -57,28 +58,38 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
-    // if (this.app.workspace.layoutReady) {
-    //   this.initView();
-    // } else {
-    //   this.registerEvent(this.app.workspace.on("layout-ready", this.initView));
-    // }
+    this.addCommand({
+      id: "show-breadcrumb-list-view",
+      name: "Open List View",
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return (
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_LIST)
+              .length === 0
+          );
+        }
+        this.initLeaf(VIEW_TYPE_BREADCRUMBS_LIST);
+      },
+    });
 
-    this.app.workspace.onLayoutReady(this.initView);
+    this.app.workspace.onLayoutReady(() => {
+      this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+      this.initView(VIEW_TYPE_BREADCRUMBS_LIST);
+    });
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
 
-  initView = async (): Promise<void> => {
+  // TODO I feel like initView and initLeaf are doing the same thing, and the the first one does it better...
+  initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
-    for (leaf of this.app.workspace.getLeavesOfType(
-      VIEW_TYPE_BREADCRUMBS_MATRIX
-    )) {
+    for (leaf of this.app.workspace.getLeavesOfType(type)) {
       if (leaf.view instanceof MatrixView) return;
       await leaf.setViewState({ type: "empty" });
       break;
     }
     (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
-      type: VIEW_TYPE_BREADCRUMBS_MATRIX,
+      type,
       active: true,
     });
   };
@@ -101,11 +112,12 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   onunload(): void {
-    this.app.workspace
-      .getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)
-      .forEach((leaf) => leaf.detach());
-    this.app.workspace
-      .getLeavesOfType(VIEW_TYPE_BREADCRUMBS_TRAIL)
-      .forEach((leaf) => leaf.detach());
+    [
+      VIEW_TYPE_BREADCRUMBS_MATRIX,
+      VIEW_TYPE_BREADCRUMBS_LIST,
+      VIEW_TYPE_BREADCRUMBS_TRAIL,
+    ].forEach((type) =>
+      this.app.workspace.getLeavesOfType(type).forEach((leaf) => leaf.detach())
+    );
   }
 }
