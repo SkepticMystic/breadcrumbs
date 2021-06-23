@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { debounce, Plugin, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -30,6 +30,10 @@ export default class BreadcrumbsPlugin extends Plugin {
   // plugin: BreadcrumbsPlugin;
 
   async onload(): Promise<void> {
+    // while (!this.app.plugins.plugins.dataview.api) {
+    //   debounce(() => console.log('waiting'), 10, true)
+    //   // console.log(this.app.plugins.plugins.dataview.api);
+    // }
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
@@ -69,7 +73,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(() => {
       this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-      this.initView(VIEW_TYPE_BREADCRUMBS_LIST);
     });
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));

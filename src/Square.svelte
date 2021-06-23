@@ -15,11 +15,11 @@
 </script>
 
 <div class="square">
-  <h3 class="header">{fieldName}</h3>
+  <h3 class="breadcrumbs-matrix-header">{fieldName}</h3>
 
   {#if realItems.length}
     {#if settings.showRelationType}
-      <h5 class="header">Real</h5>
+      <h5 class="breadcrumbs-matrix-header">Real</h5>
     {/if}
       <ol>
         {#each realItems as realItem}
@@ -36,7 +36,7 @@
 
   {#if impliedItems.length}
     {#if settings.showRelationType}
-      <h5 class="header">Implied</h5>
+      <h5 class="breadcrumbs-matrix-header">Implied</h5>
     {/if}
       <ol>
         {#each impliedItems as impliedItem}
@@ -56,10 +56,17 @@
   div.square {
     /* display: flex;
     flex-direction: column; */
-    border: 2px solid white;
+    border: 2px solid var(--background-modifier-border);
     border-radius: 5px;
     padding: 5px;
     height: fit-content;
     position: relative;
+  }
+
+  .breadcrumbs-matrix-header {
+    margin: 2px;
+  }
+  ol {
+    margin: 2px;
   }
 </style>
