@@ -227,12 +227,11 @@ export default class MatrixView extends ItemView {
     this.contentEl.empty();
 
     const button = this.contentEl.createEl("button", {
-      text: this.matrixQ ? "Matrix" : "List",
+      text: this.matrixQ ? "List" : "Matrix",
     });
     button.addEventListener("click", async () => {
       this.matrixQ = !this.matrixQ;
-      button.innerText = this.matrixQ ? "Matrix" : "List";
-      console.log(this.matrixQ);
+      button.innerText = this.matrixQ ? "List" : "Matrix";
       await this.draw();
     });
 
@@ -261,10 +260,12 @@ export default class MatrixView extends ItemView {
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
     const impliedSiblingsArr: internalLinkObj[] = [];
+
     if (currParents.length) {
       currParents.forEach((parent) => {
         const impliedSiblings = gParents.predecessors(parent) ?? [];
         const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+
         impliedSiblings.splice(indexCurrNote, 1);
         impliedSiblings.forEach((impliedSibling) => {
           impliedSiblingsArr.push({
@@ -283,31 +284,31 @@ export default class MatrixView extends ItemView {
       app: this.app,
     };
 
-    const topSquare: SquareProps = {
-      realItems: [
-        {
-          to: settings.indexNote,
-          currFile: currFile,
-          cls: this.resolvedClass(settings.indexNote, currFile),
-        },
-      ],
-      impliedItems: [],
-      fieldName: "Top",
-      app: this.app,
-    };
+    // const topSquare: SquareProps = {
+    //   realItems: [
+    //     {
+    //       to: settings.indexNote,
+    //       currFile: currFile,
+    //       cls: this.resolvedClass(settings.indexNote, currFile),
+    //     },
+    //   ],
+    //   impliedItems: [],
+    //   fieldName: "Top",
+    //   app: this.app,
+    // };
 
-    const currSquare: SquareProps = {
-      realItems: [
-        {
-          to: currFile.basename,
-          currFile: currFile,
-          cls: this.resolvedClass(currFile.basename, currFile),
-        },
-      ],
-      impliedItems: [],
-      fieldName: "Current",
-      app: this.app,
-    };
+    // const currSquare: SquareProps = {
+    //   realItems: [
+    //     {
+    //       to: currFile.basename,
+    //       currFile: currFile,
+    //       cls: this.resolvedClass(currFile.basename, currFile),
+    //     },
+    //   ],
+    //   impliedItems: [],
+    //   fieldName: "Current",
+    //   app: this.app,
+    // };
 
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
@@ -328,10 +329,9 @@ export default class MatrixView extends ItemView {
         target: this.contentEl,
         props: {
           parents: parentsSquare,
-          top: topSquare,
-          current: currSquare,
           siblings: siblingSquare,
           children: childrenSquare,
+          settings: settings,
         },
       });
     } else {
@@ -339,9 +339,9 @@ export default class MatrixView extends ItemView {
         target: this.contentEl,
         props: {
           parents: parentsSquare,
-          top: topSquare,
           siblings: siblingSquare,
           children: childrenSquare,
+          settings: settings,
         },
       });
     }

@@ -77,5 +77,16 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             console.log(this.plugin.settings.indexNote);
           })
       );
+
+      new Setting(containerEl)
+      .setName("Show Relationship Type")
+      .setDesc("Show whether a link is real or implied")
+      .addToggle((toggle) => toggle
+        .setValue(this.plugin.settings.showRelationType)
+        .onChange(async (value) => {
+          this.plugin.settings.showRelationType = value;
+          await this.plugin.saveSettings();
+        })
+      );
   }
 }

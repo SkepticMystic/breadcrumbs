@@ -9,6 +9,7 @@ import MatrixView from "src/MatrixView";
 // import ListView from "src/ListView";
 
 interface BreadcrumbsSettings {
+  showRelationType: boolean;
   parentFieldName: string;
   siblingFieldName: string;
   childFieldName: string;
@@ -16,6 +17,7 @@ interface BreadcrumbsSettings {
 }
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
+  showRelationType: true,
   parentFieldName: "parent",
   siblingFieldName: "sibling",
   childFieldName: "child",
@@ -34,15 +36,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
-      (leaf: WorkspaceLeaf) =>
-        (this.matrixView = new MatrixView(leaf, this))
+      (leaf: WorkspaceLeaf) => (this.matrixView = new MatrixView(leaf, this))
     );
-
-    // this.registerView(
-    //   VIEW_TYPE_BREADCRUMBS_LIST,
-    //   (leaf: WorkspaceLeaf) =>
-    //     (this.listView = new ListView(leaf, this))
-    // );
 
     this.addCommand({
       id: "show-breadcrumb-matrix-view",
