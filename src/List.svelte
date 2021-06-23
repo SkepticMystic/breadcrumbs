@@ -17,30 +17,32 @@
 
 <details open>
   <summary>{fieldName}</summary>
+  {#if realItems.length}
+    {#if settings.showRelationType}
+      <h5 class="header">Real</h5>
+    {/if}
 
-  {#if settings.showRelationType}
-    <h5 class="header">Real</h5>
+    <ol class="markdown-preview-view">
+      {#each realItems as realItem}
+        <li>
+          <a
+            href="null"
+            class={realItem.cls}
+            on:click={async () => openLink(realItem)}
+          >
+            {realItem.to}
+          </a>
+        </li>
+      {/each}
+    </ol>
   {/if}
 
-  <ol>
-    {#each realItems as realItem}
-      <li>
-        <a
-          href="null"
-          class={realItem.cls}
-          on:click={async () => openLink(realItem)}
-        >
-          {realItem.to}
-        </a>
-      </li>
-    {/each}
-  </ol>
-
+  {#if impliedItems.length}
   {#if settings.showRelationType}
     <h5 class="header">Implied</h5>
   {/if}
 
-  <ol>
+  <ol class="markdown-preview-view">
     {#each impliedItems as impliedItem}
       <li>
         <a
@@ -52,18 +54,24 @@
       </li>
     {/each}
   </ol>
+  {/if}
 </details>
 
 <style>
   summary {
     font-size: larger;
     margin: 3px;
+    color: var(--text-title-h3);
   }
   h5.header {
     margin: 3px;
+    color: var(--text-title-h5);
   }
 
-  ol {
+  ol.markdown-preview-view {
     margin: 3px;
+    padding-left: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 </style>

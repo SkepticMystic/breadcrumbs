@@ -98,7 +98,7 @@ export default class MatrixView extends ItemView {
     }
     return fileFrontMatterArr;
   }
-
+  
   splitAndDrop(str: string): string[] | [] {
     return str
       ?.match(splitLinksRegex)
@@ -276,7 +276,7 @@ export default class MatrixView extends ItemView {
         });
       });
     }
-
+    
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
@@ -323,7 +323,7 @@ export default class MatrixView extends ItemView {
       fieldName: settings.childFieldName,
       app: this.app,
     };
-
+    
     if (this.matrixQ) {
       this.view = new Matrix({
         target: this.contentEl,

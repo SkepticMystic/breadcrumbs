@@ -66,7 +66,17 @@
   .breadcrumbs-matrix-header {
     margin: 2px;
   }
+
+  h3.breadcrumbs-matrix-header {
+    color: var(--text-title-h3);
+}
+  h5.breadcrumbs-matrix-header {
+    color: var(--text-title-h5);
+  }
+
+
   ol {
-    margin: 2px;
+    margin: 3px;
+    padding-left: 20px;
   }
 </style>
