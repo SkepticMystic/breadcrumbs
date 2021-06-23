@@ -38,4 +38,5 @@
     grid-template-columns: repeat(3, 1fr);
     align-items: stretch;
   }
+
 </style>

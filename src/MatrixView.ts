@@ -14,7 +14,7 @@ import {
 } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
 import Matrix from "./Matrix.svelte";
-import Lists from "./Lists.svelte"
+import Lists from "./Lists.svelte";
 
 interface neighbourObj {
   current: TFile;
@@ -233,7 +233,7 @@ export default class MatrixView extends ItemView {
       this.matrixQ = !this.matrixQ;
       button.innerText = this.matrixQ ? "Matrix" : "List";
       console.log(this.matrixQ);
-      await this.draw()
+      await this.draw();
     });
 
     // const { parentFieldName, siblingFieldName, childFieldName, indexNote } =
@@ -256,11 +256,25 @@ export default class MatrixView extends ItemView {
     ];
 
     const settings = this.plugin.settings;
-
-    // TODO finish
-    const impliedSiblings = [];
-
     const currFile = this.app.workspace.getActiveFile();
+
+    /// Implied Siblings
+    const currParents = gParents.successors(currFile.basename) ?? [];
+    const impliedSiblingsArr: internalLinkObj[] = [];
+    if (currParents.length) {
+      currParents.forEach((parent) => {
+        const impliedSiblings = gParents.predecessors(parent) ?? [];
+        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+        impliedSiblings.splice(indexCurrNote, 1);
+        impliedSiblings.forEach((impliedSibling) => {
+          impliedSiblingsArr.push({
+            to: impliedSibling,
+            currFile,
+            cls: this.resolvedClass(impliedSibling, currFile),
+          });
+        });
+      });
+    }
 
     const parentsSquare: SquareProps = {
       realItems: realParents,
@@ -277,7 +291,7 @@ export default class MatrixView extends ItemView {
           cls: this.resolvedClass(settings.indexNote, currFile),
         },
       ],
-      impliedItems: [{ to: undefined, currFile: undefined, cls: undefined }],
+      impliedItems: [],
       fieldName: "Top",
       app: this.app,
     };
@@ -290,14 +304,14 @@ export default class MatrixView extends ItemView {
           cls: this.resolvedClass(currFile.basename, currFile),
         },
       ],
-      impliedItems: [{ to: undefined, currFile: undefined, cls: undefined }],
+      impliedItems: [],
       fieldName: "Current",
       app: this.app,
     };
 
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
-      impliedItems: impliedSiblings,
+      impliedItems: impliedSiblingsArr,
       fieldName: settings.siblingFieldName,
       app: this.app,
     };
@@ -331,8 +345,6 @@ export default class MatrixView extends ItemView {
         },
       });
     }
-
-
   }
 
   async onOpen(): Promise<void> {

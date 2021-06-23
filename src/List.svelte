@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { App } from "obsidian";
 
-  import type { internalLinkObj } from "src/ListView";
+  import type { internalLinkObj } from "src/MatrixView";
 
   export let list;
   const realItems: internalLinkObj[] = list.realItems;
@@ -14,7 +14,7 @@
   }
 </script>
 
-<details>
+<details open>
   <summary>{fieldName}</summary>
 
   {#if realItems.length > 0}

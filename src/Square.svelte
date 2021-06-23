@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { App } from "obsidian";
-import type { internalLinkObj, SquareProps } from "src/ListView";
+import type { internalLinkObj, SquareProps } from "src/MatrixView";
 
 
   export let realItems: internalLinkObj[];
@@ -53,5 +53,6 @@ import type { internalLinkObj, SquareProps } from "src/ListView";
     flex-direction: column; */
     border: 2px solid white;
     border-radius: 5px;
+    padding: 5px;
   }
 </style>

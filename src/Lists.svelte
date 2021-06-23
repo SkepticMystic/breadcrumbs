@@ -13,7 +13,7 @@
 
 <h2 class="header">{currFile}</h2>
 {#each lists as list}
-  {#if Object.keys(list).length}
+  {#if list.realItems.length > 0 || list.impliedItems.length > 0}
     <List {list} />
   {/if}
 {/each}
