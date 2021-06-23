@@ -1,4 +1,4 @@
-import { debounce, Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
