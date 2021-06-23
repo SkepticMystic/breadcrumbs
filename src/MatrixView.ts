@@ -251,8 +251,8 @@ export default class MatrixView extends ItemView {
       this.squareItems(gParents),
       this.squareItems(gSiblings),
       this.squareItems(gChildren),
-      this.squareItems(gParents, false),
       this.squareItems(gChildren, false),
+      this.squareItems(gParents, false),
     ];
 
     const settings = this.plugin.settings;
