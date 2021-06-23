@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type BreadcrumbsPlugin from "src/main";
+import type BreadcrumbsPlugin from "./main";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -11,9 +11,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
   display(): void {
     const { containerEl } = this;
-
     containerEl.empty();
-
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin." });
 
     new Setting(containerEl)
@@ -32,7 +30,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-      new Setting(containerEl)
+    new Setting(containerEl)
       .setName("Sibling Metadata Field")
       .setDesc(
         'The key name you use as the sibling field. For example, if you use "sibling: [[Note]]", then the value of this setting should be "sibling"'
@@ -48,7 +46,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-      new Setting(containerEl)
+    new Setting(containerEl)
       .setName("Child Metadata Field")
       .setDesc(
         'The key name you use as the child field. For example, if you use "child: [[Note]]", then the value of this setting should be "child"'
