@@ -47,7 +47,6 @@ export default class MatrixView extends ItemView {
   matrixQ: boolean;
   trailDiv: HTMLDivElement;
   previewView: HTMLElement;
-  api;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
@@ -67,9 +66,13 @@ export default class MatrixView extends ItemView {
 
     this.trailDiv = createDiv();
     this.trailDiv.classList.add("is-readable-line-width");
-    this.app.workspace.onLayoutReady(async () => {
-      await this.draw();
-    });
+    setTimeout(
+      () =>
+        this.app.workspace.onLayoutReady(async () => {
+          await this.draw();
+        }),
+      4000
+    );
   }
 
   getViewType(): string {
@@ -81,14 +84,10 @@ export default class MatrixView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    // Liam uses this here: https://github.com/liamcain/obsidian-calendar-plugin/blob/d620bbac628ac8ac5e1f176ac1bb7be64dc2846e/src/view.ts#L100
-    // this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
     await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {
       await this.draw();
-      this.apiProm.then((result) => (this.api = result)).catch(e => console.log(e));
     });
-    console.log(this.api);
   }
 
   onClose(): Promise<void> {
@@ -98,15 +97,6 @@ export default class MatrixView extends ItemView {
     this.trailDiv.empty();
     return Promise.resolve();
   }
-
-  apiProm = new Promise((resolve, reject) => {
-    const result: DataviewApi = this.app.plugins.plugins.dataview.api;
-    if (result) {
-      resolve((value) => value);
-    } else {
-      reject((e) => console.log(e));
-    }
-  });
 
   getFileFrontmatterArr(): fileFrontmatter[] {
     const files: TFile[] = this.app.vault.getMarkdownFiles();
