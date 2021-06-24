@@ -1,17 +1,29 @@
 <script lang="ts">
-  import type { App } from "obsidian";
+  import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
+
   import type BreadcrumbsSettings from "src/main";
-  import type { internalLinkObj } from "src/MatrixView";
+  import type { internalLinkObj, SquareProps } from "src/MatrixView";
 
   export let settings: BreadcrumbsSettings;
-  export let list;
-  const realItems: internalLinkObj[] = list.realItems;
-  const impliedItems: internalLinkObj[] = list.impliedItems;
-  const fieldName: string = list.fieldName;
-  const app: App = list.app;
+  export let list: SquareProps;
+  const { realItems, impliedItems, fieldName, app } = list;
+  const currFile = app.workspace.getActiveFile();
 
   async function openLink(item: internalLinkObj) {
     await app.workspace.openLinkText(item.to, item.currFile.path);
+  }
+
+  function hoverPreview(e: MouseEvent) {
+    const targetEl = e.target as HTMLElement;
+
+    app.workspace.trigger("hover-link", {
+      event: e,
+      source: VIEW_TYPE_BREADCRUMBS_MATRIX,
+      hoverParent: targetEl.parentElement,
+      targetEl,
+      linktext: currFile.basename,
+      sourcePath: currFile.path,
+    });
   }
 </script>
 
@@ -29,6 +41,7 @@
             href="null"
             class={realItem.cls}
             on:click={async () => openLink(realItem)}
+            on:mouseover={(e) => hoverPreview(e)}
           >
             {realItem.to.split("/").last()}
           </a>
