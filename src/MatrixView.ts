@@ -45,6 +45,7 @@ export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
   private view: Matrix;
   matrixQ: boolean;
+  trailDiv: HTMLDivElement;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
@@ -56,8 +57,14 @@ export default class MatrixView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    this.draw();
     await this.plugin.saveSettings();
+
+    this.trailDiv = createDiv();
+    const previewView = document.querySelector(
+      "div.view-content div.markdown-preview-view"
+    );
+    previewView.prepend(this.trailDiv)
+    await this.draw();
   }
 
   getViewType(): string {
@@ -98,7 +105,7 @@ export default class MatrixView extends ItemView {
     }
     return fileFrontMatterArr;
   }
-  
+
   splitAndDrop(str: string): string[] | [] {
     return str
       ?.match(splitLinksRegex)
@@ -226,6 +233,26 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
+    const { gParents, gSiblings, gChildren } = await this.initGraphs();
+    const breadcrumbs = this.getBreadcrumbs(gParents);
+    const currFile = this.app.workspace.getActiveFile();
+
+    this.trailDiv.empty();
+
+    breadcrumbs.forEach((crumb) => {
+      const link = this.trailDiv.createEl("a", { text: crumb });
+      link.href = null;
+      link.classList.add(...this.resolvedClass(crumb, currFile).split(" "));
+      link.addEventListener("click", async () => {
+        await this.app.workspace.openLinkText(crumb, currFile.path);
+      });
+      this.trailDiv.createSpan({ text: " > " });
+    });
+
+    this.trailDiv.removeChild(this.trailDiv.lastChild);
+
+    // this.trailDiv.innerText = breadcrumbs.join(" > ");
+
     const button = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",
     });
@@ -237,8 +264,6 @@ export default class MatrixView extends ItemView {
 
     // const { parentFieldName, siblingFieldName, childFieldName, indexNote } =
     //   this.plugin.settings;
-
-    const { gParents, gSiblings, gChildren } = await this.initGraphs();
 
     const [
       realParents,
@@ -255,7 +280,6 @@ export default class MatrixView extends ItemView {
     ];
 
     const settings = this.plugin.settings;
-    const currFile = this.app.workspace.getActiveFile();
 
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
@@ -276,7 +300,7 @@ export default class MatrixView extends ItemView {
         });
       });
     }
-    
+
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
@@ -323,7 +347,7 @@ export default class MatrixView extends ItemView {
       fieldName: settings.childFieldName,
       app: this.app,
     };
-    
+
     if (this.matrixQ) {
       this.view = new Matrix({
         target: this.contentEl,
@@ -350,7 +374,7 @@ export default class MatrixView extends ItemView {
   async onOpen(): Promise<void> {
     // Liam uses this here: https://github.com/liamcain/obsidian-calendar-plugin/blob/d620bbac628ac8ac5e1f176ac1bb7be64dc2846e/src/view.ts#L100
     // this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
-    // this.draw();
     await this.plugin.saveSettings();
+    await this.draw();
   }
 }
