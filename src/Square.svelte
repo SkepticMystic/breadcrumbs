@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { App } from "obsidian";
   import type BreadcrumbsSettings from "src/main";
-  import type { internalLinkObj, SquareProps } from "src/MatrixView";
+  import type { internalLinkObj } from "src/MatrixView";
 
   export let realItems: internalLinkObj[];
   export let impliedItems: internalLinkObj[];
@@ -21,34 +21,36 @@
     {#if settings.showRelationType}
       <h5 class="breadcrumbs-matrix-header">Real</h5>
     {/if}
-      <ol>
-        {#each realItems as realItem}
-          <li>
-            <a
-              href="null"
-              class={realItem.cls}
-              on:click={async () => openLink(realItem)}>{realItem.to}</a
-            >
-          </li>
-        {/each}
-      </ol>
+    <ol>
+      {#each realItems as realItem}
+        <li>
+          <a
+            href="null"
+            class={realItem.cls}
+            on:click={async () => openLink(realItem)}
+            >{realItem.to.split("/").last()}
+          </a>
+        </li>
+      {/each}
+    </ol>
   {/if}
 
   {#if impliedItems.length}
     {#if settings.showRelationType}
       <h5 class="breadcrumbs-matrix-header">Implied</h5>
     {/if}
-      <ol>
-        {#each impliedItems as impliedItem}
-          <li>
-            <a
-              href="null"
-              class={impliedItem.cls}
-              on:click={async () => openLink(impliedItem)}>{impliedItem.to}</a
-            >
-          </li>
-        {/each}
-      </ol>
+    <ol>
+      {#each impliedItems as impliedItem}
+        <li>
+          <a
+            href="null"
+            class={impliedItem.cls}
+            on:click={async () => openLink(impliedItem)}
+            >{impliedItem.to.split("/").last()}
+          </a>
+        </li>
+      {/each}
+    </ol>
   {/if}
 </div>
 
@@ -69,11 +71,10 @@
 
   h3.breadcrumbs-matrix-header {
     color: var(--text-title-h3);
-}
+  }
   h5.breadcrumbs-matrix-header {
     color: var(--text-title-h5);
   }
-
 
   ol {
     margin: 3px;

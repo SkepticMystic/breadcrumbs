@@ -2,11 +2,9 @@ import { Plugin, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
-  VIEW_TYPE_BREADCRUMBS_LIST,
   VIEW_TYPE_BREADCRUMBS_TRAIL,
 } from "src/constants";
 import MatrixView from "src/MatrixView";
-// import ListView from "src/ListView";
 
 interface BreadcrumbsSettings {
   showRelationType: boolean;
@@ -26,14 +24,8 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
-  // listView: ListView;
-  // plugin: BreadcrumbsPlugin;
 
   async onload(): Promise<void> {
-    // while (!this.app.plugins.plugins.dataview.api) {
-    //   debounce(() => console.log('waiting'), 10, true)
-    //   // console.log(this.app.plugins.plugins.dataview.api);
-    // }
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
@@ -53,21 +45,7 @@ export default class BreadcrumbsPlugin extends Plugin {
               .length === 0
           );
         }
-        this.initLeaf(VIEW_TYPE_BREADCRUMBS_MATRIX);
-      },
-    });
-
-    this.addCommand({
-      id: "show-breadcrumb-list-view",
-      name: "Open List View",
-      checkCallback: (checking: boolean) => {
-        if (checking) {
-          return (
-            this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_LIST)
-              .length === 0
-          );
-        }
-        this.initLeaf(VIEW_TYPE_BREADCRUMBS_LIST);
+        this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
       },
     });
 
@@ -77,8 +55,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
-
-  // TODO I feel like initView and initLeaf are doing the same thing, and the the first one does it better...
+  
   initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
     for (leaf of this.app.workspace.getLeavesOfType(type)) {
@@ -92,15 +69,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   };
 
-  initLeaf(type: string): void {
-    if (this.app.workspace.getLeavesOfType(type).length) {
-      return;
-    }
-    this.app.workspace.getRightLeaf(false).setViewState({
-      type,
-    });
-  }
-
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
@@ -110,12 +78,11 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   onunload(): void {
-    [
-      VIEW_TYPE_BREADCRUMBS_MATRIX,
-      VIEW_TYPE_BREADCRUMBS_LIST,
-      VIEW_TYPE_BREADCRUMBS_TRAIL,
-    ].forEach((type) =>
-      this.app.workspace.getLeavesOfType(type).forEach((leaf) => leaf.detach())
+    [VIEW_TYPE_BREADCRUMBS_MATRIX, VIEW_TYPE_BREADCRUMBS_TRAIL].forEach(
+      (type) =>
+        this.app.workspace
+          .getLeavesOfType(type)
+          .forEach((leaf) => leaf.detach())
     );
   }
 }

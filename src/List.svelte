@@ -30,7 +30,7 @@
             class={realItem.cls}
             on:click={async () => openLink(realItem)}
           >
-            {realItem.to}
+            {realItem.to.split("/").last()}
           </a>
         </li>
       {/each}
@@ -38,22 +38,22 @@
   {/if}
 
   {#if impliedItems.length}
-  {#if settings.showRelationType}
-    <h5 class="header">Implied</h5>
-  {/if}
+    {#if settings.showRelationType}
+      <h5 class="header">Implied</h5>
+    {/if}
 
-  <ol class="markdown-preview-view">
-    {#each impliedItems as impliedItem}
-      <li>
-        <a
-          href="null"
-          class={impliedItem.cls}
-          on:click={async () => openLink(impliedItem)}
-          >{impliedItem.to}
-        </a>
-      </li>
-    {/each}
-  </ol>
+    <ol class="markdown-preview-view">
+      {#each impliedItems as impliedItem}
+        <li>
+          <a
+            href="null"
+            class={impliedItem.cls}
+            on:click={async () => openLink(impliedItem)}
+            >{impliedItem.to.split("/").last()}
+          </a>
+        </li>
+      {/each}
+    </ol>
   {/if}
 </details>
 

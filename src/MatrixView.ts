@@ -13,8 +13,8 @@ import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
-import Matrix from "./Matrix.svelte";
 import Lists from "./Lists.svelte";
+import Matrix from "./Matrix.svelte";
 
 interface neighbourObj {
   current: TFile;
@@ -46,12 +46,17 @@ export default class MatrixView extends ItemView {
   private view: Matrix;
   matrixQ: boolean;
   trailDiv: HTMLDivElement;
+  previewView: HTMLElement;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.registerEvent(
-      this.app.workspace.on("active-leaf-change", async () => await this.draw())
+      this.app.workspace.on("active-leaf-change", async () => {
+        this.app.workspace.onLayoutReady(async () => {
+          await this.draw();
+        });
+      })
     );
   }
 
@@ -60,11 +65,10 @@ export default class MatrixView extends ItemView {
     await this.plugin.saveSettings();
 
     this.trailDiv = createDiv();
-    const previewView = document.querySelector(
-      "div.view-content div.markdown-preview-view"
-    );
-    previewView.prepend(this.trailDiv)
-    await this.draw();
+    this.trailDiv.classList.add("is-readable-line-width");
+    this.app.workspace.onLayoutReady(async () => {
+      await this.draw();
+    });
   }
 
   getViewType(): string {
@@ -75,10 +79,20 @@ export default class MatrixView extends ItemView {
     return "Breadcrumbs Matrix";
   }
 
+  async onOpen(): Promise<void> {
+    // Liam uses this here: https://github.com/liamcain/obsidian-calendar-plugin/blob/d620bbac628ac8ac5e1f176ac1bb7be64dc2846e/src/view.ts#L100
+    // this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
+    await this.plugin.saveSettings();
+    this.app.workspace.onLayoutReady(async () => {
+      await this.draw();
+    });
+  }
+
   onClose(): Promise<void> {
     if (this.view) {
       this.view.$destroy();
     }
+    this.trailDiv.empty();
     return Promise.resolve();
   }
 
@@ -87,11 +101,12 @@ export default class MatrixView extends ItemView {
     const fileFrontMatterArr: fileFrontmatter[] = [];
 
     if (this.app.plugins.plugins.dataview !== undefined) {
-      files.forEach((file) => {
-        const dv: FrontMatterCache = this.app.plugins.plugins.dataview.api.page(
-          file.path
-        );
-        fileFrontMatterArr.push({ file, frontmatter: dv });
+      this.app.workspace.onLayoutReady(() => {
+        files.forEach((file) => {
+          const dv: FrontMatterCache =
+            this.app.plugins.plugins.dataview.api.page(file.path);
+          fileFrontMatterArr.push({ file, frontmatter: dv });
+        });
       });
     } else {
       files.forEach((file) => {
@@ -237,6 +252,11 @@ export default class MatrixView extends ItemView {
     const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 
+    this.previewView = document.querySelector(
+      "div.mod-active div.view-content div.markdown-preview-view"
+    );
+    this.previewView.prepend(this.trailDiv);
+
     this.trailDiv.empty();
 
     breadcrumbs.forEach((crumb) => {
@@ -246,7 +266,7 @@ export default class MatrixView extends ItemView {
       link.addEventListener("click", async () => {
         await this.app.workspace.openLinkText(crumb, currFile.path);
       });
-      this.trailDiv.createSpan({ text: " > " });
+      this.trailDiv.createSpan({ text: " → " });
     });
 
     this.trailDiv.removeChild(this.trailDiv.lastChild);
@@ -308,32 +328,6 @@ export default class MatrixView extends ItemView {
       app: this.app,
     };
 
-    // const topSquare: SquareProps = {
-    //   realItems: [
-    //     {
-    //       to: settings.indexNote,
-    //       currFile: currFile,
-    //       cls: this.resolvedClass(settings.indexNote, currFile),
-    //     },
-    //   ],
-    //   impliedItems: [],
-    //   fieldName: "Top",
-    //   app: this.app,
-    // };
-
-    // const currSquare: SquareProps = {
-    //   realItems: [
-    //     {
-    //       to: currFile.basename,
-    //       currFile: currFile,
-    //       cls: this.resolvedClass(currFile.basename, currFile),
-    //     },
-    //   ],
-    //   impliedItems: [],
-    //   fieldName: "Current",
-    //   app: this.app,
-    // };
-
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
       impliedItems: impliedSiblingsArr,
@@ -369,12 +363,5 @@ export default class MatrixView extends ItemView {
         },
       });
     }
-  }
-
-  async onOpen(): Promise<void> {
-    // Liam uses this here: https://github.com/liamcain/obsidian-calendar-plugin/blob/d620bbac628ac8ac5e1f176ac1bb7be64dc2846e/src/view.ts#L100
-    // this.app.workspace.trigger(TRIGGER_ON_OPEN, sources);
-    await this.plugin.saveSettings();
-    await this.draw();
   }
 }
