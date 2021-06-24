@@ -47,6 +47,7 @@ export default class MatrixView extends ItemView {
   matrixQ: boolean;
   trailDiv: HTMLDivElement;
   previewView: HTMLElement;
+  api;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
@@ -85,7 +86,9 @@ export default class MatrixView extends ItemView {
     await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {
       await this.draw();
+      this.apiProm.then((result) => (this.api = result)).catch(e => console.log(e));
     });
+    console.log(this.api);
   }
 
   onClose(): Promise<void> {
@@ -95,6 +98,15 @@ export default class MatrixView extends ItemView {
     this.trailDiv.empty();
     return Promise.resolve();
   }
+
+  apiProm = new Promise((resolve, reject) => {
+    const result: DataviewApi = this.app.plugins.plugins.dataview.api;
+    if (result) {
+      resolve((value) => value);
+    } else {
+      reject((e) => console.log(e));
+    }
+  });
 
   getFileFrontmatterArr(): fileFrontmatter[] {
     const files: TFile[] = this.app.vault.getMarkdownFiles();
