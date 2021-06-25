@@ -27,11 +27,11 @@
   }
 </script>
 
-<details open>
+<details open class="breadcrumbs-details">
   <summary>{fieldName}</summary>
   {#if realItems.length}
     {#if settings.showRelationType}
-      <h5 class="header">Real</h5>
+      <h5 class="breadcrumbs-header">Real</h5>
     {/if}
 
     <ol class="markdown-preview-view">
@@ -52,7 +52,7 @@
 
   {#if impliedItems.length}
     {#if settings.showRelationType}
-      <h5 class="header">Implied</h5>
+      <h5 class="breadcrumbs-header">Implied</h5>
     {/if}
 
     <ol class="markdown-preview-view">
@@ -76,7 +76,7 @@
     margin: 3px;
     color: var(--text-title-h3);
   }
-  h5.header {
+  h5.breadcrumbs-header {
     margin: 3px;
     color: var(--text-title-h5);
   }

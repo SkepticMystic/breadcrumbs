@@ -156,10 +156,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     return gParents;
   }
 
-  getBreadcrumbs(
-    g: Graph,
-    userTo: string = this.settings.indexNote
-  ): string[] {
+  getBreadcrumbs(g: Graph, userTo: string = this.settings.indexNote): string[] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     let step = userTo;
@@ -183,13 +180,15 @@ export default class BreadcrumbsPlugin extends Plugin {
   resolvedClass(
     toFile: string,
     currFile: TFile
-  ): "internal-link is-unresolved breadcrumbs-link" | "internal-link breadcrumbs-link" {
+  ):
+    | "internal-link is-unresolved breadcrumbs-link"
+    | "internal-link breadcrumbs-link" {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
   }
 
-  async drawTrail() {
+  async drawTrail(): Promise<void> {
     const gParents = await this.initParentGraph();
     const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
