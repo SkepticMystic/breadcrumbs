@@ -1,14 +1,26 @@
 # Breadcrumb Trail
 
-This plugin adds a new view to Obsidian, the breadcrumb trail. In this view, you can see a hieracrchy going from your current note, all the way up to your chosen Index/Home note.
+This plugin adds two new views to Obsidian, the breadcrumb matrix/list view, and the breadcrumbs trail view.
 
-![](https://i.imgur.com/dONnvdu.png)
+## Matrix/List view
+
+This view shows the current note's parents, siblings, and children in either of the following styles:
+
+![image](https://user-images.githubusercontent.com/70717676/123402846-75a67f80-d5a8-11eb-8230-75c37441f122.png)
+
+![image](https://user-images.githubusercontent.com/70717676/123402852-77704300-d5a8-11eb-8f56-c4eb3ca23e02.png)
+
+To open the view in your sidebar, run the command `Breadcrumbs: Open View` from the command palette.
+
+## Breadcrumbs Trail view
+
+This view shows a trail of notes from the top of your vault (See `Settings#IndexNote`) down to your current note
+
+![image](https://user-images.githubusercontent.com/70717676/123403044-a8507800-d5a8-11eb-9669-33148021b6fa.png)
 
 To get this structure, the plugin requires that you use some type of metadata indicating the hierarchy of notes.
 For example, you may have a yaml field called `parent`, which links to the current note's "parent" note: `parent: [[Parent Note]]`. (You can also use inline Dataview fields `parent:: [[Parent Note]]`).
 Using this structure that you impose, you can use the breadcrumb trail to visualise the path back to your parent note.
-
-To open the view in your sidebar, run the command `Breadcrumbs: Open View` from the command palette.
 
 ## Settings
 
