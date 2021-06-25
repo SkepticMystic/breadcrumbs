@@ -26,7 +26,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.parentFieldName = value;
             await this.plugin.saveSettings();
-            console.log(this.plugin.settings.parentFieldName);
           })
       );
 
@@ -42,7 +41,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.siblingFieldName = value;
             await this.plugin.saveSettings();
-            console.log(this.plugin.settings.siblingFieldName);
           })
       );
 
@@ -58,7 +56,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.childFieldName = value;
             await this.plugin.saveSettings();
-            console.log(this.plugin.settings.childFieldName);
           })
       );
 
@@ -74,7 +71,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.indexNote = value;
             await this.plugin.saveSettings();
-            console.log(this.plugin.settings.indexNote);
           })
       );
 
@@ -87,6 +83,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           this.plugin.settings.showRelationType = value;
           await this.plugin.saveSettings();
         })
+      );
+
+      new Setting(containerEl)
+      .setName("Breadcrumb trail seperator")
+      .setDesc(
+        "The character to show between crumbs in the breadcrumb trail. The default is '→'"
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("→")
+          .setValue(this.plugin.settings.trailSeperator)
+          .onChange(async (value) => {
+            this.plugin.settings.trailSeperator = value;
+            await this.plugin.saveSettings();
+          })
       );
   }
 }

@@ -12,6 +12,7 @@ interface BreadcrumbsSettings {
   siblingFieldName: string;
   childFieldName: string;
   indexNote: string;
+  trailSeperator: string;
 }
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   siblingFieldName: "sibling",
   childFieldName: "child",
   indexNote: "Index",
+  trailSeperator: "→",
 };
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
@@ -55,7 +57,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
-  
+
   initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
     for (leaf of this.app.workspace.getLeavesOfType(type)) {

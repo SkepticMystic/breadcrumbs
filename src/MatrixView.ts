@@ -253,6 +253,7 @@ export default class MatrixView extends ItemView {
     const { gParents, gSiblings, gChildren } = await this.initGraphs();
     const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
+    const settings = this.plugin.settings;
 
     this.previewView = document.querySelector(
       "div.mod-active div.view-content div.markdown-preview-view"
@@ -268,7 +269,7 @@ export default class MatrixView extends ItemView {
       link.addEventListener("click", async () => {
         await this.app.workspace.openLinkText(crumb, currFile.path);
       });
-      this.trailDiv.createSpan({ text: " → " });
+      this.trailDiv.createSpan({ text: ` ${settings.trailSeperator} ` });
     });
 
     this.trailDiv.removeChild(this.trailDiv.lastChild);
@@ -301,7 +302,6 @@ export default class MatrixView extends ItemView {
       this.squareItems(gParents, false),
     ];
 
-    const settings = this.plugin.settings;
 
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
