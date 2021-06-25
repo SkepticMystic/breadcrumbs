@@ -31,7 +31,9 @@ interface fileFrontmatter {
 export interface internalLinkObj {
   to: string;
   currFile: TFile;
-  cls: "internal-link is-unresolved breadcrumbs-link" | "internal-link breadcrumbs-link";
+  cls:
+    | "internal-link is-unresolved breadcrumbs-link"
+    | "internal-link breadcrumbs-link";
 }
 
 export interface SquareProps {
@@ -108,7 +110,7 @@ export default class MatrixView extends ItemView {
     } else {
       files.forEach((file) => {
         const obs: FrontMatterCache =
-          this.app.metadataCache.getFileCache(file).frontmatter;
+          this.app.metadataCache.getFileCache(file).frontmatter ?? [];
         fileFrontMatterArr.push({
           file,
           frontmatter: obs,
@@ -129,7 +131,7 @@ export default class MatrixView extends ItemView {
     if (typeof fieldItems === "string") {
       return this.splitAndDrop(fieldItems);
     } else {
-      return [fieldItems].flat().map((link) => link.path);
+      return [fieldItems].flat().map((link) => link?.path ?? link);
     }
   }
 
@@ -188,7 +190,9 @@ export default class MatrixView extends ItemView {
   resolvedClass(
     toFile: string,
     currFile: TFile
-  ): "internal-link is-unresolved breadcrumbs-link" | "internal-link breadcrumbs-link" {
+  ):
+    | "internal-link is-unresolved breadcrumbs-link"
+    | "internal-link breadcrumbs-link" {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";

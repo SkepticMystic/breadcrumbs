@@ -28,6 +28,11 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   indexNote: "Index",
   trailSeperator: "→",
 };
+
+interface ParentObj {
+  current: TFile;
+  parents: string[];
+}
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
@@ -100,7 +105,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     } else {
       files.forEach((file) => {
         const obs: FrontMatterCache =
-          this.app.metadataCache.getFileCache(file).frontmatter;
+          this.app.metadataCache.getFileCache(file).frontmatter ?? [];
         fileFrontMatterArr.push({
           file,
           frontmatter: obs,
@@ -121,11 +126,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     if (typeof fieldItems === "string") {
       return this.splitAndDrop(fieldItems);
     } else {
-      return [fieldItems].flat().map((link) => link.path);
+      const links = [fieldItems].flat().map((link) => link.path ?? link);
+      return links;
     }
   }
 
-  getParentObjArr(fileFrontmatterArr: fileFrontmatter[]) {
+  getParentObjArr(fileFrontmatterArr: fileFrontmatter[]): ParentObj[] {
     const settings = this.settings;
     return fileFrontmatterArr.map((fileFrontmatter) => {
       const parents = this.getFields(fileFrontmatter, settings.parentFieldName);
@@ -134,7 +140,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
-  populateParentGraph(g: Graph, currFileName: string, parentObj): void {
+  populateParentGraph(
+    g: Graph,
+    currFileName: string,
+    parentObj: ParentObj
+  ): void {
     if (parentObj["parents"]) {
       g.setNode(currFileName, currFileName);
       parentObj["parents"].forEach((node) =>
