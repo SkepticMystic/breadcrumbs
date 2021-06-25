@@ -31,7 +31,7 @@ interface fileFrontmatter {
 export interface internalLinkObj {
   to: string;
   currFile: TFile;
-  cls: "internal-link is-unresolved" | "internal-link";
+  cls: "internal-link is-unresolved breadcrumbs-link" | "internal-link breadcrumbs-link";
 }
 
 export interface SquareProps {

@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class="square">
+<div class="breadcrumbs-matrix-square">
   <h3 class="breadcrumbs-matrix-header">{fieldName}</h3>
 
   {#if realItems.length}
@@ -55,7 +55,7 @@
 </div>
 
 <style>
-  div.square {
+  div.breadcrumbs-matrix-square {
     /* display: flex;
     flex-direction: column; */
     border: 2px solid var(--background-modifier-border);

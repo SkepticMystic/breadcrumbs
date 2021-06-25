@@ -1,39 +1,5 @@
-div.breadcrumbs-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    align-items: stretch;
-}
-
-.breadcrumbsDiv {
-    /* width: fit-content;
-    height: fit-content; */
-    /* min-height: 50px;
-    min-width: 50px; */
-    margin: 10px;
-    padding: 10px;
-    border: 1px solid rgb(218, 215, 215);
-    border-radius: 5px;
-    background-color: rgb(17, 19, 19);
-    color: rgb(226, 226, 226);
-}
-
-.breadcrumbs-fillerDiv {
-    /* width: 50px;
-    height: 50px; */
-    margin: 10px;
-    opacity: 0;
-}
-
-.matrixRow {
-    display: flex;
-    flex-direction: row;
-}
-
-strong.breadcrumbs-heading {
-    font-size: larger;
-}
-
-a.is-unresolved-breadcrumbs {
-    opacity: 0.5
+div.breadcrumbs-trail {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  padding: 5px;
 }
