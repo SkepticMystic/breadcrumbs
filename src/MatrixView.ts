@@ -45,8 +45,6 @@ export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
   private view: Matrix;
   matrixQ: boolean;
-  trailDiv: HTMLDivElement;
-  previewView: HTMLElement;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
@@ -63,9 +61,7 @@ export default class MatrixView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     await this.plugin.saveSettings();
-
-    this.trailDiv = createDiv();
-    this.trailDiv.classList.add("is-readable-line-width");
+    this.matrixQ = true;
     setTimeout(
       () =>
         this.app.workspace.onLayoutReady(async () => {
@@ -94,7 +90,6 @@ export default class MatrixView extends ItemView {
     if (this.view) {
       this.view.$destroy();
     }
-    this.trailDiv.empty();
     return Promise.resolve();
   }
 
@@ -190,40 +185,13 @@ export default class MatrixView extends ItemView {
     return { gParents, gSiblings, gChildren };
   }
 
-  //   This is a TrailView thing
-  getBreadcrumbs(
-    g: Graph,
-    // TODO Settings bug
-    userTo: string = this.plugin.settings.indexNote
-  ): string[] {
-    const from = this.app.workspace.getActiveFile().basename;
-    const paths = graphlib.alg.dijkstra(g, from);
-    let step = userTo;
-    const breadcrumbs: string[] = [];
-
-    // Check if a path even exists
-    if (paths[step].distance === Infinity) {
-      return [`No path to ${userTo} was found from the current note`];
-    } else {
-      // If it does, walk it until arriving at `from`
-      while (paths[step].distance !== 0) {
-        breadcrumbs.push(step);
-        step = paths[step].predecessor;
-      }
-
-      breadcrumbs.push(from);
-      return breadcrumbs;
-    }
-  }
-
-  //   Need to adjust this to return the link El instead of appending it to a specified el
   resolvedClass(
     toFile: string,
     currFile: TFile
-  ): "internal-link is-unresolved" | "internal-link" {
+  ): "internal-link is-unresolved breadcrumbs-link" | "internal-link breadcrumbs-link" {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
-      ? "internal-link is-unresolved"
-      : "internal-link";
+      ? "internal-link is-unresolved breadcrumbs-link"
+      : "internal-link breadcrumbs-link";
   }
 
   squareItems(g: Graph, realQ = true): internalLinkObj[] {
@@ -251,30 +219,8 @@ export default class MatrixView extends ItemView {
     this.contentEl.empty();
 
     const { gParents, gSiblings, gChildren } = await this.initGraphs();
-    const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
-
-    this.previewView = document.querySelector(
-      "div.mod-active div.view-content div.markdown-preview-view"
-    );
-    this.previewView.prepend(this.trailDiv);
-
-    this.trailDiv.empty();
-
-    breadcrumbs.forEach((crumb) => {
-      const link = this.trailDiv.createEl("a", { text: crumb });
-      link.href = null;
-      link.classList.add(...this.resolvedClass(crumb, currFile).split(" "));
-      link.addEventListener("click", async () => {
-        await this.app.workspace.openLinkText(crumb, currFile.path);
-      });
-      this.trailDiv.createSpan({ text: ` ${settings.trailSeperator} ` });
-    });
-
-    this.trailDiv.removeChild(this.trailDiv.lastChild);
-
-    // this.trailDiv.innerText = breadcrumbs.join(" > ");
 
     const button = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",
@@ -302,7 +248,6 @@ export default class MatrixView extends ItemView {
       this.squareItems(gParents, false),
     ];
 
-
     /// Implied Siblings
     const currParents = gParents.successors(currFile.basename) ?? [];
     const impliedSiblingsArr: internalLinkObj[] = [];
@@ -310,9 +255,11 @@ export default class MatrixView extends ItemView {
     if (currParents.length) {
       currParents.forEach((parent) => {
         const impliedSiblings = gParents.predecessors(parent) ?? [];
-        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
 
+        // The current note is always it's own implied sibling, so remove it from the list
+        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
         impliedSiblings.splice(indexCurrNote, 1);
+
         impliedSiblings.forEach((impliedSibling) => {
           impliedSiblingsArr.push({
             to: impliedSibling,
