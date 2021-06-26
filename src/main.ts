@@ -130,9 +130,13 @@ export default class BreadcrumbsPlugin extends Plugin {
   getFields(fileFrontmatter: fileFrontmatter, field: string): string[] {
     const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
     if (typeof fieldItems === "string") {
-      return this.splitAndDrop(fieldItems);
+      return this.splitAndDrop(fieldItems).map((value) =>
+        value.split("/").last()
+      );
     } else {
-      const links = [fieldItems].flat().map((link) => link.path ?? link);
+      const links = [fieldItems]
+        .flat()
+        .map((link) => link.path.split("/").last() ?? link.split("/").last());
       return links;
     }
   }
