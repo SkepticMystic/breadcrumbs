@@ -139,8 +139,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   getParentObjArr(fileFrontmatterArr: fileFrontmatter[]): ParentObj[] {
     const settings = this.settings;
+    const parentFields = settings.parentFieldName
+      .split(",")
+      .map((str) => str.trim());
+
     return fileFrontmatterArr.map((fileFrontmatter) => {
-      const parents = this.getFields(fileFrontmatter, settings.parentFieldName);
+      const parents: string[] = parentFields
+        .map((parentField) => this.getFields(fileFrontmatter, parentField))
+        .flat();
 
       return { current: fileFrontmatter.file, parents };
     });
@@ -178,8 +184,16 @@ export default class BreadcrumbsPlugin extends Plugin {
     let step = userTo;
     const breadcrumbs: string[] = [];
 
-    // Check if a path even exists
-    if (paths[step].distance === Infinity) {
+    // Check if indexNote exists
+    if (
+      !this.app.metadataCache.getFirstLinkpathDest(
+        userTo,
+        this.app.workspace.getActiveFile().path
+      )
+    ) {
+      return [`${userTo} is not a note in your vault`];
+    } else if (paths[step].distance === Infinity) {
+      // Check if a path even exists
       return [`No path to ${userTo} was found from the current note`];
     } else {
       // If it does, walk it until arriving at `from`
