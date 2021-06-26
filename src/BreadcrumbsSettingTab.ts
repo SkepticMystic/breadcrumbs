@@ -109,5 +109,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    new Setting(containerEl)
+      .setName("Respect Readable Line Length")
+      .setDesc(
+        "Should the breadcrumbs trail adjust it's width to the readable line length, or use as much space as possible? Default is to use readable line length."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.respectReadableLineLength)
+          .onChange(async (value) => {
+            this.plugin.settings.respectReadableLineLength = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }

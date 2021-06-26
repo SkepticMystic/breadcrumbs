@@ -18,6 +18,7 @@ interface BreadcrumbsSettings {
   childFieldName: string;
   indexNote: string;
   trailSeperator: string;
+  respectReadableLineLength: boolean;
 }
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
@@ -27,6 +28,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   childFieldName: "child",
   indexNote: "Index",
   trailSeperator: "→",
+  respectReadableLineLength: true,
 };
 
 interface ParentObj {
@@ -80,7 +82,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.app.workspace.onLayoutReady(() => {
       this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
       this.trailDiv = createDiv({
-        cls: "breadcrumbs-trail is-readable-line-width",
+        cls: `breadcrumbs-trail is-readable-line-width${
+          this.settings.respectReadableLineLength
+            ? " markdown-preview-sizer markdown-preview-section"
+            : ""
+        }`,
       });
       this.drawTrail();
     });
