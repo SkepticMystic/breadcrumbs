@@ -17,6 +17,7 @@ interface BreadcrumbsSettings {
   siblingFieldName: string;
   childFieldName: string;
   indexNote: string;
+  showTrail: boolean;
   trailSeperator: string;
   respectReadableLineLength: boolean;
 }
@@ -27,6 +28,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   siblingFieldName: "sibling",
   childFieldName: "child",
   indexNote: "Index",
+  showTrail: true,
   trailSeperator: "→",
   respectReadableLineLength: true,
 };
@@ -51,17 +53,28 @@ export default class BreadcrumbsPlugin extends Plugin {
       (leaf: WorkspaceLeaf) => (this.matrixView = new MatrixView(leaf, this))
     );
 
-    setTimeout(
-      () =>
-        this.app.workspace.onLayoutReady(async () => {
+    this.app.workspace.onLayoutReady(async () => {
+      setTimeout(async () => {
+        this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+
+        this.trailDiv = createDiv({
+          cls: `breadcrumbs-trail is-readable-line-width${
+            this.settings.respectReadableLineLength
+              ? " markdown-preview-sizer markdown-preview-section"
+              : ""
+          }`,
+        });
+        if (this.settings.showTrail) {
           await this.drawTrail();
-        }),
-      4000
-    );
+        }
+      }, 4000);
+    });
 
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", async () => {
-        await this.drawTrail();
+        if (this.settings.showTrail) {
+          await this.drawTrail();
+        }
       })
     );
 
@@ -79,17 +92,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
-    this.app.workspace.onLayoutReady(() => {
-      this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-      this.trailDiv = createDiv({
-        cls: `breadcrumbs-trail is-readable-line-width${
-          this.settings.respectReadableLineLength
-            ? " markdown-preview-sizer markdown-preview-section"
-            : ""
-        }`,
-      });
-      this.drawTrail();
-    });
+    this.app.workspace.onLayoutReady(() => {});
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
