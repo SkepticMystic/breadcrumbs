@@ -137,16 +137,31 @@ export default class MatrixView extends ItemView {
 
   getNeighbourObjArr(fileFrontmatterArr: fileFrontmatter[]): neighbourObj[] {
     const settings = this.plugin.settings;
-    return fileFrontmatterArr.map((fileFrontmatter) => {
-      const parents = this.getFields(fileFrontmatter, settings.parentFieldName);
-      const siblings = this.getFields(
-        fileFrontmatter,
-        settings.siblingFieldName
-      );
-      const children = this.getFields(fileFrontmatter, settings.childFieldName);
+    const parentFields = settings.parentFieldName
+      .split(",")
+      .map((str) => str.trim());
+    const siblingFields = settings.siblingFieldName
+      .split(",")
+      .map((str) => str.trim());
+    const childFields = settings.childFieldName
+      .split(",")
+      .map((str) => str.trim());
 
-      return { current: fileFrontmatter.file, parents, siblings, children };
-    });
+    const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
+      (fileFrontmatter) => {
+        const parents = parentFields
+          .map((parentField) => this.getFields(fileFrontmatter, parentField))
+          .flat();
+        const siblings = siblingFields
+          .map((siblingField) => this.getFields(fileFrontmatter, siblingField))
+          .flat();
+        const children = childFields
+          .map((childField) => this.getFields(fileFrontmatter, childField))
+          .flat();
+        return { current: fileFrontmatter.file, parents, siblings, children };
+      }
+    );
+    return neighbourObjArr;
   }
 
   populateGraph(
