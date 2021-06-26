@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type BreadcrumbsPlugin from "./main";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
@@ -69,23 +69,33 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .setPlaceholder("Index Note")
           .setValue(this.plugin.settings.indexNote)
           .onChange(async (value) => {
-            this.plugin.settings.indexNote = value;
+            if (
+              !this.app.metadataCache.getFirstLinkpathDest(
+                value,
+                this.app.workspace.getActiveFile().path
+              )
+            ) {
+              new Notice(`${value} is not a note in your vault`);
+            } else {
+              this.plugin.settings.indexNote = value;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Show Relationship Type")
+      .setDesc("Show whether a link is real or implied")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showRelationType)
+          .onChange(async (value) => {
+            this.plugin.settings.showRelationType = value;
             await this.plugin.saveSettings();
           })
       );
 
-      new Setting(containerEl)
-      .setName("Show Relationship Type")
-      .setDesc("Show whether a link is real or implied")
-      .addToggle((toggle) => toggle
-        .setValue(this.plugin.settings.showRelationType)
-        .onChange(async (value) => {
-          this.plugin.settings.showRelationType = value;
-          await this.plugin.saveSettings();
-        })
-      );
-
-      new Setting(containerEl)
+    new Setting(containerEl)
       .setName("Breadcrumb trail seperator")
       .setDesc(
         "The character to show between crumbs in the breadcrumb trail. The default is '→'"
