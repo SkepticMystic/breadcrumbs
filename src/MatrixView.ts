@@ -1,47 +1,15 @@
-import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
-import {
-  App,
-  FrontMatterCache,
-  ItemView,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
-import {
-  dropHeaderOrAlias,
-  splitLinksRegex,
-  VIEW_TYPE_BREADCRUMBS_MATRIX,
-} from "src/constants";
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
+import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
-
-interface neighbourObj {
-  current: TFile;
-  parents: string[];
-  siblings: string[];
-  children: string[];
-}
-
-interface fileFrontmatter {
-  file: TFile;
-  frontmatter: FrontMatterCache;
-}
-
-export interface internalLinkObj {
-  to: string;
-  currFile: TFile;
-  cls:
-    | "internal-link is-unresolved breadcrumbs-link"
-    | "internal-link breadcrumbs-link";
-}
-
-export interface SquareProps {
-  realItems: internalLinkObj[];
-  impliedItems: internalLinkObj[];
-  fieldName: string;
-  app: App;
-}
+import type {
+  internalLinkObj,
+  neighbourObj,
+  SquareProps,
+} from "src/interfaces";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
@@ -95,75 +63,6 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  getFileFrontmatterArr(): fileFrontmatter[] {
-    const files: TFile[] = this.app.vault.getMarkdownFiles();
-    const fileFrontMatterArr: fileFrontmatter[] = [];
-
-    if (this.app.plugins.plugins.dataview !== undefined) {
-      this.app.workspace.onLayoutReady(() => {
-        files.forEach((file) => {
-          const dv: FrontMatterCache =
-            this.app.plugins.plugins.dataview.api.page(file.path);
-          fileFrontMatterArr.push({ file, frontmatter: dv });
-        });
-      });
-    } else {
-      files.forEach((file) => {
-        const obs: FrontMatterCache =
-          this.app.metadataCache.getFileCache(file).frontmatter ?? [];
-        fileFrontMatterArr.push({
-          file,
-          frontmatter: obs,
-        });
-      });
-    }
-    return fileFrontMatterArr;
-  }
-
-  splitAndDrop(str: string): string[] | [] {
-    return str
-      ?.match(splitLinksRegex)
-      ?.map((link) => link.match(dropHeaderOrAlias)?.[1]);
-  }
-
-  getFields(fileFrontmatter: fileFrontmatter, field: string): string[] {
-    const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
-    if (typeof fieldItems === "string") {
-      return this.splitAndDrop(fieldItems);
-    } else {
-      return [fieldItems].flat().map((link) => link?.path ?? link);
-    }
-  }
-
-  getNeighbourObjArr(fileFrontmatterArr: fileFrontmatter[]): neighbourObj[] {
-    const settings = this.plugin.settings;
-    const parentFields = settings.parentFieldName
-      .split(",")
-      .map((str) => str.trim());
-    const siblingFields = settings.siblingFieldName
-      .split(",")
-      .map((str) => str.trim());
-    const childFields = settings.childFieldName
-      .split(",")
-      .map((str) => str.trim());
-
-    const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
-      (fileFrontmatter) => {
-        const parents = parentFields
-          .map((parentField) => this.getFields(fileFrontmatter, parentField))
-          .flat();
-        const siblings = siblingFields
-          .map((siblingField) => this.getFields(fileFrontmatter, siblingField))
-          .flat();
-        const children = childFields
-          .map((childField) => this.getFields(fileFrontmatter, childField))
-          .flat();
-        return { current: fileFrontmatter.file, parents, siblings, children };
-      }
-    );
-    return neighbourObjArr;
-  }
-
   populateGraph(
     g: Graph,
     currFileName: string,
@@ -183,8 +82,8 @@ export default class MatrixView extends ItemView {
     gSiblings: Graph;
     gChildren: Graph;
   }> {
-    const fileFrontmatterArr = this.getFileFrontmatterArr();
-    const neighbourArr = this.getNeighbourObjArr(fileFrontmatterArr);
+    const fileFrontmatterArr = getFileFrontmatterArr(this.app);
+    const neighbourArr = getNeighbourObjArr(this.plugin, fileFrontmatterArr);
     const [gParents, gSiblings, gChildren] = [
       new Graph(),
       new Graph(),

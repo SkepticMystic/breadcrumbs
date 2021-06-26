@@ -1,4 +1,4 @@
-import { App, debounce, Notice, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type BreadcrumbsPlugin from "./main";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
@@ -77,7 +77,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 this.app.workspace.getActiveFile().path
               )
             ) {
-              new Notice(`${value} is not a note in your vault`);
+              setTimeout(
+                () => new Notice(`${value} is not a note in your vault`),
+                1000
+              );
             } else {
               this.plugin.settings.indexNote = value;
               await this.plugin.saveSettings();

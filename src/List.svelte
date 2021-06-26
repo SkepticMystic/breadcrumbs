@@ -15,14 +15,13 @@
 
   function hoverPreview(e: MouseEvent) {
     const targetEl = e.target as HTMLElement;
-
+    console.log('hovering')
     app.workspace.trigger("hover-link", {
       event: e,
       source: VIEW_TYPE_BREADCRUMBS_MATRIX,
-      hoverParent: targetEl.parentElement,
+      hoverParent: targetEl.getRootNode(),
       targetEl,
-      linktext: currFile.basename,
-      sourcePath: currFile.path,
+      linktext: currFile.path,
     });
   }
 </script>
@@ -41,7 +40,7 @@
             href="null"
             class={realItem.cls}
             on:click={async () => openLink(realItem)}
-            on:mouseover={(e) => hoverPreview(e)}
+            on:mouseover={hoverPreview}
           >
             {realItem.to.split("/").last()}
           </a>

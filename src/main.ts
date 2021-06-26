@@ -1,15 +1,11 @@
-import { FrontMatterCache, Plugin, TFile, WorkspaceLeaf } from "obsidian";
-import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
-import {
-  dropHeaderOrAlias,
-  splitLinksRegex,
-  VIEW_TYPE_BREADCRUMBS_MATRIX,
-  VIEW_TYPE_BREADCRUMBS_TRAIL,
-} from "src/constants";
-import MatrixView from "src/MatrixView";
-import type fileFrontmatter from "src/MatrixView";
-import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
+import { Graph } from "graphlib";
+import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
+import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
+import type { fileFrontmatter, ParentObj } from "src/interfaces";
+import MatrixView from "src/MatrixView";
+import { getFields, getFileFrontmatterArr } from "src/sharedFunctions";
 
 interface BreadcrumbsSettings {
   showRelationType: boolean;
@@ -33,10 +29,6 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   respectReadableLineLength: true,
 };
 
-interface ParentObj {
-  current: TFile;
-  parents: string[];
-}
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
@@ -92,56 +84,22 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
-    this.app.workspace.onLayoutReady(() => {});
+    // this.app.workspace.onLayoutReady(() => {});
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
 
   // SECTION Breadcrumbs
 
-  getFileFrontmatterArr(): fileFrontmatter[] {
-    const files: TFile[] = this.app.vault.getMarkdownFiles();
-    const fileFrontMatterArr: fileFrontmatter[] = [];
-
-    if (this.app.plugins.plugins.dataview !== undefined) {
-      this.app.workspace.onLayoutReady(() => {
-        files.forEach((file) => {
-          const dv: FrontMatterCache =
-            this.app.plugins.plugins.dataview.api.page(file.path);
-          fileFrontMatterArr.push({ file, frontmatter: dv });
-        });
-      });
-    } else {
-      files.forEach((file) => {
-        const obs: FrontMatterCache =
-          this.app.metadataCache.getFileCache(file).frontmatter ?? [];
-        fileFrontMatterArr.push({
-          file,
-          frontmatter: obs,
-        });
-      });
-    }
-    return fileFrontMatterArr;
-  }
-
-  splitAndDrop(str: string): string[] | [] {
-    return str
-      ?.match(splitLinksRegex)
-      ?.map((link) => link.match(dropHeaderOrAlias)?.[1]);
-  }
-
-  getFields(fileFrontmatter: fileFrontmatter, field: string): string[] {
-    const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
-    if (typeof fieldItems === "string") {
-      return this.splitAndDrop(fieldItems).map((value) =>
-        value.split("/").last()
-      );
-    } else {
-      const links = [fieldItems]
-        .flat()
-        .map((link) => link.path.split("/").last() ?? link.split("/").last());
-      return links;
-    }
+  resolvedClass(
+    toFile: string,
+    currFile: TFile
+  ):
+    | "internal-link is-unresolved breadcrumbs-link"
+    | "internal-link breadcrumbs-link" {
+    return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
+      ? "internal-link is-unresolved breadcrumbs-link"
+      : "internal-link breadcrumbs-link";
   }
 
   getParentObjArr(fileFrontmatterArr: fileFrontmatter[]): ParentObj[] {
@@ -152,7 +110,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     return fileFrontmatterArr.map((fileFrontmatter) => {
       const parents: string[] = parentFields
-        .map((parentField) => this.getFields(fileFrontmatter, parentField))
+        .map((parentField) => getFields(fileFrontmatter, parentField))
         .flat();
 
       return { current: fileFrontmatter.file, parents };
@@ -173,7 +131,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async initParentGraph(): Promise<Graph> {
-    const fileFrontmatterArr = this.getFileFrontmatterArr();
+    const fileFrontmatterArr = getFileFrontmatterArr(this.app);
     const parentObjArr = this.getParentObjArr(fileFrontmatterArr);
     const gParents = new Graph();
 
@@ -214,40 +172,38 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
   }
 
-  resolvedClass(
-    toFile: string,
-    currFile: TFile
-  ):
-    | "internal-link is-unresolved breadcrumbs-link"
-    | "internal-link breadcrumbs-link" {
-    return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
-      ? "internal-link is-unresolved breadcrumbs-link"
-      : "internal-link breadcrumbs-link";
+  fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
+    breadcrumbs.forEach((crumb) => {
+      const link = this.trailDiv.createEl("a", {
+        text: crumb,
+        cls: "internal-link breadcrumbs-link",
+      });
+      link.href = null;
+      // A link in the trail will never be unresolved, so no need to check
+      // link.classList.add(...this.resolvedClass(crumb, currFile).split(" "));
+      link.addEventListener("click", async () => {
+        await this.app.workspace.openLinkText(crumb, currFile.path);
+      });
+      this.trailDiv.createSpan({ text: ` ${this.settings.trailSeperator} ` });
+    });
+    this.trailDiv.removeChild(this.trailDiv.lastChild);
   }
 
   async drawTrail(): Promise<void> {
     const gParents = await this.initParentGraph();
     const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
-    const settings = this.settings;
 
+    // Get the container div of the active note
     this.previewView = document.querySelector(
       "div.mod-active div.view-content div.markdown-preview-view"
     );
+    // Prepend the exisiting trailDiv (created in `onLoad`)
     this.previewView.prepend(this.trailDiv);
+    // Make sure it's empty when changing files
     this.trailDiv.empty();
-
-    breadcrumbs.forEach((crumb) => {
-      const link = this.trailDiv.createEl("a", { text: crumb });
-      link.href = null;
-      link.classList.add(...this.resolvedClass(crumb, currFile).split(" "));
-      link.addEventListener("click", async () => {
-        await this.app.workspace.openLinkText(crumb, currFile.path);
-      });
-      this.trailDiv.createSpan({ text: ` ${settings.trailSeperator} ` });
-    });
-
-    this.trailDiv.removeChild(this.trailDiv.lastChild);
+    // Fill in the breadcrumbs
+    this.fillTrailDiv(breadcrumbs, currFile);
   }
 
   initView = async (type: string): Promise<void> => {
@@ -272,12 +228,14 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   onunload(): void {
-    [VIEW_TYPE_BREADCRUMBS_MATRIX, VIEW_TYPE_BREADCRUMBS_TRAIL].forEach(
-      (type) =>
-        this.app.workspace
-          .getLeavesOfType(type)
-          .forEach((leaf) => leaf.detach())
+    // Detach matrix view
+    [VIEW_TYPE_BREADCRUMBS_MATRIX].forEach((type) =>
+      this.app.workspace.getLeavesOfType(type).forEach((leaf) => leaf.detach())
     );
-    this.trailDiv.remove();
+
+    // Empty trailDiv
+    if (this.trailDiv) {
+      this.trailDiv.remove();
+    }
   }
 }
