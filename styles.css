@@ -4,5 +4,9 @@ div.breadcrumbs-trail {
   padding: 5px;
 }
 
+.breadcrumbs-matrix-square li {
+  text-align: left;
+}
+
 li.breadcrumbs-implied::marker {
 }
