@@ -1,5 +1,8 @@
 export const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
-export const VIEW_TYPE_BREADCRUMBS_LIST = "breadcrumbs-list";
-export const VIEW_TYPE_BREADCRUMBS_TRAIL = "breadcrumbs-trail";
+
+export const TRAIL_ICON = "breadcrumbs-trail-icon";
+
 export const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+
+export const DATAVIEW_INDEX_DELAY = 4000;
