@@ -1,14 +1,21 @@
+import type { BreadcrumbsSettings } from "./interfaces";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type { fileFrontmatter, neighbourObj } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 
-export function getFileFrontmatterArr(app: App): fileFrontmatter[] {
+export function getFileFrontmatterArr(
+  app: App,
+  settings: BreadcrumbsSettings
+): fileFrontmatter[] {
   const files: TFile[] = app.vault.getMarkdownFiles();
   const fileFrontMatterArr: fileFrontmatter[] = [];
 
   // If dataview is **enabled** (not just installed), use its index
   if (app.plugins.plugins.dataview !== undefined) {
+    if (settings.debugMode) {
+      console.log("Using Dataview metadataCache");
+    }
     app.workspace.onLayoutReady(() => {
       files.forEach((file) => {
         const dv: FrontMatterCache = app.plugins.plugins.dataview.api.page(
@@ -20,6 +27,9 @@ export function getFileFrontmatterArr(app: App): fileFrontmatter[] {
   }
   // Otherwise use Obsidian's
   else {
+    if (settings.debugMode) {
+      console.log("Using Obsidian metadataCache");
+    }
     files.forEach((file) => {
       const obs: FrontMatterCache =
         app.metadataCache.getFileCache(file).frontmatter ?? [];
@@ -29,13 +39,18 @@ export function getFileFrontmatterArr(app: App): fileFrontmatter[] {
       });
     });
   }
+  if (settings.debugMode) {
+    console.log({ fileFrontMatterArr });
+  }
   return fileFrontMatterArr;
 }
 
 export function splitAndDrop(str: string): string[] | [] {
-  return str
-    ?.match(splitLinksRegex)
-    ?.map((link) => link.match(dropHeaderOrAlias)?.[1]);
+  return (
+    str
+      ?.match(splitLinksRegex)
+      ?.map((link) => link.match(dropHeaderOrAlias)?.[1]) ?? []
+  );
 }
 
 export function getFields(
@@ -43,12 +58,18 @@ export function getFields(
   field: string
 ): string[] {
   const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
+
   if (typeof fieldItems === "string") {
-    return splitAndDrop(fieldItems).map((value) => value.split("/").last());
+    const links =
+      splitAndDrop(fieldItems)?.map((value) => value.split("/").last()) ?? [];
+    return links;
   } else {
-    const links = [fieldItems]
-      .flat()
-      .map((link) => link.path.split("/").last() ?? link.split("/").last());
+    const links: string[] =
+      [fieldItems]
+        .flat()
+        ?.map(
+          (link) => link.path.split("/").last() ?? link.split("/").last()
+        ) ?? [];
     return links;
   }
 }
@@ -72,18 +93,27 @@ export function getNeighbourObjArr(
     (fileFrontmatter) => {
       const [parents, siblings, children] = [
         parentFields
-          .map((parentField) => getFields(fileFrontmatter, parentField))
+          .map((parentField) =>
+            getFields(fileFrontmatter, parentField, plugin.settings)
+          )
           .flat(),
         siblingFields
-          .map((siblingField) => getFields(fileFrontmatter, siblingField))
+          .map((siblingField) =>
+            getFields(fileFrontmatter, siblingField, plugin.settings)
+          )
           .flat(),
         childFields
-          .map((childField) => getFields(fileFrontmatter, childField))
+          .map((childField) =>
+            getFields(fileFrontmatter, childField, plugin.settings)
+          )
           .flat(),
       ];
       return { current: fileFrontmatter.file, parents, siblings, children };
     }
   );
+  if (plugin.settings.debugMode) {
+    console.log({ neighbourObjArr });
+  }
   return neighbourObjArr;
 }
 

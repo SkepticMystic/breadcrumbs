@@ -78,10 +78,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 this.app.workspace.getActiveFile().path
               )
             ) {
-              setTimeout(
-                () => new Notice(`${value} is not a note in your vault`),
-                1000
-              );
+              text.inputEl.onblur = () => new Notice(`${value} is not a note in your vault`);
+              
             } else {
               plugin.settings.indexNote = value;
               await plugin.saveSettings();
@@ -211,6 +209,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             plugin.settings.respectReadableLineLength = value;
             await plugin.saveSettings();
           })
+      );
+
+    containerEl.createEl("h3", { text: "Debugging Options" });
+
+    new Setting(containerEl)
+      .setName("Debug Mode")
+      .setDesc(
+        "Toggling this one will enable a few console logs to appear when use the matrix/list view, or the trail."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.debugMode).onChange(async (value) => {
+          plugin.settings.debugMode = value;
+          await plugin.saveSettings();
+        })
       );
   }
 }

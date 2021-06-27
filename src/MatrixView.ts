@@ -82,7 +82,10 @@ export default class MatrixView extends ItemView {
     gSiblings: Graph;
     gChildren: Graph;
   }> {
-    const fileFrontmatterArr = getFileFrontmatterArr(this.app);
+    const fileFrontmatterArr = getFileFrontmatterArr(
+      this.app,
+      this.plugin.settings
+    );
     const neighbourArr = getNeighbourObjArr(this.plugin, fileFrontmatterArr);
     const [gParents, gSiblings, gChildren] = [
       new Graph(),

@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailSeperator: "→",
   respectReadableLineLength: true,
+  debugMode: false,
 };
 
 export default class BreadcrumbsPlugin extends Plugin {
@@ -112,9 +113,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   getParentObjArr(fileFrontmatterArr: fileFrontmatter[]): ParentObj[] {
     const settings = this.settings;
-    const parentFields = settings.parentFieldName
-      .split(",")
-      .map((str) => str.trim());
+    const parentFields =
+      settings.parentFieldName.split(",").map((str) => str.trim()) ?? [];
 
     return fileFrontmatterArr.map((fileFrontmatter) => {
       const parents: string[] = parentFields
@@ -139,7 +139,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async initParentGraph(): Promise<Graph> {
-    const fileFrontmatterArr = getFileFrontmatterArr(this.app);
+    const fileFrontmatterArr = getFileFrontmatterArr(this.app, this.settings);
     const parentObjArr = this.getParentObjArr(fileFrontmatterArr);
     const gParents = new Graph();
 
