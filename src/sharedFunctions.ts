@@ -1,7 +1,7 @@
-import type { App, TFile, FrontMatterCache } from "obsidian";
-import type BreadcrumbsPlugin from "src/main";
-import { splitLinksRegex, dropHeaderOrAlias } from "src/constants";
+import type { App, FrontMatterCache, TFile } from "obsidian";
+import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type { fileFrontmatter, neighbourObj } from "src/interfaces";
+import type BreadcrumbsPlugin from "src/main";
 
 export function getFileFrontmatterArr(app: App): fileFrontmatter[] {
   const files: TFile[] = app.vault.getMarkdownFiles();

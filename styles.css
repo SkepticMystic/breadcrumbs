@@ -3,3 +3,6 @@ div.breadcrumbs-trail {
   border-radius: 5px;
   padding: 5px;
 }
+
+li.breadcrumbs-implied::marker {
+}

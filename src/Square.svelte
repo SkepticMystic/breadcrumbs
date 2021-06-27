@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { App } from "obsidian";
-  import type BreadcrumbsSettings from "src/main";
-  import type { internalLinkObj } from "src/MatrixView";
+  import type { BreadcrumbsSettings, internalLinkObj } from "src/interfaces";
 
   export let realItems: internalLinkObj[];
   export let impliedItems: internalLinkObj[];
@@ -39,9 +38,9 @@
     {#if settings.showRelationType}
       <h5 class="breadcrumbs-matrix-header">Implied</h5>
     {/if}
-    <ol>
+    <ol start={realItems.length + 1}>
       {#each impliedItems as impliedItem}
-        <li>
+        <li class="breadcrumbs-implied">
           <a
             href="null"
             class={impliedItem.cls}

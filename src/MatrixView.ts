@@ -101,12 +101,7 @@ export default class MatrixView extends ItemView {
     return { gParents, gSiblings, gChildren };
   }
 
-  resolvedClass(
-    toFile: string,
-    currFile: TFile
-  ):
-    | "internal-link is-unresolved breadcrumbs-link"
-    | "internal-link breadcrumbs-link" {
+  resolvedClass(toFile: string, currFile: TFile): string {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";

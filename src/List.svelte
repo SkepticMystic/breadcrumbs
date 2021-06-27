@@ -1,9 +1,9 @@
 <script lang="ts">
   import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
   import type {
+    BreadcrumbsSettings,
     internalLinkObj,
     SquareProps,
-    BreadcrumbsSettings,
   } from "src/interfaces";
 
   export let settings: BreadcrumbsSettings;
@@ -56,9 +56,9 @@
       <h5 class="breadcrumbs-header">Implied</h5>
     {/if}
 
-    <ol class="markdown-preview-view">
+    <ol class="markdown-preview-view" start={realItems.length + 1}>
       {#each impliedItems as impliedItem}
-        <li>
+        <li class="breadcrumbs-implied">
           <a
             href="null"
             class={impliedItem.cls}
