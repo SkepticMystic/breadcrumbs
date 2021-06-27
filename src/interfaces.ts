@@ -1,5 +1,17 @@
 import type { App, FrontMatterCache, TFile } from "obsidian";
 
+export interface BreadcrumbsSettings {
+  parentFieldName: string;
+  siblingFieldName: string;
+  childFieldName: string;
+  indexNote: string;
+  showNameOrType: boolean;
+  showRelationType: boolean;
+  showTrail: boolean;
+  trailSeperator: string;
+  respectReadableLineLength: boolean;
+}
+
 export interface neighbourObj {
   current: TFile;
   parents: string[];

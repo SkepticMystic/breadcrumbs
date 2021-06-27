@@ -91,6 +91,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     containerEl.createEl("h3", { text: "Matrix/List View" });
 
     new Setting(containerEl)
+      .setName("Show all field names or just relation types")
+      .setDesc(
+        "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On means show the full list of names."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showNameOrType)
+          .onChange(async (value) => {
+            this.plugin.settings.showNameOrType = value;
+            await this.plugin.saveSettings();
+            await this.plugin.matrixView.draw();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Show Relationship Type")
       .setDesc(
         "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
@@ -101,6 +116,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.showRelationType = value;
             await this.plugin.saveSettings();
+            await this.plugin.matrixView.draw();
           })
       );
 

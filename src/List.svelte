@@ -1,8 +1,10 @@
 <script lang="ts">
   import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
-
-  import type BreadcrumbsSettings from "src/main";
-  import type { internalLinkObj, SquareProps } from "src/MatrixView";
+  import type {
+    internalLinkObj,
+    SquareProps,
+    BreadcrumbsSettings,
+  } from "src/interfaces";
 
   export let settings: BreadcrumbsSettings;
   export let list: SquareProps;
@@ -15,7 +17,7 @@
 
   function hoverPreview(e: MouseEvent) {
     const targetEl = e.target as HTMLElement;
-    console.log('hovering')
+    console.log("hovering");
     app.workspace.trigger("hover-link", {
       event: e,
       source: VIEW_TYPE_BREADCRUMBS_MATRIX,

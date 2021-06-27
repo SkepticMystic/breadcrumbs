@@ -149,8 +149,11 @@ export default class MatrixView extends ItemView {
       await this.draw();
     });
 
-    // const { parentFieldName, siblingFieldName, childFieldName, indexNote } =
-    //   this.plugin.settings;
+    const [parentFieldName, siblingFieldName, childFieldName] = [
+      settings.showNameOrType ? settings.parentFieldName : "Parent",
+      settings.showNameOrType ? settings.siblingFieldName : "Sibling",
+      settings.showNameOrType ? settings.childFieldName : "Child",
+    ];
 
     const [
       realParents,
@@ -191,21 +194,21 @@ export default class MatrixView extends ItemView {
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
-      fieldName: settings.parentFieldName,
+      fieldName: parentFieldName,
       app: this.app,
     };
 
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
       impliedItems: impliedSiblingsArr,
-      fieldName: settings.siblingFieldName,
+      fieldName: siblingFieldName,
       app: this.app,
     };
 
     const childrenSquare: SquareProps = {
       realItems: realChildren,
       impliedItems: impliedChildren,
-      fieldName: settings.childFieldName,
+      fieldName: childFieldName,
       app: this.app,
     };
 

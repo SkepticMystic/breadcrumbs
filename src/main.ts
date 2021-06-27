@@ -3,27 +3,21 @@ import { Graph } from "graphlib";
 import { Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
-import type { fileFrontmatter, ParentObj } from "src/interfaces";
+import type {
+  BreadcrumbsSettings,
+  fileFrontmatter,
+  ParentObj,
+} from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import { getFields, getFileFrontmatterArr } from "src/sharedFunctions";
 
-interface BreadcrumbsSettings {
-  showRelationType: boolean;
-  parentFieldName: string;
-  siblingFieldName: string;
-  childFieldName: string;
-  indexNote: string;
-  showTrail: boolean;
-  trailSeperator: string;
-  respectReadableLineLength: boolean;
-}
-
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-  showRelationType: true,
   parentFieldName: "parent",
   siblingFieldName: "sibling",
   childFieldName: "child",
   indexNote: "Index",
+  showNameOrType: true,
+  showRelationType: true,
   showTrail: true,
   trailSeperator: "→",
   respectReadableLineLength: true,
