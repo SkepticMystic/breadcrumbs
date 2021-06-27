@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   siblingFieldName: "sibling",
   childFieldName: "child",
   indexNote: "Index",
+  refreshIntervalTime: 0,
   showNameOrType: true,
   showRelationType: true,
   showTrail: true,
@@ -28,6 +29,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   matrixView: MatrixView;
   trailDiv: HTMLDivElement;
   previewView: HTMLDivElement;
+  refreshIntervalID: number;
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -63,6 +65,18 @@ export default class BreadcrumbsPlugin extends Plugin {
         }
       })
     );
+
+    if (this.settings.refreshIntervalTime) {
+      this.refreshIntervalID = window.setInterval(async () => {
+        if (this.trailDiv) {
+          await this.drawTrail();
+        }
+        if (this.matrixView) {
+          await this.matrixView.draw();
+        }
+      }, this.settings.refreshIntervalTime * 1000);
+      this.registerInterval(this.refreshIntervalID);
+    }
 
     this.addCommand({
       id: "show-breadcrumb-matrix-view",

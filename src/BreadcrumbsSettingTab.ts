@@ -10,6 +10,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
   }
 
   display(): void {
+    const plugin = this.plugin;
     const { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin." });
@@ -28,10 +29,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("Field name")
-          .setValue(this.plugin.settings.parentFieldName)
+          .setValue(plugin.settings.parentFieldName)
           .onChange(async (value) => {
-            this.plugin.settings.parentFieldName = value;
-            await this.plugin.saveSettings();
+            plugin.settings.parentFieldName = value;
+            await plugin.saveSettings();
           })
       );
 
@@ -41,10 +42,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("Field name")
-          .setValue(this.plugin.settings.siblingFieldName)
+          .setValue(plugin.settings.siblingFieldName)
           .onChange(async (value) => {
-            this.plugin.settings.siblingFieldName = value;
-            await this.plugin.saveSettings();
+            plugin.settings.siblingFieldName = value;
+            await plugin.saveSettings();
           })
       );
 
@@ -54,10 +55,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("Field name")
-          .setValue(this.plugin.settings.childFieldName)
+          .setValue(plugin.settings.childFieldName)
           .onChange(async (value) => {
-            this.plugin.settings.childFieldName = value;
-            await this.plugin.saveSettings();
+            plugin.settings.childFieldName = value;
+            await plugin.saveSettings();
           })
       );
 
@@ -69,7 +70,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("Index Note")
-          .setValue(this.plugin.settings.indexNote)
+          .setValue(plugin.settings.indexNote)
           .onChange(async (value) => {
             if (
               !this.app.metadataCache.getFirstLinkpathDest(
@@ -82,8 +83,44 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 1000
               );
             } else {
-              this.plugin.settings.indexNote = value;
-              await this.plugin.saveSettings();
+              plugin.settings.indexNote = value;
+              await plugin.saveSettings();
+            }
+          })
+      );
+
+    new Setting(containerEl)
+      .setName("Refresh Interval")
+      .setDesc(
+        "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Seconds")
+          .setValue(plugin.settings.refreshIntervalTime.toString())
+          .onChange(async (value) => {
+            clearInterval(plugin.refreshIntervalID);
+            const num = Number(value);
+
+            if (num > 0) {
+              plugin.settings.refreshIntervalTime = num;
+              await plugin.saveSettings();
+
+              plugin.refreshIntervalID = window.setInterval(async () => {
+                if (plugin.trailDiv) {
+                  await plugin.drawTrail();
+                }
+                if (plugin.matrixView) {
+                  await plugin.matrixView.draw();
+                }
+              }, num * 1000);
+              plugin.registerInterval(plugin.refreshIntervalID);
+            } else if (num === 0) {
+              plugin.settings.refreshIntervalTime = num;
+              await plugin.saveSettings();
+              clearInterval(plugin.refreshIntervalID);
+            } else {
+              new Notice("The interval must be a non-negative number");
             }
           })
       );
@@ -97,11 +134,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.showNameOrType)
+          .setValue(plugin.settings.showNameOrType)
           .onChange(async (value) => {
-            this.plugin.settings.showNameOrType = value;
-            await this.plugin.saveSettings();
-            await this.plugin.matrixView.draw();
+            plugin.settings.showNameOrType = value;
+            await plugin.saveSettings();
+            await plugin.matrixView.draw();
           })
       );
 
@@ -112,11 +149,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.showRelationType)
+          .setValue(plugin.settings.showRelationType)
           .onChange(async (value) => {
-            this.plugin.settings.showRelationType = value;
-            await this.plugin.saveSettings();
-            await this.plugin.matrixView.draw();
+            plugin.settings.showRelationType = value;
+            await plugin.saveSettings();
+            await plugin.matrixView.draw();
           })
       );
 
@@ -128,25 +165,23 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "Show a trail of notes leading from your index note down to the current note you are in (if a path exists)"
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showTrail)
-          .onChange(async (value) => {
-            this.plugin.settings.showTrail = value;
+        toggle.setValue(plugin.settings.showTrail).onChange(async (value) => {
+          plugin.settings.showTrail = value;
 
-            await this.plugin.saveSettings();
-            if (value) {
-              this.plugin.trailDiv = createDiv({
-                cls: `breadcrumbs-trail is-readable-line-width${
-                  this.plugin.settings.respectReadableLineLength
-                    ? " markdown-preview-sizer markdown-preview-section"
-                    : ""
-                }`,
-              });
-              await this.plugin.drawTrail();
-            } else {
-              this.plugin.trailDiv.remove();
-            }
-          })
+          await plugin.saveSettings();
+          if (value) {
+            plugin.trailDiv = createDiv({
+              cls: `breadcrumbs-trail is-readable-line-width${
+                plugin.settings.respectReadableLineLength
+                  ? " markdown-preview-sizer markdown-preview-section"
+                  : ""
+              }`,
+            });
+            await plugin.drawTrail();
+          } else {
+            plugin.trailDiv.remove();
+          }
+        })
       );
 
     new Setting(containerEl)
@@ -157,10 +192,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("→")
-          .setValue(this.plugin.settings.trailSeperator)
+          .setValue(plugin.settings.trailSeperator)
           .onChange(async (value) => {
-            this.plugin.settings.trailSeperator = value;
-            await this.plugin.saveSettings();
+            plugin.settings.trailSeperator = value;
+            await plugin.saveSettings();
           })
       );
 
@@ -171,10 +206,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.respectReadableLineLength)
+          .setValue(plugin.settings.respectReadableLineLength)
           .onChange(async (value) => {
-            this.plugin.settings.respectReadableLineLength = value;
-            await this.plugin.saveSettings();
+            plugin.settings.respectReadableLineLength = value;
+            await plugin.saveSettings();
           })
       );
   }

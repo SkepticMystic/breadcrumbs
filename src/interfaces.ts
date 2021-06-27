@@ -5,6 +5,7 @@ export interface BreadcrumbsSettings {
   siblingFieldName: string;
   childFieldName: string;
   indexNote: string;
+  refreshIntervalTime: number;
   showNameOrType: boolean;
   showRelationType: boolean;
   showTrail: boolean;
