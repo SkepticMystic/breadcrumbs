@@ -1,15 +1,19 @@
 import { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
-import type BreadcrumbsPlugin from "src/main";
-import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
-import Lists from "./Lists.svelte";
-import Matrix from "./Matrix.svelte";
+import {
+  DATAVIEW_INDEX_DELAY,
+  TRAIL_ICON,
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
+} from "src/constants";
 import type {
   internalLinkObj,
   neighbourObj,
   SquareProps,
 } from "src/interfaces";
+import type BreadcrumbsPlugin from "src/main";
+import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
+import Lists from "./Lists.svelte";
+import Matrix from "./Matrix.svelte";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
@@ -31,13 +35,13 @@ export default class MatrixView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     await this.plugin.saveSettings();
-    this.matrixQ = true;
+    this.matrixQ = this.plugin.settings.defaultView;
     setTimeout(
       () =>
         this.app.workspace.onLayoutReady(async () => {
           await this.draw();
         }),
-      4000
+      DATAVIEW_INDEX_DELAY
     );
   }
 
@@ -48,6 +52,8 @@ export default class MatrixView extends ItemView {
   getDisplayText(): string {
     return "Breadcrumbs Matrix";
   }
+
+  icon = TRAIL_ICON;
 
   async onOpen(): Promise<void> {
     await this.plugin.saveSettings();
@@ -130,6 +136,17 @@ export default class MatrixView extends ItemView {
     }
     return internalLinkObjArr;
   }
+
+  // removeDuplicateImpliedLinks(real: internalLinkObj[], implied: internalLinkObj[]) {
+  //   real.forEach(realItem => {
+  //     implied.forEach(impliedItem => {
+  //       if(impliedItem.to === realItem.to) {
+  //         implied
+  //       }
+
+  //     })
+  //   })
+  // }
 
   async draw(): Promise<void> {
     this.contentEl.empty();
