@@ -1,30 +1,25 @@
 <script lang="ts">
+  import type { SquareProps } from "src/interfaces";
   import type BreadcrumbsSettings from "src/main";
+  import type MatrixView from "src/MatrixView";
   import List from "./List.svelte";
-  import type SquareProps from "./MatrixView";
 
   export let parents: SquareProps;
-  // export let top: SquareProps;
   export let siblings: SquareProps;
   export let children: SquareProps;
   export let settings: BreadcrumbsSettings;
+  export let matrixView: MatrixView;
 
   const lists = [parents, siblings, children];
-  const currFile = parents.app.workspace.getActiveFile().basename;
 </script>
 
-<!-- <h2 class="header">{currFile}</h2> -->
 <div class="breadcrumbs-list">
   {#each lists as list}
     {#if list.realItems.length > 0 || list.impliedItems.length > 0}
-      <List {list} {settings} />
+      <List {list} {settings} {matrixView} />
     {/if}
   {/each}
 </div>
 
 <style>
-  h2.header {
-    margin: 3px;
-    color: var(--text-title-h2)
-  }
 </style>

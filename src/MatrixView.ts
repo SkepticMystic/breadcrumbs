@@ -205,7 +205,7 @@ export default class MatrixView extends ItemView {
         });
       });
     }
-
+    
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
@@ -245,6 +245,7 @@ export default class MatrixView extends ItemView {
           siblings: siblingSquare,
           children: childrenSquare,
           settings: settings,
+          matrixView: this,
         },
       });
     }

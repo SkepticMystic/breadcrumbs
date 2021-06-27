@@ -5,8 +5,10 @@
     internalLinkObj,
     SquareProps,
   } from "src/interfaces";
+  import type MatrixView from "src/MatrixView";
 
   export let settings: BreadcrumbsSettings;
+  export let matrixView: MatrixView;
   export let list: SquareProps;
   const { realItems, impliedItems, fieldName, app } = list;
   const currFile = app.workspace.getActiveFile();
@@ -15,13 +17,16 @@
     await app.workspace.openLinkText(item.to, item.currFile.path);
   }
 
-  function hoverPreview(e: MouseEvent) {
+  function hoverPreview(e) {
+    // const event = e.native
     const targetEl = e.target as HTMLElement;
+    const hoverParent = matrixView.containerEl;
     console.log("hovering");
+    console.log(hoverParent);
     app.workspace.trigger("hover-link", {
       event: e,
       source: VIEW_TYPE_BREADCRUMBS_MATRIX,
-      hoverParent: targetEl.getRootNode(),
+      hoverParent,
       targetEl,
       linktext: currFile.path,
     });
