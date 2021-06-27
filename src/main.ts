@@ -181,20 +181,28 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
-    breadcrumbs.forEach((crumb) => {
-      const link = this.trailDiv.createEl("a", {
-        text: crumb,
-        cls: "internal-link breadcrumbs-link",
+    // If a path exists
+    if (!breadcrumbs[0].startsWith("No path to ")) {
+      breadcrumbs.forEach((crumb) => {
+        const link = this.trailDiv.createEl("a", {
+          text: crumb,
+          cls: "internal-link breadcrumbs-link",
+        });
+        link.href = null;
+        // A link in the trail will never be unresolved, so no need to check
+        link.addEventListener("click", async () => {
+          await this.app.workspace.openLinkText(crumb, currFile.path);
+        });
+        this.trailDiv.createSpan({
+          text: ` ${this.settings.trailSeperator} `,
+        });
       });
-      link.href = null;
-      // A link in the trail will never be unresolved, so no need to check
-      // link.classList.add(...this.resolvedClass(crumb, currFile).split(" "));
-      link.addEventListener("click", async () => {
-        await this.app.workspace.openLinkText(crumb, currFile.path);
-      });
-      this.trailDiv.createSpan({ text: ` ${this.settings.trailSeperator} ` });
-    });
-    this.trailDiv.removeChild(this.trailDiv.lastChild);
+      this.trailDiv.removeChild(this.trailDiv.lastChild);
+    }
+    // Otherwise don't add any links, just text
+    else {
+      this.trailDiv.createSpan({ text: breadcrumbs[0] });
+    }
   }
 
   async drawTrail(): Promise<void> {
