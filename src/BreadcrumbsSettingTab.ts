@@ -78,8 +78,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 this.app.workspace.getActiveFile().path
               )
             ) {
-              text.inputEl.onblur = () => new Notice(`${value} is not a note in your vault`);
-              
+              text.inputEl.onblur = () =>
+                new Notice(`${value} is not a note in your vault`);
             } else {
               plugin.settings.indexNote = value;
               await plugin.saveSettings();
@@ -124,6 +124,18 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     containerEl.createEl("h3", { text: "Matrix/List View" });
+
+    new Setting(containerEl)
+      .setName("Show Matrix or List view by default")
+      .setDesc(
+        "When Obsidian first loads, which view should it show? On = Matrix, Off = List"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.defaultView).onChange(async (value) => {
+          plugin.settings.defaultView = value;
+          await plugin.saveSettings();
+        })
+      );
 
     new Setting(containerEl)
       .setName("Show all field names or just relation types")
