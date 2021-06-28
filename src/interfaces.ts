@@ -1,5 +1,4 @@
 import type { App, FrontMatterCache, TFile } from "obsidian";
-import type MatrixView from "src/MatrixView";
 
 export interface BreadcrumbsSettings {
   parentFieldName: string;

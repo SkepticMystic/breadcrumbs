@@ -1,14 +1,14 @@
 <script lang="ts">
   import type BreadcrumbsSettings from "src/main";
-  import type SquareProps from "./MatrixView";
+  import type MatrixView from "src/MatrixView";
   import Square from "./Square.svelte";
+  import type { SquareProps } from "src/interfaces";
 
   export let parents: SquareProps;
-  // export let top: SquareProps;
-  // export let current: SquareProps;
   export let siblings: SquareProps;
   export let children: SquareProps;
   export let settings: BreadcrumbsSettings;
+  export let matrixView: MatrixView;
 
   const list = [parents, siblings, children];
 </script>
@@ -16,7 +16,7 @@
 <div class="breadcrumbs-matrix  markdown-preview-view">
   {#each list as item}
     {#if item.realItems.length > 0 || item.impliedItems.length > 0}
-      <Square {...item} {settings} />
+      <Square {...item} {settings} {matrixView} />
     {/if}
   {/each}
 </div>

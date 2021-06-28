@@ -112,12 +112,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   // SECTION Breadcrumbs
 
-  resolvedClass(
-    toFile: string,
-    currFile: TFile
-  ):
-    | "internal-link is-unresolved breadcrumbs-link"
-    | "internal-link breadcrumbs-link" {
+  resolvedClass(toFile: string, currFile: TFile): string {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";

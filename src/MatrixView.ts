@@ -25,9 +25,7 @@ export default class MatrixView extends ItemView {
     this.plugin = plugin;
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", async () => {
-        this.app.workspace.onLayoutReady(async () => {
-          await this.draw();
-        });
+        await this.draw();
       })
     );
   }
@@ -75,12 +73,11 @@ export default class MatrixView extends ItemView {
     neighbourObj: neighbourObj,
     relationship: string
   ): void {
-    if (neighbourObj[relationship]) {
-      g.setNode(currFileName, currFileName);
-      neighbourObj[relationship].forEach((node) =>
-        g.setEdge(currFileName, node, relationship)
-      );
-    }
+    // NOTE I removed an if(neighbourObj[relationship]) check here
+    g.setNode(currFileName, currFileName);
+    neighbourObj[relationship].forEach((node) =>
+      g.setEdge(currFileName, node, relationship)
+    );
   }
 
   async initGraphs(): Promise<{
@@ -151,7 +148,6 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
-    const { gParents, gSiblings, gChildren } = await this.initGraphs();
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
 
@@ -169,6 +165,8 @@ export default class MatrixView extends ItemView {
       settings.showNameOrType ? settings.siblingFieldName : "Sibling",
       settings.showNameOrType ? settings.childFieldName : "Child",
     ];
+
+    const { gParents, gSiblings, gChildren } = await this.initGraphs();
 
     const [
       realParents,
@@ -205,7 +203,7 @@ export default class MatrixView extends ItemView {
         });
       });
     }
-    
+
     const parentsSquare: SquareProps = {
       realItems: realParents,
       impliedItems: impliedParents,
@@ -235,6 +233,7 @@ export default class MatrixView extends ItemView {
           siblings: siblingSquare,
           children: childrenSquare,
           settings: settings,
+          matrixView: this,
         },
       });
     } else {

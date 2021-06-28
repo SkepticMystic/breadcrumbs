@@ -1,7 +1,10 @@
-import type { BreadcrumbsSettings } from "./interfaces";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
-import type { fileFrontmatter, neighbourObj } from "src/interfaces";
+import type {
+  BreadcrumbsSettings,
+  fileFrontmatter,
+  neighbourObj,
+} from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 
 export function getFileFrontmatterArr(
@@ -93,19 +96,13 @@ export function getNeighbourObjArr(
     (fileFrontmatter) => {
       const [parents, siblings, children] = [
         parentFields
-          .map((parentField) =>
-            getFields(fileFrontmatter, parentField, plugin.settings)
-          )
+          .map((parentField) => getFields(fileFrontmatter, parentField) ?? [])
           .flat(),
         siblingFields
-          .map((siblingField) =>
-            getFields(fileFrontmatter, siblingField, plugin.settings)
-          )
+          .map((siblingField) => getFields(fileFrontmatter, siblingField) ?? [])
           .flat(),
         childFields
-          .map((childField) =>
-            getFields(fileFrontmatter, childField, plugin.settings)
-          )
+          .map((childField) => getFields(fileFrontmatter, childField) ?? [])
           .flat(),
       ];
       return { current: fileFrontmatter.file, parents, siblings, children };

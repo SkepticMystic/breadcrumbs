@@ -1,5 +1,5 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
-import type BreadcrumbsPlugin from "./main";
+import type BreadcrumbsPlugin from "src/main";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -140,7 +140,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Show all field names or just relation types")
       .setDesc(
-        "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On means show the full list of names."
+        "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
       )
       .addToggle((toggle) =>
         toggle
@@ -206,12 +206,14 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.trailSeperator = value;
             await plugin.saveSettings();
+            // BUG This doesn't seem to work... you still have to switch notes for it to redraw
+            await plugin.matrixView.draw();
           })
       );
 
     new Setting(containerEl)
       .setName("No path found message")
-      .setDesc("The text to display when no path to the inedx note was found")
+      .setDesc("The text to display when no path to the index note was found")
       .addText((text) =>
         text
           .setPlaceholder(`No path to index note was found`)
@@ -225,7 +227,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Respect Readable Line Length")
       .setDesc(
-        "Should the breadcrumbs trail adjust it's width to the readable line length, or use as much space as possible? Default is to use readable line length."
+        "Should the breadcrumbs trail adjust its width to the readable line length, or use as much space as possible? On = use readable line length."
       )
       .addToggle((toggle) =>
         toggle
@@ -241,7 +243,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Debug Mode")
       .setDesc(
-        "Toggling this one will enable a few console logs to appear when use the matrix/list view, or the trail."
+        "Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail."
       )
       .addToggle((toggle) =>
         toggle.setValue(plugin.settings.debugMode).onChange(async (value) => {

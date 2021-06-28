@@ -11,24 +11,21 @@
   export let matrixView: MatrixView;
   export let list: SquareProps;
   const { realItems, impliedItems, fieldName, app } = list;
-  const currFile = app.workspace.getActiveFile();
 
   async function openLink(item: internalLinkObj) {
     await app.workspace.openLinkText(item.to, item.currFile.path);
   }
 
   function hoverPreview(e) {
-    // const event = e.native
     const targetEl = e.target as HTMLElement;
-    const hoverParent = matrixView.containerEl;
-    console.log("hovering");
-    console.log(hoverParent);
+    const hoverParent = matrixView;
+
     app.workspace.trigger("hover-link", {
       event: e,
       source: VIEW_TYPE_BREADCRUMBS_MATRIX,
       hoverParent,
       targetEl,
-      linktext: currFile.path,
+      linktext: targetEl.innerText,
     });
   }
 </script>
@@ -68,6 +65,7 @@
             href="null"
             class={impliedItem.cls}
             on:click={async () => openLink(impliedItem)}
+            on:mouseover={hoverPreview}
             >{impliedItem.to.split("/").last()}
           </a>
         </li>
