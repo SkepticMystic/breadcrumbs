@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showNameOrType: true,
   showRelationType: true,
   showTrail: true,
+  noPathMessage: `No path to index note was found`,
   trailSeperator: "→",
   respectReadableLineLength: true,
   debugMode: false,
@@ -180,7 +181,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
     // Check if a path even exists
     else if (paths[step].distance === Infinity) {
-      return [`No path to ${userTo} was found from the current note`];
+      return [this.settings.noPathMessage];
     } else {
       // If it does, walk it until arriving at `from`
       while (paths[step].distance !== 0) {
@@ -195,7 +196,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
     // If a path exists
-    if (!breadcrumbs[0].startsWith("No path to ")) {
+    if (breadcrumbs[0] !== this.settings.noPathMessage) {
       breadcrumbs.forEach((crumb) => {
         const link = this.trailDiv.createEl("a", {
           text: crumb,

@@ -210,6 +210,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("No path found message")
+      .setDesc("The text to display when no path to the inedx note was found")
+      .addText((text) =>
+        text
+          .setPlaceholder(`No path to index note was found`)
+          .setValue(plugin.settings.noPathMessage)
+          .onChange(async (value) => {
+            plugin.settings.noPathMessage = value;
+            await plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Respect Readable Line Length")
       .setDesc(
         "Should the breadcrumbs trail adjust it's width to the readable line length, or use as much space as possible? Default is to use readable line length."
