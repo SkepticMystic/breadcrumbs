@@ -1,8 +1,8 @@
 {
   "id": "breadcrumbs",
   "name": "Breadcrumbs",
-  "version": "0.4.14",
-  "minAppVersion": "0.12.5",
+  "version": "0.5.0",
+  "minAppVersion": "0.12.7",
   "description": "Visualise the hierarchy of your vault using a breadcrumb trail",
   "author": "SkepticMystic",
   "authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
