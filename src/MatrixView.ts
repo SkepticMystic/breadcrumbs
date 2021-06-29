@@ -12,19 +12,13 @@ import Matrix from "./Matrix.svelte";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
-  private view: Matrix;
+  private view: Matrix | Lists;
   private currGraphs: allGraphs;
   matrixQ: boolean;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
     this.plugin = plugin;
-
-    this.registerEvent(
-      this.app.workspace.on("active-leaf-change", async () => {
-        await this.draw();
-      })
-    );
   }
 
   async onload(): Promise<void> {
@@ -143,17 +137,20 @@ export default class MatrixView extends ItemView {
     ];
 
     /// Implied Siblings
-    const currParents = gParents.successors(currFile.basename) ?? [];
+    const currParents = (gParents.successors(currFile.basename) ??
+      []) as string[];
     const impliedSiblingsArr: internalLinkObj[] = [];
 
     if (currParents.length) {
       currParents.forEach((parent) => {
-        const impliedSiblings = gParents.predecessors(parent) ?? [];
+        const impliedSiblings = (gParents.predecessors(parent) ??
+          []) as string[];
 
         // The current note is always it's own implied sibling, so remove it from the list
         const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
         impliedSiblings.splice(indexCurrNote, 1);
 
+        // Create thie implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
           impliedSiblingsArr.push({
             to: impliedSibling,
