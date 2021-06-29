@@ -8,12 +8,12 @@ import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
+  allGraphs,
   BreadcrumbsSettings,
-  fileFrontmatter,
-  ParentObj,
+  neighbourObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFields, getFileFrontmatterArr } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -37,6 +37,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   trailDiv: HTMLDivElement;
   previewView: HTMLDivElement;
   refreshIntervalID: number;
+  currGraphs: allGraphs;
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -56,6 +57,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(async () => {
       setTimeout(async () => {
+        this.currGraphs = await this.initGraphs();
+
         this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
         this.trailDiv = createDiv({
@@ -67,7 +70,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           }`,
         });
         if (this.settings.showTrail) {
-          await this.drawTrail();
+          await this.drawTrail(this.currGraphs.gParents);
         }
       }, DATAVIEW_INDEX_DELAY);
     });
@@ -75,7 +78,8 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", async () => {
         if (this.settings.showTrail) {
-          await this.drawTrail();
+          this.currGraphs = await this.initGraphs();
+          await this.drawTrail(this.currGraphs.gParents);
         }
       })
     );
@@ -83,8 +87,9 @@ export default class BreadcrumbsPlugin extends Plugin {
     // ANCHOR autorefresh interval
     if (this.settings.refreshIntervalTime) {
       this.refreshIntervalID = window.setInterval(async () => {
+        this.currGraphs = await this.initGraphs();
         if (this.trailDiv && this.settings.showTrail) {
-          await this.drawTrail();
+          await this.drawTrail(this.currGraphs.gParents);
         }
         if (this.matrixView) {
           await this.matrixView.draw();
@@ -110,53 +115,53 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
 
+  // SECTION OneSource
+
+  populateGraph(
+    g: Graph,
+    currFileName: string,
+    neighbours: neighbourObj,
+    relationship: string
+  ): void {
+    // NOTE I removed an if(neighbours[relationship]) check here
+    g.setNode(currFileName, currFileName);
+    neighbours[relationship].forEach((node) =>
+      g.setEdge(currFileName, node, relationship)
+    );
+  }
+
+  async initGraphs(): Promise<{
+    gParents: Graph;
+    gSiblings: Graph;
+    gChildren: Graph;
+  }> {
+    const fileFrontmatterArr = getFileFrontmatterArr(this.app, this.settings);
+    const neighbourArr = getNeighbourObjArr(this, fileFrontmatterArr);
+    const [gParents, gSiblings, gChildren] = [
+      new Graph(),
+      new Graph(),
+      new Graph(),
+    ];
+
+    neighbourArr.forEach((neighbourObj) => {
+      const currFileName = neighbourObj.current.basename;
+
+      this.populateGraph(gParents, currFileName, neighbourObj, "parents");
+      this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
+      this.populateGraph(gChildren, currFileName, neighbourObj, "children");
+    });
+
+    return { gParents, gSiblings, gChildren };
+  }
+
+  // !SECTION OneSource
+
   // SECTION Breadcrumbs
 
   resolvedClass(toFile: string, currFile: TFile): string {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
-  }
-
-  getParentObjArr(fileFrontmatterArr: fileFrontmatter[]): ParentObj[] {
-    const settings = this.settings;
-    const parentFields =
-      settings.parentFieldName.split(",").map((str) => str.trim()) ?? [];
-
-    return fileFrontmatterArr.map((fileFrontmatter) => {
-      const parents: string[] =
-        parentFields
-          .map((parentField) => getFields(fileFrontmatter, parentField))
-          ?.flat() ?? [];
-
-      return { current: fileFrontmatter.file, parents };
-    });
-  }
-
-  populateParentGraph(
-    g: Graph,
-    currFileName: string,
-    parentObj: ParentObj
-  ): void {
-    if (parentObj["parents"]) {
-      g.setNode(currFileName, currFileName);
-      parentObj["parents"].forEach((node) =>
-        g.setEdge(currFileName, node, "parents")
-      );
-    }
-  }
-
-  async initParentGraph(): Promise<Graph> {
-    const fileFrontmatterArr = getFileFrontmatterArr(this.app, this.settings);
-    const parentObjArr = this.getParentObjArr(fileFrontmatterArr);
-    const gParents = new Graph();
-
-    parentObjArr.forEach((parentObj) => {
-      const currFileName = parentObj.current.basename;
-      this.populateParentGraph(gParents, currFileName, parentObj);
-    });
-
-    return gParents;
   }
 
   getBreadcrumbs(g: Graph, userTo: string = this.settings.indexNote): string[] {
@@ -214,8 +219,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
   }
 
-  async drawTrail(): Promise<void> {
-    const gParents = await this.initParentGraph();
+  async drawTrail(gParents: Graph): Promise<void> {
     const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 

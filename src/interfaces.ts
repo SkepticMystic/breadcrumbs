@@ -1,3 +1,4 @@
+import type { Graph } from "graphlib";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
@@ -44,4 +45,10 @@ export interface SquareProps {
   impliedItems: internalLinkObj[];
   fieldName: string;
   app: App;
+}
+
+export interface allGraphs {
+  gParents: Graph;
+  gSiblings: Graph;
+  gChildren: Graph;
 }

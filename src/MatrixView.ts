@@ -1,28 +1,25 @@
-import { Graph } from "graphlib";
+import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
-import type {
-  internalLinkObj,
-  neighbourObj,
-  SquareProps,
-} from "src/interfaces";
+import type { allGraphs, internalLinkObj, SquareProps } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
   private view: Matrix;
+  private currGraphs: allGraphs;
   matrixQ: boolean;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
     super(leaf);
     this.plugin = plugin;
+
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", async () => {
         await this.draw();
@@ -67,59 +64,22 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  populateGraph(
-    g: Graph,
-    currFileName: string,
-    neighbourObj: neighbourObj,
-    relationship: string
-  ): void {
-    // NOTE I removed an if(neighbourObj[relationship]) check here
-    g.setNode(currFileName, currFileName);
-    neighbourObj[relationship].forEach((node) =>
-      g.setEdge(currFileName, node, relationship)
-    );
-  }
-
-  async initGraphs(): Promise<{
-    gParents: Graph;
-    gSiblings: Graph;
-    gChildren: Graph;
-  }> {
-    const fileFrontmatterArr = getFileFrontmatterArr(
-      this.app,
-      this.plugin.settings
-    );
-    const neighbourArr = getNeighbourObjArr(this.plugin, fileFrontmatterArr);
-    const [gParents, gSiblings, gChildren] = [
-      new Graph(),
-      new Graph(),
-      new Graph(),
-    ];
-
-    neighbourArr.forEach((neighbourObj) => {
-      const currFileName = neighbourObj.current.basename;
-
-      this.populateGraph(gParents, currFileName, neighbourObj, "parents");
-      this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
-      this.populateGraph(gChildren, currFileName, neighbourObj, "children");
-    });
-
-    return { gParents, gSiblings, gChildren };
-  }
-
   resolvedClass(toFile: string, currFile: TFile): string {
     return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
   }
 
-  squareItems(g: Graph, realQ = true): internalLinkObj[] {
-    const currFile = this.app.workspace.getActiveFile();
+  // NOTE I should be able to check for duplicates in real and implied here
+  squareItems(g: Graph, currFile: TFile, realQ = true): internalLinkObj[] {
     let items: string[];
+    const successors = (g.successors(currFile.basename) ?? []) as string[];
+    const predecessors = (g.predecessors(currFile.basename) ?? []) as string[];
+
     if (realQ) {
-      items = g.successors(currFile.basename) ?? [];
+      items = successors;
     } else {
-      items = g.predecessors(currFile.basename) ?? [];
+      items = predecessors;
     }
     const internalLinkObjArr: internalLinkObj[] = [];
     if (items.length) {
@@ -147,7 +107,7 @@ export default class MatrixView extends ItemView {
 
   async draw(): Promise<void> {
     this.contentEl.empty();
-
+    this.currGraphs = this.plugin.currGraphs;
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
 
@@ -166,7 +126,7 @@ export default class MatrixView extends ItemView {
       settings.showNameOrType ? settings.childFieldName : "Child",
     ];
 
-    const { gParents, gSiblings, gChildren } = await this.initGraphs();
+    const { gParents, gSiblings, gChildren } = this.currGraphs;
 
     const [
       realParents,
@@ -175,11 +135,11 @@ export default class MatrixView extends ItemView {
       impliedParents,
       impliedChildren,
     ] = [
-      this.squareItems(gParents),
-      this.squareItems(gSiblings),
-      this.squareItems(gChildren),
-      this.squareItems(gChildren, false),
-      this.squareItems(gParents, false),
+      this.squareItems(gParents, currFile),
+      this.squareItems(gSiblings, currFile),
+      this.squareItems(gChildren, currFile),
+      this.squareItems(gChildren, currFile, false),
+      this.squareItems(gParents, currFile, false),
     ];
 
     /// Implied Siblings
