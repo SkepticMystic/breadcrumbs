@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
   siblingFieldName: "sibling",
   childFieldName: "child",
-  indexNote: "Index",
+  indexNote: ["Index"],
   refreshIntervalTime: 0,
   defaultView: true,
   showNameOrType: true,
@@ -165,34 +165,56 @@ export default class BreadcrumbsPlugin extends Plugin {
       : "internal-link breadcrumbs-link";
   }
 
-  getBreadcrumbs(g: Graph, userTo: string = this.settings.indexNote): string[] {
+  getShortestBreadcrumbs(g: Graph): string[] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
-    let step = userTo;
-    const breadcrumbs: string[] = [];
+    const indexNotes: string[] = this.settings.indexNote;
 
-    // Check if indexNote exists
-    if (
-      !this.app.metadataCache.getFirstLinkpathDest(
-        userTo,
-        this.app.workspace.getActiveFile().path
-      )
-    ) {
-      return [`${userTo} is not a note in your vault`];
-    }
-    // Check if a path even exists
-    else if (paths[step].distance === Infinity) {
-      return [this.settings.noPathMessage];
-    } else {
-      // If it does, walk it until arriving at `from`
-      while (paths[step].distance !== 0) {
-        breadcrumbs.push(step);
-        step = paths[step].predecessor;
+    const allTrails: string[][] = [];
+
+    indexNotes.forEach((index) => {
+      let step = index;
+      const breadcrumbs: string[] = [];
+
+      // Check if indexNote exists
+      if (
+        !this.app.metadataCache.getFirstLinkpathDest(
+          index,
+          this.app.workspace.getActiveFile().path
+        )
+      ) {
+        return [`${index} is not a note in your vault`];
       }
+      // Check if a path even exists
+      else if (paths[step].distance === Infinity) {
+        breadcrumbs.push(this.settings.noPathMessage);
+      } else {
+        // If it does, walk it until arriving at `from`
+        while (paths[step].distance !== 0) {
+          breadcrumbs.push(step);
+          step = paths[step].predecessor;
+        }
+        breadcrumbs.push(from);
+      }
+      allTrails.push(breadcrumbs);
+    });
 
-      breadcrumbs.push(from);
-      return breadcrumbs;
+    let sortedTrails: string[][] = allTrails;
+
+    if (allTrails.some((trail) => trail[0] !== this.settings.noPathMessage)) {
+      const discardNoPath = allTrails.filter(
+        (trail) => trail[0] !== this.settings.noPathMessage
+      );
+      sortedTrails = discardNoPath.sort((a, b) =>
+        a.length < b.length ? -1 : 1
+      );
     }
+
+    if (this.settings.debugMode) {
+      console.log(sortedTrails);
+    }
+
+    return sortedTrails[0];
   }
 
   fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
@@ -221,7 +243,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(gParents: Graph): Promise<void> {
-    const breadcrumbs = this.getBreadcrumbs(gParents);
+    const breadcrumbs = this.getShortestBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 
     // Get the container div of the active note
@@ -265,7 +287,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     const openLeaves = this.app.workspace.getLeavesOfType(
       VIEW_TYPE_BREADCRUMBS_MATRIX
     );
-    console.log(openLeaves)
+    // console.log(openLeaves);
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
