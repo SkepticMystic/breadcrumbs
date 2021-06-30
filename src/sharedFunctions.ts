@@ -24,9 +24,12 @@ export function getFileFrontmatterArr(
         if (settings.superDebugMode) {
           console.log(`Get frontmatter: ${file.basename}`);
         }
-        const dv: FrontMatterCache = app.plugins.plugins.dataview.api.page(
-          file.path
-        );
+        const dv: FrontMatterCache =
+          app.plugins.plugins.dataview.api.page(file.path) ?? [];
+
+        if (settings.superDebugMode) {
+          console.log({ dv });
+        }
         fileFrontMatterArr.push({ file, frontmatter: dv });
       });
     });
