@@ -1,3 +1,4 @@
+import { internalLinkObj } from "./interfaces";
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
@@ -88,16 +89,24 @@ export default class MatrixView extends ItemView {
     return internalLinkObjArr;
   }
 
-  // removeDuplicateImpliedLinks(real: internalLinkObj[], implied: internalLinkObj[]) {
-  //   real.forEach(realItem => {
-  //     implied.forEach(impliedItem => {
-  //       if(impliedItem.to === realItem.to) {
-  //         implied
-  //       }
+  // ANCHOR Remove duplicate implied links
 
-  //     })
-  //   })
-  // }
+  removeDuplicateImplied(
+    real: internalLinkObj[],
+    implied: internalLinkObj[]
+  ): void {
+    const impliedTos: [string, number][] = implied.map((impliedObj, i) => [
+      impliedObj.to,
+      i,
+    ]);
+    real.forEach((realItem) => {
+      impliedTos.forEach((impliedTo) => {
+        if (impliedTo[0] === realItem.to) {
+          implied.splice(impliedTo[1], 1);
+        }
+      });
+    });
+  }
 
   async draw(): Promise<void> {
     this.contentEl.empty();
@@ -160,6 +169,10 @@ export default class MatrixView extends ItemView {
         });
       });
     }
+
+    this.removeDuplicateImplied(realParents, impliedParents);
+    this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
+    this.removeDuplicateImplied(realChildren, impliedChildren);
 
     const parentsSquare: SquareProps = {
       realItems: realParents,

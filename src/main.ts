@@ -54,7 +54,6 @@ export default class BreadcrumbsPlugin extends Plugin {
           (leaf: WorkspaceLeaf) =>
             (this.matrixView = new MatrixView(leaf, this))
         );
-
         this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
         this.trailDiv = createDiv({
@@ -71,9 +70,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
+            this.currGraphs = await this.initGraphs();
+            await this.matrixView.draw();
             if (this.settings.showTrail) {
-              this.currGraphs = await this.initGraphs();
-              await this.matrixView.draw();
               await this.drawTrail(this.currGraphs.gParents);
             }
           })
@@ -101,7 +100,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     );
 
     this.addCommand({
-      id: "show-breadcrumb-matrix-view",
+      id: "show-breadcrumbs-matrix-view",
       name: "Open Matrix View",
       checkCallback: (checking: boolean) => {
         if (checking) {
@@ -240,7 +239,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
     for (leaf of this.app.workspace.getLeavesOfType(type)) {
-      if (leaf.view instanceof MatrixView) return;
+      if (leaf.view instanceof MatrixView) {
+        return;
+      }
       await leaf.setViewState({ type: "empty" });
       break;
     }
@@ -259,10 +260,13 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   onunload(): void {
+    console.log("unloading");
     // Detach matrix view
-    this.app.workspace
-      .getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)
-      .forEach((leaf) => leaf.detach());
+    const openLeaves = this.app.workspace.getLeavesOfType(
+      VIEW_TYPE_BREADCRUMBS_MATRIX
+    );
+    console.log(openLeaves)
+    openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
     if (this.trailDiv) {
