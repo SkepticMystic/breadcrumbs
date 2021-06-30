@@ -45,15 +45,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
+    this.registerView(
+      VIEW_TYPE_BREADCRUMBS_MATRIX,
+      (leaf: WorkspaceLeaf) => (this.matrixView = new MatrixView(leaf, this))
+    );
+
     this.app.workspace.onLayoutReady(async () => {
       setTimeout(async () => {
         this.currGraphs = await this.initGraphs();
 
-        this.registerView(
-          VIEW_TYPE_BREADCRUMBS_MATRIX,
-          (leaf: WorkspaceLeaf) =>
-            (this.matrixView = new MatrixView(leaf, this))
-        );
         this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
         this.trailDiv = createDiv({
@@ -65,7 +65,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           }`,
         });
         if (this.settings.showTrail) {
-          await this.drawTrail(this.currGraphs.gParents);
+          await this.drawTrail();
         }
 
         this.registerEvent(
@@ -73,17 +73,17 @@ export default class BreadcrumbsPlugin extends Plugin {
             this.currGraphs = await this.initGraphs();
             await this.matrixView.draw();
             if (this.settings.showTrail) {
-              await this.drawTrail(this.currGraphs.gParents);
+              await this.drawTrail();
             }
           })
         );
 
         // ANCHOR autorefresh interval
-        if (this.settings.refreshIntervalTime) {
+        if (this.settings.refreshIntervalTime > 0) {
           this.refreshIntervalID = window.setInterval(async () => {
             this.currGraphs = await this.initGraphs();
             if (this.trailDiv && this.settings.showTrail) {
-              await this.drawTrail(this.currGraphs.gParents);
+              await this.drawTrail();
             }
             if (this.matrixView) {
               await this.matrixView.draw();
@@ -183,7 +183,9 @@ export default class BreadcrumbsPlugin extends Plugin {
           this.app.workspace.getActiveFile().path
         )
       ) {
-        return [`${index} is not a note in your vault. Please change the settings for Index Notes`];
+        return [
+          `${index} is not a note in your vault. Please change the settings for Index Notes`,
+        ];
       }
       // Check if a path even exists
       else if (paths[step].distance === Infinity) {
@@ -242,7 +244,8 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
   }
 
-  async drawTrail(gParents: Graph): Promise<void> {
+  async drawTrail(): Promise<void> {
+    const gParents = this.currGraphs.gParents;
     const breadcrumbs = this.getShortestBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 

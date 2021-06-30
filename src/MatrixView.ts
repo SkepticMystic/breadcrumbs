@@ -25,13 +25,10 @@ export default class MatrixView extends ItemView {
     super.onload();
     await this.plugin.saveSettings();
     this.matrixQ = this.plugin.settings.defaultView;
-    setTimeout(
-      () =>
-        this.app.workspace.onLayoutReady(async () => {
-          await this.draw();
-        }),
-      DATAVIEW_INDEX_DELAY
-    );
+
+    this.app.workspace.onLayoutReady(async () => {
+      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
+    });
   }
 
   getViewType(): string {
