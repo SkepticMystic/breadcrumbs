@@ -1,4 +1,3 @@
-import { internalLinkObj } from "./interfaces";
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
@@ -90,6 +89,18 @@ export default class MatrixView extends ItemView {
   }
 
   // ANCHOR Remove duplicate implied links
+
+  // removeDuplicateImpliedBetter(
+  //   real: internalLinkObj[],
+  //   implied: internalLinkObj[]
+  // ): internalLinkObj[] {
+  //   implied = implied.filter((impliedItem, i, self) => {
+  //     real.forEach((realItem) => {
+  //       return !(i === self.findIndex((t) => t.to));
+  //     });
+  //   });
+  //   return implied;
+  // }
 
   removeDuplicateImplied(
     real: internalLinkObj[],

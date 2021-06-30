@@ -265,7 +265,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     const openLeaves = this.app.workspace.getLeavesOfType(
       VIEW_TYPE_BREADCRUMBS_MATRIX
     );
-    console.log(openLeaves)
+    // console.log(openLeaves)
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
