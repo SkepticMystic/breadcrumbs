@@ -15,6 +15,7 @@ export interface BreadcrumbsSettings {
   trailSeperator: string;
   respectReadableLineLength: boolean;
   debugMode: boolean;
+  superDebugMode: boolean;
 }
 
 export interface neighbourObj {

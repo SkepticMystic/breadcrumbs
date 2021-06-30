@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   trailSeperator: "→",
   respectReadableLineLength: true,
   debugMode: false,
+  superDebugMode: false,
 };
 
 export default class BreadcrumbsPlugin extends Plugin {

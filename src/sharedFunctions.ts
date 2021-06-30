@@ -21,6 +21,9 @@ export function getFileFrontmatterArr(
     }
     app.workspace.onLayoutReady(() => {
       files.forEach((file) => {
+        if (settings.superDebugMode) {
+          console.log(`Get frontmatter: ${file.basename}`);
+        }
         const dv: FrontMatterCache = app.plugins.plugins.dataview.api.page(
           file.path
         );
@@ -58,8 +61,12 @@ export function splitAndDrop(str: string): string[] | [] {
 
 export function getFields(
   fileFrontmatter: fileFrontmatter,
-  field: string
+  field: string,
+  settings: BreadcrumbsSettings
 ): string[] {
+  if (settings.superDebugMode) {
+    console.log(`Get ${field} of: ${fileFrontmatter.file.basename}`);
+  }
   const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
 
   if (typeof fieldItems === "string") {
@@ -96,13 +103,22 @@ export function getNeighbourObjArr(
     (fileFrontmatter) => {
       const [parents, siblings, children] = [
         parentFields
-          .map((parentField) => getFields(fileFrontmatter, parentField) ?? [])
+          .map(
+            (parentField) =>
+              getFields(fileFrontmatter, parentField, plugin.settings) ?? []
+          )
           .flat(),
         siblingFields
-          .map((siblingField) => getFields(fileFrontmatter, siblingField) ?? [])
+          .map(
+            (siblingField) =>
+              getFields(fileFrontmatter, siblingField, plugin.settings) ?? []
+          )
           .flat(),
         childFields
-          .map((childField) => getFields(fileFrontmatter, childField) ?? [])
+          .map(
+            (childField) =>
+              getFields(fileFrontmatter, childField, plugin.settings) ?? []
+          )
           .flat(),
       ];
       return { current: fileFrontmatter.file, parents, siblings, children };

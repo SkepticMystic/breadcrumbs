@@ -251,5 +251,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         })
       );
+
+    new Setting(containerEl)
+      .setName("Super Debug Mode")
+      .setDesc("Toggling this on will enable ALOT of console logs")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.superDebugMode)
+          .onChange(async (value) => {
+            plugin.settings.superDebugMode = value;
+            await plugin.saveSettings();
+          })
+      );
   }
 }
