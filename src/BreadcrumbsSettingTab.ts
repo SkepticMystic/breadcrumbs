@@ -1,5 +1,6 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import { splitAndTrim } from "src/sharedFunctions";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -63,31 +64,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Index/Home Note")
-      .setDesc(
-        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`."
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder("Index Note")
-          .setValue(plugin.settings.indexNote)
-          .onChange(async (value) => {
-            if (
-              !this.app.metadataCache.getFirstLinkpathDest(
-                value,
-                this.app.workspace.getActiveFile().path
-              )
-            ) {
-              text.inputEl.onblur = () =>
-                new Notice(`${value} is not a note in your vault`);
-            } else {
-              plugin.settings.indexNote = value;
-              await plugin.saveSettings();
-            }
-          })
-      );
-
-    new Setting(containerEl)
       .setName("Refresh Interval")
       .setDesc(
         "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
@@ -105,8 +81,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               await plugin.saveSettings();
 
               plugin.refreshIntervalID = window.setInterval(async () => {
+                if (plugin.trailDiv || plugin.matrixView) {
+                  plugin.currGraphs = await plugin.initGraphs();
+                }
                 if (plugin.trailDiv) {
-                  await plugin.drawTrail();
+                  await plugin.drawTrail(plugin.currGraphs.gParents);
                 }
                 if (plugin.matrixView) {
                   await plugin.matrixView.draw();
@@ -187,12 +166,43 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                   : ""
               }`,
             });
-            await plugin.drawTrail();
+            await plugin.drawTrail(plugin.currGraphs.gParents);
           } else {
             plugin.trailDiv.remove();
           }
         })
       );
+
+    new Setting(containerEl)
+      .setName("Index/Home Note(s)")
+      .setDesc(
+        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed"
+      )
+      .addText((text) => {
+        let finalValue: string[];
+        text
+          .setPlaceholder("Index Note")
+          .setValue(plugin.settings.indexNote.join(", "))
+          .onChange(async (value) => {
+            finalValue = splitAndTrim(value);
+          });
+
+        text.inputEl.onblur = async () => {
+          // TODO Refactor this to general purpose isInVault function
+          const isInVault = (note: string) =>
+            !!this.app.metadataCache.getFirstLinkpathDest(
+              note,
+              this.app.workspace.getActiveFile().path
+            );
+
+          if (finalValue.every(isInVault)) {
+            plugin.settings.indexNote = finalValue;
+            await plugin.saveSettings();
+          } else {
+            new Notice(`Atleast one of the notes is not in your vault`);
+          }
+        };
+      });
 
     new Setting(containerEl)
       .setName("Breadcrumb trail seperator")
