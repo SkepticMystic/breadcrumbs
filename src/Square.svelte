@@ -43,6 +43,7 @@
             data-href={realItem.to.split("/").last()}
             href={realItem.to.split("/").last()}
             class={realItem.cls}
+            rel="noopener"
             on:click={async () => openLink(realItem)}
             on:mouseover={hoverPreview}
           >

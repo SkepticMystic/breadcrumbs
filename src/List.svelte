@@ -66,6 +66,7 @@
             data-href={impliedItem.to.split("/").last()}
             href={impliedItem.to.split("/").last()}
             class={impliedItem.cls}
+            rel="noopener"
             on:click={async () => openLink(impliedItem)}
             on:mouseover={hoverPreview}
             >{impliedItem.to.split("/").last()}

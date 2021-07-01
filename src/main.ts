@@ -227,8 +227,10 @@ export default class BreadcrumbsPlugin extends Plugin {
           text: crumb,
           // A link in the trail will never be unresolved, so no need to check
           cls: "internal-link breadcrumbs-link",
-          href: null,
+          href: crumb.split("/").last(),
         });
+        link.dataset.href = crumb.split("/").last();
+        link.rel = "noopener";
         link.addEventListener("click", async () => {
           await this.app.workspace.openLinkText(crumb, currFile.path);
         });
