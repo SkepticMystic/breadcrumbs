@@ -40,11 +40,13 @@
       {#each realItems as realItem}
         <li>
           <a
-            href="null"
+            data-href={realItem.to.split("/").last()}
+            href={realItem.to.split("/").last()}
             class={realItem.cls}
             on:click={async () => openLink(realItem)}
             on:mouseover={hoverPreview}
-            >{realItem.to.split("/").last()}
+          >
+            {realItem.to.split("/").last()}
           </a>
         </li>
       {/each}
@@ -59,7 +61,8 @@
       {#each impliedItems as impliedItem}
         <li class="breadcrumbs-implied">
           <a
-            href="null"
+            data-href={impliedItem.to.split("/").last()}
+            href={impliedItem.to.split("/").last()}
             class={impliedItem.cls}
             on:click={async () => openLink(impliedItem)}
             on:mouseover={hoverPreview}
