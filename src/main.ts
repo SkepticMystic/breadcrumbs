@@ -168,7 +168,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   getShortestBreadcrumbs(g: Graph): string[] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
-    const indexNotes: string[] = this.settings.indexNote;
+    const indexNotes: string[] = [this.settings.indexNote].flat();
 
     const allTrails: string[][] = [];
 

@@ -85,7 +85,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                   plugin.currGraphs = await plugin.initGraphs();
                 }
                 if (plugin.trailDiv) {
-                  await plugin.drawTrail(plugin.currGraphs.gParents);
+                  await plugin.drawTrail();
                 }
                 if (plugin.matrixView) {
                   await plugin.matrixView.draw();
@@ -166,7 +166,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                   : ""
               }`,
             });
-            await plugin.drawTrail(plugin.currGraphs.gParents);
+            await plugin.drawTrail();
           } else {
             plugin.trailDiv.remove();
           }
@@ -182,7 +182,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         let finalValue: string[];
         text
           .setPlaceholder("Index Note")
-          .setValue(plugin.settings.indexNote.join(", "))
+          .setValue([plugin.settings.indexNote].flat().join(", "))
           .onChange(async (value) => {
             finalValue = splitAndTrim(value);
           });

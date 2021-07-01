@@ -87,18 +87,6 @@ export default class MatrixView extends ItemView {
 
   // ANCHOR Remove duplicate implied links
 
-  // removeDuplicateImpliedBetter(
-  //   real: internalLinkObj[],
-  //   implied: internalLinkObj[]
-  // ): internalLinkObj[] {
-  //   implied = implied.filter((impliedItem, i, self) => {
-  //     real.forEach((realItem) => {
-  //       return !(i === self.findIndex((t) => t.to));
-  //     });
-  //   });
-  //   return implied;
-  // }
-
   removeDuplicateImplied(
     real: internalLinkObj[],
     implied: internalLinkObj[]
@@ -116,20 +104,66 @@ export default class MatrixView extends ItemView {
     });
   }
 
+  nextLevel(obj: { [x: string]: any }, gChildren: Graph): void {
+    for (const child in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, child)) {
+        const childrenOfChild = (gChildren.successors(obj[child]) ??
+          []) as string[];
+        childrenOfChild.forEach((innerChild) => (obj[child] = { innerChild }));
+        obj[child] = { ...childrenOfChild };
+      }
+    }
+  }
+
+  // createIndexObj(gChildren: Graph, currFile: string, depth: number) {
+  //   const initialChildren: [string, number][][] = [[]];
+
+  //   const immediateChildren = (gChildren.successors(currFile) ??
+  //     []) as string[];
+  //   immediateChildren.forEach((child) => initialChildren[0].push([child, 1]));
+
+  //   console.log(initialChildren);
+
+  //   for (let i = 0; i < depth; i++) {
+  //     initialChildren.push([]);
+  //     initialChildren[i].forEach((childArr) => {
+  //       const childrenOfChild = (
+  //         (gChildren.successors(childArr[0]) ?? []) as string[]
+  //       ).map((child) => [child, i + 2]);
+  //         initialChildren[i + 1].push(childrenOfChild);
+  //     });
+  //   }
+  //   console.log(initialChildren);
+  // }
+
   async draw(): Promise<void> {
     this.contentEl.empty();
+
+    const viewToggleButton = this.contentEl.createEl("button", {
+      text: this.matrixQ ? "List" : "Matrix",
+    });
+    viewToggleButton.addEventListener("click", async () => {
+      this.matrixQ = !this.matrixQ;
+      viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
+      await this.draw();
+    });
+
+    // const createIndexButton = this.contentEl.createEl("button", {
+    //   text: "Create Index",
+    // });
+    // createIndexButton.addEventListener("click", () =>
+    //   console.log(
+    //     this.createIndexObj(
+    //       this.plugin.currGraphs.gChildren,
+    //       currFile.basename,
+    //       2
+    //     )
+    //   )
+    // );
+
     this.currGraphs = this.plugin.currGraphs;
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
-
-    const button = this.contentEl.createEl("button", {
-      text: this.matrixQ ? "List" : "Matrix",
-    });
-    button.addEventListener("click", async () => {
-      this.matrixQ = !this.matrixQ;
-      button.innerText = this.matrixQ ? "List" : "Matrix";
-      await this.draw();
-    });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
       settings.showNameOrType ? settings.parentFieldName : "Parent",
