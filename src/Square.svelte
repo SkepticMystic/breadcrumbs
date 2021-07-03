@@ -11,8 +11,24 @@
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
 
-  async function openLink(item: internalLinkObj) {
-    await app.workspace.openLinkText(item.to, item.currFile.path);
+  // async function openLink(item: internalLinkObj) {
+  //   await app.workspace.openLinkText(item.to, item.currFile.path);
+  // }
+
+  async function linkClick(item: internalLinkObj) {
+    const openLeaves = [];
+    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
+    app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view?.file?.basename === item.to) {
+        openLeaves.push(leaf);
+      }
+    });
+
+    if (openLeaves.length) {
+      app.workspace.setActiveLeaf(openLeaves[0]);
+    } else {
+      await app.workspace.openLinkText(item.to, item.currFile.path);
+    }
   }
 
   function hoverPreview(e) {
@@ -42,7 +58,7 @@
           <a
             href="null"
             class={realItem.cls}
-            on:click={async () => openLink(realItem)}
+            on:click={async () => linkClick(realItem)}
             on:mouseover={hoverPreview}
             >{realItem.to.split("/").last()}
           </a>
@@ -61,7 +77,7 @@
           <a
             href="null"
             class={impliedItem.cls}
-            on:click={async () => openLink(impliedItem)}
+            on:click={async () => linkClick(impliedItem)}
             on:mouseover={hoverPreview}
             >{impliedItem.to.split("/").last()}
           </a>
