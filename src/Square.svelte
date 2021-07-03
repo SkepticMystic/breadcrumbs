@@ -1,41 +1,24 @@
 <script lang="ts">
-  import type { App, TFile } from "obsidian";
+  import type { TFile } from "obsidian";
   import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
   import type { BreadcrumbsSettings, internalLinkObj } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
+  import { linkClick } from "src/sharedFunctions";
 
   export let realItems: internalLinkObj[];
   export let impliedItems: internalLinkObj[];
   export let fieldName: string;
-  export let app: App;
   export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
 
-  async function linkClick(item: internalLinkObj) {
-    const openLeaves = [];
-    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
-    app.workspace.iterateAllLeaves((leaf) => {
-      if (leaf.view?.file?.basename === item.to) {
-        openLeaves.push(leaf);
-      }
-    });
+  function hoverPreview(event: MouseEvent, view: MatrixView, source: string) {
+    const targetEl = event.target as HTMLElement;
 
-    if (openLeaves.length) {
-      app.workspace.setActiveLeaf(openLeaves[0]);
-    } else {
-      await app.workspace.openLinkText(item.to, currFile.path);
-    }
-  }
-
-  function hoverPreview(e) {
-    const targetEl = e.target as HTMLElement;
-    const hoverParent = matrixView;
-
-    app.workspace.trigger("hover-link", {
-      event: e,
-      source: VIEW_TYPE_BREADCRUMBS_MATRIX,
-      hoverParent,
+    matrixView.app.workspace.trigger("hover-link", {
+      event,
+      source,
+      hoverParent: view,
       targetEl,
       linktext: targetEl.innerText,
     });
@@ -56,8 +39,9 @@
             data-href={realItem.to.split("/").last()}
             href={realItem.to.split("/").last()}
             class={realItem.cls}
-            on:click={async () => linkClick(realItem)}
-            on:mouseover={hoverPreview}
+            on:click={async () => linkClick(matrixView, realItem, currFile)}
+            on:mouseover={(event) =>
+              hoverPreview(event, matrixView, VIEW_TYPE_BREADCRUMBS_MATRIX)}
           >
             {realItem.to.split("/").last()}
           </a>
@@ -77,7 +61,7 @@
             data-href={impliedItem.to.split("/").last()}
             href={impliedItem.to.split("/").last()}
             class={impliedItem.cls}
-            on:click={async () => linkClick(impliedItem)}
+            on:click={async () => linkClick(matrixView, impliedItem, currFile)}
             on:mouseover={hoverPreview}
             >{impliedItem.to.split("/").last()}
           </a>

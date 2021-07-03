@@ -234,21 +234,18 @@ export default class MatrixView extends ItemView {
       realItems: realParents,
       impliedItems: impliedParents,
       fieldName: parentFieldName,
-      app: this.app,
     };
 
     const siblingSquare: SquareProps = {
       realItems: realSiblings,
       impliedItems: impliedSiblingsArr,
       fieldName: siblingFieldName,
-      app: this.app,
     };
 
     const childrenSquare: SquareProps = {
       realItems: realChildren,
       impliedItems: impliedChildren,
       fieldName: childFieldName,
-      app: this.app,
     };
 
     if (this.matrixQ) {

@@ -1,5 +1,5 @@
 import type { Graph } from "graphlib";
-import type { App, FrontMatterCache, TFile } from "obsidian";
+import type { FrontMatterCache, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
   parentFieldName: string;
@@ -44,7 +44,6 @@ export interface SquareProps {
   realItems: internalLinkObj[];
   impliedItems: internalLinkObj[];
   fieldName: string;
-  app: App;
 }
 
 export interface allGraphs {

@@ -3,9 +3,11 @@ import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
   fileFrontmatter,
-  neighbourObj,
+  internalLinkObj,
+  neighbourObj
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
+import type MatrixView from "src/MatrixView";
 
 export function getFileFrontmatterArr(
   app: App,
@@ -145,3 +147,53 @@ export function getNeighbourObjArr(
 //     ? "internal-link is-unresolved breadcrumbs-link"
 //     : "internal-link breadcrumbs-link";
 // }
+
+
+export async function linkClick(
+  view: MatrixView,
+  internalLink: internalLinkObj,
+  currFile: TFile
+): Promise<void> {
+  const openLeaves = [];
+  // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
+  view.app.workspace.iterateAllLeaves((leaf) => {
+    if (leaf.view?.file?.basename === internalLink.to) {
+      openLeaves.push(leaf);
+    }
+  });
+
+  if (openLeaves.length) {
+    view.app.workspace.setActiveLeaf(openLeaves[0]);
+  } else {
+    await view.app.workspace.openLinkText(internalLink.to, currFile.path);
+  }
+}
+
+export async function openOrCreateDailyNote(
+  matrixView: MatrixView,
+  internalLink: internalLinkObj,
+  currFile: TFile,
+  inNewSplit: boolean,
+): Promise<void> {
+  const { workspace } = matrixView.app;
+  const dest = matrixView.app.metadataCache.getFirstLinkpathDest(internalLink.to, currFile.path);
+
+  const openLeaves = [];
+  // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
+  workspace.iterateAllLeaves((leaf) => {
+    if (leaf.view?.file?.basename === internalLink.to) {
+      openLeaves.push(leaf);
+    }
+  });
+
+  if (openLeaves.length) {
+    workspace.setActiveLeaf(openLeaves[0]);
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mode = (matrixView.app.vault as any).getConfig("defaultViewMode");
+    const leaf = inNewSplit
+      ? workspace.splitActiveLeaf()
+      : workspace.getUnpinnedLeaf();
+    await leaf.openFile(dest, { active: true, mode });
+  }
+}
