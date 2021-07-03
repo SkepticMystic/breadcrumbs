@@ -5,15 +5,15 @@ import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
-  VIEW_TYPE_BREADCRUMBS_MATRIX,
+  VIEW_TYPE_BREADCRUMBS_MATRIX
 } from "src/constants";
 import type {
   allGraphs,
   BreadcrumbsSettings,
-  neighbourObj,
+  neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getNeighbourObjArr, openOrSwitch } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -164,77 +164,104 @@ export default class BreadcrumbsPlugin extends Plugin {
       : "internal-link breadcrumbs-link";
   }
 
-  getShortestBreadcrumbs(g: Graph): string[] {
+  // breadcrumbArrs(g: Graph): string[] {
+  //   const from = this.app.workspace.getActiveFile().basename;
+  //   const indexNotes: string[] = [this.settings.indexNote].flat();
+
+  //   let allTrails: string[][] = [];
+
+  //   if (indexNotes === [""]) {
+  //     allTrails.push([])
+
+  //     let parents = (g.predecessors(from) ?? []) as string[];
+
+  //     let i = 0;
+  //     const MAX_DEPTH = 200;
+
+  //     while (parents.length !== 0 || i < MAX_DEPTH) {
+  //       allTrails[0].push(parents[0])
+  //       parents = (g.predecessors(parents[0]) ?? []) as string[]
+  //       i++
+  //     }
+  //   }
+
+
+  //   return allTrails[0]
+  // }
+
+  getBreadcrumbs(g: Graph): string[] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
 
-    const allTrails: string[][] = [];
+    let allTrails: string[][] = [];
+    let sortedTrails: string[][] = [];
 
-    indexNotes.forEach((index) => {
-      let step = index;
-      const breadcrumbs: string[] = [];
+    if (indexNotes[0] === "") {
+      const breadcrumbs: string[] = []
 
-      // Check if indexNote exists
-      if (
-        !this.app.metadataCache.getFirstLinkpathDest(
-          index,
-          this.app.workspace.getActiveFile().path
-        )
-      ) {
-        return [
-          `${index} is not a note in your vault. Please change the settings for Index Notes`,
-        ];
-      }
-      // Check if a path even exists
-      else if (paths[step].distance === Infinity) {
-        breadcrumbs.push(this.settings.noPathMessage);
+      let parents = (g.successors(from) ?? []) as string[];
+
+      let i = 0;
+      const MAX_DEPTH = 200;
+
+      if (parents.length === 0) {
+        breadcrumbs.push(this.settings.noPathMessage)
       } else {
-        // If it does, walk it until arriving at `from`
-        while (paths[step].distance !== 0) {
-          breadcrumbs.push(step);
-          step = paths[step].predecessor;
+        while (parents.length !== 0 && i < MAX_DEPTH) {
+          breadcrumbs.push(parents[0])
+          parents = (g.successors(parents[0]) ?? []) as string[]
+          i++
         }
-        breadcrumbs.push(from);
       }
-      allTrails.push(breadcrumbs);
-    });
+      breadcrumbs.reverse().push(from)
+      sortedTrails.push(breadcrumbs)
+    } else {
+      indexNotes.forEach((index) => {
+        let step = index;
+        const breadcrumbs: string[] = [];
 
-    let sortedTrails: string[][] = allTrails;
+        // Check if indexNote exists
+        if (
+          !isInVault(this.app, index)
+        ) {
+          return [
+            `${index} is not a note in your vault. Please change the settings for Index Notes`
+          ];
+        }
+        // Check if a path even exists
+        else if (paths[step].distance === Infinity) {
+          breadcrumbs.push(this.settings.noPathMessage);
+        } else {
+          // If it does, walk it until arriving at `from`
+          while (paths[step].distance !== 0) {
+            breadcrumbs.push(step);
+            step = paths[step].predecessor;
+          }
+          breadcrumbs.push(from);
+        }
+        allTrails.push(breadcrumbs);
+      });
 
-    if (allTrails.some((trail) => trail[0] !== this.settings.noPathMessage)) {
-      const discardNoPath = allTrails.filter(
-        (trail) => trail[0] !== this.settings.noPathMessage
-      );
-      sortedTrails = discardNoPath.sort((a, b) =>
+      if (allTrails.some((trail) => trail[0] !== this.settings.noPathMessage)) {
+        allTrails = allTrails.filter(
+          (trail) => trail[0] !== this.settings.noPathMessage
+        );
+      }
+
+      sortedTrails = allTrails.sort((a, b) =>
         a.length < b.length ? -1 : 1
       );
     }
 
+
     if (this.settings.debugMode) {
-      console.log(sortedTrails);
+      console.log({ sortedTrails, allTrails });
     }
 
     return sortedTrails[0];
   }
 
-  async clickLink(dest: string, currFile: TFile): Promise<void> {
-    const openLeaves: WorkspaceLeaf[] = [];
-    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in another pane
-    this.app.workspace.iterateAllLeaves((leaf) => {
-      if (leaf.view?.file?.basename === dest) {
-        openLeaves.push(leaf);
-      }
-    });
-
-    console.log({ openLeaves })
-
-    if (openLeaves.length) {
-      this.app.workspace.setActiveLeaf(openLeaves[0], true, true);
-    } else {
-      await this.app.workspace.openLinkText(dest, currFile.path);
-    }
-  }
 
   fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
     // If a path was found
@@ -256,13 +283,13 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
     // Otherwise don't add any links, just text
     else {
-      this.trailDiv.createSpan({ text: breadcrumbs[0] });
+      this.trailDiv.createSpan({ text: this.settings.noPathMessage });
     }
   }
 
   async drawTrail(): Promise<void> {
     const gParents = this.currGraphs.gParents;
-    const breadcrumbs = this.getShortestBreadcrumbs(gParents);
+    const breadcrumbs = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 
     // Get the container div of the active note

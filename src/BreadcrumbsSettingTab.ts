@@ -1,6 +1,6 @@
 import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
-import { splitAndTrim } from "src/sharedFunctions";
+import { isInVault, splitAndTrim } from "src/sharedFunctions";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -160,11 +160,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
           if (value) {
             plugin.trailDiv = createDiv({
-              cls: `breadcrumbs-trail is-readable-line-width${
-                plugin.settings.respectReadableLineLength
-                  ? " markdown-preview-sizer markdown-preview-section"
-                  : ""
-              }`,
+              cls: `breadcrumbs-trail is-readable-line-width${plugin.settings.respectReadableLineLength
+                ? " markdown-preview-sizer markdown-preview-section"
+                : ""
+                }`,
             });
             await plugin.drawTrail();
           } else {
@@ -189,18 +188,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
         text.inputEl.onblur = async () => {
           // TODO Refactor this to general purpose isInVault function
-          const isInVault = (note: string) =>
-            !!this.app.metadataCache.getFirstLinkpathDest(
-              note,
-              this.app.workspace.getActiveFile().path
-            );
 
-          if (finalValue.every(isInVault)) {
+          if (finalValue === [""]) {
+            plugin.settings.indexNote = finalValue;
+            await plugin.saveSettings()
+          } else if (finalValue.every(index => isInVault(this.app, index))) {
             plugin.settings.indexNote = finalValue;
             await plugin.saveSettings();
           } else {
             new Notice(`Atleast one of the notes is not in your vault`);
           }
+          console.log(finalValue);
         };
       });
 

@@ -148,6 +148,12 @@ export function getNeighbourObjArr(
 //     : "internal-link breadcrumbs-link";
 // }
 
+export const isInVault = (app: App, note: string): boolean =>
+  !!app.metadataCache.getFirstLinkpathDest(
+    note,
+    app.workspace.getActiveFile().path
+  );
+
 export function hoverPreview(event: MouseEvent, matrixView: MatrixView): void {
   const targetEl = event.target as HTMLElement;
 
