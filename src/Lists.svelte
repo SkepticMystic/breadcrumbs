@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { TFile } from "obsidian";
+
   import type { SquareProps } from "src/interfaces";
   import type BreadcrumbsSettings from "src/main";
   import type MatrixView from "src/MatrixView";
@@ -7,6 +9,7 @@
   export let parents: SquareProps;
   export let siblings: SquareProps;
   export let children: SquareProps;
+  export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
 
@@ -16,7 +19,7 @@
 <div class="breadcrumbs-list">
   {#each lists as list}
     {#if list.realItems.length > 0 || list.impliedItems.length > 0}
-      <List {list} {settings} {matrixView} />
+      <List {list} {currFile} {settings} {matrixView} />
     {/if}
   {/each}
 </div>

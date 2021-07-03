@@ -77,7 +77,6 @@ export default class MatrixView extends ItemView {
       items.forEach((item: string) => {
         internalLinkObjArr.push({
           to: item,
-          currFile: currFile,
           cls: this.resolvedClass(item, currFile),
         });
       });
@@ -221,7 +220,6 @@ export default class MatrixView extends ItemView {
         impliedSiblings.forEach((impliedSibling) => {
           impliedSiblingsArr.push({
             to: impliedSibling,
-            currFile,
             cls: this.resolvedClass(impliedSibling, currFile),
           });
         });
@@ -260,6 +258,7 @@ export default class MatrixView extends ItemView {
           parents: parentsSquare,
           siblings: siblingSquare,
           children: childrenSquare,
+          currFile,
           settings: settings,
           matrixView: this,
         },
@@ -271,6 +270,7 @@ export default class MatrixView extends ItemView {
           parents: parentsSquare,
           siblings: siblingSquare,
           children: childrenSquare,
+          currFile,
           settings: settings,
           matrixView: this,
         },

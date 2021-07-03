@@ -37,7 +37,6 @@ export interface fileFrontmatter {
 
 export interface internalLinkObj {
   to: string;
-  currFile: TFile;
   cls: string;
 }
 

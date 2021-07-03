@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { App } from "obsidian";
+  import type { App, TFile } from "obsidian";
   import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
   import type { BreadcrumbsSettings, internalLinkObj } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
@@ -8,12 +8,9 @@
   export let impliedItems: internalLinkObj[];
   export let fieldName: string;
   export let app: App;
+  export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
-
-  // async function openLink(item: internalLinkObj) {
-  //   await app.workspace.openLinkText(item.to, item.currFile.path);
-  // }
 
   async function linkClick(item: internalLinkObj) {
     const openLeaves = [];
@@ -27,7 +24,7 @@
     if (openLeaves.length) {
       app.workspace.setActiveLeaf(openLeaves[0]);
     } else {
-      await app.workspace.openLinkText(item.to, item.currFile.path);
+      await app.workspace.openLinkText(item.to, currFile.path);
     }
   }
 

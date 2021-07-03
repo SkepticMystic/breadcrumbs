@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { TFile } from "obsidian";
+
   import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
   import type {
     BreadcrumbsSettings,
@@ -9,10 +11,9 @@
 
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
+  export let currFile: TFile;
   export let list: SquareProps;
   const { realItems, impliedItems, fieldName, app } = list;
-
-  const currFile = app.workspace.getActiveFile();
 
   async function linkClick(item: internalLinkObj) {
     const openLeaves = [];
@@ -26,7 +27,7 @@
     if (openLeaves.length) {
       app.workspace.setActiveLeaf(openLeaves[0]);
     } else {
-      await app.workspace.openLinkText(item.to, item.currFile.path);
+      await app.workspace.openLinkText(item.to, currFile.path);
     }
   }
 

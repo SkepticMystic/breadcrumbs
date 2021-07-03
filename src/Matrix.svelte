@@ -3,10 +3,12 @@
   import type MatrixView from "src/MatrixView";
   import Square from "./Square.svelte";
   import type { SquareProps } from "src/interfaces";
+  import type { TFile } from "obsidian";
 
   export let parents: SquareProps;
   export let siblings: SquareProps;
   export let children: SquareProps;
+  export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
 
@@ -16,7 +18,7 @@
 <div class="breadcrumbs-matrix  markdown-preview-view">
   {#each list as item}
     {#if item.realItems.length > 0 || item.impliedItems.length > 0}
-      <Square {...item} {settings} {matrixView} />
+      <Square {...item} {currFile} {settings} {matrixView} />
     {/if}
   {/each}
 </div>
