@@ -58,11 +58,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.trailDiv = createDiv({
           // Check if respectReadableLineLength is enabled
-          cls: `breadcrumbs-trail is-readable-line-width${
-            this.settings.respectReadableLineLength
-              ? " markdown-preview-sizer markdown-preview-section"
-              : ""
-          }`,
+          cls: `breadcrumbs-trail is-readable-line-width${this.settings.respectReadableLineLength
+            ? " markdown-preview-sizer markdown-preview-section"
+            : ""
+            }`,
         });
         if (this.settings.showTrail) {
           await this.drawTrail();
@@ -219,6 +218,24 @@ export default class BreadcrumbsPlugin extends Plugin {
     return sortedTrails[0];
   }
 
+  async clickLink(dest: string, currFile: TFile): Promise<void> {
+    const openLeaves: WorkspaceLeaf[] = [];
+    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in another pane
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view?.file?.basename === dest) {
+        openLeaves.push(leaf);
+      }
+    });
+
+    console.log({ openLeaves })
+
+    if (openLeaves.length) {
+      this.app.workspace.setActiveLeaf(openLeaves[0], true, true);
+    } else {
+      await this.app.workspace.openLinkText(dest, currFile.path);
+    }
+  }
+
   fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
     // If a path was found
     if (breadcrumbs[0] !== this.settings.noPathMessage) {
@@ -230,7 +247,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           href: null,
         });
         link.addEventListener("click", async () => {
-          await this.app.workspace.openLinkText(crumb, currFile.path);
+          await this.clickLink(crumb, currFile);
         });
         this.trailDiv.createSpan({
           text: ` ${this.settings.trailSeperator} `,
