@@ -104,36 +104,56 @@ export default class MatrixView extends ItemView {
     });
   }
 
-  nextLevel(obj: { [x: string]: any }, gChildren: Graph): void {
-    for (const child in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, child)) {
-        const childrenOfChild = (gChildren.successors(obj[child]) ??
-          []) as string[];
-        childrenOfChild.forEach((innerChild) => (obj[child] = { innerChild }));
-        obj[child] = { ...childrenOfChild };
-      }
-    }
-  }
+  // getAdjList(
+  //   gChildren: Graph,
+  //   currFile: string,
+  //   depth: number
+  // ): Map<string, string[]> {
+  //   const adjList: Map<string, string[]> = new Map();
 
-  // createIndexObj(gChildren: Graph, currFile: string, depth: number) {
-  //   const initialChildren: [string, number][][] = [[]];
+  //   function addNode(node: string) {
+  //     adjList.set(node, []);
+  //   }
 
-  //   const immediateChildren = (gChildren.successors(currFile) ??
-  //     []) as string[];
-  //   immediateChildren.forEach((child) => initialChildren[0].push([child, 1]));
+  //   addNode(currFile)
 
-  //   console.log(initialChildren);
+  //   // const immediateChildren = (gChildren.successors(currFile) ??
+  //   //   []) as string[];
+  //   // immediateChildren.forEach(addNode);
 
-  //   for (let i = 0; i < depth; i++) {
-  //     initialChildren.push([]);
-  //     initialChildren[i].forEach((childArr) => {
-  //       const childrenOfChild = (
-  //         (gChildren.successors(childArr[0]) ?? []) as string[]
-  //       ).map((child) => [child, i + 2]);
-  //         initialChildren[i + 1].push(childrenOfChild);
+  //   const visited: Set<string> = new Set();
+
+  //   // Do this `depth` number of times
+  //   for (let i = 1; i < depth; i++) {
+  //     console.log(adjList);
+  //     adjList.forEach((childArr, parent) => {
+  //       let childrenOfKey: string[];
+  //       // If the node hasn't been visited before
+  //       if (!visited.has(parent)) {
+  //         // Get it's children
+  //         childrenOfKey = (gChildren.successors(parent) ?? []) as string[];
+  //         // Mark it as visited
+  //         visited.add(parent);
+  //         // Add it to the adjList
+  //         adjList.set(parent, childrenOfKey);
+  //         // Add the children as top-level map items
+  //         childrenOfKey.forEach((childOfKey) => {
+  //           addNode(childOfKey);
+  //         });
+  //       }
   //     });
   //   }
-  //   console.log(initialChildren);
+
+  //   return adjList;
+  // }
+
+  // mapToMD(adjList: Map<string, string[]>): string {
+  //   let md = '';
+  //   adjList.forEach((childArr, parent) => {
+
+  //   })
+
+  //   return md
   // }
 
   async draw(): Promise<void> {
@@ -153,11 +173,7 @@ export default class MatrixView extends ItemView {
     // });
     // createIndexButton.addEventListener("click", () =>
     //   console.log(
-    //     this.createIndexObj(
-    //       this.plugin.currGraphs.gChildren,
-    //       currFile.basename,
-    //       2
-    //     )
+    //     this.getAdjList(this.plugin.currGraphs.gChildren, currFile.basename, 2)
     //   )
     // );
 
@@ -180,12 +196,12 @@ export default class MatrixView extends ItemView {
       impliedParents,
       impliedChildren,
     ] = [
-      this.squareItems(gParents, currFile),
-      this.squareItems(gSiblings, currFile),
-      this.squareItems(gChildren, currFile),
-      this.squareItems(gChildren, currFile, false),
-      this.squareItems(gParents, currFile, false),
-    ];
+        this.squareItems(gParents, currFile),
+        this.squareItems(gSiblings, currFile),
+        this.squareItems(gChildren, currFile),
+        this.squareItems(gChildren, currFile, false),
+        this.squareItems(gParents, currFile, false),
+      ];
 
     /// Implied Siblings
     const currParents = (gParents.successors(currFile.basename) ??

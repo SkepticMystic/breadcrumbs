@@ -11,8 +11,24 @@
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
 
-  async function openLink(item: internalLinkObj) {
-    await app.workspace.openLinkText(item.to, item.currFile.path);
+  // async function openLink(item: internalLinkObj) {
+  //   await app.workspace.openLinkText(item.to, item.currFile.path);
+  // }
+
+  async function linkClick(item: internalLinkObj) {
+    const openLeaves = [];
+    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
+    app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view?.file?.basename === item.to) {
+        openLeaves.push(leaf);
+      }
+    });
+
+    if (openLeaves.length) {
+      app.workspace.setActiveLeaf(openLeaves[0]);
+    } else {
+      await app.workspace.openLinkText(item.to, item.currFile.path);
+    }
   }
 
   function hoverPreview(e) {
@@ -43,8 +59,7 @@
             data-href={realItem.to.split("/").last()}
             href={realItem.to.split("/").last()}
             class={realItem.cls}
-            rel="noopener"
-            on:click={async () => openLink(realItem)}
+            on:click={async () => linkClick(realItem)}
             on:mouseover={hoverPreview}
           >
             {realItem.to.split("/").last()}
@@ -65,7 +80,7 @@
             data-href={impliedItem.to.split("/").last()}
             href={impliedItem.to.split("/").last()}
             class={impliedItem.cls}
-            on:click={async () => openLink(impliedItem)}
+            on:click={async () => linkClick(impliedItem)}
             on:mouseover={hoverPreview}
             >{impliedItem.to.split("/").last()}
           </a>
