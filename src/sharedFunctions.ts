@@ -148,40 +148,31 @@ export function getNeighbourObjArr(
 //     : "internal-link breadcrumbs-link";
 // }
 
+export function hoverPreview(event: MouseEvent, matrixView: MatrixView): void {
+  const targetEl = event.target as HTMLElement;
 
-export async function linkClick(
-  view: MatrixView,
-  internalLink: internalLinkObj,
-  currFile: TFile
-): Promise<void> {
-  const openLeaves = [];
-  // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
-  view.app.workspace.iterateAllLeaves((leaf) => {
-    if (leaf.view?.file?.basename === internalLink.to) {
-      openLeaves.push(leaf);
-    }
+  matrixView.app.workspace.trigger("hover-link", {
+    event,
+    source: matrixView.getViewType(),
+    hoverParent: matrixView,
+    targetEl,
+    linktext: targetEl.innerText,
   });
-
-  if (openLeaves.length) {
-    view.app.workspace.setActiveLeaf(openLeaves[0]);
-  } else {
-    await view.app.workspace.openLinkText(internalLink.to, currFile.path);
-  }
 }
 
-export async function openOrCreateDailyNote(
-  matrixView: MatrixView,
-  internalLink: internalLinkObj,
+export async function openOrSwitch(
+  app: App,
+  dest: string,
   currFile: TFile,
-  inNewSplit: boolean,
+  event: MouseEvent,
 ): Promise<void> {
-  const { workspace } = matrixView.app;
-  const dest = matrixView.app.metadataCache.getFirstLinkpathDest(internalLink.to, currFile.path);
+  const { workspace } = app;
+  const destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
 
   const openLeaves = [];
   // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
   workspace.iterateAllLeaves((leaf) => {
-    if (leaf.view?.file?.basename === internalLink.to) {
+    if (leaf.view?.file?.basename === dest) {
       openLeaves.push(leaf);
     }
   });
@@ -190,10 +181,10 @@ export async function openOrCreateDailyNote(
     workspace.setActiveLeaf(openLeaves[0]);
   } else {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mode = (matrixView.app.vault as any).getConfig("defaultViewMode");
-    const leaf = inNewSplit
+    const mode = (app.vault as any).getConfig("defaultViewMode");
+    const leaf = event.ctrlKey
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
-    await leaf.openFile(dest, { active: true, mode });
+    await leaf.openFile(destFile, { active: true, mode });
   }
 }

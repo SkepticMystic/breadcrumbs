@@ -258,6 +258,7 @@ export default class MatrixView extends ItemView {
           currFile,
           settings: settings,
           matrixView: this,
+          app: this.app
         },
       });
     } else {
@@ -270,6 +271,7 @@ export default class MatrixView extends ItemView {
           currFile,
           settings: settings,
           matrixView: this,
+          app: this.app
         },
       });
     }

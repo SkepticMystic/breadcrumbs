@@ -1,9 +1,9 @@
 <script lang="ts">
+  import type { App, TFile } from "obsidian";
+  import type { SquareProps } from "src/interfaces";
   import type BreadcrumbsSettings from "src/main";
   import type MatrixView from "src/MatrixView";
   import Square from "./Square.svelte";
-  import type { SquareProps } from "src/interfaces";
-  import type { TFile } from "obsidian";
 
   export let parents: SquareProps;
   export let siblings: SquareProps;
@@ -11,6 +11,7 @@
   export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
+  export let app: App;
 
   const list = [parents, siblings, children];
 </script>
@@ -18,7 +19,7 @@
 <div class="breadcrumbs-matrix  markdown-preview-view">
   {#each list as item}
     {#if item.realItems.length > 0 || item.impliedItems.length > 0}
-      <Square {...item} {currFile} {settings} {matrixView} />
+      <Square {...item} {currFile} {settings} {matrixView} {app} />
     {/if}
   {/each}
 </div>

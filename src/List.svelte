@@ -1,28 +1,15 @@
 <script lang="ts">
-  import type { TFile } from "obsidian";
-  import { VIEW_TYPE_BREADCRUMBS_MATRIX } from "src/constants";
+  import type { App, TFile } from "obsidian";
   import type { BreadcrumbsSettings, SquareProps } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
-  import { linkClick } from "src/sharedFunctions";
+  import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
 
+  export let app: App;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
   export let currFile: TFile;
   export let list: SquareProps;
   const { realItems, impliedItems, fieldName } = list;
-
-  function hoverPreview(e) {
-    const targetEl = e.target as HTMLElement;
-    const hoverParent = matrixView;
-
-    matrixView.app.workspace.trigger("hover-link", {
-      event: e,
-      source: VIEW_TYPE_BREADCRUMBS_MATRIX,
-      hoverParent,
-      targetEl,
-      linktext: targetEl.innerText,
-    });
-  }
 </script>
 
 <details open class="breadcrumbs-details">
@@ -35,15 +22,13 @@
     <ol class="markdown-preview-view">
       {#each realItems as realItem}
         <li>
-          <a
-            data-href={realItem.to.split("/").last()}
-            href={realItem.to.split("/").last()}
+          <div
             class={realItem.cls}
-            on:click={async () => linkClick(matrixView, realItem, currFile)}
-            on:mouseover={hoverPreview}
+            on:click={async (e) => openOrSwitch(app, realItem.to, currFile, e)}
+            on:mouseover={(e) => hoverPreview(e, matrixView)}
           >
             {realItem.to.split("/").last()}
-          </a>
+          </div>
         </li>
       {/each}
     </ol>
@@ -57,14 +42,14 @@
     <ol class="markdown-preview-view" start={realItems.length + 1}>
       {#each impliedItems as impliedItem}
         <li class="breadcrumbs-implied">
-          <a
-            data-href={impliedItem.to.split("/").last()}
-            href={impliedItem.to.split("/").last()}
+          <div
             class={impliedItem.cls}
-            on:click={async () => linkClick(matrixView, impliedItem, currFile)}
-            on:mouseover={hoverPreview}
-            >{impliedItem.to.split("/").last()}
-          </a>
+            on:click={async (e) =>
+              openOrSwitch(app, impliedItem.to, currFile, e)}
+            on:mouseover={(e) => hoverPreview(e, matrixView)}
+          >
+            {impliedItem.to.split("/").last()}
+          </div>
         </li>
       {/each}
     </ol>

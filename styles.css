@@ -10,3 +10,11 @@ div.breadcrumbs-trail {
 
 li.breadcrumbs-implied::marker {
 }
+
+.internal-link.breadcrumbs-link {
+  color: var(--text-accent);
+}
+
+.internal-link.breadcrumbs-link:hover {
+  color: var(--text-accent-hover, var(--text-accent));
+}

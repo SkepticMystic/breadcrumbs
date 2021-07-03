@@ -13,7 +13,7 @@ import type {
   neighbourObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getNeighbourObjArr, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -240,16 +240,13 @@ export default class BreadcrumbsPlugin extends Plugin {
     // If a path was found
     if (breadcrumbs[0] !== this.settings.noPathMessage) {
       breadcrumbs.forEach((crumb) => {
-        const link = this.trailDiv.createEl("a", {
+        const link = this.trailDiv.createSpan({
           text: crumb,
           // A link in the trail will never be unresolved, so no need to check
           cls: "internal-link breadcrumbs-link",
-          href: crumb.split("/").last(),
         });
-        link.dataset.href = crumb.split("/").last();
-        link.rel = "noopener";
-        link.addEventListener("click", async () => {
-          await this.clickLink(crumb, currFile);
+        link.addEventListener("click", async (e) => {
+          await openOrSwitch(this.app, crumb, currFile, e);
         });
         this.trailDiv.createSpan({
           text: ` ${this.settings.trailSeperator} `,
