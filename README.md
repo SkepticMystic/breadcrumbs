@@ -40,3 +40,7 @@ The name of the field used to indicate notes on the same level as the current on
 ### Child Field
 
 The field used to show "narrower" notes, like `Subtopic: [[Note]]`, or `child:: [[Note]]`
+
+# Feed my coffee problem
+
+https://ko-fi.com/skepticmystic
