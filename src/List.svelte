@@ -63,14 +63,14 @@
     color: var(--text-title-h3);
   }
   h5.breadcrumbs-header {
-    margin: 3px;
+    /* margin: 3px; */
     color: var(--text-title-h5);
   }
 
   ol.markdown-preview-view {
-    margin: 3px;
-    padding-left: 20px;
-    padding-top: 5px;
+    /* margin: 3px; */
+    /* padding-left: 20px; */
+    padding-top: 3px;
     padding-bottom: 5px;
   }
 </style>
