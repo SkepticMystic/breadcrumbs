@@ -69,7 +69,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
-            console.log({ jugglLinks: await getJugglLinks(this.app, this.settings) })
             this.currGraphs = await this.initGraphs();
             await this.matrixView.draw();
             if (this.settings.showTrail) {
