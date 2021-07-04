@@ -1,9 +1,11 @@
+import { ITypedLink, parseTypedLink } from "juggl-api";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
   fileFrontmatter,
-  neighbourObj,
+  JugglLink,
+  neighbourObj
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 
@@ -48,6 +50,7 @@ export function getFileFrontmatterArr(
       });
     });
   }
+
   if (settings.debugMode) {
     console.log({ fileFrontMatterArr });
   }
@@ -60,6 +63,51 @@ export function splitAndDrop(str: string): string[] | [] {
       ?.match(splitLinksRegex)
       ?.map((link) => link.match(dropHeaderOrAlias)?.[1]) ?? []
   );
+}
+
+export async function getJugglLinks(
+  app: App,
+  settings: BreadcrumbsSettings): Promise<JugglLink[]> {
+  const files = app.vault.getMarkdownFiles();
+  // Add Juggl links
+  const typedLinksArr: JugglLink[] = await Promise.all(
+    files.map(async (file) => {
+      const jugglLink: JugglLink = { note: file.basename, links: [] };
+
+      const links = app.metadataCache.getFileCache(file)?.links ?? [];
+      const content = await app.vault.cachedRead(file);
+
+      links.forEach(link => {
+        const lineNo = link.position.start.line;
+        const line = content.split('\n')[lineNo]
+
+        const linksInLine = line.match(splitLinksRegex).map(link => link.slice(2, link.length - 2))
+
+        const parsedLinks = parseTypedLink(link, line, '-');
+        jugglLink.links.push({ type: parsedLinks?.properties?.type ?? '', linksInLine })
+      });
+      return jugglLink
+    })
+  )
+
+  console.log(typedLinksArr)
+
+  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].flat()
+
+  typedLinksArr.forEach(jugglLink => {
+    if (jugglLink.links.length) {
+      const fieldTypesOnly = [];
+      jugglLink.links.forEach(link => {
+        if (allFields.includes(link.type)) {
+          fieldTypesOnly.push(link)
+        }
+      })
+      jugglLink.links = fieldTypesOnly
+    }
+  })
+
+  const filteredLinks = typedLinksArr.filter(link => link.links.length ? true : false)
+  return filteredLinks
 }
 
 export function getFields(
@@ -90,10 +138,16 @@ export function getFields(
 export const splitAndTrim = (fields: string): string[] =>
   fields.split(",").map((str: string) => str.trim());
 
-export function getNeighbourObjArr(
+export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: fileFrontmatter[]
-): neighbourObj[] {
+): Promise<neighbourObj[]> {
+
+  let jugglLinks: JugglLink[];
+  if (plugin.app.plugins.plugins.juggl !== undefined) {
+    jugglLinks = await getJugglLinks(plugin.app, plugin.settings)
+  }
+
   const { parentFieldName, siblingFieldName, childFieldName } = plugin.settings;
 
   const [parentFields, siblingFields, childFields] = [
@@ -104,7 +158,7 @@ export function getNeighbourObjArr(
 
   const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
     (fileFrontmatter) => {
-      const [parents, siblings, children] = [
+      let [parents, siblings, children] = [
         parentFields
           .map(
             (parentField) =>
@@ -124,6 +178,24 @@ export function getNeighbourObjArr(
           )
           .flat(),
       ];
+
+      if (jugglLinks) {
+        const currFileJugglLinks = jugglLinks.filter(link => link.note === fileFrontmatter.file.basename);
+        currFileJugglLinks.forEach(jugglLink => {
+          jugglLink.links.forEach(link => {
+            if (parentFields.includes(link.type)) {
+              parents = [...parents, ...link.linksInLine]
+            }
+            if (siblingFields.includes(link.type)) {
+              siblings = [...siblings, ...link.linksInLine]
+            }
+            if (childFields.includes(link.type)) {
+              children = [...children, ...link.linksInLine]
+            }
+          })
+        })
+      }
+
       return { current: fileFrontmatter.file, parents, siblings, children };
     }
   );

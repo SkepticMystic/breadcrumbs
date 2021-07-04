@@ -143,13 +143,13 @@ export default class MatrixView extends ItemView {
     return adjList;
   }
 
-  mapToMD(adjList: Map<string, string[]>): string {
-    let md = '';
+  // mapToMD(adjList: Map<string, string[]>): string {
+  //   let md = '';
 
-    // Here I need help...
+  //   // Here I need help...
 
-    return md
-  }
+  //   return md
+  // }
 
   async draw(): Promise<void> {
     this.contentEl.empty();
