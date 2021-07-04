@@ -13,7 +13,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getJugglLinks, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -69,6 +69,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
+            console.log({ jugglLinks: await getJugglLinks(this.app, this.settings) })
             this.currGraphs = await this.initGraphs();
             await this.matrixView.draw();
             if (this.settings.showTrail) {
@@ -136,7 +137,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     gChildren: Graph;
   }> {
     const fileFrontmatterArr = getFileFrontmatterArr(this.app, this.settings);
-    const neighbourArr = getNeighbourObjArr(this, fileFrontmatterArr);
+    const neighbourArr = await getNeighbourObjArr(this, fileFrontmatterArr);
     const [gParents, gSiblings, gChildren] = [
       new Graph(),
       new Graph(),

@@ -103,54 +103,49 @@ export default class MatrixView extends ItemView {
     });
   }
 
-  // getAdjList(
-  //   gChildren: Graph,
-  //   currFile: string,
-  //   depth: number
-  // ): Map<string, string[]> {
-  //   const adjList: Map<string, string[]> = new Map();
+  getAdjList(
+    gChildren: Graph,
+    currFile: string,
+    depth: number
+  ): Map<string, string[]> {
+    const adjList: Map<string, string[]> = new Map();
 
-  //   function addNode(node: string) {
-  //     adjList.set(node, []);
-  //   }
+    function addNode(node: string) {
+      adjList.set(node, []);
+    }
 
-  //   addNode(currFile)
+    addNode(currFile)
 
-  //   // const immediateChildren = (gChildren.successors(currFile) ??
-  //   //   []) as string[];
-  //   // immediateChildren.forEach(addNode);
+    const visited: Set<string> = new Set();
 
-  //   const visited: Set<string> = new Set();
+    // Do this `depth` number of times
+    for (let i = 1; i < depth; i++) {
+      console.log(adjList);
+      adjList.forEach((childArr, parent) => {
+        let childrenOfKey: string[];
+        // If the node hasn't been visited before
+        if (!visited.has(parent)) {
+          // Get it's children
+          childrenOfKey = (gChildren.successors(parent) ?? []) as string[];
+          // Mark it as visited
+          visited.add(parent);
+          // Add it to the adjList
+          adjList.set(parent, childrenOfKey);
+          // Add the children as top-level map items
+          childrenOfKey.forEach((childOfKey) => {
+            addNode(childOfKey);
+          });
+        }
+      });
+    }
 
-  //   // Do this `depth` number of times
-  //   for (let i = 1; i < depth; i++) {
-  //     console.log(adjList);
-  //     adjList.forEach((childArr, parent) => {
-  //       let childrenOfKey: string[];
-  //       // If the node hasn't been visited before
-  //       if (!visited.has(parent)) {
-  //         // Get it's children
-  //         childrenOfKey = (gChildren.successors(parent) ?? []) as string[];
-  //         // Mark it as visited
-  //         visited.add(parent);
-  //         // Add it to the adjList
-  //         adjList.set(parent, childrenOfKey);
-  //         // Add the children as top-level map items
-  //         childrenOfKey.forEach((childOfKey) => {
-  //           addNode(childOfKey);
-  //         });
-  //       }
-  //     });
-  //   }
-
-  //   return adjList;
-  // }
+    return adjList;
+  }
 
   // mapToMD(adjList: Map<string, string[]>): string {
   //   let md = '';
-  //   adjList.forEach((childArr, parent) => {
 
-  //   })
+  //   // Here I need help...
 
   //   return md
   // }
@@ -167,14 +162,14 @@ export default class MatrixView extends ItemView {
       await this.draw();
     });
 
-    // const createIndexButton = this.contentEl.createEl("button", {
-    //   text: "Create Index",
-    // });
-    // createIndexButton.addEventListener("click", () =>
-    //   console.log(
-    //     this.getAdjList(this.plugin.currGraphs.gChildren, currFile.basename, 2)
-    //   )
-    // );
+    const createIndexButton = this.contentEl.createEl("button", {
+      text: "Create Index",
+    });
+    createIndexButton.addEventListener("click", () =>
+      console.log(
+        this.getAdjList(this.plugin.currGraphs.gChildren, currFile.basename, 2)
+      )
+    );
 
     this.currGraphs = this.plugin.currGraphs;
     const currFile = this.app.workspace.getActiveFile();

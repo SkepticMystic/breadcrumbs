@@ -18,6 +18,14 @@ export interface BreadcrumbsSettings {
   superDebugMode: boolean;
 }
 
+export interface JugglLink {
+  note: string;
+  links: {
+    type: string;
+    linksInLine: string[];
+  }[]
+}
+
 export interface neighbourObj {
   current: TFile;
   parents: string[];
