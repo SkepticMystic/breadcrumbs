@@ -122,16 +122,20 @@ export function getFields(
   field: string,
   settings: BreadcrumbsSettings
 ): string[] {
-  if (settings.superDebugMode) {
-    console.log(`Get ${field} of: ${fileFrontmatter.file.basename}`);
-  }
   const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
 
+
   if (typeof fieldItems === "string") {
+    if (settings.superDebugMode) {
+      console.log(`${field} of: ${fileFrontmatter.file.basename} is: ${fieldItems}`);
+    }
     const links =
       splitAndDrop(fieldItems)?.map((value) => value.split("/").last()) ?? [];
     return links;
   } else {
+    if (settings.superDebugMode) {
+      console.log(`${field} of: ${fileFrontmatter.file.basename} is: ${fieldItems.join(', ')}`);
+    }
     const links: string[] =
       [fieldItems]
         .flat()
