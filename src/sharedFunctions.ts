@@ -82,7 +82,7 @@ export async function getJugglLinks(
         const lineNo = link.position.start.line;
         const line = content.split('\n')[lineNo]
 
-        const linksInLine = line.match(splitLinksRegex).map(link => link.slice(2, link.length - 2))
+        const linksInLine = line.match(splitLinksRegex)?.map(link => link.slice(2, link.length - 2)) ?? []
 
         const parsedLinks = parseTypedLink(link, line, '-');
         jugglLink.links.push({ type: parsedLinks?.properties?.type ?? '', linksInLine })
