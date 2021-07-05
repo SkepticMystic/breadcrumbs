@@ -130,7 +130,7 @@ export function getFields(
       console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is: ${fieldItems}`);
     }
     const links =
-      splitAndDrop(fieldItems)?.map((value) => value.split("/").last()) ?? [];
+      splitAndDrop(fieldItems)?.map((value: string) => value?.split("/").last() ?? '') ?? [];
     return links;
   } else {
     if (settings.superDebugMode) {
@@ -141,7 +141,7 @@ export function getFields(
       [fieldItems]
         .flat()
         ?.map(
-          (link) => link.path.split("/").last() ?? link.split("/").last()
+          (link) => link.path?.split("/").last() ?? (link?.split("/").last() ?? '')
         ) ?? [];
     return links;
   }
