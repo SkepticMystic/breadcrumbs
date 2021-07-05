@@ -141,7 +141,7 @@ export function getFields(
       [fieldItems]
         .flat()
         ?.map(
-          (link) => link?.path?.split("/").last() ?? link.split("/").last()
+          (link) => link.path.split("/").last() ?? link.split("/").last()
         ) ?? [];
     return links;
   }
