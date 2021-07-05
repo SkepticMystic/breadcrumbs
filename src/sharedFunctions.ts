@@ -95,7 +95,7 @@ export async function getJugglLinks(
     console.log({ typedLinksArr })
   }
 
-  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].flat()
+  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].flat().filter(field => field !== "")
 
   typedLinksArr.forEach(jugglLink => {
     if (jugglLink.links.length) {
