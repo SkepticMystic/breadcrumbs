@@ -95,7 +95,7 @@ export async function getJugglLinks(
     console.log({ typedLinksArr })
   }
 
-  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].flat().filter(field => field !== "")
+  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].map(splitAndTrim).flat().filter(field => field !== "")
 
   typedLinksArr.forEach(jugglLink => {
     if (jugglLink.links.length) {
@@ -122,7 +122,7 @@ export function getFields(
   field: string,
   settings: BreadcrumbsSettings
 ): string[] {
-  const fieldItems: string | [] = fileFrontmatter.frontmatter[field] ?? [];
+  const fieldItems: string | [] = fileFrontmatter.frontmatter?.[field] ?? [];
 
 
   if (typeof fieldItems === "string") {
