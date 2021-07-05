@@ -127,14 +127,15 @@ export function getFields(
 
   if (typeof fieldItems === "string") {
     if (settings.superDebugMode) {
-      console.log(`${field} of: ${fileFrontmatter.file.basename} is: ${fieldItems}`);
+      console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is: ${fieldItems}`);
     }
     const links =
       splitAndDrop(fieldItems)?.map((value) => value.split("/").last()) ?? [];
     return links;
   } else {
     if (settings.superDebugMode) {
-      console.log(`${field} of: ${fileFrontmatter.file.basename} is: ${fieldItems.join(', ')}`);
+      console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`);
+      console.log(fieldItems.join(', '))
     }
     const links: string[] =
       [fieldItems]
@@ -190,7 +191,7 @@ export async function getNeighbourObjArr(
           .flat(),
       ];
 
-      if (jugglLinks) {
+      if (plugin.app.plugins.plugins.juggl !== undefined) {
         const currFileJugglLinks = jugglLinks.filter(link => link.note === fileFrontmatter.file.basename);
         currFileJugglLinks.forEach(jugglLink => {
           jugglLink.links.forEach(link => {
