@@ -1,3 +1,4 @@
+import { settings } from "cluster";
 import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
 import { addIcon, Plugin, TFile, WorkspaceLeaf } from "obsidian";
@@ -13,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getJugglLinks, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -70,6 +71,11 @@ export default class BreadcrumbsPlugin extends Plugin {
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
             this.currGraphs = await this.initGraphs();
+
+            if (this.settings.debugMode) {
+              console.log(this.currGraphs)
+            }
+
             await this.matrixView.draw();
             if (this.settings.showTrail) {
               await this.drawTrail();

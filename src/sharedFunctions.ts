@@ -135,13 +135,13 @@ export function getFields(
   } else {
     if (settings.superDebugMode) {
       console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`);
-      console.log(fieldItems.join(', '))
+      console.log(fieldItems?.join(', ') ?? undefined)
     }
     const links: string[] =
       [fieldItems]
         .flat()
         ?.map(
-          (link) => link.path.split("/").last() ?? link.split("/").last()
+          (link) => link?.path?.split("/").last() ?? link.split("/").last()
         ) ?? [];
     return links;
   }
