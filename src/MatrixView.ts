@@ -77,7 +77,7 @@ export default class MatrixView extends ItemView {
       items.forEach((item: string) => {
         internalLinkObjArr.push({
           to: item,
-          cls: this.resolvedClass(item, currFile),
+          cls: this.resolvedClass(item, currFile) + (realQ ? '' : ' breadcrumbs-implied'),
         });
       });
     }
@@ -142,13 +142,6 @@ export default class MatrixView extends ItemView {
     return adjList;
   }
 
-  // mapToMD(adjList: Map<string, string[]>): string {
-  //   let md = '';
-
-  //   // Here I need help...
-
-  //   return md
-  // }
 
   async draw(): Promise<void> {
     this.contentEl.empty();
@@ -197,7 +190,8 @@ export default class MatrixView extends ItemView {
         this.squareItems(gParents, currFile, false),
       ];
 
-    /// Implied Siblings
+    // SECTION Implied Siblings
+    /// Notes with the same parents
     const currParents = (gParents.successors(currFile.basename) ??
       []) as string[];
     const impliedSiblingsArr: internalLinkObj[] = [];
@@ -220,6 +214,12 @@ export default class MatrixView extends ItemView {
         });
       });
     }
+
+    /// A real sibling implies the reverse sibling
+    impliedSiblingsArr.push(...this.squareItems(gSiblings, currFile, false))
+
+
+    // !SECTION
 
     this.removeDuplicateImplied(realParents, impliedParents);
     this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
