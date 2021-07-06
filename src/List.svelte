@@ -58,8 +58,8 @@
 
 <style>
   summary {
-    font-size: larger;
-    margin: 3px;
+    /* font-size: larger; */
+    /* margin: 3px; */
     color: var(--text-title-h3);
   }
   h5.breadcrumbs-header {
