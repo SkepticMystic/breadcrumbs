@@ -181,24 +181,29 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     // No index note chosen
     if (indexNotes[0] === "") {
-      const breadcrumbs: string[] = []
-      // Get parents
-      let parents = (g.successors(from) ?? []) as string[];
+      const terminals: string[] = g.sinks();
+      console.log({ terminals })
 
-      let i = 0;
-      const MAX_DEPTH = 200;
+      terminals.forEach((terminal: string) => {
+        let step = terminal;
+        // If a path to terminal exists
+        if (paths[step].distance !== Infinity) {
+          const breadcrumbs: string[] = [];
+          // Walk it till you get there
+          while (paths[step].distance !== 0) {
+            // Noting your steps along the way
+            breadcrumbs.push(step);
+            // Updating the step each time
+            step = paths[step].predecessor;
+          }
+          // Add the last step
+          breadcrumbs.push(from);
 
-      if (parents.length === 0) {
-        breadcrumbs.push(this.settings.noPathMessage)
-      } else {
-        while (parents.length !== 0 && i < MAX_DEPTH) {
-          breadcrumbs.push(parents[0])
-          parents = (g.successors(parents[0]) ?? []) as string[]
-          i++
+          sortedTrails.push(breadcrumbs);
         }
-      }
-      breadcrumbs.reverse().push(from)
-      sortedTrails.push(breadcrumbs)
+      })
+      console.log(sortedTrails)
+
     } else {
       indexNotes.forEach((index) => {
         let step = index;
@@ -239,7 +244,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     if (this.settings.debugMode) {
-      console.log({ sortedTrails, allTrails });
+      console.log({ sortedTrails });
     }
 
     return sortedTrails;
