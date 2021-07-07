@@ -1,4 +1,4 @@
-import { settings } from "cluster";
+
 import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
 import { addIcon, Plugin, TFile, WorkspaceLeaf } from "obsidian";
@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showNameOrType: true,
   showRelationType: true,
   showTrail: true,
+  showAll: false,
   noPathMessage: `No path to index note was found`,
   trailSeperator: "→",
   respectReadableLineLength: true,
@@ -170,32 +171,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       : "internal-link breadcrumbs-link";
   }
 
-  // breadcrumbArrs(g: Graph): string[] {
-  //   const from = this.app.workspace.getActiveFile().basename;
-  //   const indexNotes: string[] = [this.settings.indexNote].flat();
-
-  //   let allTrails: string[][] = [];
-
-  //   if (indexNotes === [""]) {
-  //     allTrails.push([])
-
-  //     let parents = (g.predecessors(from) ?? []) as string[];
-
-  //     let i = 0;
-  //     const MAX_DEPTH = 200;
-
-  //     while (parents.length !== 0 || i < MAX_DEPTH) {
-  //       allTrails[0].push(parents[0])
-  //       parents = (g.predecessors(parents[0]) ?? []) as string[]
-  //       i++
-  //     }
-  //   }
-
-
-  //   return allTrails[0]
-  // }
-
-  getBreadcrumbs(g: Graph): string[] {
+  getBreadcrumbs(g: Graph): string[][] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
@@ -203,9 +179,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     let allTrails: string[][] = [];
     let sortedTrails: string[][] = [];
 
+    // No index note chosen
     if (indexNotes[0] === "") {
       const breadcrumbs: string[] = []
-
+      // Get parents
       let parents = (g.successors(from) ?? []) as string[];
 
       let i = 0;
@@ -244,6 +221,7 @@ export default class BreadcrumbsPlugin extends Plugin {
             breadcrumbs.push(step);
             step = paths[step].predecessor;
           }
+          // Add the last step
           breadcrumbs.push(from);
         }
         allTrails.push(breadcrumbs);
@@ -260,20 +238,19 @@ export default class BreadcrumbsPlugin extends Plugin {
       );
     }
 
-
     if (this.settings.debugMode) {
       console.log({ sortedTrails, allTrails });
     }
 
-    return sortedTrails[0];
+    return sortedTrails;
   }
 
 
-  fillTrailDiv(breadcrumbs: string[], currFile: TFile): void {
+  fillTrailDiv(trailDiv: HTMLDivElement, breadcrumbs: string[], currFile: TFile): void {
     // If a path was found
     if (breadcrumbs[0] !== this.settings.noPathMessage) {
       breadcrumbs.forEach((crumb) => {
-        const link = this.trailDiv.createSpan({
+        const link = trailDiv.createSpan({
           text: crumb,
           // A link in the trail will never be unresolved, so no need to check
           cls: "internal-link breadcrumbs-link",
@@ -281,21 +258,21 @@ export default class BreadcrumbsPlugin extends Plugin {
         link.addEventListener("click", async (e) => {
           await openOrSwitch(this.app, crumb, currFile, e);
         });
-        this.trailDiv.createSpan({
+        trailDiv.createSpan({
           text: ` ${this.settings.trailSeperator} `,
         });
       });
-      this.trailDiv.removeChild(this.trailDiv.lastChild);
+      trailDiv.removeChild(trailDiv.lastChild);
     }
     // Otherwise don't add any links, just text
     else {
-      this.trailDiv.createSpan({ text: this.settings.noPathMessage });
+      trailDiv.createSpan({ text: this.settings.noPathMessage });
     }
   }
 
   async drawTrail(): Promise<void> {
     const gParents = this.currGraphs.gParents;
-    const breadcrumbs = this.getBreadcrumbs(gParents);
+    const sortedTrails = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
 
     // Get the container div of the active note
@@ -306,8 +283,56 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.previewView.prepend(this.trailDiv);
     // Make sure it's empty when changing files
     this.trailDiv.empty();
-    // Fill in the breadcrumbs
-    this.fillTrailDiv(breadcrumbs, currFile);
+
+    let trailsSpan: HTMLSpanElement;
+    let buttonDiv: HTMLDivElement;
+    if (sortedTrails.length > 1) {
+      if (sortedTrails[0][0] !== sortedTrails[1][0]) {
+        let showAll = this.settings.showAll;
+        trailsSpan = this.trailDiv.createSpan();
+        trailsSpan.style.display = 'flex';
+        trailsSpan.style.justifyContent = 'space-between';
+        const trails = trailsSpan.createDiv()
+
+        buttonDiv = trailsSpan.createDiv();
+        const allButton = buttonDiv.createEl('button', { text: 'All' });
+
+        if (showAll) {
+          allButton.innerText = "Shortest"
+          trails.empty()
+          sortedTrails.forEach(trail => {
+            trails.createDiv({}, (div: HTMLDivElement) => {
+              this.fillTrailDiv(div, trail, currFile)
+            })
+          })
+        } else {
+          allButton.innerText = "All"
+          trails.empty()
+          this.fillTrailDiv(trails, sortedTrails[0], currFile)
+        }
+
+        allButton.addEventListener('click', () => {
+          showAll = !showAll;
+          if (showAll) {
+            allButton.innerText = "Shortest"
+            trails.empty()
+            sortedTrails.forEach(trail => {
+              trails.createDiv({}, (div: HTMLDivElement) => {
+                this.fillTrailDiv(div, trail, currFile)
+              })
+            })
+          } else {
+            allButton.innerText = "All"
+            trails.empty()
+            this.fillTrailDiv(trails, sortedTrails[0], currFile)
+          }
+        })
+      } else {
+        this.fillTrailDiv(this.trailDiv, sortedTrails[0], currFile);
+      }
+    } else {
+      this.fillTrailDiv(this.trailDiv, sortedTrails[0], currFile);
+    }
   }
 
   initView = async (type: string): Promise<void> => {

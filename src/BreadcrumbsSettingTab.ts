@@ -202,6 +202,22 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Default: All or Shortest")
+      .setDesc(
+        "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest"
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.showAll)
+          .onChange(async (value) => {
+            plugin.settings.showAll = value;
+
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          })
+      );
+
+    new Setting(containerEl)
       .setName("Breadcrumb trail seperator")
       .setDesc(
         "The character to show between crumbs in the breadcrumb trail. The default is '→'"
