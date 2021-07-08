@@ -15,6 +15,7 @@ import type {
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import { closeImpliedLinks, getFileFrontmatterArr, getNeighbourObjArr, isInVault, isSubset, openOrSwitch } from "src/sharedFunctions";
+import TrailGrid from "./TrailGrid.svelte";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -26,6 +27,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showNameOrType: true,
   showRelationType: true,
   showTrail: true,
+  trailOrTable: false,
   showAll: false,
   noPathMessage: `No path to index note was found`,
   trailSeperator: "→",
@@ -323,34 +325,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
       previewView.prepend(trailDiv);
 
-      let trailsSpan: HTMLSpanElement;
-      let buttonDiv: HTMLDivElement;
-      if (sortedTrails.length > 1) {
-        let showAll = settings.showAll;
-        trailsSpan = trailDiv.createSpan();
-        trailsSpan.style.display = 'flex';
-        trailsSpan.style.justifyContent = 'space-between';
-        const trails = trailsSpan.createDiv()
+      if (settings.trailOrTable) {
+        let trailsSpan: HTMLSpanElement;
+        let buttonDiv: HTMLDivElement;
+        if (sortedTrails.length > 1) {
+          let showAll = settings.showAll;
+          trailsSpan = trailDiv.createSpan();
+          trailsSpan.style.display = 'flex';
+          trailsSpan.style.justifyContent = 'space-between';
+          const trails = trailsSpan.createDiv()
 
-        buttonDiv = trailsSpan.createDiv();
-        const allButton = buttonDiv.createEl('button', { text: 'All' });
+          buttonDiv = trailsSpan.createDiv();
+          const allButton = buttonDiv.createEl('button', { text: 'All' });
 
-        if (showAll) {
-          allButton.innerText = "Shortest"
-          trails.empty()
-          sortedTrails.forEach(trail => {
-            trails.createDiv({}, (div: HTMLDivElement) => {
-              this.fillTrailDiv(div, trail, currFile)
-            })
-          })
-        } else {
-          allButton.innerText = "All"
-          trails.empty()
-          this.fillTrailDiv(trails, sortedTrails[0], currFile)
-        }
-
-        allButton.addEventListener('click', () => {
-          showAll = !showAll;
           if (showAll) {
             allButton.innerText = "Shortest"
             trails.empty()
@@ -364,12 +351,36 @@ export default class BreadcrumbsPlugin extends Plugin {
             trails.empty()
             this.fillTrailDiv(trails, sortedTrails[0], currFile)
           }
-        })
+
+          allButton.addEventListener('click', () => {
+            showAll = !showAll;
+            if (showAll) {
+              allButton.innerText = "Shortest"
+              trails.empty()
+              sortedTrails.forEach(trail => {
+                trails.createDiv({}, (div: HTMLDivElement) => {
+                  this.fillTrailDiv(div, trail, currFile)
+                })
+              })
+            } else {
+              allButton.innerText = "All"
+              trails.empty()
+              this.fillTrailDiv(trails, sortedTrails[0], currFile)
+            }
+          })
+        } else {
+          this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
+        }
       } else {
-        this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
+        trailDiv.empty()
+        new TrailGrid({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app }
+        })
       }
     }
   }
+
 
   initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;

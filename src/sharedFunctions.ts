@@ -291,3 +291,28 @@ export async function openOrSwitch(
     await leaf.openFile(destFile, { active: true, mode });
   }
 }
+
+export function padArray(arr: any[], finalLength: number, filler = ''): any[] {
+  const currLength = arr.length;
+  if (currLength > finalLength) { throw new Error('Current length is greater than final length') }
+  else if (currLength === finalLength) { return arr }
+  else {
+    for (let i = currLength; i < finalLength; i++) {
+      arr.push(filler)
+    }
+    return arr;
+  }
+}
+
+export function transpose(A: any[][]): any[][] {
+  const cols = A[0].length;
+  const AT: any[][] = [];
+  // For each column
+  for (let j = 0; j < cols; j++) {
+    // Add a new row to AT
+    AT.push([])
+    // And fill it with the values in the jth column of A
+    A.forEach(row => AT[j].push(row[j]))
+  }
+  return AT
+}
