@@ -200,6 +200,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         });
       }
     }
+    console.log(pathsArr)
     return pathsArr;
   }
 
@@ -214,7 +215,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     // No index note chosen
     if (indexNotes[0] === "") {
       const bfsAllPaths = this.bfsAllPaths(g, from);
-      const bfsAllPathsArr = Object.values(bfsAllPaths)
+      let bfsAllPathsArr = [];
+      Object.keys(bfsAllPaths).forEach((key, i) => {
+        bfsAllPathsArr.push([key, ...Object.values(bfsAllPaths)[i]])
+      })
+      bfsAllPathsArr = bfsAllPathsArr.filter(arr => arr.join('') !== from)
       bfsAllPathsArr.forEach((path, i) => {
         for (let j = 0; j < bfsAllPathsArr.length; j++) {
           if (i !== j) {
