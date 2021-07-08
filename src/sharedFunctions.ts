@@ -10,6 +10,9 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
 
+export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
+
+
 export function getFileFrontmatterArr(
   app: App,
   settings: BreadcrumbsSettings

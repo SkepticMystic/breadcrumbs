@@ -14,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
+import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, isSubset, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -73,6 +73,8 @@ export default class BreadcrumbsPlugin extends Plugin {
             if (this.settings.debugMode) {
               console.log(this.currGraphs)
             }
+
+
 
             await this.matrixView.draw();
             if (this.settings.showTrail) {
@@ -211,31 +213,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     // No index note chosen
     if (indexNotes[0] === "") {
-      const terminals: string[] = g.sinks();
-      console.log({ terminals })
-
-      terminals.forEach((terminal: string) => {
-        let step = terminal;
-        // If a path to terminal exists
-        if (paths[step].distance !== Infinity) {
-          const breadcrumbs: string[] = [];
-          // Walk it till you get there
-          while (paths[step].distance !== 0) {
-            // Noting your steps along the way
-            breadcrumbs.push(step);
-            // Updating the step each time
-            step = paths[step].predecessor;
+      const bfsAllPaths = this.bfsAllPaths(g, from);
+      const bfsAllPathsArr = Object.values(bfsAllPaths)
+      bfsAllPathsArr.forEach((path, i) => {
+        for (let j = 0; j < bfsAllPathsArr.length; j++) {
+          if (i !== j) {
+            if (isSubset(path, bfsAllPathsArr[j])) {
+              bfsAllPathsArr.splice(i, 1)
+            }
           }
-          // Only if a path was found
-          if (breadcrumbs.length > 0) {
-            // Add the last step
-            breadcrumbs.push(from);
-          }
-          sortedTrails.push(breadcrumbs);
         }
       })
-      console.log({ sortedTrails })
-
+      sortedTrails = bfsAllPathsArr
     } else {
       indexNotes.forEach((index) => {
         let step = index;
