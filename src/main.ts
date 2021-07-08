@@ -14,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { getFileFrontmatterArr, getNeighbourObjArr, isInVault, isSubset, openOrSwitch } from "src/sharedFunctions";
+import { closeImpliedLinks, getFileFrontmatterArr, getNeighbourObjArr, isInVault, isSubset, openOrSwitch } from "src/sharedFunctions";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -176,7 +176,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   bfsAllPaths(g: Graph, startNode: string): string[][] {
-    const queue: {node: string, path: string[]}[] = [{node: startNode, path: []}];
+    const queue: { node: string, path: string[] }[] = [{ node: startNode, path: [] }];
     const pathsArr: string[][] = [];
 
     let i = 0;
@@ -186,10 +186,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
       const newNodes = ((g.successors(currPath.node) ?? []) as string[]);
       let extPath = [currPath.node, ...currPath.path];
-      queue.push(...newNodes.map((n:string)  => {return {node: n, path: extPath}}));
+      queue.push(...newNodes.map((n: string) => { return { node: n, path: extPath } }));
       // terminal node
       if (newNodes.length === 0) {
-         pathsArr.push(extPath);
+        pathsArr.push(extPath);
       }
     }
     console.log(pathsArr)
@@ -281,8 +281,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    const { gParents } = this.currGraphs;
-    const sortedTrails = this.getBreadcrumbs(gParents);
+    const { gParents, gChildren } = this.currGraphs;
+    const closedParents = closeImpliedLinks(gParents, gChildren)
+    const sortedTrails = this.getBreadcrumbs(closedParents);
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.settings
 

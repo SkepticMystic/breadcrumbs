@@ -1,3 +1,4 @@
+import type { Graph } from "graphlib";
 import { parseTypedLink } from "juggl-api";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
@@ -221,6 +222,14 @@ export async function getNeighbourObjArr(
     console.log({ neighbourObjArr });
   }
   return neighbourObjArr;
+}
+
+export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
+  const closedG = real;
+  implied.edges().forEach(impliedEdge => {
+    closedG.setEdge(impliedEdge.w, impliedEdge.v)
+  })
+  return closedG
 }
 
 // This doesn't work for some reason. Even if you pass it `app`, metadatacache is undefined
