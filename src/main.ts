@@ -175,29 +175,21 @@ export default class BreadcrumbsPlugin extends Plugin {
       : "internal-link breadcrumbs-link";
   }
 
-  bfsAllPaths(g: Graph, startNode: string): { [node: string]: string[] } {
-    const queue = [startNode];
-    const visited = [];
-    const pathsArr: { [node: string]: string[] } = {};
-    pathsArr[startNode] = [];
+  bfsAllPaths(g: Graph, startNode: string): string[][] {
+    const queue: {node: string, path: string[]}[] = [{node: startNode, path: []}];
+    const pathsArr: string[][] = [];
 
     let i = 0;
     while (queue.length !== 0 && i < 1000) {
       i++;
-      const currNode = queue[0];
-      visited.push(currNode);
+      const currPath = queue.shift();
 
-      const newNodes = ((g.successors(currNode) ?? []) as string[])
-        .filter(
-          (successor) => !visited.includes(successor)
-        );
-      queue.push(...newNodes);
-      queue.shift();
-
-      if (newNodes) {
-        newNodes.forEach((node) => {
-          pathsArr[node] = [currNode, ...pathsArr[currNode]];
-        });
+      const newNodes = ((g.successors(currPath.node) ?? []) as string[]);
+      let extPath = [currPath.node, ...currPath.path];
+      queue.push(...newNodes.map((n:string)  => {return {node: n, path: extPath}}));
+      // terminal node
+      if (newNodes.length === 0) {
+         pathsArr.push(extPath);
       }
     }
     console.log(pathsArr)
@@ -215,21 +207,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     // No index note chosen
     if (indexNotes[0] === "") {
       const bfsAllPaths = this.bfsAllPaths(g, from);
-      let bfsAllPathsArr = [];
-      Object.keys(bfsAllPaths).forEach((key, i) => {
-        bfsAllPathsArr.push([key, ...Object.values(bfsAllPaths)[i]])
-      })
-      bfsAllPathsArr = bfsAllPathsArr.filter(arr => arr.join('') !== from)
-      bfsAllPathsArr.forEach((path, i) => {
-        for (let j = 0; j < bfsAllPathsArr.length; j++) {
-          if (i !== j) {
-            if (isSubset(path, bfsAllPathsArr[j])) {
-              bfsAllPathsArr.splice(i, 1)
-            }
-          }
-        }
-      })
-      sortedTrails = bfsAllPathsArr
+      if (bfsAllPaths.length > 1) {
+        sortedTrails = bfsAllPaths.sort((a, b) => a.length - b.length);
+      }
+      else {
+        sortedTrails = bfsAllPaths;
+      }
     } else {
       indexNotes.forEach((index) => {
         let step = index;
@@ -339,16 +322,31 @@ export default class BreadcrumbsPlugin extends Plugin {
       let trailsSpan: HTMLSpanElement;
       let buttonDiv: HTMLDivElement;
       if (sortedTrails.length > 1) {
-        if (sortedTrails[0][0] !== sortedTrails[1][0]) {
-          let showAll = settings.showAll;
-          trailsSpan = trailDiv.createSpan();
-          trailsSpan.style.display = 'flex';
-          trailsSpan.style.justifyContent = 'space-between';
-          const trails = trailsSpan.createDiv()
+        let showAll = settings.showAll;
+        trailsSpan = trailDiv.createSpan();
+        trailsSpan.style.display = 'flex';
+        trailsSpan.style.justifyContent = 'space-between';
+        const trails = trailsSpan.createDiv()
 
-          buttonDiv = trailsSpan.createDiv();
-          const allButton = buttonDiv.createEl('button', { text: 'All' });
+        buttonDiv = trailsSpan.createDiv();
+        const allButton = buttonDiv.createEl('button', { text: 'All' });
 
+        if (showAll) {
+          allButton.innerText = "Shortest"
+          trails.empty()
+          sortedTrails.forEach(trail => {
+            trails.createDiv({}, (div: HTMLDivElement) => {
+              this.fillTrailDiv(div, trail, currFile)
+            })
+          })
+        } else {
+          allButton.innerText = "All"
+          trails.empty()
+          this.fillTrailDiv(trails, sortedTrails[0], currFile)
+        }
+
+        allButton.addEventListener('click', () => {
+          showAll = !showAll;
           if (showAll) {
             allButton.innerText = "Shortest"
             trails.empty()
@@ -362,26 +360,7 @@ export default class BreadcrumbsPlugin extends Plugin {
             trails.empty()
             this.fillTrailDiv(trails, sortedTrails[0], currFile)
           }
-
-          allButton.addEventListener('click', () => {
-            showAll = !showAll;
-            if (showAll) {
-              allButton.innerText = "Shortest"
-              trails.empty()
-              sortedTrails.forEach(trail => {
-                trails.createDiv({}, (div: HTMLDivElement) => {
-                  this.fillTrailDiv(div, trail, currFile)
-                })
-              })
-            } else {
-              allButton.innerText = "All"
-              trails.empty()
-              this.fillTrailDiv(trails, sortedTrails[0], currFile)
-            }
-          })
-        } else {
-          this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
-        }
+        })
       } else {
         this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
       }
