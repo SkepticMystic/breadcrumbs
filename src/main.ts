@@ -185,13 +185,16 @@ export default class BreadcrumbsPlugin extends Plugin {
       const currPath = queue.shift();
 
       const newNodes = ((g.successors(currPath.node) ?? []) as string[]);
-      let extPath = [currPath.node, ...currPath.path];
+      const extPath = [currPath.node, ...currPath.path];
       queue.push(...newNodes.map((n: string) => { return { node: n, path: extPath } }));
       // terminal node
       if (newNodes.length === 0) {
         pathsArr.push(extPath);
       }
     }
+    pathsArr.forEach(path => {
+      if (path.length) { path.splice(path.length - 1, 1) }
+    })
     console.log(pathsArr)
     return pathsArr;
   }
