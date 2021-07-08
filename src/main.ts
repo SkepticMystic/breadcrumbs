@@ -37,8 +37,8 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
-  trailDiv: HTMLDivElement;
-  previewView: HTMLDivElement;
+  activeTrails: { file: TFile, trailDiv: HTMLDivElement }[];
+  previousFile: TFile[];
   refreshIntervalID: number;
   currGraphs: allGraphs;
 
@@ -46,6 +46,9 @@ export default class BreadcrumbsPlugin extends Plugin {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
+
+    this.activeTrails = [];
+    this.previousFile = [this.app.workspace.getActiveFile(), this.app.workspace.getActiveFile()];
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -58,13 +61,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
-        this.trailDiv = createDiv({
-          // Check if respectReadableLineLength is enabled
-          cls: `breadcrumbs-trail is-readable-line-width${this.settings.respectReadableLineLength
-            ? " markdown-preview-sizer markdown-preview-section"
-            : ""
-            }`,
-        });
+
         if (this.settings.showTrail) {
           await this.drawTrail();
         }
@@ -79,6 +76,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 
             await this.matrixView.draw();
             if (this.settings.showTrail) {
+              // this.activeTrails.last().trailDiv.remove
+              // this.activeTrails.splice(this.activeTrails.length - 1, 1)
+              this.previousFile.shift();
+              this.previousFile.push(this.app.workspace.getActiveFile())
+              console.log(this.previousFile)
               await this.drawTrail();
             }
           })
@@ -88,7 +90,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         if (this.settings.refreshIntervalTime > 0) {
           this.refreshIntervalID = window.setInterval(async () => {
             this.currGraphs = await this.initGraphs();
-            if (this.trailDiv && this.settings.showTrail) {
+            if (this.settings.showTrail) {
               await this.drawTrail();
             }
             if (this.matrixView) {
@@ -171,12 +173,40 @@ export default class BreadcrumbsPlugin extends Plugin {
       : "internal-link breadcrumbs-link";
   }
 
+  bfsAllPaths(g: Graph, startNode: string): { [node: string]: string[] } {
+    const queue = [startNode];
+    const visited = [];
+    const pathsArr: { [node: string]: string[] } = {};
+    pathsArr[startNode] = [];
+
+    let i = 0;
+    while (queue.length !== 0 && i < 1000) {
+      i++;
+      const currNode = queue[0];
+      visited.push(currNode);
+
+      const newNodes = ((g.successors(currNode) ?? []) as string[])
+        .filter(
+          (successor) => !visited.includes(successor)
+        );
+      queue.push(...newNodes);
+      queue.shift();
+
+      if (newNodes) {
+        newNodes.forEach((node) => {
+          pathsArr[node] = [currNode, ...pathsArr[currNode]];
+        });
+      }
+    }
+    return pathsArr;
+  }
+
   getBreadcrumbs(g: Graph): string[][] {
     const from = this.app.workspace.getActiveFile().basename;
     const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
 
-    let allTrails: string[][] = [];
+    const allTrails: string[][] = [];
     let sortedTrails: string[][] = [];
 
     // No index note chosen
@@ -196,18 +226,19 @@ export default class BreadcrumbsPlugin extends Plugin {
             // Updating the step each time
             step = paths[step].predecessor;
           }
-          // Add the last step
-          breadcrumbs.push(from);
-
+          // Only if a path was found
+          if (breadcrumbs.length > 0) {
+            // Add the last step
+            breadcrumbs.push(from);
+          }
           sortedTrails.push(breadcrumbs);
         }
       })
-      console.log(sortedTrails)
+      console.log({ sortedTrails })
 
     } else {
       indexNotes.forEach((index) => {
         let step = index;
-        const breadcrumbs: string[] = [];
 
         // Check if indexNote exists
         if (
@@ -218,27 +249,24 @@ export default class BreadcrumbsPlugin extends Plugin {
           ];
         }
         // Check if a path even exists
-        else if (paths[step].distance === Infinity) {
-          breadcrumbs.push(this.settings.noPathMessage);
-        } else {
-          // If it does, walk it until arriving at `from`
+        else if (paths[step].distance !== Infinity) {
+          const breadcrumbs: string[] = [];
+          // Walk it until arriving at `from`
           while (paths[step].distance !== 0) {
             breadcrumbs.push(step);
             step = paths[step].predecessor;
           }
-          // Add the last step
-          breadcrumbs.push(from);
+          if (breadcrumbs.length > 0) {
+            // Add the last step
+            breadcrumbs.push(from);
+          }
+          allTrails.push(breadcrumbs);
         }
-        allTrails.push(breadcrumbs);
       });
 
-      if (allTrails.some((trail) => trail[0] !== this.settings.noPathMessage)) {
-        allTrails = allTrails.filter(
-          (trail) => trail[0] !== this.settings.noPathMessage
-        );
-      }
+      const filteredTrails = allTrails.filter(trail => trail.length > 0)
 
-      sortedTrails = allTrails.sort((a, b) =>
+      sortedTrails = filteredTrails.sort((a, b) =>
         a.length < b.length ? -1 : 1
       );
     }
@@ -253,7 +281,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   fillTrailDiv(trailDiv: HTMLDivElement, breadcrumbs: string[], currFile: TFile): void {
     // If a path was found
-    if (breadcrumbs[0] !== this.settings.noPathMessage) {
+    if (breadcrumbs.length > 0) {
       breadcrumbs.forEach((crumb) => {
         const link = trailDiv.createSpan({
           text: crumb,
@@ -276,48 +304,57 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    const gParents = this.currGraphs.gParents;
+    const { gParents } = this.currGraphs;
     const sortedTrails = this.getBreadcrumbs(gParents);
     const currFile = this.app.workspace.getActiveFile();
+    const settings = this.settings
 
     // Get the container div of the active note
-    this.previewView = document.querySelector(
+    const previewView = document.querySelector(
       "div.mod-active div.view-content div.markdown-preview-view"
     );
-    // Prepend the exisiting trailDiv (created in `onLoad`)
-    this.previewView.prepend(this.trailDiv);
-    // Make sure it's empty when changing files
-    this.trailDiv.empty();
 
-    let trailsSpan: HTMLSpanElement;
-    let buttonDiv: HTMLDivElement;
-    if (sortedTrails.length > 1) {
-      if (sortedTrails[0][0] !== sortedTrails[1][0]) {
-        let showAll = this.settings.showAll;
-        trailsSpan = this.trailDiv.createSpan();
-        trailsSpan.style.display = 'flex';
-        trailsSpan.style.justifyContent = 'space-between';
-        const trails = trailsSpan.createDiv()
+    let trailDiv: HTMLDivElement;
 
-        buttonDiv = trailsSpan.createDiv();
-        const allButton = buttonDiv.createEl('button', { text: 'All' });
+    // If the current note already has a trailDiv
+    if (this.activeTrails.length === 0
+      || !this.activeTrails.some(fileTrail => fileTrail.file.path === currFile.path)) {
 
-        if (showAll) {
-          allButton.innerText = "Shortest"
-          trails.empty()
-          sortedTrails.forEach(trail => {
-            trails.createDiv({}, (div: HTMLDivElement) => {
-              this.fillTrailDiv(div, trail, currFile)
-            })
-          })
-        } else {
-          allButton.innerText = "All"
-          trails.empty()
-          this.fillTrailDiv(trails, sortedTrails[0], currFile)
+      if (this.activeTrails.length > 0) {
+        const previousDiv = this.activeTrails.filter(fileTrail => fileTrail.file.path === this.previousFile[0].path);
+        if (previousDiv.length) {
+          previousDiv[0].trailDiv.remove();
+          this.activeTrails.splice(this.activeTrails.indexOf(previousDiv[0]), 1)
         }
+      }
 
-        allButton.addEventListener('click', () => {
-          showAll = !showAll;
+      trailDiv = createDiv({
+        // Check if respectReadableLineLength is enabled
+        cls: `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
+          ? " markdown-preview-sizer markdown-preview-section"
+          : ""
+          }`,
+      });
+      // Track the trailDiv for the current note
+      /// Might have to pair it with the note name
+      this.activeTrails.push({ file: currFile, trailDiv });
+      console.log(this.activeTrails)
+
+      previewView.prepend(trailDiv);
+
+      let trailsSpan: HTMLSpanElement;
+      let buttonDiv: HTMLDivElement;
+      if (sortedTrails.length > 1) {
+        if (sortedTrails[0][0] !== sortedTrails[1][0]) {
+          let showAll = settings.showAll;
+          trailsSpan = trailDiv.createSpan();
+          trailsSpan.style.display = 'flex';
+          trailsSpan.style.justifyContent = 'space-between';
+          const trails = trailsSpan.createDiv()
+
+          buttonDiv = trailsSpan.createDiv();
+          const allButton = buttonDiv.createEl('button', { text: 'All' });
+
           if (showAll) {
             allButton.innerText = "Shortest"
             trails.empty()
@@ -331,12 +368,29 @@ export default class BreadcrumbsPlugin extends Plugin {
             trails.empty()
             this.fillTrailDiv(trails, sortedTrails[0], currFile)
           }
-        })
+
+          allButton.addEventListener('click', () => {
+            showAll = !showAll;
+            if (showAll) {
+              allButton.innerText = "Shortest"
+              trails.empty()
+              sortedTrails.forEach(trail => {
+                trails.createDiv({}, (div: HTMLDivElement) => {
+                  this.fillTrailDiv(div, trail, currFile)
+                })
+              })
+            } else {
+              allButton.innerText = "All"
+              trails.empty()
+              this.fillTrailDiv(trails, sortedTrails[0], currFile)
+            }
+          })
+        } else {
+          this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
+        }
       } else {
-        this.fillTrailDiv(this.trailDiv, sortedTrails[0], currFile);
+        this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
       }
-    } else {
-      this.fillTrailDiv(this.trailDiv, sortedTrails[0], currFile);
     }
   }
 
@@ -373,8 +427,8 @@ export default class BreadcrumbsPlugin extends Plugin {
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
-    if (this.trailDiv) {
-      this.trailDiv.remove();
+    if (this.activeTrails.length > 0) {
+      this.activeTrails.forEach((trail) => trail.trailDiv.remove());
     }
   }
 }
