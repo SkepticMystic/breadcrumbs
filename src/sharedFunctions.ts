@@ -1,6 +1,6 @@
 import type { Graph } from "graphlib";
 import { parseTypedLink } from "juggl-api";
-import type { App, FrontMatterCache, TFile } from "obsidian";
+import type { App, FrontMatterCache, TFile, WorkspaceLeaf } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
@@ -227,19 +227,6 @@ export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
   return closedG
 }
 
-// This doesn't work for some reason. Even if you pass it `app`, metadatacache is undefined
-// export function resolvedClass(
-//   app: App,
-//   toFile: string,
-//   currFile: TFile
-// ):
-//   | "internal-link is-unresolved breadcrumbs-link"
-//   | "internal-link breadcrumbs-link" {
-//   return app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
-//     ? "internal-link is-unresolved breadcrumbs-link"
-//     : "internal-link breadcrumbs-link";
-// }
-
 export const isInVault = (app: App, note: string): boolean =>
   !!app.metadataCache.getFirstLinkpathDest(
     note,
@@ -267,7 +254,7 @@ export async function openOrSwitch(
   const { workspace } = app;
   const destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
 
-  const openLeaves = [];
+  const openLeaves: WorkspaceLeaf[] = [];
   // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
   workspace.iterateAllLeaves((leaf) => {
     if (leaf.view?.file?.basename === dest) {
@@ -275,7 +262,9 @@ export async function openOrSwitch(
     }
   });
 
-  if (openLeaves.length) {
+  
+  if (openLeaves.length > 0) {
+    console.log(openLeaves[0])
     workspace.setActiveLeaf(openLeaves[0]);
   } else {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

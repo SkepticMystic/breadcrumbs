@@ -40,9 +40,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
-  trailDiv: HTMLDivElement;
-  // activeTrails: { file: TFile, trailDiv: HTMLDivElement }[];
-  // previousFile: TFile[];
+  visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
   currGraphs: allGraphs;
 
@@ -51,8 +49,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
-    // this.activeTrails = [];
-    // this.previousFile = [this.app.workspace.getActiveFile(), this.app.workspace.getActiveFile()];
+    this.visited = [];
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -60,12 +57,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     );
 
     this.app.workspace.onLayoutReady(async () => {
-      this.trailDiv = createDiv()
+      // this.trailDiv = createDiv()
       setTimeout(async () => {
         this.currGraphs = await this.initGraphs();
 
         this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-
 
         if (this.settings.showTrail) {
           await this.drawTrail();
@@ -78,11 +74,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
             await this.matrixView.draw();
             if (this.settings.showTrail) {
-              // this.activeTrails.last().trailDiv.remove
-              // this.activeTrails.splice(this.activeTrails.length - 1, 1)
-              // this.previousFile.shift();
-              // this.previousFile.push(this.app.workspace.getActiveFile())
-              // console.log(this.previousFile)
               await this.drawTrail();
             }
           })
@@ -255,31 +246,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     return sortedTrails;
   }
 
-
-  fillTrailDiv(trailDiv: HTMLDivElement, breadcrumbs: string[], currFile: TFile): void {
-    // If a path was found
-    if (breadcrumbs.length > 0) {
-      breadcrumbs.forEach((crumb) => {
-        const link = trailDiv.createSpan({
-          text: crumb,
-          // A link in the trail will never be unresolved, so no need to check
-          cls: "internal-link breadcrumbs-link",
-        });
-        link.addEventListener("click", async (e) => {
-          await openOrSwitch(this.app, crumb, currFile, e);
-        });
-        trailDiv.createSpan({
-          text: ` ${this.settings.trailSeperator} `,
-        });
-      });
-      trailDiv.removeChild(trailDiv.lastChild);
-    }
-    // Otherwise don't add any links, just text
-    else {
-      trailDiv.createSpan({ text: this.settings.noPathMessage });
-    }
-  }
-
   async drawTrail(): Promise<void> {
     const { gParents, gChildren } = this.currGraphs;
     const closedParents = closeImpliedLinks(gParents, gChildren)
@@ -291,24 +257,29 @@ export default class BreadcrumbsPlugin extends Plugin {
     const previewView = document.querySelector(
       "div.mod-active div.view-content div.markdown-preview-view"
     );
+    previewView.querySelector('div.breadcrumbs-trail')?.remove()
 
+    const trailDiv = createDiv()
+    previewView.prepend(trailDiv)
 
-    this.trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
+    this.visited.push([currFile.path, trailDiv])
+
+    trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
       ? " markdown-preview-sizer markdown-preview-section"
       : ""
       }`
 
-    previewView.prepend(this.trailDiv);
+    previewView.prepend(trailDiv);
 
-    this.trailDiv.empty();
+    trailDiv.empty();
     if (settings.trailOrTable) {
       new TrailPath({
-        target: this.trailDiv,
+        target: trailDiv,
         props: { sortedTrails, app: this.app, settings, currFile }
       })
     } else {
       new TrailGrid({
-        target: this.trailDiv,
+        target: trailDiv,
         props: { sortedTrails, app: this.app, settings }
       })
     }
@@ -347,7 +318,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
-    this.trailDiv.remove();
+    this.visited.forEach(visit => visit[1].remove())
 
   }
 }

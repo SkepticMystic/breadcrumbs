@@ -31,10 +31,18 @@ debug(settings, {maxLength, paddedTrails, transposedTrails, uniqueValuesPerCol})
 {#each transposedTrails as col, i}
 
     {#each uniqueValuesPerCol[i] as step}
-        <div class="breadcrumbs-trail-grid-item {resolvedClass(step, currFile)} {step === '' ? 'breadcrumbs-filler' : ''}" style="
-        grid-area: {col.indexOf(step) + 1} / {i + 1} / {col.lastIndexOf(step) + 2} / {i + 2};"
-        on:click="{(e) => openOrSwitch(app, step, currFile, e)}">
-        {step}
+        <div 
+        class="breadcrumbs-trail-grid-item 
+            {resolvedClass(step, currFile)} 
+            {step === '' ? 'breadcrumbs-filler' : ''}" 
+        
+        style="
+            grid-area: {col.indexOf(step) + 1} / {i + 1} / 
+                {col.lastIndexOf(step) + 2} / {i + 2};"
+        on:click="{(e) => 
+            openOrSwitch(app, step, currFile, e)
+        }">
+            {step}
         </div>
     {/each}
 
