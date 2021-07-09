@@ -262,7 +262,7 @@ export async function openOrSwitch(
     }
   });
 
-  
+
   if (openLeaves.length > 0) {
     console.log(openLeaves[0])
     workspace.setActiveLeaf(openLeaves[0]);
@@ -299,4 +299,18 @@ export function transpose(A: any[][]): any[][] {
     A.forEach(row => AT[j].push(row[j]))
   }
   return AT
+}
+
+export function runs(arr: string[]): { value: string, first: number, last: number }[] {
+  const runs: { value: string, first: number, last: number }[] = []
+  let i = 0;
+  while (i < arr.length) {
+    const currValue = arr[i]
+    runs.push({ value: currValue, first: i, last: undefined })
+    while (currValue === arr[i]) {
+      i++
+    }
+    runs.last().last = i - 1;
+  }
+  return runs
 }

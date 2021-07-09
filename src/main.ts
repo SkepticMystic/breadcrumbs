@@ -14,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr, isInVault } from "src/sharedFunctions";
+import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
 import TrailPath from "./TrailPath.svelte";
 
@@ -188,6 +188,32 @@ export default class BreadcrumbsPlugin extends Plugin {
     })
     debug(this.settings, { pathsArr })
     return pathsArr;
+  }
+
+  dfsAllPaths(g: Graph, startNode: string): string[][] {
+    const queue: { node: string; path: string[] }[] = [
+      { node: startNode, path: [] },
+    ];
+    const pathsArr: string[][] = [];
+
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+      i++
+      const currPath = queue.shift();
+
+      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const extPath = [currPath.node, ...currPath.path];
+      queue.unshift(
+        ...newNodes.map((n: string) => {
+          return { node: n, path: extPath };
+        })
+      );
+
+      if (newNodes.length === 0) {
+        pathsArr.push(extPath);
+      }
+    }
+    return pathsArr
   }
 
   getBreadcrumbs(g: Graph): string[][] {

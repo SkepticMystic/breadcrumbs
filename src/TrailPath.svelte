@@ -1,13 +1,26 @@
 <script lang="ts">
-import type { App,TFile } from "obsidian";
+import type { App,TFile, View } from "obsidian";
 import type { BreadcrumbsSettings } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
-
 
 export let sortedTrails: string[][];
 export let app: App;
 export let settings: BreadcrumbsSettings;
 export let currFile: TFile;
+
+const activeLeafView = app.workspace.activeLeaf.view
+
+function hoverPreview(event: MouseEvent, view: View): void {
+  const targetEl = event.target as HTMLElement;
+
+  view.app.workspace.trigger("hover-link", {
+    event,
+    source: view.getViewType(),
+    hoverParent: view,
+    targetEl,
+    linktext: targetEl.innerText,
+  });
+}
 
 let showAll = settings.showAll;
 $: buttonText = showAll ? "Shortest" : "All";
@@ -25,7 +38,8 @@ $: trailsToShow = showAll ? sortedTrails : [sortedTrails[0]];
                     {#each trail as crumb, i}
                         <span
                             class="internal-link breadcrumbs-link"
-                            on:click={async (e) => await openOrSwitch(app, crumb,   currFile, e)}>
+                            on:click={async (e) => await openOrSwitch(app, crumb, currFile, e)}
+                            on:mouseover={(e) => hoverPreview(e, activeLeafView)}>
                             {crumb}
                         </span>
                         {#if i < trail.length - 1}
