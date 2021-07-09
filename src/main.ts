@@ -14,8 +14,9 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { closeImpliedLinks, getFileFrontmatterArr, getNeighbourObjArr, isInVault, isSubset, openOrSwitch } from "src/sharedFunctions";
+import { closeImpliedLinks, getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
+import TrailPath from "./TrailPath.svelte";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -321,56 +322,15 @@ export default class BreadcrumbsPlugin extends Plugin {
       // Track the trailDiv for the current note
       /// Might have to pair it with the note name
       this.activeTrails.push({ file: currFile, trailDiv });
-      console.log(this.activeTrails)
 
       previewView.prepend(trailDiv);
 
       if (settings.trailOrTable) {
-        let trailsSpan: HTMLSpanElement;
-        let buttonDiv: HTMLDivElement;
-        if (sortedTrails.length > 1) {
-          let showAll = settings.showAll;
-          trailsSpan = trailDiv.createSpan();
-          trailsSpan.style.display = 'flex';
-          trailsSpan.style.justifyContent = 'space-between';
-          const trails = trailsSpan.createDiv()
-
-          buttonDiv = trailsSpan.createDiv();
-          const allButton = buttonDiv.createEl('button', { text: 'All' });
-
-          if (showAll) {
-            allButton.innerText = "Shortest"
-            trails.empty()
-            sortedTrails.forEach(trail => {
-              trails.createDiv({}, (div: HTMLDivElement) => {
-                this.fillTrailDiv(div, trail, currFile)
-              })
-            })
-          } else {
-            allButton.innerText = "All"
-            trails.empty()
-            this.fillTrailDiv(trails, sortedTrails[0], currFile)
-          }
-
-          allButton.addEventListener('click', () => {
-            showAll = !showAll;
-            if (showAll) {
-              allButton.innerText = "Shortest"
-              trails.empty()
-              sortedTrails.forEach(trail => {
-                trails.createDiv({}, (div: HTMLDivElement) => {
-                  this.fillTrailDiv(div, trail, currFile)
-                })
-              })
-            } else {
-              allButton.innerText = "All"
-              trails.empty()
-              this.fillTrailDiv(trails, sortedTrails[0], currFile)
-            }
-          })
-        } else {
-          this.fillTrailDiv(trailDiv, sortedTrails[0], currFile);
-        }
+        trailDiv.empty();
+        new TrailPath({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app, settings, currFile }
+        })
       } else {
         trailDiv.empty()
         new TrailGrid({
