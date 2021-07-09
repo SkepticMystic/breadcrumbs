@@ -14,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { closeImpliedLinks, getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
+import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
 import TrailPath from "./TrailPath.svelte";
 
@@ -74,10 +74,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
             this.currGraphs = await this.initGraphs();
-
-            if (this.settings.debugMode) {
-              console.log(this.currGraphs)
-            }
+            debug(this.settings, this.currGraphs)
 
             await this.matrixView.draw();
             if (this.settings.showTrail) {
@@ -254,10 +251,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       );
     }
 
-    if (this.settings.debugMode) {
-      console.log({ sortedTrails });
-    }
-
+    debug(this.settings, sortedTrails)
     return sortedTrails;
   }
 

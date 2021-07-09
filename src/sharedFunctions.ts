@@ -13,7 +13,6 @@ import type MatrixView from "src/MatrixView";
 
 export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
 
-
 export function getFileFrontmatterArr(
   app: App,
   settings: BreadcrumbsSettings
@@ -23,29 +22,24 @@ export function getFileFrontmatterArr(
 
   // If dataview is **enabled** (not just installed), use its index
   if (app.plugins.plugins.dataview !== undefined) {
-    if (settings.debugMode) {
-      console.log("Using Dataview metadataCache");
-    }
+    debug(settings, "Using Dataview")
+
     app.workspace.onLayoutReady(() => {
       files.forEach((file) => {
-        if (settings.superDebugMode) {
-          console.log(`Get frontmatter: ${file.basename}`);
-        }
-        const dv: FrontMatterCache =
-          app.plugins.plugins.dataview.api.page(file.path) ?? [];
+        superDebug(settings, `Get frontmatter: ${file.basename}`)
 
-        if (settings.superDebugMode) {
-          console.log({ dv });
-        }
+        const dv: FrontMatterCache = app.plugins.plugins.dataview.api.page(file.path) ?? [];
+
+        superDebug(settings, dv)
+
         fileFrontMatterArr.push({ file, frontmatter: dv });
       });
     });
   }
   // Otherwise use Obsidian's
   else {
-    if (settings.debugMode) {
-      console.log("Using Obsidian metadataCache");
-    }
+    debug(settings, "Using Obsidian")
+
     files.forEach((file) => {
       const obs: FrontMatterCache =
         app.metadataCache.getFileCache(file).frontmatter ?? [];
@@ -56,9 +50,7 @@ export function getFileFrontmatterArr(
     });
   }
 
-  if (settings.debugMode) {
-    console.log({ fileFrontMatterArr });
-  }
+  debug(settings, fileFrontMatterArr)
   return fileFrontMatterArr;
 }
 
@@ -98,9 +90,7 @@ export async function getJugglLinks(
     })
   )
 
-  if (settings.debugMode) {
-    console.log({ typedLinksArr })
-  }
+  debug(settings, typedLinksArr)
 
   const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].map(splitAndTrim).flat().filter(field => field !== "")
 
@@ -117,10 +107,7 @@ export async function getJugglLinks(
   })
 
   const filteredLinks = typedLinksArr.filter(link => link.links.length ? true : false)
-
-  if (settings.debugMode) {
-    console.log(filteredLinks)
-  }
+  debug(settings, filteredLinks)
   return filteredLinks
 }
 
@@ -133,17 +120,15 @@ export function getFields(
 
 
   if (typeof fieldItems === "string") {
-    if (settings.superDebugMode) {
-      console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is: ${fieldItems}`);
-    }
+    superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is: ${fieldItems}`)
+
     const links =
       splitAndDrop(fieldItems)?.map((value: string) => value?.split("/").last() ?? '') ?? [];
     return links;
   } else {
-    if (settings.superDebugMode) {
-      console.log(`${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`);
-      console.log(fieldItems?.join(', ') ?? undefined)
-    }
+    superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`)
+    superDebug(settings, fieldItems?.join(', ') ?? undefined)
+
     const links: string[] =
       [fieldItems]
         .flat()
@@ -218,10 +203,20 @@ export async function getNeighbourObjArr(
       return { current: fileFrontmatter.file, parents, siblings, children };
     }
   );
-  if (plugin.settings.debugMode) {
-    console.log({ neighbourObjArr });
-  }
+  debug(plugin.settings, neighbourObjArr)
   return neighbourObjArr;
+}
+
+export function debug(settings: BreadcrumbsSettings, log: any): void {
+  if (settings.debugMode) {
+    console.log(log)
+  }
+}
+
+export function superDebug(settings: BreadcrumbsSettings, log: any): void {
+  if (settings.superDebugMode) {
+    console.log(log)
+  }
 }
 
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
