@@ -127,7 +127,7 @@ export function getFields(
     return links;
   } else {
     superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`)
-    superDebug(settings, fieldItems?.join(', ') ?? undefined)
+    // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
     const links: string[] =
       [fieldItems]

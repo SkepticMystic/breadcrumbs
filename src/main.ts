@@ -195,7 +195,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     pathsArr.forEach(path => {
       if (path.length) { path.splice(path.length - 1, 1) }
     })
-    console.log(pathsArr)
+    debug(this.settings, { pathsArr })
     return pathsArr;
   }
 
@@ -309,7 +309,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     } else {
       new TrailGrid({
         target: this.trailDiv,
-        props: { sortedTrails, app: this.app }
+        props: { sortedTrails, app: this.app, settings }
       })
     }
   }
@@ -344,7 +344,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     const openLeaves = this.app.workspace.getLeavesOfType(
       VIEW_TYPE_BREADCRUMBS_MATRIX
     );
-    // console.log(openLeaves);
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv

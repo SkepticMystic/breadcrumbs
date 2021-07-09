@@ -1,9 +1,12 @@
 <script lang="ts">
-import type { App, TFile } from "obsidian";
-import { openOrSwitch,padArray,transpose } from "src/sharedFunctions";
+import type { App,TFile } from "obsidian";
+import type { BreadcrumbsSettings } from "src/interfaces";
+import { debug,openOrSwitch,padArray,transpose } from "src/sharedFunctions";
+
 
 export let sortedTrails: string[][]
 export let app: App;
+export let settings: BreadcrumbsSettings;
 
 const currFile = app.workspace.getActiveFile();
 
@@ -17,7 +20,8 @@ const maxLength = sortedTrails.last().length
 const paddedTrails: string[][] = sortedTrails.map(trail => padArray(trail, maxLength))
 const transposedTrails: string[][] = transpose(paddedTrails);
 const uniqueValuesPerCol = transposedTrails.map(trail => [...new Set(trail)])
-console.log({maxLength, paddedTrails, transposedTrails, uniqueValuesPerCol})
+
+debug(settings, {maxLength, paddedTrails, transposedTrails, uniqueValuesPerCol})
 
 </script>
 
