@@ -148,14 +148,30 @@ export default class MatrixView extends ItemView {
 
     let txt = currFile.basename + '\n';
     const indent = '  ';
+    const visited: string[] = [];
+    const depths: number[] = [];
     reversed.forEach(path => {
       for (let i = 0; i < path.length; i++) {
-        txt += indent.repeat(i + 1);
-        txt += '- '
-        txt += path[i];
-        txt += '\n';
+
+        const curr = path[i];
+        if (!visited.includes(curr)) {
+          const index = visited.indexOf(curr);
+          if (depths[index] !== i) {
+            txt += indent.repeat(i + 1);
+            txt += `- ${curr}\n`;
+            visited.push(curr)
+            depths.push(i)
+          }
+        } else {
+          const next = path[i + 1]
+          if (next) {
+            txt += indent.repeat(i + 2)
+            txt += `- ${next}\n`
+          }
+        }
       }
     })
+    console.log({ visited })
 
 
     // !SECTION Create Index
