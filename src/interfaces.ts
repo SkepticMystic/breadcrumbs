@@ -11,7 +11,7 @@ export interface BreadcrumbsSettings {
   showNameOrType: boolean;
   showRelationType: boolean;
   showTrail: boolean;
-  trailOrTable: boolean;
+  trailOrTable: 1 | 2 | 3;
   showAll: boolean;
   noPathMessage: string;
   trailSeperator: string;

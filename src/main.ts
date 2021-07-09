@@ -14,7 +14,7 @@ import type {
   neighbourObj
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr, isInVault, openOrSwitch } from "src/sharedFunctions";
+import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr, isInVault } from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
 import TrailPath from "./TrailPath.svelte";
 
@@ -22,15 +22,15 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
   siblingFieldName: "sibling",
   childFieldName: "child",
-  indexNote: ["Index"],
+  indexNote: [""],
   refreshIntervalTime: 0,
   defaultView: true,
   showNameOrType: true,
   showRelationType: true,
   showTrail: true,
-  trailOrTable: false,
+  trailOrTable: 3,
   showAll: false,
-  noPathMessage: `No path to index note was found`,
+  noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   respectReadableLineLength: true,
   debugMode: false,
@@ -211,16 +211,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       indexNotes.forEach((index) => {
         let step = index;
 
-        // Check if indexNote exists
-        if (
-          !isInVault(this.app, index)
-        ) {
-          return [
-            `${index} is not a note in your vault. Please change the settings for Index Notes`
-          ];
-        }
-        // Check if a path even exists
-        else if (paths[step].distance !== Infinity) {
+        if (paths[step].distance !== Infinity) {
           const breadcrumbs: string[] = [];
           // Walk it until arriving at `from`
           while (paths[step].distance !== 0) {
@@ -247,41 +238,55 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    const { gParents, gChildren } = this.currGraphs;
-    const closedParents = closeImpliedLinks(gParents, gChildren)
-    const sortedTrails = this.getBreadcrumbs(closedParents);
-    const currFile = this.app.workspace.getActiveFile();
-    const settings = this.settings
+    if (this.settings.showTrail) {
 
-    // Get the container div of the active note
-    const previewView = document.querySelector(
-      "div.mod-active div.view-content div.markdown-preview-view"
-    );
-    previewView.querySelector('div.breadcrumbs-trail')?.remove()
+      const { gParents, gChildren } = this.currGraphs;
+      const closedParents = closeImpliedLinks(gParents, gChildren)
+      const sortedTrails = this.getBreadcrumbs(closedParents);
+      const currFile = this.app.workspace.getActiveFile();
+      const settings = this.settings
 
-    const trailDiv = createDiv()
-    previewView.prepend(trailDiv)
+      // Get the container div of the active note
+      const previewView = document.querySelector(
+        "div.mod-active div.view-content div.markdown-preview-view"
+      );
+      previewView.querySelector('div.breadcrumbs-trail')?.remove()
 
-    this.visited.push([currFile.path, trailDiv])
+      const trailDiv = createDiv()
+      previewView.prepend(trailDiv)
 
-    trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
-      ? " markdown-preview-sizer markdown-preview-section"
-      : ""
-      }`
+      this.visited.push([currFile.path, trailDiv])
 
-    previewView.prepend(trailDiv);
+      trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
+        ? " markdown-preview-sizer markdown-preview-section"
+        : ""
+        }`
 
-    trailDiv.empty();
-    if (settings.trailOrTable) {
-      new TrailPath({
-        target: trailDiv,
-        props: { sortedTrails, app: this.app, settings, currFile }
-      })
-    } else {
-      new TrailGrid({
-        target: trailDiv,
-        props: { sortedTrails, app: this.app, settings }
-      })
+      previewView.prepend(trailDiv);
+
+      trailDiv.empty();
+
+
+      if (settings.trailOrTable === 1) {
+        new TrailPath({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app, settings, currFile }
+        })
+      } else if (settings.trailOrTable === 2) {
+        new TrailGrid({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app, settings }
+        })
+      } else {
+        new TrailPath({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app, settings, currFile }
+        });
+        new TrailGrid({
+          target: trailDiv,
+          props: { sortedTrails, app: this.app, settings }
+        })
+      }
     }
   }
 

@@ -81,10 +81,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               await plugin.saveSettings();
 
               plugin.refreshIntervalID = window.setInterval(async () => {
-                if (plugin.trailDiv || plugin.matrixView) {
-                  plugin.currGraphs = await plugin.initGraphs();
-                }
-                if (plugin.trailDiv) {
+                plugin.currGraphs = await plugin.initGraphs();
+                if (plugin.settings.showTrail) {
                   await plugin.drawTrail();
                 }
                 if (plugin.matrixView) {
@@ -149,43 +147,39 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     containerEl.createEl("h3", { text: "Breadcrumb Trail" });
 
     new Setting(containerEl)
-      .setName("Show Breadcrumb Trail")
+      .setName("Show Breadcrumbs")
       .setDesc(
         "Show a trail of notes leading from your index note down to the current note you are in (if a path exists)"
       )
       .addToggle((toggle) =>
         toggle.setValue(plugin.settings.showTrail).onChange(async (value) => {
           plugin.settings.showTrail = value;
-
           await plugin.saveSettings();
-          if (value) {
-            plugin.trailDiv = createDiv({
-              cls: `breadcrumbs-trail is-readable-line-width${plugin.settings.respectReadableLineLength
-                ? " markdown-preview-sizer markdown-preview-section"
-                : ""
-                }`,
-            });
-            await plugin.drawTrail();
-          } else {
-            plugin.trailDiv.remove();
-          }
+          await plugin.drawTrail();
         })
       );
 
+
     new Setting(containerEl)
-      .setName("Trail or Table mode")
+      .setName("Trail or Table or Both")
       .setDesc(
-        "Wether to show the regular breadcrumb trails, or a table view. On = Trail, Off = Table"
+        "Wether to show the regular breadcrumb trails, the table view, neither, or both. 1 = Only Trail, 2 = Only Grid, 3 = Both"
       )
-      .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.trailOrTable)
+      .addText((text) => {
+        text
+          .setPlaceholder("Index Note")
+          .setValue(plugin.settings.trailOrTable.toString())
           .onChange(async (value) => {
-            plugin.settings.trailOrTable = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail()
-          })
-      );
+            const num = parseInt(value);
+            if ([1, 2, 3].includes(num)) {
+              plugin.settings.trailOrTable = num as 1 | 2 | 3;
+              await plugin.saveSettings();
+              await plugin.drawTrail();
+            } else {
+              new Notice("The value has to be 1, 2, or 3")
+            }
+          });
+      });
 
     new Setting(containerEl)
       .setName("Index/Home Note(s)")
