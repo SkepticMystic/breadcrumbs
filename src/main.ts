@@ -40,8 +40,9 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   matrixView: MatrixView;
-  activeTrails: { file: TFile, trailDiv: HTMLDivElement }[];
-  previousFile: TFile[];
+  trailDiv: HTMLDivElement;
+  // activeTrails: { file: TFile, trailDiv: HTMLDivElement }[];
+  // previousFile: TFile[];
   refreshIntervalID: number;
   currGraphs: allGraphs;
 
@@ -50,8 +51,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
-    this.activeTrails = [];
-    this.previousFile = [this.app.workspace.getActiveFile(), this.app.workspace.getActiveFile()];
+    // this.activeTrails = [];
+    // this.previousFile = [this.app.workspace.getActiveFile(), this.app.workspace.getActiveFile()];
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -59,6 +60,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     );
 
     this.app.workspace.onLayoutReady(async () => {
+      this.trailDiv = createDiv()
       setTimeout(async () => {
         this.currGraphs = await this.initGraphs();
 
@@ -77,15 +79,13 @@ export default class BreadcrumbsPlugin extends Plugin {
               console.log(this.currGraphs)
             }
 
-
-
             await this.matrixView.draw();
             if (this.settings.showTrail) {
               // this.activeTrails.last().trailDiv.remove
               // this.activeTrails.splice(this.activeTrails.length - 1, 1)
-              this.previousFile.shift();
-              this.previousFile.push(this.app.workspace.getActiveFile())
-              console.log(this.previousFile)
+              // this.previousFile.shift();
+              // this.previousFile.push(this.app.workspace.getActiveFile())
+              // console.log(this.previousFile)
               await this.drawTrail();
             }
           })
@@ -298,46 +298,25 @@ export default class BreadcrumbsPlugin extends Plugin {
       "div.mod-active div.view-content div.markdown-preview-view"
     );
 
-    let trailDiv: HTMLDivElement;
 
-    // If the current note already has a trailDiv
-    if (this.activeTrails.length === 0
-      || !this.activeTrails.some(fileTrail => fileTrail.file.path === currFile.path)) {
+    this.trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
+      ? " markdown-preview-sizer markdown-preview-section"
+      : ""
+      }`
 
-      if (this.activeTrails.length > 0) {
-        const previousDiv = this.activeTrails.filter(fileTrail => fileTrail.file.path === this.previousFile[0].path);
-        if (previousDiv.length) {
-          previousDiv[0].trailDiv.remove();
-          this.activeTrails.splice(this.activeTrails.indexOf(previousDiv[0]), 1)
-        }
-      }
+    previewView.prepend(this.trailDiv);
 
-      trailDiv = createDiv({
-        // Check if respectReadableLineLength is enabled
-        cls: `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
-          ? " markdown-preview-sizer markdown-preview-section"
-          : ""
-          }`,
-      });
-      // Track the trailDiv for the current note
-      /// Might have to pair it with the note name
-      this.activeTrails.push({ file: currFile, trailDiv });
-
-      previewView.prepend(trailDiv);
-
-      if (settings.trailOrTable) {
-        trailDiv.empty();
-        new TrailPath({
-          target: trailDiv,
-          props: { sortedTrails, app: this.app, settings, currFile }
-        })
-      } else {
-        trailDiv.empty()
-        new TrailGrid({
-          target: trailDiv,
-          props: { sortedTrails, app: this.app }
-        })
-      }
+    this.trailDiv.empty();
+    if (settings.trailOrTable) {
+      new TrailPath({
+        target: this.trailDiv,
+        props: { sortedTrails, app: this.app, settings, currFile }
+      })
+    } else {
+      new TrailGrid({
+        target: this.trailDiv,
+        props: { sortedTrails, app: this.app }
+      })
     }
   }
 
@@ -375,8 +354,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
-    if (this.activeTrails.length > 0) {
-      this.activeTrails.forEach((trail) => trail.trailDiv.remove());
-    }
+    this.trailDiv.remove();
+
   }
 }

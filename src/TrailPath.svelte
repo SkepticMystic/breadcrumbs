@@ -19,16 +19,20 @@ $: trailsToShow = showAll ? sortedTrails : [sortedTrails[0]];
     <div class="trails-div">
         {#each trailsToShow as trail}
             <div>
-                {#each trail as crumb, i}
-                    <span
-                        class="internal-link breadcrumbs-link"
-                        on:click={async (e) => await openOrSwitch(app, crumb, currFile, e)}>
-                        {crumb}
-                    </span>
-                    {#if i < trail.length - 1}
-                    <span>{' ' + settings.trailSeperator + ' '}</span>
-                    {/if}
-                {/each}
+                {#if trail.length === 0}
+                    <span>{settings.noPathMessage}</span>
+                {:else}
+                    {#each trail as crumb, i}
+                        <span
+                            class="internal-link breadcrumbs-link"
+                            on:click={async (e) => await openOrSwitch(app, crumb,   currFile, e)}>
+                            {crumb}
+                        </span>
+                        {#if i < trail.length - 1}
+                            <span>{' ' + settings.trailSeperator + ' '}</span>
+                        {/if}
+                    {/each}
+                {/if}
             </div>
         {/each}
     </div>
