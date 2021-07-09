@@ -1,12 +1,14 @@
+import { reverse } from "dns";
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
-  VIEW_TYPE_BREADCRUMBS_MATRIX,
+  VIEW_TYPE_BREADCRUMBS_MATRIX
 } from "src/constants";
 import type { allGraphs, internalLinkObj, SquareProps } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
+import { closeImpliedLinks } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
@@ -103,48 +105,60 @@ export default class MatrixView extends ItemView {
     });
   }
 
-  getAdjList(
-    gChildren: Graph,
-    currFile: string,
-    depth: number
-  ): Map<string, string[]> {
-    const adjList: Map<string, string[]> = new Map();
+  dfsAllPaths(g: Graph, startNode: string): string[][] {
+    const queue: { node: string; path: string[] }[] = [
+      { node: startNode, path: [] },
+    ];
+    const pathsArr: string[][] = [];
 
-    function addNode(node: string) {
-      adjList.set(node, []);
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+      i++
+      const currPath = queue.shift();
+
+      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const extPath = [currPath.node, ...currPath.path];
+      queue.unshift(
+        ...newNodes.map((n: string) => {
+          return { node: n, path: extPath };
+        })
+      );
+
+      if (newNodes.length === 0) {
+        pathsArr.push(extPath);
+      }
     }
-
-    addNode(currFile)
-
-    const visited: Set<string> = new Set();
-
-    // Do this `depth` number of times
-    for (let i = 1; i < depth; i++) {
-      console.log(adjList);
-      adjList.forEach((childArr, parent) => {
-        let childrenOfKey: string[];
-        // If the node hasn't been visited before
-        if (!visited.has(parent)) {
-          // Get it's children
-          childrenOfKey = (gChildren.successors(parent) ?? []) as string[];
-          // Mark it as visited
-          visited.add(parent);
-          // Add it to the adjList
-          adjList.set(parent, childrenOfKey);
-          // Add the children as top-level map items
-          childrenOfKey.forEach((childOfKey) => {
-            addNode(childOfKey);
-          });
-        }
-      });
-    }
-
-    return adjList;
+    return pathsArr
   }
 
 
   async draw(): Promise<void> {
     this.contentEl.empty();
+    // this.currGraphs = this.plugin.currGraphs;
+    const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
+    const currFile = this.app.workspace.getActiveFile();
+    const settings = this.plugin.settings;
+
+    // SECTION Create Index
+
+
+    const allPaths = this.dfsAllPaths(closeImpliedLinks(gChildren, gParents), currFile.basename);
+    const reversed = allPaths.map(path => path.reverse());
+    reversed.forEach(path => path.shift());
+
+    let txt = currFile.basename + '\n';
+    const indent = '  ';
+    reversed.forEach(path => {
+      for (let i = 0; i < path.length; i++) {
+        txt += indent.repeat(i + 1);
+        txt += '- '
+        txt += path[i];
+        txt += '\n';
+      }
+    })
+
+
+    // !SECTION Create Index
 
     const viewToggleButton = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",
@@ -160,13 +174,10 @@ export default class MatrixView extends ItemView {
     });
     createIndexButton.addEventListener("click", () =>
       console.log(
-        this.getAdjList(this.plugin.currGraphs.gChildren, currFile.basename, 2)
+        txt
       )
     );
 
-    this.currGraphs = this.plugin.currGraphs;
-    const currFile = this.app.workspace.getActiveFile();
-    const settings = this.plugin.settings;
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
       settings.showNameOrType ? settings.parentFieldName : "Parent",
@@ -174,7 +185,6 @@ export default class MatrixView extends ItemView {
       settings.showNameOrType ? settings.childFieldName : "Child",
     ];
 
-    const { gParents, gSiblings, gChildren } = this.currGraphs;
 
     const [
       realParents,

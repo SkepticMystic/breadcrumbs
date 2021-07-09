@@ -67,7 +67,7 @@ debug(settings, {maxLength, paddedTrails, transposedTrails, runs: allRuns})
 <style>
 
 div.breadcrumbs-trail-grid {
-    border: 3px solid var(--background-modifier-border);
+    border: 2px solid var(--background-modifier-border);
     display: grid;
     align-items: stretch;
     width: auto;
@@ -80,7 +80,8 @@ div.breadcrumbs-trail-grid-item {
     align-items: center;
     justify-content: center;
     padding: 2px;
-    height: auto;
+    font-size: smaller;
+    /* height: auto; */
 }
 
 div.breadcrumbs-trail-grid-item.breadcrumbs-filler {
