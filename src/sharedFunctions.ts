@@ -11,6 +11,10 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
 
+export function sum(arr: number[]): number {
+  return arr.reduce((a, b) => a + b)
+}
+
 export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
 
 export function getFileFrontmatterArr(
@@ -313,4 +317,29 @@ export function runs(arr: string[]): { value: string, first: number, last: numbe
     runs.last().last = i - 1;
   }
   return runs
+}
+
+// SOURCE https://stackoverflow.com/questions/9960908/permutations-in-javascript
+export function permute(permutation: any[]): any[][] {
+  const length = permutation.length,
+    result = [permutation.slice()],
+    c = new Array(length).fill(0)
+
+  let i = 1, k: number, p: number;
+
+  while (i < length) {
+    if (c[i] < i) {
+      k = i % 2 && c[i];
+      p = permutation[i];
+      permutation[i] = permutation[k];
+      permutation[k] = p;
+      ++c[i];
+      i = 1;
+      result.push(permutation.slice());
+    } else {
+      c[i] = 0;
+      ++i;
+    }
+  }
+  return result;
 }
