@@ -31,15 +31,15 @@ function hoverPreview(event: MouseEvent, view: View): void {
 const maxLength = Math.max(...sortedTrails.map(trail => trail.length))
 const paddedTrails: string[][] = sortedTrails.map(trail => padArray(trail, maxLength))
 
-const permutations: string[][][] = permute(paddedTrails)
+// const permutations: string[][][] = permute(paddedTrails.map(trail => [trail[0]]))
 
-//  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
+// //  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
 
-const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
-const runsPerRun = ALLRuns.map(runs => sum(runs.map(run => run.length)))
-const minRunLength = Math.min(...runsPerRun);
-const indexOfMinRun = runsPerRun.indexOf(minRunLength);
-const minRun = ALLRuns[indexOfMinRun]
+// const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
+// const runsPerRun = ALLRuns.map(runs => runs[0].length)
+// const minRunLength = Math.min(...runsPerRun);
+// const indexOfMinRun = runsPerRun.indexOf(minRunLength);
+// const minRun = ALLRuns[indexOfMinRun]
 
 const transposedTrails: string[][] = transpose(paddedTrails);
 const allRuns = transposedTrails.map(runs);
@@ -54,7 +54,7 @@ const allRuns = transposedTrails.map(runs);
 
 {#each transposedTrails as col, i}
 
-    {#each minRun[i] as step}
+    {#each allRuns[i] as step}
         <div 
         class="breadcrumbs-trail-grid-item 
             {resolvedClass(step.value, currFile)} 
