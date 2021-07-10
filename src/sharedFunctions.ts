@@ -15,6 +15,11 @@ export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b)
 }
 
+export function normalise(arr: number[]): number[] {
+  const max = Math.max(...arr);
+  return arr.map(item => item / max)
+}
+
 export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
 
 export function getFileFrontmatterArr(

@@ -1,12 +1,13 @@
 <script lang="ts">
 import type { App,TFile,View } from "obsidian";
-import type { BreadcrumbsSettings } from "src/interfaces";
-import { debug,openOrSwitch,padArray,permute,runs,sum,transpose } from "src/sharedFunctions";
-
+import type BreadcrumbsPlugin from "src/main";
+import { closeImpliedLinks, normalise, openOrSwitch,padArray,runs,transpose } from "src/sharedFunctions";
 
 export let sortedTrails: string[][]
 export let app: App;
-export let settings: BreadcrumbsSettings;
+export let plugin: BreadcrumbsPlugin;
+
+const settings = plugin.settings;
 
 const currFile = app.workspace.getActiveFile();
 const activeLeafView = app.workspace.activeLeaf.view;
@@ -28,6 +29,27 @@ function hoverPreview(event: MouseEvent, view: View): void {
     linktext: targetEl.innerText,
   });
 }
+
+const allCells = [... new Set(sortedTrails.reduce((a, b) => [...a, ...b]))]
+
+// const data: {[cell: string]: number} = {}
+// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
+
+const children: {[cell: string]: number} = {};
+allCells.forEach(cell => children[cell] = (closeImpliedLinks(plugin.currGraphs.gChildren, plugin.currGraphs.gParents).successors(cell) ?? []).length)
+
+const normalisedData = normalise(Object.values(children));
+allCells.forEach((cell, i) => {
+    children[cell] = normalisedData[i]
+})
+// const normalisedData = allCells.forEach(cell => {
+// })
+
+// const links: {[cell: string]: number}[] = []
+// data.forEach(cell => links[Object.keys(cell)[0]] = (Object.values(cell)[0]?.links.length ?? 0))
+
+// console.log(data)
+
 const maxLength = Math.max(...sortedTrails.map(trail => trail.length))
 const paddedTrails: string[][] = sortedTrails.map(trail => padArray(trail, maxLength))
 
@@ -43,6 +65,10 @@ const paddedTrails: string[][] = sortedTrails.map(trail => padArray(trail, maxLe
 
 const transposedTrails: string[][] = transpose(paddedTrails);
 const allRuns = transposedTrails.map(runs);
+
+const intToCol = (int:number) => ('#' + int.toString(16).padStart(6, '0'));
+// allRuns.forEach(run => console.log(intToCol(data[run[0].value])))
+
 
 // debug(settings, {maxLength, paddedTrails, transposedTrails, permutations, ALLRuns, runsPerRun, minRunLength: Math.min(...runsPerRun), minRun})
 
@@ -62,7 +88,10 @@ const allRuns = transposedTrails.map(runs);
         
         style="
             grid-area: {step.first + 1} / {i + 1} / 
-                {step.last + 2} / {i + 2};"
+                {step.last + 2} / {i + 2};
+            {settings.gridHeatmap 
+                ? `background-color: rgba(50, 50, 50, ${children[step.value]})` 
+                : ''}"
 
         on:click={(e) => 
             openOrSwitch(app, step.value, currFile, e)

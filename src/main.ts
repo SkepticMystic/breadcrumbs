@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showRelationType: true,
   showTrail: true,
   trailOrTable: 3,
+  gridHeatmap: false,
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
@@ -301,7 +302,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       } else if (settings.trailOrTable === 2) {
         new TrailGrid({
           target: trailDiv,
-          props: { sortedTrails, app: this.app, settings }
+          props: { sortedTrails, app: this.app, plugin: this }
         })
       } else {
         new TrailPath({
@@ -310,7 +311,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         });
         new TrailGrid({
           target: trailDiv,
-          props: { sortedTrails, app: this.app, settings }
+          props: { sortedTrails, app: this.app, plugin: this }
         })
       }
     }

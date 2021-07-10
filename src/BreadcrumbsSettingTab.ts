@@ -181,6 +181,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           });
       });
 
+      new Setting(containerEl)
+      .setName("Grid view heatmap")
+      .setDesc(
+        "If the grid view is visible, change the background colour of squares based on the number of children leaving that note."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.gridHeatmap).onChange(async (value) => {
+          plugin.settings.gridHeatmap = value;
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
+      );
+
     new Setting(containerEl)
       .setName("Index/Home Note(s)")
       .setDesc(
