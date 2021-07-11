@@ -144,7 +144,7 @@ export function getFields(
     // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
 
-    const flattenedItems: string[] = (fieldItems.flat().flat()) as string[];
+    const flattenedItems: string[] = ([fieldItems].flat(5)) as string[];
     console.log(flattenedItems)
 
     const links: [] =
