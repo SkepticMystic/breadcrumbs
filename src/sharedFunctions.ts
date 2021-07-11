@@ -20,6 +20,10 @@ export function normalise(arr: number[]): number[] {
   return arr.map(item => item / max)
 }
 
+export function flatten(arr: any[]): any[] {
+  return [].concat.apply([], arr)
+}
+
 export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
 
 export function getFileFrontmatterArr(
@@ -39,7 +43,7 @@ export function getFileFrontmatterArr(
 
         const dv: FrontMatterCache = app.plugins.plugins.dataview.api.page(file.path) ?? [];
 
-        superDebug(settings, dv)
+        superDebug(settings, { dv })
 
         fileFrontMatterArr.push({ file, frontmatter: dv });
       });
@@ -59,7 +63,7 @@ export function getFileFrontmatterArr(
     });
   }
 
-  debug(settings, fileFrontMatterArr)
+  debug(settings, { fileFrontMatterArr })
   return fileFrontMatterArr;
 }
 
@@ -99,7 +103,7 @@ export async function getJugglLinks(
     })
   )
 
-  debug(settings, typedLinksArr)
+  debug(settings, { typedLinksArr })
 
   const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].map(splitAndTrim).flat().filter(field => field !== "")
 
@@ -116,7 +120,7 @@ export async function getJugglLinks(
   })
 
   const filteredLinks = typedLinksArr.filter(link => link.links.length ? true : false)
-  debug(settings, filteredLinks)
+  debug(settings, { filteredLinks })
   return filteredLinks
 }
 
@@ -134,16 +138,21 @@ export function getFields(
     const links =
       splitAndDrop(fieldItems)?.map((value: string) => value?.split("/").last() ?? '') ?? [];
     return links;
-  } else {
+  }
+  else {
     superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`)
-    // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
+    superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
-    const links: string[] =
-      [fieldItems]
-        .flat()
-        ?.map(
-          (link) => link.path?.split("/").last() ?? (link?.split("/").last() ?? '')
-        ) ?? [];
+
+    const flattenedItems: string[] = flatten(flatten(fieldItems)) as string[];
+    console.log(flattenedItems)
+
+    const links: [] =
+      flattenedItems.map(
+        (link) => {
+          debug(settings, link);
+          return link?.path?.split("/").last() ?? (link?.split("/").last() ?? (''))
+        }) ?? [];
     return links;
   }
 }
@@ -212,7 +221,7 @@ export async function getNeighbourObjArr(
       return { current: fileFrontmatter.file, parents, siblings, children };
     }
   );
-  debug(plugin.settings, neighbourObjArr)
+  debug(plugin.settings, { neighbourObjArr })
   return neighbourObjArr;
 }
 
