@@ -20,11 +20,11 @@ export function normalise(arr: number[]): number[] {
   return arr.map(item => item / max)
 }
 
-export function flatten(arr: any[]): any[] {
-  return [].concat.apply([], arr)
+export function flatten<T>(arr: T[]): T[] {
+  return [].concat(...arr)
 }
 
-export const isSubset = (arr1: any[], arr2: any[]): boolean => arr1.every(value => arr2.includes(value));
+export const isSubset = <T>(arr1: T[], arr2: T[]): boolean => arr1.every(value => arr2.includes(value));
 
 export function getFileFrontmatterArr(
   app: App,
@@ -141,7 +141,7 @@ export function getFields(
   }
   else {
     superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`)
-    superDebug(settings, (fieldItems?.join(', ') ?? undefined))
+    // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
 
     const flattenedItems: string[] = flatten(flatten(fieldItems)) as string[];
@@ -225,13 +225,13 @@ export async function getNeighbourObjArr(
   return neighbourObjArr;
 }
 
-export function debug(settings: BreadcrumbsSettings, log: any): void {
+export function debug(settings: BreadcrumbsSettings, log: never): void {
   if (settings.debugMode) {
     console.log(log)
   }
 }
 
-export function superDebug(settings: BreadcrumbsSettings, log: any): void {
+export function superDebug(settings: BreadcrumbsSettings, log: never): void {
   if (settings.superDebugMode) {
     console.log(log)
   }
