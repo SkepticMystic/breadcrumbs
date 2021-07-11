@@ -20,9 +20,9 @@ export function normalise(arr: number[]): number[] {
   return arr.map(item => item / max)
 }
 
-export function flatten<T>(arr: T[]): T[] {
-  return [].concat(...arr)
-}
+// export function flatten<T>(arr: T[]): T[] {
+//   return [].concat(...arr)
+// }
 
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean => arr1.every(value => arr2.includes(value));
 
@@ -55,7 +55,7 @@ export function getFileFrontmatterArr(
 
     files.forEach((file) => {
       const obs: FrontMatterCache =
-        app.metadataCache.getFileCache(file).frontmatter ?? [];
+        app.metadataCache.getFileCache(file).frontmatter;
       fileFrontMatterArr.push({
         file,
         frontmatter: obs,
@@ -105,7 +105,7 @@ export async function getJugglLinks(
 
   debug(settings, { typedLinksArr })
 
-  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].map(splitAndTrim).flat().filter(field => field !== "")
+  const allFields: string[] = [settings.parentFieldName, settings.siblingFieldName, settings.childFieldName].map(splitAndTrim).flat().filter((field: string) => field !== "")
 
   typedLinksArr.forEach(jugglLink => {
     if (jugglLink.links.length) {
@@ -144,7 +144,7 @@ export function getFields(
     // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
 
-    const flattenedItems: string[] = flatten(flatten(fieldItems)) as string[];
+    const flattenedItems: string[] = (fieldItems.flat().flat()) as string[];
     console.log(flattenedItems)
 
     const links: [] =
@@ -225,13 +225,13 @@ export async function getNeighbourObjArr(
   return neighbourObjArr;
 }
 
-export function debug(settings: BreadcrumbsSettings, log: never): void {
+export function debug(settings: BreadcrumbsSettings, log: any): void {
   if (settings.debugMode) {
     console.log(log)
   }
 }
 
-export function superDebug(settings: BreadcrumbsSettings, log: never): void {
+export function superDebug(settings: BreadcrumbsSettings, log: any): void {
   if (settings.superDebugMode) {
     console.log(log)
   }
