@@ -42,6 +42,7 @@ const normalisedData = normalise(Object.values(children));
 allCells.forEach((cell, i) => {
     children[cell] = normalisedData[i]
 })
+console.log(children);
 // const normalisedData = allCells.forEach(cell => {
 // })
 
@@ -90,7 +91,7 @@ const intToCol = (int:number) => ('#' + int.toString(16).padStart(6, '0'));
             grid-area: {step.first + 1} / {i + 1} / 
                 {step.last + 2} / {i + 2};
             {settings.gridHeatmap 
-                ? `background-color: rgba(50, 50, 50, ${children[step.value]})` 
+                ? `background-color: ${settings.heatmapColour}${Math.round((children[step.value] * 200) + 55).toString(16)}` 
                 : ''}"
 
         on:click={(e) => 

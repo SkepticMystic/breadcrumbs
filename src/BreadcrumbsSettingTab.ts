@@ -201,6 +201,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
+    const mainColourDiv = trailDetails.createDiv();
+    mainColourDiv.createEl("h4", {
+      text: "Heat map colour",
+    });
+    const mainColourPicker = mainColourDiv.createEl("input", { type: "color" });
+
+    mainColourPicker.value = plugin.settings.heatmapColour;
+
+    mainColourPicker.addEventListener("change", async () => {
+      plugin.settings.heatmapColour = mainColourPicker.value
+      console.log(mainColourPicker.value)
+      await plugin.saveSettings();
+    });
+
     new Setting(trailDetails)
       .setName("Index/Home Note(s)")
       .setDesc(

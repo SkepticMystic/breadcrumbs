@@ -13,6 +13,7 @@ export interface BreadcrumbsSettings {
   showTrail: boolean;
   trailOrTable: 1 | 2 | 3;
   gridHeatmap: boolean;
+  heatmapColour: string;
   showAll: boolean;
   noPathMessage: string;
   trailSeperator: string;

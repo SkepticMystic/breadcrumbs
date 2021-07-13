@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridHeatmap: false,
+  heatmapColour: '#EEEEEE',
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
