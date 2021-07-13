@@ -14,17 +14,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     const plugin = this.plugin;
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin." });
+    containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
-    containerEl.createEl("h3", { text: "Metadata Field Names" });
-    containerEl.createEl("p", {
+    const fieldDetails: HTMLDetailsElement = containerEl.createEl("details");
+    fieldDetails.createEl("summary", { text: "Metadata Field Names" })
+
+    fieldDetails.createEl("p", {
       text: "The field names you use to indicate parent, sibling, and child relationships. Just enter the unformatted field name. So if you use `**parent**:: [[Note]]`, just enter `parent`.",
     });
-    containerEl.createEl("p", {
+    fieldDetails.createEl("p", {
       text: "You can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
     });
 
-    new Setting(containerEl)
+    new Setting(fieldDetails)
       .setName("Parent Metadata Field")
       .setDesc("The key name you use as the parent field.")
       .addText((text) =>
@@ -37,7 +39,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(fieldDetails)
       .setName("Sibling Metadata Field")
       .setDesc("The key name you use as the sibling field.")
       .addText((text) =>
@@ -50,7 +52,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(fieldDetails)
       .setName("Child Metadata Field")
       .setDesc("The key name you use as the child field.")
       .addText((text) =>
@@ -63,7 +65,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    const generalDetails: HTMLDetailsElement = containerEl.createEl("details");
+    generalDetails.createEl("summary", { text: "General Options" })
+
+    new Setting(generalDetails)
       .setName("Refresh Interval")
       .setDesc(
         "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
@@ -100,9 +105,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Matrix/List View" });
+    const MLViewDetails: HTMLDetailsElement = containerEl.createEl("details");
+    MLViewDetails.createEl("summary", { text: "Matrix/List View" })
 
-    new Setting(containerEl)
+    new Setting(MLViewDetails)
       .setName("Show Matrix or List view by default")
       .setDesc(
         "When Obsidian first loads, which view should it show? On = Matrix, Off = List"
@@ -114,7 +120,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl)
+    new Setting(MLViewDetails)
       .setName("Show all field names or just relation types")
       .setDesc(
         "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
@@ -129,7 +135,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(MLViewDetails)
       .setName("Show Relationship Type")
       .setDesc(
         "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
@@ -144,9 +150,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Breadcrumb Trail" });
+    const trailDetails: HTMLDetailsElement = containerEl.createEl("details");
+    trailDetails.createEl("summary", { text: "Trail/Grid" })
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Show Breadcrumbs")
       .setDesc(
         "Show a trail of notes leading from your index note down to the current note you are in (if a path exists)"
@@ -160,7 +167,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Trail or Table or Both")
       .setDesc(
         "Wether to show the regular breadcrumb trails, the table view, neither, or both. 1 = Only Trail, 2 = Only Grid, 3 = Both"
@@ -181,7 +188,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           });
       });
 
-      new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Grid view heatmap")
       .setDesc(
         "If the grid view is visible, change the background colour of squares based on the number of children leaving that note."
@@ -194,7 +201,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Index/Home Note(s)")
       .setDesc(
         "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."
@@ -223,7 +230,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         };
       });
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Default: All or Shortest")
       .setDesc(
         "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest"
@@ -239,7 +246,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Breadcrumb trail seperator")
       .setDesc(
         "The character to show between crumbs in the breadcrumb trail. The default is '→'"
@@ -256,7 +263,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("No path found message")
       .setDesc("The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)")
       .addText((text) =>
@@ -269,7 +276,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    new Setting(containerEl)
+    new Setting(trailDetails)
       .setName("Respect Readable Line Length")
       .setDesc(
         "Should the breadcrumbs trail adjust its width to the readable line length, or use as much space as possible? On = use readable line length."
@@ -283,9 +290,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl("h3", { text: "Debugging Options" });
+    const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
+    debugDetails.createEl("summary", { text: "Debugging" })
 
-    new Setting(containerEl)
+    new Setting(debugDetails)
       .setName("Debug Mode")
       .setDesc(
         "Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail."
@@ -297,7 +305,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    new Setting(containerEl)
+    new Setting(debugDetails)
       .setName("Super Debug Mode")
       .setDesc("Toggling this on will enable ALOT of console logs")
       .addToggle((toggle) =>
