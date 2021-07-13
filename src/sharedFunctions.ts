@@ -143,9 +143,7 @@ export function getFields(
     superDebug(settings, `${field} (type: '${typeof fieldItems}') of: ${fileFrontmatter.file.basename} is:`)
     // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
 
-
-    const flattenedItems: string[] = ([fieldItems].flat(5)) as string[];
-    console.log(flattenedItems)
+    const flattenedItems: [] = ([fieldItems].flat(5));
 
     const links: [] =
       flattenedItems.map(
@@ -153,6 +151,7 @@ export function getFields(
           debug(settings, link);
           return link?.path?.split("/").last() ?? (link?.split("/").last() ?? (''))
         }) ?? [];
+    debug(settings, { links })
     return links;
   }
 }

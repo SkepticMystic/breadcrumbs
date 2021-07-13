@@ -8,7 +8,7 @@ import {
 } from "src/constants";
 import type { allGraphs, internalLinkObj, SquareProps } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks } from "src/sharedFunctions";
+import { closeImpliedLinks, debug } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
@@ -250,6 +250,8 @@ export default class MatrixView extends ItemView {
     this.removeDuplicateImplied(realParents, impliedParents);
     this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
     this.removeDuplicateImplied(realChildren, impliedChildren);
+
+    debug(settings, { realParents, impliedParents, realSiblings, impliedSiblingsArr, realChildren, impliedChildren })
 
     const parentsSquare: SquareProps = {
       realItems: realParents,

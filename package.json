@@ -8,7 +8,7 @@
     "build": "rollup -c --environment BUILD:production"
   },
   "keywords": [],
-  "author": "",
+  "author": "SkepticMystic",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.1.0",
