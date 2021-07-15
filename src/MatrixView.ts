@@ -93,17 +93,9 @@ export default class MatrixView extends ItemView {
     reals: internalLinkObj[],
     implieds: internalLinkObj[]
   ): internalLinkObj[] {
-    // const noDuplicatesImplieds = implieds;
-    // reals.forEach(real => {
-    //   implieds.forEach((implied, i) => {
-    //     if (implied.to === real.to) {
-    //       noDuplicatesImplieds.slice(i, 1)
-    //     }
-    //   })
-    // });
 
-    const noDuplicates = implieds.filter(implied => !reals.map(real => real.to).includes(implied.to))
-    return noDuplicates
+    const realTos = reals.map(real => real.to);
+    return implieds.filter(implied => !realTos.includes(implied.to))
   }
 
   dfsAllPaths(g: Graph, startNode: string): string[][] {
