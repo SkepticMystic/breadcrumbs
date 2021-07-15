@@ -18,6 +18,7 @@
     "@types/node": "^14.14.37",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
+    "auto-plugin-obsidian": "^0.1.4",
     "eslint": "^7.29.0",
     "obsidian": "^0.12.0",
     "rollup": "^2.32.1",
