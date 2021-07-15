@@ -90,20 +90,20 @@ export default class MatrixView extends ItemView {
   // ANCHOR Remove duplicate implied links
 
   removeDuplicateImplied(
-    real: internalLinkObj[],
-    implied: internalLinkObj[]
-  ): void {
-    const impliedTos: [string, number][] = implied.map((impliedObj, i) => [
-      impliedObj.to,
-      i,
-    ]);
-    real.forEach((realItem) => {
-      impliedTos.forEach((impliedTo) => {
-        if (impliedTo[0] === realItem.to) {
-          implied.splice(impliedTo[1], 1);
-        }
-      });
-    });
+    reals: internalLinkObj[],
+    implieds: internalLinkObj[]
+  ): internalLinkObj[] {
+    // const noDuplicatesImplieds = implieds;
+    // reals.forEach(real => {
+    //   implieds.forEach((implied, i) => {
+    //     if (implied.to === real.to) {
+    //       noDuplicatesImplieds.slice(i, 1)
+    //     }
+    //   })
+    // });
+
+    const noDuplicates = implieds.filter(implied => !reals.map(real => real.to).includes(implied.to))
+    return noDuplicates
   }
 
   dfsAllPaths(g: Graph, startNode: string): string[][] {
@@ -200,7 +200,7 @@ export default class MatrixView extends ItemView {
     ];
 
 
-    const [
+    let [
       realParents,
       realSiblings,
       realChildren,
@@ -218,7 +218,7 @@ export default class MatrixView extends ItemView {
     /// Notes with the same parents
     const currParents = (gParents.successors(currFile.basename) ??
       []) as string[];
-    const impliedSiblingsArr: internalLinkObj[] = [];
+    let impliedSiblingsArr: internalLinkObj[] = [];
 
     if (currParents.length) {
       currParents.forEach((parent) => {
@@ -245,9 +245,9 @@ export default class MatrixView extends ItemView {
 
     // !SECTION
 
-    this.removeDuplicateImplied(realParents, impliedParents);
-    this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
-    this.removeDuplicateImplied(realChildren, impliedChildren);
+    impliedParents = this.removeDuplicateImplied(realParents, impliedParents);
+    impliedSiblingsArr = this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
+    impliedChildren = this.removeDuplicateImplied(realChildren, impliedChildren);
 
     debug(settings, { realParents, impliedParents, realSiblings, impliedSiblingsArr, realChildren, impliedChildren })
 
