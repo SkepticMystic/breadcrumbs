@@ -151,7 +151,7 @@ export function getFields(
           debug(settings, link);
           return link?.path?.split("/").last() ?? (link?.split("/").last() ?? (''))
         }) ?? [];
-    debug(settings, { links })
+        
     return links;
   }
 }
