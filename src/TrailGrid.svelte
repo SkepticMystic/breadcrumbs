@@ -42,7 +42,6 @@ const normalisedData = normalise(Object.values(children));
 allCells.forEach((cell, i) => {
     children[cell] = normalisedData[i]
 })
-console.log(children);
 // const normalisedData = allCells.forEach(cell => {
 // })
 

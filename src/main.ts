@@ -1,7 +1,7 @@
 
 import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
-import { addIcon, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DATAVIEW_INDEX_DELAY,
@@ -42,7 +42,6 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
-  matrixView: MatrixView;
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
   currGraphs: allGraphs;
@@ -56,7 +55,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
-      (leaf: WorkspaceLeaf) => (this.matrixView = new MatrixView(leaf, this))
+      (leaf: WorkspaceLeaf) => (new MatrixView(leaf, this))
     );
 
     this.app.workspace.onLayoutReady(async () => {
@@ -75,7 +74,7 @@ export default class BreadcrumbsPlugin extends Plugin {
             this.currGraphs = await this.initGraphs();
             debug(this.settings, this.currGraphs)
 
-            await this.matrixView.draw();
+            await this.getActiveView().draw();
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
@@ -89,8 +88,8 @@ export default class BreadcrumbsPlugin extends Plugin {
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
-            if (this.matrixView) {
-              await this.matrixView.draw();
+            if (this.getActiveView()) {
+              await this.getActiveView().draw();
             }
           }, this.settings.refreshIntervalTime * 1000);
           this.registerInterval(this.refreshIntervalID);
@@ -115,6 +114,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
+  }
+
+  getActiveView(): MatrixView {
+    return this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)?.[0].view as MatrixView;
   }
 
   // SECTION OneSource
@@ -160,7 +163,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   // SECTION Breadcrumbs
 
   resolvedClass(toFile: string, currFile: TFile): string {
-    return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
+    const { unresolvedLinks } = this.app.metadataCache;
+    if (unresolvedLinks[currFile.path] === undefined) { throw new Error(`${currFile.path} does not exist`); }
+    return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
   }
@@ -274,21 +279,23 @@ export default class BreadcrumbsPlugin extends Plugin {
     const sortedTrails = this.getBreadcrumbs(closedParents);
     const settings = this.settings
 
+    const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeMDView) { return }
+
+
     // Get the container div of the active note
-    const previewView = document.querySelector(
-      "div.mod-active div.view-content div.markdown-preview-view"
-    );
+    const previewView = activeMDView.contentEl.querySelector('.markdown-preview-view')
     previewView.querySelector('div.breadcrumbs-trail')?.remove()
 
-    const trailDiv = createDiv()
+    const trailDiv = createDiv({
+      cls: `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
+        ? " markdown-preview-sizer markdown-preview-section"
+        : ""
+        }`
+    })
     previewView.prepend(trailDiv)
 
     this.visited.push([currFile.path, trailDiv])
-
-    trailDiv.className = `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
-      ? " markdown-preview-sizer markdown-preview-section"
-      : ""
-      }`
 
     previewView.prepend(trailDiv);
 

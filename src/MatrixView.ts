@@ -1,4 +1,3 @@
-import { reverse } from "dns";
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
@@ -58,7 +57,9 @@ export default class MatrixView extends ItemView {
   }
 
   resolvedClass(toFile: string, currFile: TFile): string {
-    return this.app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
+    const { unresolvedLinks } = this.app.metadataCache;
+    if (unresolvedLinks[currFile.path] === undefined) { throw new Error(`${currFile.path} does not exist`); }
+    return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
   }
@@ -171,7 +172,6 @@ export default class MatrixView extends ItemView {
         }
       }
     })
-    console.log({ visited })
 
 
     // !SECTION Create Index
@@ -189,9 +189,7 @@ export default class MatrixView extends ItemView {
       text: "Create Index",
     });
     createIndexButton.addEventListener("click", () =>
-      console.log(
-        txt
-      )
+      console.log(txt)
     );
 
 
