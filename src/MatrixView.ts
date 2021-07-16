@@ -58,7 +58,9 @@ export default class MatrixView extends ItemView {
 
   resolvedClass(toFile: string, currFile: TFile): string {
     const { unresolvedLinks } = this.app.metadataCache;
-    if (unresolvedLinks[currFile.path] === undefined) { throw new Error(`${currFile.path} does not exist`); }
+    if (!unresolvedLinks[currFile.path]) {
+      return "internal-link breadcrumbs-link"
+    }
     return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";

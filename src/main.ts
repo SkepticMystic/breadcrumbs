@@ -73,8 +73,10 @@ export default class BreadcrumbsPlugin extends Plugin {
           this.app.workspace.on("active-leaf-change", async () => {
             this.currGraphs = await this.initGraphs();
             debug(this.settings, this.currGraphs)
-
-            await this.getActiveView().draw();
+            const activeView = this.getActiveView()
+            if (activeView) {
+              await activeView.draw();
+            }
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
@@ -88,8 +90,9 @@ export default class BreadcrumbsPlugin extends Plugin {
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
-            if (this.getActiveView()) {
-              await this.getActiveView().draw();
+            const activeView = this.getActiveView()
+            if (activeView) {
+              await activeView.draw();
             }
           }, this.settings.refreshIntervalTime * 1000);
           this.registerInterval(this.refreshIntervalID);
@@ -116,8 +119,15 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
 
-  getActiveView(): MatrixView {
-    return this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)?.[0].view as MatrixView;
+  getActiveView(): MatrixView | null {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX);
+    if (leaves && leaves.length >= 1) {
+      const view = leaves[0].view;
+      if (view instanceof MatrixView) {
+        return view;
+      }
+    }
+    return null;
   }
 
   // SECTION OneSource
@@ -164,7 +174,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   resolvedClass(toFile: string, currFile: TFile): string {
     const { unresolvedLinks } = this.app.metadataCache;
-    if (unresolvedLinks[currFile.path] === undefined) { throw new Error(`${currFile.path} does not exist`); }
+    if (!unresolvedLinks[currFile.path]) {
+      return "internal-link breadcrumbs-link"
+    }
     return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
@@ -220,8 +232,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     return pathsArr
   }
 
-  getBreadcrumbs(g: Graph): string[][] {
-    const from = this.app.workspace.getActiveFile().basename;
+  getBreadcrumbs(g: Graph): string[][] | null {
+    const currFile = this.app.workspace.getActiveViewOfType(MarkdownView).file;
+    if (currFile.extension !== 'md') { return null }
+
+    const from = currFile.basename;
     const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
 
@@ -269,18 +284,20 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   async drawTrail(): Promise<void> {
     if (!this.settings.showTrail) { return }
+    const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeMDView) { return }
 
-    const currFile = this.app.workspace.getActiveFile();
+    const currFile = activeMDView.file
     const frontm = this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
     if (frontm['kanban-plugin']) { return }
 
     const { gParents, gChildren } = this.currGraphs;
     const closedParents = closeImpliedLinks(gParents, gChildren)
     const sortedTrails = this.getBreadcrumbs(closedParents);
+    if (!sortedTrails) { return }
+    
     const settings = this.settings
 
-    const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeMDView) { return }
 
 
     // Get the container div of the active note
@@ -288,12 +305,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     previewView.querySelector('div.breadcrumbs-trail')?.remove()
 
     const trailDiv = createDiv({
-      cls: `breadcrumbs-trail is-readable-line-width${settings.respectReadableLineLength
-        ? " markdown-preview-sizer markdown-preview-section"
+      cls: `breadcrumbs-trail ${settings.respectReadableLineLength
+        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
         : ""
         }`
     })
-    previewView.prepend(trailDiv)
+    // previewView.prepend(trailDiv)
 
     this.visited.push([currFile.path, trailDiv])
 
