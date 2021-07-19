@@ -17,7 +17,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
     const fieldDetails: HTMLDetailsElement = containerEl.createEl("details");
-    fieldDetails.createEl("summary", { text: "Metadata Field Names" })
+    fieldDetails.createEl("summary", { text: "Metadata Field Names" });
 
     fieldDetails.createEl("p", {
       text: "The field names you use to indicate parent, sibling, and child relationships. Just enter the unformatted field name. So if you use `**parent**:: [[Note]]`, just enter `parent`.",
@@ -66,7 +66,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     const generalDetails: HTMLDetailsElement = containerEl.createEl("details");
-    generalDetails.createEl("summary", { text: "General Options" })
+    generalDetails.createEl("summary", { text: "General Options" });
 
     new Setting(generalDetails)
       .setName("Refresh Interval")
@@ -90,8 +90,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 if (plugin.settings.showTrail) {
                   await plugin.drawTrail();
                 }
-                if (plugin.matrixView) {
-                  await plugin.matrixView.draw();
+                if (plugin.getActiveView()) {
+                  await plugin.getActiveView().draw();
                 }
               }, num * 1000);
               plugin.registerInterval(plugin.refreshIntervalID);
@@ -106,7 +106,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     const MLViewDetails: HTMLDetailsElement = containerEl.createEl("details");
-    MLViewDetails.createEl("summary", { text: "Matrix/List View" })
+    MLViewDetails.createEl("summary", { text: "Matrix/List View" });
 
     new Setting(MLViewDetails)
       .setName("Show Matrix or List view by default")
@@ -131,7 +131,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.showNameOrType = value;
             await plugin.saveSettings();
-            await plugin.matrixView.draw();
+            await plugin.getActiveView().draw();
           })
       );
 
@@ -146,12 +146,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.showRelationType = value;
             await plugin.saveSettings();
-            await plugin.matrixView.draw();
+            await plugin.getActiveView().draw();
           })
       );
 
     const trailDetails: HTMLDetailsElement = containerEl.createEl("details");
-    trailDetails.createEl("summary", { text: "Trail/Grid" })
+    trailDetails.createEl("summary", { text: "Trail/Grid" });
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
@@ -165,7 +165,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           await plugin.drawTrail();
         })
       );
-
 
     new Setting(trailDetails)
       .setName("Trail or Table or Both")
@@ -183,7 +182,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               await plugin.saveSettings();
               await plugin.drawTrail();
             } else {
-              new Notice("The value has to be 1, 2, or 3")
+              new Notice("The value has to be 1, 2, or 3");
             }
           });
       });
@@ -210,8 +209,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     mainColourPicker.value = plugin.settings.heatmapColour;
 
     mainColourPicker.addEventListener("change", async () => {
-      plugin.settings.heatmapColour = mainColourPicker.value
-      console.log(mainColourPicker.value)
+      plugin.settings.heatmapColour = mainColourPicker.value;
+      console.log(mainColourPicker.value);
       await plugin.saveSettings();
     });
 
@@ -234,8 +233,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
           if (finalValue === [""]) {
             plugin.settings.indexNote = finalValue;
-            await plugin.saveSettings()
-          } else if (finalValue.every(index => isInVault(this.app, index))) {
+            await plugin.saveSettings();
+          } else if (finalValue.every((index) => isInVault(this.app, index))) {
             plugin.settings.indexNote = finalValue;
             await plugin.saveSettings();
           } else {
@@ -250,14 +249,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest"
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.showAll)
-          .onChange(async (value) => {
-            plugin.settings.showAll = value;
+        toggle.setValue(plugin.settings.showAll).onChange(async (value) => {
+          plugin.settings.showAll = value;
 
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-          })
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
       );
 
     new Setting(trailDetails)
@@ -273,13 +270,15 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             plugin.settings.trailSeperator = value;
             await plugin.saveSettings();
             // BUG This doesn't seem to work... you still have to switch notes for it to redraw
-            await plugin.matrixView.draw();
+            await plugin.getActiveView().draw();
           })
       );
 
     new Setting(trailDetails)
       .setName("No path found message")
-      .setDesc("The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)")
+      .setDesc(
+        "The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)"
+      )
       .addText((text) =>
         text
           .setPlaceholder(`No path to index note was found`)
@@ -305,7 +304,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
-    debugDetails.createEl("summary", { text: "Debugging" })
+    debugDetails.createEl("summary", { text: "Debugging" });
 
     new Setting(debugDetails)
       .setName("Debug Mode")

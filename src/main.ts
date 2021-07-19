@@ -1,4 +1,3 @@
-
 import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
 import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
@@ -7,15 +6,20 @@ import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
-  VIEW_TYPE_BREADCRUMBS_MATRIX
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
   allGraphs,
   BreadcrumbsSettings,
-  neighbourObj
+  neighbourObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import { closeImpliedLinks, debug, getFileFrontmatterArr, getNeighbourObjArr } from "src/sharedFunctions";
+import {
+  closeImpliedLinks,
+  debug,
+  getFileFrontmatterArr,
+  getNeighbourObjArr,
+} from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
 import TrailPath from "./TrailPath.svelte";
 
@@ -31,7 +35,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridHeatmap: false,
-  heatmapColour: '#EEEEEE',
+  heatmapColour: "#EEEEEE",
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
@@ -55,7 +59,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
-      (leaf: WorkspaceLeaf) => (new MatrixView(leaf, this))
+      (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
     );
 
     this.app.workspace.onLayoutReady(async () => {
@@ -72,8 +76,8 @@ export default class BreadcrumbsPlugin extends Plugin {
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
             this.currGraphs = await this.initGraphs();
-            debug(this.settings, this.currGraphs)
-            const activeView = this.getActiveView()
+            debug(this.settings, this.currGraphs);
+            const activeView = this.getActiveView();
             if (activeView) {
               await activeView.draw();
             }
@@ -90,7 +94,7 @@ export default class BreadcrumbsPlugin extends Plugin {
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
-            const activeView = this.getActiveView()
+            const activeView = this.getActiveView();
             if (activeView) {
               await activeView.draw();
             }
@@ -120,7 +124,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   getActiveView(): MatrixView | null {
-    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX);
+    const leaves = this.app.workspace.getLeavesOfType(
+      VIEW_TYPE_BREADCRUMBS_MATRIX
+    );
     if (leaves && leaves.length >= 1) {
       const view = leaves[0].view;
       if (view instanceof MatrixView) {
@@ -175,7 +181,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   resolvedClass(toFile: string, currFile: TFile): string {
     const { unresolvedLinks } = this.app.metadataCache;
     if (!unresolvedLinks[currFile.path]) {
-      return "internal-link breadcrumbs-link"
+      return "internal-link breadcrumbs-link";
     }
     return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
@@ -183,7 +189,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   bfsAllPaths(g: Graph, startNode: string): string[][] {
-    const queue: { node: string, path: string[] }[] = [{ node: startNode, path: [] }];
+    const queue: { node: string; path: string[] }[] = [
+      { node: startNode, path: [] },
+    ];
     const pathsArr: string[][] = [];
 
     let i = 0;
@@ -191,18 +199,24 @@ export default class BreadcrumbsPlugin extends Plugin {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = ((g.successors(currPath.node) ?? []) as string[]);
+      const newNodes = (g.successors(currPath.node) ?? []) as string[];
       const extPath = [currPath.node, ...currPath.path];
-      queue.push(...newNodes.map((n: string) => { return { node: n, path: extPath } }));
+      queue.push(
+        ...newNodes.map((n: string) => {
+          return { node: n, path: extPath };
+        })
+      );
       // terminal node
       if (newNodes.length === 0) {
         pathsArr.push(extPath);
       }
     }
-    pathsArr.forEach(path => {
-      if (path.length) { path.splice(path.length - 1, 1) }
-    })
-    debug(this.settings, { pathsArr })
+    pathsArr.forEach((path) => {
+      if (path.length) {
+        path.splice(path.length - 1, 1);
+      }
+    });
+    debug(this.settings, { pathsArr });
     return pathsArr;
   }
 
@@ -214,7 +228,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     let i = 0;
     while (queue.length > 0 && i < 1000) {
-      i++
+      i++;
       const currPath = queue.shift();
 
       const newNodes = (g.successors(currPath.node) ?? []) as string[];
@@ -229,12 +243,14 @@ export default class BreadcrumbsPlugin extends Plugin {
         pathsArr.push(extPath);
       }
     }
-    return pathsArr
+    return pathsArr;
   }
 
   getBreadcrumbs(g: Graph): string[][] | null {
     const currFile = this.app.workspace.getActiveViewOfType(MarkdownView).file;
-    if (currFile.extension !== 'md') { return null }
+    if (currFile.extension !== "md") {
+      return null;
+    }
 
     const from = currFile.basename;
     const paths = graphlib.alg.dijkstra(g, from);
@@ -248,8 +264,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       const bfsAllPaths = this.bfsAllPaths(g, from);
       if (bfsAllPaths.length > 1) {
         sortedTrails = bfsAllPaths.sort((a, b) => a.length - b.length);
-      }
-      else {
+      } else {
         sortedTrails = bfsAllPaths;
       }
     } else {
@@ -271,77 +286,91 @@ export default class BreadcrumbsPlugin extends Plugin {
         }
       });
 
-      const filteredTrails = allTrails.filter(trail => trail.length > 0)
+      const filteredTrails = allTrails.filter((trail) => trail.length > 0);
 
       sortedTrails = filteredTrails.sort((a, b) =>
         a.length < b.length ? -1 : 1
       );
     }
 
-    debug(this.settings, sortedTrails)
+    debug(this.settings, sortedTrails);
     return sortedTrails;
   }
 
   async drawTrail(): Promise<void> {
-    if (!this.settings.showTrail) { return }
+    if (!this.settings.showTrail) {
+      return;
+    }
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeMDView) { return }
+    if (!activeMDView) {
+      return;
+    }
 
-    const currFile = activeMDView.file
-    const frontm = this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
-    if (frontm['kanban-plugin']) { return }
+    const currFile = activeMDView.file;
+    const frontm =
+      this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
+    if (frontm["kanban-plugin"]) {
+      return;
+    }
 
     const { gParents, gChildren } = this.currGraphs;
-    const closedParents = closeImpliedLinks(gParents, gChildren)
+    const closedParents = closeImpliedLinks(gParents, gChildren);
     const sortedTrails = this.getBreadcrumbs(closedParents);
-    if (!sortedTrails) { return }
-    
-    const settings = this.settings
-
-
 
     // Get the container div of the active note
-    const previewView = activeMDView.contentEl.querySelector('.markdown-preview-view')
-    previewView.querySelector('div.breadcrumbs-trail')?.remove()
+    const previewView = activeMDView.contentEl.querySelector(
+      ".markdown-preview-view"
+    );
+    // Make sure it's empty
+    previewView.querySelector("div.breadcrumbs-trail")?.remove();
+
+    const settings = this.settings;
+
+    if (sortedTrails[0].length === 0 && settings.noPathMessage === "") {
+      return;
+    }
 
     const trailDiv = createDiv({
-      cls: `breadcrumbs-trail ${settings.respectReadableLineLength
-        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-        : ""
-        }`
-    })
+      cls: `breadcrumbs-trail ${
+        settings.respectReadableLineLength
+          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+          : ""
+      }`,
+    });
     // previewView.prepend(trailDiv)
 
-    this.visited.push([currFile.path, trailDiv])
+    this.visited.push([currFile.path, trailDiv]);
 
     previewView.prepend(trailDiv);
 
     trailDiv.empty();
 
+    if (sortedTrails[0].length === 0) {
+      trailDiv.innerText = settings.noPathMessage;
+      return;
+    }
 
     if (settings.trailOrTable === 1) {
       new TrailPath({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, settings, currFile }
-      })
+        props: { sortedTrails, app: this.app, settings, currFile },
+      });
     } else if (settings.trailOrTable === 2) {
       new TrailGrid({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, plugin: this }
-      })
+        props: { sortedTrails, app: this.app, plugin: this },
+      });
     } else {
       new TrailPath({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, settings, currFile }
+        props: { sortedTrails, app: this.app, settings, currFile },
       });
       new TrailGrid({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, plugin: this }
-      })
+        props: { sortedTrails, app: this.app, plugin: this },
+      });
     }
-
   }
-
 
   initView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
@@ -375,7 +404,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
-    this.visited.forEach(visit => visit[1].remove())
-
+    this.visited.forEach((visit) => visit[1].remove());
   }
 }
