@@ -1,7 +1,7 @@
 {
   "id": "breadcrumbs",
   "name": "Breadcrumbs",
-  "version": "0.8.18",
+  "version": "0.8.19",
   "minAppVersion": "0.12.10",
   "description": "Visualise the hierarchy of your vault using a breadcrumb trail or matrix view",
   "author": "SkepticMystic",
