@@ -256,17 +256,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
 
-    const allTrails: string[][] = [];
-    let sortedTrails: string[][] = [];
+    let allTrails: string[][] = [];
 
     // No index note chosen
     if (indexNotes[0] === "") {
-      const bfsAllPaths = this.bfsAllPaths(g, from);
-      if (bfsAllPaths.length > 1) {
-        sortedTrails = bfsAllPaths.sort((a, b) => a.length - b.length);
-      } else {
-        sortedTrails = bfsAllPaths;
-      }
+      allTrails = this.bfsAllPaths(g, from);
     } else {
       indexNotes.forEach((index) => {
         let step = index;
@@ -285,13 +279,10 @@ export default class BreadcrumbsPlugin extends Plugin {
           allTrails.push(breadcrumbs);
         }
       });
-
-      const filteredTrails = allTrails.filter((trail) => trail.length > 0);
-
-      sortedTrails = filteredTrails.sort((a, b) =>
-        a.length < b.length ? -1 : 1
-      );
     }
+    let sortedTrails = allTrails
+      .filter((trail) => trail.length > 0)
+      .sort((a, b) => a.length - b.length);
 
     debug(this.settings, sortedTrails);
     return sortedTrails;
@@ -313,9 +304,12 @@ export default class BreadcrumbsPlugin extends Plugin {
       return;
     }
 
+    const settings = this.settings;
+
     const { gParents, gChildren } = this.currGraphs;
     const closedParents = closeImpliedLinks(gParents, gChildren);
     const sortedTrails = this.getBreadcrumbs(closedParents);
+    debug(settings, { sortedTrails });
 
     // Get the container div of the active note
     const previewView = activeMDView.contentEl.querySelector(
@@ -324,9 +318,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     // Make sure it's empty
     previewView.querySelector("div.breadcrumbs-trail")?.remove();
 
-    const settings = this.settings;
-
-    if (sortedTrails[0].length === 0 && settings.noPathMessage === "") {
+    if (sortedTrails.length === 0 && settings.noPathMessage === "") {
       return;
     }
 
@@ -345,7 +337,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     trailDiv.empty();
 
-    if (sortedTrails[0].length === 0) {
+    if (sortedTrails.length === 0) {
       trailDiv.innerText = settings.noPathMessage;
       return;
     }
