@@ -386,3 +386,7 @@ export function permute(permutation: any[]): any[][] {
   }
   return result;
 }
+
+export function dropMD(path: string) {
+  return path.split(".md", 1)[0];
+}

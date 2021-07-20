@@ -55,10 +55,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
-    // console.log(
-    //   getComputedStyle(document.body).getPropertyValue("--text-accent")
-    // );
-
     this.visited = [];
 
     this.registerView(

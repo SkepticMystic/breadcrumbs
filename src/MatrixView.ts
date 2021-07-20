@@ -5,16 +5,15 @@ import {
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
-import type { allGraphs, internalLinkObj, SquareProps } from "src/interfaces";
+import type { internalLinkObj, SquareProps } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, debug } from "src/sharedFunctions";
+import { closeImpliedLinks, debug, dropMD } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
   private view: Matrix | Lists;
-  private currGraphs: allGraphs;
   matrixQ: boolean;
 
   constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
@@ -55,17 +54,14 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  resolvedClass(toFile: string, currFile: TFile): string {
+  unresolvedQ(to: string, from: string): boolean {
     const { unresolvedLinks } = this.app.metadataCache;
-    if (!unresolvedLinks[currFile.path]) {
-      return "internal-link breadcrumbs-link";
+    if (!unresolvedLinks[from]) {
+      return false;
     }
-    return unresolvedLinks[currFile.path][toFile] > 0
-      ? "internal-link is-unresolved breadcrumbs-link"
-      : "internal-link breadcrumbs-link";
+    return unresolvedLinks[from][to] > 0;
   }
 
-  // NOTE I should be able to check for duplicates in real and implied here
   squareItems(g: Graph, currFile: TFile, realQ = true): internalLinkObj[] {
     let items: string[];
     const successors = (g.successors(currFile.basename) ?? []) as string[];
@@ -77,12 +73,15 @@ export default class MatrixView extends ItemView {
       items = predecessors;
     }
     const internalLinkObjArr: internalLinkObj[] = [];
+    // TODO I don't think I need to check the length here
+    /// forEach won't run if it's empty anyway
     if (items.length) {
       items.forEach((item: string) => {
         internalLinkObjArr.push({
           to: item,
           cls:
-            this.resolvedClass(item, currFile) +
+            "internal-link breadcrumbs-link" +
+            (this.unresolvedQ(item, currFile.path) ? " is-unresolved" : "") +
             (realQ ? "" : " breadcrumbs-implied"),
         });
       });
@@ -222,7 +221,11 @@ export default class MatrixView extends ItemView {
         impliedSiblings.forEach((impliedSibling) => {
           impliedSiblingsArr.push({
             to: impliedSibling,
-            cls: this.resolvedClass(impliedSibling, currFile),
+            cls:
+              "internal-link breadcrumbs-link breadcrumbs-implied" +
+              (this.unresolvedQ(impliedSibling, currFile.path)
+                ? " is-unresolved"
+                : ""),
           });
         });
       });
