@@ -1,7 +1,7 @@
 {
   "name": "breadcrumbs-plugin",
   "version": "0.9.2",
-  "description": "Visualise the hierarchy of your vault using a breadcrumb trail",
+  "description": "Visualise & navigate your vault's structure",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
