@@ -273,10 +273,10 @@ export default class BreadcrumbsPlugin extends Plugin {
             breadcrumbs.push(step);
             step = paths[step].predecessor;
           }
-          if (breadcrumbs.length > 0) {
-            // Add the last step
-            breadcrumbs.push(from);
-          }
+          // if (breadcrumbs.length > 0) {
+          //   // Add the last step
+          //   breadcrumbs.push(from);
+          // }
           allTrails.push(breadcrumbs);
         }
       });
