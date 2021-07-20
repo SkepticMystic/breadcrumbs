@@ -3,7 +3,7 @@ import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
-  VIEW_TYPE_BREADCRUMBS_MATRIX
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type { allGraphs, internalLinkObj, SquareProps } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
@@ -26,10 +26,6 @@ export default class MatrixView extends ItemView {
     super.onload();
     await this.plugin.saveSettings();
     this.matrixQ = this.plugin.settings.defaultView;
-
-    this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-    });
   }
 
   getViewType(): string {
@@ -45,7 +41,7 @@ export default class MatrixView extends ItemView {
   async onOpen(): Promise<void> {
     await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {
-      await this.draw();
+      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
     });
   }
 
@@ -59,7 +55,7 @@ export default class MatrixView extends ItemView {
   resolvedClass(toFile: string, currFile: TFile): string {
     const { unresolvedLinks } = this.app.metadataCache;
     if (!unresolvedLinks[currFile.path]) {
-      return "internal-link breadcrumbs-link"
+      return "internal-link breadcrumbs-link";
     }
     return unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
@@ -82,7 +78,9 @@ export default class MatrixView extends ItemView {
       items.forEach((item: string) => {
         internalLinkObjArr.push({
           to: item,
-          cls: this.resolvedClass(item, currFile) + (realQ ? '' : ' breadcrumbs-implied'),
+          cls:
+            this.resolvedClass(item, currFile) +
+            (realQ ? "" : " breadcrumbs-implied"),
         });
       });
     }
@@ -95,9 +93,8 @@ export default class MatrixView extends ItemView {
     reals: internalLinkObj[],
     implieds: internalLinkObj[]
   ): internalLinkObj[] {
-
-    const realTos = reals.map(real => real.to);
-    return implieds.filter(implied => !realTos.includes(implied.to))
+    const realTos = reals.map((real) => real.to);
+    return implieds.filter((implied) => !realTos.includes(implied.to));
   }
 
   dfsAllPaths(g: Graph, startNode: string): string[][] {
@@ -108,7 +105,7 @@ export default class MatrixView extends ItemView {
 
     let i = 0;
     while (queue.length > 0 && i < 1000) {
-      i++
+      i++;
       const currPath = queue.shift();
 
       const newNodes = (g.successors(currPath.node) ?? []) as string[];
@@ -123,9 +120,8 @@ export default class MatrixView extends ItemView {
         pathsArr.push(extPath);
       }
     }
-    return pathsArr
+    return pathsArr;
   }
-
 
   async draw(): Promise<void> {
     this.contentEl.empty();
@@ -136,37 +132,37 @@ export default class MatrixView extends ItemView {
 
     // SECTION Create Index
 
+    const allPaths = this.dfsAllPaths(
+      closeImpliedLinks(gChildren, gParents),
+      currFile.basename
+    );
+    const reversed = allPaths.map((path) => path.reverse());
+    reversed.forEach((path) => path.shift());
 
-    const allPaths = this.dfsAllPaths(closeImpliedLinks(gChildren, gParents), currFile.basename);
-    const reversed = allPaths.map(path => path.reverse());
-    reversed.forEach(path => path.shift());
-
-    let txt = currFile.basename + '\n';
-    const indent = '  ';
+    let txt = currFile.basename + "\n";
+    const indent = "  ";
     const visited: string[] = [];
     const depths: number[] = [];
-    reversed.forEach(path => {
+    reversed.forEach((path) => {
       for (let i = 0; i < path.length; i++) {
-
         const curr = path[i];
         if (!visited.includes(curr)) {
           const index = visited.indexOf(curr);
           if (depths[index] !== i) {
             txt += indent.repeat(i + 1);
             txt += `- ${curr}\n`;
-            visited.push(curr)
-            depths.push(i)
+            visited.push(curr);
+            depths.push(i);
           }
         } else {
-          const next = path[i + 1]
+          const next = path[i + 1];
           if (next) {
-            txt += indent.repeat(i + 2)
-            txt += `- ${next}\n`
+            txt += indent.repeat(i + 2);
+            txt += `- ${next}\n`;
           }
         }
       }
-    })
-
+    });
 
     // !SECTION Create Index
 
@@ -182,17 +178,13 @@ export default class MatrixView extends ItemView {
     const createIndexButton = this.contentEl.createEl("button", {
       text: "Create Index",
     });
-    createIndexButton.addEventListener("click", () =>
-      console.log(txt)
-    );
-
+    createIndexButton.addEventListener("click", () => console.log(txt));
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
       settings.showNameOrType ? settings.parentFieldName : "Parent",
       settings.showNameOrType ? settings.siblingFieldName : "Sibling",
       settings.showNameOrType ? settings.childFieldName : "Child",
     ];
-
 
     let [
       realParents,
@@ -201,12 +193,12 @@ export default class MatrixView extends ItemView {
       impliedParents,
       impliedChildren,
     ] = [
-        this.squareItems(gParents, currFile),
-        this.squareItems(gSiblings, currFile),
-        this.squareItems(gChildren, currFile),
-        this.squareItems(gChildren, currFile, false),
-        this.squareItems(gParents, currFile, false),
-      ];
+      this.squareItems(gParents, currFile),
+      this.squareItems(gSiblings, currFile),
+      this.squareItems(gChildren, currFile),
+      this.squareItems(gChildren, currFile, false),
+      this.squareItems(gParents, currFile, false),
+    ];
 
     // SECTION Implied Siblings
     /// Notes with the same parents
@@ -234,16 +226,28 @@ export default class MatrixView extends ItemView {
     }
 
     /// A real sibling implies the reverse sibling
-    impliedSiblingsArr.push(...this.squareItems(gSiblings, currFile, false))
-
+    impliedSiblingsArr.push(...this.squareItems(gSiblings, currFile, false));
 
     // !SECTION
 
     impliedParents = this.removeDuplicateImplied(realParents, impliedParents);
-    impliedSiblingsArr = this.removeDuplicateImplied(realSiblings, impliedSiblingsArr);
-    impliedChildren = this.removeDuplicateImplied(realChildren, impliedChildren);
+    impliedSiblingsArr = this.removeDuplicateImplied(
+      realSiblings,
+      impliedSiblingsArr
+    );
+    impliedChildren = this.removeDuplicateImplied(
+      realChildren,
+      impliedChildren
+    );
 
-    debug(settings, { realParents, impliedParents, realSiblings, impliedSiblingsArr, realChildren, impliedChildren })
+    debug(settings, {
+      realParents,
+      impliedParents,
+      realSiblings,
+      impliedSiblingsArr,
+      realChildren,
+      impliedChildren,
+    });
 
     const parentsSquare: SquareProps = {
       realItems: realParents,
@@ -273,7 +277,7 @@ export default class MatrixView extends ItemView {
           currFile,
           settings: settings,
           matrixView: this,
-          app: this.app
+          app: this.app,
         },
       });
     } else {
@@ -286,7 +290,7 @@ export default class MatrixView extends ItemView {
           currFile,
           settings: settings,
           matrixView: this,
-          app: this.app
+          app: this.app,
         },
       });
     }

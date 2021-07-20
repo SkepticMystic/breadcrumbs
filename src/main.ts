@@ -211,6 +211,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         pathsArr.push(extPath);
       }
     }
+    // Splice off the current note from the path
     pathsArr.forEach((path) => {
       if (path.length) {
         path.splice(path.length - 1, 1);
