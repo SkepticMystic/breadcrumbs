@@ -254,32 +254,13 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     const from = currFile.basename;
-    const paths = graphlib.alg.dijkstra(g, from);
     const indexNotes: string[] = [this.settings.indexNote].flat();
 
-    let allTrails: string[][] = [];
+    let allTrails: string[][] = this.bfsAllPaths(g, from);
 
     // No index note chosen
-    if (indexNotes[0] === "") {
-      allTrails = this.bfsAllPaths(g, from);
-    } else {
-      indexNotes.forEach((index) => {
-        let step = index;
-
-        if (paths[step].distance !== Infinity) {
-          const breadcrumbs: string[] = [];
-          // Walk it until arriving at `from`
-          while (paths[step].distance !== 0) {
-            breadcrumbs.push(step);
-            step = paths[step].predecessor;
-          }
-          // if (breadcrumbs.length > 0) {
-          //   // Add the last step
-          //   breadcrumbs.push(from);
-          // }
-          allTrails.push(breadcrumbs);
-        }
-      });
+    if (indexNotes[0] !== "" && allTrails[0].length > 0) {
+      allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
     }
     let sortedTrails = allTrails
       .filter((trail) => trail.length > 0)
