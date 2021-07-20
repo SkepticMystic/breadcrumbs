@@ -3,7 +3,7 @@
   "name": "Breadcrumbs",
   "version": "0.9.3",
   "minAppVersion": "0.12.10",
-  "description": "Visualise the hierarchy of your vault using a breadcrumb trail or matrix view",
+  "description": "Visualise & navigate your vault's structure",
   "author": "SkepticMystic",
   "authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
   "isDesktopOnly": false
