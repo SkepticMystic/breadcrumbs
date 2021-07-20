@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
-    "build": "rollup -c --environment BUILD:production"
+    "build": "rollup -c --environment BUILD:production",
+    "release": "standard-version"
   },
   "keywords": [],
   "author": "SkepticMystic",
@@ -23,6 +24,7 @@
     "obsidian": "^0.12.0",
     "rollup": "^2.32.1",
     "rollup-plugin-svelte": "7.1.0",
+    "standard-version": "^9.3.1",
     "svelte-check": "1.1.14",
     "svelte-preprocess": "4.7.3",
     "tslib": "^2.2.0",
