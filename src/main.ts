@@ -35,7 +35,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridHeatmap: false,
-  heatmapColour: "#EEEEEE",
+  heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
@@ -54,6 +54,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
+
+    // console.log(
+    //   getComputedStyle(document.body).getPropertyValue("--text-accent")
+    // );
 
     this.visited = [];
 
