@@ -1,6 +1,6 @@
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import { closeImpliedLinks, debug } from "src/sharedFunctions";
+import { closeImpliedLinks, copyToClipboard, debug } from "src/sharedFunctions";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
@@ -68,13 +68,11 @@ export default class MatrixView extends ItemView {
 
   squareItems(g: Graph, currFile: TFile, realQ = true): internalLinkObj[] {
     let items: string[];
-    const successors = (g.successors(currFile.basename) ?? []) as string[];
-    const predecessors = (g.predecessors(currFile.basename) ?? []) as string[];
 
     if (realQ) {
-      items = successors;
+      items = (g.successors(currFile.basename) ?? []) as string[];
     } else {
-      items = predecessors;
+      items = (g.predecessors(currFile.basename) ?? []) as string[];
     }
     const internalLinkObjArr: internalLinkObj[] = [];
     // TODO I don't think I need to check the length here
@@ -193,10 +191,10 @@ export default class MatrixView extends ItemView {
     });
 
     const createIndexButton = this.contentEl.createEl("button", {
-      text: "Create Index",
+      text: "Create Index ⚠️",
     });
     createIndexButton.addEventListener("click", () => {
-      console.log(this.createIndex(allPaths, currFile.basename, settings));
+      copyToClipboard(this.createIndex(allPaths, currFile.basename, settings));
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
