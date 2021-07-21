@@ -1,4 +1,3 @@
-import * as graphlib from "graphlib";
 import { Graph } from "graphlib";
 import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
@@ -35,7 +34,9 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridHeatmap: false,
-  heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+  heatmapColour: getComputedStyle(document.body).getPropertyValue(
+    "--text-accent"
+  ),
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",

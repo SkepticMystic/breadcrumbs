@@ -125,6 +125,36 @@ export default class MatrixView extends ItemView {
     return pathsArr;
   }
 
+  createIndex(allPaths: string[][], currFile: string): string {
+    const reversed = allPaths.map((path) => path.reverse());
+    reversed.forEach((path) => path.shift());
+
+    let txt = currFile + "\n";
+    const indent = "  ";
+    const visited: { [node: string]: number[] } = {};
+    reversed.forEach((path) => {
+      for (let depth = 0; depth < path.length; depth++) {
+        const currNode = path[depth];
+
+        // If that node has been visited before at the current depth
+        if (
+          visited.hasOwnProperty(currNode) &&
+          visited[currNode].includes(depth)
+        ) {
+          continue;
+        } else {
+          txt += `${indent.repeat(depth)} - [[${currNode}]]\n`;
+
+          if (!visited.hasOwnProperty(currNode)) {
+            visited[currNode] = [];
+          }
+          visited[currNode].push(depth);
+        }
+      }
+    });
+    return txt;
+  }
+
   async draw(): Promise<void> {
     this.contentEl.empty();
     // this.currGraphs = this.plugin.currGraphs;
@@ -138,33 +168,6 @@ export default class MatrixView extends ItemView {
       closeImpliedLinks(gChildren, gParents),
       currFile.basename
     );
-    const reversed = allPaths.map((path) => path.reverse());
-    reversed.forEach((path) => path.shift());
-
-    let txt = currFile.basename + "\n";
-    const indent = "  ";
-    const visited: string[] = [];
-    const depths: number[] = [];
-    reversed.forEach((path) => {
-      for (let i = 0; i < path.length; i++) {
-        const curr = path[i];
-        if (!visited.includes(curr)) {
-          const index = visited.indexOf(curr);
-          if (depths[index] !== i) {
-            txt += indent.repeat(i + 1);
-            txt += `- ${curr}\n`;
-            visited.push(curr);
-            depths.push(i);
-          }
-        } else {
-          const next = path[i + 1];
-          if (next) {
-            txt += indent.repeat(i + 2);
-            txt += `- ${next}\n`;
-          }
-        }
-      }
-    });
 
     // !SECTION Create Index
 
@@ -180,7 +183,9 @@ export default class MatrixView extends ItemView {
     const createIndexButton = this.contentEl.createEl("button", {
       text: "Create Index",
     });
-    createIndexButton.addEventListener("click", () => console.log(txt));
+    createIndexButton.addEventListener("click", () => {
+      console.log(this.createIndex(allPaths, currFile.basename));
+    });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
       settings.showNameOrType ? settings.parentFieldName : "Parent",
