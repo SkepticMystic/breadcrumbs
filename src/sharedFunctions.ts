@@ -1,4 +1,5 @@
 import type { Graph } from "graphlib";
+import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
 import type { App, FrontMatterCache, TFile, WorkspaceLeaf } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
@@ -263,7 +264,7 @@ export function superDebug(settings: BreadcrumbsSettings, log: any): void {
 }
 
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
-  const closedG = real;
+  const closedG = graphlib.json.read(graphlib.json.write(real));
   implied.edges().forEach((impliedEdge) => {
     closedG.setEdge(impliedEdge.w, impliedEdge.v);
   });
@@ -390,3 +391,15 @@ export function permute(permutation: any[]): any[][] {
 export function dropMD(path: string) {
   return path.split(".md", 1)[0];
 }
+
+export const copyToClipboard = (str: string) => {
+  const el = document.createElement("textarea");
+  el.value = str;
+  el.setAttribute("readonly", "");
+  el.style.position = "absolute";
+  el.style.left = "-9999px";
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand("copy");
+  document.body.removeChild(el);
+};
