@@ -41,6 +41,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   respectReadableLineLength: true,
+  wikilinkIndex: true,
   debugMode: false,
   superDebugMode: false,
 };

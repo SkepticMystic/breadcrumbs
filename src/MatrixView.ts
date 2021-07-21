@@ -1,13 +1,17 @@
 import type { Graph } from "graphlib";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { closeImpliedLinks, debug } from "src/sharedFunctions";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
-import type { internalLinkObj, SquareProps } from "src/interfaces";
+import type {
+  BreadcrumbsSettings,
+  internalLinkObj,
+  SquareProps,
+} from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, debug, dropMD } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
@@ -125,7 +129,11 @@ export default class MatrixView extends ItemView {
     return pathsArr;
   }
 
-  createIndex(allPaths: string[][], currFile: string): string {
+  createIndex(
+    allPaths: string[][],
+    currFile: string,
+    settings: BreadcrumbsSettings
+  ): string {
     const reversed = allPaths.map((path) => path.reverse());
     reversed.forEach((path) => path.shift());
 
@@ -143,7 +151,11 @@ export default class MatrixView extends ItemView {
         ) {
           continue;
         } else {
-          txt += `${indent.repeat(depth)} - [[${currNode}]]\n`;
+          txt += `${indent.repeat(depth)}- `;
+          txt += settings.wikilinkIndex ? "[[" : "";
+          txt += currNode;
+          txt += settings.wikilinkIndex ? "]]" : "";
+          txt += "\n";
 
           if (!visited.hasOwnProperty(currNode)) {
             visited[currNode] = [];
@@ -184,7 +196,7 @@ export default class MatrixView extends ItemView {
       text: "Create Index",
     });
     createIndexButton.addEventListener("click", () => {
-      console.log(this.createIndex(allPaths, currFile.basename));
+      console.log(this.createIndex(allPaths, currFile.basename, settings));
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [

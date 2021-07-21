@@ -303,6 +303,24 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    const createIndexDetails: HTMLDetailsElement =
+      containerEl.createEl("details");
+    createIndexDetails.createEl("summary", { text: "Create Index" });
+
+    new Setting(createIndexDetails)
+      .setName("Add wiklink brackets")
+      .setDesc(
+        "When creating an index, should it wrap the note name in wikilinks `[[]]` or not. On = yes, off = no."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.wikilinkIndex)
+          .onChange(async (value) => {
+            plugin.settings.wikilinkIndex = value;
+            await plugin.saveSettings();
+          })
+      );
+
     const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
     debugDetails.createEl("summary", { text: "Debugging" });
 

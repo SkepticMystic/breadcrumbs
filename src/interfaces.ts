@@ -18,6 +18,7 @@ export interface BreadcrumbsSettings {
   noPathMessage: string;
   trailSeperator: string;
   respectReadableLineLength: boolean;
+  wikilinkIndex: boolean;
   debugMode: boolean;
   superDebugMode: boolean;
 }
@@ -27,7 +28,7 @@ export interface JugglLink {
   links: {
     type: string;
     linksInLine: string[];
-  }[]
+  }[];
 }
 
 export interface neighbourObj {
