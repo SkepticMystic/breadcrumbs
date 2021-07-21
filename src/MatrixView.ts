@@ -174,15 +174,6 @@ export default class MatrixView extends ItemView {
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
 
-    // SECTION Create Index
-
-    const allPaths = this.dfsAllPaths(
-      closeImpliedLinks(gChildren, gParents),
-      currFile.basename
-    );
-
-    // !SECTION Create Index
-
     const viewToggleButton = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",
     });
@@ -196,6 +187,10 @@ export default class MatrixView extends ItemView {
       text: "Create Index ⚠️",
     });
     createIndexButton.addEventListener("click", () => {
+      const allPaths = this.dfsAllPaths(
+        closeImpliedLinks(gChildren, gParents),
+        currFile.basename
+      );
       const index = this.createIndex(allPaths, currFile.basename, settings);
       debug(settings, { index });
       copyToClipboard(index);
