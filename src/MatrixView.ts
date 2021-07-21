@@ -1,7 +1,6 @@
 import type { Graph } from "graphlib";
 import { cloneDeep } from "lodash";
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
-import { closeImpliedLinks, copyToClipboard, debug } from "src/sharedFunctions";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
@@ -13,6 +12,7 @@ import type {
   SquareProps,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
+import { closeImpliedLinks, debug } from "src/sharedFunctions";
 import Lists from "./Lists.svelte";
 import Matrix from "./Matrix.svelte";
 
@@ -186,15 +186,17 @@ export default class MatrixView extends ItemView {
     const createIndexButton = this.contentEl.createEl("button", {
       text: "Create Index ⚠️",
     });
-    createIndexButton.addEventListener("click", () => {
+    createIndexButton.addEventListener("click", async () => {
       const allPaths = this.dfsAllPaths(
         closeImpliedLinks(gChildren, gParents),
         currFile.basename
       );
       const index = this.createIndex(allPaths, currFile.basename, settings);
       debug(settings, { index });
-      copyToClipboard(index);
-      new Notice("Index copied to clipboard");
+      await navigator.clipboard.writeText(index).then(
+        () => new Notice("Index copied to clipboard"),
+        () => new Notice("Could not copy index to clipboard")
+      );
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
