@@ -1,6 +1,6 @@
 import type { Graph } from "graphlib";
 import { cloneDeep } from "lodash";
-import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { closeImpliedLinks, copyToClipboard, debug } from "src/sharedFunctions";
 import {
   DATAVIEW_INDEX_DELAY,
@@ -194,6 +194,7 @@ export default class MatrixView extends ItemView {
       const index = this.createIndex(allPaths, currFile.basename, settings);
       debug(settings, { index });
       copyToClipboard(index);
+      new Notice("Index copied to clipboard");
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
