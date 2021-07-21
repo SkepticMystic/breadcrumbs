@@ -19,6 +19,7 @@
     "@rollup/plugin-node-resolve": "^11.2.1",
     "@rollup/plugin-typescript": "^8.2.1",
     "@types/graphlib": "^2.1.7",
+    "@types/lodash": "^4.14.171",
     "@types/node": "^14.14.37",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",

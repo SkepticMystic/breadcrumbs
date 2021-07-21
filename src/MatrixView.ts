@@ -1,4 +1,5 @@
 import type { Graph } from "graphlib";
+import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { closeImpliedLinks, copyToClipboard, debug } from "src/sharedFunctions";
 import {
@@ -132,7 +133,8 @@ export default class MatrixView extends ItemView {
     currFile: string,
     settings: BreadcrumbsSettings
   ): string {
-    const reversed = allPaths.map((path) => path.reverse());
+    const copy = cloneDeep(allPaths);
+    const reversed = copy.map((path) => path.reverse());
     reversed.forEach((path) => path.shift());
 
     let txt = currFile + "\n";
@@ -194,7 +196,9 @@ export default class MatrixView extends ItemView {
       text: "Create Index ⚠️",
     });
     createIndexButton.addEventListener("click", () => {
-      copyToClipboard(this.createIndex(allPaths, currFile.basename, settings));
+      const index = this.createIndex(allPaths, currFile.basename, settings);
+      debug(settings, { index });
+      copyToClipboard(index);
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
