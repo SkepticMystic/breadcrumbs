@@ -46,6 +46,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   trailSeperator: "→",
   respectReadableLineLength: true,
   wikilinkIndex: true,
+  aliasesInIndex: false,
   debugMode: false,
   superDebugMode: false,
 };
