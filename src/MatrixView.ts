@@ -44,12 +44,7 @@ export default class MatrixView extends ItemView {
           ),
           currFile
         );
-        const index = this.createIndex(
-          currFile + "\n",
-          allPaths,
-          currFile,
-          settings
-        );
+        const index = this.createIndex(currFile + "\n", allPaths, settings);
         debug(settings, { index });
         await navigator.clipboard.writeText(index).then(
           () => new Notice("Index copied to clipboard"),
@@ -63,12 +58,8 @@ export default class MatrixView extends ItemView {
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
         const { gParents, gChildren } = this.plugin.currGraphs;
-
         const terminals = gParents.sinks();
-        console.log({ terminals });
-
         const settings = this.plugin.settings;
-        const currFile = this.app.workspace.getActiveFile().basename;
 
         let globalIndex = "";
         terminals.forEach((terminal) => {
@@ -77,12 +68,7 @@ export default class MatrixView extends ItemView {
             closeImpliedLinks(gChildren, gParents),
             terminal
           );
-          globalIndex = this.createIndex(
-            globalIndex,
-            allPaths,
-            terminal,
-            settings
-          );
+          globalIndex = this.createIndex(globalIndex, allPaths, settings);
         });
 
         debug(settings, { globalIndex });
@@ -194,7 +180,6 @@ export default class MatrixView extends ItemView {
     // Gotta give it a starting index. This allows it to work for the global index feat
     index: string,
     allPaths: string[][],
-    currFile: string,
     settings: BreadcrumbsSettings
   ): string {
     const copy = cloneDeep(allPaths);
@@ -218,6 +203,26 @@ export default class MatrixView extends ItemView {
           index += settings.wikilinkIndex ? "[[" : "";
           index += currNode;
           index += settings.wikilinkIndex ? "]]" : "";
+
+          if (settings.aliasesInIndex) {
+            const currFile = this.app.metadataCache.getFirstLinkpathDest(
+              currNode,
+              this.app.workspace.getActiveFile().path
+            );
+            const cache = this.app.metadataCache.getFileCache(currFile);
+
+            const alias = cache?.frontmatter?.alias ?? [];
+            const aliases = cache?.frontmatter?.aliases ?? [];
+
+            const allAliases: string[] = [
+              ...[alias].flat(3),
+              ...[aliases].flat(3),
+            ];
+            if (allAliases.length) {
+              index += ` (${allAliases.join(", ")})`;
+            }
+          }
+
           index += "\n";
 
           if (!visited.hasOwnProperty(currNode)) {

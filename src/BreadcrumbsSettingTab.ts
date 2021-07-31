@@ -348,6 +348,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(createIndexDetails)
+      .setName("Show aliases of notes in index")
+      .setDesc("Show the aliases of each note in brackets. On = yes, off = no.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.aliasesInIndex)
+          .onChange(async (value) => {
+            console.log(value)
+            plugin.settings.aliasesInIndex = value;
+            await plugin.saveSettings();
+          })
+      );
+
     const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
     debugDetails.createEl("summary", { text: "Debugging" });
 

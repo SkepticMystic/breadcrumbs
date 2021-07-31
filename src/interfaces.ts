@@ -21,6 +21,7 @@ export interface BreadcrumbsSettings {
   trailSeperator: string;
   respectReadableLineLength: boolean;
   wikilinkIndex: boolean;
+  aliasesInIndex: boolean;
   debugMode: boolean;
   superDebugMode: boolean;
 }
