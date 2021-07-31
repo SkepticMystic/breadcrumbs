@@ -1,6 +1,6 @@
 {
   "name": "breadcrumbs-plugin",
-  "version": "0.9.17",
+  "version": "0.9.18",
   "description": "Visualise & navigate your vault's structure",
   "main": "main.js",
   "scripts": {
