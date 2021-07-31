@@ -5,7 +5,6 @@ import type {
   App,
   CachedMetadata,
   FrontMatterCache,
-  Pos,
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
@@ -14,7 +13,6 @@ import type {
   BreadcrumbsSettings,
   dvFrontmatterCache,
   dvLink,
-  fileFrontmatter,
   JugglLink,
   neighbourObj,
 } from "src/interfaces";
@@ -37,6 +35,18 @@ export function normalise(arr: number[]): number[] {
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
 
+export function debug(settings: BreadcrumbsSettings, log: any): void {
+  if (settings.debugMode) {
+    console.log(log);
+  }
+}
+
+export function superDebug(settings: BreadcrumbsSettings, log: any): void {
+  if (settings.superDebugMode) {
+    console.log(log);
+  }
+}
+
 export function getDVMetadataCache(
   app: App,
   settings: BreadcrumbsSettings,
@@ -51,9 +61,7 @@ export function getDVMetadataCache(
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
       file.path
     );
-
     superDebug(settings, { dvCache });
-
     dvCacheArr.push(dvCache);
   });
   return dvCacheArr;
@@ -69,9 +77,10 @@ export function getObsMetadataCache(
   const fileFrontmatterArr: dvFrontmatterCache[] = [];
 
   files.forEach((file) => {
-    const obs: CachedMetadata = app.metadataCache.getFileCache(file);
-    if (obs.frontmatter) {
-      fileFrontmatterArr.push({ file, ...obs.frontmatter });
+    const obs: FrontMatterCache =
+      app.metadataCache.getFileCache(file).frontmatter;
+    if (obs) {
+      fileFrontmatterArr.push({ file, ...obs });
     } else {
       fileFrontmatterArr.push({ file });
     }
@@ -79,48 +88,6 @@ export function getObsMetadataCache(
 
   debug(settings, { fileFrontmatterArr });
   return fileFrontmatterArr;
-}
-
-export function getFileFrontmatterArr(
-  app: App,
-  settings: BreadcrumbsSettings
-): (fileFrontmatter | dvFrontmatterCache)[] {
-  const files: TFile[] = app.vault.getMarkdownFiles();
-  const fileFrontMatterArr: (fileFrontmatter | dvFrontmatterCache)[] = [];
-
-  // If dataview is **enabled** (not just installed), use its index
-  if (app.plugins.plugins.dataview !== undefined) {
-    debug(settings, "Using Dataview");
-
-    app.workspace.onLayoutReady(() => {
-      files.forEach((file) => {
-        superDebug(settings, `Get frontmatter: ${file.basename}`);
-
-        const dv: dvFrontmatterCache =
-          app.plugins.plugins.dataview.api.page(file.path) ?? [];
-
-        superDebug(settings, { dv });
-
-        fileFrontMatterArr.push({ file, frontmatter: dv });
-      });
-    });
-  }
-  // Otherwise use Obsidian's
-  else {
-    debug(settings, "Using Obsidian");
-
-    files.forEach((file) => {
-      const obs: FrontMatterCache =
-        app.metadataCache.getFileCache(file).frontmatter;
-      fileFrontMatterArr.push({
-        file,
-        frontmatter: obs,
-      });
-    });
-  }
-
-  debug(settings, { fileFrontMatterArr });
-  return fileFrontMatterArr;
 }
 
 export function splitAndDrop(str: string): string[] | [] {
@@ -196,8 +163,7 @@ export async function getJugglLinks(
 
 export function getFieldValues(
   frontmatterCache: dvFrontmatterCache,
-  field: string,
-  settings: BreadcrumbsSettings
+  field: string
 ) {
   const rawValues: (string | dvLink)[] =
     [frontmatterCache?.[field]].flat(5) ?? null;
@@ -215,85 +181,7 @@ export function getFieldValues(
   } else {
     return [];
   }
-
-  // if (rawValues instanceof Array) {
-  //   const flatValues: string[] | dvLink[] = rawValues.flat();
-  //   // if it's a dvLink[]
-  //   if (flatValues[0].path || typeof flatValues[0].path === "string") {
-  //     return (flatValues as dvLink[]).map((link: dvLink) =>
-  //       link.path.split("/").last()
-  //     );
-  //   } else {
-  //     return (flatValues as string[]).map(
-  //       (link: string) =>
-  //         splitAndDrop(link)?.map(
-  //           (value: string) => value?.split("/").last() ?? ""
-  //         ) ?? []
-  //     );
-  //   }
-  // } else if (typeof rawValues === "string") {
-  //   superDebug(
-  //     settings,
-  //     `${field} (type: 'string') of: ${frontmatterCache.file.basename} is: ${rawValues}`
-  //   );
-
-  //   const links =
-  //     splitAndDrop(rawValues)?.map(
-  //       (value: string) => value?.split("/").last() ?? ""
-  //     ) ?? [];
-  //   return links;
-  // } else if (rawValues === null) {
-  //   return [];
-  // } else if (rawValues.path) {
-  //   return (rawValues as dvLink).path;
-  // } else {
-  //   return [];
-  // }
 }
-
-// export function getFields(
-//   fileFrontmatter: fileFrontmatter,
-//   field: string,
-//   settings: BreadcrumbsSettings
-// ): string[] {
-//   const fieldItems: string | [] = fileFrontmatter.frontmatter?.[field];
-//   if (!fieldItems) {
-//     return [];
-//   }
-
-//   if (typeof fieldItems === "string") {
-//     superDebug(
-//       settings,
-//       `${field} (type: '${typeof fieldItems}') of: ${
-//         fileFrontmatter.file.basename
-//       } is: ${fieldItems}`
-//     );
-
-//     const links =
-//       splitAndDrop(fieldItems)?.map(
-//         (value: string) => value?.split("/").last() ?? ""
-//       ) ?? [];
-//     return links;
-//   } else {
-//     superDebug(
-//       settings,
-//       `${field} (type: '${typeof fieldItems}') of: ${
-//         fileFrontmatter.file.basename
-//       } is:`
-//     );
-//     // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
-
-//     const flattenedItems: [] = [fieldItems].flat(5);
-
-//     const links: [] =
-//       flattenedItems.map((link) => {
-//         superDebug(settings, link);
-//         return link?.path?.split("/").last() ?? link?.split("/").last() ?? "";
-//       }) ?? [];
-
-//     return links;
-//   }
-// }
 
 export const splitAndTrim = (fields: string): string[] =>
   fields.split(",").map((str: string) => str.trim());
@@ -302,11 +190,6 @@ export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
 ): Promise<neighbourObj[]> {
-  let jugglLinks: JugglLink[];
-  if (plugin.app.plugins.plugins.juggl !== undefined) {
-    jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
-  }
-
   const { parentFieldName, siblingFieldName, childFieldName } = plugin.settings;
 
   const [parentFields, siblingFields, childFields] = [
@@ -315,29 +198,23 @@ export async function getNeighbourObjArr(
     splitAndTrim(childFieldName),
   ];
 
+  let jugglLinks: JugglLink[];
+  if (plugin.app.plugins.plugins.juggl !== undefined) {
+    jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
+  }
+
   const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
     (fileFrontmatter) => {
       let [parents, siblings, children] = [
         parentFields
-          .map(
-            (parentField) =>
-              getFieldValues(fileFrontmatter, parentField, plugin.settings) ??
-              []
-          )
-          .flat(),
+          .map((parentField) => getFieldValues(fileFrontmatter, parentField))
+          .flat(3),
         siblingFields
-          .map(
-            (siblingField) =>
-              getFieldValues(fileFrontmatter, siblingField, plugin.settings) ??
-              []
-          )
-          .flat(),
+          .map((siblingField) => getFieldValues(fileFrontmatter, siblingField))
+          .flat(3),
         childFields
-          .map(
-            (childField) =>
-              getFieldValues(fileFrontmatter, childField, plugin.settings) ?? []
-          )
-          .flat(),
+          .map((childField) => getFieldValues(fileFrontmatter, childField))
+          .flat(3),
       ];
 
       if (plugin.app.plugins.plugins.juggl !== undefined) {
@@ -364,18 +241,6 @@ export async function getNeighbourObjArr(
   );
   debug(plugin.settings, { neighbourObjArr });
   return neighbourObjArr;
-}
-
-export function debug(settings: BreadcrumbsSettings, log: any): void {
-  if (settings.debugMode) {
-    console.log(log);
-  }
-}
-
-export function superDebug(settings: BreadcrumbsSettings, log: any): void {
-  if (settings.superDebugMode) {
-    console.log(log);
-  }
 }
 
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
