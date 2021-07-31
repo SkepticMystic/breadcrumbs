@@ -30,6 +30,28 @@ export default class MatrixView extends ItemView {
     super.onload();
     await this.plugin.saveSettings();
     this.matrixQ = this.plugin.settings.defaultView;
+
+    this.plugin.addCommand({
+      id: "local-index",
+      name: "Copy a Local Index to the clipboard",
+      callback: async () => {
+        const settings = this.plugin.settings;
+        const currFile = this.app.workspace.getActiveFile();
+        const allPaths = this.dfsAllPaths(
+          closeImpliedLinks(
+            this.plugin.currGraphs.gChildren,
+            this.plugin.currGraphs.gParents
+          ),
+          this.app.workspace.getActiveFile().basename
+        );
+        const index = this.createIndex(allPaths, currFile.basename, settings);
+        debug(settings, { index });
+        await navigator.clipboard.writeText(index).then(
+          () => new Notice("Index copied to clipboard"),
+          () => new Notice("Could not copy index to clipboard")
+        );
+      },
+    });
   }
 
   getViewType(): string {
@@ -181,22 +203,6 @@ export default class MatrixView extends ItemView {
       this.matrixQ = !this.matrixQ;
       viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
       await this.draw();
-    });
-
-    const createIndexButton = this.contentEl.createEl("button", {
-      text: "Create Index ⚠️",
-    });
-    createIndexButton.addEventListener("click", async () => {
-      const allPaths = this.dfsAllPaths(
-        closeImpliedLinks(gChildren, gParents),
-        currFile.basename
-      );
-      const index = this.createIndex(allPaths, currFile.basename, settings);
-      debug(settings, { index });
-      await navigator.clipboard.writeText(index).then(
-        () => new Notice("Index copied to clipboard"),
-        () => new Notice("Could not copy index to clipboard")
-      );
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
