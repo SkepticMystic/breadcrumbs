@@ -36,17 +36,57 @@ export default class MatrixView extends ItemView {
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
         const settings = this.plugin.settings;
-        const currFile = this.app.workspace.getActiveFile();
+        const currFile = this.app.workspace.getActiveFile().basename;
         const allPaths = this.dfsAllPaths(
           closeImpliedLinks(
             this.plugin.currGraphs.gChildren,
             this.plugin.currGraphs.gParents
           ),
-          this.app.workspace.getActiveFile().basename
+          currFile
         );
-        const index = this.createIndex(allPaths, currFile.basename, settings);
+        const index = this.createIndex(
+          currFile + "\n",
+          allPaths,
+          currFile,
+          settings
+        );
         debug(settings, { index });
         await navigator.clipboard.writeText(index).then(
+          () => new Notice("Index copied to clipboard"),
+          () => new Notice("Could not copy index to clipboard")
+        );
+      },
+    });
+
+    this.plugin.addCommand({
+      id: "global-index",
+      name: "Copy a Global Index to the clipboard",
+      callback: async () => {
+        const { gParents, gChildren } = this.plugin.currGraphs;
+
+        const terminals = gParents.sinks();
+        console.log({ terminals });
+
+        const settings = this.plugin.settings;
+        const currFile = this.app.workspace.getActiveFile().basename;
+
+        let globalIndex = "";
+        terminals.forEach((terminal) => {
+          globalIndex += terminal + "\n";
+          const allPaths = this.dfsAllPaths(
+            closeImpliedLinks(gChildren, gParents),
+            terminal
+          );
+          globalIndex = this.createIndex(
+            globalIndex,
+            allPaths,
+            terminal,
+            settings
+          );
+        });
+
+        debug(settings, { globalIndex });
+        await navigator.clipboard.writeText(globalIndex).then(
           () => new Notice("Index copied to clipboard"),
           () => new Notice("Could not copy index to clipboard")
         );
@@ -151,6 +191,8 @@ export default class MatrixView extends ItemView {
   }
 
   createIndex(
+    // Gotta give it a starting index. This allows it to work for the global index feat
+    index: string,
     allPaths: string[][],
     currFile: string,
     settings: BreadcrumbsSettings
@@ -159,7 +201,6 @@ export default class MatrixView extends ItemView {
     const reversed = copy.map((path) => path.reverse());
     reversed.forEach((path) => path.shift());
 
-    let txt = currFile + "\n";
     const indent = "  ";
     const visited: { [node: string]: number[] } = {};
     reversed.forEach((path) => {
@@ -173,11 +214,11 @@ export default class MatrixView extends ItemView {
         ) {
           continue;
         } else {
-          txt += `${indent.repeat(depth)}- `;
-          txt += settings.wikilinkIndex ? "[[" : "";
-          txt += currNode;
-          txt += settings.wikilinkIndex ? "]]" : "";
-          txt += "\n";
+          index += `${indent.repeat(depth)}- `;
+          index += settings.wikilinkIndex ? "[[" : "";
+          index += currNode;
+          index += settings.wikilinkIndex ? "]]" : "";
+          index += "\n";
 
           if (!visited.hasOwnProperty(currNode)) {
             visited[currNode] = [];
@@ -186,7 +227,7 @@ export default class MatrixView extends ItemView {
         }
       }
     });
-    return txt;
+    return index;
   }
 
   async draw(): Promise<void> {
