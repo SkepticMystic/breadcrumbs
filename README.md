@@ -1,6 +1,7 @@
 # Breadcrumb Trail
 
 This plugin adds two new views to Obsidian, the breadcrumb matrix/list view, and the breadcrumbs trail view.
+The [wiki](https://github.com/SkepticMystic/breadcrumbs/wiki) has more in-depth info on the plugin than the readme.
 
 ## Matrix/List view
 
