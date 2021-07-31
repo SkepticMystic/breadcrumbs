@@ -174,7 +174,7 @@ export function getFields(
 
     const links: [] =
       flattenedItems.map((link) => {
-        debug(settings, link);
+        superDebug(settings, link);
         return link?.path?.split("/").last() ?? link?.split("/").last() ?? "";
       }) ?? [];
 
@@ -263,6 +263,8 @@ export function superDebug(settings: BreadcrumbsSettings, log: any): void {
   }
 }
 
+// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
+// It makes implied relations real
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
   const closedG = graphlib.json.read(graphlib.json.write(real));
   implied.edges().forEach((impliedEdge) => {
