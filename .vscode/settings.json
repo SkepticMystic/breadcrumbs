@@ -1,5 +1,6 @@
 {
     "conventionalCommits.scopes": [
-        "CreateIndex"
+        "CreateIndex",
+        "Grid View"
     ]
 }
