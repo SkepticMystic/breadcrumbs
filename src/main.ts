@@ -18,7 +18,6 @@ import {
   closeImpliedLinks,
   debug,
   getDVMetadataCache,
-  getFileFrontmatterArr,
   getNeighbourObjArr,
   getObsMetadataCache,
 } from "src/sharedFunctions";
@@ -36,6 +35,8 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showRelationType: true,
   showTrail: true,
   trailOrTable: 3,
+  gridDots: false,
+  dotsColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"

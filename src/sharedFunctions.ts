@@ -373,3 +373,5 @@ export function permute(permutation: any[]): any[][] {
 export function dropMD(path: string) {
   return path.split(".md", 1)[0];
 }
+
+export const range = (n: number) => [...Array(5).keys()];

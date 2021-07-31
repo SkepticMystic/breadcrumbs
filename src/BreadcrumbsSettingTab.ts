@@ -188,6 +188,33 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       });
 
     new Setting(trailDetails)
+      .setName("Grid view dots")
+      .setDesc(
+        "If the grid view is visible, shows dots based on the file size of each cell."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.gridDots).onChange(async (value) => {
+          plugin.settings.gridDots = value;
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
+      );
+
+    const dotsColour = trailDetails.createDiv();
+    dotsColour.createEl("h4", {
+      text: "Dots colour",
+    });
+    const dotsColourPicker = dotsColour.createEl("input", {
+      type: "color",
+    });
+
+    dotsColourPicker.value = plugin.settings.heatmapColour;
+    dotsColourPicker.addEventListener("change", async () => {
+      plugin.settings.dotsColour = dotsColourPicker.value;
+      await plugin.saveSettings();
+    });
+
+    new Setting(trailDetails)
       .setName("Grid view heatmap")
       .setDesc(
         "If the grid view is visible, change the background colour of squares based on the number of children leaving that note."
@@ -200,17 +227,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    const mainColourDiv = trailDetails.createDiv();
-    mainColourDiv.createEl("h4", {
+    const heatmapColour = trailDetails.createDiv();
+    heatmapColour.createEl("h4", {
       text: "Heat map colour",
     });
-    const mainColourPicker = mainColourDiv.createEl("input", { type: "color" });
+    const heatmapColourPicker = heatmapColour.createEl("input", {
+      type: "color",
+    });
 
-    mainColourPicker.value = plugin.settings.heatmapColour;
-
-    mainColourPicker.addEventListener("change", async () => {
-      plugin.settings.heatmapColour = mainColourPicker.value;
-      console.log(mainColourPicker.value);
+    heatmapColourPicker.value = plugin.settings.heatmapColour;
+    heatmapColourPicker.addEventListener("change", async () => {
+      plugin.settings.heatmapColour = heatmapColourPicker.value;
       await plugin.saveSettings();
     });
 
