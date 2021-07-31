@@ -8,6 +8,7 @@
     "baseUrl": ".",
     "paths": {
       "src": ["src/*"]
-    }
+    },
+    "lib": ["ES2019", "DOM"]
   }
 }
