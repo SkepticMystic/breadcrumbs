@@ -1,10 +1,19 @@
 import type { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
-import type { App, FrontMatterCache, TFile, WorkspaceLeaf } from "obsidian";
+import type {
+  App,
+  CachedMetadata,
+  FrontMatterCache,
+  Pos,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
+  dvFrontmatterCache,
+  dvLink,
   fileFrontmatter,
   JugglLink,
   neighbourObj,
@@ -28,12 +37,56 @@ export function normalise(arr: number[]): number[] {
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
 
+export function getDVMetadataCache(
+  app: App,
+  settings: BreadcrumbsSettings,
+  files: TFile[]
+) {
+  debug(settings, "Using Dataview");
+
+  const dvCacheArr: dvFrontmatterCache[] = [];
+  files.forEach((file) => {
+    superDebug(settings, `Get frontmatter: ${file.basename}`);
+
+    const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
+      file.path
+    );
+
+    superDebug(settings, { dvCache });
+
+    dvCacheArr.push(dvCache);
+  });
+  return dvCacheArr;
+}
+
+export function getObsMetadataCache(
+  app: App,
+  settings: BreadcrumbsSettings,
+  files: TFile[]
+) {
+  debug(settings, "Using Obsidian");
+
+  const fileFrontmatterArr: dvFrontmatterCache[] = [];
+
+  files.forEach((file) => {
+    const obs: CachedMetadata = app.metadataCache.getFileCache(file);
+    if (obs.frontmatter) {
+      fileFrontmatterArr.push({ file, ...obs.frontmatter });
+    } else {
+      fileFrontmatterArr.push({ file });
+    }
+  });
+
+  debug(settings, { fileFrontmatterArr });
+  return fileFrontmatterArr;
+}
+
 export function getFileFrontmatterArr(
   app: App,
   settings: BreadcrumbsSettings
-): fileFrontmatter[] {
+): (fileFrontmatter | dvFrontmatterCache)[] {
   const files: TFile[] = app.vault.getMarkdownFiles();
-  const fileFrontMatterArr: fileFrontmatter[] = [];
+  const fileFrontMatterArr: (fileFrontmatter | dvFrontmatterCache)[] = [];
 
   // If dataview is **enabled** (not just installed), use its index
   if (app.plugins.plugins.dataview !== undefined) {
@@ -43,7 +96,7 @@ export function getFileFrontmatterArr(
       files.forEach((file) => {
         superDebug(settings, `Get frontmatter: ${file.basename}`);
 
-        const dv: FrontMatterCache =
+        const dv: dvFrontmatterCache =
           app.plugins.plugins.dataview.api.page(file.path) ?? [];
 
         superDebug(settings, { dv });
@@ -141,53 +194,113 @@ export async function getJugglLinks(
   return filteredLinks;
 }
 
-export function getFields(
-  fileFrontmatter: fileFrontmatter,
+export function getFieldValues(
+  frontmatterCache: dvFrontmatterCache,
   field: string,
   settings: BreadcrumbsSettings
-): string[] {
-  const fieldItems: string | [] = fileFrontmatter.frontmatter?.[field] ?? [];
+) {
+  const rawValues: (string | dvLink)[] =
+    [frontmatterCache?.[field]].flat(5) ?? null;
 
-  if (typeof fieldItems === "string") {
-    superDebug(
-      settings,
-      `${field} (type: '${typeof fieldItems}') of: ${
-        fileFrontmatter.file.basename
-      } is: ${fieldItems}`
-    );
-
-    const links =
-      splitAndDrop(fieldItems)?.map(
-        (value: string) => value?.split("/").last() ?? ""
-      ) ?? [];
-    return links;
+  if (rawValues.length && rawValues[0] !== undefined) {
+    if (typeof rawValues[0] === "string") {
+      return splitAndDrop(rawValues[0]).map((str: string) =>
+        str.split("/").last()
+      );
+    } else {
+      return (rawValues as dvLink[]).map((link: dvLink) =>
+        link.path.split("/").last()
+      );
+    }
   } else {
-    superDebug(
-      settings,
-      `${field} (type: '${typeof fieldItems}') of: ${
-        fileFrontmatter.file.basename
-      } is:`
-    );
-    // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
-
-    const flattenedItems: [] = [fieldItems].flat(5);
-
-    const links: [] =
-      flattenedItems.map((link) => {
-        superDebug(settings, link);
-        return link?.path?.split("/").last() ?? link?.split("/").last() ?? "";
-      }) ?? [];
-
-    return links;
+    return [];
   }
+
+  // if (rawValues instanceof Array) {
+  //   const flatValues: string[] | dvLink[] = rawValues.flat();
+  //   // if it's a dvLink[]
+  //   if (flatValues[0].path || typeof flatValues[0].path === "string") {
+  //     return (flatValues as dvLink[]).map((link: dvLink) =>
+  //       link.path.split("/").last()
+  //     );
+  //   } else {
+  //     return (flatValues as string[]).map(
+  //       (link: string) =>
+  //         splitAndDrop(link)?.map(
+  //           (value: string) => value?.split("/").last() ?? ""
+  //         ) ?? []
+  //     );
+  //   }
+  // } else if (typeof rawValues === "string") {
+  //   superDebug(
+  //     settings,
+  //     `${field} (type: 'string') of: ${frontmatterCache.file.basename} is: ${rawValues}`
+  //   );
+
+  //   const links =
+  //     splitAndDrop(rawValues)?.map(
+  //       (value: string) => value?.split("/").last() ?? ""
+  //     ) ?? [];
+  //   return links;
+  // } else if (rawValues === null) {
+  //   return [];
+  // } else if (rawValues.path) {
+  //   return (rawValues as dvLink).path;
+  // } else {
+  //   return [];
+  // }
 }
+
+// export function getFields(
+//   fileFrontmatter: fileFrontmatter,
+//   field: string,
+//   settings: BreadcrumbsSettings
+// ): string[] {
+//   const fieldItems: string | [] = fileFrontmatter.frontmatter?.[field];
+//   if (!fieldItems) {
+//     return [];
+//   }
+
+//   if (typeof fieldItems === "string") {
+//     superDebug(
+//       settings,
+//       `${field} (type: '${typeof fieldItems}') of: ${
+//         fileFrontmatter.file.basename
+//       } is: ${fieldItems}`
+//     );
+
+//     const links =
+//       splitAndDrop(fieldItems)?.map(
+//         (value: string) => value?.split("/").last() ?? ""
+//       ) ?? [];
+//     return links;
+//   } else {
+//     superDebug(
+//       settings,
+//       `${field} (type: '${typeof fieldItems}') of: ${
+//         fileFrontmatter.file.basename
+//       } is:`
+//     );
+//     // superDebug(settings, (fieldItems?.join(', ') ?? undefined))
+
+//     const flattenedItems: [] = [fieldItems].flat(5);
+
+//     const links: [] =
+//       flattenedItems.map((link) => {
+//         superDebug(settings, link);
+//         return link?.path?.split("/").last() ?? link?.split("/").last() ?? "";
+//       }) ?? [];
+
+//     return links;
+//   }
+// }
 
 export const splitAndTrim = (fields: string): string[] =>
   fields.split(",").map((str: string) => str.trim());
 
 export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
-  fileFrontmatterArr: fileFrontmatter[]
+  fileFrontmatterArr: dvFrontmatterCache[]
 ): Promise<neighbourObj[]> {
   let jugglLinks: JugglLink[];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
@@ -208,19 +321,21 @@ export async function getNeighbourObjArr(
         parentFields
           .map(
             (parentField) =>
-              getFields(fileFrontmatter, parentField, plugin.settings) ?? []
+              getFieldValues(fileFrontmatter, parentField, plugin.settings) ??
+              []
           )
           .flat(),
         siblingFields
           .map(
             (siblingField) =>
-              getFields(fileFrontmatter, siblingField, plugin.settings) ?? []
+              getFieldValues(fileFrontmatter, siblingField, plugin.settings) ??
+              []
           )
           .flat(),
         childFields
           .map(
             (childField) =>
-              getFields(fileFrontmatter, childField, plugin.settings) ?? []
+              getFieldValues(fileFrontmatter, childField, plugin.settings) ?? []
           )
           .flat(),
       ];

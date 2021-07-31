@@ -10,14 +10,17 @@ import {
 import type {
   allGraphs,
   BreadcrumbsSettings,
+  dvFrontmatterCache,
   neighbourObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
   closeImpliedLinks,
   debug,
+  getDVMetadataCache,
   getFileFrontmatterArr,
   getNeighbourObjArr,
+  getObsMetadataCache,
 } from "src/sharedFunctions";
 import TrailGrid from "./TrailGrid.svelte";
 import TrailPath from "./TrailPath.svelte";
@@ -147,9 +150,9 @@ export default class BreadcrumbsPlugin extends Plugin {
     relationship: string
   ): void {
     g.setNode(currFileName, currFileName);
-    neighbours[relationship].forEach((node) =>
-      g.setEdge(currFileName, node, relationship)
-    );
+    neighbours[relationship].forEach((node) => {
+      g.setEdge(currFileName, node, relationship);
+    });
   }
 
   async initGraphs(): Promise<{
@@ -157,8 +160,18 @@ export default class BreadcrumbsPlugin extends Plugin {
     gSiblings: Graph;
     gChildren: Graph;
   }> {
-    const fileFrontmatterArr = getFileFrontmatterArr(this.app, this.settings);
+    const files = this.app.vault.getMarkdownFiles();
+
+    const dvQ = !!this.app.plugins.plugins.dataview;
+    let fileFrontmatterArr: dvFrontmatterCache[];
+    if (dvQ) {
+      fileFrontmatterArr = getDVMetadataCache(this.app, this.settings, files);
+    } else {
+      fileFrontmatterArr = getObsMetadataCache(this.app, this.settings, files);
+    }
+
     const neighbourArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+
     const [gParents, gSiblings, gChildren] = [
       new Graph(),
       new Graph(),
@@ -166,13 +179,13 @@ export default class BreadcrumbsPlugin extends Plugin {
     ];
 
     neighbourArr.forEach((neighbourObj) => {
-      const currFileName = neighbourObj.current.basename;
+      const currFileName =
+        neighbourObj.current.basename || neighbourObj.current.name;
 
       this.populateGraph(gParents, currFileName, neighbourObj, "parents");
       this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
       this.populateGraph(gChildren, currFileName, neighbourObj, "children");
     });
-
     return { gParents, gSiblings, gChildren };
   }
 

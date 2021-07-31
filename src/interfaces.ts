@@ -1,5 +1,5 @@
 import type { Graph } from "graphlib";
-import type { FrontMatterCache, TFile } from "obsidian";
+import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
   parentFieldName: string;
@@ -21,6 +21,18 @@ export interface BreadcrumbsSettings {
   wikilinkIndex: boolean;
   debugMode: boolean;
   superDebugMode: boolean;
+}
+
+export interface dvFrontmatterCache {
+  file: TFile | any;
+  [field: string]: string | string[] | string[][] | dvLink | dvLink[] | Pos;
+}
+
+export interface dvLink {
+  display: any;
+  embded: boolean;
+  path: string;
+  type: string;
 }
 
 export interface JugglLink {
