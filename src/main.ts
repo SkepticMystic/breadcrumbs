@@ -36,7 +36,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridDots: false,
-  dotsColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+  dotsColour: '#000000',
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
