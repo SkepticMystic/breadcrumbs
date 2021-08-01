@@ -36,7 +36,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   showTrail: true,
   trailOrTable: 3,
   gridDots: false,
-  dotsColour: '#000000',
+  dotsColour: "#000000",
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
@@ -50,6 +50,17 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   debugMode: false,
   superDebugMode: false,
 };
+
+declare module "obsidian" {
+  interface App {
+    plugins: {
+      plugins: {
+        dataview: any;
+        juggl: any;
+      };
+    };
+  }
+}
 
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
