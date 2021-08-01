@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.22](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.21...0.9.22) (2021-08-01)
+
+
+### Bug Fixes
+
+* :bug: Initialise jugglLinks as empty array so that it always has .length ([96d32af](https://github.com/SkepticMystic/breadcrumbs/commit/96d32afa51b54d03dca391407f96e5c4882e78a3))
+
 ### [0.9.21](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.20...0.9.21) (2021-08-01)
 
 
