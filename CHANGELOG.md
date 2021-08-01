@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.23](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.22...0.9.23) (2021-08-01)
+
+
+### Bug Fixes
+
+* :bug: less harsh falsey checking on rawValues content ([2e20b1e](https://github.com/SkepticMystic/breadcrumbs/commit/2e20b1e2977228c04c38c4e3eb127daf5ccce7c0))
+
 ### [0.9.22](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.21...0.9.22) (2021-08-01)
 
 
