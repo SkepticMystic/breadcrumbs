@@ -214,7 +214,7 @@ export async function getNeighbourObjArr(
     splitAndTrim(childFieldName),
   ];
 
-  let jugglLinks: JugglLink[];
+  let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
   }
