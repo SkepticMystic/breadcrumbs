@@ -1,6 +1,7 @@
 {
     "conventionalCommits.scopes": [
         "CreateIndex",
-        "Grid View"
+        "Grid View",
+        "Juggl"
     ]
 }

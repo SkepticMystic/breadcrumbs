@@ -94,6 +94,8 @@ export function splitAndDrop(str: string): string[] | [] {
   );
 }
 
+// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
+// => {[note: string]: {type: string, linksInLine: string[]}[]}
 export async function getJugglLinks(
   app: App,
   settings: BreadcrumbsSettings
@@ -237,10 +239,13 @@ export async function getNeighbourObjArr(
           .flat(3),
       ];
 
-      if (plugin.app.plugins.plugins.juggl !== undefined) {
+      if (jugglLinks.length) {
         const currFileJugglLinks = jugglLinks.filter(
-          (link) => link.note === fileFrontmatter.file.basename
+          (link) =>
+            link.note ===
+            (fileFrontmatter.file.basename || fileFrontmatter.file.name)
         );
+
         currFileJugglLinks.forEach((jugglLink) => {
           jugglLink.links.forEach((link) => {
             if (parentFields.includes(link.type)) {
