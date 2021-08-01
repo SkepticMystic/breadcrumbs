@@ -1,13 +1,7 @@
 import type { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
-import type {
-  App,
-  CachedMetadata,
-  FrontMatterCache,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
+import type { App, FrontMatterCache, TFile, WorkspaceLeaf } from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
@@ -79,6 +73,7 @@ export function getObsMetadataCache(
   files.forEach((file) => {
     const obs: FrontMatterCache =
       app.metadataCache.getFileCache(file).frontmatter;
+    superDebug(settings, { obs });
     if (obs) {
       fileFrontmatterArr.push({ file, ...obs });
     } else {
@@ -163,22 +158,26 @@ export async function getJugglLinks(
 
 export function getFieldValues(
   frontmatterCache: dvFrontmatterCache,
-  field: string
+  field: string,
+  settings: BreadcrumbsSettings
 ) {
   const rawValues: (string | dvLink)[] =
     [frontmatterCache?.[field]].flat(5) ?? null;
 
   if (rawValues.length && rawValues[0] !== undefined) {
     if (typeof rawValues[0] === "string") {
+      superDebug(settings, { rawValues });
       return splitAndDrop(rawValues[0]).map((str: string) =>
         str.split("/").last()
       );
     } else {
+      superDebug(settings, { rawValues });
       return (rawValues as dvLink[]).map((link: dvLink) =>
         link.path.split("/").last()
       );
     }
   } else {
+    superDebug(settings, { rawValues });
     return [];
   }
 }
@@ -207,13 +206,19 @@ export async function getNeighbourObjArr(
     (fileFrontmatter) => {
       let [parents, siblings, children] = [
         parentFields
-          .map((parentField) => getFieldValues(fileFrontmatter, parentField))
+          .map((parentField) =>
+            getFieldValues(fileFrontmatter, parentField, plugin.settings)
+          )
           .flat(3),
         siblingFields
-          .map((siblingField) => getFieldValues(fileFrontmatter, siblingField))
+          .map((siblingField) =>
+            getFieldValues(fileFrontmatter, siblingField, plugin.settings)
+          )
           .flat(3),
         childFields
-          .map((childField) => getFieldValues(fileFrontmatter, childField))
+          .map((childField) =>
+            getFieldValues(fileFrontmatter, childField, plugin.settings)
+          )
           .flat(3),
       ];
 
