@@ -173,28 +173,25 @@ export function getFieldValues(
   settings: BreadcrumbsSettings
 ) {
   // Narrow down the possible types
-  const rawValues: (string | dvLink)[] =
+  const rawValues: (string | dvLink | undefined)[] =
     [frontmatterCache?.[field]].flat(5) ?? null;
 
-  // If there are any values for that field, and they're not undefined (Forget why that can happen...)
-  if (rawValues.length && rawValues[0] !== undefined) {
+  superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
+  superDebug(settings, { rawValues });
+
+  // If there are any values for that field, and they're not undefined
+  if (rawValues.length && rawValues[0]) {
     if (typeof rawValues[0] === "string") {
-      superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
-      superDebug(settings, { rawValues });
       return splitAndDrop(rawValues[0]).map((str: string) =>
         str.split("/").last()
       );
     } else {
       // Assuming it's a dvLink
-      superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
-      superDebug(settings, { rawValues });
       return (rawValues as dvLink[]).map((link: dvLink) =>
         link.path.split("/").last()
       );
     }
   } else {
-    superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
-    superDebug(settings, { rawValues });
     return [];
   }
 }
