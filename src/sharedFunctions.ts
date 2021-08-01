@@ -50,7 +50,7 @@ export function getDVMetadataCache(
 
   const dvCacheArr: dvFrontmatterCache[] = [];
   files.forEach((file) => {
-    superDebug(settings, `Get frontmatter: ${file.basename}`);
+    superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
 
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
       file.path
@@ -71,6 +71,7 @@ export function getObsMetadataCache(
   const fileFrontmatterArr: dvFrontmatterCache[] = [];
 
   files.forEach((file) => {
+    superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
     const obs: FrontMatterCache =
       app.metadataCache.getFileCache(file).frontmatter;
     superDebug(settings, { obs });
@@ -103,13 +104,17 @@ export async function getJugglLinks(
     files.map(async (file) => {
       const jugglLink: JugglLink = { note: file.basename, links: [] };
 
+      // Use Obs metadatacache to get the links in the current file
       const links = app.metadataCache.getFileCache(file)?.links ?? [];
       const content = await app.vault.cachedRead(file);
 
       links.forEach((link) => {
+        // Get the line no. of each link
         const lineNo = link.position.start.line;
+        // And the corresponding line content
         const line = content.split("\n")[lineNo];
 
+        // Get an array of inner text of each link
         const linksInLine =
           line
             .match(splitLinksRegex)
@@ -139,16 +144,20 @@ export async function getJugglLinks(
 
   typedLinksArr.forEach((jugglLink) => {
     if (jugglLink.links.length) {
+      // Filter out links whose type is not in allFields
+      // TODO This could probably be done better with filter?
       const fieldTypesOnly = [];
       jugglLink.links.forEach((link) => {
         if (allFields.includes(link.type)) {
           fieldTypesOnly.push(link);
         }
       });
+      // I don't remember why I'm mutating the links instead of making a new obj
       jugglLink.links = fieldTypesOnly;
     }
   });
 
+  // Filter out the juggl links with no links
   const filteredLinks = typedLinksArr.filter((link) =>
     link.links.length ? true : false
   );
@@ -161,22 +170,28 @@ export function getFieldValues(
   field: string,
   settings: BreadcrumbsSettings
 ) {
+  // Narrow down the possible types
   const rawValues: (string | dvLink)[] =
     [frontmatterCache?.[field]].flat(5) ?? null;
 
+  // If there are any values for that field, and they're not undefined (Forget why that can happen...)
   if (rawValues.length && rawValues[0] !== undefined) {
     if (typeof rawValues[0] === "string") {
+      superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
       superDebug(settings, { rawValues });
       return splitAndDrop(rawValues[0]).map((str: string) =>
         str.split("/").last()
       );
     } else {
+      // Assuming it's a dvLink
+      superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
       superDebug(settings, { rawValues });
       return (rawValues as dvLink[]).map((link: dvLink) =>
         link.path.split("/").last()
       );
     }
   } else {
+    superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
     superDebug(settings, { rawValues });
     return [];
   }
