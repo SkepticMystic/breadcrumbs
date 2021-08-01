@@ -208,7 +208,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       type: "color",
     });
 
-    dotsColourPicker.value = plugin.settings.heatmapColour;
+    dotsColourPicker.value = plugin.settings.dotsColour;
     dotsColourPicker.addEventListener("change", async () => {
       plugin.settings.dotsColour = dotsColourPicker.value;
       await plugin.saveSettings();
