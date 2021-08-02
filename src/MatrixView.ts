@@ -1,5 +1,6 @@
 import type { Graph } from "graphlib";
 import { cloneDeep } from "lodash";
+import { createTreeHierarchy } from "hierarchy-js";
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
@@ -7,6 +8,7 @@ import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
+  AdjListItem,
   BreadcrumbsSettings,
   internalLinkObj,
   SquareProps,
@@ -179,6 +181,26 @@ export default class MatrixView extends ItemView {
     return pathsArr;
   }
 
+  dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
+    const queue: string[] = [startNode];
+    const adjList: AdjListItem[] = [];
+
+    let i = 0;
+    while (queue.length && i < 1000) {
+      i++;
+
+      const currNode = queue.shift();
+      const newNodes = (g.successors(currNode) ?? []) as string[];
+
+      newNodes.forEach((succ) => {
+        const next: AdjListItem = { name: currNode, parentId: succ };
+        queue.unshift(succ);
+        adjList.push(next);
+      });
+    }
+    return adjList;
+  }
+
   createIndex(
     // Gotta give it a starting index. This allows it to work for the global index feat
     index: string,
@@ -243,6 +265,40 @@ export default class MatrixView extends ItemView {
     const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
+
+    const closedParents = closeImpliedLinks(gParents, gChildren);
+    // const dijkstraPaths = graphlib.alg.dijkstra(
+    //   closedParents,
+    //   currFile.basename
+    // );
+
+    const adjList: AdjListItem[] = this.dfsAdjList(
+      closedParents,
+      currFile.basename
+    );
+    console.log({ adjList });
+
+    const noDoubles = adjList.filter(
+      (thing, index, self) =>
+        index ===
+        self.findIndex(
+          (t) => t.name === thing.name && t?.parentId === thing?.parentId
+        )
+    );
+    console.log({ noDoubles });
+    console.time("tree");
+    const tree = createTreeHierarchy(noDoubles, { excludeParent: true });
+    console.timeEnd("tree");
+    console.log({ tree });
+
+    // for (const [node, path] of Object.entries(dijkstraPaths)) {
+    //   const item: AdjListItem = { id: node };
+    //   const predecessor: string | undefined = path.predecessor;
+    //   if (predecessor) {
+    //     item.parentId = predecessor;
+    //   }
+    //   adjList.push(item);
+    // }
 
     const viewToggleButton = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",

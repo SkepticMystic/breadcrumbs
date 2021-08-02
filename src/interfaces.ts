@@ -79,3 +79,14 @@ export interface allGraphs {
   gSiblings: Graph;
   gChildren: Graph;
 }
+
+export interface d3Tree {
+  name: string;
+  children?: d3Tree[];
+  value?: string | number;
+}
+
+export interface AdjListItem {
+  name: string;
+  parentId?: string;
+}
