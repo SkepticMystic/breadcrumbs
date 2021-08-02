@@ -84,11 +84,10 @@ export default class MatrixView extends ItemView {
     });
   }
 
-  getViewType(): string {
+  getViewType() {
     return VIEW_TYPE_BREADCRUMBS_MATRIX;
   }
-
-  getDisplayText(): string {
+  getDisplayText() {
     return "Breadcrumbs Matrix";
   }
 
@@ -241,7 +240,6 @@ export default class MatrixView extends ItemView {
 
   async draw(): Promise<void> {
     this.contentEl.empty();
-    // this.currGraphs = this.plugin.currGraphs;
     const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;

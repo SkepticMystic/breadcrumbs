@@ -90,8 +90,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 if (plugin.settings.showTrail) {
                   await plugin.drawTrail();
                 }
-                if (plugin.getActiveView()) {
-                  await plugin.getActiveView().draw();
+                if (plugin.getActiveMatrixView()) {
+                  await plugin.getActiveMatrixView().draw();
                 }
               }, num * 1000);
               plugin.registerInterval(plugin.refreshIntervalID);
@@ -131,7 +131,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.showNameOrType = value;
             await plugin.saveSettings();
-            await plugin.getActiveView().draw();
+            await plugin.getActiveMatrixView().draw();
           })
       );
 
@@ -146,7 +146,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.showRelationType = value;
             await plugin.saveSettings();
-            await plugin.getActiveView().draw();
+            await plugin.getActiveMatrixView().draw();
           })
       );
 
@@ -297,7 +297,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             plugin.settings.trailSeperator = value;
             await plugin.saveSettings();
             // BUG This doesn't seem to work... you still have to switch notes for it to redraw
-            await plugin.getActiveView().draw();
+            await plugin.getActiveMatrixView().draw();
           })
       );
 

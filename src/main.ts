@@ -6,6 +6,7 @@ import {
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
+  VIEW_TYPE_BREADCRUMBS_STATS,
 } from "src/constants";
 import type {
   allGraphs,
@@ -14,6 +15,7 @@ import type {
   neighbourObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
+import StatsView from "src/StatsView";
 import {
   closeImpliedLinks,
   debug,
@@ -76,6 +78,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.visited = [];
 
     this.registerView(
+      VIEW_TYPE_BREADCRUMBS_STATS,
+      (leaf: WorkspaceLeaf) => new StatsView(leaf, this)
+    );
+
+    this.registerView(
       VIEW_TYPE_BREADCRUMBS_MATRIX,
       (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
     );
@@ -85,7 +92,9 @@ export default class BreadcrumbsPlugin extends Plugin {
       setTimeout(async () => {
         this.currGraphs = await this.initGraphs();
 
-        this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
+
+        this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
         if (this.settings.showTrail) {
           await this.drawTrail();
@@ -95,7 +104,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           this.app.workspace.on("active-leaf-change", async () => {
             this.currGraphs = await this.initGraphs();
             debug(this.settings, this.currGraphs);
-            const activeView = this.getActiveView();
+            const activeView = this.getActiveMatrixView();
             if (activeView) {
               await activeView.draw();
             }
@@ -112,7 +121,7 @@ export default class BreadcrumbsPlugin extends Plugin {
             if (this.settings.showTrail) {
               await this.drawTrail();
             }
-            const activeView = this.getActiveView();
+            const activeView = this.getActiveMatrixView();
             if (activeView) {
               await activeView.draw();
             }
@@ -134,14 +143,28 @@ export default class BreadcrumbsPlugin extends Plugin {
               .length === 0
           );
         }
-        this.initView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+      },
+    });
+
+    this.addCommand({
+      id: "show-breadcrumbs-stats-view",
+      name: "Open Stats View",
+      checkCallback: (checking: boolean) => {
+        if (checking) {
+          return (
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS)
+              .length === 0
+          );
+        }
+        this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
       },
     });
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }
 
-  getActiveView(): MatrixView | null {
+  getActiveMatrixView(): MatrixView | null {
     const leaves = this.app.workspace.getLeavesOfType(
       VIEW_TYPE_BREADCRUMBS_MATRIX
     );
@@ -374,7 +397,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
   }
 
-  initView = async (type: string): Promise<void> => {
+  initMatrixView = async (type: string): Promise<void> => {
     let leaf: WorkspaceLeaf = null;
     for (leaf of this.app.workspace.getLeavesOfType(type)) {
       if (leaf.view instanceof MatrixView) {
@@ -385,7 +408,22 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
     (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
       type,
-      active: true,
+      active: false,
+    });
+  };
+
+  initStatsView = async (type: string): Promise<void> => {
+    let leaf: WorkspaceLeaf = null;
+    for (leaf of this.app.workspace.getLeavesOfType(type)) {
+      if (leaf.view instanceof StatsView) {
+        return;
+      }
+      await leaf.setViewState({ type: "empty" });
+      break;
+    }
+    (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
+      type,
+      active: false,
     });
   };
 
