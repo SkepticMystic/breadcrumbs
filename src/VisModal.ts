@@ -14,47 +14,47 @@ export class VisModal extends Modal {
     this.plugin = plugin;
   }
 
+  graphlibToD3(g: Graph): d3Graph {
+    const d3Graph: d3Graph = { nodes: [], links: [] };
+    const edgeIDs = {};
+
+    g.nodes().forEach((node, i) => {
+      d3Graph.nodes.push({ id: i, name: node });
+      edgeIDs[node] = i;
+    });
+    g.edges().forEach((edge) => {
+      d3Graph.links.push({
+        source: edgeIDs[edge.v],
+        target: edgeIDs[edge.w],
+      });
+    });
+    return d3Graph;
+  }
+
+  dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
+    const queue: string[] = [startNode];
+    const adjList: AdjListItem[] = [];
+
+    let i = 0;
+    while (queue.length && i < 1000) {
+      i++;
+
+      const currNode = queue.shift();
+      const newNodes = (g.successors(currNode) ?? []) as string[];
+
+      newNodes.forEach((succ) => {
+        const next: AdjListItem = { name: currNode, parentId: succ };
+        queue.unshift(succ);
+        adjList.push(next);
+      });
+    }
+    return adjList;
+  }
+
   onOpen() {
     // ANCHOR Setup Modal layout
     let { contentEl } = this;
     contentEl.createEl("h1", { text: "Hey" });
-
-    function dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
-      const queue: string[] = [startNode];
-      const adjList: AdjListItem[] = [];
-
-      let i = 0;
-      while (queue.length && i < 1000) {
-        i++;
-
-        const currNode = queue.shift();
-        const newNodes = (g.successors(currNode) ?? []) as string[];
-
-        newNodes.forEach((succ) => {
-          const next: AdjListItem = { name: currNode, parentId: succ };
-          queue.unshift(succ);
-          adjList.push(next);
-        });
-      }
-      return adjList;
-    }
-
-    function graphlibToD3(g: Graph): d3Graph {
-      const d3Graph: d3Graph = { nodes: [], links: [] };
-      const edgeIDs = {};
-
-      g.nodes().forEach((node, i) => {
-        d3Graph.nodes.push({ id: i, name: node });
-        edgeIDs[node] = i;
-      });
-      g.edges().forEach((edge) => {
-        d3Graph.links.push({
-          source: edgeIDs[edge.v],
-          target: edgeIDs[edge.w],
-        });
-      });
-      return d3Graph;
-    }
 
     contentEl.empty();
     const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
@@ -62,26 +62,26 @@ export class VisModal extends Modal {
 
     const closedParents = closeImpliedLinks(gParents, gChildren);
 
-    const adjList: AdjListItem[] = dfsAdjList(closedParents, currFile.basename);
-    console.log({ adjList });
+    // const adjList: AdjListItem[] = dfsAdjList(closedParents, currFile.basename);
+    // console.log({ adjList });
 
-    const noDoubles = adjList.filter(
-      (thing, index, self) =>
-        index ===
-        self.findIndex(
-          (t) => t.name === thing.name && t?.parentId === thing?.parentId
-        )
-    );
-    console.log({ noDoubles });
-    console.time("tree");
-    const hierarchy = createTreeHierarchy(noDoubles, {
-      id: "name",
-      excludeParent: true,
-    });
-    console.timeEnd("tree");
-    console.log({ hierarchy });
+    // const noDoubles = adjList.filter(
+    //   (thing, index, self) =>
+    //     index ===
+    //     self.findIndex(
+    //       (t) => t.name === thing.name && t?.parentId === thing?.parentId
+    //     )
+    // );
+    // console.log({ noDoubles });
+    // console.time("tree");
+    // const hierarchy = createTreeHierarchy(noDoubles, {
+    //   id: "name",
+    //   excludeParent: true,
+    // });
+    // console.timeEnd("tree");
+    // console.log({ hierarchy });
 
-    const data = graphlibToD3(closedParents);
+    const data = this.graphlibToD3(closedParents);
     const d3GraphDiv = contentEl.createDiv({
       cls: "d3-graph",
     });
@@ -108,7 +108,7 @@ export class VisModal extends Modal {
       .select(".d3-graph")
       .append("svg")
       .attr("height", Math.round(screen.height / 1.3))
-      .attr("width", Math.round(screen.width / 1.3));
+      .attr("width", contentEl.clientWidth);
 
     const link = svg
       .append("g")
@@ -126,8 +126,8 @@ export class VisModal extends Modal {
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-      .attr("r", 5);
-    // .attr("fill", color)
+      .attr("r", 5)
+      .attr("fill", "#e6e6e6");
     // .call(drag(simulation));
 
     node.append("title").text((d) => d.id);
