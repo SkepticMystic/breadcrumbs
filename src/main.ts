@@ -25,6 +25,7 @@ import {
 } from "src/sharedFunctions";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
+import { VisModal } from "src/VisModal";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",
@@ -160,6 +161,10 @@ export default class BreadcrumbsPlugin extends Plugin {
         this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
       },
     });
+
+    this.addRibbonIcon("dice", "Make Adjacency Matrix", () =>
+      new VisModal(this.app, this).open()
+    );
 
     this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
   }

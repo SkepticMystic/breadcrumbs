@@ -90,3 +90,18 @@ export interface AdjListItem {
   name: string;
   parentId?: string;
 }
+
+export interface d3Node {
+  id: number;
+  name: string;
+}
+
+export interface d3Link {
+  source: number;
+  target: number;
+}
+
+export interface d3Graph {
+  nodes: d3Node[];
+  links: d3Link[];
+}
