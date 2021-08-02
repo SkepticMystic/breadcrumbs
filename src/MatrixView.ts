@@ -31,6 +31,10 @@ export default class MatrixView extends ItemView {
     await this.plugin.saveSettings();
     this.matrixQ = this.plugin.settings.defaultView;
 
+    this.app.workspace.onLayoutReady(async () => {
+      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
+    });
+
     this.plugin.addCommand({
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
@@ -92,9 +96,9 @@ export default class MatrixView extends ItemView {
 
   async onOpen(): Promise<void> {
     await this.plugin.saveSettings();
-    this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-    });
+    // this.app.workspace.onLayoutReady(async () => {
+    //   setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
+    // });
     // this.app.workspace.on("dataview:api-ready", () =>
     //   console.log("dv ready")
     // );
