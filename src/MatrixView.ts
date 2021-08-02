@@ -1,6 +1,8 @@
+import * as d3 from "d3";
+import { color } from "d3";
 import type { Graph } from "graphlib";
-import { cloneDeep } from "lodash";
 import { createTreeHierarchy } from "hierarchy-js";
+import { cloneDeep } from "lodash";
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
@@ -287,9 +289,96 @@ export default class MatrixView extends ItemView {
     );
     console.log({ noDoubles });
     console.time("tree");
-    const tree = createTreeHierarchy(noDoubles, { excludeParent: true });
+    const hierarchy = createTreeHierarchy(noDoubles, { excludeParent: true });
     console.timeEnd("tree");
-    console.log({ tree });
+    console.log({ hierarchy });
+
+    const d3GraphDiv = this.contentEl.createDiv({ cls: "d3-graph" });
+
+    const width = 450;
+    const height = 450;
+
+    const tree = (data) => {
+      const root = d3
+        .hierarchy(data)
+        .sort(
+          (a, b) =>
+            d3.descending(a.height, b.height) ||
+            d3.ascending(a.data.name, b.data.name)
+        );
+      root.dx = 10;
+      root.dy = width / (root.height + 1);
+      return d3.cluster().nodeSize([root.dx, root.dy])(root);
+    };
+
+    const pack = (data) =>
+      d3
+        .pack()
+        .size([width - 2, height - 2])
+        .padding(3)(
+        d3
+          .hierarchy(data)
+          .sum((d) => d.value)
+          .sort((a, b) => b.value - a.value)
+      );
+
+    const root = pack(adjList);
+
+    const svg = d3
+      .create("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .style("font", "10px sans-serif")
+      .attr("text-anchor", "middle");
+
+    svg
+      .append("filter")
+      .append("feDropShadow")
+      .attr("flood-opacity", 0.3)
+      .attr("dx", 0)
+      .attr("dy", 1);
+
+    const node = svg
+      .selectAll("g")
+      .data(d3.group(root.descendants(), (d) => d.height))
+      .join("g")
+      .selectAll("g")
+      .data((d) => d[1])
+      .join("g")
+      .attr("transform", (d) => `translate(${d.x + 1},${d.y + 1})`);
+
+    node
+      .append("circle")
+      .attr("r", (d) => d.r)
+      .attr("fill", (d) => color(d.height));
+
+    const leaf = node.filter((d) => !d.children);
+
+    // leaf.select("circle").attr("id", (d) => (d.leafUid = DOM.uid("leaf")).id);
+
+    leaf
+      .append("clipPath")
+      // .attr("id", (d) => (d.clipUid = DOM.uid("clip")).id)
+      .append("use")
+      .attr("xlink:href", (d) => d.leafUid.href);
+
+    leaf
+      .append("text")
+      .attr("clip-path", (d) => d.clipUid)
+      .selectAll("tspan")
+      .data((d) => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+      .join("tspan")
+      .attr("x", 0)
+      .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+      .text((d) => d);
+
+    node.append("title").text(
+      (d) =>
+        `${d
+          .ancestors()
+          .map((d) => d.data.name)
+          .reverse()
+          .join("/")}\n${format(d.value)}`
+    );
 
     // for (const [node, path] of Object.entries(dijkstraPaths)) {
     //   const item: AdjListItem = { id: node };

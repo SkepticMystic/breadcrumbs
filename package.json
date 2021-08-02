@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^2.0.1",
+    "d3": "^6.7.0",
     "graphlib": "^2.1.8",
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
