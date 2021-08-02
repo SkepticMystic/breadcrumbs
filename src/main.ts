@@ -21,8 +21,8 @@ import {
   getNeighbourObjArr,
   getObsMetadataCache,
 } from "src/sharedFunctions";
-import TrailGrid from "./TrailGrid.svelte";
-import TrailPath from "./TrailPath.svelte";
+import TrailGrid from "./Components/TrailGrid.svelte";
+import TrailPath from "./Components/TrailPath.svelte";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   parentFieldName: "parent",

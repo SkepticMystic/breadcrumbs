@@ -13,8 +13,8 @@ import type {
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { closeImpliedLinks, debug } from "src/sharedFunctions";
-import Lists from "./Lists.svelte";
-import Matrix from "./Matrix.svelte";
+import Lists from "./Components/Lists.svelte";
+import Matrix from "./Components/Matrix.svelte";
 
 export default class MatrixView extends ItemView {
   private plugin: BreadcrumbsPlugin;
