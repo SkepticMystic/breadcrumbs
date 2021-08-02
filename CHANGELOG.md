@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.25](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.24...0.9.25) (2021-08-02)
+
+
+### Features
+
+* **Vis View:** :sparkles: Functional Vis Modal! ([ac59f6f](https://github.com/SkepticMystic/breadcrumbs/commit/ac59f6ffa11edf82388995efd9e4e239dc23e986))
+
 ### [0.9.24](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.23...0.9.24) (2021-08-02)
 
 
