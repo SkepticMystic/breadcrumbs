@@ -31,7 +31,7 @@ export default class StatsView extends ItemView {
     return "Breadcrumbs Stats";
   }
 
-  icon = "bullet-list-glyph";
+  icon = "info";
 
   async onOpen(): Promise<void> {
     await this.plugin.saveSettings();
@@ -74,13 +74,10 @@ export default class StatsView extends ItemView {
 
   async draw(): Promise<void> {
     this.contentEl.empty();
-    // const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
-    // const currFile = this.app.workspace.getActiveFile();
-    // const settings = this.plugin.settings;
 
     this.view = new Stats({
       target: this.contentEl,
-      props: {},
+      props: { plugin: this.plugin },
     });
   }
 }

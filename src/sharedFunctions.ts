@@ -397,3 +397,7 @@ export function dropMD(path: string) {
 }
 
 export const range = (n: number) => [...Array(5).keys()];
+
+export function complement<T>(A: T[], B: T[]) {
+  return A.filter((a) => !B.includes(a));
+}
