@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.24](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.23...0.9.24) (2021-08-02)
+
+
+### Features
+
+* **Stats View:** :sparkles: Initial Stats View set up, no content yet ([bfe0227](https://github.com/SkepticMystic/breadcrumbs/commit/bfe02278d18da1b3da596b24645e158cb817cb27))
+* **Stats View:** :sparkles: Node, Real Edge, Implied Edge counts ([c89de64](https://github.com/SkepticMystic/breadcrumbs/commit/c89de64dc57b2f17ce3a5270d1a866b6395cf34b))
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Draw l/m view onLoad, not onOpen ([7f4078d](https://github.com/SkepticMystic/breadcrumbs/commit/7f4078d7314fd942e354df43f684efbe80d39a67))
+
 ### [0.9.23](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.22...0.9.23) (2021-08-01)
 
 
