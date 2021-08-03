@@ -1,7 +1,13 @@
 import type { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
-import type { App, FrontMatterCache, TFile, WorkspaceLeaf } from "obsidian";
+import type {
+  App,
+  FrontMatterCache,
+  Pos,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
@@ -173,27 +179,25 @@ export function getFieldValues(
   settings: BreadcrumbsSettings
 ) {
   // Narrow down the possible types
-  const rawValues: (string | dvLink | undefined)[] =
-    [frontmatterCache?.[field]].flat(5) ?? null;
+  const rawValues: (string | dvLink | Pos | undefined)[] = [
+    frontmatterCache?.[field],
+  ].flat(5);
 
   superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
   superDebug(settings, { rawValues });
 
-  // If there are any values for that field, and they're not undefined
-  if (rawValues.length && rawValues[0]) {
-    if (typeof rawValues[0] === "string") {
-      return splitAndDrop(rawValues[0]).map((str: string) =>
-        str.split("/").last()
+  const values: string[] = [];
+  rawValues.forEach((rawItem) => {
+    if (!rawItem) return;
+    if (typeof rawItem === "string") {
+      values.push(
+        ...splitAndDrop(rawItem).map((str: string) => str.split("/").last())
       );
-    } else {
-      // Assuming it's a dvLink
-      return (rawValues as dvLink[]).map((link: dvLink) =>
-        link.path.split("/").last()
-      );
+    } else if (rawItem.path) {
+      values.push((rawItem as dvLink).path.split("/").last());
     }
-  } else {
-    return [];
-  }
+  });
+  return values;
 }
 
 export const splitAndTrim = (fields: string): string[] =>

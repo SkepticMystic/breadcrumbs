@@ -5,6 +5,7 @@
         "Juggl",
         "List/Matrix View",
         "Stats View",
-        "Vis View"
+        "Vis View",
+        "getFieldValues"
     ]
 }
