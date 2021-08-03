@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.27](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.26...0.9.27) (2021-08-03)
+
+
+### Features
+
+* **Stats View:** :sparkles: Custom Tooltip + Copyable td info ([bedc5fd](https://github.com/SkepticMystic/breadcrumbs/commit/bedc5fd9801580e4e06647a889ce946b9b518f52))
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Fix extra arrows showing on shorter paths ([8c71661](https://github.com/SkepticMystic/breadcrumbs/commit/8c716610cb7b43ba0c48f1d0b030c0a21b298542))
+* **Stats View:** :bug: Close stats view on unload ([6931256](https://github.com/SkepticMystic/breadcrumbs/commit/69312563f5e6c4c6b20483ff3da5a04f9c293701))
+
 ### [0.9.26](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.25...0.9.26) (2021-08-03)
 
 
