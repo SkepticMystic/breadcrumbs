@@ -17,7 +17,7 @@ import type {
   d3Graph,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, debug } from "src/sharedFunctions";
+import { closeImpliedLinks, copy, debug } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
 
@@ -55,10 +55,7 @@ export default class MatrixView extends ItemView {
         );
         const index = this.createIndex(currFile + "\n", allPaths, settings);
         debug(settings, { index });
-        await navigator.clipboard.writeText(index).then(
-          () => new Notice("Index copied to clipboard"),
-          () => new Notice("Could not copy index to clipboard")
-        );
+        await copy(index);
       },
     });
 
@@ -81,10 +78,7 @@ export default class MatrixView extends ItemView {
         });
 
         debug(settings, { globalIndex });
-        await navigator.clipboard.writeText(globalIndex).then(
-          () => new Notice("Index copied to clipboard"),
-          () => new Notice("Could not copy index to clipboard")
-        );
+        await copy(globalIndex);
       },
     });
   }

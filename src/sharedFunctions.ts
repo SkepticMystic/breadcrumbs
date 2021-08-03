@@ -1,9 +1,10 @@
 import type { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
-import type {
+import {
   App,
   FrontMatterCache,
+  Notice,
   Pos,
   TFile,
   WorkspaceLeaf,
@@ -405,4 +406,11 @@ export const range = (n: number) => [...Array(5).keys()];
 
 export function complement<T>(A: T[], B: T[]) {
   return A.filter((a) => !B.includes(a));
+}
+
+export async function copy(content: string) {
+  await navigator.clipboard.writeText(content).then(
+    () => new Notice("Copied to clipboard"),
+    () => new Notice("Could not copy to clipboard")
+  );
 }
