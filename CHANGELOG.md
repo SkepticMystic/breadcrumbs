@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.26](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.25...0.9.26) (2021-08-03)
+
+
+### Bug Fixes
+
+* **getFieldValues:** :bug: Better falsey checking on rawValues ([ec717bc](https://github.com/SkepticMystic/breadcrumbs/commit/ec717bcef5acb0b075eec7cb4d802fa5df0ee3ef))
+
 ### [0.9.25](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.24...0.9.25) (2021-08-02)
 
 
