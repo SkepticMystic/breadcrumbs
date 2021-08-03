@@ -65,7 +65,7 @@
   </thead>
 
   <tr>
-    <td>Nodes</td>
+    <td><strong>Nodes</strong></td>
     <td data-tooltip={pRNodesStr} on:click={async () => await copy(pRNodesStr)}
       >{pRNodes.length}</td
     >
@@ -79,7 +79,7 @@
   </tr>
 
   <tr>
-    <td>Real Edges</td>
+    <td><strong>Real Edges</strong></td>
     <td data-tooltip={pREdgesStr} on:click={async () => await copy(pREdgesStr)}
       >{pREdges.length}</td
     >
@@ -93,7 +93,7 @@
   </tr>
 
   <tr>
-    <td>Implied Edges</td>
+    <td><strong>Implied Edges</strong></td>
     <td data-tooltip={pIEdgesStr} on:click={async () => await copy(pIEdgesStr)}
       >{pAEdges.length - pREdges.length}</td
     >
@@ -124,7 +124,7 @@
   [data-tooltip] {
     position: relative;
     /* z-index: 2; */
-    overflow-wrap: break-word;
+    white-space: pre-line;
     /* display: block; */
   }
 
@@ -146,17 +146,17 @@
     padding: 7px;
     width: fit-content;
     min-width: 200px;
-    /* max-width: fit-content; */
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
     background-color: var(--background-primary);
-    color: #fff;
+    color: var(--text-normal);
     content: attr(data-tooltip);
     text-align: center;
-    font-size: 14px;
+    font-size: var(--font-medium);
     line-height: 1.2;
     transition: 0.2s ease-out;
+    z-index: 1;
   }
 
   /* [data-tooltip]:after {
