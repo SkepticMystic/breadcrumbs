@@ -414,3 +414,30 @@ export async function copy(content: string) {
     () => new Notice("Could not copy to clipboard")
   );
 }
+
+export function makeWiki(wikiQ: boolean, str: string) {
+  let copy = str.slice();
+  if (wikiQ) {
+    copy = "[[" + copy;
+    copy += "]]";
+  }
+  return copy;
+}
+
+export function mergeGraphs(g1: Graph, g2: Graph) {
+  const copy1 = graphlib.json.read(graphlib.json.write(g1));
+  g2.edges().forEach((edge) => {
+    copy1.setEdge(edge.v, edge.w);
+  });
+  return copy1;
+}
+
+export function removeUnlinkedNodes(g: Graph) {
+  const copy = graphlib.json.read(graphlib.json.write(g));
+  const nodes = copy.nodes();
+  const unlinkedNodes = nodes.filter(
+    (node) => !(copy.neighbors(node) as string[]).length
+  );
+  unlinkedNodes.forEach((node) => copy.removeNode(node));
+  return copy;
+}

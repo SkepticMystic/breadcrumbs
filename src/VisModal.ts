@@ -1,10 +1,10 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
-import { createTreeHierarchy } from "hierarchy-js";
 import { App, Modal } from "obsidian";
-import type { AdjListItem, d3Graph } from "src/interfaces";
+import { ALLUNLINKED, REAlCLOSED, RELATIONS } from "src/constants";
+import type { AdjListItem, d3Graph, VisGraphs } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks } from "src/sharedFunctions";
+import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
 
 export class VisModal extends Modal {
   plugin: BreadcrumbsPlugin;
@@ -53,13 +53,102 @@ export class VisModal extends Modal {
 
   onOpen() {
     let { contentEl } = this;
-    contentEl.createEl("h1", { text: "Hey" });
-
     contentEl.empty();
-    const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
-    const currFile = this.app.workspace.getActiveFile();
 
-    const closedParents = closeImpliedLinks(gParents, gChildren);
+    const optionsDiv = contentEl.createDiv({ cls: "vis-view-options" });
+
+    optionsDiv.createSpan({ text: "Relation:" });
+    const relationSelect = optionsDiv.createEl("select");
+    RELATIONS.forEach((type) => {
+      relationSelect.createEl("option", { value: type, text: type });
+    });
+    relationSelect.value = this.plugin.settings.visRelation;
+
+    optionsDiv.createSpan({ text: "Close Implied:" });
+    const closedSelect = optionsDiv.createEl("select");
+    REAlCLOSED.forEach((type) => {
+      closedSelect.createEl("option", { value: type, text: type });
+    });
+    closedSelect.value = this.plugin.settings.visClosed;
+
+    optionsDiv.createSpan({ text: "Unlinked:" });
+    const unlinkedSelect = optionsDiv.createEl("select");
+    ALLUNLINKED.forEach((type) => {
+      unlinkedSelect.createEl("option", { value: type, text: type });
+    });
+    unlinkedSelect.value = this.plugin.settings.visAll;
+
+    const d3GraphDiv = contentEl.createDiv({
+      cls: "d3-graph",
+    });
+
+    const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
+    // const currFile = this.app.workspace.getActiveFile();
+
+    const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
+      closeImpliedLinks(gParents, gChildren),
+      closeImpliedLinks(gSiblings, gSiblings),
+      closeImpliedLinks(gChildren, gParents),
+    ];
+
+    console.log({ closedSNoS: removeUnlinkedNodes(closedSiblingNoSingle) });
+
+    const graphs: VisGraphs = {
+      Parent: {
+        Real: {
+          All: gParents,
+          "No Unlinked": removeUnlinkedNodes(gParents),
+        },
+        Closed: {
+          All: closedParentNoSingle,
+          "No Unlinked": removeUnlinkedNodes(closedParentNoSingle),
+        },
+      },
+      Sibling: {
+        Real: {
+          All: gSiblings,
+          "No Unlinked": removeUnlinkedNodes(gSiblings),
+        },
+        Closed: {
+          All: closedSiblingNoSingle,
+          "No Unlinked": removeUnlinkedNodes(closedSiblingNoSingle),
+        },
+      },
+      Child: {
+        Real: {
+          All: gChildren,
+          "No Unlinked": removeUnlinkedNodes(gChildren),
+        },
+        Closed: {
+          All: closedChildNoSingle,
+          "No Unlinked": removeUnlinkedNodes(closedChildNoSingle),
+        },
+      },
+    };
+
+    relationSelect.addEventListener("change", () => {
+      d3GraphDiv.empty();
+      this.draw(
+        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value]
+      );
+    });
+    closedSelect.addEventListener("change", () => {
+      d3GraphDiv.empty();
+      this.draw(
+        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value]
+      );
+    });
+    unlinkedSelect.addEventListener("change", () => {
+      d3GraphDiv.empty();
+      this.draw(
+        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value]
+      );
+    });
+
+    // Draw the default value onOpen
+    this.draw(
+      graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value]
+    );
 
     // const adjList: AdjListItem[] = dfsAdjList(closedParents, currFile.basename);
     // console.log({ adjList });
@@ -79,11 +168,12 @@ export class VisModal extends Modal {
     // });
     // console.timeEnd("tree");
     // console.log({ hierarchy });
+  }
 
-    const data = this.graphlibToD3(closedParents);
-    const d3GraphDiv = contentEl.createDiv({
-      cls: "d3-graph",
-    });
+  draw(graph: Graph) {
+    let { contentEl } = this;
+
+    const data = this.graphlibToD3(graph);
 
     const width = 1000;
     const height = 1000;
@@ -140,6 +230,17 @@ export class VisModal extends Modal {
 
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
+
+    var tooltip = d3
+      .select(".d3-graph")
+      .append("div")
+      .style("position", "absolute")
+      .style("visibility", "hidden")
+      .text("I'm a circle!");
+
+    tooltip
+      .style("top", d3.select(window).attr("cy") + "px")
+      .style("left", d3.select(window).attr("cx") + "px");
   }
 
   onClose() {

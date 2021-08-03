@@ -1,4 +1,12 @@
-import { App, Notice, PluginSettingTab, Setting } from "obsidian";
+import {
+  App,
+  DropdownComponent,
+  Notice,
+  PluginSettingTab,
+  Setting,
+} from "obsidian";
+import { ALLUNLINKED, REAlCLOSED, RELATIONS } from "src/constants";
+import type { Relations } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { isInVault, splitAndTrim } from "src/sharedFunctions";
 
@@ -330,6 +338,52 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    const visModalDetails: HTMLDetailsElement = containerEl.createEl("details");
+    visModalDetails.createEl("summary", { text: "Visualisation Modal" });
+
+    new Setting(visModalDetails)
+      .setName("Default Relation")
+      .setDesc("Which relation type to show first when opening the modal")
+      .addDropdown((cb: DropdownComponent) => {
+        RELATIONS.forEach((option: Relations) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(plugin.settings.visRelation);
+
+        cb.onChange(async (value: Relations) => {
+          this.plugin.settings.visRelation = value;
+          await this.plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
+      .setName("Default Real/Closed")
+      .setDesc("Show the real or closed graph by default")
+      .addDropdown((cb: DropdownComponent) => {
+        REAlCLOSED.forEach((option: string) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(plugin.settings.visClosed);
+
+        cb.onChange(async (value: string) => {
+          this.plugin.settings.visClosed = value;
+          await this.plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
+      .setName("Default Unlinked")
+      .setDesc("Show all nodes or only those which have links by default")
+      .addDropdown((cb: DropdownComponent) => {
+        ALLUNLINKED.forEach((option: string) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(plugin.settings.visAll);
+
+        cb.onChange(async (value: string) => {
+          this.plugin.settings.visAll = value;
+          await this.plugin.saveSettings();
+        });
+      });
+
     const createIndexDetails: HTMLDetailsElement =
       containerEl.createEl("details");
     createIndexDetails.createEl("summary", { text: "Create Index" });
@@ -355,7 +409,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         toggle
           .setValue(plugin.settings.aliasesInIndex)
           .onChange(async (value) => {
-            console.log(value)
+            console.log(value);
             plugin.settings.aliasesInIndex = value;
             await plugin.saveSettings();
           })

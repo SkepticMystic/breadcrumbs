@@ -18,3 +18,7 @@ li.breadcrumbs-implied::marker {
 .internal-link.breadcrumbs-link:hover {
   color: var(--text-accent-hover, var(--text-accent));
 }
+
+.vis-view-options > * {
+  padding: 5px;
+}

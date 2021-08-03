@@ -20,6 +20,9 @@ export interface BreadcrumbsSettings {
   noPathMessage: string;
   trailSeperator: string;
   respectReadableLineLength: boolean;
+  visRelation: Relations;
+  visClosed: string;
+  visAll: string;
   wikilinkIndex: boolean;
   aliasesInIndex: boolean;
   debugMode: boolean;
@@ -105,3 +108,13 @@ export interface d3Graph {
   nodes: d3Node[];
   links: d3Link[];
 }
+
+export type Relations = "Parent" | "Sibling" | "Child";
+
+export type VisGraphs = {
+  [relation in Relations]: {
+    [direction in "Real" | "Closed"]: {
+      [unlikedQ in "All" | "No Unlinked"]: Graph;
+    };
+  };
+};

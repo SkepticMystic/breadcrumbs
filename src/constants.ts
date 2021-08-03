@@ -9,3 +9,7 @@ export const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 
 export const DATAVIEW_INDEX_DELAY = 3000;
+
+export const RELATIONS = ["Parent", "Sibling", "Child"];
+export const REAlCLOSED = ["Real", "Closed"];
+export const ALLUNLINKED = ["All", "No Unlinked"];
