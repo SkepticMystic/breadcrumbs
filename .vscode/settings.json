@@ -6,6 +6,7 @@
         "List/Matrix View",
         "Stats View",
         "Vis View",
-        "getFieldValues"
+        "getFieldValues",
+        "Path View"
     ]
 }
