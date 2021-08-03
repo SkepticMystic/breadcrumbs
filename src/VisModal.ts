@@ -52,7 +52,6 @@ export class VisModal extends Modal {
   }
 
   onOpen() {
-    // ANCHOR Setup Modal layout
     let { contentEl } = this;
     contentEl.createEl("h1", { text: "Hey" });
 
