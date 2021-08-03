@@ -162,7 +162,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
-    this.addRibbonIcon("dice", "Make Adjacency Matrix", () =>
+    this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()
     );
 
@@ -443,9 +443,13 @@ export default class BreadcrumbsPlugin extends Plugin {
   onunload(): void {
     console.log("unloading");
     // Detach matrix view
-    const openLeaves = this.app.workspace.getLeavesOfType(
-      VIEW_TYPE_BREADCRUMBS_MATRIX
-    );
+    const openLeaves = [
+      VIEW_TYPE_BREADCRUMBS_MATRIX,
+      VIEW_TYPE_BREADCRUMBS_STATS,
+    ]
+      .map((type) => this.app.workspace.getLeavesOfType(type))
+      .flat(1);
+
     openLeaves.forEach((leaf) => leaf.detach());
 
     // Empty trailDiv
