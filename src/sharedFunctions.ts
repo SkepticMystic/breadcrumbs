@@ -327,16 +327,17 @@ export async function openOrSwitch(
 }
 
 export function padArray(arr: any[], finalLength: number, filler = ""): any[] {
-  const currLength = arr.length;
+  const copy = [...arr];
+  const currLength = copy.length;
   if (currLength > finalLength) {
     throw new Error("Current length is greater than final length");
   } else if (currLength === finalLength) {
-    return arr;
+    return copy;
   } else {
     for (let i = currLength; i < finalLength; i++) {
-      arr.push(filler);
+      copy.push(filler);
     }
-    return arr;
+    return copy;
   }
 }
 
