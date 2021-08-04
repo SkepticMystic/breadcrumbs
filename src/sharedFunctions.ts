@@ -67,7 +67,7 @@ export function getDVMetadataCache(
     fileFrontmatterArr.push(dvCache);
   });
 
-  debug(settings, { dvCacheArr: fileFrontmatterArr });
+  debug(settings, { fileFrontmatterArr });
   return fileFrontmatterArr;
 }
 
