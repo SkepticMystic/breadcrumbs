@@ -191,7 +191,13 @@ export class VisModal extends Modal {
         d3.forceLink(links).id((d) => d.id)
       )
       .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force(
+        "center",
+        d3.forceCenter(
+          parseInt(contentEl.style.width) / 2,
+          parseInt(contentEl.style.height) / 2
+        )
+      );
 
     const svg = d3
       .select(".d3-graph")
