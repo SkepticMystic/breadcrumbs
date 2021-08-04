@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.2](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.1...0.10.2) (2021-08-04)
+
+
+### Features
+
+* **Vis View:** :sparkles: Show node name on hover ([4c2ad5d](https://github.com/SkepticMystic/breadcrumbs/commit/4c2ad5dd80ce3b8a450de504f8a02ebcec642945))
+
+
+### Bug Fixes
+
+* **Vis View:** Center graph in Vis View ([56ee243](https://github.com/SkepticMystic/breadcrumbs/commit/56ee2434e70c791404a75ffd91d6bb1870cadbd8))
+
 ### [0.10.1](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.0...0.10.1) (2021-08-03)
 
 ### [0.9.27](https://github.com/SkepticMystic/breadcrumbs/compare/0.9.26...0.9.27) (2021-08-03)
