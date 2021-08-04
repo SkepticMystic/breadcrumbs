@@ -204,6 +204,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     gSiblings: Graph;
     gChildren: Graph;
   }> {
+    debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
     const dvQ = !!this.app.plugins.plugins.dataview;
@@ -230,6 +231,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
       this.populateGraph(gChildren, currFileName, neighbourObj, "children");
     });
+    debug(this.settings, "graphs inited");
     return { gParents, gSiblings, gChildren };
   }
 
