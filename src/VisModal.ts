@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import { drag } from "d3";
 import type { Graph } from "graphlib";
 import { App, Modal } from "obsidian";
 import { ALLUNLINKED, REAlCLOSED, RELATIONS } from "src/constants";
@@ -90,8 +91,6 @@ export class VisModal extends Modal {
       closeImpliedLinks(gSiblings, gSiblings),
       closeImpliedLinks(gChildren, gParents),
     ];
-
-    console.log({ closedSNoS: removeUnlinkedNodes(closedSiblingNoSingle) });
 
     const graphs: VisGraphs = {
       Parent: {
@@ -223,9 +222,9 @@ export class VisModal extends Modal {
       .join("circle")
       .attr("r", 5)
       .attr("fill", "#e6e6e6");
-    // .call(drag(simulation));
+    // .call(drag());
 
-    node.append("title").text((d) => d.id);
+    node.append("title").text((d) => d.name);
 
     simulation.on("tick", () => {
       link
@@ -237,16 +236,16 @@ export class VisModal extends Modal {
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     });
 
-    var tooltip = d3
-      .select(".d3-graph")
-      .append("div")
-      .style("position", "absolute")
-      .style("visibility", "hidden")
-      .text("I'm a circle!");
+    // var tooltip = d3
+    //   .select(".d3-graph")
+    //   .append("div")
+    //   .style("position", "absolute")
+    //   .style("visibility", "hidden")
+    //   .text("I'm a circle!");
 
-    tooltip
-      .style("top", d3.select(window).attr("cy") + "px")
-      .style("left", d3.select(window).attr("cx") + "px");
+    // tooltip
+    //   .style("top", d3.select(window).attr("cy") + "px")
+    //   .style("left", d3.select(window).attr("cx") + "px");
   }
 
   onClose() {
