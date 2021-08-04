@@ -55,17 +55,20 @@ export function getDVMetadataCache(
 ) {
   debug(settings, "Using Dataview");
 
-  const dvCacheArr: dvFrontmatterCache[] = [];
+  const fileFrontmatterArr: dvFrontmatterCache[] = [];
   files.forEach((file) => {
     superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
 
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
       file.path
     );
+
     superDebug(settings, { dvCache });
-    dvCacheArr.push(dvCache);
+    fileFrontmatterArr.push(dvCache);
   });
-  return dvCacheArr;
+
+  debug(settings, { dvCacheArr: fileFrontmatterArr });
+  return fileFrontmatterArr;
 }
 
 export function getObsMetadataCache(
