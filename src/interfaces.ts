@@ -20,6 +20,7 @@ export interface BreadcrumbsSettings {
   noPathMessage: string;
   trailSeperator: string;
   respectReadableLineLength: boolean;
+  visGraph: visTypes;
   visRelation: Relations;
   visClosed: string;
   visAll: string;
@@ -97,6 +98,7 @@ export interface AdjListItem {
 export interface d3Node {
   id: number;
   name: string;
+  value?: number;
 }
 
 export interface d3Link {
@@ -118,3 +120,10 @@ export type VisGraphs = {
     };
   };
 };
+
+export type visTypes =
+  | "Force Directed Graph"
+  | "Force Directed Tree"
+  | "Tree"
+  | "Circle Packing"
+  | "Edge Bundling";

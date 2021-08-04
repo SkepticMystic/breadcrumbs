@@ -1,3 +1,5 @@
+import type { Relations, visTypes } from "src/interfaces";
+
 export const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
 export const VIEW_TYPE_BREADCRUMBS_STATS = "breadcrumbs-stats";
 
@@ -10,6 +12,13 @@ export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 
 export const DATAVIEW_INDEX_DELAY = 3000;
 
-export const RELATIONS = ["Parent", "Sibling", "Child"];
+export const VISTYPES: visTypes[] = [
+  "Force Directed Graph",
+  "Force Directed Tree",
+  "Tree",
+  "Circle Packing",
+  "Edge Bundling",
+];
+export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];

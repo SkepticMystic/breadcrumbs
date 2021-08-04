@@ -22,6 +22,11 @@ li.breadcrumbs-implied::marker {
 .vis-view-options > * {
   padding: 5px;
 }
+circle > title {
+  background-color: red !important;
+  color: red !important;
+}
+
 /* Source: https://svelte.dev/repl/3153faf7584d40bd8ddebecf39f24ac1?version=3.41.0 */
 [data-tooltip] {
   position: relative;
