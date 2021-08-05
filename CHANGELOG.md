@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.7](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.6...0.10.7) (2021-08-05)
+
+
+### Features
+
+* **Vis View:** :sparkles: Lots more work on view view. Upgrade forceDirectedG, functional Circle Packing + TidyTree ([9769d9b](https://github.com/SkepticMystic/breadcrumbs/commit/9769d9b55251c5073d6c190ff9f29a4eaf36d537))
+
 ### [0.10.6](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.5...0.10.6) (2021-08-05)
 
 
