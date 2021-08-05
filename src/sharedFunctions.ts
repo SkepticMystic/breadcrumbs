@@ -83,7 +83,7 @@ export function getObsMetadataCache(
   files.forEach((file) => {
     superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
     const obs: FrontMatterCache =
-      app.metadataCache.getFileCache(file).frontmatter;
+      app.metadataCache.getFileCache(file)?.frontmatter;
     superDebug(settings, { obs });
     if (obs) {
       fileFrontmatterArr.push({ file, ...obs });
@@ -182,26 +182,34 @@ export function getFieldValues(
   field: string,
   settings: BreadcrumbsSettings
 ) {
-  // Narrow down the possible types
-  const rawValues: (string | dvLink | Pos | undefined)[] = [
-    frontmatterCache?.[field],
-  ].flat(5);
-
-  superDebug(settings, `${field} of: ${frontmatterCache.file.path}`);
-  superDebug(settings, { rawValues });
-
   const values: string[] = [];
-  rawValues.forEach((rawItem) => {
-    if (!rawItem) return;
-    if (typeof rawItem === "string") {
-      values.push(
-        ...splitAndDrop(rawItem).map((str: string) => str.split("/").last())
-      );
-    } else if (rawItem.path) {
-      values.push((rawItem as dvLink).path.split("/").last());
-    }
-  });
-  return values;
+  try {
+    const rawValues: (string | dvLink | Pos | TFile | undefined)[] = [
+      frontmatterCache?.[field],
+    ].flat(5);
+
+    superDebug(settings, `${field} of: ${frontmatterCache?.file?.path}`);
+    superDebug(settings, { rawValues });
+
+    rawValues.forEach((rawItem) => {
+      if (!rawItem) return;
+      if (typeof rawItem === "string") {
+        const splits = rawItem.match(splitLinksRegex);
+        if (splits !== null) {
+          const strs = splits
+            .map((link) => link.match(dropHeaderOrAlias)[1])
+            .map((str: string) => str.split("/").last());
+        } else {
+          values.push(rawItem.split("/").last());
+        }
+      } else if (rawItem.path) {
+        values.push((rawItem as dvLink).path.split("/").last());
+      }
+    });
+    return values;
+  } catch (error) {
+    return values;
+  }
 }
 
 export const splitAndTrim = (fields: string): string[] =>

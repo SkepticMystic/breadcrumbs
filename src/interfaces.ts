@@ -31,8 +31,15 @@ export interface BreadcrumbsSettings {
 }
 
 export interface dvFrontmatterCache {
-  file: TFile | any;
-  [field: string]: string | string[] | string[][] | dvLink | dvLink[] | Pos;
+  file: TFile;
+  [field: string]:
+    | string
+    | string[]
+    | string[][]
+    | dvLink
+    | dvLink[]
+    | Pos
+    | TFile;
 }
 
 export interface dvLink {
