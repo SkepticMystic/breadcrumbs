@@ -22,10 +22,6 @@ li.breadcrumbs-implied::marker {
 .vis-view-options > * {
   padding: 5px;
 }
-circle > title {
-  background-color: red !important;
-  color: red !important;
-}
 
 /* Source: https://svelte.dev/repl/3153faf7584d40bd8ddebecf39f24ac1?version=3.41.0 */
 [data-tooltip] {
@@ -57,7 +53,7 @@ circle > title {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
-  background-color: red /* var(--background-primary); */;
+  background-color: var(--background-primary);
   color: var(--text-normal);
   content: attr(data-tooltip);
   text-align: center;
@@ -65,7 +61,7 @@ circle > title {
   line-height: 1.2;
   transition: 0.2s ease-out;
   white-space: pre-line;
-  z-index: 1;
+  z-index: 100;
 }
 
 /* [data-tooltip]:after {
