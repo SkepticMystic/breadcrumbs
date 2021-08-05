@@ -5,13 +5,12 @@ import type { d3Node } from "src/interfaces";
 import { graphlibToD3, VisModal } from "src/VisModal";
 import type { App } from "obsidian";
 
-
 export const forceDirectedG = (
+  g: Graph,
   app: App,
   modal: VisModal,
   width: number,
-  height: number,
-  g: Graph
+  height: number
 ) => {
   const data = graphlibToD3(g);
 

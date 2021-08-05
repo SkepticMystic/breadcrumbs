@@ -21,7 +21,6 @@ import {
   debug,
   getDVMetadataCache,
   getNeighbourObjArr,
-  getNeighbourObjArr2,
   getObsMetadataCache,
 } from "src/sharedFunctions";
 import TrailGrid from "./Components/TrailGrid.svelte";

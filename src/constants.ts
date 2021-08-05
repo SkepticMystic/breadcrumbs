@@ -15,7 +15,7 @@ export const DATAVIEW_INDEX_DELAY = 3000;
 export const VISTYPES: visTypes[] = [
   "Force Directed Graph",
   "Force Directed Tree",
-  "Tree",
+  "Tidy Tree",
   "Circle Packing",
   "Edge Bundling",
 ];

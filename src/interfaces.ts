@@ -100,6 +100,8 @@ export interface d3Tree {
 export interface AdjListItem {
   name: string;
   parentId?: string;
+  depth?: number;
+  height?: number;
 }
 
 export interface d3Node {
@@ -131,6 +133,6 @@ export type VisGraphs = {
 export type visTypes =
   | "Force Directed Graph"
   | "Force Directed Tree"
-  | "Tree"
+  | "Tidy Tree"
   | "Circle Packing"
   | "Edge Bundling";

@@ -1,8 +1,8 @@
 import * as d3 from "d3";
+import _ from "lodash";
 import type { Graph } from "graphlib";
 import { createTreeHierarchy } from "hierarchy-js";
-import { App, Modal, Notice } from "obsidian";
-import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
+import { App, Modal, Notice, TFile } from "obsidian";
 import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
 import type {
   AdjListItem,
@@ -12,11 +12,11 @@ import type {
   visTypes,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import {
-  closeImpliedLinks,
-  openOrSwitch,
-  removeUnlinkedNodes,
-} from "src/sharedFunctions";
+import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
+import { circlePacking } from "src/Visualisations/CirclePacking";
+import { edgeBundling } from "src/Visualisations/EdgeBundling";
+import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
+import { tidyTree } from "src/Visualisations/TidyTree";
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };
@@ -34,6 +34,124 @@ export function graphlibToD3(g: Graph): d3Graph {
   });
   return d3Graph;
 }
+
+export function bfsFromAllSinks(g: Graph) {
+  const queue: string[] = g.sinks();
+  const adjList: AdjListItem[] = [];
+
+  let i = 0;
+  while (queue.length && i < 1000) {
+    i++;
+
+    const currNode = queue.shift();
+    const newNodes = g.predecessors(currNode) as string[];
+
+    if (newNodes.length) {
+      newNodes.forEach((pre) => {
+        const next: AdjListItem = {
+          name: currNode,
+          parentId: pre,
+          depth: i,
+        };
+        queue.push(pre);
+        adjList.push(next);
+      });
+    } else {
+      adjList.push({
+        name: currNode,
+        parentId: undefined,
+        depth: i,
+      });
+    }
+  }
+
+  const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
+  adjList.forEach((item) => (item.height = maxDepth - item.depth));
+  return adjList;
+}
+
+export function dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
+  const queue: string[] = [startNode];
+  const adjList: AdjListItem[] = [];
+
+  let i = 0;
+  while (queue.length && i < 1000) {
+    i++;
+
+    const currNode = queue.shift();
+    const newNodes = g.successors(currNode) as string[];
+
+    if (newNodes.length) {
+      newNodes.forEach((succ) => {
+        const next: AdjListItem = {
+          name: currNode,
+          parentId: succ,
+          depth: i,
+        };
+        queue.push(succ);
+        adjList.push(next);
+      });
+    } else {
+      adjList.push({
+        name: currNode,
+        parentId: undefined,
+        depth: i,
+      });
+    }
+  }
+  return adjList;
+}
+
+export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
+  const queue: string[] = [startNode];
+  const adjList: AdjListItem[] = [];
+
+  let i = 0;
+  while (queue.length && i < 1000) {
+    i++;
+
+    const currNode = queue.shift();
+    const newNodes = g.successors(currNode) as string[];
+    console.log({ currNode, newNodes });
+
+    if (newNodes.length) {
+      newNodes.forEach((succ) => {
+        const next: AdjListItem = {
+          name: currNode,
+          parentId: succ,
+          depth: i,
+        };
+        queue.push(succ);
+        adjList.push(next);
+      });
+    } else {
+      adjList.push({
+        name: currNode,
+        parentId: undefined,
+        depth: i,
+      });
+    }
+  }
+  return adjList;
+}
+
+export function reverseDepth(adjList: AdjListItem[]) {
+  const copy = _.cloneDeep(adjList);
+  const maxDepth = copy.sort((a, b) => a.depth - b.depth).last().depth;
+
+  copy.forEach((item) => (item.depth = maxDepth - item.depth));
+  return copy;
+}
+
+export const stratify = d3
+  .stratify()
+  .id(function (d: AdjListItem) {
+    console.log({ d });
+    return d.name;
+  })
+  .parentId(function (d: AdjListItem) {
+    return d.parentId;
+  });
 export class VisModal extends Modal {
   plugin: BreadcrumbsPlugin;
   modal: VisModal;
@@ -44,26 +162,6 @@ export class VisModal extends Modal {
     this.modal = this;
   }
 
-  dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
-    const queue: string[] = [startNode];
-    const adjList: AdjListItem[] = [];
-
-    let i = 0;
-    while (queue.length && i < 1000) {
-      i++;
-
-      const currNode = queue.shift();
-      const newNodes = (g.successors(currNode) ?? []) as string[];
-
-      newNodes.forEach((succ) => {
-        const next: AdjListItem = { name: currNode, parentId: succ };
-        queue.unshift(succ);
-        adjList.push(next);
-      });
-    }
-    return adjList;
-  }
-
   onOpen() {
     new Notice(
       "Most of the visualisations don't work. This feature is still very experimental."
@@ -71,8 +169,8 @@ export class VisModal extends Modal {
     let { contentEl } = this;
     contentEl.empty();
 
-    contentEl.style.width = `${Math.round(screen.width / 1.5)}px`;
-    contentEl.style.height = `${Math.round(screen.height / 1.3)}px`;
+    contentEl.style.width = `${Math.round(window.innerWidth / 1.5)}px`;
+    contentEl.style.height = `${Math.round(window.innerHeight / 1.3)}px`;
 
     const optionsDiv = contentEl.createDiv({ cls: "vis-view-options" });
 
@@ -174,11 +272,16 @@ export class VisModal extends Modal {
 
     const currFile = this.app.workspace.getActiveFile();
 
-    const width = parseInt(contentEl.style.width);
-    const height = parseInt(contentEl.style.height);
+    const width = parseInt(contentEl.style.width) - 10;
+    const height = parseInt(contentEl.style.height) - 40;
 
     const forceDirectedT = (graph: Graph) => {
-      const adjList: AdjListItem[] = this.dfsAdjList(graph, currFile.basename);
+      const data = graphlibToD3(graph);
+
+      // const links = data.links.map((d) => Object.create(d));
+      // const nodes = data.nodes.map((d) => Object.create(d));
+
+      const adjList: AdjListItem[] = dfsAdjList(graph, currFile.basename);
       console.log({ adjList });
 
       const noDoubles = adjList.filter(
@@ -282,340 +385,29 @@ export class VisModal extends Modal {
       // invalidation.then(() => simulation.stop());
     };
 
-    const tree = (graph: Graph) => {
-      const adjList: AdjListItem[] = this.dfsAdjList(graph, currFile.basename);
-      console.log({ adjList });
-
-      const noDoubles = adjList.filter(
-        (thing, index, self) =>
-          index ===
-          self.findIndex(
-            (t) => t.name === thing.name && t?.parentId === thing?.parentId
-          )
-      );
-      console.log({ noDoubles });
-
-      const hierarchy: d3Tree = createTreeHierarchy(noDoubles, {
-        id: "name",
-        excludeParent: true,
-      });
-
-      console.log({ hierarchy });
-
-      // const makeRoot = (data: d3Tree) => {
-      //   const root = d3.hierarchy(data);
-      //   root.dx = 10;
-      //   root.dy = width / (root.height + 1);
-      //   return d3.tree().nodeSize([root.dx, root.dy])(root);
-      // };
-
-      const makeRoot = (hier: d3Tree) => {
-        const root = d3.hierarchy(hier);
-        root.dx = 10;
-        root.dy = 10;
-        return d3.tree().nodeSize([root.dx, root.dy])(root);
-      };
-
-      const root = makeRoot(hierarchy);
-
-      console.log({ root });
-
-      let x0 = Infinity;
-      let x1 = -x0;
-      root.each((d) => {
-        if (d.x > x1) x1 = d.x;
-        if (d.x < x0) x0 = d.x;
-      });
-
-      const svg = d3
-        .select(".d3-graph")
-        .append("svg")
-        .attr("height", Math.round(screen.height / 1.3))
-        .attr("width", contentEl.clientWidth);
-
-      const g = svg
-        .append("g")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 10)
-        .attr("transform", `translate(${10 / 3},${10 - x0})`);
-
-      const link = g
-        .append("g")
-        .attr("fill", "none")
-        .attr("stroke", "#555")
-        .attr("stroke-opacity", 0.4)
-        .attr("stroke-width", 1.5)
-        .selectAll("path")
-        .data(root.links())
-        .join("path")
-        .attr(
-          "d",
-          d3
-            .linkHorizontal()
-            .x((d) => d.y)
-            .y((d) => d.x)
-        );
-
-      const node = g
-        .append("g")
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-width", 3)
-        .selectAll("g")
-        .data(root.descendants())
-        .join("g")
-        .attr("transform", (d) => `translate(${d.y},${d.x})`);
-
-      node
-        .append("circle")
-        .attr("fill", (d) => (d.children ? "#555" : "#999"))
-        .attr("r", 2.5);
-
-      node
-        .append("text")
-        .attr("dy", "0.31em")
-        .attr("x", (d) => (d.children ? -6 : 6))
-        .attr("text-anchor", (d) => (d.children ? "end" : "start"))
-        .text((d) => d.data.name)
-        .clone(true)
-        .lower()
-        .attr("stroke", "white");
-    };
-
-    const circlePacking = (graph: Graph) => {
-      const adjList: AdjListItem[] = this.dfsAdjList(graph, currFile.basename);
-      console.log({ adjList });
-
-      const noDoubles = adjList.filter(
-        (thing, index, self) =>
-          index ===
-          self.findIndex(
-            (t) => t.name === thing.name && t?.parentId === thing?.parentId
-          )
-      );
-      console.log({ noDoubles });
-
-      const hierarchy: d3Tree = createTreeHierarchy(noDoubles, {
-        id: "name",
-        excludeParent: true,
-      });
-
-      console.log({ hierarchy });
-
-      const pack = (data: d3Tree) =>
-        d3.pack().size([width, height]).padding(3)(
-          d3
-            .hierarchy(data)
-            .sum((d) => d.value)
-            .sort((a, b) => b.value - a.value)
-        );
-
-      const root = pack(hierarchy);
-
-      const svg = d3
-        .select(".d3-graph")
-        .append("svg")
-        .attr("height", Math.round(screen.height / 1.3))
-        .attr("width", contentEl.clientWidth)
-        .style("font", "10px sans-serif")
-        .style("overflow", "visible")
-        .attr("text-anchor", "middle");
-
-      const node = svg
-        .append("g")
-        .attr("pointer-events", "all")
-        .selectAll("g")
-        .data(root.descendants())
-        .join("g")
-        .attr("transform", (d) => `translate(${d.x},${d.y})`);
-
-      node
-        .append("circle")
-        .attr("r", (d) => 10)
-        .attr("stroke", (d) => (d.children ? "#bbb" : "none"))
-        .attr("fill", (d) => (d.children ? "none" : "#ddd"));
-
-      const leaf = node.filter((d) => !d.children);
-
-      leaf.select("circle").attr("id", (d) => (d.leafUid = DOM.uid("leaf")).id);
-
-      leaf
-        .append("clipPath")
-        .attr("id", (d) => (d.clipUid = DOM.uid("clip")).id)
-        .append("use")
-        .attr("xlink:href", (d) => d.leafUid.href);
-
-      leaf
-        .append("text")
-        .attr("clip-path", (d) => d.clipUid)
-        .selectAll("tspan")
-        .data((d) => d.data.name.split(/(?=[A-Z][^A-Z])/g))
-        .join("tspan")
-        .attr("x", 0)
-        .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-        .text((d) => d);
-
-      node.append("title").text(
-        (d) =>
-          `${d
-            .ancestors()
-            .map((d) => d.data.name)
-            .reverse()
-            .join("/")}${d.value.toLocaleString()}`
-      );
-    };
-
-    const edgeBundling = (g: Graph) => {
-      const adjList: AdjListItem[] = this.dfsAdjList(graph, currFile.basename);
-      console.log({ adjList });
-
-      const noDoubles = adjList.filter(
-        (thing, index, self) =>
-          index ===
-          self.findIndex(
-            (t) => t.name === thing.name && t?.parentId === thing?.parentId
-          )
-      );
-      console.log({ noDoubles });
-
-      const hierarchy: d3Tree = createTreeHierarchy(noDoubles, {
-        id: "name",
-        excludeParent: true,
-      });
-
-      console.log({ hierarchy });
-
-      const radius = 477;
-      const colornone = "#ccc";
-      const colorout = "#f00";
-      const colorin = "#00f";
-
-      const line = d3
-        .lineRadial()
-        .curve(d3.curveBundle.beta(0.85))
-        .radius((d) => d.y)
-        .angle((d) => d.x);
-
-      const clus = d3.cluster().size([2 * Math.PI, radius - 100]);
-
-      const svg = d3
-        .select(".d3-graph")
-        .append("svg")
-        .attr("height", Math.round(screen.height / 1.3))
-        .attr("width", contentEl.clientWidth);
-
-      const root = clus(
-        bilink(
-          d3
-            .hierarchy(hierarchy)
-            .sort(
-              (a, b) =>
-                d3.ascending(a.height, b.height) ||
-                d3.ascending(a.data.name, b.data.name)
-            )
-        )
-      );
-
-      console.log({ root });
-
-      function id(node) {
-        return `${node.parent ? id(node.parent) + "." : ""}${node.data.name}`;
-      }
-
-      const node = svg
-        .append("g")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 10)
-        .selectAll("g")
-        .data(root.leaves())
-        .join("g")
-        .attr(
-          "transform",
-          (d) => `rotate(${(d.x * 180) / Math.PI - 90}) translate(${d.y},0)`
-        )
-        .append("text")
-        .attr("dy", "0.31em")
-        .attr("x", (d) => (d.x < Math.PI ? 6 : -6))
-        .attr("text-anchor", (d) => (d.x < Math.PI ? "start" : "end"))
-        .attr("transform", (d) => (d.x >= Math.PI ? "rotate(180)" : null))
-        .text((d) => d.data.name)
-        .each(function (d) {
-          d.text = this;
-        })
-        .on("mouseover", overed)
-        .on("mouseout", outed)
-        .call((text) =>
-          text.append("title").text(
-            (d) => `${id(d)}
-${d.outgoing.length} outgoing
-${d.incoming.length} incoming`
-          )
-        );
-
-      const link = svg
-        .append("g")
-        .attr("stroke", colornone)
-        .attr("fill", "none")
-        .selectAll("path")
-        .data(root.leaves().flatMap((leaf) => leaf.outgoing))
-        .join("path")
-        .style("mix-blend-mode", "multiply")
-        .attr("d", ([i, o]) => line(i.path(o)))
-        .each(function (d) {
-          d.path = this;
-        });
-
-      function bilink(root) {
-        const map = new Map(root.leaves().map((d) => [id(d), d]));
-        for (const d of root.leaves())
-          (d.incoming = []),
-            (d.outgoing = d.data.imports.map((i) => [d, map.get(i)]));
-        for (const d of root.leaves())
-          for (const o of d.outgoing) o[1].incoming.push(o);
-        return root;
-      }
-
-      function overed(event, d) {
-        link.style("mix-blend-mode", null);
-        d3.select(this).attr("font-weight", "bold");
-        d3.selectAll(d.incoming.map((d) => d.path))
-          .attr("stroke", colorin)
-          .raise();
-        d3.selectAll(d.incoming.map(([d]) => d.text))
-          .attr("fill", colorin)
-          .attr("font-weight", "bold");
-        d3.selectAll(d.outgoing.map((d) => d.path))
-          .attr("stroke", colorout)
-          .raise();
-        d3.selectAll(d.outgoing.map(([, d]) => d.text))
-          .attr("fill", colorout)
-          .attr("font-weight", "bold");
-      }
-
-      function outed(event, d) {
-        link.style("mix-blend-mode", "multiply");
-        d3.select(this).attr("font-weight", null);
-        d3.selectAll(d.incoming.map((d) => d.path)).attr("stroke", null);
-        d3.selectAll(d.incoming.map(([d]) => d.text))
-          .attr("fill", null)
-          .attr("font-weight", null);
-        d3.selectAll(d.outgoing.map((d) => d.path)).attr("stroke", null);
-        d3.selectAll(d.outgoing.map(([, d]) => d.text))
-          .attr("fill", null)
-          .attr("font-weight", null);
-      }
-    };
-
     const types: {
-      [vis in visTypes]: { fun: (...args) => void; argArr: any[] };
+      [vis in visTypes]: {
+        fun: (...args: any[]) => void;
+        argArr: any[];
+      };
     } = {
       "Force Directed Graph": {
         fun: forceDirectedG,
-        argArr: [this.app, this.modal, width, height, graph],
+        argArr: [graph, this.app, this.modal, width, height],
       },
       "Force Directed Tree": { fun: forceDirectedT, argArr: [graph] },
-      Tree: { fun: tree, argArr: [graph] },
-      "Circle Packing": { fun: circlePacking, argArr: [graph] },
-      "Edge Bundling": { fun: edgeBundling, argArr: [graph] },
+      "Tidy Tree": {
+        fun: tidyTree,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
+      },
+      "Circle Packing": {
+        fun: circlePacking,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
+      },
+      "Edge Bundling": {
+        fun: edgeBundling,
+        argArr: [graph, contentEl, currFile, width, height],
+      },
     };
 
     types[type].fun(...types[type].argArr);
