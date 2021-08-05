@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.6](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.5...0.10.6) (2021-08-05)
+
+
+### Features
+
+* **Vis View:** :sparkles: Default visualisation type ([3dd2906](https://github.com/SkepticMystic/breadcrumbs/commit/3dd29068fd46e591d95f9086d9bf7d2e203bd737))
+* **Vis View:** :sparkles: Working Zoom & Pan on Force Directed Graph! ([0b49359](https://github.com/SkepticMystic/breadcrumbs/commit/0b49359014d804160aad129fffba4bcb721a1187))
+
+
+### Bug Fixes
+
+* **Stats View:** :bug: Remove old styles from data-tooltip ([973bed2](https://github.com/SkepticMystic/breadcrumbs/commit/973bed209a05007318f24b37f4d3ffa7e267f85a))
+
 ### [0.10.5](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.4...0.10.5) (2021-08-05)
 
 
