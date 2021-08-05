@@ -1,43 +1,47 @@
-import { worker } from "cluster";
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import { createTreeHierarchy } from "hierarchy-js";
 import { App, Modal, Notice } from "obsidian";
+import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
 import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
 import type {
   AdjListItem,
   d3Graph,
-  d3Node,
   d3Tree,
   VisGraphs,
   visTypes,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
+import {
+  closeImpliedLinks,
+  openOrSwitch,
+  removeUnlinkedNodes,
+} from "src/sharedFunctions";
 
+export function graphlibToD3(g: Graph): d3Graph {
+  const d3Graph: d3Graph = { nodes: [], links: [] };
+  const edgeIDs = {};
+
+  g.nodes().forEach((node, i) => {
+    d3Graph.nodes.push({ id: i, name: node });
+    edgeIDs[node] = i;
+  });
+  g.edges().forEach((edge) => {
+    d3Graph.links.push({
+      source: edgeIDs[edge.v],
+      target: edgeIDs[edge.w],
+    });
+  });
+  return d3Graph;
+}
 export class VisModal extends Modal {
   plugin: BreadcrumbsPlugin;
+  modal: VisModal;
 
   constructor(app: App, plugin: BreadcrumbsPlugin) {
     super(app);
     this.plugin = plugin;
-  }
-
-  graphlibToD3(g: Graph): d3Graph {
-    const d3Graph: d3Graph = { nodes: [], links: [] };
-    const edgeIDs = {};
-
-    g.nodes().forEach((node, i) => {
-      d3Graph.nodes.push({ id: i, name: node });
-      edgeIDs[node] = i;
-    });
-    g.edges().forEach((edge) => {
-      d3Graph.links.push({
-        source: edgeIDs[edge.v],
-        target: edgeIDs[edge.w],
-      });
-    });
-    return d3Graph;
+    this.modal = this;
   }
 
   dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
@@ -105,7 +109,6 @@ export class VisModal extends Modal {
     });
 
     const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
-    // const currFile = this.app.workspace.getActiveFile();
 
     const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
       closeImpliedLinks(gParents, gChildren),
@@ -146,34 +149,18 @@ export class VisModal extends Modal {
       },
     };
 
-    relationSelect.addEventListener("change", () => {
-      d3GraphDiv.empty();
-      this.draw(
-        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value],
-        graphSelect.value as visTypes
-      );
-    });
-    closedSelect.addEventListener("change", () => {
-      d3GraphDiv.empty();
-      this.draw(
-        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value],
-        graphSelect.value as visTypes
-      );
-    });
-    unlinkedSelect.addEventListener("change", () => {
-      d3GraphDiv.empty();
-      this.draw(
-        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value],
-        graphSelect.value as visTypes
-      );
-    });
-    graphSelect.addEventListener("change", () => {
-      d3GraphDiv.empty();
-      this.draw(
-        graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value],
-        graphSelect.value as visTypes
-      );
-    });
+    [relationSelect, closedSelect, unlinkedSelect, graphSelect].forEach(
+      (selector) =>
+        selector.addEventListener("change", () => {
+          d3GraphDiv.empty();
+          this.draw(
+            graphs[relationSelect.value][closedSelect.value][
+              unlinkedSelect.value
+            ],
+            graphSelect.value as visTypes
+          );
+        })
+    );
 
     // Draw the default value onOpen
     this.draw(
@@ -187,119 +174,8 @@ export class VisModal extends Modal {
 
     const currFile = this.app.workspace.getActiveFile();
 
-    const width = 1000;
-    const height = 1000;
-
-    const forceDirectedG = (g: Graph) => {
-      console.log({ contentEl });
-
-      const data = this.graphlibToD3(g);
-
-      const links = data.links.map((d) => Object.create(d));
-      const nodes = data.nodes.map((d) => Object.create(d));
-
-      const simulation = d3
-        .forceSimulation(nodes)
-        .force(
-          "link",
-          d3.forceLink(links).id((d) => d.id)
-        )
-        .force("charge", d3.forceManyBody())
-        .force(
-          "center",
-          d3
-            .forceCenter(
-              parseInt(contentEl.style.width) / 2,
-              parseInt(contentEl.style.height) / 2
-            )
-            .strength(0.5)
-        );
-
-      const drag = (simulation) => {
-        function dragstarted(event, d) {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-          d.fx = event.x;
-          d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-          if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        }
-
-        return d3
-          .drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended);
-      };
-
-      const zoom = d3.zoom();
-
-      const svg = d3
-        .select(".d3-graph")
-        .append("svg")
-        .attr("height", Math.round(screen.height / 1.3))
-        .attr("width", contentEl.clientWidth);
-
-      const link = svg
-        .append("g")
-        .attr("stroke", "#868282")
-        .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(links)
-        .join("line")
-        .attr("stroke-width", (d: d3Node) => Math.sqrt(d.value));
-
-      const nodeColour = getComputedStyle(document.body).getPropertyValue(
-        "--text-accent"
-      );
-
-      const node = svg
-        .append("g")
-        .attr("stroke", nodeColour)
-        .attr("stroke-width", 1.5)
-        .selectAll("circle")
-        .data(nodes)
-        .join("circle")
-        .attr("r", 5)
-        .attr("fill", nodeColour)
-        .attr("class", "forceDirectedG")
-        .call(drag(simulation));
-
-      node.append("title").text((d: d3Node) => d.name);
-
-      simulation.on("tick", () => {
-        link
-          .attr("x1", (d) => d.source.x)
-          .attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
-
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      });
-
-      function zoomed({ transform }) {
-        node.attr("transform", transform);
-        link.attr("transform", transform);
-      }
-      svg.call(
-        d3
-          .zoom()
-          .extent([
-            [0, 0],
-            [width, height],
-          ])
-          .scaleExtent([1, 8])
-          .on("zoom", zoomed)
-      );
-    };
+    const width = parseInt(contentEl.style.width);
+    const height = parseInt(contentEl.style.height);
 
     const forceDirectedT = (graph: Graph) => {
       const adjList: AdjListItem[] = this.dfsAdjList(graph, currFile.basename);
@@ -729,15 +605,20 @@ ${d.incoming.length} incoming`
       }
     };
 
-    const types: { [vis in visTypes]: (g: Graph) => void } = {
-      "Force Directed Graph": forceDirectedG,
-      "Force Directed Tree": forceDirectedT,
-      Tree: tree,
-      "Circle Packing": circlePacking,
-      "Edge Bundling": edgeBundling,
+    const types: {
+      [vis in visTypes]: { fun: (...args) => void; argArr: any[] };
+    } = {
+      "Force Directed Graph": {
+        fun: forceDirectedG,
+        argArr: [this.app, this.modal, width, height, graph],
+      },
+      "Force Directed Tree": { fun: forceDirectedT, argArr: [graph] },
+      Tree: { fun: tree, argArr: [graph] },
+      "Circle Packing": { fun: circlePacking, argArr: [graph] },
+      "Edge Bundling": { fun: edgeBundling, argArr: [graph] },
     };
 
-    types[type](graph);
+    types[type].fun(...types[type].argArr);
   }
 
   onClose() {
