@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.5](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.4...0.10.5) (2021-08-05)
+
+
+### Bug Fixes
+
+* **getFieldValues:** :bug: splitAndDrop regex was => null when the link didn't have [[]] ([37083df](https://github.com/SkepticMystic/breadcrumbs/commit/37083dfc1aca536017615118fc6dba645e19fba9))
+
 ### [0.10.4](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.3...0.10.4) (2021-08-04)
 
 
