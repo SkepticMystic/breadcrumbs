@@ -214,6 +214,7 @@ export class VisModal extends Modal {
             )
             .strength(0.5)
         );
+
       const drag = (simulation) => {
         function dragstarted(event, d) {
           if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -238,6 +239,8 @@ export class VisModal extends Modal {
           .on("drag", dragged)
           .on("end", dragended);
       };
+
+      const zoom = d3.zoom();
 
       const svg = d3
         .select(".d3-graph")
@@ -281,6 +284,21 @@ export class VisModal extends Modal {
 
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       });
+
+      function zoomed({ transform }) {
+        node.attr("transform", transform);
+        link.attr("transform", transform);
+      }
+      svg.call(
+        d3
+          .zoom()
+          .extent([
+            [0, 0],
+            [width, height],
+          ])
+          .scaleExtent([1, 8])
+          .on("zoom", zoomed)
+      );
     };
 
     const forceDirectedT = (graph: Graph) => {
