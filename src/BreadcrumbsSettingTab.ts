@@ -5,8 +5,8 @@ import {
   PluginSettingTab,
   Setting,
 } from "obsidian";
-import { ALLUNLINKED, REAlCLOSED, RELATIONS } from "src/constants";
-import type { Relations } from "src/interfaces";
+import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
+import type { Relations, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { isInVault, splitAndTrim } from "src/sharedFunctions";
 
@@ -342,6 +342,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     visModalDetails.createEl("summary", { text: "Visualisation Modal" });
 
     new Setting(visModalDetails)
+      .setName("Default Visualisation Type")
+      .setDesc("Which visualisation to show by defualt")
+      .addDropdown((cb: DropdownComponent) => {
+        VISTYPES.forEach((option: visTypes) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(plugin.settings.visGraph);
+
+        cb.onChange(async (value: visTypes) => {
+          plugin.settings.visGraph = value;
+          await plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
       .setName("Default Relation")
       .setDesc("Which relation type to show first when opening the modal")
       .addDropdown((cb: DropdownComponent) => {
@@ -351,8 +365,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         cb.setValue(plugin.settings.visRelation);
 
         cb.onChange(async (value: Relations) => {
-          this.plugin.settings.visRelation = value;
-          await this.plugin.saveSettings();
+          plugin.settings.visRelation = value;
+          await plugin.saveSettings();
         });
       });
     new Setting(visModalDetails)
@@ -365,8 +379,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         cb.setValue(plugin.settings.visClosed);
 
         cb.onChange(async (value: string) => {
-          this.plugin.settings.visClosed = value;
-          await this.plugin.saveSettings();
+          plugin.settings.visClosed = value;
+          await plugin.saveSettings();
         });
       });
     new Setting(visModalDetails)
@@ -379,8 +393,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         cb.setValue(plugin.settings.visAll);
 
         cb.onChange(async (value: string) => {
-          this.plugin.settings.visAll = value;
-          await this.plugin.saveSettings();
+          plugin.settings.visAll = value;
+          await plugin.saveSettings();
         });
       });
 
