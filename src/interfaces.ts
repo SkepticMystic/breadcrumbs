@@ -111,8 +111,8 @@ export interface d3Node {
 }
 
 export interface d3Link {
-  source: number;
-  target: number;
+  source: number | string;
+  target: number | string;
 }
 
 export interface d3Graph {
