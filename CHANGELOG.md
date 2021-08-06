@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.8](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.7...0.10.8) (2021-08-06)
+
+
+### Features
+
+* **Vis View:** :sparkles: Add height property to adjList Items ([2f27bf4](https://github.com/SkepticMystic/breadcrumbs/commit/2f27bf43cc038ce36a2c69951232349cf7eee4cb))
+* **Vis View:** :sparkles: Better Circle Packing ([14ee9d0](https://github.com/SkepticMystic/breadcrumbs/commit/14ee9d074c7457c46ee4c02ecb25a4ee73689b34))
+
 ### [0.10.7](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.6...0.10.7) (2021-08-05)
 
 
