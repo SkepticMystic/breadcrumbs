@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import type { App, TFile } from "obsidian";
-import type { AdjListItem, d3Node } from "src/interfaces";
+import type { AdjListItem, d3Link, d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
 import { bfsAdjList, VisModal } from "src/VisModal";
 
@@ -42,6 +42,11 @@ export const circlePacking = (
 
   // console.log({ hierarchy });
 
+  const linkArr: d3Link[] = noDoubles.map((d) => {
+    return { source: d.name, target: d.parentId };
+  });
+  const links = linkArr.map((d) => Object.create(d));
+
   const svg = d3
     .select(".d3-graph")
     .append("svg")
@@ -76,6 +81,15 @@ export const circlePacking = (
   node.on("click", (event: MouseEvent, d: d3Node) => {
     nodeClick(event, d.name);
   });
+
+  const link = svg
+    .append("g")
+    .attr("stroke", "#868282")
+    .attr("stroke-opacity", 0.6)
+    .selectAll("line")
+    .data(links)
+    .join("line")
+    .attr("stroke-width", 0.8);
 
   // Features of the forces applied to the nodes:
   const simulation = d3
