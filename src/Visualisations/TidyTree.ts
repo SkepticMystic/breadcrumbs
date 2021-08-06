@@ -16,6 +16,14 @@ export const tidyTree = (
   const adjList: AdjListItem[] = bfsAdjList(graph, currFile.basename);
   console.log({ adjList });
 
+  const noDoubles = [...adjList];
+  noDoubles.forEach((a, i, list) => {
+    if (list.some((b, j) => i !== j && a.parentId === b.parentId)) {
+      noDoubles.splice(i, 1);
+    }
+  });
+  console.log({ noDoubles });
+
   const tree = (data) => {
     const root = d3.hierarchy(data);
     root.dx = 10;
@@ -23,7 +31,7 @@ export const tidyTree = (
     return d3.tree().nodeSize([root.dx, root.dy])(root);
   };
 
-  const root = tree(stratify(adjList));
+  const root = tree(stratify(noDoubles));
   console.log(root);
 
   let x0 = Infinity;
