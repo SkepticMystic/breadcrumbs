@@ -18,6 +18,7 @@ export const VISTYPES: visTypes[] = [
   "Tidy Tree",
   "Circle Packing",
   "Edge Bundling",
+  "Arc Diagram",
 ];
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];

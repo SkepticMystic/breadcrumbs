@@ -135,4 +135,5 @@ export type visTypes =
   | "Force Directed Tree"
   | "Tidy Tree"
   | "Circle Packing"
-  | "Edge Bundling";
+  | "Edge Bundling"
+  | "Arc Diagram";

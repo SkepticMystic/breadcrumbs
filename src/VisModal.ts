@@ -17,6 +17,7 @@ import { circlePacking } from "src/Visualisations/CirclePacking";
 import { edgeBundling } from "src/Visualisations/EdgeBundling";
 import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
 import { tidyTree } from "src/Visualisations/TidyTree";
+import { arcDiagram } from "src/Visualisations/ArcDiagram";
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };
@@ -405,6 +406,10 @@ export class VisModal extends Modal {
       "Edge Bundling": {
         fun: edgeBundling,
         argArr: [graph, contentEl, currFile, width, height],
+      },
+      "Arc Diagram": {
+        fun: arcDiagram,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
       },
     };
 
