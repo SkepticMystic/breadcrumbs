@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.9](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.8...0.10.9) (2021-08-06)
+
+
+### Features
+
+* **Vis View:** :sparkles: Working Arc Diagram! ([71dd61b](https://github.com/SkepticMystic/breadcrumbs/commit/71dd61bd858916b5b57ebf5d82975539f4dc49b3))
+
 ### [0.10.8](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.7...0.10.8) (2021-08-06)
 
 
