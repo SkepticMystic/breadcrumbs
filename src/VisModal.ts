@@ -99,6 +99,9 @@ export function dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
       });
     }
   }
+  const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
+  adjList.forEach((item) => (item.height = maxDepth - item.depth));
+
   return adjList;
 }
 
@@ -132,15 +135,10 @@ export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
       });
     }
   }
+  const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
+  adjList.forEach((item) => (item.height = maxDepth - item.depth));
+
   return adjList;
-}
-
-export function reverseDepth(adjList: AdjListItem[]) {
-  const copy = _.cloneDeep(adjList);
-  const maxDepth = copy.sort((a, b) => a.depth - b.depth).last().depth;
-
-  copy.forEach((item) => (item.depth = maxDepth - item.depth));
-  return copy;
 }
 
 export const stratify = d3
@@ -169,7 +167,7 @@ export class VisModal extends Modal {
     let { contentEl } = this;
     contentEl.empty();
 
-    contentEl.style.width = `${Math.round(window.innerWidth / 1.5)}px`;
+    contentEl.style.width = `${Math.round(window.innerWidth / 1.3)}px`;
     contentEl.style.height = `${Math.round(window.innerHeight / 1.3)}px`;
 
     const optionsDiv = contentEl.createDiv({ cls: "vis-view-options" });
