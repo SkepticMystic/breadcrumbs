@@ -127,18 +127,58 @@ export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
         };
         queue.push(succ);
         adjList.push(next);
+export function dfsFlatAdjList(g: Graph, startNode: string) {
+  const nodes = g.nodes();
+  const nodeCount = nodes.length;
+  const visits = {};
+  nodes.forEach((node, i) => {
+    visits[node] = nodeCount * i;
+  });
+
+  const queue: string[] = [startNode];
+  const adjList: AdjListItem[] = [];
+
+  let i = 0;
+  while (queue.length && i < 1000) {
+    i++;
+
+    const currNode = queue.shift();
+    const neighbours = {
+      succs: g.successors(currNode) as string[],
+      // pres: g.predecessors(currNode) as string[],
+    };
+    if (neighbours.succs.length) {
+      queue.unshift(...neighbours.succs);
+      neighbours.succs.forEach((succ, j) => {
+        visits[currNode] += j + 1;
+        adjList.push({
+          id: visits[currNode] as number,
+          name: currNode,
+          parentId: (visits[succ] + 1) as number,
+          depth: i,
+        });
       });
     } else {
+      visits[currNode]++;
       adjList.push({
+        id: visits[currNode] as number,
         name: currNode,
-        parentId: undefined,
+        parentId: 999999999,
         depth: i,
       });
     }
   }
+  adjList.push({
+    id: 999999999,
+    name: "CONTAINER",
+    parentId: undefined,
+    depth: i + 1,
+  });
+
   const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
   adjList.forEach((item) => (item.height = maxDepth - item.depth));
 
+  console.log({ visits });
   return adjList;
 }
 
