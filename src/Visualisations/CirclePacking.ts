@@ -3,7 +3,7 @@ import type { Graph } from "graphlib";
 import type { App, TFile } from "obsidian";
 import type { AdjListItem, d3Link, d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
-import { bfsAdjList, VisModal } from "src/VisModal";
+import { bfsAdjList, dfsFlatAdjList, VisModal } from "src/VisModal";
 
 export const circlePacking = (
   graph: Graph,
@@ -13,6 +13,12 @@ export const circlePacking = (
   width: number,
   height: number
 ) => {
+  const flatAdj = dfsFlatAdjList(graph, currFile.basename);
+  console.log({ flatAdj });
+
+  const hierarchy = d3.stratify()(flatAdj);
+  console.log({ hierarchy });
+
   const adjList: AdjListItem[] = bfsAdjList(graph, currFile.basename);
   console.log({ adjList });
 
@@ -155,4 +161,66 @@ export const circlePacking = (
   };
 
   node.call(drag(simulation));
+
+  //   const pack = (data) =>
+  //     d3.pack().size([width, height]).padding(3)(
+  //       d3
+  //         .hierarchy(data)
+  //         .sum((d) => d.value)
+  //         .sort((a, b) => b.value - a.value)
+  //     );
+
+  //   const root = pack(hierarchy);
+
+  //   const svg = d3
+  //     .select(".d3-graph")
+  //     .append("svg")
+  //     .attr("height", height)
+  //     .attr("width", width)
+  //     .style("font", "10px sans-serif")
+  //     .style("overflow", "visible")
+  //     .attr("text-anchor", "middle");
+
+  //   const node = svg
+  //     .append("g")
+  //     .attr("pointer-events", "all")
+  //     .selectAll("g")
+  //     .data(root.descendants())
+  //     .join("g")
+  //     .attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+  //   node
+  //     .append("circle")
+  //     .attr("r", (d) => d.r)
+  //     .attr("stroke", (d) => (d.children ? "#bbb" : "none"))
+  //     .attr("fill", (d) => (d.children ? "none" : "#ddd"));
+
+  //   const leaf = node.filter((d) => !d.children);
+
+  //   leaf.select("circle");
+
+  //   // leaf
+  //   //   .append("clipPath")
+  //   //   .attr("id", (d) => (d.clipUid = DOM.uid("clip")).id)
+  //   //   .append("use")
+  //   //   .attr("xlink:href", (d) => d.leafUid.href);
+
+  //   // leaf
+  //   //   .append("text")
+  //   //   .attr("clip-path", (d) => d.clipUid)
+  //   //   .selectAll("tspan")
+  //   //   .data((d) => d.data.name.split(/(?=[A-Z][^A-Z])/g))
+  //   //   .join("tspan")
+  //   //   .attr("x", 0)
+  //   //   .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+  //   //   .text((d) => d);
+
+  //   node.append("title").text(
+  //     (d) => `${d
+  //       .ancestors()
+  //       .map((d) => d.data.data.name)
+  //       .reverse()
+  //       .join("/")}
+  // ${d.value.toLocaleString()}`
+  //   );
 };
