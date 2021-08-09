@@ -1,10 +1,7 @@
-import type { HierarchyPointNode } from "d3";
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
-import { createTreeHierarchy } from "hierarchy-js";
 import type { TFile } from "obsidian";
-import type { AdjListItem, d3Node, d3Tree } from "src/interfaces";
-import { dfsAdjList } from "src/VisModal";
+import { dfsFlatAdjList } from "src/VisModal";
 
 export const edgeBundling = (
   graph: Graph,
@@ -13,139 +10,165 @@ export const edgeBundling = (
   width: number,
   height: number
 ) => {
-  const adjList: AdjListItem[] = dfsAdjList(graph, currFile.basename);
-  console.log({ adjList });
+  const flatAdj = dfsFlatAdjList(graph, currFile.basename);
+  console.log({ flatAdj });
 
-  const noDoubles = adjList.filter(
-    (thing, index, self) =>
-      index ===
-      self.findIndex(
-        (t) => t.name === thing.name && t?.parentId === thing?.parentId
-      )
-  );
-  console.log({ noDoubles });
+  const hier = d3.stratify()(flatAdj);
+  console.log({ hier });
 
-  const hierarchy: d3Tree = createTreeHierarchy(noDoubles, {
-    id: "name",
-    excludeParent: true,
-  });
+  const PADDING_BUBBLE = 15; // distance between edge end and bubble
+  const PADDING_LABEL = 30; // distance between edge end and engineer name
+  const BUBBLE_SIZE_MIN = 4;
+  const BUBBLE_SIZE_MAX = 20;
 
-  console.log({ hierarchy });
+  var diameter = 560,
+    radius = diameter / 2,
+    innerRadius = radius - 170; // between center and edge end
 
-  const radius = 477;
-  const colornone = "#ccc";
-  const colorout = "#f00";
-  const colorin = "#00f";
+  // The 'cluster' function takes 1 argument as input. It also has methods (??) like cluster.separation(), cluster.size() and cluster.nodeSize()
+  var cluster = d3.cluster().size([360, innerRadius]);
 
-  const line = d3
+  var line = d3
     .lineRadial()
     .curve(d3.curveBundle.beta(0.85))
-    .radius((d) => d[0])
-    .angle((d) => d[1]);
-
-  const clus = d3.cluster().size([2 * Math.PI, radius - 100]);
+    .radius(function (d) {
+      return d[1];
+    })
+    .angle(function (d) {
+      return (d[0] / 180) * Math.PI;
+    });
 
   const svg = d3
     .select(".d3-graph")
     .append("svg")
     .attr("height", height)
-    .attr("width", width);
-
-  const root = clus(
-    bilink(
-      d3
-        .hierarchy(hierarchy)
-        .sort(
-          (a, b) =>
-            d3.ascending(a.height, b.height) ||
-            d3.ascending(a.data.name, b.data.name)
-        )
-    )
-  );
-
-  console.log({ root });
-
-  function id(node: HierarchyPointNode<unknown>) {
-    return `${node.parent ? id(node.parent) + "." : ""}${node.data.name}`;
-  }
-
-  const node = svg
+    .attr("width", width)
     .append("g")
-    .attr("font-family", "sans-serif")
-    .attr("font-size", 10)
-    .selectAll("g")
-    .data(root.leaves())
-    .join("g")
-    .attr(
-      "transform",
-      (d) => `rotate(${(d.x * 180) / Math.PI - 90}) translate(${d.y},0)`
-    )
+    .attr("transform", "translate(" + radius + "," + radius + ")");
+
+  var link = svg.append("g").selectAll(".link"),
+    label = svg.append("g").selectAll(".label"),
+    bubble = svg.append("g").selectAll(".bubble");
+
+  // Add a scale for bubble size
+  var bubbleSizeScale = d3
+    .scaleLinear()
+    .domain([0, 100])
+    .range([BUBBLE_SIZE_MIN, BUBBLE_SIZE_MAX]);
+
+  // Scale for the bubble size
+
+  // If wanna see your data
+  // console.log(hierarchicalData)
+
+  // Reformat the data
+  var root = packageHierarchy(hier)
+    //debugger;
+    .sum(function (d) {
+      console.log(d);
+      return d.height;
+    });
+
+  // console.log(root)
+
+  // Build an object that gives feature of each leaves
+  cluster(root);
+  const leaves = root.leaves();
+
+  // Leaves is an array of Objects. 1 item = one leaf. Provides x and y for leaf position in the svg. Also gives details about its parent.
+  const _link = link
+    .data(packageImports(leaves))
+    .enter()
+    .append("path")
+    .each(function (d) {
+      (d.source = d[0]), (d.target = d[d.length - 1]);
+    })
+    .attr("class", "link")
+    .attr("d", line)
+    .attr("fill", "none")
+    .attr("stroke", "black");
+
+  const _label = label
+    .data(leaves)
+    .enter()
     .append("text")
+    .attr("class", "label")
     .attr("dy", "0.31em")
-    .attr("x", (d) => (d.x < Math.PI ? 6 : -6))
-    .attr("text-anchor", (d) => (d.x < Math.PI ? "start" : "end"))
-    .attr("transform", (d) => (d.x >= Math.PI ? "rotate(180)" : null));
-  //     .text((d) => d.data.name)
-  //     .each(function (d) {
-  //       d.text = this;
-  //     })
-  //     .on("mouseover", overed)
-  //     .on("mouseout", outed)
-  //     .call((text) =>
-  //       text.append("title").text(
-  //         (d) => `${id(d)}
-  // ${d.outgoing.length} outgoing
-  // ${d.incoming.length} incoming`
-  //       )
-  //     );
+    .attr("transform", function (d) {
+      return (
+        "rotate(" +
+        (d.x - 90) +
+        ")translate(" +
+        (d.y + PADDING_LABEL) +
+        ",0)" +
+        (d.x < 180 ? "" : "rotate(180)")
+      );
+    })
+    .attr("text-anchor", function (d) {
+      return d.x < 180 ? "start" : "end";
+    })
+    .text(function (d) {
+      return d.data.key;
+    });
 
-  const link = svg.append("g").attr("stroke", colornone).attr("fill", "none");
-  // .selectAll("path")
-  // .data(root.leaves().flatMap((leaf) => leaf.outgoing))
-  // .join("path")
-  // .style("mix-blend-mode", "multiply")
-  // .attr("d", ([i, o]) => line(i.path(o)))
-  // .each(function (d) {
-  //   d.path = this;
-  // });
+  const _bubble = bubble
+    .data(leaves)
+    .enter()
+    .append("circle")
+    .attr("class", "bubble")
+    .attr("transform", function (d) {
+      return (
+        "rotate(" + (d.x - 90) + ")translate(" + (d.y + PADDING_BUBBLE) + ",0)"
+      );
+    })
+    .attr("r", (d) => bubbleSizeScale(d.value))
+    .attr("stroke", "black")
+    .attr("fill", "#69a3b2")
+    .style("opacity", 0.2);
 
-  function bilink(root) {
-    const map = new Map(root.leaves().map((d) => [id(d), d]));
-    for (const d of root.leaves())
-      (d.incoming = []),
-        (d.outgoing = d.data.imports.map((i) => [d, map.get(i)]));
-    for (const d of root.leaves())
-      for (const o of d.outgoing) o[1].incoming.push(o);
-    return root;
+  // Lazily construct the package hierarchy from class names.
+  function packageHierarchy(classes) {
+    var map = {};
+
+    function find(name, data) {
+      var node = map[name],
+        i;
+      if (!node) {
+        node = map[name] = data || { name: name, children: [] };
+        if (name.length) {
+          node.parent = find(name.substring(0, (i = name.lastIndexOf("."))));
+          node.parent.children.push(node);
+          node.key = name.substring(i + 1);
+        }
+      }
+      return node;
+    }
+
+    classes.forEach(function (d) {
+      find(d.name, d);
+    });
+
+    return d3.hierarchy(map[""]);
   }
 
-  function overed(event, d) {
-    link.style("mix-blend-mode", null);
-    d3.select(this).attr("font-weight", "bold");
-    d3.selectAll(d.incoming.map((d) => d.path))
-      .attr("stroke", colorin)
-      .raise();
-    d3.selectAll(d.incoming.map(([d]) => d.text))
-      .attr("fill", colorin)
-      .attr("font-weight", "bold");
-    d3.selectAll(d.outgoing.map((d) => d.path))
-      .attr("stroke", colorout)
-      .raise();
-    d3.selectAll(d.outgoing.map(([, d]) => d.text))
-      .attr("fill", colorout)
-      .attr("font-weight", "bold");
-  }
+  // Return a list of imports for the given array of nodes.
+  function packageImports(nodes) {
+    var map = {},
+      imports = [];
 
-  function outed(event, d) {
-    link.style("mix-blend-mode", "multiply");
-    d3.select(this).attr("font-weight", null);
-    d3.selectAll(d.incoming.map((d) => d.path)).attr("stroke", null);
-    d3.selectAll(d.incoming.map(([d]) => d.text))
-      .attr("fill", null)
-      .attr("font-weight", null);
-    d3.selectAll(d.outgoing.map((d) => d.path)).attr("stroke", null);
-    d3.selectAll(d.outgoing.map(([, d]) => d.text))
-      .attr("fill", null)
-      .attr("font-weight", null);
+    // Compute a map from name to node.
+    nodes.forEach(function (d) {
+      map[d.data.name] = d;
+    });
+
+    // For each import, construct a link from the source to target node.
+    nodes.forEach(function (d) {
+      if (d.data.imports)
+        d.data.imports.forEach(function (i) {
+          imports.push(map[d.data.name].path(map[i]));
+        });
+    });
+
+    return imports;
   }
 };
