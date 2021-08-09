@@ -119,7 +119,7 @@ text {
     // )
     .attr("d", arc);
 
-  const step = 14;
+  const step = 104;
 
   const nodeClick = (event: MouseEvent, dest: string) => {
     const currFile = app.workspace.getActiveFile();
@@ -186,7 +186,7 @@ text {
   //   viewof order.addEventListener("input", update);
   //   invalidation.then(() => viewof order.removeEventListener("input", update));
 
-  function arc(d) {
+  function arc(d: { source: { y: number }; target: { y: number } }) {
     const y1 = d.source.y;
     const y2 = d.target.y;
     const r = Math.abs(y2 - y1) / 2;
@@ -196,13 +196,7 @@ text {
   }
 
   function zoomed({ transform }) {
-    overlay.attr("transform", transform);
-    path.attr("transform", transform);
-    label.attr("transform", transform);
-    svg.selectAll("circle").attr("transform", transform);
-    svg.selectAll("text").attr("transform", transform);
-    svg.selectAll("rect").attr("transform", transform);
-    svg.selectAll("g").attr("transform", transform);
+    svg.attr("transform", transform);
   }
   svg.call(
     d3
