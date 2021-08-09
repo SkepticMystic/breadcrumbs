@@ -1,8 +1,6 @@
 import * as d3 from "d3";
-import _ from "lodash";
 import type { Graph } from "graphlib";
-import { createTreeHierarchy } from "hierarchy-js";
-import { App, Modal, Notice, TFile } from "obsidian";
+import { App, Modal, Notice } from "obsidian";
 import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
 import type {
   AdjListItem,
@@ -13,11 +11,14 @@ import type {
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
+import { arcDiagram } from "src/Visualisations/ArcDiagram";
 import { circlePacking } from "src/Visualisations/CirclePacking";
 import { edgeBundling } from "src/Visualisations/EdgeBundling";
 import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
+import { sunburst } from "src/Visualisations/Sunburst";
 import { tidyTree } from "src/Visualisations/TidyTree";
-import { arcDiagram } from "src/Visualisations/ArcDiagram";
+import { treeMap } from "src/Visualisations/TreeMap";
+import { icicle } from "src/Visualisations/Icicle";
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };
@@ -115,18 +116,34 @@ export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
     i++;
 
     const currNode = queue.shift();
-    const newNodes = g.successors(currNode) as string[];
-    console.log({ currNode, newNodes });
+    const neighbours = {
+      succs: g.successors(currNode) as string[],
+      pres: g.predecessors(currNode) as string[],
+    };
+    console.log({ currNode, neighbours });
 
-    if (newNodes.length) {
-      newNodes.forEach((succ) => {
-        const next: AdjListItem = {
-          name: currNode,
-          parentId: succ,
-          depth: i,
-        };
-        queue.push(succ);
-        adjList.push(next);
+    const next: AdjListItem = {
+      name: currNode,
+      pres: undefined,
+      succs: undefined,
+      parentId: i,
+      depth: i,
+    };
+    if (neighbours.succs.length) {
+      next.succs = neighbours.succs;
+      queue.push(...neighbours.succs);
+    }
+    if (neighbours.pres.length) {
+      next.pres = neighbours.pres;
+    }
+    adjList.push(next);
+  }
+  const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
+  adjList.forEach((item) => (item.height = maxDepth - item.depth));
+
+  return adjList;
+}
+
 export function dfsFlatAdjList(g: Graph, startNode: string) {
   const nodes = g.nodes();
   const nodeCount = nodes.length;
@@ -148,9 +165,9 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
       // pres: g.predecessors(currNode) as string[],
     };
     if (neighbours.succs.length) {
-      queue.unshift(...neighbours.succs);
+      queue.push(...neighbours.succs);
       neighbours.succs.forEach((succ, j) => {
-        visits[currNode] += j + 1;
+        visits[currNode]++;
         adjList.push({
           id: visits[currNode] as number,
           name: currNode,
@@ -181,6 +198,13 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
   console.log({ visits });
   return adjList;
 }
+
+export const tod3Hierarchy = (adjList: AdjListItem[]): d3Tree => {
+  // parentId doesn't necessarily mean parent here. It means successor of the node in the graph it was generated from.
+  const hier: d3Tree = { name: "Root", children: [] };
+
+  adjList.forEach((item) => {});
+};
 
 export const stratify = d3
   .stratify()
@@ -314,116 +338,6 @@ export class VisModal extends Modal {
     const width = parseInt(contentEl.style.width) - 10;
     const height = parseInt(contentEl.style.height) - 40;
 
-    const forceDirectedT = (graph: Graph) => {
-      const data = graphlibToD3(graph);
-
-      // const links = data.links.map((d) => Object.create(d));
-      // const nodes = data.nodes.map((d) => Object.create(d));
-
-      const adjList: AdjListItem[] = dfsAdjList(graph, currFile.basename);
-      console.log({ adjList });
-
-      const noDoubles = adjList.filter(
-        (thing, index, self) =>
-          index ===
-          self.findIndex(
-            (t) => t.name === thing.name && t?.parentId === thing?.parentId
-          )
-      );
-      console.log({ noDoubles });
-
-      const hierarchy: d3Tree = createTreeHierarchy(noDoubles, {
-        id: "name",
-        excludeParent: true,
-      });
-
-      console.log({ hierarchy });
-
-      const root = d3.hierarchy(hierarchy);
-      const links = root.links();
-      const nodes = root.descendants();
-
-      const drag = (simulation) => {
-        function dragstarted(event, d) {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-          d.fx = event.x;
-          d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-          if (!event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        }
-
-        return d3
-          .drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended);
-      };
-
-      const simulation = d3
-        .forceSimulation(nodes)
-        .force(
-          "link",
-          d3
-            .forceLink(links)
-            .id((d) => d.id)
-            .distance(0)
-            .strength(1)
-        )
-        .force("charge", d3.forceManyBody().strength(-50));
-      // .force("x", d3.forceX())
-      // .force("y", d3.forceY());
-
-      const svg = d3
-        .select(".d3-graph")
-        .append("svg")
-        .attr("height", Math.round(screen.height / 1.3))
-        .attr("width", contentEl.clientWidth);
-
-      const link = svg
-        .append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(links)
-        .join("line");
-
-      const node = svg
-        .append("g")
-        .attr("fill", "#fff")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1.5)
-        .selectAll("circle")
-        .data(nodes)
-        .join("circle")
-        .attr("fill", (d) => (d.children ? null : "#000"))
-        .attr("stroke", (d) => (d.children ? null : "#fff"))
-        .attr("r", 3.5)
-        .call(drag(simulation));
-
-      node.append("title").text((d) => d.data.name);
-
-      simulation.on("tick", () => {
-        link
-          .attr("x1", (d) => d.source.x)
-          .attr("y1", (d) => d.source.y)
-          .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
-
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      });
-
-      // invalidation.then(() => simulation.stop());
-    };
-
     const types: {
       [vis in visTypes]: {
         fun: (...args: any[]) => void;
@@ -434,7 +348,6 @@ export class VisModal extends Modal {
         fun: forceDirectedG,
         argArr: [graph, this.app, this.modal, width, height],
       },
-      "Force Directed Tree": { fun: forceDirectedT, argArr: [graph] },
       "Tidy Tree": {
         fun: tidyTree,
         argArr: [graph, this.app, currFile, this.modal, width, height],
@@ -449,6 +362,18 @@ export class VisModal extends Modal {
       },
       "Arc Diagram": {
         fun: arcDiagram,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
+      },
+      Sunburst: {
+        fun: sunburst,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
+      },
+      "Tree Map": {
+        fun: treeMap,
+        argArr: [graph, this.app, currFile, this.modal, width, height],
+      },
+      Icicle: {
+        fun: icicle,
         argArr: [graph, this.app, currFile, this.modal, width, height],
       },
     };

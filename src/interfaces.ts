@@ -98,8 +98,11 @@ export interface d3Tree {
 }
 
 export interface AdjListItem {
+  id?: number;
   name: string;
-  parentId?: string;
+  pres?: string[] | undefined;
+  succs?: string[] | undefined;
+  parentId?: string | number;
   depth?: number;
   height?: number;
 }
@@ -132,8 +135,10 @@ export type VisGraphs = {
 
 export type visTypes =
   | "Force Directed Graph"
-  | "Force Directed Tree"
   | "Tidy Tree"
   | "Circle Packing"
   | "Edge Bundling"
-  | "Arc Diagram";
+  | "Arc Diagram"
+  | "Sunburst"
+  | "Tree Map"
+  | "Icicle";
