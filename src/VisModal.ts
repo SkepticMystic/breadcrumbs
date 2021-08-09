@@ -1,24 +1,17 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import { App, Modal, Notice } from "obsidian";
-import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
-import type {
-  AdjListItem,
-  d3Graph,
-  d3Tree,
-  VisGraphs,
-  visTypes,
-} from "src/interfaces";
+import type { AdjListItem, d3Graph, d3Tree, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
 import { arcDiagram } from "src/Visualisations/ArcDiagram";
 import { circlePacking } from "src/Visualisations/CirclePacking";
 import { edgeBundling } from "src/Visualisations/EdgeBundling";
 import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
+import { icicle } from "src/Visualisations/Icicle";
 import { sunburst } from "src/Visualisations/Sunburst";
 import { tidyTree } from "src/Visualisations/TidyTree";
 import { treeMap } from "src/Visualisations/TreeMap";
-import { icicle } from "src/Visualisations/Icicle";
+import VisComp from "./Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };
@@ -165,8 +158,8 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
       // pres: g.predecessors(currNode) as string[],
     };
     if (neighbours.succs.length) {
-      queue.push(...neighbours.succs);
-      neighbours.succs.forEach((succ, j) => {
+      queue.unshift(...neighbours.succs);
+      neighbours.succs.forEach((succ) => {
         visits[currNode]++;
         adjList.push({
           id: visits[currNode] as number,
@@ -227,158 +220,18 @@ export class VisModal extends Modal {
 
   onOpen() {
     new Notice(
-      "Most of the visualisations don't work. This feature is still very experimental."
+      "Alot of these features may not work, it is still very experimental."
     );
     let { contentEl } = this;
     contentEl.empty();
 
-    contentEl.style.width = `${Math.round(window.innerWidth / 1.3)}px`;
-    contentEl.style.height = `${Math.round(window.innerHeight / 1.3)}px`;
-
-    const optionsDiv = contentEl.createDiv({ cls: "vis-view-options" });
-
-    optionsDiv.createSpan({ text: "Graph:" });
-    const graphSelect = optionsDiv.createEl("select");
-    VISTYPES.forEach((type) => {
-      graphSelect.createEl("option", { value: type, text: type });
+    new VisComp({
+      target: contentEl,
+      props: {
+        modal: this,
+        settings: this.plugin.settings,
+      },
     });
-    graphSelect.value = this.plugin.settings.visGraph;
-
-    optionsDiv.createSpan({ text: "Relation:" });
-    const relationSelect = optionsDiv.createEl("select");
-    RELATIONS.forEach((type) => {
-      relationSelect.createEl("option", { value: type, text: type });
-    });
-    relationSelect.value = this.plugin.settings.visRelation;
-
-    optionsDiv.createSpan({ text: "Close Implied:" });
-    const closedSelect = optionsDiv.createEl("select");
-    REAlCLOSED.forEach((type) => {
-      closedSelect.createEl("option", { value: type, text: type });
-    });
-    closedSelect.value = this.plugin.settings.visClosed;
-
-    optionsDiv.createSpan({ text: "Unlinked:" });
-    const unlinkedSelect = optionsDiv.createEl("select");
-    ALLUNLINKED.forEach((type) => {
-      unlinkedSelect.createEl("option", { value: type, text: type });
-    });
-    unlinkedSelect.value = this.plugin.settings.visAll;
-
-    const d3GraphDiv = contentEl.createDiv({
-      cls: "d3-graph",
-    });
-
-    const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
-
-    const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
-      closeImpliedLinks(gParents, gChildren),
-      closeImpliedLinks(gSiblings, gSiblings),
-      closeImpliedLinks(gChildren, gParents),
-    ];
-
-    const graphs: VisGraphs = {
-      Parent: {
-        Real: {
-          All: gParents,
-          "No Unlinked": removeUnlinkedNodes(gParents),
-        },
-        Closed: {
-          All: closedParentNoSingle,
-          "No Unlinked": removeUnlinkedNodes(closedParentNoSingle),
-        },
-      },
-      Sibling: {
-        Real: {
-          All: gSiblings,
-          "No Unlinked": removeUnlinkedNodes(gSiblings),
-        },
-        Closed: {
-          All: closedSiblingNoSingle,
-          "No Unlinked": removeUnlinkedNodes(closedSiblingNoSingle),
-        },
-      },
-      Child: {
-        Real: {
-          All: gChildren,
-          "No Unlinked": removeUnlinkedNodes(gChildren),
-        },
-        Closed: {
-          All: closedChildNoSingle,
-          "No Unlinked": removeUnlinkedNodes(closedChildNoSingle),
-        },
-      },
-    };
-
-    [relationSelect, closedSelect, unlinkedSelect, graphSelect].forEach(
-      (selector) =>
-        selector.addEventListener("change", () => {
-          d3GraphDiv.empty();
-          this.draw(
-            graphs[relationSelect.value][closedSelect.value][
-              unlinkedSelect.value
-            ],
-            graphSelect.value as visTypes
-          );
-        })
-    );
-
-    // Draw the default value onOpen
-    this.draw(
-      graphs[relationSelect.value][closedSelect.value][unlinkedSelect.value],
-      graphSelect.value as visTypes
-    );
-  }
-
-  draw(graph: Graph, type: visTypes) {
-    let { contentEl } = this;
-
-    const currFile = this.app.workspace.getActiveFile();
-
-    const width = parseInt(contentEl.style.width) - 10;
-    const height = parseInt(contentEl.style.height) - 40;
-
-    const types: {
-      [vis in visTypes]: {
-        fun: (...args: any[]) => void;
-        argArr: any[];
-      };
-    } = {
-      "Force Directed Graph": {
-        fun: forceDirectedG,
-        argArr: [graph, this.app, this.modal, width, height],
-      },
-      "Tidy Tree": {
-        fun: tidyTree,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-      "Circle Packing": {
-        fun: circlePacking,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-      "Edge Bundling": {
-        fun: edgeBundling,
-        argArr: [graph, contentEl, currFile, width, height],
-      },
-      "Arc Diagram": {
-        fun: arcDiagram,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-      Sunburst: {
-        fun: sunburst,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-      "Tree Map": {
-        fun: treeMap,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-      Icicle: {
-        fun: icicle,
-        argArr: [graph, this.app, currFile, this.modal, width, height],
-      },
-    };
-
-    types[type].fun(...types[type].argArr);
   }
 
   onClose() {
