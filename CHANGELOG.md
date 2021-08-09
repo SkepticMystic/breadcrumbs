@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.10](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.9...0.10.10) (2021-08-09)
+
+
+### Features
+
+* **Vis View:** :sparkles: Functional Tree Map! ([5489e94](https://github.com/SkepticMystic/breadcrumbs/commit/5489e948f7659ea13d5125f060c584dac34f6be5))
+* **Vis View:** :sparkles: Much better tidy tree ([8a3a9a3](https://github.com/SkepticMystic/breadcrumbs/commit/8a3a9a38472ce531107c0d64962b22a1cbcac507))
+* **Vis View:** :sparkles: Proof of Concept of hierarchy!!! ([b47f849](https://github.com/SkepticMystic/breadcrumbs/commit/b47f849cb7393ce26029439bb82b29d9b6a58627))
+
 ### [0.10.9](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.8...0.10.9) (2021-08-06)
 
 
