@@ -1,9 +1,10 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import type { App, TFile } from "obsidian";
-import { bfsAdjList, stratify, VisModal } from "src/VisModal";
-import type { AdjListItem, d3Node } from "src/interfaces";
+import type { d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
+import { dfsFlatAdjList, VisModal } from "src/VisModal";
+import { dataset_dev } from "svelte/internal";
 
 export const tidyTree = (
   graph: Graph,
@@ -13,16 +14,16 @@ export const tidyTree = (
   width: number,
   height: number
 ) => {
-  const adjList: AdjListItem[] = bfsAdjList(graph, currFile.basename);
-  console.log({ adjList });
+  // const adjList: AdjListItem[] = bfsAdjList(graph, currFile.basename);
+  // console.log({ adjList });
 
-  const noDoubles = [...adjList];
-  noDoubles.forEach((a, i, list) => {
-    if (list.some((b, j) => i !== j && a.parentId === b.parentId)) {
-      noDoubles.splice(i, 1);
-    }
-  });
-  console.log({ noDoubles });
+  // const noDoubles = [...adjList];
+  // noDoubles.forEach((a, i, list) => {
+  //   if (list.some((b, j) => i !== j && a.parentId === b.parentId)) {
+  //     noDoubles.splice(i, 1);
+  //   }
+  // });
+  // console.log({ noDoubles });
 
   const tree = (data) => {
     const root = d3.hierarchy(data);
@@ -31,7 +32,13 @@ export const tidyTree = (
     return d3.tree().nodeSize([root.dx, root.dy])(root);
   };
 
-  const root = tree(stratify(noDoubles));
+  const flatAdj = dfsFlatAdjList(graph, currFile.basename);
+  console.log({ flatAdj });
+
+  const hierarchy = d3.stratify()(flatAdj);
+  console.log({ hierarchy });
+
+  const root = tree(hierarchy);
   console.log(root);
 
   let x0 = Infinity;
@@ -86,24 +93,41 @@ export const tidyTree = (
 
   node.attr("aria-label", (d) => {
     console.log(d);
-    return d.data.id;
+    return d.data.data.name;
   });
 
   const nodeClick = (event: MouseEvent, dest: string) => {
     openOrSwitch(app, dest, currFile, event);
     modal.close();
   };
-  node.on("click", (event: MouseEvent, d: d3Node) => {
-    nodeClick(event, d.name);
+  node.on("click", (event: MouseEvent, d) => {
+    console.log({ d });
+    nodeClick(event, d.data.data.name);
   });
 
-  // node
-  //   .append("text")
-  //   .attr("dy", "0.31em")
-  //   .attr("x", (d) => (d.children ? -6 : 6))
-  //   .attr("text-anchor", (d) => (d.children ? "end" : "start"))
-  //   .text((d) => d.data.id)
-  //   .clone(true)
-  //   .lower()
-  //   .attr("stroke", "white");
+  node
+    .append("text")
+    .attr("dy", "0.31em")
+    .attr("x", (d) => (d.children ? -6 : 6))
+    .attr("text-anchor", (d) => (d.children ? "end" : "start"))
+    .text((d) => d.data.data.name)
+    .clone(true)
+    .lower()
+    .attr("stroke", "white");
+
+  function zoomed({ transform }) {
+    node.attr("transform", transform);
+    link.attr("transform", transform);
+    g.attr("transform", transform);
+  }
+  svg.call(
+    d3
+      .zoom()
+      .extent([
+        [0, 0],
+        [width, height],
+      ])
+      .scaleExtent([0.5, 8])
+      .on("zoom", zoomed)
+  );
 };
