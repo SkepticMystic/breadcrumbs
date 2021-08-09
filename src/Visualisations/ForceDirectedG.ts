@@ -27,7 +27,7 @@ export const forceDirectedG = (
     .force("charge", d3.forceManyBody())
     .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5));
 
-  const drag = (simulation) => {
+  const drag = (simulation: d3.Simulation<any, undefined>) => {
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
@@ -92,8 +92,8 @@ export const forceDirectedG = (
     .attr("markerWidth", 6)
     .attr("markerHeight", 6)
     .attr("orient", "auto")
-    .attr("stroke-width", 10)
     // .attr("stroke", "#868282")
+    .attr("stroke-width", 10)
     .append("svg:path")
     .attr("d", "M0,-5L10,0L0,5");
 

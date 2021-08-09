@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { Graph } from "graphlib";
-
   import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
   import type {
     BreadcrumbsSettings,
@@ -14,6 +12,7 @@
   import { edgeBundling } from "src/Visualisations/EdgeBundling";
   import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
   import { icicle } from "src/Visualisations/Icicle";
+  import { radialTree } from "src/Visualisations/RadialTree";
   import { sunburst } from "src/Visualisations/Sunburst";
   import { tidyTree } from "src/Visualisations/TidyTree";
   import { treeMap } from "src/Visualisations/TreeMap";
@@ -132,6 +131,9 @@
     },
     Icicle: {
       fun: icicle,
+    },
+    "Radial Tree": {
+      fun: radialTree,
     },
   };
 

@@ -141,4 +141,5 @@ export type visTypes =
   | "Arc Diagram"
   | "Sunburst"
   | "Tree Map"
-  | "Icicle";
+  | "Icicle"
+  | "Radial Tree";

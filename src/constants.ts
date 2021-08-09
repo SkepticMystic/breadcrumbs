@@ -21,7 +21,9 @@ export const VISTYPES: visTypes[] = [
   "Sunburst",
   "Tree Map",
   "Icicle",
+  "Radial Tree",
 ];
+
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
