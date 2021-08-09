@@ -194,4 +194,24 @@ text {
       margin.left
     },${y2}`;
   }
+
+  function zoomed({ transform }) {
+    overlay.attr("transform", transform);
+    path.attr("transform", transform);
+    label.attr("transform", transform);
+    svg.selectAll("circle").attr("transform", transform);
+    svg.selectAll("text").attr("transform", transform);
+    svg.selectAll("rect").attr("transform", transform);
+    svg.selectAll("g").attr("transform", transform);
+  }
+  svg.call(
+    d3
+      .zoom()
+      .extent([
+        [0, 0],
+        [width, height],
+      ])
+      .scaleExtent([0.5, 8])
+      .on("zoom", zoomed)
+  );
 };
