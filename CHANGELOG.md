@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.11](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.10...0.10.11) (2021-08-09)
+
+
+### Features
+
+* **Vis View:** :sparkles: Functional zooming on arcDiagram ([27a22bf](https://github.com/SkepticMystic/breadcrumbs/commit/27a22bf4470acbd9eaa606782aff3cba99272059))
+* **Vis View:** :sparkles: Progress on radialTree ([aa6d990](https://github.com/SkepticMystic/breadcrumbs/commit/aa6d990f7102453ab8532ed53b5ab3b2e1e397d8))
+
 ### [0.10.10](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.9...0.10.10) (2021-08-09)
 
 
