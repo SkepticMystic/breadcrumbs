@@ -3,16 +3,17 @@ import type { Graph } from "graphlib";
 import { openOrSwitch } from "src/sharedFunctions";
 import type { d3Node } from "src/interfaces";
 import { graphlibToD3, VisModal } from "src/VisModal";
-import type { App } from "obsidian";
+import type { App, TFile } from "obsidian";
 
 export const forceDirectedG = (
-  g: Graph,
+  graph: Graph,
   app: App,
+  currFile: TFile,
   modal: VisModal,
   width: number,
   height: number
 ) => {
-  const data = graphlibToD3(g);
+  const data = graphlibToD3(graph);
 
   const links = data.links.map((d) => Object.create(d));
   const nodes = data.nodes.map((d) => Object.create(d));
