@@ -195,7 +195,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     neighbours: neighbourObj,
     relationship: string
   ): void {
-    g.setNode(currFileName, currFileName);
+    g.setNode(currFileName, relationship);
     neighbours[relationship].forEach((node) => {
       g.setEdge(currFileName, node, relationship);
     });
