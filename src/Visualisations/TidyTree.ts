@@ -3,7 +3,7 @@ import type { Graph } from "graphlib";
 import type { App, TFile } from "obsidian";
 import type { d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
-import { dfsFlatAdjList, VisModal } from "src/VisModal";
+import { dfsFlatAdjList, dfsFlatAdjList2, VisModal } from "src/VisModal";
 import { dataset_dev } from "svelte/internal";
 
 export const tidyTree = (
@@ -116,9 +116,7 @@ export const tidyTree = (
     .attr("stroke", "white");
 
   function zoomed({ transform }) {
-    node.attr("transform", transform);
-    link.attr("transform", transform);
-    g.attr("transform", transform);
+    svg.attr("transform", transform);
   }
   svg.call(
     d3
