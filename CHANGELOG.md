@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.12](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.11...0.10.12) (2021-08-10)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Setting to open matrixView in left or right side onLoad ([c56d3dc](https://github.com/SkepticMystic/breadcrumbs/commit/c56d3dc897c3ee8183d35dda42d3fb8303fb55eb))
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Redraw path after updating settings ([fa323b8](https://github.com/SkepticMystic/breadcrumbs/commit/fa323b86caa82e6de149e403fcbf2e792c09c293))
+
 ### [0.10.11](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.10...0.10.11) (2021-08-09)
 
 
