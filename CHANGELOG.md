@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.13](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.12...0.10.13) (2021-08-10)
+
+
+### Features
+
+* **Vis View:** :sparkles: Basic zoom on tidyTree ([935d8fc](https://github.com/SkepticMystic/breadcrumbs/commit/935d8fcd2fcfda65046112e986e894a7c659b0d5))
+* **Vis View:** :sparkles: Better dfsFlatAdjList ([cbe3182](https://github.com/SkepticMystic/breadcrumbs/commit/cbe31827e75fac17bcbd1bfa881888da0c8e0ffb))
+
 ### [0.10.12](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.11...0.10.12) (2021-08-10)
 
 
