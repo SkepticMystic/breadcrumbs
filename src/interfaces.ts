@@ -10,6 +10,7 @@ export interface BreadcrumbsSettings {
   defaultView: boolean;
   showNameOrType: boolean;
   showRelationType: boolean;
+  rlLeaf: boolean;
   showTrail: boolean;
   trailOrTable: 1 | 2 | 3;
   gridDots: boolean;

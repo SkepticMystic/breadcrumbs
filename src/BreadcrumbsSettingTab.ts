@@ -5,7 +5,13 @@ import {
   PluginSettingTab,
   Setting,
 } from "obsidian";
-import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
+import {
+  ALLUNLINKED,
+  REAlCLOSED,
+  RELATIONS,
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
+  VISTYPES,
+} from "src/constants";
 import type { Relations, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { isInVault, splitAndTrim } from "src/sharedFunctions";
@@ -156,6 +162,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             await plugin.saveSettings();
             await plugin.getActiveMatrixView().draw();
           })
+      );
+
+    new Setting(MLViewDetails)
+      .setName("Open View in Right or Left side")
+      .setDesc(
+        "When loading the matrix view, should it open on the left or right side leaf? On = Right, Off = Left."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(plugin.settings.rlLeaf).onChange(async (value) => {
+          plugin.settings.rlLeaf = value;
+          await plugin.saveSettings();
+          await plugin.getActiveMatrixView()?.onClose();
+          await plugin.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        })
       );
 
     const trailDetails: HTMLDetailsElement = containerEl.createEl("details");

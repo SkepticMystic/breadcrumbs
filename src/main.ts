@@ -36,6 +36,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   defaultView: true,
   showNameOrType: true,
   showRelationType: true,
+  rlLeaf: true,
   showTrail: true,
   trailOrTable: 3,
   gridDots: false,
@@ -417,10 +418,17 @@ export default class BreadcrumbsPlugin extends Plugin {
       await leaf.setViewState({ type: "empty" });
       break;
     }
-    (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
-      type,
-      active: false,
-    });
+    if (this.settings.rlLeaf) {
+      (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
+        type,
+        active: false,
+      });
+    } else {
+      (leaf ?? this.app.workspace.getLeftLeaf(false)).setViewState({
+        type,
+        active: false,
+      });
+    }
   };
 
   initStatsView = async (type: string): Promise<void> => {
