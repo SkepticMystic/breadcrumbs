@@ -1,16 +1,8 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import { App, Modal, Notice } from "obsidian";
-import type { AdjListItem, d3Graph, d3Tree, visTypes } from "src/interfaces";
+import type { AdjListItem, d3Graph, d3Tree } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { arcDiagram } from "src/Visualisations/ArcDiagram";
-import { circlePacking } from "src/Visualisations/CirclePacking";
-import { edgeBundling } from "src/Visualisations/EdgeBundling";
-import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
-import { icicle } from "src/Visualisations/Icicle";
-import { sunburst } from "src/Visualisations/Sunburst";
-import { tidyTree } from "src/Visualisations/TidyTree";
-import { treeMap } from "src/Visualisations/TreeMap";
 import VisComp from "./Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {
@@ -148,41 +140,50 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
   const queue: string[] = [startNode];
   const adjList: AdjListItem[] = [];
 
+  let depth = 1;
   let i = 0;
   while (queue.length && i < 1000) {
     i++;
 
     const currNode = queue.shift();
-    const neighbours = {
-      succs: g.successors(currNode) as string[],
-      // pres: g.predecessors(currNode) as string[],
-    };
-    if (neighbours.succs.length) {
-      queue.unshift(...neighbours.succs);
-      neighbours.succs.forEach((succ) => {
-        visits[currNode]++;
-        adjList.push({
-          id: visits[currNode] as number,
-          name: currNode,
-          parentId: (visits[succ] + 1) as number,
-          depth: i,
-        });
+    const next = g.successors(currNode) as string[];
+
+    if (next.length) {
+      queue.unshift(...next);
+      next.forEach((succ) => {
+        const parentId = nodeCount * nodes.indexOf(succ);
+        if (
+          !adjList.some(
+            (adjItem) =>
+              adjItem.name === currNode && adjItem.parentId === parentId
+          )
+        ) {
+          adjList.push({
+            id: visits[currNode] as number,
+            name: currNode,
+            parentId,
+            depth,
+          });
+          visits[currNode]++;
+        }
       });
+      depth++;
     } else {
-      visits[currNode]++;
       adjList.push({
         id: visits[currNode] as number,
         name: currNode,
         parentId: 999999999,
-        depth: i,
+        depth,
       });
+      depth = 1;
+      visits[currNode]++;
     }
   }
   adjList.push({
     id: 999999999,
     name: "CONTAINER",
     parentId: undefined,
-    depth: i + 1,
+    depth: 0,
   });
 
   const maxDepth = adjList.sort((a, b) => a.depth - b.depth).last().depth;
