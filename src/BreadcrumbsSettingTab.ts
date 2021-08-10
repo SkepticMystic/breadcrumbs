@@ -304,8 +304,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.trailSeperator = value;
             await plugin.saveSettings();
-            // BUG This doesn't seem to work... you still have to switch notes for it to redraw
-            await plugin.getActiveMatrixView().draw();
+            await plugin.drawTrail();
           })
       );
 
@@ -321,6 +320,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.noPathMessage = value;
             await plugin.saveSettings();
+            await plugin.drawTrail();
           })
       );
 
@@ -335,6 +335,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             plugin.settings.respectReadableLineLength = value;
             await plugin.saveSettings();
+            await plugin.drawTrail();
           })
       );
 
