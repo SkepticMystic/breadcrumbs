@@ -2,9 +2,10 @@ import type { Graph } from "graphlib";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
-  parentFieldName: string;
-  siblingFieldName: string;
-  childFieldName: string;
+  userHierarchies: userHierarchy[];
+  // parentFieldName: string;
+  // siblingFieldName: string;
+  // childFieldName: string;
   indexNote: string[];
   refreshIntervalTime: number;
   defaultView: boolean;
@@ -41,6 +42,12 @@ export interface dvFrontmatterCache {
     | dvLink[]
     | Pos
     | TFile;
+}
+
+export interface userHierarchy {
+  up: string;
+  same: string;
+  down: string;
 }
 
 export interface dvLink {
