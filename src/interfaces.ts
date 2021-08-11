@@ -65,6 +65,8 @@ export interface neighbourObj {
   children: string[];
 }
 
+export type relObj = { [key: string]: string[] } | { current: TFile };
+
 export interface ParentObj {
   current: TFile;
   parents: string[];

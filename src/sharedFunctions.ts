@@ -16,6 +16,7 @@ import type {
   dvLink,
   JugglLink,
   neighbourObj,
+  relObj,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
@@ -28,10 +29,6 @@ export function normalise(arr: number[]): number[] {
   const max = Math.max(...arr);
   return arr.map((item) => item / max);
 }
-
-// export function flatten<T>(arr: T[]): T[] {
-//   return [].concat(...arr)
-// }
 
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
@@ -170,9 +167,7 @@ export async function getJugglLinks(
   });
 
   // Filter out the juggl links with no links
-  const filteredLinks = typedLinksArr.filter((link) =>
-    link.links.length ? true : false
-  );
+  const filteredLinks = typedLinksArr.filter((link) => !!link.links.length);
   debug(settings, { filteredLinks });
   return filteredLinks;
 }
@@ -218,7 +213,7 @@ export const splitAndTrim = (fields: string): string[] =>
 export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
-): Promise<neighbourObj[]> {
+): Promise<relObj[]> {
   const { parentFieldName, siblingFieldName, childFieldName } = plugin.settings;
 
   const [parentFields, siblingFields, childFields] = [
@@ -227,30 +222,29 @@ export async function getNeighbourObjArr(
     splitAndTrim(childFieldName),
   ];
 
+  const allFields = [parentFields, siblingFields, childFields].flat(1);
+
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
   }
 
-  const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
+  const neighbourObjArr: relObj[] = fileFrontmatterArr.map(
     (fileFrontmatter) => {
-      let [parents, siblings, children] = [
-        parentFields
-          .map((parentField) =>
-            getFieldValues(fileFrontmatter, parentField, plugin.settings)
-          )
-          .flat(3),
-        siblingFields
-          .map((siblingField) =>
-            getFieldValues(fileFrontmatter, siblingField, plugin.settings)
-          )
-          .flat(3),
-        childFields
-          .map((childField) =>
-            getFieldValues(fileFrontmatter, childField, plugin.settings)
-          )
-          .flat(3),
-      ];
+      const relObj: relObj = {
+        current: fileFrontmatter.file,
+      };
+
+      allFields.forEach(
+        (field) =>
+          (relObj[field] = getFieldValues(
+            fileFrontmatter,
+            field,
+            plugin.settings
+          ))
+      );
+
+      console.log({ relObj });
 
       if (jugglLinks.length) {
         const currFileJugglLinks = jugglLinks.filter(
@@ -261,22 +255,17 @@ export async function getNeighbourObjArr(
 
         currFileJugglLinks.forEach((jugglLink) => {
           jugglLink.links.forEach((link) => {
-            if (parentFields.includes(link.type)) {
-              parents = [...parents, ...link.linksInLine];
-            }
-            if (siblingFields.includes(link.type)) {
-              siblings = [...siblings, ...link.linksInLine];
-            }
-            if (childFields.includes(link.type)) {
-              children = [...children, ...link.linksInLine];
+            if (allFields.includes(link.type)) {
+              relObj[link.type].push(...link.linksInLine);
             }
           });
         });
       }
 
-      return { current: fileFrontmatter.file, parents, siblings, children };
+      return { ...relObj };
     }
   );
+  console.log({ neighbourObjArr });
   debug(plugin.settings, { neighbourObjArr });
   return neighbourObjArr;
 }

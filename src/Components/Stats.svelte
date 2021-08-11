@@ -8,24 +8,18 @@
   const { settings } = plugin;
   const separator = settings.trailSeperator;
 
-  const { gParents, gSiblings, gChildren } = plugin.currGraphs;
-  const allRG = [gParents, gSiblings, gChildren];
+  const graphs = plugin.currGraphs;
+  const allR = Object.values(graphs);
 
-  const [pRNodes, sRNodes, cRNodes] = allRG.map((g) => g.nodes());
+  const allRNodes = allR.map((g) => g.nodes());
 
-  const [pRNodesStr, sRNodesStr, cRNodesStr] = [
-    pRNodes.join("\n"),
-    sRNodes.join("\n"),
-    cRNodes.join("\n"),
-  ];
+  const allRNodesStr = allRNodes.map((rNodes) => rNodes.join("\n"));
 
-  const [pREdges, sREdges, cREdges] = allRG.map((g) => g.edges());
+  const allREdges = allR.map((g) => g.edges());
 
-  const [pREdgesStr, sREdgesStr, cREdgesStr] = [
-    pREdges.map((e) => `${e.v} → ${e.w}`).join("\n"),
-    sREdges.map((e) => `${e.v} → ${e.w}`).join("\n"),
-    cREdges.map((e) => `${e.v} → ${e.w}`).join("\n"),
-  ];
+  const allREdgesStr = allREdges.map((edges) =>
+    edges.map((e) => `${e.v} → ${e.w}`).join("\n")
+  );
 
   const [closedP, closedS, closedC] = [
     closeImpliedLinks(gParents, gChildren),

@@ -13,6 +13,7 @@ import type {
   BreadcrumbsSettings,
   dvFrontmatterCache,
   neighbourObj,
+  relObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import StatsView from "src/StatsView";
@@ -22,6 +23,7 @@ import {
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
+  splitAndTrim,
 } from "src/sharedFunctions";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
@@ -74,7 +76,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
-  currGraphs: allGraphs;
+  currGraphs: { [graph: string]: Graph };
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -94,12 +96,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     );
 
     this.app.workspace.onLayoutReady(async () => {
-      // this.trailDiv = createDiv()
       setTimeout(async () => {
         this.currGraphs = await this.initGraphs();
 
         this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
-
         this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
         if (this.settings.showTrail) {
@@ -192,19 +192,17 @@ export default class BreadcrumbsPlugin extends Plugin {
   populateGraph(
     g: Graph,
     currFileName: string,
-    neighbours: neighbourObj,
-    relationship: string
+    relObj: relObj,
+    relationship: keyof relObj
   ): void {
     g.setNode(currFileName, relationship);
-    neighbours[relationship].forEach((node) => {
+    relObj[relationship].forEach((node: string) => {
       g.setEdge(currFileName, node, relationship);
     });
   }
 
   async initGraphs(): Promise<{
-    gParents: Graph;
-    gSiblings: Graph;
-    gChildren: Graph;
+    [graph: string]: Graph;
   }> {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
@@ -217,24 +215,48 @@ export default class BreadcrumbsPlugin extends Plugin {
       fileFrontmatterArr = getObsMetadataCache(this.app, this.settings, files);
     }
 
-    const neighbourArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+    const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
-    const [gParents, gSiblings, gChildren] = [
-      new Graph(),
-      new Graph(),
-      new Graph(),
+    const { parentFieldName, siblingFieldName, childFieldName } = this.settings;
+    const [parentFields, siblingFields, childFields] = [
+      splitAndTrim(parentFieldName),
+      splitAndTrim(siblingFieldName),
+      splitAndTrim(childFieldName),
     ];
+    const allFields = [parentFields, siblingFields, childFields].flat(1);
 
-    neighbourArr.forEach((neighbourObj) => {
-      const currFileName =
-        neighbourObj.current.basename || neighbourObj.current.name;
+    const graphs: { [graph: string]: Graph } = {};
 
-      this.populateGraph(gParents, currFileName, neighbourObj, "parents");
-      this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
-      this.populateGraph(gChildren, currFileName, neighbourObj, "children");
+    allFields.forEach((field) => {
+      graphs[field] = new Graph();
     });
+
+    relObjArr.forEach((relObj) => {
+      const currFileName = relObj.current.basename || relObj.current.name;
+
+      Object.keys(relObj).forEach((rel) => {
+        if (rel === "current") return;
+        this.populateGraph(graphs[rel], currFileName, relObj, rel);
+      });
+    });
+
+    // const [gParents, gSiblings, gChildren] = [
+    //   new Graph(),
+    //   new Graph(),
+    //   new Graph(),
+    // ];
+
+    // neighbourArr.forEach((neighbourObj) => {
+    //   const currFileName =
+    //     neighbourObj.current.basename || neighbourObj.current.name;
+
+    //   this.populateGraph(gParents, currFileName, neighbourObj, "parents");
+    //   this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
+    //   this.populateGraph(gChildren, currFileName, neighbourObj, "children");
+    // });
     debug(this.settings, "graphs inited");
-    return { gParents, gSiblings, gChildren };
+    console.log({ graphs });
+    return { ...graphs };
   }
 
   // !SECTION OneSource
