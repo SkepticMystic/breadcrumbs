@@ -17,7 +17,13 @@ import type {
   d3Graph,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { closeImpliedLinks, copy, debug } from "src/sharedFunctions";
+import {
+  closeImpliedLinks,
+  copy,
+  debug,
+  getAllXGs,
+  mergeGs,
+} from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
 
@@ -46,13 +52,18 @@ export default class MatrixView extends ItemView {
       callback: async () => {
         const settings = this.plugin.settings;
         const currFile = this.app.workspace.getActiveFile().basename;
-        const allPaths = this.dfsAllPaths(
-          closeImpliedLinks(
-            this.plugin.currGraphs.gChildren,
-            this.plugin.currGraphs.gParents
-          ),
-          currFile
-        );
+
+        const allUps = getAllXGs(this.plugin, "up");
+        const allDowns = getAllXGs(this.plugin, "down");
+        console.log({ allUps, allDowns });
+
+        const upG = mergeGs(...Object.values(allUps));
+        const downG = mergeGs(...Object.values(allDowns));
+        console.log({ upG, downG });
+
+        const closedParents = closeImpliedLinks(upG, downG);
+
+        const allPaths = this.dfsAllPaths(closedParents, currFile);
         const index = this.createIndex(currFile + "\n", allPaths, settings);
         debug(settings, { index });
         await copy(index);
@@ -63,17 +74,23 @@ export default class MatrixView extends ItemView {
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
-        const { gParents, gChildren } = this.plugin.currGraphs;
-        const terminals = gParents.sinks();
+        const allUps = getAllXGs(this.plugin, "up");
+        const allDowns = getAllXGs(this.plugin, "down");
+        console.log({ allUps, allDowns });
+
+        const upG = mergeGs(...Object.values(allUps));
+        const downG = mergeGs(...Object.values(allDowns));
+        console.log({ upG, downG });
+
+        const closedParents = closeImpliedLinks(upG, downG);
+
+        const terminals = upG.sinks();
         const settings = this.plugin.settings;
 
         let globalIndex = "";
         terminals.forEach((terminal) => {
           globalIndex += terminal + "\n";
-          const allPaths = this.dfsAllPaths(
-            closeImpliedLinks(gChildren, gParents),
-            terminal
-          );
+          const allPaths = this.dfsAllPaths(closedParents, terminal);
           globalIndex = this.createIndex(globalIndex, allPaths, settings);
         });
 
@@ -239,7 +256,18 @@ export default class MatrixView extends ItemView {
 
   async draw(): Promise<void> {
     this.contentEl.empty();
-    const { gParents, gSiblings, gChildren } = this.plugin.currGraphs;
+
+    const allUps = getAllXGs(this.plugin, "up");
+    const allSames = getAllXGs(this.plugin, "same");
+
+    const allDowns = getAllXGs(this.plugin, "down");
+    console.log({ allUps, allDowns });
+
+    const upG = mergeGs(...Object.values(allUps));
+    const sameG = mergeGs(...Object.values(allSames));
+    const downG = mergeGs(...Object.values(allDowns));
+    console.log({ upG, sameG, downG });
+
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
 
@@ -253,9 +281,9 @@ export default class MatrixView extends ItemView {
     });
 
     const [parentFieldName, siblingFieldName, childFieldName] = [
-      settings.showNameOrType ? settings.parentFieldName : "Parent",
-      settings.showNameOrType ? settings.siblingFieldName : "Sibling",
-      settings.showNameOrType ? settings.childFieldName : "Child",
+      "up",
+      "same",
+      "down",
     ];
 
     let [
@@ -265,23 +293,21 @@ export default class MatrixView extends ItemView {
       impliedParents,
       impliedChildren,
     ] = [
-      this.squareItems(gParents, currFile),
-      this.squareItems(gSiblings, currFile),
-      this.squareItems(gChildren, currFile),
-      this.squareItems(gChildren, currFile, false),
-      this.squareItems(gParents, currFile, false),
+      this.squareItems(upG, currFile),
+      this.squareItems(sameG, currFile),
+      this.squareItems(downG, currFile),
+      this.squareItems(downG, currFile, false),
+      this.squareItems(upG, currFile, false),
     ];
 
     // SECTION Implied Siblings
     /// Notes with the same parents
-    const currParents = (gParents.successors(currFile.basename) ??
-      []) as string[];
+    const currParents = (upG.successors(currFile.basename) ?? []) as string[];
     let impliedSiblingsArr: internalLinkObj[] = [];
 
     if (currParents.length) {
       currParents.forEach((parent) => {
-        const impliedSiblings = (gParents.predecessors(parent) ??
-          []) as string[];
+        const impliedSiblings = (upG.predecessors(parent) ?? []) as string[];
 
         // The current note is always it's own implied sibling, so remove it from the list
         const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
@@ -302,7 +328,7 @@ export default class MatrixView extends ItemView {
     }
 
     /// A real sibling implies the reverse sibling
-    impliedSiblingsArr.push(...this.squareItems(gSiblings, currFile, false));
+    impliedSiblingsArr.push(...this.squareItems(sameG, currFile, false));
 
     // !SECTION
 

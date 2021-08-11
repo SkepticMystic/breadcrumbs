@@ -142,12 +142,8 @@ export async function getJugglLinks(
 
   debug(settings, { typedLinksArr });
 
-  const allFields: string[] = [
-    settings.parentFieldName,
-    settings.siblingFieldName,
-    settings.childFieldName,
-  ]
-    .map(splitAndTrim)
+  const allFields: string[] = settings.userHierarchies
+    .map((hier) => Object.values(hier))
     .flat()
     .filter((field: string) => field !== "");
 
@@ -213,58 +209,52 @@ export const splitAndTrim = (fields: string): string[] =>
 export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
-): Promise<relObj[]> {
-  const { parentFieldName, siblingFieldName, childFieldName } = plugin.settings;
-
-  const [parentFields, siblingFields, childFields] = [
-    splitAndTrim(parentFieldName),
-    splitAndTrim(siblingFieldName),
-    splitAndTrim(childFieldName),
-  ];
-
-  const allFields = [parentFields, siblingFields, childFields].flat(1);
+): Promise<
+  {
+    current: TFile;
+    hierarchies: { [field: string]: string[] }[];
+  }[]
+> {
+  const { userHierarchies } = plugin.settings;
+  const allFields: string[] = userHierarchies
+    .map((hier) => Object.values(hier))
+    .flat()
+    .filter((field: string) => field !== "");
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
   }
 
-  const neighbourObjArr: relObj[] = fileFrontmatterArr.map(
-    (fileFrontmatter) => {
-      const relObj: relObj = {
-        current: fileFrontmatter.file,
-      };
+  const neighbourObjArr: {
+    current: TFile;
+    hierarchies: { [field: string]: string[] }[];
+  }[] = fileFrontmatterArr.map((fileFrontmatter) => {
+    const hierFields: {
+      current: TFile;
+      hierarchies: { [field: string]: string[] }[];
+    } = {
+      current: fileFrontmatter.file,
+      hierarchies: [],
+    };
 
-      allFields.forEach(
-        (field) =>
-          (relObj[field] = getFieldValues(
-            fileFrontmatter,
-            field,
-            plugin.settings
-          ))
-      );
-
-      console.log({ relObj });
-
-      if (jugglLinks.length) {
-        const currFileJugglLinks = jugglLinks.filter(
-          (link) =>
-            link.note ===
-            (fileFrontmatter.file.basename || fileFrontmatter.file.name)
+    userHierarchies.forEach((hier, i) => {
+      const fields: string[] = Object.values(hier);
+      const newHier: { [field: string]: string[] } = {};
+      fields.forEach((field) => {
+        const fieldValues = getFieldValues(
+          fileFrontmatter,
+          field,
+          plugin.settings
         );
+        newHier[field] = fieldValues;
+      });
+      hierFields.hierarchies.push(newHier);
+    });
 
-        currFileJugglLinks.forEach((jugglLink) => {
-          jugglLink.links.forEach((link) => {
-            if (allFields.includes(link.type)) {
-              relObj[link.type].push(...link.linksInLine);
-            }
-          });
-        });
-      }
+    return hierFields;
+  });
 
-      return { ...relObj };
-    }
-  );
   console.log({ neighbourObjArr });
   debug(plugin.settings, { neighbourObjArr });
   return neighbourObjArr;
@@ -273,6 +263,7 @@ export async function getNeighbourObjArr(
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
+  console.log({ real, implied });
   const closedG = graphlib.json.read(graphlib.json.write(real));
   implied.edges().forEach((impliedEdge) => {
     closedG.setEdge(impliedEdge.w, impliedEdge.v);
@@ -432,6 +423,18 @@ export function mergeGraphs(g1: Graph, g2: Graph) {
   return copy1;
 }
 
+export function mergeGs(...graphs: Graph[]) {
+  const copy = graphlib.json.read(graphlib.json.write(graphs[0]));
+  graphs.forEach((graph, i) => {
+    if (i > 0) {
+      graph.edges().forEach((edge) => {
+        copy.setEdge(edge);
+      });
+    }
+  });
+  return copy;
+}
+
 export function removeUnlinkedNodes(g: Graph) {
   const copy = graphlib.json.read(graphlib.json.write(g));
   const nodes = copy.nodes();
@@ -440,4 +443,25 @@ export function removeUnlinkedNodes(g: Graph) {
   );
   unlinkedNodes.forEach((node) => copy.removeNode(node));
   return copy;
+}
+
+export function getAllXGs(
+  plugin: BreadcrumbsPlugin,
+  rel: "up" | "same" | "down"
+) {
+  const { userHierarchies } = plugin.settings;
+  const fieldNamesInXDir = userHierarchies
+    .map((hier) => hier[rel])
+    .filter((field) => field !== "");
+  const currHiers = plugin.currGraphs;
+  const allXGs: { [rel: string]: Graph } = {};
+  currHiers.forEach((hier) => {
+    fieldNamesInXDir.forEach((field) => {
+      const graph = hier[field];
+      if (hier[field]) {
+        allXGs[field] = graph;
+      }
+    });
+  });
+  return allXGs;
 }

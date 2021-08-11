@@ -9,30 +9,31 @@ import {
   VIEW_TYPE_BREADCRUMBS_STATS,
 } from "src/constants";
 import type {
-  allGraphs,
   BreadcrumbsSettings,
   dvFrontmatterCache,
-  neighbourObj,
   relObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
-import StatsView from "src/StatsView";
 import {
   closeImpliedLinks,
   debug,
+  getAllXGs,
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
+  mergeGs,
   splitAndTrim,
 } from "src/sharedFunctions";
+import StatsView from "src/StatsView";
+import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
-import { VisModal } from "src/VisModal";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-  parentFieldName: "parent",
-  siblingFieldName: "sibling",
-  childFieldName: "child",
+  userHierarchies: [],
+  // parentFieldName: "parent",
+  // siblingFieldName: "sibling",
+  // childFieldName: "child",
   indexNote: [""],
   refreshIntervalTime: 0,
   defaultView: true,
@@ -76,7 +77,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
-  currGraphs: { [graph: string]: Graph };
+  currGraphs: { [field: string]: Graph }[];
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -192,18 +193,17 @@ export default class BreadcrumbsPlugin extends Plugin {
   populateGraph(
     g: Graph,
     currFileName: string,
-    relObj: relObj,
-    relationship: keyof relObj
+    fields: string[],
+    relationship: string
   ): void {
     g.setNode(currFileName, relationship);
-    relObj[relationship].forEach((node: string) => {
-      g.setEdge(currFileName, node, relationship);
+    if (relationship === "") return;
+    fields.forEach((field) => {
+      g.setEdge(currFileName, field, relationship);
     });
   }
 
-  async initGraphs(): Promise<{
-    [graph: string]: Graph;
-  }> {
+  async initGraphs(): Promise<{ [field: string]: Graph }[]> {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
@@ -217,46 +217,36 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
-    const { parentFieldName, siblingFieldName, childFieldName } = this.settings;
-    const [parentFields, siblingFields, childFields] = [
-      splitAndTrim(parentFieldName),
-      splitAndTrim(siblingFieldName),
-      splitAndTrim(childFieldName),
-    ];
-    const allFields = [parentFields, siblingFields, childFields].flat(1);
+    const { userHierarchies } = this.settings;
+    const allFields: string[] = userHierarchies
+      .map((hier) => Object.values(hier))
+      .flat()
+      .filter((field: string) => field !== "");
 
-    const graphs: { [graph: string]: Graph } = {};
+    const graphs: { [field: string]: Graph }[] = [];
 
-    allFields.forEach((field) => {
-      graphs[field] = new Graph();
+    userHierarchies.forEach((hier, i) => {
+      const newGraphs: { [field: string]: Graph } = {};
+      newGraphs[hier.up] = new Graph();
+      newGraphs[hier.same] = new Graph();
+      newGraphs[hier.down] = new Graph();
+      graphs.push(newGraphs);
     });
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
 
-      Object.keys(relObj).forEach((rel) => {
-        if (rel === "current") return;
-        this.populateGraph(graphs[rel], currFileName, relObj, rel);
+      relObj.hierarchies.forEach((hier, i) => {
+        Object.keys(hier).forEach((key) => {
+          const fields = hier[key];
+          this.populateGraph(graphs[i][key], currFileName, fields, key);
+        });
       });
     });
 
-    // const [gParents, gSiblings, gChildren] = [
-    //   new Graph(),
-    //   new Graph(),
-    //   new Graph(),
-    // ];
-
-    // neighbourArr.forEach((neighbourObj) => {
-    //   const currFileName =
-    //     neighbourObj.current.basename || neighbourObj.current.name;
-
-    //   this.populateGraph(gParents, currFileName, neighbourObj, "parents");
-    //   this.populateGraph(gSiblings, currFileName, neighbourObj, "siblings");
-    //   this.populateGraph(gChildren, currFileName, neighbourObj, "children");
-    // });
     debug(this.settings, "graphs inited");
     console.log({ graphs });
-    return { ...graphs };
+    return graphs;
   }
 
   // !SECTION OneSource
@@ -373,8 +363,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const settings = this.settings;
 
-    const { gParents, gChildren } = this.currGraphs;
-    const closedParents = closeImpliedLinks(gParents, gChildren);
+    const allUps = getAllXGs(this, "up");
+    const allDowns = getAllXGs(this, "down");
+    console.log({ allUps, allDowns });
+
+    const upG = mergeGs(...Object.values(allUps));
+    const downG = mergeGs(...Object.values(allDowns));
+    console.log({ upG, downG });
+
+    const closedParents = closeImpliedLinks(upG, downG);
     const sortedTrails = this.getBreadcrumbs(closedParents);
     debug(settings, { sortedTrails });
 
