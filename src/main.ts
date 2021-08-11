@@ -210,12 +210,9 @@ export default class BreadcrumbsPlugin extends Plugin {
     const files = this.app.vault.getMarkdownFiles();
 
     const dvQ = !!this.app.plugins.plugins.dataview;
-    let fileFrontmatterArr: dvFrontmatterCache[];
-    if (dvQ) {
-      fileFrontmatterArr = getDVMetadataCache(this.app, this.settings, files);
-    } else {
-      fileFrontmatterArr = getObsMetadataCache(this.app, this.settings, files);
-    }
+    const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
+      ? getDVMetadataCache(this.app, this.settings, files)
+      : getObsMetadataCache(this.app, this.settings, files);
 
     const neighbourArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
@@ -334,9 +331,8 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    if (!this.settings.showTrail) {
-      return;
-    }
+    if (!this.settings.showTrail) return;
+
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!activeMDView) {
       return;
@@ -345,9 +341,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     const currFile = activeMDView.file;
     const frontm =
       this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
-    if (frontm["kanban-plugin"]) {
-      return;
-    }
+    if (frontm["kanban-plugin"]) return;
 
     const settings = this.settings;
 
@@ -363,9 +357,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     // Make sure it's empty
     previewView.querySelector("div.breadcrumbs-trail")?.remove();
 
-    if (sortedTrails.length === 0 && settings.noPathMessage === "") {
-      return;
-    }
+    if (sortedTrails.length === 0 && settings.noPathMessage === "") return;
 
     const trailDiv = createDiv({
       cls: `breadcrumbs-trail ${
