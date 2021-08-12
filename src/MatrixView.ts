@@ -1,20 +1,15 @@
-import * as d3 from "d3";
-import { color } from "d3";
 import type { Graph } from "graphlib";
-import { createTreeHierarchy } from "hierarchy-js";
 import { cloneDeep } from "lodash";
-import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
-  AdjListItem,
   BreadcrumbsSettings,
   internalLinkObj,
   SquareProps,
-  d3Graph,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import {

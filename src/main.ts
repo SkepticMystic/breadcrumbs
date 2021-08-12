@@ -228,7 +228,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
-    console.log({ relObjArr });
 
     const { userHierarchies } = this.settings;
 
@@ -278,7 +277,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     debug(this.settings, "graphs inited");
-    console.log({ graphs });
+
     return graphs;
   }
 
@@ -398,11 +397,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const allUps = getAllXGs(this, "up");
     const allDowns = getAllXGs(this, "down");
-    console.log({ allUps, allDowns });
 
     const upG = mergeGs(...Object.values(allUps));
     const downG = mergeGs(...Object.values(allDowns));
-    console.log({ upG, downG });
 
     const closedParents = closeImpliedLinks(upG, downG);
     const sortedTrails = this.getBreadcrumbs(closedParents);

@@ -221,7 +221,6 @@ export async function getNeighbourObjArr(
   }[]
 > {
   const { userHierarchies } = plugin.settings;
-  console.log({ userHierarchies });
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
@@ -284,7 +283,6 @@ export async function getNeighbourObjArr(
     return hierFields;
   });
 
-  console.log({ neighbourObjArr });
   debug(plugin.settings, { neighbourObjArr });
   return neighbourObjArr;
 }
@@ -292,7 +290,6 @@ export async function getNeighbourObjArr(
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
-  console.log({ real, implied });
   const closedG = graphlib.json.read(graphlib.json.write(real));
   implied.edges().forEach((impliedEdge) => {
     closedG.setEdge(impliedEdge.w, impliedEdge.v);
@@ -484,8 +481,6 @@ export function getAllXGs(
     .map((hier) => hier[dir])
     .filter((field) => field.join() !== "")
     .flat();
-
-  console.log({ fieldNamesInXDir });
 
   const { currGraphs } = plugin;
   const allXGs: { [rel: string]: Graph } = {};
