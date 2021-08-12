@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.14](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.13...0.10.14) (2021-08-12)
+
+
+### Features
+
+* :sparkles: Get multiple hierarchies working with l/m view! ([558ae67](https://github.com/SkepticMystic/breadcrumbs/commit/558ae670eb050e945ef053199d31838fdf099861))
+* :sparkles: Multiple field names for each direction in a hierarchy ([0f3babb](https://github.com/SkepticMystic/breadcrumbs/commit/0f3babbb3f507f5e48c06ade14de2435f8976f36))
+* :sparkles: Multiple hierarchies setting! ([2eda709](https://github.com/SkepticMystic/breadcrumbs/commit/2eda7095c4b28d3fc28c847412646cbd1eebbf38))
+* **Stats View:** :sparkles: Progress on new stats view ([5389720](https://github.com/SkepticMystic/breadcrumbs/commit/53897209aec532376c15e0e6bc1e8e9dee5896ba))
+* **Stats View:** :sparkles: Update stats view for multiple hierarchies ([24f5dae](https://github.com/SkepticMystic/breadcrumbs/commit/24f5dae5aa3d2b454f46069dba0719142224759e))
+
+
+### Bug Fixes
+
+* :bug: Everything on the front-end works as it used to ([ea0e8ff](https://github.com/SkepticMystic/breadcrumbs/commit/ea0e8ff3beac9befeba75932b8c5fac51ec562be))
+
 ### [0.10.13](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.12...0.10.13) (2021-08-10)
 
 

@@ -193,13 +193,6 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
   return adjList;
 }
 
-export const tod3Hierarchy = (adjList: AdjListItem[]): d3Tree => {
-  // parentId doesn't necessarily mean parent here. It means successor of the node in the graph it was generated from.
-  const hier: d3Tree = { name: "Root", children: [] };
-
-  adjList.forEach((item) => {});
-};
-
 export const stratify = d3
   .stratify()
   .id(function (d: AdjListItem) {

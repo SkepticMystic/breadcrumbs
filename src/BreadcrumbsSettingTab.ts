@@ -1,5 +1,6 @@
 import {
   App,
+  ButtonComponent,
   DropdownComponent,
   Notice,
   PluginSettingTab,
@@ -12,9 +13,10 @@ import {
   VIEW_TYPE_BREADCRUMBS_MATRIX,
   VISTYPES,
 } from "src/constants";
-import type { Relations, visTypes } from "src/interfaces";
+import type { Relations, userHierarchy, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { isInVault, splitAndTrim } from "src/sharedFunctions";
+import { hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
+import { isEqual } from "lodash";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -30,7 +32,119 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
-    const fieldDetails: HTMLDetailsElement = containerEl.createEl("details");
+    function hierIndex(
+      currHiers: userHierarchy[],
+      values: [string[], string[], string[]]
+    ) {
+      return currHiers.findIndex(
+        (hier) =>
+          isEqual(hier.up, values[0]) &&
+          isEqual(hier.same, values[1]) &&
+          isEqual(hier.down, values[2])
+      );
+    }
+
+    const addHierarchyRow = (
+      values: userHierarchy = { up: ["↑"], same: ["→"], down: ["↓"] },
+      existing = false
+    ) => {
+      const row = createDiv({ cls: "hierarchy-row" });
+
+      const hierarchyNames = row.createSpan({});
+
+      const upInput = hierarchyNames.createEl("input", {
+        value: values.up.join(", "),
+      });
+      const sameInput = hierarchyNames.createEl("input", {
+        value: values.same.join(", "),
+      });
+      const downInput = hierarchyNames.createEl("input", {
+        value: values.down.join(", "),
+      });
+      let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
+        splitAndTrim
+      ) as [string[], string[], string[]];
+
+      [upInput, sameInput, downInput].forEach((input) =>
+        input.addEventListener("change", () => {
+          saveButton.toggleClass("hierarchy-unsaved", true);
+          saveButton.textContent = "Unsaved";
+        })
+      );
+
+      const deleteButton = row.createEl("button", { text: "X" }, (el) => {
+        el.addEventListener("click", async () => {
+          row.remove();
+          const removeIndex = hierIndex(
+            plugin.settings.userHierarchies,
+            [upInput.value, sameInput.value, downInput.value].map(
+              splitAndTrim
+            ) as [string[], string[], string[]]
+          );
+
+          if (removeIndex > -1) {
+            plugin.settings.userHierarchies.splice(removeIndex, 1);
+            await plugin.saveSettings();
+          }
+          new Notice("Hierarchy Removed.");
+        });
+      });
+
+      const saveButton = row.createEl(
+        "button",
+        {
+          text: existing ? "Saved" : "Unsaved",
+          cls: (existing ? "" : "hierarchy-unsaved ") + "save-hierarchy-button",
+        },
+        function (el) {
+          el.addEventListener("click", async () => {
+            if (saveButton.hasClass("hierarchy-unsaved")) {
+              const removeIndex = hierIndex(
+                plugin.settings.userHierarchies,
+                cleanInputs
+              );
+              console.log({ removeIndex });
+
+              if (removeIndex > -1) {
+                plugin.settings.userHierarchies.splice(removeIndex, 1);
+                await plugin.saveSettings();
+              }
+            }
+            cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
+              splitAndTrim
+            ) as [string[], string[], string[]];
+            saveButton.toggleClass("hierarchy-unsaved", false);
+            saveButton.textContent = "Saved";
+            if (
+              hierIndex(
+                plugin.settings.userHierarchies,
+                [upInput.value, sameInput.value, downInput.value].map(
+                  splitAndTrim
+                ) as [string[], string[], string[]]
+              ) > -1
+            ) {
+              new Notice(
+                "A hierarchy with these Up, Same, and Down values already exists."
+              );
+            } else {
+              plugin.settings.userHierarchies.push({
+                up: splitAndTrim(upInput.value),
+                same: splitAndTrim(sameInput.value),
+                down: splitAndTrim(downInput.value),
+              });
+              await plugin.saveSettings();
+              new Notice("Hierarchy saved.");
+            }
+          });
+        }
+      );
+
+      return row;
+    };
+
+    const fieldDetails: HTMLDetailsElement = containerEl.createEl("details", {
+      cls: "field-details",
+    });
     fieldDetails.createEl("summary", { text: "Metadata Field Names" });
 
     fieldDetails.createEl("p", {
@@ -41,43 +155,87 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     });
 
     new Setting(fieldDetails)
-      .setName("Parent Metadata Field")
-      .setDesc("The key name you use as the parent field.")
-      .addText((text) =>
-        text
-          .setPlaceholder("Field name")
-          .setValue(plugin.settings.parentFieldName)
-          .onChange(async (value) => {
-            plugin.settings.parentFieldName = value;
-            await plugin.saveSettings();
-          })
-      );
+      .setName("Add Hierarchy")
+      .setDesc("Add a new hierarchy.")
+      .addButton((button: ButtonComponent) => {
+        let b = button
+          .setTooltip("Add Additional")
+          .setButtonText("+")
+          .onClick(async () => {
+            fieldDetails.append(addHierarchyRow());
+          });
+      });
+    console.log(splitAndTrim(""));
 
-    new Setting(fieldDetails)
-      .setName("Sibling Metadata Field")
-      .setDesc("The key name you use as the sibling field.")
-      .addText((text) =>
-        text
-          .setPlaceholder("Field name")
-          .setValue(plugin.settings.siblingFieldName)
-          .onChange(async (value) => {
-            plugin.settings.siblingFieldName = value;
-            await plugin.saveSettings();
-          })
-      );
+    fieldDetails.createEl(
+      "button",
+      { text: "Reset Hierarchies" },
+      async (el) => {
+        el.addEventListener("click", async () => {
+          const rows = fieldDetails.querySelectorAll(".hierarchy-row");
+          rows.forEach((row) => row.remove());
+          plugin.settings.userHierarchies = [];
+          await plugin.saveSettings();
+          new Notice("Hierarchies reset.");
+        });
+      }
+    );
 
-    new Setting(fieldDetails)
-      .setName("Child Metadata Field")
-      .setDesc("The key name you use as the child field.")
-      .addText((text) =>
-        text
-          .setPlaceholder("Field name")
-          .setValue(plugin.settings.childFieldName)
-          .onChange(async (value) => {
-            plugin.settings.childFieldName = value;
-            await plugin.saveSettings();
-          })
-      );
+    fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
+      el.addEventListener("click", () => {
+        if (plugin.settings.userHierarchies.length) {
+          new Notice(
+            plugin.settings.userHierarchies.map(hierToStr).join("\n\n")
+          );
+        } else {
+          new Notice("No hierarchies currently exist.");
+        }
+        console.log({ hierarchies: plugin.settings.userHierarchies });
+      });
+    });
+
+    plugin.settings.userHierarchies.forEach((userHier) => {
+      fieldDetails.append(addHierarchyRow(userHier, true));
+    });
+
+    // new Setting(fieldDetails)
+    //   .setName("Parent Metadata Field")
+    //   .setDesc("The key name you use as the parent field.")
+    //   .addText((text) =>
+    //     text
+    //       .setPlaceholder("Field name")
+    //       .setValue(plugin.settings.parentFieldName)
+    //       .onChange(async (value) => {
+    //         plugin.settings.parentFieldName = value;
+    //         await plugin.saveSettings();
+    //       })
+    //   );
+
+    // new Setting(fieldDetails)
+    //   .setName("Sibling Metadata Field")
+    //   .setDesc("The key name you use as the sibling field.")
+    //   .addText((text) =>
+    //     text
+    //       .setPlaceholder("Field name")
+    //       .setValue(plugin.settings.siblingFieldName)
+    //       .onChange(async (value) => {
+    //         plugin.settings.siblingFieldName = value;
+    //         await plugin.saveSettings();
+    //       })
+    //   );
+
+    // new Setting(fieldDetails)
+    //   .setName("Child Metadata Field")
+    //   .setDesc("The key name you use as the child field.")
+    //   .addText((text) =>
+    //     text
+    //       .setPlaceholder("Field name")
+    //       .setValue(plugin.settings.childFieldName)
+    //       .onChange(async (value) => {
+    //         plugin.settings.childFieldName = value;
+    //         await plugin.saveSettings();
+    //       })
+    //   );
 
     const generalDetails: HTMLDetailsElement = containerEl.createEl("details");
     generalDetails.createEl("summary", { text: "General Options" });

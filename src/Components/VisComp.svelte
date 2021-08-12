@@ -5,7 +5,12 @@
     VisGraphs,
     visTypes,
   } from "src/interfaces";
-  import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
+  import {
+    closeImpliedLinks,
+    getAllXGs,
+    mergeGs,
+    removeUnlinkedNodes,
+  } from "src/sharedFunctions";
   import type { VisModal } from "src/VisModal";
   import { arcDiagram } from "src/Visualisations/ArcDiagram";
   import { circlePacking } from "src/Visualisations/CirclePacking";
@@ -53,19 +58,27 @@
     Math.round(window.innerHeight / 1.3),
   ];
 
-  const { gParents, gSiblings, gChildren } = plugin.currGraphs;
+  const allUps = getAllXGs(plugin, "up");
+  const allSames = getAllXGs(plugin, "same");
+  const allDowns = getAllXGs(plugin, "down");
+  console.log({ allUps, allDowns });
+
+  const upG = mergeGs(...Object.values(allUps));
+  const sameG = mergeGs(...Object.values(allSames));
+  const downG = mergeGs(...Object.values(allDowns));
+  console.log({ upG, downG });
 
   const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
-    closeImpliedLinks(gParents, gChildren),
-    closeImpliedLinks(gSiblings, gSiblings),
-    closeImpliedLinks(gChildren, gParents),
+    closeImpliedLinks(upG, downG),
+    closeImpliedLinks(sameG, sameG),
+    closeImpliedLinks(downG, upG),
   ];
 
   const graphs: VisGraphs = {
     Parent: {
       Real: {
-        All: gParents,
-        "No Unlinked": removeUnlinkedNodes(gParents),
+        All: upG,
+        "No Unlinked": removeUnlinkedNodes(upG),
       },
       Closed: {
         All: closedParentNoSingle,
@@ -74,8 +87,8 @@
     },
     Sibling: {
       Real: {
-        All: gSiblings,
-        "No Unlinked": removeUnlinkedNodes(gSiblings),
+        All: sameG,
+        "No Unlinked": removeUnlinkedNodes(sameG),
       },
       Closed: {
         All: closedSiblingNoSingle,
@@ -84,8 +97,8 @@
     },
     Child: {
       Real: {
-        All: gChildren,
-        "No Unlinked": removeUnlinkedNodes(gChildren),
+        All: downG,
+        "No Unlinked": removeUnlinkedNodes(downG),
       },
       Closed: {
         All: closedChildNoSingle,

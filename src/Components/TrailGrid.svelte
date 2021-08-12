@@ -4,6 +4,8 @@
   import type BreadcrumbsPlugin from "src/main";
   import {
     closeImpliedLinks,
+    getAllXGs,
+    mergeGs,
     normalise,
     openOrSwitch,
     padArray,
@@ -52,14 +54,21 @@
   // const data: {[cell: string]: number} = {}
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 
+  const allUps = getAllXGs(plugin, "up");
+  const allDowns = getAllXGs(plugin, "down");
+  console.log({ allUps, allDowns });
+
+  const upG = mergeGs(...Object.values(allUps));
+  const downG = mergeGs(...Object.values(allDowns));
+  console.log({ upG, downG });
+
+  const closedParents = closeImpliedLinks(upG, downG);
+
   const children: { [cell: string]: number } = {};
   allCells.forEach(
     (cell) =>
       (children[cell] = (
-        closeImpliedLinks(
-          plugin.currGraphs.gChildren,
-          plugin.currGraphs.gParents
-        ).successors(cell) ?? []
+        closeImpliedLinks(downG, upG).successors(cell) ?? []
       ).length)
   );
 

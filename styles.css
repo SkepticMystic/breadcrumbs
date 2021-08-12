@@ -90,3 +90,18 @@ li.breadcrumbs-implied::marker {
   visibility: hidden;
   opacity: 0;
 }
+
+.hierarchy-row {
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+}
+
+.save-hierarchy-button {
+  opacity: 0.6;
+}
+
+.save-hierarchy-button.hierarchy-unsaved {
+  opacity: 1;
+  background-color: rgb(245, 48, 48) !important;
+}
