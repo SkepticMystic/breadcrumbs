@@ -3,9 +3,6 @@ import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
-  // parentFieldName: string;
-  // siblingFieldName: string;
-  // childFieldName: string;
   indexNote: string[];
   refreshIntervalTime: number;
   defaultView: boolean;
@@ -44,10 +41,11 @@ export interface dvFrontmatterCache {
     | TFile;
 }
 
+export type Directions = "up" | "same" | "down";
 export interface userHierarchy {
-  up: string;
-  same: string;
-  down: string;
+  up: string[];
+  same: string[];
+  down: string[];
 }
 
 export interface dvLink {

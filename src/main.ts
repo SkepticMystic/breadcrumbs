@@ -10,6 +10,7 @@ import {
 } from "src/constants";
 import type {
   BreadcrumbsSettings,
+  Directions,
   dvFrontmatterCache,
   relObj,
 } from "src/interfaces";
@@ -77,7 +78,11 @@ export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
-  currGraphs: { [field: string]: Graph }[];
+  currGraphs: {
+    up: { [field: string]: Graph };
+    same: { [field: string]: Graph };
+    down: { [field: string]: Graph };
+  }[];
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -194,16 +199,23 @@ export default class BreadcrumbsPlugin extends Plugin {
     g: Graph,
     currFileName: string,
     fields: string[],
-    relationship: string
+    dir: Directions,
+    fieldName: string
   ): void {
-    g.setNode(currFileName, relationship);
-    if (relationship === "") return;
+    g.setNode(currFileName, { dir, fieldName });
+    if (fieldName === "") return;
     fields.forEach((field) => {
-      g.setEdge(currFileName, field, relationship);
+      g.setEdge(currFileName, field, { dir, fieldName });
     });
   }
 
-  async initGraphs(): Promise<{ [field: string]: Graph }[]> {
+  async initGraphs(): Promise<
+    {
+      up: { [field: string]: Graph };
+      same: { [field: string]: Graph };
+      down: { [field: string]: Graph };
+    }[]
+  > {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
@@ -216,30 +228,51 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+    console.log({ relObjArr });
 
     const { userHierarchies } = this.settings;
-    const allFields: string[] = userHierarchies
-      .map((hier) => Object.values(hier))
-      .flat()
-      .filter((field: string) => field !== "");
 
-    const graphs: { [field: string]: Graph }[] = [];
+    const graphs: {
+      up: { [field: string]: Graph };
+      same: { [field: string]: Graph };
+      down: { [field: string]: Graph };
+    }[] = [];
 
     userHierarchies.forEach((hier, i) => {
-      const newGraphs: { [field: string]: Graph } = {};
-      newGraphs[hier.up] = new Graph();
-      newGraphs[hier.same] = new Graph();
-      newGraphs[hier.down] = new Graph();
+      const newGraphs: {
+        up: { [field: string]: Graph };
+        same: { [field: string]: Graph };
+        down: { [field: string]: Graph };
+      } = { up: {}, same: {}, down: {} };
+
+      Object.keys(hier).forEach((dir: Directions) => {
+        hier[dir].forEach((dirField) => {
+          newGraphs[dir][dirField] = new Graph();
+        });
+      });
+
       graphs.push(newGraphs);
     });
+    console.log({ graphs });
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
 
       relObj.hierarchies.forEach((hier, i) => {
-        Object.keys(hier).forEach((key) => {
-          const fields = hier[key];
-          this.populateGraph(graphs[i][key], currFileName, fields, key);
+        Object.keys(hier).forEach((dir: Directions) => {
+          const fieldsObj: {
+            [field: string]: string[];
+          } = hier[dir];
+
+          Object.keys(fieldsObj).forEach((fieldName) => {
+            this.populateGraph(
+              graphs[i][dir][fieldName],
+              currFileName,
+              fieldsObj[fieldName],
+              dir,
+              fieldName
+            );
+          });
         });
       });
     });

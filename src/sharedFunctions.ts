@@ -17,6 +17,7 @@ import type {
   JugglLink,
   neighbourObj,
   relObj,
+  userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
@@ -212,14 +213,15 @@ export async function getNeighbourObjArr(
 ): Promise<
   {
     current: TFile;
-    hierarchies: { [field: string]: string[] }[];
+    hierarchies: {
+      up: { [field: string]: string[] };
+      same: { [field: string]: string[] };
+      down: { [field: string]: string[] };
+    }[];
   }[]
 > {
   const { userHierarchies } = plugin.settings;
-  const allFields: string[] = userHierarchies
-    .map((hier) => Object.values(hier))
-    .flat()
-    .filter((field: string) => field !== "");
+  console.log({ userHierarchies });
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
@@ -228,27 +230,54 @@ export async function getNeighbourObjArr(
 
   const neighbourObjArr: {
     current: TFile;
-    hierarchies: { [field: string]: string[] }[];
+    hierarchies: {
+      up: { [field: string]: string[] };
+      same: { [field: string]: string[] };
+      down: { [field: string]: string[] };
+    }[];
   }[] = fileFrontmatterArr.map((fileFrontmatter) => {
     const hierFields: {
       current: TFile;
-      hierarchies: { [field: string]: string[] }[];
+      hierarchies: {
+        up: { [field: string]: string[] };
+        same: { [field: string]: string[] };
+        down: { [field: string]: string[] };
+      }[];
     } = {
       current: fileFrontmatter.file,
       hierarchies: [],
     };
 
     userHierarchies.forEach((hier, i) => {
-      const fields: string[] = Object.values(hier);
-      const newHier: { [field: string]: string[] } = {};
-      fields.forEach((field) => {
-        const fieldValues = getFieldValues(
+      const fieldsArr = Object.values(hier) as [string[], string[], string[]];
+      const newHier: {
+        up: { [field: string]: string[] };
+        same: { [field: string]: string[] };
+        down: { [field: string]: string[] };
+      } = { up: {}, same: {}, down: {} };
+
+      fieldsArr[0].forEach((upField) => {
+        newHier.up[upField] = getFieldValues(
           fileFrontmatter,
-          field,
+          upField,
           plugin.settings
         );
-        newHier[field] = fieldValues;
       });
+      fieldsArr[1].forEach((sameField) => {
+        newHier.same[sameField] = getFieldValues(
+          fileFrontmatter,
+          sameField,
+          plugin.settings
+        );
+      });
+      fieldsArr[2].forEach((downField) => {
+        newHier.down[downField] = getFieldValues(
+          fileFrontmatter,
+          downField,
+          plugin.settings
+        );
+      });
+
       hierFields.hierarchies.push(newHier);
     });
 
@@ -447,21 +476,33 @@ export function removeUnlinkedNodes(g: Graph) {
 
 export function getAllXGs(
   plugin: BreadcrumbsPlugin,
-  rel: "up" | "same" | "down"
+  dir: "up" | "same" | "down"
 ) {
   const { userHierarchies } = plugin.settings;
+
   const fieldNamesInXDir = userHierarchies
-    .map((hier) => hier[rel])
-    .filter((field) => field !== "");
-  const currHiers = plugin.currGraphs;
+    .map((hier) => hier[dir])
+    .filter((field) => field.join() !== "")
+    .flat();
+
+  console.log({ fieldNamesInXDir });
+
+  const { currGraphs } = plugin;
   const allXGs: { [rel: string]: Graph } = {};
-  currHiers.forEach((hier) => {
+
+  currGraphs.forEach((hierarchyGs) => {
     fieldNamesInXDir.forEach((field) => {
-      const graph = hier[field];
-      if (hier[field]) {
+      const graph = hierarchyGs[dir][field];
+      if (graph) {
         allXGs[field] = graph;
       }
     });
   });
   return allXGs;
+}
+
+export function hierToStr(hier: userHierarchy) {
+  return `↑: ${hier.up.join(", ")}.
+→: ${hier.same.join(", ")}.
+↓: ${hier.down.join(", ")}.`;
 }

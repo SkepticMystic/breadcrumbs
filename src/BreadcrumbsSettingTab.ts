@@ -15,7 +15,8 @@ import {
 } from "src/constants";
 import type { Relations, userHierarchy, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { isInVault, splitAndTrim } from "src/sharedFunctions";
+import { hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
+import { isEqual } from "lodash";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -33,36 +34,36 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
     function hierIndex(
       currHiers: userHierarchy[],
-      values: [string, string, string]
+      values: [string[], string[], string[]]
     ) {
       return currHiers.findIndex(
         (hier) =>
-          hier.up === values[0] &&
-          hier.same === values[1] &&
-          hier.down === values[2]
+          isEqual(hier.up, values[0]) &&
+          isEqual(hier.same, values[1]) &&
+          isEqual(hier.down, values[2])
       );
     }
 
     const addHierarchyRow = (
-      values: userHierarchy = { up: "↑", same: "→", down: "↓" },
+      values: userHierarchy = { up: ["↑"], same: ["→"], down: ["↓"] },
       existing = false
     ) => {
       const row = createDiv({ cls: "hierarchy-row" });
 
       const hierarchyNames = row.createSpan({});
 
-      const upInput = hierarchyNames.createEl("input", { value: values.up });
+      const upInput = hierarchyNames.createEl("input", {
+        value: values.up.join(", "),
+      });
       const sameInput = hierarchyNames.createEl("input", {
-        value: values.same,
+        value: values.same.join(", "),
       });
       const downInput = hierarchyNames.createEl("input", {
-        value: values.down,
+        value: values.down.join(", "),
       });
-      let cleanInputs: [string, string, string] = [
-        upInput.value,
-        sameInput.value,
-        downInput.value,
-      ];
+      let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
+        splitAndTrim
+      ) as [string[], string[], string[]];
 
       [upInput, sameInput, downInput].forEach((input) =>
         input.addEventListener("change", () => {
@@ -74,11 +75,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       const deleteButton = row.createEl("button", { text: "X" }, (el) => {
         el.addEventListener("click", async () => {
           row.remove();
-          const removeIndex = hierIndex(plugin.settings.userHierarchies, [
-            upInput.value,
-            sameInput.value,
-            downInput.value,
-          ]);
+          const removeIndex = hierIndex(
+            plugin.settings.userHierarchies,
+            [upInput.value, sameInput.value, downInput.value].map(
+              splitAndTrim
+            ) as [string[], string[], string[]]
+          );
 
           if (removeIndex > -1) {
             plugin.settings.userHierarchies.splice(removeIndex, 1);
@@ -108,24 +110,27 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 await plugin.saveSettings();
               }
             }
-            cleanInputs = [upInput.value, sameInput.value, downInput.value];
+            cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
+              splitAndTrim
+            ) as [string[], string[], string[]];
             saveButton.toggleClass("hierarchy-unsaved", false);
             saveButton.textContent = "Saved";
             if (
-              hierIndex(plugin.settings.userHierarchies, [
-                upInput.value,
-                sameInput.value,
-                downInput.value,
-              ]) > -1
+              hierIndex(
+                plugin.settings.userHierarchies,
+                [upInput.value, sameInput.value, downInput.value].map(
+                  splitAndTrim
+                ) as [string[], string[], string[]]
+              ) > -1
             ) {
               new Notice(
                 "A hierarchy with these Up, Same, and Down values already exists."
               );
             } else {
               plugin.settings.userHierarchies.push({
-                up: upInput.value,
-                same: sameInput.value,
-                down: downInput.value,
+                up: splitAndTrim(upInput.value),
+                same: splitAndTrim(sameInput.value),
+                down: splitAndTrim(downInput.value),
               });
               await plugin.saveSettings();
               new Notice("Hierarchy saved.");
@@ -160,6 +165,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             fieldDetails.append(addHierarchyRow());
           });
       });
+    console.log(splitAndTrim(""));
 
     fieldDetails.createEl(
       "button",
@@ -177,15 +183,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
     fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
       el.addEventListener("click", () => {
-        if (plugin.settings.userHierarchies.length === 0) {
+        if (plugin.settings.userHierarchies.length) {
+          new Notice(
+            plugin.settings.userHierarchies.map(hierToStr).join("\n\n")
+          );
+        } else {
           new Notice("No hierarchies currently exist.");
-          return;
         }
-        let hierText = "";
-        plugin.settings.userHierarchies.forEach((hier) => {
-          hierText += `up: ${hier.up}, same: ${hier.same}, down: ${hier.down}\n`;
-        });
-        new Notice(hierText);
         console.log({ hierarchies: plugin.settings.userHierarchies });
       });
     });
