@@ -497,7 +497,7 @@ export function getAllXGs(
 }
 
 export function hierToStr(hier: userHierarchy) {
-  return `↑: ${hier.up.join(", ")}.
-→: ${hier.same.join(", ")}.
-↓: ${hier.down.join(", ")}.`;
+  return `↑: ${hier.up.join(", ")}
+→: ${hier.same.join(", ")}
+↓: ${hier.down.join(", ")}`;
 }

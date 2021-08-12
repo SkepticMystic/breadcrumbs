@@ -1,13 +1,15 @@
-import type { Graph } from "graphlib";
-import { cloneDeep } from "lodash";
+import type { Edge, Graph } from "graphlib";
+import { cloneDeep, sum } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DATAVIEW_INDEX_DELAY,
+  DIRECTIONS,
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
   BreadcrumbsSettings,
+  Directions,
   internalLinkObj,
   SquareProps,
 } from "src/interfaces";
@@ -252,16 +254,8 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
-    const allUps = getAllXGs(this.plugin, "up");
-    const allSames = getAllXGs(this.plugin, "same");
-
-    const allDowns = getAllXGs(this.plugin, "down");
-    console.log({ allUps, allDowns });
-
-    const upG = mergeGs(...Object.values(allUps));
-    const sameG = mergeGs(...Object.values(allSames));
-    const downG = mergeGs(...Object.values(allDowns));
-    console.log({ upG, sameG, downG });
+    const hierGs = this.plugin.currGraphs;
+    const { userHierarchies } = this.plugin.settings;
 
     const currFile = this.app.workspace.getActiveFile();
     const settings = this.plugin.settings;
@@ -281,96 +275,123 @@ export default class MatrixView extends ItemView {
       "down",
     ];
 
-    let [
-      realParents,
-      realSiblings,
-      realChildren,
-      impliedParents,
-      impliedChildren,
-    ] = [
-      this.squareItems(upG, currFile),
-      this.squareItems(sameG, currFile),
-      this.squareItems(downG, currFile),
-      this.squareItems(downG, currFile, false),
-      this.squareItems(upG, currFile, false),
-    ];
-
-    // SECTION Implied Siblings
-    /// Notes with the same parents
-    const currParents = (upG.successors(currFile.basename) ?? []) as string[];
-    let impliedSiblingsArr: internalLinkObj[] = [];
-
-    if (currParents.length) {
-      currParents.forEach((parent) => {
-        const impliedSiblings = (upG.predecessors(parent) ?? []) as string[];
-
-        // The current note is always it's own implied sibling, so remove it from the list
-        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
-        impliedSiblings.splice(indexCurrNote, 1);
-
-        // Create thie implied sibling SquareProps
-        impliedSiblings.forEach((impliedSibling) => {
-          impliedSiblingsArr.push({
-            to: impliedSibling,
-            cls:
-              "internal-link breadcrumbs-link breadcrumbs-implied" +
-              (this.unresolvedQ(impliedSibling, currFile.path)
-                ? " is-unresolved"
-                : ""),
-          });
-        });
+    const data = hierGs.map((hier) => {
+      const hierData: { [dir in Directions]: Graph } = {
+        up: undefined,
+        same: undefined,
+        down: undefined,
+      };
+      DIRECTIONS.forEach((dir) => {
+        hierData[dir] = mergeGs(...Object.values(hier[dir]));
       });
-    }
-
-    /// A real sibling implies the reverse sibling
-    impliedSiblingsArr.push(...this.squareItems(sameG, currFile, false));
-
-    // !SECTION
-
-    impliedParents = this.removeDuplicateImplied(realParents, impliedParents);
-    impliedSiblingsArr = this.removeDuplicateImplied(
-      realSiblings,
-      impliedSiblingsArr
-    );
-    impliedChildren = this.removeDuplicateImplied(
-      realChildren,
-      impliedChildren
-    );
-
-    debug(settings, {
-      realParents,
-      impliedParents,
-      realSiblings,
-      impliedSiblingsArr,
-      realChildren,
-      impliedChildren,
+      return hierData;
     });
 
-    const parentsSquare: SquareProps = {
-      realItems: realParents,
-      impliedItems: impliedParents,
-      fieldName: parentFieldName,
-    };
+    const hierSquares = userHierarchies.map((hier, i) => {
+      let [rUp, rSame, rDown, iUp, iDown] = [
+        this.squareItems(data[i].up, currFile),
+        this.squareItems(data[i].same, currFile),
+        this.squareItems(data[i].down, currFile),
+        this.squareItems(data[i].down, currFile, false),
+        this.squareItems(data[i].up, currFile, false),
+      ];
 
-    const siblingSquare: SquareProps = {
-      realItems: realSiblings,
-      impliedItems: impliedSiblingsArr,
-      fieldName: siblingFieldName,
-    };
+      // SECTION Implied Siblings
+      /// Notes with the same parents
+      const currParents = (data[i].up.successors(currFile.basename) ??
+        []) as string[];
+      let iSameArr: internalLinkObj[] = [];
 
-    const childrenSquare: SquareProps = {
-      realItems: realChildren,
-      impliedItems: impliedChildren,
-      fieldName: childFieldName,
-    };
+      if (currParents.length) {
+        currParents.forEach((parent) => {
+          const impliedSiblings = (data[i].up.predecessors(parent) ??
+            []) as string[];
+
+          // The current note is always it's own implied sibling, so remove it from the list
+          const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+          impliedSiblings.splice(indexCurrNote, 1);
+
+          // Create thie implied sibling SquareProps
+          impliedSiblings.forEach((impliedSibling) => {
+            iSameArr.push({
+              to: impliedSibling,
+              cls:
+                "internal-link breadcrumbs-link breadcrumbs-implied" +
+                (this.unresolvedQ(impliedSibling, currFile.path)
+                  ? " is-unresolved"
+                  : ""),
+            });
+          });
+        });
+      }
+
+      /// A real sibling implies the reverse sibling
+      iSameArr.push(...this.squareItems(data[i].same, currFile, false));
+
+      // !SECTION
+
+      iUp = this.removeDuplicateImplied(rUp, iUp);
+      iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
+      iDown = this.removeDuplicateImplied(rDown, iDown);
+
+      debug(settings, {
+        rUp,
+        iUp,
+        rSame,
+        iSameArr,
+        rDown,
+        iDown,
+      });
+
+      const upSquare: SquareProps = {
+        realItems: rUp,
+        impliedItems: iUp,
+        fieldName: hier.up.join(", "),
+      };
+
+      const sameSquare: SquareProps = {
+        realItems: rSame,
+        impliedItems: iSameArr,
+        fieldName: hier.same.join(", "),
+      };
+
+      const downSquare: SquareProps = {
+        realItems: rDown,
+        impliedItems: iDown,
+        fieldName: hier.down.join(", "),
+      };
+
+      return [upSquare, sameSquare, downSquare];
+    });
+    console.log({ hierSquares });
+
+    const filteredSquares = hierSquares.filter((squareArr) =>
+      squareArr.some(
+        (square) => square.realItems.length + square.impliedItems.length > 0
+      )
+    );
+    console.log({ filteredSquares });
+
+    const sortedSquaresArr = filteredSquares.sort(
+      (a, b) =>
+        sum(
+          b.map(
+            (square) => square.realItems.length + square.impliedItems.length
+          )
+        ) -
+        sum(
+          a.map(
+            (square) => square.realItems.length + square.impliedItems.length
+          )
+        )
+    );
+    console.log({ sortedSquaresArr });
 
     if (this.matrixQ) {
       this.view = new Matrix({
         target: this.contentEl,
         props: {
-          parents: parentsSquare,
-          siblings: siblingSquare,
-          children: childrenSquare,
+          sortedSquaresArr,
           currFile,
           settings: settings,
           matrixView: this,
@@ -381,9 +402,7 @@ export default class MatrixView extends ItemView {
       this.view = new Lists({
         target: this.contentEl,
         props: {
-          parents: parentsSquare,
-          siblings: siblingSquare,
-          children: childrenSquare,
+          sortedSquaresArr,
           currFile,
           settings: settings,
           matrixView: this,
