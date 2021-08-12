@@ -103,5 +103,5 @@ li.breadcrumbs-implied::marker {
 
 .save-hierarchy-button.hierarchy-unsaved {
   opacity: 1;
-  background-color: red !important;
+  background-color: rgb(245, 48, 48) !important;
 }
