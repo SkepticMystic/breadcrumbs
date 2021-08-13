@@ -5,6 +5,7 @@
   import {
     closeImpliedLinks,
     copy,
+    debug,
     hierToStr,
     mergeGs,
   } from "src/sharedFunctions";
@@ -59,7 +60,7 @@
     return hierData;
   });
 
-  console.log({ data });
+  debug(settings, { data });
 
   let hierStrs: string[] = userHierarchies.map(hierToStr);
 

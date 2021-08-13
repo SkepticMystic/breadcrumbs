@@ -52,7 +52,7 @@
     } catch (error) {
       console.log(error);
       console.log({ currFile });
-      wordCounts[cell] = 0
+      wordCounts[cell] = 0;
     }
   });
 
@@ -61,11 +61,9 @@
 
   const allUps = getAllXGs(plugin, "up");
   const allDowns = getAllXGs(plugin, "down");
-  console.log({ allUps, allDowns });
 
   const upG = mergeGs(...Object.values(allUps));
   const downG = mergeGs(...Object.values(allDowns));
-  console.log({ upG, downG });
 
   const closedParents = closeImpliedLinks(upG, downG);
 
