@@ -16,6 +16,7 @@ import type {
   dvFrontmatterCache,
   dvLink,
   HierarchyFields,
+  HierarchyGraphs,
   JugglLink,
   userHierarchy,
 } from "src/interfaces";
@@ -465,6 +466,7 @@ export function mergeGraphs(g1: Graph, g2: Graph) {
 }
 
 export function mergeGs(...graphs: Graph[]) {
+  // console.trace("mergeGs");
   const outG = new Graph();
   graphs.forEach((graph) => {
     graph.edges().forEach((edge) => {
@@ -485,17 +487,15 @@ export function removeUnlinkedNodes(g: Graph) {
 }
 
 export function getAllXGs(
-  plugin: BreadcrumbsPlugin,
-  dir: "up" | "same" | "down"
+  userHierarchies: userHierarchy[],
+  currGraphs: HierarchyGraphs[],
+  dir: Directions
 ) {
-  const { userHierarchies } = plugin.settings;
-
   const fieldNamesInXDir = userHierarchies
     .map((hier) => hier[dir])
     .filter((field) => field.join() !== "")
     .flat();
 
-  const { currGraphs } = plugin;
   const allXGs: { [rel: string]: Graph } = {};
 
   currGraphs.forEach((hierarchyGs) => {

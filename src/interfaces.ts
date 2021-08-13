@@ -44,11 +44,9 @@ export interface dvFrontmatterCache {
 }
 
 export type Directions = "up" | "same" | "down";
-export interface userHierarchy {
-  up: string[];
-  same: string[];
-  down: string[];
-}
+export type userHierarchy = {
+  [dir in Directions]: string[];
+};
 
 export interface dvLink {
   display: any;
@@ -167,14 +165,14 @@ export type HierData = {
   };
 };
 
-export interface HierarchyFields {
-  up: { [field: string]: string[] };
-  same: { [field: string]: string[] };
-  down: { [field: string]: string[] };
-}
+export type HierarchyFields = {
+  [dir in Directions]: { [field: string]: string[] };
+};
 
-export interface HierarchyGraphs {
-  up: { [field: string]: Graph };
-  same: { [field: string]: Graph };
-  down: { [field: string]: Graph };
-}
+export type HierarchyGraphs = {
+  [dir in Directions]: { [field: string]: Graph };
+};
+
+export type MergedGraphs = {
+  [dir in Directions]: Graph;
+};
