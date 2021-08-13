@@ -345,50 +345,36 @@ export default class MatrixView extends ItemView {
       const upSquare: SquareProps = {
         realItems: rUp,
         impliedItems: iUp,
-        fieldName: hier.up.join(", "),
+        fieldName: hier.up[0] === "" ? "<Parents>" : hier.up.join(", "),
       };
 
       const sameSquare: SquareProps = {
         realItems: rSame,
         impliedItems: iSameArr,
-        fieldName: hier.same.join(", "),
+        fieldName: hier.same[0] === "" ? "<Siblings>" : hier.same.join(", "),
       };
 
       const downSquare: SquareProps = {
         realItems: rDown,
         impliedItems: iDown,
-        fieldName: hier.down.join(", "),
+        fieldName: hier.down[0] === "" ? "<Children>" : hier.down.join(", "),
       };
 
       return [upSquare, sameSquare, downSquare];
     });
 
     debug(settings, { hierSquares });
-    const filteredSquares = hierSquares.filter((squareArr) =>
+    const filteredSquaresArr = hierSquares.filter((squareArr) =>
       squareArr.some(
         (square) => square.realItems.length + square.impliedItems.length > 0
       )
-    );
-
-    const sortedSquaresArr = filteredSquares.sort(
-      (a, b) =>
-        sum(
-          b.map(
-            (square) => square.realItems.length + square.impliedItems.length
-          )
-        ) -
-        sum(
-          a.map(
-            (square) => square.realItems.length + square.impliedItems.length
-          )
-        )
     );
 
     if (this.matrixQ) {
       this.view = new Matrix({
         target: this.contentEl,
         props: {
-          sortedSquaresArr,
+          filteredSquaresArr,
           currFile,
           settings: settings,
           matrixView: this,
@@ -399,7 +385,7 @@ export default class MatrixView extends ItemView {
       this.view = new Lists({
         target: this.contentEl,
         props: {
-          sortedSquaresArr,
+          filteredSquaresArr,
           currFile,
           settings: settings,
           matrixView: this,

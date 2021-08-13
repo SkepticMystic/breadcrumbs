@@ -5,7 +5,7 @@
   import type MatrixView from "src/MatrixView";
   import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
 
-  export let sortedSquaresArr: SquareProps[][];
+  export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
@@ -13,7 +13,7 @@
 </script>
 
 <div class="breadcrumbs-matrix  markdown-preview-view">
-  {#each sortedSquaresArr as squares}
+  {#each filteredSquaresArr as squares}
     <div>
       {#each squares as square}
         {#if square.realItems.length > 0 || square.impliedItems.length > 0}

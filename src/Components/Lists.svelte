@@ -5,7 +5,7 @@
   import type BreadcrumbsSettings from "src/main";
   import type MatrixView from "src/MatrixView";
 
-  export let sortedSquaresArr: SquareProps[][];
+  export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;
   export let settings: BreadcrumbsSettings;
   export let matrixView: MatrixView;
@@ -13,7 +13,7 @@
 </script>
 
 <div class="breadcrumbs-list">
-  {#each sortedSquaresArr as squares}
+  {#each filteredSquaresArr as squares}
     <details open>
       <summary class="hier-summary"
         >{squares.map((square) => square.fieldName).join(", ")}</summary
