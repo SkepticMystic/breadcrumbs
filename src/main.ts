@@ -1,5 +1,12 @@
 import { Graph } from "graphlib";
-import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import {
+  addIcon,
+  MarkdownView,
+  Notice,
+  Plugin,
+  TFile,
+  WorkspaceLeaf,
+} from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DIRECTIONS,
@@ -13,6 +20,7 @@ import type {
   Directions,
   dvFrontmatterCache,
   HierarchyGraphs,
+  MergedGraphs,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -65,7 +73,7 @@ declare module "obsidian" {
   interface App {
     plugins: {
       plugins: {
-        dataview: any;
+        dataview: { api: any };
         juggl: any;
       };
     };
@@ -77,10 +85,9 @@ export default class BreadcrumbsPlugin extends Plugin {
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
   currGraphs: {
-    up: { [field: string]: Graph };
-    same: { [field: string]: Graph };
-    down: { [field: string]: Graph };
-  }[];
+    hierGs: HierarchyGraphs[];
+    mergedGs: MergedGraphs;
+  };
 
   async refreshIndex() {
     this.currGraphs = await this.initGraphs();
@@ -92,14 +99,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     if (this.settings.showTrail) {
       await this.drawTrail();
     }
+    new Notice("Index refreshed");
   }
 
+  // this.app.metadataCache.on("dataview:api-ready", console.log("dv ready"));
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
-
-    // this.app.metadataCache.on("dataview:api-ready", () =>
-    //   console.log("dv ready")
-    // );
 
     await this.loadSettings();
 
@@ -115,8 +120,8 @@ export default class BreadcrumbsPlugin extends Plugin {
       (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
     );
 
-    this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => {
+    const initEverything = async () => {
+      console.log("initialising everything");
         this.currGraphs = await this.initGraphs();
 
         this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
@@ -158,6 +163,95 @@ export default class BreadcrumbsPlugin extends Plugin {
           }, this.settings.refreshIntervalTime * 1000);
           this.registerInterval(this.refreshIntervalID);
         }
+    };
+
+    // let waiting1 = 0;
+    // let waiting2 = 0;
+    // const waitForDv = async (thenRun: () => any) => {
+    //   if (this.app.plugins.plugins.dataview) {
+    //     console.log("dv yes");
+    //     if (this.app.plugins.plugins.dataview.api) {
+    //       console.log("api yes");
+    //       setTimeout(async () => await thenRun(), 5000);
+    //       this.app.metadataCache.on("dv:api-ready", () =>
+    //         console.log("custom dv ready")
+    //       );
+    //       this.app.metadataCache.trigger("dv:api-ready");
+    //     } else {
+    //       console.log({ waiting2 });
+    //       waiting2++;
+    //       if (waiting2 > 300) {
+    //         new Notice("Dataview has not loaded yet");
+    //         setTimeout(async () => await thenRun(), 5000);
+    //       } else {
+    //         setTimeout(() => waitForDv(thenRun), 30);
+    //       }
+    //     }
+    //   } else {
+    //     console.log({ waiting1 });
+    //     waiting1++;
+    //     if (waiting1 > 100) {
+    //       setTimeout(async () => await thenRun(), 5000);
+    //     } else {
+    //       setTimeout(() => waitForDv(thenRun), 30);
+    //     }
+    //   }
+    // };
+
+    // waitForDv();
+
+    // if (this.app.plugins.plugins.dataview?.api) {
+    //   initEverything();
+    // } else {
+    //   this.registerEvent(
+    //     this.app.metadataCache.on("dataview:api-ready", initEverything)
+    //   );
+    // }
+
+    this.app.workspace.onLayoutReady(async () => {
+      setTimeout(async () => {
+        await initEverything();
+        //   this.currGraphs = await this.initGraphs();
+
+        //   this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
+        //   this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+
+        //   if (this.settings.showTrail) {
+        //     await this.drawTrail();
+        //   }
+
+        //   this.registerEvent(
+        //     this.app.workspace.on("active-leaf-change", async () => {
+        //       if (this.settings.refreshIndexOnActiveLeafChange) {
+        //         // refreshIndex does everything in one
+        //         await this.refreshIndex();
+        //       } else {
+        //         // If it is not called, active-leaf-change still needs to trigger a redraw
+        //         const activeView = this.getActiveMatrixView();
+        //         if (activeView) {
+        //           await activeView.draw();
+        //         }
+        //         if (this.settings.showTrail) {
+        //           await this.drawTrail();
+        //         }
+        //       }
+        //     })
+        //   );
+
+        //   // ANCHOR autorefresh interval
+        //   if (this.settings.refreshIntervalTime > 0) {
+        //     this.refreshIntervalID = window.setInterval(async () => {
+        //       this.currGraphs = await this.initGraphs();
+        //       if (this.settings.showTrail) {
+        //         await this.drawTrail();
+        //       }
+        //       const activeView = this.getActiveMatrixView();
+        //       if (activeView) {
+        //         await activeView.draw();
+        //       }
+        //     }, this.settings.refreshIntervalTime * 1000);
+        //     this.registerInterval(this.refreshIntervalID);
+        //   }
       }, this.settings.dvWaitTime);
     });
 
