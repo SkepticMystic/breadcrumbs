@@ -104,6 +104,19 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         },
         function (el) {
           el.addEventListener("click", async () => {
+            if (
+              hierIndex(
+                plugin.settings.userHierarchies,
+                [upInput.value, sameInput.value, downInput.value].map(
+                  splitAndTrim
+                ) as [string[], string[], string[]]
+              ) > -1
+            ) {
+              new Notice(
+                "A hierarchy with these Up, Same, and Down values already exists."
+              );
+              return;
+            }
             if (saveButton.hasClass("hierarchy-unsaved")) {
               const removeIndex = hierIndex(
                 plugin.settings.userHierarchies,
@@ -118,16 +131,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
               splitAndTrim
             ) as [string[], string[], string[]];
+
             saveButton.toggleClass("hierarchy-unsaved", false);
             saveButton.textContent = "Saved";
-            if (
-              hierIndex(
-                plugin.settings.userHierarchies,
-                [upInput.value, sameInput.value, downInput.value].map(
-                  splitAndTrim
-                ) as [string[], string[], string[]]
-              ) > -1
-            ) {
+
+            if (hierIndex(plugin.settings.userHierarchies, cleanInputs) > -1) {
               new Notice(
                 "A hierarchy with these Up, Same, and Down values already exists."
               );
