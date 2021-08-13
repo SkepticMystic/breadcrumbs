@@ -10,7 +10,7 @@ export const TRAIL_ICON_SVG =
 export const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 
-export const DATAVIEW_INDEX_DELAY = 3000;
+export const DATAVIEW_INDEX_DELAY = 5000;
 
 export const VISTYPES: visTypes[] = [
   "Force Directed Graph",
