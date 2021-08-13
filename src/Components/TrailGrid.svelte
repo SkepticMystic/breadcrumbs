@@ -43,13 +43,18 @@
   const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
 
   const wordCounts: { [cell: string]: number } = {};
-  allCells.forEach(
-    (cell) =>
-      (wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(
+  allCells.forEach((cell) => {
+    try {
+      wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(
         cell,
         currFile.path
-      ).stat.size)
-  );
+      ).stat.size;
+    } catch (error) {
+      console.log(error);
+      console.log({ currFile });
+      wordCounts[cell] = 0
+    }
+  });
 
   // const data: {[cell: string]: number} = {}
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
