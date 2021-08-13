@@ -74,7 +74,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       [upInput, sameInput, downInput].forEach((input) =>
         input.addEventListener("change", () => {
           saveButton.toggleClass("hierarchy-unsaved", true);
-          saveButton.textContent = "Unsaved";
+          saveButton.textContent = "Save";
         })
       );
 
@@ -99,7 +99,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       const saveButton = row.createEl(
         "button",
         {
-          text: existing ? "Saved" : "Unsaved",
+          text: existing ? "Saved" : "Save",
           cls: (existing ? "" : "hierarchy-unsaved ") + "save-hierarchy-button",
         },
         function (el) {
@@ -109,7 +109,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
                 plugin.settings.userHierarchies,
                 cleanInputs
               );
-              console.log({ removeIndex });
 
               if (removeIndex > -1) {
                 plugin.settings.userHierarchies.splice(removeIndex, 1);
@@ -151,13 +150,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     const fieldDetails: HTMLDetailsElement = containerEl.createEl("details", {
       cls: "field-details",
     });
-    fieldDetails.createEl("summary", { text: "Metadata Field Names" });
+    fieldDetails.createEl("summary", { text: "Hierarchies" });
 
     fieldDetails.createEl("p", {
-      text: "The field names you use to indicate parent, sibling, and child relationships. Just enter the unformatted field name. So if you use `**parent**:: [[Note]]`, just enter `parent`.",
+      text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
     });
     fieldDetails.createEl("p", {
-      text: "You can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
+      text: "For each direction (up, same, down), you can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
     });
 
     new Setting(fieldDetails)
@@ -171,7 +170,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             fieldDetails.append(addHierarchyRow());
           });
       });
-    console.log(splitAndTrim(""));
 
     fieldDetails.createEl(
       "button",
@@ -203,45 +201,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     plugin.settings.userHierarchies.forEach((userHier) => {
       fieldDetails.append(addHierarchyRow(userHier, true));
     });
-
-    // new Setting(fieldDetails)
-    //   .setName("Parent Metadata Field")
-    //   .setDesc("The key name you use as the parent field.")
-    //   .addText((text) =>
-    //     text
-    //       .setPlaceholder("Field name")
-    //       .setValue(plugin.settings.parentFieldName)
-    //       .onChange(async (value) => {
-    //         plugin.settings.parentFieldName = value;
-    //         await plugin.saveSettings();
-    //       })
-    //   );
-
-    // new Setting(fieldDetails)
-    //   .setName("Sibling Metadata Field")
-    //   .setDesc("The key name you use as the sibling field.")
-    //   .addText((text) =>
-    //     text
-    //       .setPlaceholder("Field name")
-    //       .setValue(plugin.settings.siblingFieldName)
-    //       .onChange(async (value) => {
-    //         plugin.settings.siblingFieldName = value;
-    //         await plugin.saveSettings();
-    //       })
-    //   );
-
-    // new Setting(fieldDetails)
-    //   .setName("Child Metadata Field")
-    //   .setDesc("The key name you use as the child field.")
-    //   .addText((text) =>
-    //     text
-    //       .setPlaceholder("Field name")
-    //       .setValue(plugin.settings.childFieldName)
-    //       .onChange(async (value) => {
-    //         plugin.settings.childFieldName = value;
-    //         await plugin.saveSettings();
-    //       })
-    //   );
 
     const generalDetails: HTMLDetailsElement = containerEl.createEl("details");
     generalDetails.createEl("summary", { text: "General Options" });
