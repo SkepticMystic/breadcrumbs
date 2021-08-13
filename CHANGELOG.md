@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.15](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.14...0.10.15) (2021-08-13)
+
+
+### Features
+
+* :lipstick: Labels for hierarchy input boxes ([0323edf](https://github.com/SkepticMystic/breadcrumbs/commit/0323edf74ef4675d0a1c7f9d818526a52f9aee10))
+
 ### [0.10.14](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.13...0.10.14) (2021-08-12)
 
 
