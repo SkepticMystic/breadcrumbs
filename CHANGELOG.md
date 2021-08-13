@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.20](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.19...0.10.20) (2021-08-13)
+
+
+### Bug Fixes
+
+* **Juggl:** :bug: Fix Juggl links ([23da652](https://github.com/SkepticMystic/breadcrumbs/commit/23da652e0e273b135afc51f96474613db9bf1b08))
+
 ### [0.10.19](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.18...0.10.19) (2021-08-13)
 
 
