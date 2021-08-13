@@ -32,10 +32,8 @@ import TrailPath from "./Components/TrailPath.svelte";
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
-  // parentFieldName: "parent",
-  // siblingFieldName: "sibling",
-  // childFieldName: "child",
   indexNote: [""],
+  refreshIndexOnActiveLeafChange: false,
   refreshIntervalTime: 0,
   defaultView: true,
   showNameOrType: true,
@@ -84,8 +82,24 @@ export default class BreadcrumbsPlugin extends Plugin {
     down: { [field: string]: Graph };
   }[];
 
+  async refreshIndex() {
+    this.currGraphs = await this.initGraphs();
+    debug(this.settings, this.currGraphs);
+    const activeView = this.getActiveMatrixView();
+    if (activeView) {
+      await activeView.draw();
+    }
+    if (this.settings.showTrail) {
+      await this.drawTrail();
+    }
+  }
+
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
+
+    // this.app.metadataCache.on("dataview:api-ready", () =>
+    //   console.log("dv ready")
+    // );
 
     await this.loadSettings();
 
@@ -114,14 +128,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", async () => {
-            this.currGraphs = await this.initGraphs();
-            debug(this.settings, this.currGraphs);
-            const activeView = this.getActiveMatrixView();
-            if (activeView) {
-              await activeView.draw();
-            }
-            if (this.settings.showTrail) {
-              await this.drawTrail();
+            if (this.settings.refreshIndexOnActiveLeafChange) {
+              // refreshIndex does everything in one
+              await this.refreshIndex();
+            } else {
+              // If it is not called, active-leaf-change still needs to trigger a redraw
+              const activeView = this.getActiveMatrixView();
+              if (activeView) {
+                await activeView.draw();
+              }
+              if (this.settings.showTrail) {
+                await this.drawTrail();
+              }
             }
           })
         );
@@ -171,6 +189,12 @@ export default class BreadcrumbsPlugin extends Plugin {
         }
         this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
       },
+    });
+
+    this.addCommand({
+      id: "Refresh-Breadcrumbs-Index",
+      name: "Refresh Breadcrumbs Index",
+      callback: async () => await this.refreshIndex(),
     });
 
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
@@ -249,7 +273,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
       graphs.push(newGraphs);
     });
-    console.log({ graphs });
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
@@ -391,9 +414,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const allUps = getAllXGs(this, "up");
     const allDowns = getAllXGs(this, "down");
+    debug(settings, { allUps, allDowns });
 
     const upG = mergeGs(...Object.values(allUps));
     const downG = mergeGs(...Object.values(allDowns));
+    debug(settings, { upG, downG });
 
     const closedParents = closeImpliedLinks(upG, downG);
     const sortedTrails = this.getBreadcrumbs(closedParents);

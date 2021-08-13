@@ -1,9 +1,10 @@
-import type { Graph } from "graphlib";
+import type { Edge, Graph } from "graphlib";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
   indexNote: string[];
+  refreshIndexOnActiveLeafChange: boolean;
   refreshIntervalTime: number;
   defaultView: boolean;
   showNameOrType: boolean;

@@ -206,6 +206,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     generalDetails.createEl("summary", { text: "General Options" });
 
     new Setting(generalDetails)
+      .setName("Refresh Index on Note Change")
+      .setDesc(
+        "Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.refreshIndexOnActiveLeafChange)
+          .onChange(async (value) => {
+            plugin.settings.refreshIndexOnActiveLeafChange = value;
+            await plugin.saveSettings();
+          })
+      );
+
+    new Setting(generalDetails)
       .setName("Refresh Interval")
       .setDesc(
         "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
@@ -567,7 +581,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         toggle
           .setValue(plugin.settings.aliasesInIndex)
           .onChange(async (value) => {
-            console.log(value);
             plugin.settings.aliasesInIndex = value;
             await plugin.saveSettings();
           })

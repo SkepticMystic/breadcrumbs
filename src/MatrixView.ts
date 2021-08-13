@@ -269,11 +269,12 @@ export default class MatrixView extends ItemView {
       await this.draw();
     });
 
-    const [parentFieldName, siblingFieldName, childFieldName] = [
-      "up",
-      "same",
-      "down",
-    ];
+    const refreshIndexButton = this.contentEl.createEl("button", {
+      text: "Refresh Index",
+    });
+    refreshIndexButton.addEventListener("click", async () => {
+      await this.plugin.refreshIndex();
+    });
 
     const data = hierGs.map((hier) => {
       const hierData: { [dir in Directions]: Graph } = {
