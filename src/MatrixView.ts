@@ -52,11 +52,9 @@ export default class MatrixView extends ItemView {
 
         const allUps = getAllXGs(this.plugin, "up");
         const allDowns = getAllXGs(this.plugin, "down");
-        console.log({ allUps, allDowns });
 
         const upG = mergeGs(...Object.values(allUps));
         const downG = mergeGs(...Object.values(allDowns));
-        console.log({ upG, downG });
 
         const closedParents = closeImpliedLinks(upG, downG);
 
@@ -73,11 +71,9 @@ export default class MatrixView extends ItemView {
       callback: async () => {
         const allUps = getAllXGs(this.plugin, "up");
         const allDowns = getAllXGs(this.plugin, "down");
-        console.log({ allUps, allDowns });
 
         const upG = mergeGs(...Object.values(allUps));
         const downG = mergeGs(...Object.values(allDowns));
-        console.log({ upG, downG });
 
         const closedParents = closeImpliedLinks(upG, downG);
 
@@ -254,11 +250,12 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
+    const settings = this.plugin.settings;
     const hierGs = this.plugin.currGraphs;
+    debug(settings, { hierGs });
     const { userHierarchies } = this.plugin.settings;
 
     const currFile = this.app.workspace.getActiveFile();
-    const settings = this.plugin.settings;
 
     const viewToggleButton = this.contentEl.createEl("button", {
       text: this.matrixQ ? "List" : "Matrix",
@@ -287,6 +284,7 @@ export default class MatrixView extends ItemView {
       });
       return hierData;
     });
+    debug(settings, { data });
 
     const hierSquares = userHierarchies.map((hier, i) => {
       let [rUp, rSame, rDown, iUp, iDown] = [
@@ -364,14 +362,13 @@ export default class MatrixView extends ItemView {
 
       return [upSquare, sameSquare, downSquare];
     });
-    console.log({ hierSquares });
 
+    debug(settings, { hierSquares });
     const filteredSquares = hierSquares.filter((squareArr) =>
       squareArr.some(
         (square) => square.realItems.length + square.impliedItems.length > 0
       )
     );
-    console.log({ filteredSquares });
 
     const sortedSquaresArr = filteredSquares.sort(
       (a, b) =>
@@ -386,7 +383,6 @@ export default class MatrixView extends ItemView {
           )
         )
     );
-    console.log({ sortedSquaresArr });
 
     if (this.matrixQ) {
       this.view = new Matrix({
