@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.22](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.21...0.10.22) (2021-08-13)
+
+
+### Bug Fixes
+
+* **CreateIndex:** :bug: I had the graphs being closed the wrong way ([91f742c](https://github.com/SkepticMystic/breadcrumbs/commit/91f742ce03b4df27aa45925550c1c0addf597db4))
+
 ### [0.10.21](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.20...0.10.21) (2021-08-13)
 
 
