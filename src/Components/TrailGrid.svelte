@@ -59,20 +59,13 @@
   // const data: {[cell: string]: number} = {}
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 
-  const allUps = getAllXGs(plugin, "up");
-  const allDowns = getAllXGs(plugin, "down");
+  const { up, down } = plugin.currGraphs.mergedGs;
 
-  const upG = mergeGs(...Object.values(allUps));
-  const downG = mergeGs(...Object.values(allDowns));
-
-  const closedParents = closeImpliedLinks(upG, downG);
+  const closedParents = closeImpliedLinks(up, down);
 
   const children: { [cell: string]: number } = {};
   allCells.forEach(
-    (cell) =>
-      (children[cell] = (
-        closeImpliedLinks(downG, upG).successors(cell) ?? []
-      ).length)
+    (cell) => (children[cell] = (closedParents.successors(cell) ?? []).length)
   );
 
   const normalisedData = normalise(Object.values(children));

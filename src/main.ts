@@ -122,47 +122,47 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const initEverything = async () => {
       console.log("initialising everything");
-        this.currGraphs = await this.initGraphs();
+      this.currGraphs = await this.initGraphs();
 
-        this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
-        this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+      this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
+      this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
 
-        if (this.settings.showTrail) {
-          await this.drawTrail();
-        }
+      if (this.settings.showTrail) {
+        await this.drawTrail();
+      }
 
-        this.registerEvent(
-          this.app.workspace.on("active-leaf-change", async () => {
-            if (this.settings.refreshIndexOnActiveLeafChange) {
-              // refreshIndex does everything in one
-              await this.refreshIndex();
-            } else {
-              // If it is not called, active-leaf-change still needs to trigger a redraw
-              const activeView = this.getActiveMatrixView();
-              if (activeView) {
-                await activeView.draw();
-              }
-              if (this.settings.showTrail) {
-                await this.drawTrail();
-              }
-            }
-          })
-        );
-
-        // ANCHOR autorefresh interval
-        if (this.settings.refreshIntervalTime > 0) {
-          this.refreshIntervalID = window.setInterval(async () => {
-            this.currGraphs = await this.initGraphs();
-            if (this.settings.showTrail) {
-              await this.drawTrail();
-            }
+      this.registerEvent(
+        this.app.workspace.on("active-leaf-change", async () => {
+          if (this.settings.refreshIndexOnActiveLeafChange) {
+            // refreshIndex does everything in one
+            await this.refreshIndex();
+          } else {
+            // If it is not called, active-leaf-change still needs to trigger a redraw
             const activeView = this.getActiveMatrixView();
             if (activeView) {
               await activeView.draw();
             }
-          }, this.settings.refreshIntervalTime * 1000);
-          this.registerInterval(this.refreshIntervalID);
-        }
+            if (this.settings.showTrail) {
+              await this.drawTrail();
+            }
+          }
+        })
+      );
+
+      // ANCHOR autorefresh interval
+      if (this.settings.refreshIntervalTime > 0) {
+        this.refreshIntervalID = window.setInterval(async () => {
+          this.currGraphs = await this.initGraphs();
+          if (this.settings.showTrail) {
+            await this.drawTrail();
+          }
+          const activeView = this.getActiveMatrixView();
+          if (activeView) {
+            await activeView.draw();
+          }
+        }, this.settings.refreshIntervalTime * 1000);
+        this.registerInterval(this.refreshIntervalID);
+      }
     };
 
     // let waiting1 = 0;
@@ -327,11 +327,15 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
-  async initGraphs(): Promise<HierarchyGraphs[]> {
+  async initGraphs(): Promise<{
+    hierGs: HierarchyGraphs[];
+    mergedGs: MergedGraphs;
+  }> {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
-    const dvQ = !!this.app.plugins.plugins.dataview;
+    const dvQ = !!this.app.plugins.plugins.dataview.api;
+
     const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
       ? getDVMetadataCache(this.app, this.settings, files)
       : getObsMetadataCache(this.app, this.settings, files);
@@ -340,7 +344,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const { userHierarchies } = this.settings;
 
-    const graphs: HierarchyGraphs[] = [];
+    const graphs: {
+      hierGs: HierarchyGraphs[];
+      mergedGs: MergedGraphs;
+    } = {
+      hierGs: [],
+      mergedGs: { up: undefined, same: undefined, down: undefined },
+    };
 
     userHierarchies.forEach((hier, i) => {
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
@@ -351,7 +361,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         });
       });
 
-      graphs.push(newGraphs);
+      graphs.hierGs.push(newGraphs);
     });
 
     relObjArr.forEach((relObj) => {
@@ -360,13 +370,19 @@ export default class BreadcrumbsPlugin extends Plugin {
       relObj.hierarchies.forEach((hier, i) => {
         DIRECTIONS.forEach((dir: Directions) => {
           Object.keys(hier[dir]).forEach((fieldName) => {
-            const g = graphs[i][dir][fieldName];
+            const g = graphs.hierGs[i][dir][fieldName];
             const fieldValues = hier[dir][fieldName];
 
             this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
           });
         });
       });
+    });
+
+    DIRECTIONS.forEach((dir) => {
+      const allXGs = getAllXGs(userHierarchies, graphs.hierGs, dir);
+      const dirMerged = mergeGs(...Object.values(allXGs));
+      graphs.mergedGs[dir] = dirMerged;
     });
 
     debug(this.settings, "graphs inited");
@@ -485,15 +501,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const settings = this.settings;
 
-    const allUps = getAllXGs(this, "up");
-    const allDowns = getAllXGs(this, "down");
-    debug(settings, { allUps, allDowns });
+    const { up, down } = this.currGraphs.mergedGs;
 
-    const upG = mergeGs(...Object.values(allUps));
-    const downG = mergeGs(...Object.values(allDowns));
-    debug(settings, { upG, downG });
-
-    const closedParents = closeImpliedLinks(upG, downG);
+    const closedParents = closeImpliedLinks(up, down);
     const sortedTrails = this.getBreadcrumbs(closedParents);
     debug(settings, { sortedTrails });
 

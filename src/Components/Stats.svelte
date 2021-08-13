@@ -30,7 +30,7 @@
       .join("\n");
   }
 
-  const data = hierGs.map((hier) => {
+  const data = hierGs.hierGs.map((hier) => {
     const hierData: HierData = {
       up: { Merged: {}, Closed: {}, Implied: {} },
       same: { Merged: {}, Closed: {}, Implied: {} },
@@ -55,6 +55,18 @@
         );
       }
       fillInInfo(dir, "Closed", hierData);
+
+      // if (dir !== "same") {
+      //   hierData[dir].Implied.graph = mergeGs(
+      //     ...Object.values(hier[dir === "up" ? "down" : "up"])
+      //   );
+      // } else {
+      //   hierData[dir].Closed.graph = closeImpliedLinks(
+      //     hierData[dir].Merged.graph,
+      //     hierData[dir].Merged.graph
+      //   );
+      // }
+      // fillInInfo(dir, "Closed", hierData);
     });
 
     return hierData;
@@ -91,9 +103,9 @@
   <tr>
     <td />
     <td>Measure</td>
-    <td>Up</td>
-    <td>Same</td>
-    <td>Down</td>
+    <td>↑</td>
+    <td>→</td>
+    <td>↓</td>
     <td>Total</td>
   </tr>
 

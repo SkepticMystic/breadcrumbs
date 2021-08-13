@@ -5,12 +5,7 @@
     VisGraphs,
     visTypes,
   } from "src/interfaces";
-  import {
-    closeImpliedLinks,
-    getAllXGs,
-    mergeGs,
-    removeUnlinkedNodes,
-  } from "src/sharedFunctions";
+  import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
   import type { VisModal } from "src/VisModal";
   import { arcDiagram } from "src/Visualisations/ArcDiagram";
   import { circlePacking } from "src/Visualisations/CirclePacking";
@@ -58,27 +53,19 @@
     Math.round(window.innerHeight / 1.3),
   ];
 
-  const allUps = getAllXGs(plugin, "up");
-  const allSames = getAllXGs(plugin, "same");
-  const allDowns = getAllXGs(plugin, "down");
-  console.log({ allUps, allDowns });
-
-  const upG = mergeGs(...Object.values(allUps));
-  const sameG = mergeGs(...Object.values(allSames));
-  const downG = mergeGs(...Object.values(allDowns));
-  console.log({ upG, downG });
+  const { up, same, down } = plugin.currGraphs.mergedGs;
 
   const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
-    closeImpliedLinks(upG, downG),
-    closeImpliedLinks(sameG, sameG),
-    closeImpliedLinks(downG, upG),
+    closeImpliedLinks(up, down),
+    closeImpliedLinks(same, same),
+    closeImpliedLinks(down, up),
   ];
 
   const graphs: VisGraphs = {
     Parent: {
       Real: {
-        All: upG,
-        "No Unlinked": removeUnlinkedNodes(upG),
+        All: up,
+        "No Unlinked": removeUnlinkedNodes(up),
       },
       Closed: {
         All: closedParentNoSingle,
@@ -87,8 +74,8 @@
     },
     Sibling: {
       Real: {
-        All: sameG,
-        "No Unlinked": removeUnlinkedNodes(sameG),
+        All: same,
+        "No Unlinked": removeUnlinkedNodes(same),
       },
       Closed: {
         All: closedSiblingNoSingle,
@@ -97,8 +84,8 @@
     },
     Child: {
       Real: {
-        All: downG,
-        "No Unlinked": removeUnlinkedNodes(downG),
+        All: down,
+        "No Unlinked": removeUnlinkedNodes(down),
       },
       Closed: {
         All: closedChildNoSingle,
