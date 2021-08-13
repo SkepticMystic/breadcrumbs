@@ -2,7 +2,6 @@ import { Graph } from "graphlib";
 import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
-  DATAVIEW_INDEX_DELAY,
   DIRECTIONS,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
@@ -14,7 +13,6 @@ import type {
   Directions,
   dvFrontmatterCache,
   HierarchyGraphs,
-  relObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -25,7 +23,6 @@ import {
   getNeighbourObjArr,
   getObsMetadataCache,
   mergeGs,
-  splitAndTrim,
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
@@ -36,6 +33,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
   refreshIndexOnActiveLeafChange: false,
+  dvWaitTime: 5000,
   refreshIntervalTime: 0,
   defaultView: true,
   showNameOrType: true,
@@ -160,7 +158,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           }, this.settings.refreshIntervalTime * 1000);
           this.registerInterval(this.refreshIntervalID);
         }
-      }, DATAVIEW_INDEX_DELAY);
+      }, this.settings.dvWaitTime);
     });
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);

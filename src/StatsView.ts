@@ -1,9 +1,6 @@
 import type { Graph } from "graphlib";
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import {
-  DATAVIEW_INDEX_DELAY,
-  VIEW_TYPE_BREADCRUMBS_STATS,
-} from "src/constants";
+import { VIEW_TYPE_BREADCRUMBS_STATS } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
 import Stats from "./Components/Stats.svelte";
 
@@ -20,7 +17,10 @@ export default class StatsView extends ItemView {
     super.onload();
     await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
+      setTimeout(
+        async () => await this.draw(),
+        this.plugin.settings.dvWaitTime
+      );
     });
   }
 

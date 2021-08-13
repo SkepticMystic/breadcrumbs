@@ -1,8 +1,7 @@
-import type { Edge, Graph } from "graphlib";
-import { cloneDeep, sum } from "lodash";
+import type { Graph } from "graphlib";
+import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
-  DATAVIEW_INDEX_DELAY,
   DIRECTIONS,
   TRAIL_ICON,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -40,7 +39,10 @@ export default class MatrixView extends ItemView {
     this.matrixQ = this.plugin.settings.defaultView;
 
     this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
+      setTimeout(
+        async () => await this.draw(),
+        this.plugin.settings.dvWaitTime
+      );
     });
 
     this.plugin.addCommand({
@@ -345,19 +347,28 @@ export default class MatrixView extends ItemView {
       const upSquare: SquareProps = {
         realItems: rUp,
         impliedItems: iUp,
-        fieldName: hier.up[0] === "" ? "<Parents>" : hier.up.join(", "),
+        fieldName:
+          hier.up[0] === ""
+            ? `${hier.down.join(",")}<Parents>`
+            : hier.up.join(", "),
       };
 
       const sameSquare: SquareProps = {
         realItems: rSame,
         impliedItems: iSameArr,
-        fieldName: hier.same[0] === "" ? "<Siblings>" : hier.same.join(", "),
+        fieldName:
+          hier.same[0] === ""
+            ? `${hier.up.join(",")}<Siblings>`
+            : hier.same.join(", "),
       };
 
       const downSquare: SquareProps = {
         realItems: rDown,
         impliedItems: iDown,
-        fieldName: hier.down[0] === "" ? "<Children>" : hier.down.join(", "),
+        fieldName:
+          hier.down[0] === ""
+            ? `${hier.up.join(",")}<Children>`
+            : hier.down.join(", "),
       };
 
       return [upSquare, sameSquare, downSquare];

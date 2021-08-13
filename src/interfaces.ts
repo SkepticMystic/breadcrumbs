@@ -5,6 +5,7 @@ export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
   indexNote: string[];
   refreshIndexOnActiveLeafChange: boolean;
+  dvWaitTime: number;
   refreshIntervalTime: number;
   defaultView: boolean;
   showNameOrType: boolean;

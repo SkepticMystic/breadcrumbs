@@ -219,6 +219,29 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    if (this.app.plugins.plugins.dataview !== undefined) {
+      new Setting(generalDetails)
+        .setName("Dataview Wait Time")
+        .setDesc(
+          'Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. If you see an error in the console saying "Cannot destructure currGraphs of undefined", try making this time longer. If you don\'t get that error, you can make this time shorter to make the Breadcrumbs load faster. The default is 5 seconds.'
+        )
+        .addText((text) =>
+          text
+            .setPlaceholder("Seconds")
+            .setValue((plugin.settings.dvWaitTime / 1000).toString())
+            .onChange(async (value) => {
+              const num = Number(value);
+
+              if (num > 0) {
+                plugin.settings.dvWaitTime = num * 1000;
+                await plugin.saveSettings();
+              } else {
+                new Notice("The interval must be a non-negative number");
+              }
+            })
+        );
+    }
+
     new Setting(generalDetails)
       .setName("Refresh Interval")
       .setDesc(
