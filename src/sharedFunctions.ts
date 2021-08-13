@@ -138,6 +138,7 @@ export async function getJugglLinks(
             ?.map((innerText) => innerText.split("|")[0]) ?? [];
 
         const parsedLinks = parseTypedLink(link, line, "-");
+
         const type = parsedLinks?.properties?.type ?? "";
         let typeDir: Directions | "" = "";
         DIRECTIONS.forEach((dir) => {
@@ -184,7 +185,9 @@ export async function getJugglLinks(
   });
 
   // Filter out the juggl links with no links
-  const filteredLinks = typedLinksArr.filter((link) => !!link.links.length);
+  const filteredLinks = typedLinksArr.filter(
+    (jugglLink) => jugglLink.links.length
+  );
   debug(settings, { filteredLinks });
   return filteredLinks;
 }
@@ -233,11 +236,7 @@ export async function getNeighbourObjArr(
 ): Promise<
   {
     current: TFile;
-    hierarchies: {
-      up: { [field: string]: string[] };
-      same: { [field: string]: string[] };
-      down: { [field: string]: string[] };
-    }[];
+    hierarchies: HierarchyFields[];
   }[]
 > {
   const { userHierarchies } = plugin.settings;
@@ -253,6 +252,8 @@ export async function getNeighbourObjArr(
     current: TFile;
     hierarchies: HierarchyFields[];
   }[] = fileFrontmatterArr.map((fileFrontmatter) => {
+    const currFileName =
+      fileFrontmatter.file.basename || fileFrontmatter.file.name;
     const hierFields: {
       current: TFile;
       hierarchies: HierarchyFields[];
@@ -276,13 +277,22 @@ export async function getNeighbourObjArr(
       });
 
       if (jugglLinks.length) {
-        jugglLinks.forEach((jugglLink) => {
-          jugglLink.links.forEach((link) => {
-            if (newHier[link.dir][link.type]) {
-              newHier[link.dir][link.type] = link.linksInLine;
+        const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
+          return jugglLink.note === currFileName;
+        })[0];
+
+        if (jugglLinksInFile) {
+          jugglLinksInFile.links.forEach((line) => {
+            if ((hier[line.dir] as string[]).includes(line.type)) {
+              newHier[line.dir][line.type] = [
+                ...new Set([
+                  ...(newHier[line.dir][line.type] as string[]),
+                  ...line.linksInLine,
+                ]),
+              ];
             }
           });
-        });
+        }
       }
 
       hierFields.hierarchies.push(newHier);
