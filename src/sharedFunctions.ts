@@ -1,4 +1,4 @@
-import type { Graph } from "graphlib";
+import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
 import { parseTypedLink } from "juggl-api";
 import {
@@ -450,15 +450,13 @@ export function mergeGraphs(g1: Graph, g2: Graph) {
 }
 
 export function mergeGs(...graphs: Graph[]) {
-  const copy = graphlib.json.read(graphlib.json.write(graphs[0]));
-  graphs.forEach((graph, i) => {
-    if (i > 0) {
-      graph.edges().forEach((edge) => {
-        copy.setEdge(edge);
-      });
-    }
+  const outG = new Graph();
+  graphs.forEach((graph) => {
+    graph.edges().forEach((edge) => {
+      outG.setEdge(edge);
+    });
   });
-  return copy;
+  return outG;
 }
 
 export function removeUnlinkedNodes(g: Graph) {
