@@ -59,6 +59,7 @@ export interface dvLink {
 export interface JugglLink {
   note: string;
   links: {
+    dir: Directions | "";
     type: string;
     linksInLine: string[];
   }[];
@@ -164,3 +165,9 @@ export type HierData = {
     };
   };
 };
+
+export interface HierarchyFields {
+  up: { [field: string]: string[] };
+  same: { [field: string]: string[] };
+  down: { [field: string]: string[] };
+}

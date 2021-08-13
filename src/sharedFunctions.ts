@@ -9,11 +9,13 @@ import {
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { dropHeaderOrAlias, splitLinksRegex } from "src/constants";
+import { DIRECTIONS, dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BreadcrumbsSettings,
+  Directions,
   dvFrontmatterCache,
   dvLink,
+  HierarchyFields,
   JugglLink,
   neighbourObj,
   relObj,
@@ -21,6 +23,7 @@ import type {
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
+import { link } from "fs";
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -109,6 +112,8 @@ export async function getJugglLinks(
   settings: BreadcrumbsSettings
 ): Promise<JugglLink[]> {
   const files = app.vault.getMarkdownFiles();
+  const { userHierarchies } = settings;
+
   // Add Juggl links
   const typedLinksArr: JugglLink[] = await Promise.all(
     files.map(async (file) => {
@@ -116,6 +121,7 @@ export async function getJugglLinks(
 
       // Use Obs metadatacache to get the links in the current file
       const links = app.metadataCache.getFileCache(file)?.links ?? [];
+      // TODO Only get cachedRead if links.length
       const content = await app.vault.cachedRead(file);
 
       links.forEach((link) => {
@@ -132,8 +138,20 @@ export async function getJugglLinks(
             ?.map((innerText) => innerText.split("|")[0]) ?? [];
 
         const parsedLinks = parseTypedLink(link, line, "-");
+        const type = parsedLinks?.properties?.type ?? "";
+        let typeDir: Directions | "" = "";
+        DIRECTIONS.forEach((dir) => {
+          userHierarchies.forEach((hier) => {
+            if (hier[dir].includes(type)) {
+              typeDir = dir;
+              return;
+            }
+          });
+        });
+
         jugglLink.links.push({
-          type: parsedLinks?.properties?.type ?? "",
+          dir: typeDir,
+          type,
           linksInLine,
         });
       });
@@ -145,22 +163,24 @@ export async function getJugglLinks(
 
   const allFields: string[] = settings.userHierarchies
     .map((hier) => Object.values(hier))
-    .flat()
+    .flat(2)
     .filter((field: string) => field !== "");
 
   typedLinksArr.forEach((jugglLink) => {
-    if (jugglLink.links.length) {
-      // Filter out links whose type is not in allFields
-      // TODO This could probably be done better with filter?
-      const fieldTypesOnly = [];
-      jugglLink.links.forEach((link) => {
-        if (allFields.includes(link.type)) {
-          fieldTypesOnly.push(link);
-        }
-      });
-      // I don't remember why I'm mutating the links instead of making a new obj
-      jugglLink.links = fieldTypesOnly;
-    }
+    // Filter out links whose type is not in allFields
+
+    const fieldTypesOnly = jugglLink.links.filter((link) =>
+      allFields.includes(link.type)
+    );
+
+    // // const fieldTypesOnly = [];
+    // jugglLink.links.forEach((link) => {
+    //   if (allFields.includes(link.type)) {
+    //     fieldTypesOnly.push(link);
+    //   }
+    // });
+    // I don't remember why I'm mutating the links instead of making a new obj
+    jugglLink.links = fieldTypesOnly;
   });
 
   // Filter out the juggl links with no links
@@ -224,24 +244,18 @@ export async function getNeighbourObjArr(
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
+    console.log("Using Juggl");
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
+    debug(plugin.settings, { jugglLinks });
   }
 
   const neighbourObjArr: {
     current: TFile;
-    hierarchies: {
-      up: { [field: string]: string[] };
-      same: { [field: string]: string[] };
-      down: { [field: string]: string[] };
-    }[];
+    hierarchies: HierarchyFields[];
   }[] = fileFrontmatterArr.map((fileFrontmatter) => {
     const hierFields: {
       current: TFile;
-      hierarchies: {
-        up: { [field: string]: string[] };
-        same: { [field: string]: string[] };
-        down: { [field: string]: string[] };
-      }[];
+      hierarchies: HierarchyFields[];
     } = {
       current: fileFrontmatter.file,
       hierarchies: [],
@@ -249,33 +263,27 @@ export async function getNeighbourObjArr(
 
     userHierarchies.forEach((hier, i) => {
       const fieldsArr = Object.values(hier) as [string[], string[], string[]];
-      const newHier: {
-        up: { [field: string]: string[] };
-        same: { [field: string]: string[] };
-        down: { [field: string]: string[] };
-      } = { up: {}, same: {}, down: {} };
+      const newHier: HierarchyFields = { up: {}, same: {}, down: {} };
 
-      fieldsArr[0].forEach((upField) => {
-        newHier.up[upField] = getFieldValues(
-          fileFrontmatter,
-          upField,
-          plugin.settings
-        );
+      DIRECTIONS.forEach((dir, i) => {
+        fieldsArr[i].forEach((field) => {
+          newHier[dir][field] = getFieldValues(
+            fileFrontmatter,
+            field,
+            plugin.settings
+          );
+        });
       });
-      fieldsArr[1].forEach((sameField) => {
-        newHier.same[sameField] = getFieldValues(
-          fileFrontmatter,
-          sameField,
-          plugin.settings
-        );
-      });
-      fieldsArr[2].forEach((downField) => {
-        newHier.down[downField] = getFieldValues(
-          fileFrontmatter,
-          downField,
-          plugin.settings
-        );
-      });
+
+      if (jugglLinks.length) {
+        jugglLinks.forEach((jugglLink) => {
+          jugglLink.links.forEach((link) => {
+            if (newHier[link.dir][link.type]) {
+              newHier[link.dir][link.type] = link.linksInLine;
+            }
+          });
+        });
+      }
 
       hierFields.hierarchies.push(newHier);
     });
