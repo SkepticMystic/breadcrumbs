@@ -171,3 +171,9 @@ export interface HierarchyFields {
   same: { [field: string]: string[] };
   down: { [field: string]: string[] };
 }
+
+export interface HierarchyGraphs {
+  up: { [field: string]: Graph };
+  same: { [field: string]: Graph };
+  down: { [field: string]: Graph };
+}

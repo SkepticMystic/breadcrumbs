@@ -3,6 +3,7 @@ import { addIcon, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DATAVIEW_INDEX_DELAY,
+  DIRECTIONS,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -12,6 +13,7 @@ import type {
   BreadcrumbsSettings,
   Directions,
   dvFrontmatterCache,
+  HierarchyGraphs,
   relObj,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
@@ -233,13 +235,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
-  async initGraphs(): Promise<
-    {
-      up: { [field: string]: Graph };
-      same: { [field: string]: Graph };
-      down: { [field: string]: Graph };
-    }[]
-  > {
+  async initGraphs(): Promise<HierarchyGraphs[]> {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
@@ -252,18 +248,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const { userHierarchies } = this.settings;
 
-    const graphs: {
-      up: { [field: string]: Graph };
-      same: { [field: string]: Graph };
-      down: { [field: string]: Graph };
-    }[] = [];
+    const graphs: HierarchyGraphs[] = [];
 
     userHierarchies.forEach((hier, i) => {
-      const newGraphs: {
-        up: { [field: string]: Graph };
-        same: { [field: string]: Graph };
-        down: { [field: string]: Graph };
-      } = { up: {}, same: {}, down: {} };
+      const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
       Object.keys(hier).forEach((dir: Directions) => {
         hier[dir].forEach((dirField) => {
@@ -278,19 +266,12 @@ export default class BreadcrumbsPlugin extends Plugin {
       const currFileName = relObj.current.basename || relObj.current.name;
 
       relObj.hierarchies.forEach((hier, i) => {
-        Object.keys(hier).forEach((dir: Directions) => {
-          const fieldsObj: {
-            [field: string]: string[];
-          } = hier[dir];
+        DIRECTIONS.forEach((dir: Directions) => {
+          Object.keys(hier[dir]).forEach((fieldName) => {
+            const g = graphs[i][dir][fieldName];
+            const fieldValues = hier[dir][fieldName];
 
-          Object.keys(fieldsObj).forEach((fieldName) => {
-            this.populateGraph(
-              graphs[i][dir][fieldName],
-              currFileName,
-              fieldsObj[fieldName],
-              dir,
-              fieldName
-            );
+            this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
           });
         });
       });
