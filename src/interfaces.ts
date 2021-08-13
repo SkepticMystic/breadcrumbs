@@ -151,3 +151,15 @@ export type visTypes =
   | "Tree Map"
   | "Icicle"
   | "Radial Tree";
+
+export type HierData = {
+  [dir in Directions]: {
+    [graphs: string]: {
+      graph?: Graph;
+      nodes: string[];
+      nodesStr: string;
+      edges: Edge[];
+      edgesStr: string;
+    };
+  };
+};

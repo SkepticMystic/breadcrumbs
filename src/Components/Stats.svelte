@@ -1,12 +1,9 @@
 <script lang="ts">
-  import type { Edge, Graph } from "graphlib";
-  import { sum } from "lodash";
-  import type { Directions } from "src/interfaces";
   import { DIRECTIONS } from "src/constants";
+  import type { Directions, HierData } from "src/interfaces";
   import type BreadcrumbsPlugin from "src/main";
   import {
     closeImpliedLinks,
-    complement,
     copy,
     hierToStr,
     mergeGs,
@@ -20,21 +17,7 @@
 
   const hierGs = plugin.currGraphs;
 
-  function fillInInfo(
-    dir: Directions,
-    gType: string,
-    hierData: {
-      [dir in Directions]: {
-        [graphs: string]: {
-          graph?: Graph;
-          nodes: string[];
-          nodesStr: string;
-          edges: Edge[];
-          edgesStr: string;
-        };
-      };
-    }
-  ) {
+  function fillInInfo(dir: Directions, gType: string, hierData: HierData) {
     const g = hierData[dir][gType].graph;
 
     hierData[dir][gType].nodes = hierData[dir][gType].graph.nodes();
@@ -42,22 +25,12 @@
 
     hierData[dir][gType].edges = hierData[dir][gType].graph.edges();
     hierData[dir][gType].edgesStr = hierData[dir][gType].edges
-      .map((e) => `${e.v} → ${e.w}`)
+      .map((e) => `${e.v} ${separator} ${e.w}`)
       .join("\n");
   }
 
   const data = hierGs.map((hier) => {
-    const hierData: {
-      [dir in Directions]: {
-        [graphs: string]: {
-          graph?: Graph;
-          nodes: string[];
-          nodesStr: string;
-          edges: Edge[];
-          edgesStr: string;
-        };
-      };
-    } = {
+    const hierData: HierData = {
       up: { Merged: {}, Closed: {}, Implied: {} },
       same: { Merged: {}, Closed: {}, Implied: {} },
       down: { Merged: {}, Closed: {}, Implied: {} },
@@ -89,64 +62,6 @@
   console.log({ data });
 
   let hierStrs: string[] = userHierarchies.map(hierToStr);
-  console.log({ hierStrs });
-
-  const allUpGs = hierGs
-    .map((hier) => hier.up)
-    .map((fields) => Object.values(fields));
-
-  console.log({ allUpGs });
-
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-
-  //   const allR = Object.values(graphs);
-
-  //   const allRNodes = allR.map((g) => g.nodes());
-
-  //   const allRNodesStr = allRNodes.map((rNodes) => rNodes.join("\n"));
-
-  //   const allREdges = allR.map((g) => g.edges());
-
-  //   const allREdgesStr = allREdges.map((edges) =>
-  //     edges.map((e) => `${e.v} → ${e.w}`).join("\n")
-  //   );
-
-  //   const [closedP, closedS, closedC] = [
-  //     closeImpliedLinks(gParents, gChildren),
-  //     closeImpliedLinks(gSiblings, gSiblings),
-  //     closeImpliedLinks(gChildren, gParents),
-  //   ];
-  //   const allG = [closedP, closedS, closedC];
-
-  //   const [pANodes, sANodes, cANodes] = allG.map((g) => g.nodes());
-  //   const [pAEdges, sAEdges, cAEdges] = allG.map((g) => g.edges());
 
   //   const [pIEdgesStr, sIEdgesStr, cIEdgesStr] = [
   //     complement(
