@@ -84,7 +84,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   async refreshIndex() {
     this.currGraphs = await this.initGraphs();
-    debug(this.settings, this.currGraphs);
+    debug(this.settings, { hierGs: this.currGraphs });
     const activeView = this.getActiveMatrixView();
     if (activeView) {
       await activeView.draw();
@@ -393,7 +393,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 
-    debug(this.settings, sortedTrails);
+    debug(this.settings, { sortedTrails });
     return sortedTrails;
   }
 
