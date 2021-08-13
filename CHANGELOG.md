@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.19](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.18...0.10.19) (2021-08-13)
+
+
+### Bug Fixes
+
+* **Juggl:** :bug: Get Juggl syntax working again ([579bd14](https://github.com/SkepticMystic/breadcrumbs/commit/579bd141d9903deba4c5e248d958f4969725ce72))
+* **Stats View:** :goal_net: Error handling in wordCounts ([6ff5c3e](https://github.com/SkepticMystic/breadcrumbs/commit/6ff5c3e6183fe5d7fb619c633454b70b526ad2a6))
+
 ### [0.10.18](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.17...0.10.18) (2021-08-13)
 
 ### [0.10.17](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.16...0.10.17) (2021-08-13)
