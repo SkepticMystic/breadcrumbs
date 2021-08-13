@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.17](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.16...0.10.17) (2021-08-13)
+
+
+### Bug Fixes
+
+* :bug: mergeGs was trying to copy the first graph in an arr of graphs, but that arr could be empty ([c3c23ea](https://github.com/SkepticMystic/breadcrumbs/commit/c3c23ea16a35658ac59a866bd18cf0a4420a0053))
+
 ### [0.10.16](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.15...0.10.16) (2021-08-13)
 
 ### [0.10.15](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.14...0.10.15) (2021-08-13)
