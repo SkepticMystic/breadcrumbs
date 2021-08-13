@@ -52,13 +52,8 @@ export default class MatrixView extends ItemView {
         const settings = this.plugin.settings;
         const currFile = this.app.workspace.getActiveFile().basename;
 
-        const allUps = getAllXGs(this.plugin, "up");
-        const allDowns = getAllXGs(this.plugin, "down");
-
-        const upG = mergeGs(...Object.values(allUps));
-        const downG = mergeGs(...Object.values(allDowns));
-
-        const closedParents = closeImpliedLinks(upG, downG);
+        const { up, down } = this.plugin.currGraphs.mergedGs;
+        const closedParents = closeImpliedLinks(down, up);
 
         const allPaths = this.dfsAllPaths(closedParents, currFile);
         const index = this.createIndex(currFile + "\n", allPaths, settings);
@@ -71,15 +66,11 @@ export default class MatrixView extends ItemView {
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
-        const allUps = getAllXGs(this.plugin, "up");
-        const allDowns = getAllXGs(this.plugin, "down");
+        const { up, down } = this.plugin.currGraphs.mergedGs;
 
-        const upG = mergeGs(...Object.values(allUps));
-        const downG = mergeGs(...Object.values(allDowns));
+        const closedParents = closeImpliedLinks(down, up);
 
-        const closedParents = closeImpliedLinks(upG, downG);
-
-        const terminals = upG.sinks();
+        const terminals = up.sinks();
         const settings = this.plugin.settings;
 
         let globalIndex = "";
@@ -275,7 +266,7 @@ export default class MatrixView extends ItemView {
       await this.plugin.refreshIndex();
     });
 
-    const data = hierGs.map((hier) => {
+    const data = hierGs.hierGs.map((hier) => {
       const hierData: { [dir in Directions]: Graph } = {
         up: undefined,
         same: undefined,
