@@ -1,5 +1,5 @@
-import { Graph } from "graphlib";
 import * as graphlib from "graphlib";
+import { Graph } from "graphlib";
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -17,13 +17,10 @@ import type {
   dvLink,
   HierarchyFields,
   JugglLink,
-  neighbourObj,
-  relObj,
   userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
-import { link } from "fs";
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -243,7 +240,7 @@ export async function getNeighbourObjArr(
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
-    console.log("Using Juggl");
+    debug(plugin.settings, "Using Juggl");
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
     debug(plugin.settings, { jugglLinks });
   }
