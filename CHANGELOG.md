@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.21](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.20...0.10.21) (2021-08-13)
+
+
+### Features
+
+* :sparkles: Setting to change Dataview wait time ([9d7650f](https://github.com/SkepticMystic/breadcrumbs/commit/9d7650fa68a050a4ee65342a575d9d45fbcec9aa))
+* **List/Matrix View:** :sparkles: Custom sorting of userHierachies ([1ec10f6](https://github.com/SkepticMystic/breadcrumbs/commit/1ec10f6d987ccbfb03b9eb5401aa96c86c96d5d8))
+
 ### [0.10.20](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.19...0.10.20) (2021-08-13)
 
 
