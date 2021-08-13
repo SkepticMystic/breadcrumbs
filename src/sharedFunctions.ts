@@ -16,6 +16,8 @@ import type {
   dvLink,
   JugglLink,
   neighbourObj,
+  relObj,
+  userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
@@ -28,10 +30,6 @@ export function normalise(arr: number[]): number[] {
   const max = Math.max(...arr);
   return arr.map((item) => item / max);
 }
-
-// export function flatten<T>(arr: T[]): T[] {
-//   return [].concat(...arr)
-// }
 
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
@@ -145,12 +143,8 @@ export async function getJugglLinks(
 
   debug(settings, { typedLinksArr });
 
-  const allFields: string[] = [
-    settings.parentFieldName,
-    settings.siblingFieldName,
-    settings.childFieldName,
-  ]
-    .map(splitAndTrim)
+  const allFields: string[] = settings.userHierarchies
+    .map((hier) => Object.values(hier))
     .flat()
     .filter((field: string) => field !== "");
 
@@ -170,9 +164,7 @@ export async function getJugglLinks(
   });
 
   // Filter out the juggl links with no links
-  const filteredLinks = typedLinksArr.filter((link) =>
-    link.links.length ? true : false
-  );
+  const filteredLinks = typedLinksArr.filter((link) => !!link.links.length);
   debug(settings, { filteredLinks });
   return filteredLinks;
 }
@@ -218,65 +210,79 @@ export const splitAndTrim = (fields: string): string[] =>
 export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
-): Promise<neighbourObj[]> {
-  const { parentFieldName, siblingFieldName, childFieldName } = plugin.settings;
-
-  const [parentFields, siblingFields, childFields] = [
-    splitAndTrim(parentFieldName),
-    splitAndTrim(siblingFieldName),
-    splitAndTrim(childFieldName),
-  ];
+): Promise<
+  {
+    current: TFile;
+    hierarchies: {
+      up: { [field: string]: string[] };
+      same: { [field: string]: string[] };
+      down: { [field: string]: string[] };
+    }[];
+  }[]
+> {
+  const { userHierarchies } = plugin.settings;
 
   let jugglLinks: JugglLink[] = [];
   if (plugin.app.plugins.plugins.juggl !== undefined) {
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
   }
 
-  const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
-    (fileFrontmatter) => {
-      let [parents, siblings, children] = [
-        parentFields
-          .map((parentField) =>
-            getFieldValues(fileFrontmatter, parentField, plugin.settings)
-          )
-          .flat(3),
-        siblingFields
-          .map((siblingField) =>
-            getFieldValues(fileFrontmatter, siblingField, plugin.settings)
-          )
-          .flat(3),
-        childFields
-          .map((childField) =>
-            getFieldValues(fileFrontmatter, childField, plugin.settings)
-          )
-          .flat(3),
-      ];
+  const neighbourObjArr: {
+    current: TFile;
+    hierarchies: {
+      up: { [field: string]: string[] };
+      same: { [field: string]: string[] };
+      down: { [field: string]: string[] };
+    }[];
+  }[] = fileFrontmatterArr.map((fileFrontmatter) => {
+    const hierFields: {
+      current: TFile;
+      hierarchies: {
+        up: { [field: string]: string[] };
+        same: { [field: string]: string[] };
+        down: { [field: string]: string[] };
+      }[];
+    } = {
+      current: fileFrontmatter.file,
+      hierarchies: [],
+    };
 
-      if (jugglLinks.length) {
-        const currFileJugglLinks = jugglLinks.filter(
-          (link) =>
-            link.note ===
-            (fileFrontmatter.file.basename || fileFrontmatter.file.name)
+    userHierarchies.forEach((hier, i) => {
+      const fieldsArr = Object.values(hier) as [string[], string[], string[]];
+      const newHier: {
+        up: { [field: string]: string[] };
+        same: { [field: string]: string[] };
+        down: { [field: string]: string[] };
+      } = { up: {}, same: {}, down: {} };
+
+      fieldsArr[0].forEach((upField) => {
+        newHier.up[upField] = getFieldValues(
+          fileFrontmatter,
+          upField,
+          plugin.settings
         );
+      });
+      fieldsArr[1].forEach((sameField) => {
+        newHier.same[sameField] = getFieldValues(
+          fileFrontmatter,
+          sameField,
+          plugin.settings
+        );
+      });
+      fieldsArr[2].forEach((downField) => {
+        newHier.down[downField] = getFieldValues(
+          fileFrontmatter,
+          downField,
+          plugin.settings
+        );
+      });
 
-        currFileJugglLinks.forEach((jugglLink) => {
-          jugglLink.links.forEach((link) => {
-            if (parentFields.includes(link.type)) {
-              parents = [...parents, ...link.linksInLine];
-            }
-            if (siblingFields.includes(link.type)) {
-              siblings = [...siblings, ...link.linksInLine];
-            }
-            if (childFields.includes(link.type)) {
-              children = [...children, ...link.linksInLine];
-            }
-          });
-        });
-      }
+      hierFields.hierarchies.push(newHier);
+    });
 
-      return { current: fileFrontmatter.file, parents, siblings, children };
-    }
-  );
+    return hierFields;
+  });
+
   debug(plugin.settings, { neighbourObjArr });
   return neighbourObjArr;
 }
@@ -443,6 +449,18 @@ export function mergeGraphs(g1: Graph, g2: Graph) {
   return copy1;
 }
 
+export function mergeGs(...graphs: Graph[]) {
+  const copy = graphlib.json.read(graphlib.json.write(graphs[0]));
+  graphs.forEach((graph, i) => {
+    if (i > 0) {
+      graph.edges().forEach((edge) => {
+        copy.setEdge(edge);
+      });
+    }
+  });
+  return copy;
+}
+
 export function removeUnlinkedNodes(g: Graph) {
   const copy = graphlib.json.read(graphlib.json.write(g));
   const nodes = copy.nodes();
@@ -451,4 +469,35 @@ export function removeUnlinkedNodes(g: Graph) {
   );
   unlinkedNodes.forEach((node) => copy.removeNode(node));
   return copy;
+}
+
+export function getAllXGs(
+  plugin: BreadcrumbsPlugin,
+  dir: "up" | "same" | "down"
+) {
+  const { userHierarchies } = plugin.settings;
+
+  const fieldNamesInXDir = userHierarchies
+    .map((hier) => hier[dir])
+    .filter((field) => field.join() !== "")
+    .flat();
+
+  const { currGraphs } = plugin;
+  const allXGs: { [rel: string]: Graph } = {};
+
+  currGraphs.forEach((hierarchyGs) => {
+    fieldNamesInXDir.forEach((field) => {
+      const graph = hierarchyGs[dir][field];
+      if (graph) {
+        allXGs[field] = graph;
+      }
+    });
+  });
+  return allXGs;
+}
+
+export function hierToStr(hier: userHierarchy) {
+  return `↑: ${hier.up.join(", ")}
+→: ${hier.same.join(", ")}
+↓: ${hier.down.join(", ")}`;
 }

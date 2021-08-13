@@ -1,4 +1,4 @@
-import type { Relations, visTypes } from "src/interfaces";
+import type { Directions, Relations, visTypes } from "src/interfaces";
 
 export const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
 export const VIEW_TYPE_BREADCRUMBS_STATS = "breadcrumbs-stats";
@@ -10,7 +10,7 @@ export const TRAIL_ICON_SVG =
 export const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 
-export const DATAVIEW_INDEX_DELAY = 3000;
+export const DATAVIEW_INDEX_DELAY = 5000;
 
 export const VISTYPES: visTypes[] = [
   "Force Directed Graph",
@@ -24,6 +24,7 @@ export const VISTYPES: visTypes[] = [
   "Radial Tree",
 ];
 
+export const DIRECTIONS: Directions[] = ["up", "same", "down"];
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
