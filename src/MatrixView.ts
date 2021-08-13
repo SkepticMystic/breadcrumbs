@@ -13,13 +13,7 @@ import type {
   SquareProps,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import {
-  closeImpliedLinks,
-  copy,
-  debug,
-  getAllXGs,
-  mergeGs,
-} from "src/sharedFunctions";
+import { copy, debug, mergeGs } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
 
@@ -52,8 +46,7 @@ export default class MatrixView extends ItemView {
         const settings = this.plugin.settings;
         const currFile = this.app.workspace.getActiveFile().basename;
 
-        const { up, down } = this.plugin.currGraphs.mergedGs;
-        const closedParents = closeImpliedLinks(down, up);
+        const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const allPaths = this.dfsAllPaths(closedParents, currFile);
         const index = this.createIndex(currFile + "\n", allPaths, settings);
@@ -66,9 +59,8 @@ export default class MatrixView extends ItemView {
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
-        const { up, down } = this.plugin.currGraphs.mergedGs;
-
-        const closedParents = closeImpliedLinks(down, up);
+        const { up } = this.plugin.currGraphs.mergedGs;
+        const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const terminals = up.sinks();
         const settings = this.plugin.settings;

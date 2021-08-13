@@ -169,10 +169,20 @@ export type HierarchyFields = {
   [dir in Directions]: { [field: string]: string[] };
 };
 
+export interface BCIndex {
+  hierGs: HierarchyGraphs[];
+  mergedGs: MergedGraphs;
+  closedGs: ClosedGraphs;
+}
+
 export type HierarchyGraphs = {
   [dir in Directions]: { [field: string]: Graph };
 };
 
 export type MergedGraphs = {
+  [dir in Directions]: Graph;
+};
+
+export type ClosedGraphs = {
   [dir in Directions]: Graph;
 };

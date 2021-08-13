@@ -16,6 +16,7 @@ import {
   VIEW_TYPE_BREADCRUMBS_STATS,
 } from "src/constants";
 import type {
+  BCIndex,
   BreadcrumbsSettings,
   Directions,
   dvFrontmatterCache,
@@ -84,10 +85,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
-  currGraphs: {
-    hierGs: HierarchyGraphs[];
-    mergedGs: MergedGraphs;
-  };
+  currGraphs: BCIndex;
 
   async refreshIndex() {
     this.currGraphs = await this.initGraphs();
@@ -327,10 +325,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
-  async initGraphs(): Promise<{
-    hierGs: HierarchyGraphs[];
-    mergedGs: MergedGraphs;
-  }> {
+  async initGraphs(): Promise<BCIndex> {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
@@ -344,12 +339,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const { userHierarchies } = this.settings;
 
-    const graphs: {
-      hierGs: HierarchyGraphs[];
-      mergedGs: MergedGraphs;
-    } = {
+    const graphs: BCIndex = {
       hierGs: [],
       mergedGs: { up: undefined, same: undefined, down: undefined },
+      closedGs: { up: undefined, same: undefined, down: undefined },
     };
 
     userHierarchies.forEach((hier, i) => {
@@ -384,6 +377,22 @@ export default class BreadcrumbsPlugin extends Plugin {
       const dirMerged = mergeGs(...Object.values(allXGs));
       graphs.mergedGs[dir] = dirMerged;
     });
+
+    DIRECTIONS.forEach((dir) => {
+      if (dir !== "same") {
+        graphs.closedGs[dir] = closeImpliedLinks(
+          graphs.mergedGs[dir],
+          graphs.mergedGs[dir === "up" ? "down" : "up"]
+        );
+      } else {
+        graphs.closedGs[dir] = closeImpliedLinks(
+          graphs.mergedGs[dir],
+          graphs.mergedGs[dir]
+        );
+      }
+    });
+
+    console.log({ graphs });
 
     debug(this.settings, "graphs inited");
 
@@ -501,9 +510,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const settings = this.settings;
 
-    const { up, down } = this.currGraphs.mergedGs;
-
-    const closedParents = closeImpliedLinks(up, down);
+    const closedParents = this.currGraphs.closedGs.up;
     const sortedTrails = this.getBreadcrumbs(closedParents);
     debug(settings, { sortedTrails });
 
