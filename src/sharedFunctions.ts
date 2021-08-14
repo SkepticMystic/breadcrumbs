@@ -135,7 +135,10 @@ export async function getJugglLinks(
             ?.map((link) => link.slice(2, link.length - 2))
             ?.map((innerText) => innerText.split("|")[0]) ?? [];
 
-        const parsedLinks = parseTypedLink(link, line, "-");
+        const typedLinkPrefix =
+          app.plugins.plugins.juggl?.settings.typedLinkPrefix ?? "-";
+
+        const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
 
         const type = parsedLinks?.properties?.type ?? "";
         let typeDir: Directions | "" = "";
@@ -269,15 +272,15 @@ export async function getNeighbourObjArr(
 
       // Add regular metadata links
       if (plugin.settings.useAllMetadata) {
-      DIRECTIONS.forEach((dir, i) => {
-        fieldsArr[i].forEach((field) => {
-          newHier[dir][field] = getFieldValues(
-            fileFrontmatter,
-            field,
-            plugin.settings
-          );
+        DIRECTIONS.forEach((dir, i) => {
+          fieldsArr[i].forEach((field) => {
+            newHier[dir][field] = getFieldValues(
+              fileFrontmatter,
+              field,
+              plugin.settings
+            );
+          });
         });
-      });
       }
 
       // Add Juggl Links
@@ -473,7 +476,6 @@ export function mergeGraphs(g1: Graph, g2: Graph) {
 }
 
 export function mergeGs(...graphs: Graph[]) {
-  // console.trace("mergeGs");
   const outG = new Graph();
   graphs.forEach((graph) => {
     graph.edges().forEach((edge) => {
