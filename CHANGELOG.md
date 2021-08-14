@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.24](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.23...0.10.24) (2021-08-14)
+
+
+### Bug Fixes
+
+* :bug: Previously checking for plugins.dataview.api, which won't exist if !dataview ([5bc7cc5](https://github.com/SkepticMystic/breadcrumbs/commit/5bc7cc54f7f736d77b49522708815d2175d546fb))
+
 ### [0.10.23](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.22...0.10.23) (2021-08-14)
 
 
