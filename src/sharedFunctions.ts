@@ -267,6 +267,8 @@ export async function getNeighbourObjArr(
       const fieldsArr = Object.values(hier) as [string[], string[], string[]];
       const newHier: HierarchyFields = { up: {}, same: {}, down: {} };
 
+      // Add regular metadata links
+      if (plugin.settings.useAllMetadata) {
       DIRECTIONS.forEach((dir, i) => {
         fieldsArr[i].forEach((field) => {
           newHier[dir][field] = getFieldValues(
@@ -276,7 +278,9 @@ export async function getNeighbourObjArr(
           );
         });
       });
+      }
 
+      // Add Juggl Links
       if (jugglLinks.length) {
         const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
           return jugglLink.note === currFileName;
@@ -287,7 +291,7 @@ export async function getNeighbourObjArr(
             if ((hier[line.dir] as string[]).includes(line.type)) {
               newHier[line.dir][line.type] = [
                 ...new Set([
-                  ...(newHier[line.dir][line.type] as string[]),
+                  ...(newHier[line.dir][line.type] ?? []),
                   ...line.linksInLine,
                 ]),
               ];

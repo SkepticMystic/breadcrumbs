@@ -5,6 +5,7 @@ export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
   indexNote: string[];
   refreshIndexOnActiveLeafChange: boolean;
+  useAllMetadata: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   dvWaitTime: number;
   refreshIntervalTime: number;

@@ -42,6 +42,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
   refreshIndexOnActiveLeafChange: false,
+  useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
   dvWaitTime: 5000,
   refreshIntervalTime: 0,
@@ -393,9 +394,8 @@ export default class BreadcrumbsPlugin extends Plugin {
       }
     });
 
-    console.log({ graphs });
-
     debug(this.settings, "graphs inited");
+    debug(this.settings, { graphs });
 
     return graphs;
   }

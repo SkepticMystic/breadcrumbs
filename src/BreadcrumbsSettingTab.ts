@@ -228,7 +228,22 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     new Setting(generalDetails)
-      .setName("Use Juggl link syntax without having Juggl installed")
+      .setName("Use yaml or inline fields for hierarchy data")
+      .setDesc(
+        "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below)."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.useAllMetadata)
+          .onChange(async (value) => {
+            plugin.settings.useAllMetadata = value;
+            await plugin.saveSettings();
+            await plugin.refreshIndex();
+          })
+      );
+
+    new Setting(generalDetails)
+      .setName("Use Juggl link syntax without having Juggl installed.")
       .setDesc(
         "Should Breadcrumbs look for [Juggl links](https://juggl.io/Link+Types) even if you don't have Juggl installed? If you do have Juggl installed, it will always look for Juggl links."
       )
