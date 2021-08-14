@@ -227,6 +227,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(generalDetails)
+      .setName("Use Juggl link syntax without having Juggl installed")
+      .setDesc(
+        "Should Breadcrumbs look for [Juggl links](https://juggl.io/Link+Types) even if you don't have Juggl installed? If you do have Juggl installed, it will always look for Juggl links."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.parseJugglLinksWithoutJuggl)
+          .onChange(async (value) => {
+            plugin.settings.parseJugglLinksWithoutJuggl = value;
+            await plugin.saveSettings();
+          })
+      );
+
     if (this.app.plugins.plugins.dataview !== undefined) {
       new Setting(generalDetails)
         .setName("Dataview Wait Time")

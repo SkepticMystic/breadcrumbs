@@ -240,7 +240,10 @@ export async function getNeighbourObjArr(
   const { userHierarchies } = plugin.settings;
 
   let jugglLinks: JugglLink[] = [];
-  if (plugin.app.plugins.plugins.juggl !== undefined) {
+  if (
+    plugin.app.plugins.plugins.juggl !== undefined ||
+    plugin.settings.parseJugglLinksWithoutJuggl
+  ) {
     debug(plugin.settings, "Using Juggl");
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
     debug(plugin.settings, { jugglLinks });

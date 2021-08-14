@@ -42,6 +42,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
   refreshIndexOnActiveLeafChange: false,
+  parseJugglLinksWithoutJuggl: false,
   dvWaitTime: 5000,
   refreshIntervalTime: 0,
   defaultView: true,
