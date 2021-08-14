@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.23](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.22...0.10.23) (2021-08-14)
+
+
+### Features
+
+* **Juggl:** :sparkles: Parse for Juggl links even if Juggl isn't installed ([e1a8f39](https://github.com/SkepticMystic/breadcrumbs/commit/e1a8f395c907587768b801f6290df115e3ea31ea))
+* **Juggl:** :sparkles: Use only Juggl links ([09d8d98](https://github.com/SkepticMystic/breadcrumbs/commit/09d8d98f93ee9e36ac1f8a01f3d2126f0cffe80a))
+
+
+### Bug Fixes
+
+* **Juggl:** :bug: Use typedLinkPrefix from Juggl if installed, fall back on '-' otherwise ([16af4dc](https://github.com/SkepticMystic/breadcrumbs/commit/16af4dc2f64d9ec7c2ab36d0c800ce1657e91be0))
+
 ### [0.10.22](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.21...0.10.22) (2021-08-13)
 
 
