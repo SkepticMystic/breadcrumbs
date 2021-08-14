@@ -121,7 +121,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     );
 
     const initEverything = async () => {
-      console.log("initialising everything");
       this.currGraphs = await this.initGraphs();
 
       this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
@@ -209,50 +208,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     // }
 
     this.app.workspace.onLayoutReady(async () => {
-      setTimeout(async () => {
-        await initEverything();
-        //   this.currGraphs = await this.initGraphs();
-
-        //   this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
-        //   this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-
-        //   if (this.settings.showTrail) {
-        //     await this.drawTrail();
-        //   }
-
-        //   this.registerEvent(
-        //     this.app.workspace.on("active-leaf-change", async () => {
-        //       if (this.settings.refreshIndexOnActiveLeafChange) {
-        //         // refreshIndex does everything in one
-        //         await this.refreshIndex();
-        //       } else {
-        //         // If it is not called, active-leaf-change still needs to trigger a redraw
-        //         const activeView = this.getActiveMatrixView();
-        //         if (activeView) {
-        //           await activeView.draw();
-        //         }
-        //         if (this.settings.showTrail) {
-        //           await this.drawTrail();
-        //         }
-        //       }
-        //     })
-        //   );
-
-        //   // ANCHOR autorefresh interval
-        //   if (this.settings.refreshIntervalTime > 0) {
-        //     this.refreshIntervalID = window.setInterval(async () => {
-        //       this.currGraphs = await this.initGraphs();
-        //       if (this.settings.showTrail) {
-        //         await this.drawTrail();
-        //       }
-        //       const activeView = this.getActiveMatrixView();
-        //       if (activeView) {
-        //         await activeView.draw();
-        //       }
-        //     }, this.settings.refreshIntervalTime * 1000);
-        //     this.registerInterval(this.refreshIntervalID);
-        //   }
-      }, this.settings.dvWaitTime);
+      setTimeout(
+        async () => {
+          await initEverything();
+        },
+        this.app.plugins.plugins.dataview ? this.settings.dvWaitTime : 3000
+      );
     });
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
@@ -331,7 +292,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     debug(this.settings, "initialising graphs");
     const files = this.app.vault.getMarkdownFiles();
 
-    const dvQ = !!this.app.plugins.plugins.dataview.api;
+    const dvQ = !!this.app.plugins.plugins.dataview?.api;
 
     const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
       ? getDVMetadataCache(this.app, this.settings, files)
