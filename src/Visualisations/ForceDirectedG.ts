@@ -195,22 +195,21 @@ export const forceDirectedG = (
     paths: { [node: string]: graphlib.Path },
     startNode: string
   ) {
-    if (
-      startNode === currFile.basename ||
-      paths[startNode].distance === Infinity
-    )
+    const currFileName = currFile.basename;
+    if (startNode === currFileName || paths[startNode].distance === Infinity)
       return [];
     let step = startNode;
 
     const path: string[] = [startNode];
     let i = 0;
-    while (paths[step].distance > 1 && i < 200) {
+    const MAX = 300;
+    while (paths[step].predecessor !== currFileName && i < MAX) {
       i++;
-      step = paths[startNode].predecessor;
+      step = paths[step].predecessor;
       path.push(step);
     }
-    if (i >= 200) return [];
-    path.push(currFile.basename);
+    if (i >= MAX) return [];
+    path.push(currFileName);
     return path;
   }
 
