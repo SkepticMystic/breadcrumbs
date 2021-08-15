@@ -13,6 +13,22 @@ export const forceDirectedG = (
   width: number,
   height: number
 ) => {
+  const colourChange = d3
+    .select(".d3-graph")
+    .append("input")
+    .attr("height", 100)
+    .attr("width", 100)
+    .attr("type", "color");
+
+  colourChange.on("change", function changeColor(el) {
+    const colour = el.target.value
+    node
+      .transition()
+      .duration(500)
+      .style("fill", colour)
+      .attr("stroke", colour);
+  });
+
   const data = graphlibToD3(graph);
 
   const links: {
