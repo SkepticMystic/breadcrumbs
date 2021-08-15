@@ -497,27 +497,34 @@ export function removeUnlinkedNodes(g: Graph) {
   return copy;
 }
 
-export function getAllXGs(
+export function getAllGsInDir(
   userHierarchies: userHierarchy[],
   currGraphs: HierarchyGraphs[],
   dir: Directions
 ) {
-  const fieldNamesInXDir = userHierarchies
-    .map((hier) => hier[dir])
-    .filter((field) => field.join() !== "")
-    .flat();
+  const target = {};
+  const allGsInDir: { [field: string]: Graph } = Object.assign(
+    target,
+    ...currGraphs.map((hierGs) => hierGs[dir])
+  );
 
-  const allXGs: { [rel: string]: Graph } = {};
+  // const fieldNamesInXDir = userHierarchies
+  //   .map((hier) => hier[dir])
+  //   .filter((field) => field.join() !== "")
+  //   .flat();
 
-  currGraphs.forEach((hierarchyGs) => {
-    fieldNamesInXDir.forEach((field) => {
-      const graph = hierarchyGs[dir][field];
-      if (graph) {
-        allXGs[field] = graph;
-      }
-    });
-  });
-  return allXGs;
+  // const allXGs: { [rel: string]: Graph } = {};
+
+  // currGraphs.forEach((hierarchyGs) => {
+  //   fieldNamesInXDir.forEach((field) => {
+  //     const graph = hierarchyGs[dir][field];
+  //     if (graph) {
+  //       allXGs[field] = graph;
+  //     }
+  //   });
+  // });
+  // console.log({ allXGs, allGsInDir });
+  return allGsInDir;
 }
 
 export function hierToStr(hier: userHierarchy) {

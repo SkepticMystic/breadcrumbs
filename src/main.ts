@@ -21,13 +21,12 @@ import type {
   Directions,
   dvFrontmatterCache,
   HierarchyGraphs,
-  MergedGraphs,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
   closeImpliedLinks,
   debug,
-  getAllXGs,
+  getAllGsInDir,
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
@@ -336,7 +335,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     DIRECTIONS.forEach((dir) => {
-      const allXGs = getAllXGs(userHierarchies, graphs.hierGs, dir);
+      const allXGs = getAllGsInDir(userHierarchies, graphs.hierGs, dir);
       const dirMerged = mergeGs(...Object.values(allXGs));
       graphs.mergedGs[dir] = dirMerged;
     });

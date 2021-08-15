@@ -4,8 +4,6 @@
   import type BreadcrumbsPlugin from "src/main";
   import {
     closeImpliedLinks,
-    getAllXGs,
-    mergeGs,
     normalise,
     openOrSwitch,
     padArray,
