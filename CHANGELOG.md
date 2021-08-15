@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.25](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.24...0.10.25) (2021-08-15)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Setting: Filter implied siblings of different types ([5e528b7](https://github.com/SkepticMystic/breadcrumbs/commit/5e528b752b37b890d8c9b2421ef3db6efd3e13bb))
+
+
+### Bug Fixes
+
+* **getFieldValues:** :bug: If using Obs cache, it sees number-only links as number[][], not string[][] ([3250462](https://github.com/SkepticMystic/breadcrumbs/commit/3250462e726702006f63e36af484c4197cad35fc))
+
 ### [0.10.24](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.23...0.10.24) (2021-08-14)
 
 
