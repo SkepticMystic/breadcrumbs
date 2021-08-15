@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.31](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.30...0.10.31) (2021-08-15)
+
+
+### Bug Fixes
+
+* **getFieldValues:** :bug: Some pretty big bugs that I hadn't noticed... I think it works now ([6e98456](https://github.com/SkepticMystic/breadcrumbs/commit/6e98456f4607d7ad40694b2a18ab5ddaf18e50c8))
+
 ### [0.10.30](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.29...0.10.30) (2021-08-15)
 
 
