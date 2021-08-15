@@ -200,23 +200,25 @@ export function getFieldValues(
 ) {
   const values: string[] = [];
   try {
-    const rawValues: (string | dvLink | Pos | TFile | undefined)[] = [
+    const rawValues: (string | number | dvLink | Pos | TFile | undefined)[] = [
       frontmatterCache?.[field],
-    ].flat(5);
+    ].flat(4);
 
     superDebug(settings, `${field} of: ${frontmatterCache?.file?.path}`);
     superDebug(settings, { rawValues });
 
     rawValues.forEach((rawItem) => {
       if (!rawItem) return;
-      if (typeof rawItem === "string") {
-        const splits = rawItem.match(splitLinksRegex);
+      if (typeof rawItem === "string" || typeof rawItem === "number") {
+        // Obs cache converts link of form: [[\d+]] to number[][]
+        const rawItemAsString = rawItem.toString();
+        const splits = rawItemAsString.match(splitLinksRegex);
         if (splits !== null) {
           const strs = splits
             .map((link) => link.match(dropHeaderOrAlias)[1])
             .map((str: string) => str.split("/").last());
         } else {
-          values.push(rawItem.split("/").last());
+          values.push(rawItemAsString.split("/").last());
         }
       } else if (rawItem.path) {
         values.push((rawItem as dvLink).path.split("/").last());
