@@ -200,32 +200,47 @@ export function getFieldValues(
 ) {
   const values: string[] = [];
   try {
-    const rawValues: (string | number | dvLink | Pos | TFile | undefined)[] = [
-      frontmatterCache?.[field],
-    ].flat(4);
-
-    superDebug(settings, `${field} of: ${frontmatterCache?.file?.path}`);
-    superDebug(settings, { rawValues });
-
-    rawValues.forEach((rawItem) => {
-      if (!rawItem) return;
-      if (typeof rawItem === "string" || typeof rawItem === "number") {
-        // Obs cache converts link of form: [[\d+]] to number[][]
-        const rawItemAsString = rawItem.toString();
-        const splits = rawItemAsString.match(splitLinksRegex);
-        if (splits !== null) {
-          const strs = splits
-            .map((link) => link.match(dropHeaderOrAlias)[1])
-            .map((str: string) => str.split("/").last());
-        } else {
-          values.push(rawItemAsString.split("/").last());
-        }
-      } else if (rawItem.path) {
-        values.push((rawItem as dvLink).path.split("/").last());
+    const rawValuesPreFlat = frontmatterCache?.[field];
+    if (typeof rawValuesPreFlat === "string") {
+      const splits = rawValuesPreFlat.match(splitLinksRegex);
+      if (splits !== null) {
+        const strs = splits.map((link) =>
+          link.match(dropHeaderOrAlias)[1].split("/").last()
+        );
+        values.push(...strs);
       }
-    });
+      // else {
+      //    Dont't add anything, it's not a link
+      // }
+    } else {
+      const rawValues: (string | number | dvLink | Pos | TFile | undefined)[] =
+        [rawValuesPreFlat].flat(4);
+
+      superDebug(settings, `${field} of: ${frontmatterCache?.file?.path}`);
+      superDebug(settings, { rawValues });
+
+      rawValues.forEach((rawItem) => {
+        if (!rawItem) return;
+        if (typeof rawItem === "string" || typeof rawItem === "number") {
+          // Obs cache converts link of form: [[\d+]] to number[][]
+          const rawItemAsString = rawItem.toString();
+          const splits = rawItemAsString.match(splitLinksRegex);
+          if (splits !== null) {
+            const strs = splits.map((link) =>
+              link.match(dropHeaderOrAlias)[1].split("/").last()
+            );
+            values.push(...strs);
+          } else {
+            values.push(rawItemAsString.split("/").last());
+          }
+        } else if (rawItem.path) {
+          values.push((rawItem as dvLink).path.split("/").last());
+        }
+      });
+    }
     return values;
   } catch (error) {
+    console.log(error);
     return values;
   }
 }
