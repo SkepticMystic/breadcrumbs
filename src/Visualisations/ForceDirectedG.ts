@@ -15,7 +15,12 @@ export const forceDirectedG = (
 ) => {
   const data = graphlibToD3(graph);
 
-  const links = data.links.map((d) => Object.create(d));
+  const links: {
+    index: number;
+    source: { index: number };
+    target: { index: number };
+  }[] = data.links.map((d) => Object.create(d));
+
   const nodes = data.nodes.map((d) => Object.create(d));
 
   const simulation = d3
@@ -101,7 +106,12 @@ export const forceDirectedG = (
     "--text-accent"
   );
 
-  const node = svg
+  const node: d3.Selection<
+    d3.BaseType | SVGCircleElement,
+    any,
+    SVGGElement,
+    unknown
+  > = svg
     .append("g")
     .attr("stroke", nodeColour)
     .attr("stroke-width", 1.5)
@@ -122,6 +132,38 @@ export const forceDirectedG = (
   node.on("click", (event: MouseEvent, d: d3Node) => {
     nodeClick(event, d.name);
   });
+
+  function linked(a: number, b: number) {
+    if (a === b) return true;
+    const linkedArr = links.find(
+      (link) =>
+        (link.source.index === a && link.target.index === b) ||
+        (link.target.index === a && link.source.index === b)
+    );
+
+    return !!linkedArr;
+  }
+
+  node
+    .on("mouseover", (event: MouseEvent, d: { index: number }) => {
+      node.style("opacity", (o) => {
+        return linked(d.index, o.index) ? 1 : 0.1;
+      });
+      link.style("opacity", function (o) {
+        return o.source.index === d.index || o.target.index === d.index
+          ? 1
+          : 0.1;
+      });
+    })
+    .on("mouseout", unfocus);
+
+  function focusNeighbours(d, event: MouseEvent) {}
+
+  function unfocus() {
+    // labelNode.attr("display", "block");
+    node.style("opacity", 1);
+    link.style("opacity", 1);
+  }
 
   simulation.on("tick", () => {
     link
@@ -144,7 +186,7 @@ export const forceDirectedG = (
         [0, 0],
         [width, height],
       ])
-      .scaleExtent([0.5, 8])
+      .scaleExtent([0.5, 10])
       .on("zoom", zoomed)
   );
 };
