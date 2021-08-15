@@ -14,7 +14,12 @@ export const forceDirectedG = (
   width: number,
   height: number
 ) => {
-  const pathsFromCurrNode = graphlib.alg.dijkstra(graph, currFile.basename);
+  const { settings } = modal.plugin;
+  let nodeToGetTo = currFile.basename;
+
+  console.time("Find all paths");
+  let pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
+  console.timeEnd("Find all paths");
 
   const nodeColour = getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
@@ -22,8 +27,6 @@ export const forceDirectedG = (
   const colourChange = d3
     .select(".d3-graph")
     .append("input")
-    .attr("height", 100)
-    .attr("width", 100)
     .attr("type", "color")
     // Doesn't seem to work...
     .attr("value", nodeColour);
@@ -34,10 +37,6 @@ export const forceDirectedG = (
       .transition()
       .duration(300)
       .style("fill", (d) => {
-        if (d.index === currNodeIndex) return;
-        return colour;
-      })
-      .attr("stroke", (d) => {
         if (d.index === currNodeIndex) return;
         return colour;
       });
@@ -148,17 +147,10 @@ export const forceDirectedG = (
     unknown
   > = svg
     .append("g")
-    .attr("stroke-width", 1.5)
     .selectAll("circle")
     .data(nodes)
     .join("circle")
-    .attr("stroke", (d) => {
-      if (nameFromIndex(d) === currFile.basename) {
-        return "#ffffff";
-      } else {
-        return nodeColour;
-      }
-    })
+
     .attr("r", 5)
     .attr("fill", (d) => {
       if (nameFromIndex(d) === currFile.basename) {
@@ -180,6 +172,20 @@ export const forceDirectedG = (
     nodeClick(event, d.name);
   });
 
+  node.on("mousedown", (event: MouseEvent, d) => {
+    if (event.button === 2) {
+      nodeToGetTo = d.name;
+
+      node.style("fill", (n) => {
+        if (n.name === nodeToGetTo) {
+          return "#ff0000";
+        }
+      });
+
+      pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
+    }
+  });
+
   function linked(a: number, b: number) {
     if (a === b) return true;
     const linkedArr = links.find(
@@ -195,21 +201,20 @@ export const forceDirectedG = (
     paths: { [node: string]: graphlib.Path },
     startNode: string
   ) {
-    const currFileName = currFile.basename;
-    if (startNode === currFileName || paths[startNode].distance === Infinity)
+    if (startNode === nodeToGetTo || paths[startNode].distance === Infinity)
       return [];
     let step = startNode;
 
     const path: string[] = [startNode];
     let i = 0;
     const MAX = 300;
-    while (paths[step].predecessor !== currFileName && i < MAX) {
+    while (paths[step].predecessor !== nodeToGetTo && i < MAX) {
       i++;
       step = paths[step].predecessor;
       path.push(step);
     }
     if (i >= MAX) return [];
-    path.push(currFileName);
+    path.push(nodeToGetTo);
     return path;
   }
 
@@ -232,7 +237,7 @@ export const forceDirectedG = (
 
       // Highlight path from hovered node to currNode
       const hoveredNode = nameFromIndex(d);
-      const path = walkDijkstraPaths(pathsFromCurrNode, hoveredNode);
+      const path = walkDijkstraPaths(pathsFromNodeToGetTo, hoveredNode);
       if (path.length) {
         link
           .transition()
@@ -243,6 +248,13 @@ export const forceDirectedG = (
               path.includes(nameFromIndex(link.target))
             )
               return nodeColour;
+          })
+          .style("opacity", function (link) {
+            if (
+              path.includes(nameFromIndex(link.source)) &&
+              path.includes(nameFromIndex(link.target))
+            )
+              return 1;
           });
       }
     })
