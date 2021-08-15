@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.26](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.25...0.10.26) (2021-08-15)
+
+
+### Features
+
+* **Vis View:** :sparkles: Customisable colour on Force Directed Graph nodes ([94e2947](https://github.com/SkepticMystic/breadcrumbs/commit/94e294792d3333e75ebb8abb81837b0b5a0278ca))
+* **Vis View:** :sparkles: Hovering a node unfocusses any non-connected nodes and edges ([fb6e3a8](https://github.com/SkepticMystic/breadcrumbs/commit/fb6e3a83928b73a3897aba2ce76a6ceb479f4733))
+
 ### [0.10.25](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.24...0.10.25) (2021-08-15)
 
 
