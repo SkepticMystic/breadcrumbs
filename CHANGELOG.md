@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.28](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.27...0.10.28) (2021-08-15)
+
+
+### Bug Fixes
+
+* **Vis View:** :bug: Force Directed Graph: Path finding wasn't working correctly, oops ([4d6a6f0](https://github.com/SkepticMystic/breadcrumbs/commit/4d6a6f0fd58f25070a7cf819be8cb46d3ee83719))
+
 ### [0.10.27](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.26...0.10.27) (2021-08-15)
 
 
