@@ -434,8 +434,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     return pathsArr;
   }
 
-  getBreadcrumbs(g: Graph): string[][] | null {
-    const currFile = this.app.workspace.getActiveViewOfType(MarkdownView).file;
+  getBreadcrumbs(g: Graph, currFile: TFile): string[][] | null {
     if (currFile.extension !== "md") {
       return null;
     }
@@ -461,9 +460,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     if (!this.settings.showTrail) return;
 
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeMDView) {
-      return;
-    }
+    if (!activeMDView) return;
 
     const currFile = activeMDView.file;
     const frontm =
@@ -472,8 +469,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const settings = this.settings;
 
-    const closedParents = this.currGraphs.closedGs.up;
-    const sortedTrails = this.getBreadcrumbs(closedParents);
+    const closedUp = this.currGraphs.closedGs.up;
+    const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
     debug(settings, { sortedTrails });
 
     // Get the container div of the active note
