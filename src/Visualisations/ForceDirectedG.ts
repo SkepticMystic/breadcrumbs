@@ -216,14 +216,20 @@ export const forceDirectedG = (
 
   node
     .on("mouseover", (event: MouseEvent, d: { index: number }) => {
-      node.style("opacity", (o) => {
-        return linked(d.index, o.index) ? 1 : 0.1;
-      });
-      link.style("opacity", function (o) {
-        return o.source.index === d.index || o.target.index === d.index
-          ? 1
-          : 0.1;
-      });
+      node
+        .transition()
+        .duration(150)
+        .style("opacity", (o) => {
+          return linked(d.index, o.index) ? 1 : 0.2;
+        });
+      link
+        .transition()
+        .duration(150)
+        .style("opacity", function (o) {
+          return o.source.index === d.index || o.target.index === d.index
+            ? 1
+            : 0.2;
+        });
 
       // Highlight path from hovered node to currNode
       const hoveredNode = nameFromIndex(d);
