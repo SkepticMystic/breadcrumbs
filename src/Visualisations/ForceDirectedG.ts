@@ -18,15 +18,23 @@ export const forceDirectedG = (
     .append("input")
     .attr("height", 100)
     .attr("width", 100)
-    .attr("type", "color");
+    .attr("type", "color")
+    // Doesn't seem to work...
+    .attr("value", nodeColour);
 
   colourChange.on("change", function changeColor(el) {
-    const colour = el.target.value
+    const colour = el.target.value;
     node
       .transition()
-      .duration(500)
-      .style("fill", colour)
-      .attr("stroke", colour);
+      .duration(300)
+      .style("fill", (d) => {
+        if (d.index === currNodeIndex) return;
+        return colour;
+      })
+      .attr("stroke", (d) => {
+        if (d.index === currNodeIndex) return;
+        return colour;
+      });
   });
 
   const data = graphlibToD3(graph);
