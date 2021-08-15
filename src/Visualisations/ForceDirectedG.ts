@@ -152,8 +152,21 @@ export const forceDirectedG = (
     .selectAll("circle")
     .data(nodes)
     .join("circle")
+    .attr("stroke", (d) => {
+      if (nameFromIndex(d) === currFile.basename) {
+        return "#ffffff";
+      } else {
+        return nodeColour;
+      }
+    })
     .attr("r", 5)
-    .attr("fill", nodeColour)
+    .attr("fill", (d) => {
+      if (nameFromIndex(d) === currFile.basename) {
+        return "#ffffff";
+      } else {
+        return nodeColour;
+      }
+    })
     .call(drag(simulation));
 
   node.attr("aria-label", (d: d3Node) => d.name);
