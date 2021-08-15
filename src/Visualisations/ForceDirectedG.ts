@@ -21,24 +21,24 @@ export const forceDirectedG = (
   let pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
   console.timeEnd("Find all paths");
 
-  const nodeColour = getComputedStyle(document.body).getPropertyValue(
+  const defaultNodeColour = getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
   );
-  const colourChange = d3
+  let currNodeColour = defaultNodeColour;
+
+  const colourChangeInput = d3
     .select(".d3-graph")
     .append("input")
-    .attr("type", "color")
-    // Doesn't seem to work...
-    .attr("value", nodeColour);
+    .attr("type", "color");
 
-  colourChange.on("change", function changeColor(el) {
-    const colour = el.target.value;
+  colourChangeInput.on("change", function changeColor(el) {
+    currNodeColour = el.target.value;
     node
       .transition()
       .duration(300)
       .style("fill", (d) => {
         if (d.index === currNodeIndex) return;
-        return colour;
+        return currNodeColour;
       });
   });
 
@@ -156,7 +156,7 @@ export const forceDirectedG = (
       if (nameFromIndex(d) === currFile.basename) {
         return "#ffffff";
       } else {
-        return nodeColour;
+        return currNodeColour;
       }
     })
     .call(drag(simulation));
@@ -179,7 +179,7 @@ export const forceDirectedG = (
       node.style("fill", (n) => {
         if (n.name === nodeToGetTo) {
           return "#ff0000";
-        }
+        } else return currNodeColour;
       });
 
       pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
@@ -247,7 +247,7 @@ export const forceDirectedG = (
               path.includes(nameFromIndex(link.source)) &&
               path.includes(nameFromIndex(link.target))
             )
-              return nodeColour;
+              return currNodeColour;
           })
           .style("opacity", function (link) {
             if (
