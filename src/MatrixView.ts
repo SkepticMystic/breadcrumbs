@@ -265,6 +265,7 @@ export default class MatrixView extends ItemView {
         down: undefined,
       };
       DIRECTIONS.forEach((dir) => {
+        // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
         hierData[dir] = mergeGs(...Object.values(hier[dir]));
       });
       return hierData;
@@ -272,28 +273,32 @@ export default class MatrixView extends ItemView {
     debug(settings, { data });
 
     const hierSquares = userHierarchies.map((hier, i) => {
+      const [currUpG, currSameG, currDownG] = [
+        data[i].up,
+        data[i].same,
+        data[i].down,
+      ];
+
       let [rUp, rSame, rDown, iUp, iDown] = [
-        this.squareItems(data[i].up, currFile),
-        this.squareItems(data[i].same, currFile),
-        this.squareItems(data[i].down, currFile),
-        this.squareItems(data[i].down, currFile, false),
-        this.squareItems(data[i].up, currFile, false),
+        this.squareItems(currUpG, currFile),
+        this.squareItems(currSameG, currFile),
+        this.squareItems(currDownG, currFile),
+        this.squareItems(currDownG, currFile, false),
+        this.squareItems(currUpG, currFile, false),
       ];
 
       // SECTION Implied Siblings
       /// Notes with the same parents
-      const currParents = (data[i].up.successors(currFile.basename) ??
+      const currParents = (currUpG.successors(currFile.basename) ??
         []) as string[];
       let iSameArr: internalLinkObj[] = [];
 
-      if (currParents.length) {
-        currParents.forEach((parent) => {
-          const impliedSiblings = (data[i].up.predecessors(parent) ??
-            []) as string[];
+      currParents.forEach((parent) => {
+        let impliedSiblings = (currUpG.predecessors(parent) ?? []) as string[];
 
-          // The current note is always it's own implied sibling, so remove it from the list
-          const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
-          impliedSiblings.splice(indexCurrNote, 1);
+        // The current note is always it's own implied sibling, so remove it from the list
+        const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+        impliedSiblings.splice(indexCurrNote, 1);
 
         if (settings.filterImpliedSiblingsOfDifferentTypes) {
           impliedSiblings = impliedSiblings.filter((iSibling) => {
@@ -304,21 +309,20 @@ export default class MatrixView extends ItemView {
           });
         }
         // Create the implied sibling SquareProps
-          impliedSiblings.forEach((impliedSibling) => {
-            iSameArr.push({
-              to: impliedSibling,
-              cls:
-                "internal-link breadcrumbs-link breadcrumbs-implied" +
-                (this.unresolvedQ(impliedSibling, currFile.path)
-                  ? " is-unresolved"
-                  : ""),
-            });
+        impliedSiblings.forEach((impliedSibling) => {
+          iSameArr.push({
+            to: impliedSibling,
+            cls:
+              "internal-link breadcrumbs-link breadcrumbs-implied" +
+              (this.unresolvedQ(impliedSibling, currFile.path)
+                ? " is-unresolved"
+                : ""),
           });
         });
-      }
+      });
 
       /// A real sibling implies the reverse sibling
-      iSameArr.push(...this.squareItems(data[i].same, currFile, false));
+      iSameArr.push(...this.squareItems(currSameG, currFile, false));
 
       // !SECTION
 
