@@ -48,6 +48,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   defaultView: true,
   showNameOrType: true,
   showRelationType: true,
+  filterImpliedSiblingsOfDifferentTypes: false,
   rlLeaf: true,
   showTrail: true,
   trailOrTable: 3,

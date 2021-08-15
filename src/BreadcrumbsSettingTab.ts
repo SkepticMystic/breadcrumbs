@@ -331,6 +331,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
+    // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
     new Setting(MLViewDetails)
       .setName("Show all field names or just relation types")
       .setDesc(
@@ -356,6 +357,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           .setValue(plugin.settings.showRelationType)
           .onChange(async (value) => {
             plugin.settings.showRelationType = value;
+            await plugin.saveSettings();
+            await plugin.getActiveMatrixView().draw();
+          })
+      );
+
+    new Setting(MLViewDetails)
+      .setName("Filter Implied Siblings")
+      .setDesc(
+        "Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up)."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(plugin.settings.filterImpliedSiblingsOfDifferentTypes)
+          .onChange(async (value) => {
+            plugin.settings.filterImpliedSiblingsOfDifferentTypes = value;
             await plugin.saveSettings();
             await plugin.getActiveMatrixView().draw();
           })

@@ -295,7 +295,15 @@ export default class MatrixView extends ItemView {
           const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
           impliedSiblings.splice(indexCurrNote, 1);
 
-          // Create thie implied sibling SquareProps
+        if (settings.filterImpliedSiblingsOfDifferentTypes) {
+          impliedSiblings = impliedSiblings.filter((iSibling) => {
+            const iSiblingType = currUpG.node(iSibling).fieldName;
+            const currNodeType = currUpG.node(currFile.basename).fieldName;
+            console.log({ iSiblingType, currNodeType });
+            return iSiblingType === currNodeType;
+          });
+        }
+        // Create the implied sibling SquareProps
           impliedSiblings.forEach((impliedSibling) => {
             iSameArr.push({
               to: impliedSibling,

@@ -12,6 +12,7 @@ export interface BreadcrumbsSettings {
   defaultView: boolean;
   showNameOrType: boolean;
   showRelationType: boolean;
+  filterImpliedSiblingsOfDifferentTypes: boolean;
   rlLeaf: boolean;
   showTrail: boolean;
   trailOrTable: 1 | 2 | 3;

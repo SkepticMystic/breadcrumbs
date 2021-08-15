@@ -481,7 +481,10 @@ export function mergeGs(...graphs: Graph[]) {
   const outG = new Graph();
   graphs.forEach((graph) => {
     graph.edges().forEach((edge) => {
-      outG.setEdge(edge);
+      const nodeLabel = graph.node(edge.v);
+      outG.setNode(edge.v, nodeLabel);
+      const edgeLabel = graph.edge(edge);
+      outG.setEdge(edge, edgeLabel);
     });
   });
   return outG;
