@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.30](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.29...0.10.30) (2021-08-15)
+
+
+### Bug Fixes
+
+* **Vis View:** :bug: Force Directed Graph: Colour reset to defaultNodeColour when setting new nodeToGetTo ([dd1d41e](https://github.com/SkepticMystic/breadcrumbs/commit/dd1d41e5909f781b6d1dda0bb501e528a6be9b55))
+
 ### [0.10.29](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.28...0.10.29) (2021-08-15)
 
 
