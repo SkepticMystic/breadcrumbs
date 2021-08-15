@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.29](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.28...0.10.29) (2021-08-15)
+
+
+### Features
+
+* **Vis View:** :sparkles: Force Directed Graph: Right click node to set that as the starting point for path finding ([095fb25](https://github.com/SkepticMystic/breadcrumbs/commit/095fb25e9d2193758eabf67a3a6c7d8442c9c55e))
+
 ### [0.10.28](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.27...0.10.28) (2021-08-15)
 
 
