@@ -236,6 +236,7 @@
 </table> -->
 <style>
   table {
+    border-collapse: collapse;
   }
 
   td:first-child {
@@ -244,7 +245,7 @@
   td,
   th {
     padding: 3px;
-    border: 1px solid var(--text-accent);
+    border: 1px solid var(--background-modifier-border);
     white-space: pre-line;
   }
 
