@@ -35,7 +35,11 @@ export default class MatrixView extends ItemView {
     this.app.workspace.onLayoutReady(async () => {
       setTimeout(
         async () => await this.draw(),
-        this.plugin.settings.dvWaitTime
+        this.app.plugins.plugins.dataview
+          ? this.app.plugins.plugins.dataview.api
+            ? 1
+            : this.plugin.settings.dvWaitTime
+          : 3000
       );
     });
 

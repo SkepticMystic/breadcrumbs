@@ -243,7 +243,11 @@ export default class BreadcrumbsPlugin extends Plugin {
         async () => {
           await initEverything();
         },
-        this.app.plugins.plugins.dataview ? this.settings.dvWaitTime : 3000
+        this.app.plugins.plugins.dataview
+          ? this.app.plugins.plugins.dataview.api
+            ? 1
+            : this.settings.dvWaitTime
+          : 3000
       );
     });
 
