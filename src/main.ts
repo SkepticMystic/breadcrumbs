@@ -1,6 +1,7 @@
 import { Graph } from "graphlib";
 import {
   addIcon,
+  EventRef,
   MarkdownView,
   Notice,
   Plugin,
@@ -88,10 +89,36 @@ export default class BreadcrumbsPlugin extends Plugin {
   visited: [string, HTMLDivElement][];
   refreshIntervalID: number;
   currGraphs: BCIndex;
+  activeLeafChangeEventRef: EventRef;
 
   async refreshIndex() {
+    if (!this.activeLeafChangeEventRef) {
+      console.log(
+        "activeLeafChangeEventRef wasn't registered onLoad, registering now"
+      );
+      this.activeLeafChangeEventRef = this.app.workspace.on(
+        "active-leaf-change",
+        async () => {
+          if (this.settings.refreshIndexOnActiveLeafChange) {
+            // refreshIndex does everything in one
+            await this.refreshIndex();
+          } else {
+            // If it is not called, active-leaf-change still needs to trigger a redraw
+            const activeView = this.getActiveMatrixView();
+            if (activeView) {
+              await activeView.draw();
+            }
+            if (this.settings.showTrail) {
+              await this.drawTrail();
+            }
+          }
+        }
+      );
+
+      this.registerEvent(this.activeLeafChangeEventRef);
+    }
+
     this.currGraphs = await this.initGraphs();
-    debug(this.settings, { hierGs: this.currGraphs });
     const activeView = this.getActiveMatrixView();
     if (activeView) {
       await activeView.draw();
@@ -108,6 +135,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     await this.loadSettings();
 
+    this.activeLeafChangeEventRef = undefined;
     this.visited = [];
 
     this.registerView(
@@ -130,8 +158,9 @@ export default class BreadcrumbsPlugin extends Plugin {
         await this.drawTrail();
       }
 
-      this.registerEvent(
-        this.app.workspace.on("active-leaf-change", async () => {
+      this.activeLeafChangeEventRef = this.app.workspace.on(
+        "active-leaf-change",
+        async () => {
           if (this.settings.refreshIndexOnActiveLeafChange) {
             // refreshIndex does everything in one
             await this.refreshIndex();
@@ -145,8 +174,10 @@ export default class BreadcrumbsPlugin extends Plugin {
               await this.drawTrail();
             }
           }
-        })
+        }
       );
+
+      this.registerEvent(this.activeLeafChangeEventRef);
 
       // ANCHOR autorefresh interval
       if (this.settings.refreshIntervalTime > 0) {
