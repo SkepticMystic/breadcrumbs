@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { sum } from "lodash";
   import { DIRECTIONS } from "src/constants";
   import type { Directions, HierData } from "src/interfaces";
   import type BreadcrumbsPlugin from "src/main";
@@ -18,16 +19,29 @@
 
   const hierGs = plugin.currGraphs;
 
-  function fillInInfo(dir: Directions, gType: string, hierData: HierData) {
+  function fillInInfo(
+    dir: Directions,
+    gType: string,
+    hierData: HierData,
+    nodesToo = true
+  ) {
     const g = hierData[dir][gType].graph;
 
-    hierData[dir][gType].nodes = hierData[dir][gType].graph.nodes();
-    hierData[dir][gType].nodesStr = hierData[dir][gType].nodes.join("\n");
+    if (nodesToo) {
+      const nodes = hierData[dir][gType].graph.nodes();
+      hierData[dir][gType].nodes = nodes;
+      hierData[dir][gType].nodesStr = nodes.join("\n");
+    }
 
-    hierData[dir][gType].edges = hierData[dir][gType].graph.edges();
-    hierData[dir][gType].edgesStr = hierData[dir][gType].edges
-      .map((e) => `${e.v} ${separator} ${e.w}`)
-      .join("\n");
+    const edges = hierData[dir][gType].graph.edges();
+    hierData[dir][gType].edges = edges;
+    let edgeStrArr = edges.map(
+      (e) =>
+        `${nodesToo ? e.v : e.w} ${
+          nodesToo || dir !== "same" ? separator : "⟷"
+        } ${nodesToo ? e.w : e.v}`
+    );
+    hierData[dir][gType].edgesStr = edgeStrArr.join("\n");
   }
 
   const data = hierGs.hierGs.map((hier) => {
@@ -39,34 +53,35 @@
     DIRECTIONS.forEach((dir) => {
       // Merged Graphs
       /// Smoosh all fieldGs from one dir into a merged graph for that direction as a whole
-      hierData[dir].Merged.graph = mergeGs(...Object.values(hier[dir]));
+      const mergedInDir = mergeGs(...Object.values(hier[dir]));
+      hierData[dir].Merged.graph = mergedInDir;
       fillInInfo(dir, "Merged", hierData);
 
       // Closed graphs
       if (dir !== "same") {
         hierData[dir].Closed.graph = closeImpliedLinks(
-          hierData[dir].Merged.graph,
+          mergedInDir,
           mergeGs(...Object.values(hier[dir === "up" ? "down" : "up"]))
         );
       } else {
         hierData[dir].Closed.graph = closeImpliedLinks(
-          hierData[dir].Merged.graph,
-          hierData[dir].Merged.graph
+          mergedInDir,
+          mergedInDir
         );
       }
       fillInInfo(dir, "Closed", hierData);
 
-      // if (dir !== "same") {
-      //   hierData[dir].Implied.graph = mergeGs(
-      //     ...Object.values(hier[dir === "up" ? "down" : "up"])
-      //   );
-      // } else {
-      //   hierData[dir].Closed.graph = closeImpliedLinks(
-      //     hierData[dir].Merged.graph,
-      //     hierData[dir].Merged.graph
-      //   );
-      // }
-      // fillInInfo(dir, "Closed", hierData);
+      if (dir !== "same") {
+        hierData[dir].Implied.graph = mergeGs(
+          ...Object.values(hier[dir === "up" ? "down" : "up"])
+        );
+      } else {
+        hierData[dir].Implied.graph = closeImpliedLinks(
+          mergedInDir,
+          mergedInDir
+        );
+      }
+      fillInInfo(dir, "Implied", hierData, false);
     });
 
     return hierData;
@@ -111,10 +126,10 @@
 
   {#each userHierarchies as hier, i}
     <tr>
-      <td rowspan="2">
+      <td rowspan="3">
         {hierStrs[i]}
       </td>
-      <td>Real Nodes</td>
+      <td>Nodes</td>
       {#each ["up", "same", "down"] as dir}
         <td
           aria-label={data[i][dir].Merged.nodesStr}
@@ -146,7 +161,7 @@
       </td>
     </tr>
     <tr>
-      <td>Edges</td>
+      <td>Real Edges</td>
       {#each ["up", "same", "down"] as dir}
         <td
           aria-label={data[i][dir].Merged.edgesStr}
@@ -177,7 +192,149 @@
         ].length}
       </td>
     </tr>
+    <tr>
+      <td>Implied Edges</td>
+      {#each ["up", "same", "down"] as dir}
+        <td
+          aria-label={data[i][dir].Implied.edgesStr}
+          on:click={async () => await copy(data[i][dir].Implied.edgesStr)}
+        >
+          {data[i][dir].Implied.edges.length}
+        </td>
+      {/each}
+      <td
+        aria-label={[
+          data[i].up.Implied.edgesStr,
+          data[i].same.Implied.edgesStr,
+          data[i].down.Implied.edgesStr,
+        ].join("\n")}
+        on:click={async () =>
+          await copy(
+            [
+              data[i].up.Implied.edgesStr,
+              data[i].same.Implied.edgesStr,
+              data[i].down.Implied.edgesStr,
+            ].join("\n")
+          )}
+      >
+        {[
+          ...data[i].up.Implied.edges,
+          ...data[i].same.Implied.edges,
+          ...data[i].down.Implied.edges,
+        ].length}
+      </td>
+    </tr>
   {/each}
+  <tr>
+    <td rowspan="3"> Totals </td>
+    <td>Nodes</td>
+    {#each ["up", "same", "down"] as dir}
+      <td
+        aria-label={data.map((datum) => datum[dir].Merged.nodesStr).join("\n")}
+        on:click={async () =>
+          await copy(
+            data.map((datum) => datum[dir].Merged.nodesStr).join("\n")
+          )}
+      >
+        {sum(data.map((datum) => datum[dir].Merged.nodes.length))}
+      </td>
+    {/each}
+    <!-- <td
+      aria-label={
+        ''
+      // [
+      //   data[i].up.Merged.nodesStr,
+      //   data[i].same.Merged.nodesStr,
+      //   data[i].down.Merged.nodesStr,
+      // ].join("\n")
+      // }
+      }
+      on:click={async () =>
+        await copy(
+          [
+            data[i].up.Merged.nodesStr,
+            data[i].same.Merged.nodesStr,
+            data[i].down.Merged.nodesStr,
+          ].join("\n")
+        )}
+    >
+      {[
+        ...data[i].up.Merged.nodes,
+        ...data[i].same.Merged.nodes,
+        ...data[i].down.Merged.nodes,
+      ].length}
+    </td> -->
+  </tr>
+  <tr>
+    <td>Real Edges</td>
+    {#each ["up", "same", "down"] as dir}
+      <td
+        aria-label={data.map((datum) => datum[dir].Merged.edgesStr).join("\n")}
+        on:click={async () =>
+          await copy(
+            data.map((datum) => datum[dir].Merged.edgesStr).join("\n")
+          )}
+      >
+        {sum(data.map((datum) => datum[dir].Merged.edges.length))}
+      </td>
+    {/each}
+    <!-- <td
+      aria-label={[
+        data[i].up.Merged.edgesStr,
+        data[i].same.Merged.edgesStr,
+        data[i].down.Merged.edgesStr,
+      ].join("\n")}
+      on:click={async () =>
+        await copy(
+          [
+            data[i].up.Merged.edgesStr,
+            data[i].same.Merged.edgesStr,
+            data[i].down.Merged.edgesStr,
+          ].join("\n")
+        )}
+    >
+      {[
+        ...data[i].up.Merged.edges,
+        ...data[i].same.Merged.edges,
+        ...data[i].down.Merged.edges,
+      ].length}
+    </td> -->
+  </tr>
+  <tr>
+    <td>Implied Edges</td>
+    {#each ["up", "same", "down"] as dir}
+      <td
+        aria-label={data.map((datum) => datum[dir].Implied.edgesStr).join("\n")}
+        on:click={async () =>
+          await copy(
+            data.map((datum) => datum[dir].Implied.edgesStr).join("\n")
+          )}
+      >
+        {sum(data.map((datum) => datum[dir].Implied.edges.length))}
+      </td>
+    {/each}
+    <!-- <td
+      aria-label={[
+        data[i].up.Implied.edgesStr,
+        data[i].same.Implied.edgesStr,
+        data[i].down.Implied.edgesStr,
+      ].join("\n")}
+      on:click={async () =>
+        await copy(
+          [
+            data[i].up.Implied.edgesStr,
+            data[i].same.Implied.edgesStr,
+            data[i].down.Implied.edgesStr,
+          ].join("\n")
+        )}
+    >
+      {[
+        ...data[i].up.Implied.edges,
+        ...data[i].same.Implied.edges,
+        ...data[i].down.Implied.edges,
+      ].length}
+    </td> -->
+  </tr>
 </table>
 
 <!-- 
