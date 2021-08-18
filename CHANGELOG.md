@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.32](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.31...0.10.32) (2021-08-18)
+
+
+### Features
+
+* **Stats View:** :sparkles: Total row ([628e47a](https://github.com/SkepticMystic/breadcrumbs/commit/628e47ae9bf9f8f1617d40604911a5031985b435))
+
+
+### Bug Fixes
+
+* :bug: Register active-leaf-change event if it wasn't registered onLoad ([96aa5f4](https://github.com/SkepticMystic/breadcrumbs/commit/96aa5f41924ddd2c344277774f7d892fd52606c7))
+
 ### [0.10.31](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.30...0.10.31) (2021-08-15)
 
 
