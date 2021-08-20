@@ -550,3 +550,7 @@ export function hierToStr(hier: userHierarchy) {
 →: ${hier.same.join(", ")}
 ↓: ${hier.down.join(", ")}`;
 }
+
+export function removeDuplicates(arr: string[]) {
+  return [...new Set(arr)];
+}

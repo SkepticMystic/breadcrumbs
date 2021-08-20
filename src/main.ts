@@ -32,6 +32,7 @@ import {
   getNeighbourObjArr,
   getObsMetadataCache,
   mergeGs,
+  removeDuplicates,
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
@@ -41,6 +42,8 @@ import TrailPath from "./Components/TrailPath.svelte";
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
+  hierarchyNotes: [""],
+  hierarchyNoteFieldName: "",
   refreshIndexOnActiveLeafChange: false,
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
@@ -307,6 +310,72 @@ export default class BreadcrumbsPlugin extends Plugin {
     return null;
   }
 
+  hierarchyNoteAdjList(str: string) {
+    const layers = str.split("\n");
+    console.log({ layers });
+    const depth = (line: string) => line.split("-")[0].length;
+    const depths = layers.map(depth);
+    const hier: { note: string; depth: number; children: string[] }[] = [];
+
+    const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
+
+    let lineNo = 0;
+    while (lineNo < layers.length) {
+      const currLine = layers[lineNo];
+      if (currLine === "") continue;
+      const currNote = currLine.match(lineRegex)[1];
+      const currDepth = depth(currLine);
+
+      hier[lineNo] = { note: currNote, depth: currDepth, children: [] };
+
+      if (lineNo !== layers.length - 1) {
+        const nextLine = layers[lineNo + 1];
+        const nextNote = nextLine.match(lineRegex)[1];
+        const nextDepth = depth(nextLine);
+
+        if (nextDepth > currDepth) {
+          debug(this.settings, { currNote, nextNote });
+          hier[lineNo].children.push(nextNote);
+
+          const copy = [...hier];
+          const noteUp = copy.reverse().find((adjItem, i) => {
+            debug(this.settings, { i, currNote, currDepth });
+            return adjItem.depth === currDepth - 1;
+          });
+          debug(this.settings, { noteUp });
+          if (noteUp) {
+            hier[hier.indexOf(noteUp)].children.push(currNote);
+          }
+        } else {
+          const copy = [...hier];
+          const noteUp = copy.reverse().find((adjItem, i) => {
+            debug(this.settings, { i, currNote, currDepth });
+            return adjItem.depth === currDepth - 1;
+          });
+          debug(this.settings, { noteUp });
+          hier[hier.indexOf(noteUp)].children.push(currNote);
+        }
+      } else {
+        const prevLine = layers[lineNo - 1];
+        const prevDepth = depth(prevLine);
+
+        if (prevDepth >= currDepth) {
+          const copy = [...hier];
+          const noteUp = copy.reverse().find((adjItem, i) => {
+            return adjItem.depth === currDepth - 1;
+          });
+          hier[hier.indexOf(noteUp)].children.push(currNote);
+        }
+      }
+
+      lineNo++;
+    }
+    hier.forEach((item) => {
+      item.children = removeDuplicates(item.children);
+    });
+    return hier;
+  }
+
   // SECTION OneSource
 
   populateGraph(
@@ -334,6 +403,28 @@ export default class BreadcrumbsPlugin extends Plugin {
       : getObsMetadataCache(this.app, this.settings, files);
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+
+    let hierarchyNotesArr: {
+      note: string;
+      depth: number;
+      children: string[];
+    }[];
+    if (this.settings.hierarchyNotes[0] !== "") {
+      const currPath = this.app.workspace.getActiveFile().path;
+      const contentArr = await Promise.all(
+        this.settings.hierarchyNotes.map(async (note) => {
+          const file = this.app.metadataCache.getFirstLinkpathDest(
+            note,
+            currPath
+          );
+          const content = await this.app.vault.cachedRead(file);
+          return content;
+        })
+      );
+
+      hierarchyNotesArr = contentArr.map(this.hierarchyNoteAdjList).flat();
+      debug(this.settings, { hierarchyNotesArr });
+    }
 
     const { userHierarchies } = this.settings;
 
@@ -369,6 +460,23 @@ export default class BreadcrumbsPlugin extends Plugin {
         });
       });
     });
+
+    if (hierarchyNotesArr.length) {
+      const { hierarchyNoteFieldName } = this.settings;
+
+      const g = graphs.hierGs.find(
+        (hierG) => hierG.down[hierarchyNoteFieldName]
+      ).down[hierarchyNoteFieldName];
+      
+      hierarchyNotesArr.forEach((adjListItem) => {
+        adjListItem.children.forEach((child) => {
+          g.setEdge(adjListItem.note, child, {
+            dir: "down",
+            fieldName: hierarchyNoteFieldName,
+          });
+        });
+      });
+    }
 
     DIRECTIONS.forEach((dir) => {
       const allXGs = getAllGsInDir(userHierarchies, graphs.hierGs, dir);
