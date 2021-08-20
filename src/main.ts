@@ -310,11 +310,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     return null;
   }
 
-  hierarchyNoteAdjList(str: string) {
+  hierarchyNoteAdjList = (str: string) => {
     const layers = str.split("\n");
-    console.log({ layers });
+
     const depth = (line: string) => line.split("-")[0].length;
-    const depths = layers.map(depth);
+
     const hier: { note: string; depth: number; children: string[] }[] = [];
 
     const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
@@ -346,6 +346,7 @@ export default class BreadcrumbsPlugin extends Plugin {
           if (noteUp) {
             hier[hier.indexOf(noteUp)].children.push(currNote);
           }
+        } else if (currDepth === 0) {
         } else {
           const copy = [...hier];
           const noteUp = copy.reverse().find((adjItem, i) => {
@@ -353,7 +354,9 @@ export default class BreadcrumbsPlugin extends Plugin {
             return adjItem.depth === currDepth - 1;
           });
           debug(this.settings, { noteUp });
-          hier[hier.indexOf(noteUp)].children.push(currNote);
+          if (noteUp) {
+            hier[hier.indexOf(noteUp)].children.push(currNote);
+          }
         }
       } else {
         const prevLine = layers[lineNo - 1];
@@ -374,7 +377,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       item.children = removeDuplicates(item.children);
     });
     return hier;
-  }
+  };
 
   // SECTION OneSource
 
@@ -467,7 +470,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       const g = graphs.hierGs.find(
         (hierG) => hierG.down[hierarchyNoteFieldName]
       ).down[hierarchyNoteFieldName];
-      
+
       hierarchyNotesArr.forEach((adjListItem) => {
         adjListItem.children.forEach((child) => {
           g.setEdge(adjListItem.note, child, {
