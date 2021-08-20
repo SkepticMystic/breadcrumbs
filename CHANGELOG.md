@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.35](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.34...0.10.35) (2021-08-20)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Blanks line allowed ([596bd64](https://github.com/SkepticMystic/breadcrumbs/commit/596bd6445deb21480de7a6347ba203796f00aeb4))
+
 ### [0.10.34](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.33...0.10.34) (2021-08-20)
 
 
