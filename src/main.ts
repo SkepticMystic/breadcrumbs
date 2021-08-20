@@ -311,7 +311,8 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   hierarchyNoteAdjList = (str: string) => {
-    const layers = str.split("\n");
+    const layers = str.split("\n").filter((line) => line);
+    console.log({ layers });
 
     const depth = (line: string) => line.split("-")[0].length;
 
@@ -319,10 +320,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
 
+    console.log({ str });
     let lineNo = 0;
     while (lineNo < layers.length) {
       const currLine = layers[lineNo];
-      if (currLine === "") continue;
+
       const currNote = currLine.match(lineRegex)[1];
       const currDepth = depth(currLine);
 
@@ -330,6 +332,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
       if (lineNo !== layers.length - 1) {
         const nextLine = layers[lineNo + 1];
+        console.log({ nextLine });
         const nextNote = nextLine.match(lineRegex)[1];
         const nextDepth = depth(nextLine);
 
