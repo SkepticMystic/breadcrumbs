@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.34](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.33...0.10.34) (2021-08-20)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Don't push children if !noteUp ([841f7bf](https://github.com/SkepticMystic/breadcrumbs/commit/841f7bf9e8950873b39dce43e60e37cb85bfaa0a))
+
 ### [0.10.33](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.32...0.10.33) (2021-08-20)
 
 
