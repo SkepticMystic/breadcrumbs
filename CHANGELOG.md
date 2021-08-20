@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.33](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.32...0.10.33) (2021-08-20)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Adds Hierarchy Notes to Breadcrumbs ([816d847](https://github.com/SkepticMystic/breadcrumbs/commit/816d847e1016a84e0060e805b3900e9948c08a36))
+
 ### [0.10.32](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.31...0.10.32) (2021-08-18)
 
 
