@@ -17,6 +17,7 @@ import type { Relations, userHierarchy, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import { hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
 import { isEqual } from "lodash";
+import KoFi from "./Components/KoFi.svelte";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -751,5 +752,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             await plugin.saveSettings();
           })
       );
+
+    new KoFi({ target: this.containerEl });
   }
 }
