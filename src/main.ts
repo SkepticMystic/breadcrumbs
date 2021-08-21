@@ -312,7 +312,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   hierarchyNoteAdjList = (str: string) => {
     const layers = str.split("\n").filter((line) => line);
-    console.log({ layers });
 
     const depth = (line: string) => line.split("-")[0].length;
 
@@ -321,6 +320,18 @@ export default class BreadcrumbsPlugin extends Plugin {
     const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
 
     console.log({ str });
+
+    const getNoteUp = (
+      hier: { note: string; depth: number; children: string[] }[],
+      currDepth: number
+    ) => {
+      const copy = [...hier];
+      const noteUp = copy.reverse().find((adjItem, i) => {
+        return adjItem.depth === currDepth - 1;
+      });
+      return noteUp;
+    };
+
     let lineNo = 0;
     while (lineNo < layers.length) {
       const currLine = layers[lineNo];
@@ -340,22 +351,14 @@ export default class BreadcrumbsPlugin extends Plugin {
           debug(this.settings, { currNote, nextNote });
           hier[lineNo].children.push(nextNote);
 
-          const copy = [...hier];
-          const noteUp = copy.reverse().find((adjItem, i) => {
-            debug(this.settings, { i, currNote, currDepth });
-            return adjItem.depth === currDepth - 1;
-          });
+          const noteUp = getNoteUp(hier, currDepth);
           debug(this.settings, { noteUp });
           if (noteUp) {
             hier[hier.indexOf(noteUp)].children.push(currNote);
           }
         } else if (currDepth === 0) {
         } else {
-          const copy = [...hier];
-          const noteUp = copy.reverse().find((adjItem, i) => {
-            debug(this.settings, { i, currNote, currDepth });
-            return adjItem.depth === currDepth - 1;
-          });
+          const noteUp = getNoteUp(hier, currDepth);
           debug(this.settings, { noteUp });
           if (noteUp) {
             hier[hier.indexOf(noteUp)].children.push(currNote);
@@ -366,11 +369,10 @@ export default class BreadcrumbsPlugin extends Plugin {
         const prevDepth = depth(prevLine);
 
         if (prevDepth >= currDepth) {
-          const copy = [...hier];
-          const noteUp = copy.reverse().find((adjItem, i) => {
-            return adjItem.depth === currDepth - 1;
-          });
-          hier[hier.indexOf(noteUp)].children.push(currNote);
+          const noteUp = getNoteUp(hier, currDepth);
+          if (noteUp) {
+            hier[hier.indexOf(noteUp)].children.push(currNote);
+          }
         }
       }
 
@@ -417,17 +419,25 @@ export default class BreadcrumbsPlugin extends Plugin {
     }[];
     if (this.settings.hierarchyNotes[0] !== "") {
       const currPath = this.app.workspace.getActiveFile().path;
-      const contentArr = await Promise.all(
-        this.settings.hierarchyNotes.map(async (note) => {
-          const file = this.app.metadataCache.getFirstLinkpathDest(
-            note,
-            currPath
-          );
-          const content = await this.app.vault.cachedRead(file);
-          return content;
-        })
-      );
+      const contentArr = [];
 
+      this.settings.hierarchyNotes.forEach(async (note) => {
+        const file = this.app.metadataCache.getFirstLinkpathDest(
+          note,
+          currPath
+        );
+        if (file) {
+          const content = await this.app.vault.cachedRead(file);
+          contentArr.push(content);
+        } else {
+          new Notice(
+            `${note} is no long in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`
+          );
+        }
+      });
+
+      await Promise.all(contentArr);
+      console.log({ contentArr });
       hierarchyNotesArr = contentArr.map(this.hierarchyNoteAdjList).flat();
       debug(this.settings, { hierarchyNotesArr });
     }
