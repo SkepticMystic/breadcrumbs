@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.38](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.37...0.10.38) (2021-08-21)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Forgot to initialise hierarchyNotesArr as [] ([ffe6877](https://github.com/SkepticMystic/breadcrumbs/commit/ffe687719eef2fa96c4c4eb9d0b105cf54e4e14f))
+
 ### [0.10.37](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.36...0.10.37) (2021-08-21)
 
 
