@@ -29,6 +29,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
   display(): void {
     const plugin = this.plugin;
+    const { settings } = plugin;
     const { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
@@ -83,14 +84,14 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         el.addEventListener("click", async () => {
           row.remove();
           const removeIndex = hierIndex(
-            plugin.settings.userHierarchies,
+            settings.userHierarchies,
             [upInput.value, sameInput.value, downInput.value].map(
               splitAndTrim
             ) as [string[], string[], string[]]
           );
 
           if (removeIndex > -1) {
-            plugin.settings.userHierarchies.splice(removeIndex, 1);
+            settings.userHierarchies.splice(removeIndex, 1);
             await plugin.saveSettings();
           }
           new Notice("Hierarchy Removed.");
@@ -107,7 +108,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           el.addEventListener("click", async () => {
             if (
               hierIndex(
-                plugin.settings.userHierarchies,
+                settings.userHierarchies,
                 [upInput.value, sameInput.value, downInput.value].map(
                   splitAndTrim
                 ) as [string[], string[], string[]]
@@ -120,12 +121,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             }
             if (saveButton.hasClass("hierarchy-unsaved")) {
               const removeIndex = hierIndex(
-                plugin.settings.userHierarchies,
+                settings.userHierarchies,
                 cleanInputs
               );
 
               if (removeIndex > -1) {
-                plugin.settings.userHierarchies.splice(removeIndex, 1);
+                settings.userHierarchies.splice(removeIndex, 1);
                 await plugin.saveSettings();
               }
             }
@@ -136,12 +137,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             saveButton.toggleClass("hierarchy-unsaved", false);
             saveButton.textContent = "Saved";
 
-            if (hierIndex(plugin.settings.userHierarchies, cleanInputs) > -1) {
+            if (hierIndex(settings.userHierarchies, cleanInputs) > -1) {
               new Notice(
                 "A hierarchy with these Up, Same, and Down values already exists."
               );
             } else {
-              plugin.settings.userHierarchies.push({
+              settings.userHierarchies.push({
                 up: splitAndTrim(upInput.value),
                 same: splitAndTrim(sameInput.value),
                 down: splitAndTrim(downInput.value),
@@ -187,7 +188,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         el.addEventListener("click", async () => {
           const rows = fieldDetails.querySelectorAll(".hierarchy-row");
           rows.forEach((row) => row.remove());
-          plugin.settings.userHierarchies = [];
+          settings.userHierarchies = [];
           await plugin.saveSettings();
           new Notice("Hierarchies reset.");
         });
@@ -196,18 +197,16 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
     fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
       el.addEventListener("click", () => {
-        if (plugin.settings.userHierarchies.length) {
-          new Notice(
-            plugin.settings.userHierarchies.map(hierToStr).join("\n\n")
-          );
+        if (settings.userHierarchies.length) {
+          new Notice(settings.userHierarchies.map(hierToStr).join("\n\n"));
         } else {
           new Notice("No hierarchies currently exist.");
         }
-        console.log({ hierarchies: plugin.settings.userHierarchies });
+        console.log({ hierarchies: settings.userHierarchies });
       });
     });
 
-    plugin.settings.userHierarchies.forEach((userHier) => {
+    settings.userHierarchies.forEach((userHier) => {
       fieldDetails.append(addHierarchyRow(userHier, true));
     });
 
@@ -217,22 +216,22 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
     new Setting(hierarchyNoteDetails)
       .setName("Hierarchy Note(s)")
-      .setDesc("A list of notes used to create external breadcrumb structures.")
+      .setDesc("A list of notes used to create external Breadcrumb structures.")
       .addText((text) => {
         let finalValue: string[];
         text
           .setPlaceholder("Hierarchy Note(s)")
-          .setValue([plugin.settings.hierarchyNotes].flat().join(", "))
+          .setValue([settings.hierarchyNotes].flat().join(", "))
           .onChange(async (value) => {
             finalValue = splitAndTrim(value);
           });
 
         text.inputEl.onblur = async () => {
           if (finalValue[0] === "") {
-            plugin.settings.hierarchyNotes = finalValue;
+            settings.hierarchyNotes = finalValue;
             await plugin.saveSettings();
           } else if (finalValue.every((note) => isInVault(this.app, note))) {
-            plugin.settings.hierarchyNotes = finalValue;
+            settings.hierarchyNotes = finalValue;
             await plugin.saveSettings();
           } else {
             new Notice("Atleast one of the notes is not in your vault");
@@ -285,17 +284,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         text.inputEl.onblur = async () => {
           finalValue = text.getValue();
           if (finalValue === "") {
-            plugin.settings.hierarchyNoteFieldName = finalValue;
+            settings.hierarchyNoteDownFieldName = finalValue;
             await plugin.saveSettings();
           } else {
-            const downFieldNames = plugin.settings.userHierarchies
+            const downFieldNames = settings.userHierarchies
               .map((hier) => hier.down)
               .flat(3);
 
-            debug(plugin.settings, { downFieldNames, finalValue });
+            debug(settings, { downFieldNames, finalValue });
 
             if (downFieldNames.includes(finalValue)) {
-              plugin.settings.hierarchyNoteFieldName = finalValue;
+              settings.hierarchyNoteDownFieldName = finalValue;
               await plugin.saveSettings();
             } else {
               new Notice(
@@ -316,9 +315,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(plugin.settings.refreshIndexOnActiveLeafChange)
+          .setValue(settings.refreshIndexOnActiveLeafChange)
           .onChange(async (value) => {
-            plugin.settings.refreshIndexOnActiveLeafChange = value;
+            settings.refreshIndexOnActiveLeafChange = value;
             await plugin.saveSettings();
           })
       );
@@ -329,13 +328,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below)."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.useAllMetadata)
-          .onChange(async (value) => {
-            plugin.settings.useAllMetadata = value;
-            await plugin.saveSettings();
-            await plugin.refreshIndex();
-          })
+        toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
+          settings.useAllMetadata = value;
+          await plugin.saveSettings();
+          await plugin.refreshIndex();
+        })
       );
 
     new Setting(generalDetails)
@@ -345,9 +342,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(plugin.settings.parseJugglLinksWithoutJuggl)
+          .setValue(settings.parseJugglLinksWithoutJuggl)
           .onChange(async (value) => {
-            plugin.settings.parseJugglLinksWithoutJuggl = value;
+            settings.parseJugglLinksWithoutJuggl = value;
             await plugin.saveSettings();
           })
       );
@@ -361,12 +358,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         .addText((text) =>
           text
             .setPlaceholder("Seconds")
-            .setValue((plugin.settings.dvWaitTime / 1000).toString())
+            .setValue((settings.dvWaitTime / 1000).toString())
             .onChange(async (value) => {
               const num = Number(value);
 
               if (num > 0) {
-                plugin.settings.dvWaitTime = num * 1000;
+                settings.dvWaitTime = num * 1000;
                 await plugin.saveSettings();
               } else {
                 new Notice("The interval must be a non-negative number");
@@ -383,18 +380,18 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("Seconds")
-          .setValue(plugin.settings.refreshIntervalTime.toString())
+          .setValue(settings.refreshIntervalTime.toString())
           .onChange(async (value) => {
             clearInterval(plugin.refreshIntervalID);
             const num = Number(value);
 
             if (num > 0) {
-              plugin.settings.refreshIntervalTime = num;
+              settings.refreshIntervalTime = num;
               await plugin.saveSettings();
 
               plugin.refreshIntervalID = window.setInterval(async () => {
                 plugin.currGraphs = await plugin.initGraphs();
-                if (plugin.settings.showTrail) {
+                if (settings.showTrail) {
                   await plugin.drawTrail();
                 }
                 if (plugin.getActiveMatrixView()) {
@@ -403,7 +400,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               }, num * 1000);
               plugin.registerInterval(plugin.refreshIntervalID);
             } else if (num === 0) {
-              plugin.settings.refreshIntervalTime = num;
+              settings.refreshIntervalTime = num;
               await plugin.saveSettings();
               clearInterval(plugin.refreshIntervalID);
             } else {
@@ -421,8 +418,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "When Obsidian first loads, which view should it show? On = Matrix, Off = List"
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.defaultView).onChange(async (value) => {
-          plugin.settings.defaultView = value;
+        toggle.setValue(settings.defaultView).onChange(async (value) => {
+          settings.defaultView = value;
           await plugin.saveSettings();
         })
       );
@@ -434,13 +431,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.showNameOrType)
-          .onChange(async (value) => {
-            plugin.settings.showNameOrType = value;
-            await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
-          })
+        toggle.setValue(settings.showNameOrType).onChange(async (value) => {
+          settings.showNameOrType = value;
+          await plugin.saveSettings();
+          await plugin.getActiveMatrixView().draw();
+        })
       );
 
     new Setting(MLViewDetails)
@@ -449,13 +444,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.showRelationType)
-          .onChange(async (value) => {
-            plugin.settings.showRelationType = value;
-            await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
-          })
+        toggle.setValue(settings.showRelationType).onChange(async (value) => {
+          settings.showRelationType = value;
+          await plugin.saveSettings();
+          await plugin.getActiveMatrixView().draw();
+        })
       );
 
     new Setting(MLViewDetails)
@@ -465,9 +458,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(plugin.settings.filterImpliedSiblingsOfDifferentTypes)
+          .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
           .onChange(async (value) => {
-            plugin.settings.filterImpliedSiblingsOfDifferentTypes = value;
+            settings.filterImpliedSiblingsOfDifferentTypes = value;
             await plugin.saveSettings();
             await plugin.getActiveMatrixView().draw();
           })
@@ -479,8 +472,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "When loading the matrix view, should it open on the left or right side leaf? On = Right, Off = Left."
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.rlLeaf).onChange(async (value) => {
-          plugin.settings.rlLeaf = value;
+        toggle.setValue(settings.rlLeaf).onChange(async (value) => {
+          settings.rlLeaf = value;
           await plugin.saveSettings();
           await plugin.getActiveMatrixView()?.onClose();
           await plugin.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
@@ -496,8 +489,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "Show a trail of notes leading from your index note down to the current note you are in (if a path exists)"
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.showTrail).onChange(async (value) => {
-          plugin.settings.showTrail = value;
+        toggle.setValue(settings.showTrail).onChange(async (value) => {
+          settings.showTrail = value;
           await plugin.saveSettings();
           await plugin.drawTrail();
         })
@@ -510,11 +503,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addText((text) => {
         text
-          .setValue(plugin.settings.trailOrTable.toString())
+          .setValue(settings.trailOrTable.toString())
           .onChange(async (value) => {
             const num = parseInt(value);
             if ([1, 2, 3].includes(num)) {
-              plugin.settings.trailOrTable = num as 1 | 2 | 3;
+              settings.trailOrTable = num as 1 | 2 | 3;
               await plugin.saveSettings();
               await plugin.drawTrail();
             } else {
@@ -529,8 +522,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "If the grid view is visible, shows dots based on the file size of each cell."
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.gridDots).onChange(async (value) => {
-          plugin.settings.gridDots = value;
+        toggle.setValue(settings.gridDots).onChange(async (value) => {
+          settings.gridDots = value;
           await plugin.saveSettings();
           await plugin.drawTrail();
         })
@@ -544,9 +537,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       type: "color",
     });
 
-    dotsColourPicker.value = plugin.settings.dotsColour;
+    dotsColourPicker.value = settings.dotsColour;
     dotsColourPicker.addEventListener("change", async () => {
-      plugin.settings.dotsColour = dotsColourPicker.value;
+      settings.dotsColour = dotsColourPicker.value;
       await plugin.saveSettings();
     });
 
@@ -556,8 +549,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "If the grid view is visible, change the background colour of squares based on the number of children leaving that note."
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.gridHeatmap).onChange(async (value) => {
-          plugin.settings.gridHeatmap = value;
+        toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
+          settings.gridHeatmap = value;
           await plugin.saveSettings();
           await plugin.drawTrail();
         })
@@ -571,9 +564,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       type: "color",
     });
 
-    heatmapColourPicker.value = plugin.settings.heatmapColour;
+    heatmapColourPicker.value = settings.heatmapColour;
     heatmapColourPicker.addEventListener("change", async () => {
-      plugin.settings.heatmapColour = heatmapColourPicker.value;
+      settings.heatmapColour = heatmapColourPicker.value;
       await plugin.saveSettings();
     });
 
@@ -586,7 +579,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         let finalValue: string[];
         text
           .setPlaceholder("Index Note")
-          .setValue([plugin.settings.indexNote].flat().join(", "))
+          .setValue([settings.indexNote].flat().join(", "))
           .onChange(async (value) => {
             finalValue = splitAndTrim(value);
           });
@@ -595,10 +588,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           // TODO Refactor this to general purpose isInVault function
 
           if (finalValue[0] === "") {
-            plugin.settings.indexNote = finalValue;
+            settings.indexNote = finalValue;
             await plugin.saveSettings();
           } else if (finalValue.every((index) => isInVault(this.app, index))) {
-            plugin.settings.indexNote = finalValue;
+            settings.indexNote = finalValue;
             await plugin.saveSettings();
           } else {
             new Notice(`Atleast one of the notes is not in your vault`);
@@ -612,8 +605,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest"
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.showAll).onChange(async (value) => {
-          plugin.settings.showAll = value;
+        toggle.setValue(settings.showAll).onChange(async (value) => {
+          settings.showAll = value;
 
           await plugin.saveSettings();
           await plugin.drawTrail();
@@ -628,9 +621,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("→")
-          .setValue(plugin.settings.trailSeperator)
+          .setValue(settings.trailSeperator)
           .onChange(async (value) => {
-            plugin.settings.trailSeperator = value;
+            settings.trailSeperator = value;
             await plugin.saveSettings();
             await plugin.drawTrail();
           })
@@ -644,9 +637,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder(`No path to index note was found`)
-          .setValue(plugin.settings.noPathMessage)
+          .setValue(settings.noPathMessage)
           .onChange(async (value) => {
-            plugin.settings.noPathMessage = value;
+            settings.noPathMessage = value;
             await plugin.saveSettings();
             await plugin.drawTrail();
           })
@@ -659,9 +652,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(plugin.settings.respectReadableLineLength)
+          .setValue(settings.respectReadableLineLength)
           .onChange(async (value) => {
-            plugin.settings.respectReadableLineLength = value;
+            settings.respectReadableLineLength = value;
             await plugin.saveSettings();
             await plugin.drawTrail();
           })
@@ -677,10 +670,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         VISTYPES.forEach((option: visTypes) => {
           cb.addOption(option, option);
         });
-        cb.setValue(plugin.settings.visGraph);
+        cb.setValue(settings.visGraph);
 
         cb.onChange(async (value: visTypes) => {
-          plugin.settings.visGraph = value;
+          settings.visGraph = value;
           await plugin.saveSettings();
         });
       });
@@ -691,10 +684,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         RELATIONS.forEach((option: Relations) => {
           cb.addOption(option, option);
         });
-        cb.setValue(plugin.settings.visRelation);
+        cb.setValue(settings.visRelation);
 
         cb.onChange(async (value: Relations) => {
-          plugin.settings.visRelation = value;
+          settings.visRelation = value;
           await plugin.saveSettings();
         });
       });
@@ -705,10 +698,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         REAlCLOSED.forEach((option: string) => {
           cb.addOption(option, option);
         });
-        cb.setValue(plugin.settings.visClosed);
+        cb.setValue(settings.visClosed);
 
         cb.onChange(async (value: string) => {
-          plugin.settings.visClosed = value;
+          settings.visClosed = value;
           await plugin.saveSettings();
         });
       });
@@ -719,10 +712,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         ALLUNLINKED.forEach((option: string) => {
           cb.addOption(option, option);
         });
-        cb.setValue(plugin.settings.visAll);
+        cb.setValue(settings.visAll);
 
         cb.onChange(async (value: string) => {
-          plugin.settings.visAll = value;
+          settings.visAll = value;
           await plugin.saveSettings();
         });
       });
@@ -737,24 +730,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "When creating an index, should it wrap the note name in wikilinks `[[]]` or not. On = yes, off = no."
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.wikilinkIndex)
-          .onChange(async (value) => {
-            plugin.settings.wikilinkIndex = value;
-            await plugin.saveSettings();
-          })
+        toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
+          settings.wikilinkIndex = value;
+          await plugin.saveSettings();
+        })
       );
 
     new Setting(createIndexDetails)
       .setName("Show aliases of notes in index")
       .setDesc("Show the aliases of each note in brackets. On = yes, off = no.")
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.aliasesInIndex)
-          .onChange(async (value) => {
-            plugin.settings.aliasesInIndex = value;
-            await plugin.saveSettings();
-          })
+        toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
+          settings.aliasesInIndex = value;
+          await plugin.saveSettings();
+        })
       );
 
     const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
@@ -766,8 +755,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail."
       )
       .addToggle((toggle) =>
-        toggle.setValue(plugin.settings.debugMode).onChange(async (value) => {
-          plugin.settings.debugMode = value;
+        toggle.setValue(settings.debugMode).onChange(async (value) => {
+          settings.debugMode = value;
           await plugin.saveSettings();
         })
       );
@@ -776,12 +765,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       .setName("Super Debug Mode")
       .setDesc("Toggling this on will enable ALOT of console logs")
       .addToggle((toggle) =>
-        toggle
-          .setValue(plugin.settings.superDebugMode)
-          .onChange(async (value) => {
-            plugin.settings.superDebugMode = value;
-            await plugin.saveSettings();
-          })
+        toggle.setValue(settings.superDebugMode).onChange(async (value) => {
+          settings.superDebugMode = value;
+          await plugin.saveSettings();
+        })
       );
 
     new KoFi({ target: this.containerEl });
