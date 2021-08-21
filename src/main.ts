@@ -325,7 +325,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const layers = noteContent.split("\n").filter((line) => line);
 
-    const depth = (line: string) => line.split("-")[0].length;
+    const depth = (line: string) => line.split(/[-\*\+]/)[0].length;
 
     const depths = layers.map(depth);
     const differences = [];
