@@ -13,7 +13,13 @@ import type {
   SquareProps,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { copy, debug, mergeGs } from "src/sharedFunctions";
+import {
+  copy,
+  debug,
+  debugGroupEnd,
+  debugGroupStart,
+  mergeGs,
+} from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
 
@@ -240,8 +246,10 @@ export default class MatrixView extends ItemView {
     this.contentEl.empty();
 
     const settings = this.plugin.settings;
+
+    debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
+
     const hierGs = this.plugin.currGraphs;
-    debug(settings, { hierGs });
     const { userHierarchies } = this.plugin.settings;
 
     const currFile = this.app.workspace.getActiveFile();
@@ -403,5 +411,6 @@ export default class MatrixView extends ItemView {
         },
       });
     }
+    debugGroupEnd(settings, "debugMode");
   }
 }

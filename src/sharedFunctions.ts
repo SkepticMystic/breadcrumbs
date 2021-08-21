@@ -47,12 +47,32 @@ export function superDebug(settings: BreadcrumbsSettings, log: any): void {
   }
 }
 
+export function debugGroupStart(
+  settings: BreadcrumbsSettings,
+  type: "debugMode" | "superDebugMode",
+  group: string
+) {
+  if (settings[type]) {
+    console.groupCollapsed(group);
+  }
+}
+export function debugGroupEnd(
+  settings: BreadcrumbsSettings,
+  type: "debugMode" | "superDebugMode"
+) {
+  if (settings[type]) {
+    console.groupEnd();
+  }
+}
+
 export function getDVMetadataCache(
   app: App,
   settings: BreadcrumbsSettings,
   files: TFile[]
 ) {
+  debugGroupStart(settings, "debugMode", "getDVMetadataCache");
   debug(settings, "Using Dataview");
+  debugGroupStart(settings, "superDebugMode", "dvCaches");
 
   const fileFrontmatterArr: dvFrontmatterCache[] = [];
   files.forEach((file) => {
@@ -61,12 +81,13 @@ export function getDVMetadataCache(
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
       file.path
     );
-
     superDebug(settings, { dvCache });
     fileFrontmatterArr.push(dvCache);
   });
 
+  debugGroupEnd(settings, "superDebugMode");
   debug(settings, { fileFrontmatterArr });
+  debugGroupEnd(settings, "debugMode");
   return fileFrontmatterArr;
 }
 
@@ -75,10 +96,11 @@ export function getObsMetadataCache(
   settings: BreadcrumbsSettings,
   files: TFile[]
 ) {
+  debugGroupStart(settings, "debugMode", "getObsMetadataCache");
   debug(settings, "Using Obsidian");
+  debugGroupStart(settings, "superDebugMode", "obsCaches");
 
   const fileFrontmatterArr: dvFrontmatterCache[] = [];
-
   files.forEach((file) => {
     superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
     const obs: FrontMatterCache =
@@ -91,7 +113,9 @@ export function getObsMetadataCache(
     }
   });
 
+  debugGroupEnd(settings, "superDebugMode");
   debug(settings, { fileFrontmatterArr });
+  debugGroupEnd(settings, "debugMode");
   return fileFrontmatterArr;
 }
 
@@ -109,6 +133,9 @@ export async function getJugglLinks(
   app: App,
   settings: BreadcrumbsSettings
 ): Promise<JugglLink[]> {
+  debugGroupStart(settings, "debugMode", "getJugglLinks");
+  debug(settings, "Using Juggl");
+
   const files = app.vault.getMarkdownFiles();
   const { userHierarchies } = settings;
 
@@ -190,6 +217,7 @@ export async function getJugglLinks(
     (jugglLink) => jugglLink.links.length
   );
   debug(settings, { filteredLinks });
+  debugGroupEnd(settings, "debugMode");
   return filteredLinks;
 }
 
@@ -217,7 +245,7 @@ export function getFieldValues(
         [rawValuesPreFlat].flat(4);
 
       superDebug(settings, `${field} of: ${frontmatterCache?.file?.path}`);
-      superDebug(settings, { rawValues });
+      superDebug(settings, rawValues);
 
       rawValues.forEach((rawItem) => {
         if (!rawItem) return;
@@ -257,16 +285,19 @@ export async function getNeighbourObjArr(
     hierarchies: HierarchyFields[];
   }[]
 > {
-  const { userHierarchies } = plugin.settings;
+  const { settings } = plugin;
+  const { userHierarchies } = settings;
+
+  if (settings.debugMode || settings.superDebugMode) {
+    console.groupCollapsed("getNeighbourObjArr");
+  }
 
   let jugglLinks: JugglLink[] = [];
   if (
     plugin.app.plugins.plugins.juggl !== undefined ||
     plugin.settings.parseJugglLinksWithoutJuggl
   ) {
-    debug(plugin.settings, "Using Juggl");
     jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
-    debug(plugin.settings, { jugglLinks });
   }
 
   const neighbourObjArr: {
@@ -288,13 +319,13 @@ export async function getNeighbourObjArr(
       const newHier: HierarchyFields = { up: {}, same: {}, down: {} };
 
       // Add regular metadata links
-      if (plugin.settings.useAllMetadata) {
+      if (settings.useAllMetadata) {
         DIRECTIONS.forEach((dir, i) => {
           fieldsArr[i].forEach((field) => {
             newHier[dir][field] = getFieldValues(
               fileFrontmatter,
               field,
-              plugin.settings
+              settings
             );
           });
         });
@@ -326,7 +357,10 @@ export async function getNeighbourObjArr(
     return hierFields;
   });
 
-  debug(plugin.settings, { neighbourObjArr });
+  debug(settings, { neighbourObjArr });
+  if (settings.debugMode || settings.superDebugMode) {
+    console.groupEnd();
+  }
   return neighbourObjArr;
 }
 

@@ -27,6 +27,8 @@ import MatrixView from "src/MatrixView";
 import {
   closeImpliedLinks,
   debug,
+  debugGroupEnd,
+  debugGroupStart,
   getAllGsInDir,
   getDVMetadataCache,
   getNeighbourObjArr,
@@ -311,6 +313,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   hierarchyNoteAdjList = (str: string) => {
+    const settings = this.settings;
     const layers = str.split("\n").filter((line) => line);
 
     const depth = (line: string) => line.split("-")[0].length;
@@ -324,7 +327,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       }
     });
 
-    console.log({ differences });
+    debug(settings, { differences });
 
     const posFilteredDifferences = differences
       .filter((diff) => diff !== 0)
@@ -353,7 +356,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       const noteUp = copy.reverse().find((adjItem, i) => {
         return adjItem.depth === currDepth - difference;
       });
-      debug(this.settings, { noteUp });
+      debug(settings, { noteUp });
       if (noteUp) {
         hier[hier.indexOf(noteUp)].children.push(currNote);
       }
@@ -374,7 +377,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         const nextDepth = depth(nextLine);
 
         if (nextDepth > currDepth) {
-          debug(this.settings, { currNote, nextNote });
+          debug(settings, { currNote, nextNote });
           hier[lineNo].children.push(nextNote);
           pushNoteUp(hier, currNote, currDepth);
         } else if (currDepth === 0) {
@@ -415,27 +418,29 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async initGraphs(): Promise<BCIndex> {
-    debug(this.settings, "initialising graphs");
+    const settings = this.settings;
+    debugGroupStart(settings, "debugMode", "Initialise Graphs");
     const files = this.app.vault.getMarkdownFiles();
 
     const dvQ = !!this.app.plugins.plugins.dataview?.api;
 
     const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
-      ? getDVMetadataCache(this.app, this.settings, files)
-      : getObsMetadataCache(this.app, this.settings, files);
+      ? getDVMetadataCache(this.app, settings, files)
+      : getObsMetadataCache(this.app, settings, files);
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
+    debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
     let hierarchyNotesArr: {
       note: string;
       depth: number;
       children: string[];
     }[] = [];
-    if (this.settings.hierarchyNotes[0] !== "") {
+    if (settings.hierarchyNotes[0] !== "") {
       const currPath = this.app.workspace.getActiveFile().path;
       const contentArr = [];
 
-      this.settings.hierarchyNotes.forEach(async (note) => {
+      settings.hierarchyNotes.forEach(async (note) => {
         const file = this.app.metadataCache.getFirstLinkpathDest(
           note,
           currPath
@@ -453,10 +458,11 @@ export default class BreadcrumbsPlugin extends Plugin {
       await Promise.all(contentArr);
       console.log({ contentArr });
       hierarchyNotesArr = contentArr.map(this.hierarchyNoteAdjList).flat();
-      debug(this.settings, { hierarchyNotesArr });
+      debug(settings, { hierarchyNotesArr });
     }
+    debugGroupEnd(settings, "debugMode");
 
-    const { userHierarchies } = this.settings;
+    const { userHierarchies } = settings;
 
     const graphs: BCIndex = {
       hierGs: [],
@@ -492,7 +498,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     if (hierarchyNotesArr.length) {
-      const { hierarchyNoteFieldName } = this.settings;
+      const { hierarchyNoteFieldName } = settings;
 
       const g = graphs.hierGs.find(
         (hierG) => hierG.down[hierarchyNoteFieldName]
@@ -528,8 +534,10 @@ export default class BreadcrumbsPlugin extends Plugin {
       }
     });
 
-    debug(this.settings, "graphs inited");
-    debug(this.settings, { graphs });
+    debug(settings, "graphs inited");
+    debug(settings, { graphs });
+
+    debugGroupEnd(settings, "debugMode");
 
     return graphs;
   }
@@ -630,17 +638,26 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    if (!this.settings.showTrail) return;
+    const settings = this.settings;
+    debugGroupStart(settings, "debugMode", "Draw Trail");
+    if (!settings.showTrail) {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
 
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeMDView) return;
+    if (!activeMDView) {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
 
     const currFile = activeMDView.file;
     const frontm =
       this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
-    if (frontm["kanban-plugin"]) return;
-
-    const settings = this.settings;
+    if (frontm["kanban-plugin"]) {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
 
     const closedUp = this.currGraphs.closedGs.up;
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
@@ -653,7 +670,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     // Make sure it's empty
     previewView.querySelector("div.breadcrumbs-trail")?.remove();
 
-    if (sortedTrails.length === 0 && settings.noPathMessage === "") return;
+    if (sortedTrails.length === 0 && settings.noPathMessage === "") {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
 
     const trailDiv = createDiv({
       cls: `breadcrumbs-trail ${
@@ -672,6 +692,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     if (sortedTrails.length === 0) {
       trailDiv.innerText = settings.noPathMessage;
+      debugGroupEnd(settings, "debugMode");
       return;
     }
 
