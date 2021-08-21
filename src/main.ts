@@ -430,7 +430,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       note: string;
       depth: number;
       children: string[];
-    }[];
+    }[] = [];
     if (this.settings.hierarchyNotes[0] !== "") {
       const currPath = this.app.workspace.getActiveFile().path;
       const contentArr = [];
