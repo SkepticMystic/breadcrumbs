@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.39](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.38...0.10.39) (2021-08-21)
+
+
+### Bug Fixes
+
+* **Vis View:** :bug: Force Directed Graph: Current note doesn't have to have breadcrumbs for fdg to show ([fc66973](https://github.com/SkepticMystic/breadcrumbs/commit/fc669734727582fc923fa5c92c455fd2869ba8d4)), closes [#93](https://github.com/SkepticMystic/breadcrumbs/issues/93)
+
 ### [0.10.38](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.37...0.10.38) (2021-08-21)
 
 
