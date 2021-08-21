@@ -456,7 +456,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       });
 
       await Promise.all(contentArr);
-      console.log({ contentArr });
+
       hierarchyNotesArr = contentArr.map(this.hierarchyNoteAdjList).flat();
       debug(settings, { hierarchyNotesArr });
     }

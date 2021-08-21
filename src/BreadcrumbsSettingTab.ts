@@ -15,7 +15,7 @@ import {
 } from "src/constants";
 import type { Relations, userHierarchy, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
+import { debug, hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
 import { isEqual } from "lodash";
 import KoFi from "./Components/KoFi.svelte";
 
@@ -261,7 +261,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           } else {
             const downFieldNames = plugin.settings.userHierarchies
               .map((hier) => hier.down)
-              .flat();
+              .flat(3);
+
+            debug(plugin.settings, { downFieldNames, finalValue });
 
             if (downFieldNames.includes(finalValue)) {
               plugin.settings.hierarchyNoteFieldName = finalValue;
