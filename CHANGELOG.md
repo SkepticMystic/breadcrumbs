@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.45](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.44...0.10.45) (2021-08-21)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Forget to check for different delimiters in depth() ([7d54b88](https://github.com/SkepticMystic/breadcrumbs/commit/7d54b881b067560f5a3098155a9b4ac98f58697e))
+
 ### [0.10.44](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.43...0.10.44) (2021-08-21)
 
 
