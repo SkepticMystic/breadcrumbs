@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.44](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.43...0.10.44) (2021-08-21)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Allow any list delimiter `-`, `*`, `+` ([e307696](https://github.com/SkepticMystic/breadcrumbs/commit/e3076967fde061be5f2f36dbaa007ef208fb1e31))
+* **Hierarchy Note:** :sparkles: Allow yaml frontmatter ([88f0499](https://github.com/SkepticMystic/breadcrumbs/commit/88f04997833252bb0498f409a67d57360110cedc))
+
 ### [0.10.43](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.42...0.10.43) (2021-08-21)
 
 
