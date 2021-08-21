@@ -1,7 +1,15 @@
 # Breadcrumb Trail
 
-This plugin adds two new views to Obsidian, the breadcrumb matrix/list view, and the breadcrumbs trail view.
+This plugin adds multiple new views to Obsidian.
+
 The [wiki](https://github.com/SkepticMystic/breadcrumbs/wiki) has more in-depth info on the plugin than the readme.
+
+You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md).
+
+## Basics
+
+Breadcrumbs lets you add hierarchical metadata to your notes, then leverage that structure.
+Using and up (↑), same (→), and down (↓) relationship, you can add directional structure to your notes.
 
 ## Matrix/List view
 
@@ -42,6 +50,6 @@ The name of the field used to indicate notes on the same level as the current on
 
 The field used to show "narrower" notes, like `Subtopic: [[Note]]`, or `child:: [[Note]]`
 
-# Feed my coffee problem
+## Feed my coffee problem
 
-https://ko-fi.com/skepticmystic
+If you're so inclined, you can buy me a coffee over here: https://ko-fi.com/skepticmystic :)
