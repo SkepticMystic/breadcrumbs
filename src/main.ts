@@ -45,7 +45,8 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
   hierarchyNotes: [""],
-  hierarchyNoteFieldName: "",
+  hierarchyNoteDownFieldName: "",
+  hierarchyNoteUpFieldName: "",
   refreshIndexOnActiveLeafChange: false,
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
@@ -498,20 +499,36 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     if (hierarchyNotesArr.length) {
-      const { hierarchyNoteFieldName } = settings;
+      const { hierarchyNoteUpFieldName, hierarchyNoteDownFieldName } = settings;
 
-      const g = graphs.hierGs.find(
-        (hierG) => hierG.down[hierarchyNoteFieldName]
-      ).down[hierarchyNoteFieldName];
+      if (hierarchyNoteUpFieldName !== "") {
+        const gUp = graphs.hierGs.find(
+          (hierG) => hierG.up[hierarchyNoteUpFieldName]
+        ).up[hierarchyNoteUpFieldName];
 
-      hierarchyNotesArr.forEach((adjListItem) => {
-        adjListItem.children.forEach((child) => {
-          g.setEdge(adjListItem.note, child, {
-            dir: "down",
-            fieldName: hierarchyNoteFieldName,
+        hierarchyNotesArr.forEach((adjListItem) => {
+          adjListItem.children.forEach((child) => {
+            gUp.setEdge(child, adjListItem.note, {
+              dir: "up",
+              fieldName: hierarchyNoteUpFieldName,
+            });
           });
         });
-      });
+      }
+      if (hierarchyNoteDownFieldName !== "") {
+        const gDown = graphs.hierGs.find(
+          (hierG) => hierG.down[hierarchyNoteDownFieldName]
+        ).down[hierarchyNoteDownFieldName];
+
+        hierarchyNotesArr.forEach((adjListItem) => {
+          adjListItem.children.forEach((child) => {
+            gDown.setEdge(adjListItem.note, child, {
+              dir: "down",
+              fieldName: hierarchyNoteDownFieldName,
+            });
+          });
+        });
+      }
     }
 
     DIRECTIONS.forEach((dir) => {
