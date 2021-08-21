@@ -324,18 +324,21 @@ export default class BreadcrumbsPlugin extends Plugin {
       }
     });
 
+    console.log({ differences });
+
     const posFilteredDifferences = differences
       .filter((diff) => diff !== 0)
       .map(Math.abs);
 
-    const noDup = removeDuplicates(posFilteredDifferences);
-    if (noDup.length > 1) {
+    const lcm = Math.min(...posFilteredDifferences);
+
+    if (!posFilteredDifferences.every((diff) => diff % lcm === 0)) {
       new Notice(
         "Please make sure the indentation is consistent in your hierarchy note."
       );
       return [];
     }
-    const difference = noDup[0];
+    const difference = lcm;
 
     const hier: { note: string; depth: number; children: string[] }[] = [];
 
