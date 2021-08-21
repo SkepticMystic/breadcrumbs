@@ -346,7 +346,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const hier: { note: string; depth: number; children: string[] }[] = [];
 
-    const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
+    const lineRegex = new RegExp(/\s*[-\*\+] \[\[(.*)\]\]/);
 
     const pushNoteUp = (
       hier: { note: string; depth: number; children: string[] }[],
