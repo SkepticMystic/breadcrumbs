@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.36](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.35...0.10.36) (2021-08-21)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Any consistent depth should be allowed, not just tabs ([a738e39](https://github.com/SkepticMystic/breadcrumbs/commit/a738e39415cf89391509c8bbc2e7953073980082))
+* **Hierarchy Note:** :bug: Send Notice if a note in hierarchyNotes has been deleted ([49540e8](https://github.com/SkepticMystic/breadcrumbs/commit/49540e8d99841da10161f9176a5fbaca71079cc4))
+
 ### [0.10.35](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.34...0.10.35) (2021-08-20)
 
 
