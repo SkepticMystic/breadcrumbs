@@ -16,6 +16,7 @@ export const forceDirectedG = (
 ) => {
   const { settings } = modal.plugin;
   let nodeToGetTo = currFile.basename;
+  console.log({ nodeToGetTo });
 
   console.time("Find all paths");
   let pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
@@ -50,10 +51,17 @@ export const forceDirectedG = (
     target: { index: number; x: number; y: number };
   }[] = data.links.map((d) => Object.create(d));
 
+  const currNode = data.nodes.find((node) => node.name === currFile.basename);
+  let currNodeIndex: number;
+  if (!currNode) {
+    const id = data.nodes.length;
+    data.nodes.push({ id, name: currFile.basename });
+    currNodeIndex = id;
+  } else {
+    currNodeIndex = currNode.id;
+  }
+
   const nodes = data.nodes.map((d) => Object.create(d));
-  const currNodeIndex = data.nodes.find(
-    (node) => node.name === currFile.basename
-  ).id;
 
   const simulation = d3
     .forceSimulation(nodes)
