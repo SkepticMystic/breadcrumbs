@@ -315,21 +315,45 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     const depth = (line: string) => line.split("-")[0].length;
 
+    const depths = layers.map(depth);
+    const differences = [];
+
+    depths.forEach((dep, i) => {
+      if (i >= 1) {
+        differences.push(dep - depths[i - 1]);
+      }
+    });
+
+    const posFilteredDifferences = differences
+      .filter((diff) => diff !== 0)
+      .map(Math.abs);
+
+    const noDup = removeDuplicates(posFilteredDifferences);
+    if (noDup.length > 1) {
+      new Notice(
+        "Please make sure the indentation is consistent in your hierarchy note."
+      );
+      return [];
+    }
+    const difference = noDup[0];
+
     const hier: { note: string; depth: number; children: string[] }[] = [];
 
     const lineRegex = new RegExp(/\s*- \[\[(.*)\]\]/);
 
-    console.log({ str });
-
-    const getNoteUp = (
+    const pushNoteUp = (
       hier: { note: string; depth: number; children: string[] }[],
+      currNote: string,
       currDepth: number
     ) => {
       const copy = [...hier];
       const noteUp = copy.reverse().find((adjItem, i) => {
-        return adjItem.depth === currDepth - 1;
+        return adjItem.depth === currDepth - difference;
       });
-      return noteUp;
+      debug(this.settings, { noteUp });
+      if (noteUp) {
+        hier[hier.indexOf(noteUp)].children.push(currNote);
+      }
     };
 
     let lineNo = 0;
@@ -343,36 +367,23 @@ export default class BreadcrumbsPlugin extends Plugin {
 
       if (lineNo !== layers.length - 1) {
         const nextLine = layers[lineNo + 1];
-        console.log({ nextLine });
         const nextNote = nextLine.match(lineRegex)[1];
         const nextDepth = depth(nextLine);
 
         if (nextDepth > currDepth) {
           debug(this.settings, { currNote, nextNote });
           hier[lineNo].children.push(nextNote);
-
-          const noteUp = getNoteUp(hier, currDepth);
-          debug(this.settings, { noteUp });
-          if (noteUp) {
-            hier[hier.indexOf(noteUp)].children.push(currNote);
-          }
+          pushNoteUp(hier, currNote, currDepth);
         } else if (currDepth === 0) {
         } else {
-          const noteUp = getNoteUp(hier, currDepth);
-          debug(this.settings, { noteUp });
-          if (noteUp) {
-            hier[hier.indexOf(noteUp)].children.push(currNote);
-          }
+          pushNoteUp(hier, currNote, currDepth);
         }
       } else {
         const prevLine = layers[lineNo - 1];
         const prevDepth = depth(prevLine);
 
         if (prevDepth >= currDepth) {
-          const noteUp = getNoteUp(hier, currDepth);
-          if (noteUp) {
-            hier[hier.indexOf(noteUp)].children.push(currNote);
-          }
+          pushNoteUp(hier, currNote, currDepth);
         }
       }
 

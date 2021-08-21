@@ -551,6 +551,6 @@ export function hierToStr(hier: userHierarchy) {
 ↓: ${hier.down.join(", ")}`;
 }
 
-export function removeDuplicates(arr: string[]) {
+export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
 }
