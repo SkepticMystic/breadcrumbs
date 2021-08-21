@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.37](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.36...0.10.37) (2021-08-21)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Any indentation allowed. For real this time ([7d5c596](https://github.com/SkepticMystic/breadcrumbs/commit/7d5c5964bdd3ea1937ca8b685d06f6fcc5657428))
+
 ### [0.10.36](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.35...0.10.36) (2021-08-21)
 
 
