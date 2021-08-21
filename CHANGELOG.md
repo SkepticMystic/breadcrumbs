@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.43](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.42...0.10.43) (2021-08-21)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Option to have hierarchy note fill in real parents, or real children, or both ([ea31f64](https://github.com/SkepticMystic/breadcrumbs/commit/ea31f643915a89a47492fbe9b8f5658c2f108fc7))
+
 ### [0.10.42](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.41...0.10.42) (2021-08-21)
 
 ### [0.10.41](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.40...0.10.41) (2021-08-21)
