@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.40](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.39...0.10.40) (2021-08-21)
+
+
+### Features
+
+* :sparkles: Much better debugging. Now grouped by function ([48a2f03](https://github.com/SkepticMystic/breadcrumbs/commit/48a2f03a92ca0bfc6bcf007081b1799f11a8b3ce))
+
 ### [0.10.39](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.38...0.10.39) (2021-08-21)
 
 
