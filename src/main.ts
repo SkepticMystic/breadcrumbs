@@ -314,8 +314,16 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   hierarchyNoteAdjList = (str: string) => {
+    let noteContent = str;
     const settings = this.settings;
-    const layers = str.split("\n").filter((line) => line);
+
+    const yamlRegex = new RegExp(/^---.*/);
+    const hasYaml = !!noteContent.match(yamlRegex);
+    if (hasYaml) {
+      noteContent = noteContent.split("---").slice(2).join("---");
+    }
+
+    const layers = noteContent.split("\n").filter((line) => line);
 
     const depth = (line: string) => line.split("-")[0].length;
 
