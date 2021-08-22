@@ -399,7 +399,17 @@ export async function openOrSwitch(
   event: MouseEvent
 ): Promise<void> {
   const { workspace } = app;
-  const destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
+  let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
+
+  if (!destFile) {
+    const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
+    const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
+    await app.vault.create(newFilePath, "");
+    destFile = app.metadataCache.getFirstLinkpathDest(
+      newFilePath,
+      currFile.path
+    );
+  }
 
   const openLeaves: WorkspaceLeaf[] = [];
   // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
