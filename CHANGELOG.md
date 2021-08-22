@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.46](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.45...0.10.46) (2021-08-22)
+
+
+### Features
+
+* :sparkles: Create note if it doesn't exist ([44485db](https://github.com/SkepticMystic/breadcrumbs/commit/44485dbeff1bb17126d9537a9d10c351ba1d6ce2))
+
+
+### Bug Fixes
+
+* :bug: More intuitive text inputs on hierarchies settings ([14aaebe](https://github.com/SkepticMystic/breadcrumbs/commit/14aaebe991c69519a0328670f4e9bdfbb79b58db))
+
 ### [0.10.45](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.44...0.10.45) (2021-08-21)
 
 
