@@ -47,7 +47,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     }
 
     const addHierarchyRow = (
-      values: userHierarchy = { up: ["↑"], same: ["→"], down: ["↓"] },
+      values: userHierarchy = { up: [""], same: [""], down: [""] },
       existing = false
     ) => {
       const row = createSpan({ cls: "hierarchy-row" });
@@ -56,17 +56,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
       hierarchyNames.createEl("label", { attr: { for: "up" }, text: "↑" });
       const upInput = hierarchyNames.createEl("input", {
-        attr: { id: "up" },
+        attr: { id: "up", placeholder: "↑" },
         value: values.up.join(", "),
       });
       hierarchyNames.createEl("label", { attr: { for: "same" }, text: "→" });
       const sameInput = hierarchyNames.createEl("input", {
-        attr: { id: "same" },
+        attr: { id: "same", placeholder: "→" },
         value: values.same.join(", "),
       });
       hierarchyNames.createEl("label", { attr: { for: "down" }, text: "↓" });
       const downInput = hierarchyNames.createEl("input", {
-        attr: { id: "down" },
+        attr: { id: "down", placeholder: "↓" },
         value: values.down.join(", "),
       });
       let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
