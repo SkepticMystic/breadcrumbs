@@ -229,6 +229,7 @@ export function getFieldValues(
   const values: string[] = [];
   try {
     const rawValuesPreFlat = frontmatterCache?.[field];
+    if (!rawValuesPreFlat) return [];
     if (typeof rawValuesPreFlat === "string") {
       const splits = rawValuesPreFlat.match(splitLinksRegex);
       if (splits !== null) {
