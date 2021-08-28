@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.47](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.46...0.10.47) (2021-08-28)
+
+
+### Bug Fixes
+
+* :bug: Check for Apple CMD key in openOrSwitch ([5ea29ac](https://github.com/SkepticMystic/breadcrumbs/commit/5ea29ac95fdef5e1777642364283988328f9ef38))
+* **Path View:** :bug: Add trailDiv before markdown-preview-sizer instead of prepending to markdown-preview-view ([bc51e85](https://github.com/SkepticMystic/breadcrumbs/commit/bc51e85f60fe029b74cf65a8cf8440ada4d7c173))
+
 ### [0.10.46](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.45...0.10.46) (2021-08-22)
 
 
