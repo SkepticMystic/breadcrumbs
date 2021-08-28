@@ -701,17 +701,15 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     const trailDiv = createDiv({
-      cls: `breadcrumbs-trail ${
-        settings.respectReadableLineLength
-          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-          : ""
-      }`,
+      cls: `breadcrumbs-trail ${settings.respectReadableLineLength
+        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+        : ""
+        }`,
     });
-    // previewView.prepend(trailDiv)
 
     this.visited.push([currFile.path, trailDiv]);
 
-    previewView.prepend(trailDiv);
+    previewView.querySelector('.markdown-preview-sizer').before(trailDiv);
 
     trailDiv.empty();
 
