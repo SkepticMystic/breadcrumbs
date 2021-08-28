@@ -402,6 +402,7 @@ export async function openOrSwitch(
   const { workspace } = app;
   let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
 
+  // If dest doesn't exist, make it
   if (!destFile) {
     const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
     const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
@@ -412,22 +413,24 @@ export async function openOrSwitch(
     );
   }
 
-  const openLeaves: WorkspaceLeaf[] = [];
+  // Check if it's already open
+  const leavesWithDestAlreadyOpen: WorkspaceLeaf[] = [];
   // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
   workspace.iterateAllLeaves((leaf) => {
     if (leaf.view?.file?.basename === dest) {
-      openLeaves.push(leaf);
+      leavesWithDestAlreadyOpen.push(leaf);
     }
   });
 
-  if (openLeaves.length > 0) {
-    workspace.setActiveLeaf(openLeaves[0]);
+  // Rather switch to it if it is open
+  if (leavesWithDestAlreadyOpen.length > 0) {
+    workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mode = (app.vault as any).getConfig("defaultViewMode");
-    const leaf = event.ctrlKey
+    const leaf = event.ctrlKey || event.metaKey
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
+
     await leaf.openFile(destFile, { active: true, mode });
   }
 }
