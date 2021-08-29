@@ -18,6 +18,7 @@ export interface BreadcrumbsSettings {
   filterImpliedSiblingsOfDifferentTypes: boolean;
   rlLeaf: boolean;
   showTrail: boolean;
+  hideTrailFieldName: string;
   trailOrTable: 1 | 2 | 3;
   gridDots: boolean;
   dotsColour: string;
@@ -40,13 +41,13 @@ export interface BreadcrumbsSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-    | string
-    | string[]
-    | string[][]
-    | dvLink
-    | dvLink[]
-    | Pos
-    | TFile;
+  | string
+  | string[]
+  | string[][]
+  | dvLink
+  | dvLink[]
+  | Pos
+  | TFile;
 }
 
 export type Directions = "up" | "same" | "down";

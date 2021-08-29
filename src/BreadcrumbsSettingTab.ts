@@ -496,6 +496,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
+
+    new Setting(trailDetails)
+      .setName("Field name to hide trail")
+      .setDesc(
+        "A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`."
+      )
+      .addText((text) => {
+        text
+          .setValue(settings.hideTrailFieldName);
+        text.inputEl.onblur = async () => {
+          settings.hideTrailFieldName = text.getValue();
+          await plugin.saveSettings();
+        }
+      });
+
     new Setting(trailDetails)
       .setName("Trail or Table or Both")
       .setDesc(

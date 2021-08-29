@@ -58,6 +58,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   filterImpliedSiblingsOfDifferentTypes: false,
   rlLeaf: true,
   showTrail: true,
+  hideTrailFieldName: 'hide-trail',
   trailOrTable: 3,
   gridDots: false,
   dotsColour: "#000000",
@@ -89,6 +90,7 @@ declare module "obsidian" {
     };
   }
 }
+
 
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
@@ -184,6 +186,10 @@ export default class BreadcrumbsPlugin extends Plugin {
       );
 
       this.registerEvent(this.activeLeafChangeEventRef);
+
+      // const editorToggleEventRef = this.app.workspace.on('markdown:toggle-preview', () => { console.log('working') })
+
+      // this.registerEvent(editorToggleEventRef)
 
       // ANCHOR autorefresh interval
       if (this.settings.refreshIntervalTime > 0) {
@@ -669,14 +675,24 @@ export default class BreadcrumbsPlugin extends Plugin {
       debugGroupEnd(settings, "debugMode");
       return;
     }
-
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    const currFile = activeMDView.file;
+    const currMetadata = this.app.metadataCache.getFileCache(currFile);
+
+    const previewView = activeMDView.contentEl.querySelector(
+      ".markdown-preview-view"
+    );
+    if (currMetadata.frontmatter?.hasOwnProperty(settings.hideTrailFieldName)) {
+      debugGroupEnd(settings, "debugMode");
+      previewView.querySelector("div.breadcrumbs-trail")?.remove();
+      return;
+    }
+
     if (!activeMDView) {
       debugGroupEnd(settings, "debugMode");
       return;
     }
 
-    const currFile = activeMDView.file;
     const frontm =
       this.app.metadataCache.getFileCache(currFile)?.frontmatter ?? {};
     if (frontm["kanban-plugin"]) {
@@ -689,9 +705,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     debug(settings, { sortedTrails });
 
     // Get the container div of the active note
-    const previewView = activeMDView.contentEl.querySelector(
-      ".markdown-preview-view"
-    );
     // Make sure it's empty
     previewView.querySelector("div.breadcrumbs-trail")?.remove();
 
