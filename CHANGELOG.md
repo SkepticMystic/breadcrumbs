@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.50](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.49...0.10.50) (2021-08-29)
+
+
+### Features
+
+* **Path View:** :sparkles: Option to hide trail in specific notes using custom metadata field ([f5d96bf](https://github.com/SkepticMystic/breadcrumbs/commit/f5d96bfe40d876ea645b47295ccf80c863046447))
+
 ### [0.10.49](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.48...0.10.49) (2021-08-28)
 
 ### [0.10.48](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.47...0.10.48) (2021-08-28)
