@@ -8,6 +8,7 @@
         "Vis View",
         "getFieldValues",
         "Path View",
-        "Hierarchy Note"
+        "Hierarchy Note",
+        "WriteBCToFile"
     ]
 }

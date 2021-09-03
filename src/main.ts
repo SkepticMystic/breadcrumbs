@@ -35,11 +35,14 @@ import {
   getObsMetadataCache,
   mergeGs,
   removeDuplicates,
+  writeBCToFile,
+
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
+
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
@@ -86,6 +89,17 @@ declare module "obsidian" {
       plugins: {
         dataview: { api: any };
         juggl: any;
+        metaedit: {
+          api: {
+            getAutopropFunction: () => any;
+            getUpdateFunction: () => any;
+            getFileFromTFileOrPath: () => any;
+            getGetPropertyValueFunction: () => any;
+            getGetFilesWithPropertyFunction: () => any;
+            getCreateYamlPropertyFunction: () => any;
+            getGetPropertiesInFile: () => any;
+          }
+        }
       };
     };
   }
@@ -107,6 +121,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       this.activeLeafChangeEventRef = this.app.workspace.on(
         "active-leaf-change",
         async () => {
+
           if (this.settings.refreshIndexOnActiveLeafChange) {
             // refreshIndex does everything in one
             await this.refreshIndex();
@@ -298,6 +313,16 @@ export default class BreadcrumbsPlugin extends Plugin {
       name: "Refresh Breadcrumbs Index",
       callback: async () => await this.refreshIndex(),
     });
+
+    this.addCommand({
+      id: "Write-Breadcrumbs-to-Current-File",
+      name: "Write Breadcrumbs to Current File",
+      callback: () => {
+        const currFile = this.app.workspace.getActiveFile();
+        writeBCToFile(this.app, this, this.currGraphs, currFile)
+      },
+    });
+
 
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()

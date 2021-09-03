@@ -7,10 +7,11 @@ import {
   Notice,
   Pos,
   TFile,
-  WorkspaceLeaf,
+  WorkspaceLeaf
 } from "obsidian";
 import { DIRECTIONS, dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
+  BCIndex,
   BreadcrumbsSettings,
   Directions,
   dvFrontmatterCache,
@@ -18,10 +19,12 @@ import type {
   HierarchyFields,
   HierarchyGraphs,
   JugglLink,
-  userHierarchy,
+  userHierarchy
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
+
+
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -601,4 +604,62 @@ export function hierToStr(hier: userHierarchy) {
 
 export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
+}
+
+export const createOrUpdateYaml = async (
+  key: string,
+  value: string,
+  file: TFile,
+  frontmatter: FrontMatterCache | undefined,
+  api: { [fun: string]: (...args: any) => any }
+) => {
+  if (!api) {
+    new Notice('Metaedit must be enabled for this function to work');
+    return
+  }
+
+  let valueStr = value.toString()
+
+  if (!frontmatter || frontmatter[key] === undefined) {
+    await api.createYamlProperty(key, `['${valueStr}']`, file);
+  } else if ([...[frontmatter[key]]].flat(3).includes(valueStr)) {
+    return
+  }
+  else {
+    const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
+    const newValue = [...oldValueFlat, valueStr].map(val => `'${val}'`);
+    await api.update(key, `[${newValue.join(", ")}]`, file);
+  }
+
+}
+
+export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: BCIndex, file: TFile) => {
+
+  const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
+  const { api } = app.plugins.plugins.metaedit
+
+  currGraphs.hierGs.forEach(hier => {
+    DIRECTIONS.forEach(dir => {
+      let oppDir: Directions;
+      if (dir === 'up') oppDir = 'down';
+      if (dir === 'down') oppDir = 'up';
+      if (dir === 'same') oppDir = 'same';
+
+      Object.keys(hier[dir]).forEach(field => {
+
+
+        const fieldG = hier[dir][field];
+        const succs = fieldG.predecessors(file.basename) as string[];
+
+        succs.forEach(succ => {
+          const { fieldName } = fieldG.node(succ);
+          const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0]
+          let oppField: string = currHier[oppDir][0];
+          if (!oppField) oppField = `<Reverse>${fieldName}`
+
+          createOrUpdateYaml(oppField, succ, file, frontmatter, api)
+        })
+      })
+    })
+  })
 }
