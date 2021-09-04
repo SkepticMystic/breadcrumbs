@@ -1,11 +1,11 @@
 {
   "name": "breadcrumbs-plugin",
-  "version": "0.10.54",
+  "version": "0.10.53",
   "description": "Visualise & navigate your vault's structure",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
-    "build": "obsidian-plugin build src/main.ts -o .",
+    "build": "rollup -c --environment BUILD:production",
     "release": "standard-version"
   },
   "standard-version": {
@@ -32,7 +32,7 @@
     "svelte-check": "1.1.14",
     "svelte-preprocess": "4.7.3",
     "tslib": "^2.2.0",
-    "typescript": "^4.2.4"
+    "typescript": "4.4.1"
   },
   "dependencies": {
     "@tsconfig/svelte": "^2.0.1",
