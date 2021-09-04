@@ -430,7 +430,7 @@ export async function openOrSwitch(
     workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
   } else {
     const mode = (app.vault as any).getConfig("defaultViewMode");
-    const leaf = event.ctrlKey || event.metaKey
+    const leaf = (event.ctrlKey || event.metaKey)
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
 
@@ -621,13 +621,16 @@ export const createOrUpdateYaml = async (
   let valueStr = value.toString()
 
   if (!frontmatter || frontmatter[key] === undefined) {
+    console.log(`Creating: ${key}: ${valueStr}`)
     await api.createYamlProperty(key, `['${valueStr}']`, file);
-  } else if ([...[frontmatter[key]]].flat(3).includes(valueStr)) {
+  } else if ([...[frontmatter[key]]].flat(3).some(val => val == valueStr)) {
+    console.log('Already Exists!')
     return
   }
   else {
     const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
     const newValue = [...oldValueFlat, valueStr].map(val => `'${val}'`);
+    console.log(`Updating: ${key}: ${newValue}`)
     await api.update(key, `[${newValue.join(", ")}]`, file);
   }
 
