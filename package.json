@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
-    "build": "rollup -c --environment BUILD:production",
+    "build": "obsidian-plugin build src/main.ts -o .",
     "release": "standard-version"
   },
   "standard-version": {
