@@ -43,6 +43,9 @@ export const forceDirectedG = (
       });
   });
 
+  // const saveLayoutButton = modal.contentEl.createEl('button', { text: 'Save Layout' })
+  //   .addEventListener('click', saveGraph)
+
   const data = graphlibToD3(graph);
 
   const links: {
@@ -268,7 +271,7 @@ export const forceDirectedG = (
     })
     .on("mouseout", unfocus);
 
-  function focusNeighbours(d, event: MouseEvent) {}
+  function focusNeighbours(d, event: MouseEvent) { }
 
   function unfocus() {
     // labelNode.attr("display", "block");
@@ -300,4 +303,9 @@ export const forceDirectedG = (
       .scaleExtent([0.5, 10])
       .on("zoom", zoomed)
   );
+
+  function saveGraph() {
+    const clone = svg.clone(true)
+    localStorage.setItem('FDG', JSON.stringify(clone))
+  }
 };
