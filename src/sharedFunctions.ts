@@ -613,11 +613,6 @@ export const createOrUpdateYaml = async (
   frontmatter: FrontMatterCache | undefined,
   api: { [fun: string]: (...args: any) => any }
 ) => {
-  if (!api) {
-    new Notice('Metaedit must be enabled for this function to work');
-    return
-  }
-
   let valueStr = value.toString()
 
   if (!frontmatter || frontmatter[key] === undefined) {
@@ -639,7 +634,12 @@ export const createOrUpdateYaml = async (
 export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: BCIndex, file: TFile) => {
 
   const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
-  const { api } = app.plugins.plugins.metaedit
+  const api = app.plugins.plugins.metaedit?.api
+
+  if (!api) {
+    new Notice('Metaedit must be enabled for this function to work');
+    return
+  }
 
   currGraphs.hierGs.forEach(hier => {
     DIRECTIONS.forEach(dir => {
