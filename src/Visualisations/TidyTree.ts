@@ -1,10 +1,8 @@
 import * as d3 from "d3";
 import type { Graph } from "graphlib";
 import type { App, TFile } from "obsidian";
-import type { d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
-import { dfsFlatAdjList, dfsFlatAdjList2, VisModal } from "src/VisModal";
-import { dataset_dev } from "svelte/internal";
+import { dfsFlatAdjList, VisModal } from "src/VisModal";
 
 export const tidyTree = (
   graph: Graph,
