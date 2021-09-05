@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.57](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.56...0.10.57) (2021-09-05)
+
+
+### Bug Fixes
+
+* **Vis View:** :bug: Tidy Tree: Importing non-existient function ([628afc4](https://github.com/SkepticMystic/breadcrumbs/commit/628afc4fec9b4b144ccf396c83a944c3987a7b48))
+
 ### [0.10.56](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.55...0.10.56) (2021-09-04)
 
 ### [0.10.55](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.54...0.10.55) (2021-09-04)
