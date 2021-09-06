@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.60](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.59...0.10.60) (2021-09-06)
+
+
+### Bug Fixes
+
+* **WriteBCToFile:** :bug: Notice wasn't showing if MetaEdit wasn't enabled ([649c379](https://github.com/SkepticMystic/breadcrumbs/commit/649c3791518f03ad7fcb0f7d36dc170408ea3a51))
+
 ### [0.10.59](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.58...0.10.59) (2021-09-05)
 
 ### [0.10.58](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.57...0.10.58) (2021-09-05)
