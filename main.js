@@ -6623,10 +6623,6 @@ function removeDuplicates(arr) {
     return [...new Set(arr)];
 }
 const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    if (!api) {
-        new obsidian.Notice('Metaedit must be enabled for this function to work');
-        return;
-    }
     let valueStr = value.toString();
     if (!frontmatter || frontmatter[key] === undefined) {
         console.log(`Creating: ${key}: ${valueStr}`);
@@ -6644,9 +6640,13 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
     }
 };
 const writeBCToFile = (app, plugin, currGraphs, file) => {
-    var _a;
+    var _a, _b;
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
-    const { api } = app.plugins.plugins.metaedit;
+    const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
+    if (!api) {
+        new obsidian.Notice('Metaedit must be enabled for this function to work');
+        return;
+    }
     currGraphs.hierGs.forEach(hier => {
         DIRECTIONS.forEach(dir => {
             let oppDir;
