@@ -2,7 +2,7 @@
 
 This plugin adds multiple new views to Obsidian.
 
-The [wiki](https://github.com/SkepticMystic/breadcrumbs/wiki) has more in-depth info on the plugin than the readme.
+### The [wiki](https://github.com/SkepticMystic/breadcrumbs/wiki) has more in-depth info on the plugin than the outdated readme.
 
 You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md).
 
@@ -23,32 +23,13 @@ To open the view in your sidebar, run the command `Breadcrumbs: Open View` from 
 
 ## Breadcrumbs Trail view
 
-This view shows a trail of notes from the top of your vault (See `Settings#IndexNote`) down to your current note
+This view shows a trail of notes from the top of your vault down to your current note
 
 ![image](https://user-images.githubusercontent.com/70717676/123403044-a8507800-d5a8-11eb-9669-33148021b6fa.png)
 
 To get this structure, the plugin requires that you use some type of metadata indicating the hierarchy of notes.
 For example, you may have a yaml field called `parent`, which links to the current note's "parent" note: `parent: [[Parent Note]]`. (You can also use inline Dataview fields `parent:: [[Parent Note]]`).
 Using this structure that you impose, you can use the breadcrumb trail to visualise the path back to your parent note.
-
-## Settings
-
-### Index/Home Note
-
-You need to supply the name of your vault's index/home note. If it is called `000 Home.md`, for example, just enter `000 Home` in the setting input field.
-If the index is nested inside folders, still just use the name of the note. `Folder/Index.md` → `Index`, for example.
-
-### Parent Field
-
-You also need to give the name of the field you use to indicate parent notes. For example, if you use `parent: [[Note]]`, then enter `parent` into the setting field.
-
-### Sibling Field
-
-The name of the field used to indicate notes on the same level as the current one. `Related Notes: [[Note]]` -> `Related Notes`, for example.
-
-### Child Field
-
-The field used to show "narrower" notes, like `Subtopic: [[Note]]`, or `child:: [[Note]]`
 
 ## Feed my coffee problem
 
