@@ -195,6 +195,8 @@ export default class MatrixView extends ItemView {
 
     const indent = "  ";
     const visited: { [node: string]: number[] } = {};
+
+    const activeFile = this.app.workspace.getActiveFile();
     reversed.forEach((path) => {
       for (let depth = 0; depth < path.length; depth++) {
         const currNode = path[depth];
@@ -212,21 +214,25 @@ export default class MatrixView extends ItemView {
           index += settings.wikilinkIndex ? "]]" : "";
 
           if (settings.aliasesInIndex) {
+
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
               currNode,
-              this.app.workspace.getActiveFile().path
+              activeFile.path
             );
-            const cache = this.app.metadataCache.getFileCache(currFile);
 
-            const alias = cache?.frontmatter?.alias ?? [];
-            const aliases = cache?.frontmatter?.aliases ?? [];
+            if (currFile !== null) {
+              const cache = this.app.metadataCache.getFileCache(currFile);
 
-            const allAliases: string[] = [
-              ...[alias].flat(3),
-              ...[aliases].flat(3),
-            ];
-            if (allAliases.length) {
-              index += ` (${allAliases.join(", ")})`;
+              const alias = cache?.frontmatter?.alias ?? [];
+              const aliases = cache?.frontmatter?.aliases ?? [];
+
+              const allAliases: string[] = [
+                ...[alias].flat(3),
+                ...[aliases].flat(3),
+              ];
+              if (allAliases.length) {
+                index += ` (${allAliases.join(", ")})`;
+              }
             }
           }
 

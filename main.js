@@ -26165,6 +26165,7 @@ class MatrixView extends obsidian.ItemView {
         reversed.forEach((path) => path.shift());
         const indent = "  ";
         const visited = {};
+        const activeFile = this.app.workspace.getActiveFile();
         reversed.forEach((path) => {
             var _a, _b, _c, _d;
             for (let depth = 0; depth < path.length; depth++) {
@@ -26180,16 +26181,18 @@ class MatrixView extends obsidian.ItemView {
                     index += currNode;
                     index += settings.wikilinkIndex ? "]]" : "";
                     if (settings.aliasesInIndex) {
-                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, this.app.workspace.getActiveFile().path);
-                        const cache = this.app.metadataCache.getFileCache(currFile);
-                        const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
-                        const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
-                        const allAliases = [
-                            ...[alias].flat(3),
-                            ...[aliases].flat(3),
-                        ];
-                        if (allAliases.length) {
-                            index += ` (${allAliases.join(", ")})`;
+                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, activeFile.path);
+                        if (currFile !== null) {
+                            const cache = this.app.metadataCache.getFileCache(currFile);
+                            const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
+                            const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
+                            const allAliases = [
+                                ...[alias].flat(3),
+                                ...[aliases].flat(3),
+                            ];
+                            if (allAliases.length) {
+                                index += ` (${allAliases.join(", ")})`;
+                            }
                         }
                     }
                     index += "\n";
