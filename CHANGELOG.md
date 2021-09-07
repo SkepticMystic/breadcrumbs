@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.63](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.62...0.10.63) (2021-09-07)
+
 ### [0.10.62](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.61...0.10.62) (2021-09-07)
 
 
