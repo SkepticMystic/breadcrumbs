@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.62](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.61...0.10.62) (2021-09-07)
+
+
+### Bug Fixes
+
+* **CreateIndex:** :bug: Check if currFile is null ([c1c8f17](https://github.com/SkepticMystic/breadcrumbs/commit/c1c8f17f8d09b11285e2eaa8265e305df5fee7f1))
+
 ### [0.10.61](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.60...0.10.61) (2021-09-06)
 
 ### [0.10.60](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.59...0.10.60) (2021-09-06)
