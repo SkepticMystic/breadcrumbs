@@ -6,7 +6,7 @@ import {
   Notice,
   Plugin,
   TFile,
-  WorkspaceLeaf,
+  WorkspaceLeaf
 } from "obsidian";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
@@ -14,14 +14,14 @@ import {
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
-  VIEW_TYPE_BREADCRUMBS_STATS,
+  VIEW_TYPE_BREADCRUMBS_STATS
 } from "src/constants";
 import type {
   BCIndex,
   BreadcrumbsSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs,
+  HierarchyGraphs
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -29,14 +29,14 @@ import {
   debug,
   debugGroupEnd,
   debugGroupStart,
+  getAllFieldGs,
   getAllGsInDir,
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
   mergeGs,
-  removeDuplicates,
-  writeBCToFile,
-
+  oppFields, removeDuplicates,
+  writeBCToFile
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
@@ -61,6 +61,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   filterImpliedSiblingsOfDifferentTypes: false,
   rlLeaf: true,
   showTrail: true,
+  limitTrailCheckboxStates: {},
   hideTrailFieldName: 'hide-trail',
   trailOrTable: 3,
   gridDots: false,
@@ -478,7 +479,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     }[] = [];
     if (settings.hierarchyNotes[0] !== "") {
       const currPath = this.app.workspace.getActiveFile().path;
-      const contentArr = [];
+      const contentArr: string[] = [];
 
       settings.hierarchyNotes.forEach(async (note) => {
         const file = this.app.metadataCache.getFirstLinkpathDest(
@@ -508,6 +509,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       hierGs: [],
       mergedGs: { up: undefined, same: undefined, down: undefined },
       closedGs: { up: undefined, same: undefined, down: undefined },
+      limitTrailG: undefined
     };
 
     userHierarchies.forEach((hier, i) => {
@@ -589,6 +591,29 @@ export default class BreadcrumbsPlugin extends Plugin {
         );
       }
     });
+
+    // LimitTrailG
+    if (Object.values(settings.limitTrailCheckboxStates).every(val => val)) {
+      graphs.limitTrailG = graphs.closedGs.up
+    } else {
+      const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, 'up');
+      const allLimitedTrailsGsKeys: string[] = Object.keys(allUps).filter(field => settings.limitTrailCheckboxStates[field])
+      const allLimitedTrailsGs: Graph[] = [];
+      allLimitedTrailsGsKeys.forEach(key => allLimitedTrailsGs.push(allUps[key]))
+
+      const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
+
+      const allLimitedDownGs: Graph[] = [];
+
+      Object.keys(settings.limitTrailCheckboxStates).forEach(limitedField => {
+        const oppFieldsArr = oppFields(limitedField, 'up', userHierarchies);
+        const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs)
+        allLimitedDownGs.push(...oppGs)
+      })
+
+      const mergedLimitedDownGs = mergeGs(...allLimitedDownGs)
+      graphs.limitTrailG = closeImpliedLinks(mergedLimitedUpGs, mergedLimitedDownGs)
+    }
 
     debug(settings, "graphs inited");
     debug(settings, { graphs });
@@ -725,7 +750,9 @@ export default class BreadcrumbsPlugin extends Plugin {
       return;
     }
 
-    const closedUp = this.currGraphs.closedGs.up;
+
+
+    const closedUp = this.currGraphs.limitTrailG;
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
     debug(settings, { sortedTrails });
 

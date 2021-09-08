@@ -8,6 +8,7 @@ import {
 } from "obsidian";
 import {
   ALLUNLINKED,
+  DIRECTIONS,
   REAlCLOSED,
   RELATIONS,
   VIEW_TYPE_BREADCRUMBS_MATRIX,
@@ -80,6 +81,20 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
+      async function resetLimitTrailCheckboxes() {
+        settings.limitTrailCheckboxStates = {}
+        settings.userHierarchies.forEach(userHier => {
+          userHier.up.forEach(async field => {
+            // First sort out limitTrailCheckboxStates
+            settings.limitTrailCheckboxStates[field] = true;
+            await plugin.saveSettings()
+
+          })
+        })
+        await plugin.saveSettings()
+        drawLimitTrailCheckboxes(checkboxDiv)
+      }
+
       const deleteButton = row.createEl("button", { text: "X" }, (el) => {
         el.addEventListener("click", async () => {
           row.remove();
@@ -94,6 +109,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             settings.userHierarchies.splice(removeIndex, 1);
             await plugin.saveSettings();
           }
+
+          // Refresh limitTrailFields
+          resetLimitTrailCheckboxes()
+
           new Notice("Hierarchy Removed.");
         });
       });
@@ -128,6 +147,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               if (removeIndex > -1) {
                 settings.userHierarchies.splice(removeIndex, 1);
                 await plugin.saveSettings();
+                resetLimitTrailCheckboxes()
               }
             }
             cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
@@ -149,6 +169,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               });
               await plugin.saveSettings();
               new Notice("Hierarchy saved.");
+
+              resetLimitTrailCheckboxes()
             }
           });
         }
@@ -424,6 +446,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
+
     // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
     new Setting(MLViewDetails)
       .setName("Show all field names or just relation types")
@@ -495,6 +518,39 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           await plugin.drawTrail();
         })
       );
+
+    const limitTrailFieldsDiv = trailDetails.createDiv({ cls: 'limit-ML-fields' })
+    limitTrailFieldsDiv.createEl('strong', { 'text': 'Limit M/L View to only show certain fields' })
+
+    const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: 'checkboxes' })
+
+    function drawLimitTrailCheckboxes(div: HTMLDivElement) {
+      checkboxDiv.empty()
+      const checkboxStates = settings.limitTrailCheckboxStates
+
+      settings.userHierarchies.forEach(userHier => {
+        userHier.up.forEach(async field => {
+          // First sort out limitTrailCheckboxStates
+          if (checkboxStates[field] === undefined) {
+            checkboxStates[field] = true;
+            await plugin.saveSettings()
+          }
+          const cbDiv = div.createDiv()
+          const checkedQ = checkboxStates[field]
+          const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } })
+          cb.checked = checkedQ
+          const label = cbDiv.createEl('label', { text: field, attr: { for: field } })
+
+          cb.addEventListener('change', async (event) => {
+            checkboxStates[field] = cb.checked;
+            await plugin.saveSettings()
+            console.log(settings.limitTrailCheckboxStates)
+          })
+        })
+      })
+    }
+
+    drawLimitTrailCheckboxes(checkboxDiv)
 
 
     new Setting(trailDetails)
@@ -785,6 +841,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         })
       );
+
+    debugDetails.createEl('button', { text: 'Console log `settings`' }, (el) => {
+      el.addEventListener('click', () => console.log(settings))
+    })
 
     new KoFi({ target: this.containerEl });
   }

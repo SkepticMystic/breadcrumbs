@@ -682,3 +682,11 @@ export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: B
     })
   })
 }
+
+export function oppFields(field: string, dir: Directions, userHierarchies: userHierarchy[]): string[] {
+  let oppDir: Directions = 'same';
+  if (dir !== "same") {
+    oppDir = dir === "up" ? "down" : "up"
+  }
+  return userHierarchies.find(hier => hier[oppDir].includes(field))?.[oppDir] ?? []
+}

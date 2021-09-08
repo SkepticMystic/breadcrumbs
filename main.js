@@ -6614,6 +6614,21 @@ function getAllGsInDir(userHierarchies, currGraphs, dir) {
     // console.log({ allXGs, allGsInDir });
     return allGsInDir;
 }
+function getAllFieldGs(fields, currGraphs) {
+    const fieldGs = [];
+    currGraphs.forEach(hierGs => {
+        DIRECTIONS.forEach(dir => {
+            Object.keys(hierGs[dir]).forEach(fieldName => {
+                if (fields.includes(fieldName)) {
+                    const fieldG = hierGs[dir][fieldName];
+                    if (fieldG instanceof graphlib.Graph)
+                        fieldGs.push(fieldG);
+                }
+            });
+        });
+    });
+    return fieldGs;
+}
 function hierToStr(hier) {
     return `↑: ${hier.up.join(", ")}
 →: ${hier.same.join(", ")}
@@ -6671,6 +6686,14 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
         });
     });
 };
+function oppFields(field, dir, userHierarchies) {
+    var _a, _b;
+    let oppDir = 'same';
+    if (dir !== "same") {
+        oppDir = dir === "up" ? "down" : "up";
+    }
+    return (_b = (_a = userHierarchies.find(hier => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : [];
+}
 
 /**
  * @license
@@ -24258,6 +24281,18 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                 saveButton.toggleClass("hierarchy-unsaved", true);
                 saveButton.textContent = "Save";
             }));
+            async function resetLimitTrailCheckboxes() {
+                settings.limitTrailCheckboxStates = {};
+                settings.userHierarchies.forEach(userHier => {
+                    userHier.up.forEach(async (field) => {
+                        // First sort out limitTrailCheckboxStates
+                        settings.limitTrailCheckboxStates[field] = true;
+                        await plugin.saveSettings();
+                    });
+                });
+                await plugin.saveSettings();
+                drawLimitTrailCheckboxes(checkboxDiv);
+            }
             row.createEl("button", { text: "X" }, (el) => {
                 el.addEventListener("click", async () => {
                     row.remove();
@@ -24266,6 +24301,8 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         settings.userHierarchies.splice(removeIndex, 1);
                         await plugin.saveSettings();
                     }
+                    // Refresh limitTrailFields
+                    resetLimitTrailCheckboxes();
                     new obsidian.Notice("Hierarchy Removed.");
                 });
             });
@@ -24283,6 +24320,7 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         if (removeIndex > -1) {
                             settings.userHierarchies.splice(removeIndex, 1);
                             await plugin.saveSettings();
+                            resetLimitTrailCheckboxes();
                         }
                     }
                     cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
@@ -24299,6 +24337,7 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         });
                         await plugin.saveSettings();
                         new obsidian.Notice("Hierarchy saved.");
+                        resetLimitTrailCheckboxes();
                     }
                 });
             });
@@ -24563,6 +24602,33 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
+        const limitTrailFieldsDiv = trailDetails.createDiv({ cls: 'limit-ML-fields' });
+        limitTrailFieldsDiv.createEl('strong', { 'text': 'Limit M/L View to only show certain fields' });
+        const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: 'checkboxes' });
+        function drawLimitTrailCheckboxes(div) {
+            checkboxDiv.empty();
+            const checkboxStates = settings.limitTrailCheckboxStates;
+            settings.userHierarchies.forEach(userHier => {
+                userHier.up.forEach(async (field) => {
+                    // First sort out limitTrailCheckboxStates
+                    if (checkboxStates[field] === undefined) {
+                        checkboxStates[field] = true;
+                        await plugin.saveSettings();
+                    }
+                    const cbDiv = div.createDiv();
+                    const checkedQ = checkboxStates[field];
+                    const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } });
+                    cb.checked = checkedQ;
+                    cbDiv.createEl('label', { text: field, attr: { for: field } });
+                    cb.addEventListener('change', async (event) => {
+                        checkboxStates[field] = cb.checked;
+                        await plugin.saveSettings();
+                        console.log(settings.limitTrailCheckboxStates);
+                    });
+                });
+            });
+        }
+        drawLimitTrailCheckboxes(checkboxDiv);
         new obsidian.Setting(trailDetails)
             .setName("Field name to hide trail")
             .setDesc("A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`.")
@@ -24784,6 +24850,9 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
             settings.superDebugMode = value;
             await plugin.saveSettings();
         }));
+        debugDetails.createEl('button', { text: 'Console log `settings`' }, (el) => {
+            el.addEventListener('click', () => console.log(settings));
+        });
         new KoFi({ target: this.containerEl });
     }
 }
@@ -37022,6 +37091,7 @@ const DEFAULT_SETTINGS = {
     filterImpliedSiblingsOfDifferentTypes: false,
     rlLeaf: true,
     showTrail: true,
+    limitTrailCheckboxStates: {},
     hideTrailFieldName: 'hide-trail',
     trailOrTable: 3,
     gridDots: false,
@@ -37376,6 +37446,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             hierGs: [],
             mergedGs: { up: undefined, same: undefined, down: undefined },
             closedGs: { up: undefined, same: undefined, down: undefined },
+            limitTrailG: undefined
         };
         userHierarchies.forEach((hier, i) => {
             const newGraphs = { up: {}, same: {}, down: {} };
@@ -37436,6 +37507,25 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                 graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[dir]);
             }
         });
+        // LimitTrailG
+        if (Object.values(settings.limitTrailCheckboxStates).every(val => val)) {
+            graphs.limitTrailG = graphs.closedGs.up;
+        }
+        else {
+            const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, 'up');
+            const allLimitedTrailsGsKeys = Object.keys(allUps).filter(field => settings.limitTrailCheckboxStates[field]);
+            const allLimitedTrailsGs = [];
+            allLimitedTrailsGsKeys.forEach(key => allLimitedTrailsGs.push(allUps[key]));
+            const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
+            const allLimitedDownGs = [];
+            Object.keys(settings.limitTrailCheckboxStates).forEach(limitedField => {
+                const oppFieldsArr = oppFields(limitedField, 'up', userHierarchies);
+                const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs);
+                allLimitedDownGs.push(...oppGs);
+            });
+            const mergedLimitedDownGs = mergeGs(...allLimitedDownGs);
+            graphs.limitTrailG = closeImpliedLinks(mergedLimitedUpGs, mergedLimitedDownGs);
+        }
         debug(settings, "graphs inited");
         debug(settings, { graphs });
         debugGroupEnd(settings, "debugMode");
@@ -37545,7 +37635,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const closedUp = this.currGraphs.closedGs.up;
+        const closedUp = this.currGraphs.limitTrailG;
         const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
         debug(settings, { sortedTrails });
         // Get the container div of the active note

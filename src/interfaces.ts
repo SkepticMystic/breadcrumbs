@@ -18,6 +18,7 @@ export interface BreadcrumbsSettings {
   filterImpliedSiblingsOfDifferentTypes: boolean;
   rlLeaf: boolean;
   showTrail: boolean;
+  limitTrailCheckboxStates: { [field: string]: boolean };
   hideTrailFieldName: string;
   trailOrTable: 1 | 2 | 3;
   gridDots: boolean;
@@ -180,6 +181,7 @@ export interface BCIndex {
   hierGs: HierarchyGraphs[];
   mergedGs: MergedGraphs;
   closedGs: ClosedGraphs;
+  limitTrailG: Graph;
 }
 
 export type HierarchyGraphs = {
