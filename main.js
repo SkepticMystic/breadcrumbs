@@ -6526,7 +6526,7 @@ async function openOrSwitch(app, dest, currFile, event) {
     }
     else {
         const mode = app.vault.getConfig("defaultViewMode");
-        const leaf = (event.ctrlKey || event.metaKey)
+        const leaf = (event.ctrlKey || event.getModifierState('Meta'))
             ? workspace.splitActiveLeaf()
             : workspace.getUnpinnedLeaf();
         await leaf.openFile(destFile, { active: true, mode });
