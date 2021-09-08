@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.66](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.65...0.10.66) (2021-09-08)
+
+
+### Features
+
+* **LimitTrailFields:** :sparkles: Ability to limit which fields are shown in the trail/grid view ([ba08396](https://github.com/SkepticMystic/breadcrumbs/commit/ba083960abd68d0555070a50ea4a6bfc70d9d140))
+
 ### [0.10.65](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.64...0.10.65) (2021-09-08)
 
 ### [0.10.64](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.63...0.10.64) (2021-09-08)
