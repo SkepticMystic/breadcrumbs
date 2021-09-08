@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.67](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.66...0.10.67) (2021-09-08)
+
+
+### Features
+
+* **WriteBCToFile:** :sparkles: Write Breadcrumbs to All files ([289b701](https://github.com/SkepticMystic/breadcrumbs/commit/289b701158a5f8e832d98672be39d8cf8e2ffd9b))
+
 ### [0.10.66](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.65...0.10.66) (2021-09-08)
 
 
