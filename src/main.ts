@@ -3,8 +3,7 @@ import {
   addIcon,
   EventRef,
   MarkdownView,
-  Notice,
-  Plugin,
+  Notice, Plugin,
   TFile,
   WorkspaceLeaf
 } from "obsidian";
@@ -324,6 +323,31 @@ export default class BreadcrumbsPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "Write-Breadcrumbs-to-All-Files",
+      name: "Write Breadcrumbs to **ALL** Files",
+      callback: () => {
+        const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
+
+        if (first) {
+          const second = window.confirm('Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.');
+          if (second) {
+            const third = window.confirm('For real, please make a back up before');
+            if (third) {
+              try {
+                this.app.vault.getMarkdownFiles().forEach(file => writeBCToFile(this.app, this, this.currGraphs, file))
+                new Notice('Operation Complete')
+              }
+              catch (error) {
+                new Notice(error)
+                console.log(error)
+              }
+            }
+          }
+        }
+
+      },
+    });
 
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()

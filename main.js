@@ -6674,13 +6674,13 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
             Object.keys(hier[dir]).forEach(field => {
                 const fieldG = hier[dir][field];
                 const succs = fieldG.predecessors(file.basename);
-                succs.forEach(succ => {
+                succs.forEach(async (succ) => {
                     const { fieldName } = fieldG.node(succ);
                     const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0];
                     let oppField = currHier[oppDir][0];
                     if (!oppField)
                         oppField = `<Reverse>${fieldName}`;
-                    createOrUpdateYaml(oppField, succ, file, frontmatter, api);
+                    await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
                 });
             });
         });
@@ -37387,6 +37387,29 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             callback: () => {
                 const currFile = this.app.workspace.getActiveFile();
                 writeBCToFile(this.app, this, this.currGraphs, currFile);
+            },
+        });
+        this.addCommand({
+            id: "Write-Breadcrumbs-to-All-Files",
+            name: "Write Breadcrumbs to **ALL** Files",
+            callback: () => {
+                const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
+                if (first) {
+                    const second = window.confirm('Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.');
+                    if (second) {
+                        const third = window.confirm('For real, please make a back up before');
+                        if (third) {
+                            try {
+                                this.app.vault.getMarkdownFiles().forEach(file => writeBCToFile(this.app, this, this.currGraphs, file));
+                                new obsidian.Notice('Operation Complete');
+                            }
+                            catch (error) {
+                                new obsidian.Notice(error);
+                                console.log(error);
+                            }
+                        }
+                    }
+                }
             },
         });
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());

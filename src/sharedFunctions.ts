@@ -670,13 +670,13 @@ export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: B
         const fieldG = hier[dir][field];
         const succs = fieldG.predecessors(file.basename) as string[];
 
-        succs.forEach(succ => {
+        succs.forEach(async succ => {
           const { fieldName } = fieldG.node(succ);
           const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0]
           let oppField: string = currHier[oppDir][0];
           if (!oppField) oppField = `<Reverse>${fieldName}`
 
-          createOrUpdateYaml(oppField, succ, file, frontmatter, api)
+          await createOrUpdateYaml(oppField, succ, file, frontmatter, api)
         })
       })
     })
