@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.64](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.63...0.10.64) (2021-09-08)
+
+
+### Bug Fixes
+
+* :bug: Open link in new pane if Mac `cmd` is pressed ([29abbc3](https://github.com/SkepticMystic/breadcrumbs/commit/29abbc3faee80443872fad5bcc58608e3883e330))
+
 ### [0.10.63](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.62...0.10.63) (2021-09-07)
 
 ### [0.10.62](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.61...0.10.62) (2021-09-07)
