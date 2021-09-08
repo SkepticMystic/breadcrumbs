@@ -9,6 +9,7 @@
         "getFieldValues",
         "Path View",
         "Hierarchy Note",
-        "WriteBCToFile"
+        "WriteBCToFile",
+        "LimitTrailFields"
     ]
 }
