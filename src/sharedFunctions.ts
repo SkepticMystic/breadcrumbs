@@ -596,6 +596,22 @@ export function getAllGsInDir(
   return allGsInDir;
 }
 
+export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
+  const fieldGs: Graph[] = [];
+  currGraphs.forEach(hierGs => {
+    DIRECTIONS.forEach(dir => {
+      Object.keys(hierGs[dir]).forEach(fieldName => {
+        if (fields.includes(fieldName)) {
+          const fieldG = hierGs[dir][fieldName];
+          if (fieldG instanceof graphlib.Graph) fieldGs.push(fieldG)
+        }
+      })
+    })
+  })
+  return fieldGs
+
+}
+
 export function hierToStr(hier: userHierarchy) {
   return `↑: ${hier.up.join(", ")}
 →: ${hier.same.join(", ")}
