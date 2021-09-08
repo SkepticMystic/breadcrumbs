@@ -430,7 +430,7 @@ export async function openOrSwitch(
     workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
   } else {
     const mode = (app.vault as any).getConfig("defaultViewMode");
-    const leaf = (event.ctrlKey || event.metaKey)
+    const leaf = (event.ctrlKey || event.getModifierState('Meta'))
       ? workspace.splitActiveLeaf()
       : workspace.getUnpinnedLeaf();
 
