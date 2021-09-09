@@ -731,6 +731,23 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
+    const writeBCsToFileDetails: HTMLDetailsElement = containerEl.createEl("details");
+    writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
+
+    new Setting(writeBCsToFileDetails)
+      .setName("Show the `Write Breadcrumbs to ALL Files` command")
+      .setDesc(
+        "This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not even shown by default (even though it has 3 confirmation boxes to ensure you want to run it"
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.showWriteAllBCsCmd)
+          .onChange(async (value) => {
+            settings.showWriteAllBCsCmd = value;
+            await plugin.saveSettings();
+          })
+      );
+
     const visModalDetails: HTMLDetailsElement = containerEl.createEl("details");
     visModalDetails.createEl("summary", { text: "Visualisation Modal" });
 

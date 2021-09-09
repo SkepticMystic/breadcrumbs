@@ -24764,6 +24764,17 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
+        const writeBCsToFileDetails = containerEl.createEl("details");
+        writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
+        new obsidian.Setting(writeBCsToFileDetails)
+            .setName("Show the `Write Breadcrumbs to ALL Files` command")
+            .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not even shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
+            .addToggle((toggle) => toggle
+            .setValue(settings.showWriteAllBCsCmd)
+            .onChange(async (value) => {
+            settings.showWriteAllBCsCmd = value;
+            await plugin.saveSettings();
+        }));
         const visModalDetails = containerEl.createEl("details");
         visModalDetails.createEl("summary", { text: "Visualisation Modal" });
         new obsidian.Setting(visModalDetails)
@@ -37102,6 +37113,7 @@ const DEFAULT_SETTINGS = {
     noPathMessage: `This note has no real or implied parents`,
     trailSeperator: "→",
     respectReadableLineLength: true,
+    showWriteAllBCsCmd: false,
     visGraph: "Force Directed Graph",
     visRelation: "Parent",
     visClosed: "Real",
@@ -37411,6 +37423,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                     }
                 }
             },
+            checkCallback: () => this.settings.showWriteAllBCsCmd
         });
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));

@@ -73,6 +73,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   respectReadableLineLength: true,
+  showWriteAllBCsCmd: false,
   visGraph: "Force Directed Graph",
   visRelation: "Parent",
   visClosed: "Real",
@@ -328,7 +329,6 @@ export default class BreadcrumbsPlugin extends Plugin {
       name: "Write Breadcrumbs to **ALL** Files",
       callback: () => {
         const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
-
         if (first) {
           const second = window.confirm('Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.');
           if (second) {
@@ -347,6 +347,7 @@ export default class BreadcrumbsPlugin extends Plugin {
         }
 
       },
+      checkCallback: () => this.settings.showWriteAllBCsCmd
     });
 
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
