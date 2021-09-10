@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.70](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.69...0.10.70) (2021-09-10)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Setting to list field names to check for alternate link text ([52f0321](https://github.com/SkepticMystic/breadcrumbs/commit/52f0321248f5e72c198ed5bd7e422833ef12ac0e))
+
 ### [0.10.69](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.68...0.10.69) (2021-09-10)
 
 
