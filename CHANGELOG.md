@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.69](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.68...0.10.69) (2021-09-10)
+
+
+### Features
+
+* **WriteBCToFile:** :sparkles: Setting to limit which fields are written to files ([258343f](https://github.com/SkepticMystic/breadcrumbs/commit/258343f4c4a4a6cb5ed710cbdda5b88c6a6a660a))
+
 ### [0.10.68](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.67...0.10.68) (2021-09-09)
 
 
