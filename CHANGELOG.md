@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.71](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.70...0.10.71) (2021-09-10)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Display alt link names for implied siblings, too ([075d8a0](https://github.com/SkepticMystic/breadcrumbs/commit/075d8a05cc19605238d930394474312d7ef768c4))
+
 ### [0.10.70](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.69...0.10.70) (2021-09-10)
 
 
