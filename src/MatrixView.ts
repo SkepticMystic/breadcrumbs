@@ -122,8 +122,9 @@ export default class MatrixView extends ItemView {
     return unresolvedLinks[from][to] > 0;
   }
 
-  squareItems(g: Graph, currFile: TFile, realQ = true): internalLinkObj[] {
+  squareItems(g: Graph, currFile: TFile, settings: BreadcrumbsSettings, realQ = true): internalLinkObj[] {
     let items: string[];
+    const altFieldsQ = !!settings.altLinkFields.length
 
     if (realQ) {
       items = (g.successors(currFile.basename) ?? []) as string[];
@@ -134,13 +135,26 @@ export default class MatrixView extends ItemView {
     // TODO I don't think I need to check the length here
     /// forEach won't run if it's empty anyway
     if (items.length) {
-      items.forEach((item: string) => {
+      items.forEach((to: string) => {
+        let alt = null;
+        if (altFieldsQ) {
+          const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path)
+          if (toFile) {
+            const metadata = this.app.metadataCache.getFileCache(toFile)
+            settings.altLinkFields.forEach(altLinkField => {
+              const altLink = metadata?.frontmatter?.[altLinkField]
+              if (altLink) { alt = altLink; return }
+              console.log({ alt, altLink })
+            })
+          }
+        }
         internalLinkObjArr.push({
-          to: item,
+          to,
           cls:
             "internal-link breadcrumbs-link" +
-            (this.unresolvedQ(item, currFile.path) ? " is-unresolved" : "") +
+            (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
             (realQ ? "" : " breadcrumbs-implied"),
+          alt
         });
       });
     }
@@ -298,11 +312,11 @@ export default class MatrixView extends ItemView {
       ];
 
       let [rUp, rSame, rDown, iUp, iDown] = [
-        this.squareItems(currUpG, currFile),
-        this.squareItems(currSameG, currFile),
-        this.squareItems(currDownG, currFile),
-        this.squareItems(currDownG, currFile, false),
-        this.squareItems(currUpG, currFile, false),
+        this.squareItems(currUpG, currFile, settings),
+        this.squareItems(currSameG, currFile, settings),
+        this.squareItems(currDownG, currFile, settings),
+        this.squareItems(currDownG, currFile, settings, false),
+        this.squareItems(currUpG, currFile, settings, false),
       ];
 
       // SECTION Implied Siblings
@@ -335,12 +349,14 @@ export default class MatrixView extends ItemView {
               (this.unresolvedQ(impliedSibling, currFile.path)
                 ? " is-unresolved"
                 : ""),
+            // TODO get alt for implied siblings
+            alt: null
           });
         });
       });
 
       /// A real sibling implies the reverse sibling
-      iSameArr.push(...this.squareItems(currSameG, currFile, false));
+      iSameArr.push(...this.squareItems(currSameG, currFile, settings, false));
 
       // !SECTION
 

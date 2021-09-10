@@ -31,9 +31,12 @@
                       class={realItem.cls}
                       on:click={async (e) =>
                         openOrSwitch(app, realItem.to, currFile, e)}
-                      on:mouseover={(event) => hoverPreview(event, matrixView)}
+                      on:mouseover={(event) =>
+                        hoverPreview(event, matrixView, realItem.to)}
                     >
-                      {realItem.to.split("/").last()}
+                      {realItem.alt
+                        ? realItem.alt
+                        : realItem.to.split("/").last()}
                     </div>
                   </li>
                 {/each}
@@ -51,9 +54,12 @@
                       class={impliedItem.cls}
                       on:click={async (e) =>
                         openOrSwitch(app, impliedItem.to, currFile, e)}
-                      on:mouseover={(event) => hoverPreview(event, matrixView)}
+                      on:mouseover={(event) =>
+                        hoverPreview(event, matrixView, impliedItem.to)}
                     >
-                      {impliedItem.to.split("/").last()}
+                      {impliedItem.alt
+                        ? impliedItem.alt
+                        : impliedItem.to.split("/").last()}
                     </div>
                   </li>
                 {/each}

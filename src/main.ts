@@ -50,6 +50,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   hierarchyNoteDownFieldName: "",
   hierarchyNoteUpFieldName: "",
   refreshIndexOnActiveLeafChange: false,
+  altLinkFields: [],
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
   dvWaitTime: 5000,

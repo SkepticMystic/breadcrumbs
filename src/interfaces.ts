@@ -8,6 +8,7 @@ export interface BreadcrumbsSettings {
   hierarchyNoteDownFieldName: string;
   hierarchyNoteUpFieldName: string;
   refreshIndexOnActiveLeafChange: boolean;
+  altLinkFields: string[];
   useAllMetadata: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   dvWaitTime: number;
@@ -96,6 +97,7 @@ export interface fileFrontmatter {
 export interface internalLinkObj {
   to: string;
   cls: string;
+  alt: string | null;
 }
 
 export interface SquareProps {

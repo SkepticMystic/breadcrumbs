@@ -364,6 +364,24 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     new Setting(generalDetails)
+      .setName('Fields used for Alternative note names (Aliases)')
+      .setDesc('A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.')
+      .addText(text => {
+        let finalValue: string;
+
+        text
+          .setValue(settings.altLinkFields.join(', '))
+          .onChange(str => {
+            finalValue = str
+          });
+        text.inputEl.onblur = async () => {
+          settings.altLinkFields = splitAndTrim(finalValue);
+          await plugin.saveSettings()
+        }
+      })
+
+
+    new Setting(generalDetails)
       .setName("Use yaml or inline fields for hierarchy data")
       .setDesc(
         "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below)."

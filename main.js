@@ -6491,14 +6491,14 @@ function closeImpliedLinks(real, implied) {
     return closedG;
 }
 const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, app.workspace.getActiveFile().path);
-function hoverPreview$2(event, matrixView) {
+function hoverPreview$2(event, matrixView, to) {
     const targetEl = event.target;
     matrixView.app.workspace.trigger("hover-link", {
         event,
         source: matrixView.getViewType(),
         hoverParent: matrixView,
         targetEl,
-        linktext: targetEl.innerText,
+        linktext: to,
     });
 }
 async function openOrSwitch(app, dest, currFile, event) {
@@ -24501,6 +24501,21 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
             await plugin.saveSettings();
         }));
         new obsidian.Setting(generalDetails)
+            .setName('Fields used for Alternative note names (Aliases)')
+            .setDesc('A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.')
+            .addText(text => {
+            let finalValue;
+            text
+                .setValue(settings.altLinkFields.join(', '))
+                .onChange(str => {
+                finalValue = str;
+            });
+            text.inputEl.onblur = async () => {
+                settings.altLinkFields = splitAndTrim(finalValue);
+                await plugin.saveSettings();
+            };
+        });
+        new obsidian.Setting(generalDetails)
             .setName("Use yaml or inline fields for hierarchy data")
             .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below).")
             .addToggle((toggle) => toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
@@ -25125,7 +25140,11 @@ function create_if_block_4$1(ctx) {
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
-	let t0_value = /*realItem*/ ctx[18].to.split("/").last() + "";
+
+	let t0_value = (/*realItem*/ ctx[18].alt
+	? /*realItem*/ ctx[18].alt
+	: /*realItem*/ ctx[18].to.split("/").last()) + "";
+
 	let t0;
 	let div_class_value;
 	let t1;
@@ -25134,6 +25153,10 @@ function create_each_block_3$2(ctx) {
 
 	function click_handler(...args) {
 		return /*click_handler*/ ctx[5](/*realItem*/ ctx[18], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[6](/*realItem*/ ctx[18], ...args);
 	}
 
 	return {
@@ -25153,7 +25176,7 @@ function create_each_block_3$2(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(div, "click", click_handler),
-					listen(div, "mouseover", /*mouseover_handler*/ ctx[6])
+					listen(div, "mouseover", mouseover_handler)
 				];
 
 				mounted = true;
@@ -25161,7 +25184,10 @@ function create_each_block_3$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*realItem*/ ctx[18].to.split("/").last() + "")) set_data(t0, t0_value);
+
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt
+			? /*realItem*/ ctx[18].alt
+			: /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*realItem*/ ctx[18].cls)) {
 				attr(div, "class", div_class_value);
@@ -25175,7 +25201,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (45:12) {#if square.impliedItems.length}
+// (48:12) {#if square.impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
@@ -25258,7 +25284,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (46:14) {#if settings.showRelationType}
+// (49:14) {#if settings.showRelationType}
 function create_if_block_2$2(ctx) {
 	let h5;
 
@@ -25277,11 +25303,15 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (54:16) {#each square.impliedItems as impliedItem}
+// (57:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
-	let t_value = /*impliedItem*/ ctx[15].to.split("/").last() + "";
+
+	let t_value = (/*impliedItem*/ ctx[15].alt
+	? /*impliedItem*/ ctx[15].alt
+	: /*impliedItem*/ ctx[15].to.split("/").last()) + "";
+
 	let t;
 	let div_class_value;
 	let mounted;
@@ -25289,6 +25319,10 @@ function create_each_block_2$3(ctx) {
 
 	function click_handler_1(...args) {
 		return /*click_handler_1*/ ctx[7](/*impliedItem*/ ctx[15], ...args);
+	}
+
+	function mouseover_handler_1(...args) {
+		return /*mouseover_handler_1*/ ctx[8](/*impliedItem*/ ctx[15], ...args);
 	}
 
 	return {
@@ -25307,7 +25341,7 @@ function create_each_block_2$3(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(div, "click", click_handler_1),
-					listen(div, "mouseover", /*mouseover_handler_1*/ ctx[8])
+					listen(div, "mouseover", mouseover_handler_1)
 				];
 
 				mounted = true;
@@ -25315,7 +25349,10 @@ function create_each_block_2$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = /*impliedItem*/ ctx[15].to.split("/").last() + "")) set_data(t, t_value);
+
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt
+			? /*impliedItem*/ ctx[15].alt
+			: /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*impliedItem*/ ctx[15].cls)) {
 				attr(div, "class", div_class_value);
@@ -25511,9 +25548,9 @@ function instance$5($$self, $$props, $$invalidate) {
 	let { matrixView } = $$props;
 	let { app } = $$props;
 	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = e => hoverPreview$2(e, matrixView);
+	const mouseover_handler = (realItem, e) => hoverPreview$2(e, matrixView, realItem.to);
 	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = e => hoverPreview$2(e, matrixView);
+	const mouseover_handler_1 = (impliedItem, e) => hoverPreview$2(e, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -25753,7 +25790,11 @@ function create_if_block_4(ctx) {
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
-	let t0_value = /*realItem*/ ctx[18].to.split("/").last() + "";
+
+	let t0_value = (/*realItem*/ ctx[18].alt
+	? /*realItem*/ ctx[18].alt
+	: /*realItem*/ ctx[18].to.split("/").last()) + "";
+
 	let t0;
 	let div_class_value;
 	let t1;
@@ -25762,6 +25803,10 @@ function create_each_block_3$1(ctx) {
 
 	function click_handler(...args) {
 		return /*click_handler*/ ctx[5](/*realItem*/ ctx[18], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[6](/*realItem*/ ctx[18], ...args);
 	}
 
 	return {
@@ -25781,7 +25826,7 @@ function create_each_block_3$1(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(div, "click", click_handler),
-					listen(div, "mouseover", /*mouseover_handler*/ ctx[6])
+					listen(div, "mouseover", mouseover_handler)
 				];
 
 				mounted = true;
@@ -25789,7 +25834,10 @@ function create_each_block_3$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*realItem*/ ctx[18].to.split("/").last() + "")) set_data(t0, t0_value);
+
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt
+			? /*realItem*/ ctx[18].alt
+			: /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-fq6v4k"))) {
 				attr(div, "class", div_class_value);
@@ -25803,7 +25851,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (41:12) {#if square.impliedItems.length}
+// (44:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let t;
 	let ol;
@@ -25886,7 +25934,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (42:14) {#if settings.showRelationType}
+// (45:14) {#if settings.showRelationType}
 function create_if_block_2$1(ctx) {
 	let h5;
 
@@ -25905,11 +25953,15 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (46:16) {#each square.impliedItems as impliedItem}
+// (49:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
-	let t_value = /*impliedItem*/ ctx[15].to.split("/").last() + "";
+
+	let t_value = (/*impliedItem*/ ctx[15].alt
+	? /*impliedItem*/ ctx[15].alt
+	: /*impliedItem*/ ctx[15].to.split("/").last()) + "";
+
 	let t;
 	let div_class_value;
 	let mounted;
@@ -25917,6 +25969,10 @@ function create_each_block_2$2(ctx) {
 
 	function click_handler_1(...args) {
 		return /*click_handler_1*/ ctx[7](/*impliedItem*/ ctx[15], ...args);
+	}
+
+	function mouseover_handler_1(...args) {
+		return /*mouseover_handler_1*/ ctx[8](/*impliedItem*/ ctx[15], ...args);
 	}
 
 	return {
@@ -25935,7 +25991,7 @@ function create_each_block_2$2(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(div, "click", click_handler_1),
-					listen(div, "mouseover", /*mouseover_handler_1*/ ctx[8])
+					listen(div, "mouseover", mouseover_handler_1)
 				];
 
 				mounted = true;
@@ -25943,7 +25999,10 @@ function create_each_block_2$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = /*impliedItem*/ ctx[15].to.split("/").last() + "")) set_data(t, t_value);
+
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt
+			? /*impliedItem*/ ctx[15].alt
+			: /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-fq6v4k"))) {
 				attr(div, "class", div_class_value);
@@ -26124,9 +26183,9 @@ function instance$4($$self, $$props, $$invalidate) {
 	let { matrixView } = $$props;
 	let { app } = $$props;
 	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = event => hoverPreview$2(event, matrixView);
+	const mouseover_handler = (realItem, event) => hoverPreview$2(event, matrixView, realItem.to);
 	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = event => hoverPreview$2(event, matrixView);
+	const mouseover_handler_1 = (impliedItem, event) => hoverPreview$2(event, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -26241,9 +26300,10 @@ class MatrixView extends obsidian.ItemView {
         }
         return unresolvedLinks[from][to] > 0;
     }
-    squareItems(g, currFile, realQ = true) {
+    squareItems(g, currFile, settings, realQ = true) {
         var _a, _b;
         let items;
+        const altFieldsQ = !!settings.altLinkFields.length;
         if (realQ) {
             items = ((_a = g.successors(currFile.basename)) !== null && _a !== void 0 ? _a : []);
         }
@@ -26254,12 +26314,29 @@ class MatrixView extends obsidian.ItemView {
         // TODO I don't think I need to check the length here
         /// forEach won't run if it's empty anyway
         if (items.length) {
-            items.forEach((item) => {
+            items.forEach((to) => {
+                let alt = null;
+                if (altFieldsQ) {
+                    const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path);
+                    if (toFile) {
+                        const metadata = this.app.metadataCache.getFileCache(toFile);
+                        settings.altLinkFields.forEach(altLinkField => {
+                            var _a;
+                            const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
+                            if (altLink) {
+                                alt = altLink;
+                                return;
+                            }
+                            console.log({ alt, altLink });
+                        });
+                    }
+                }
                 internalLinkObjArr.push({
-                    to: item,
+                    to,
                     cls: "internal-link breadcrumbs-link" +
-                        (this.unresolvedQ(item, currFile.path) ? " is-unresolved" : "") +
+                        (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
                         (realQ ? "" : " breadcrumbs-implied"),
+                    alt
                 });
             });
         }
@@ -26381,11 +26458,11 @@ class MatrixView extends obsidian.ItemView {
                 data[i].down,
             ];
             let [rUp, rSame, rDown, iUp, iDown] = [
-                this.squareItems(currUpG, currFile),
-                this.squareItems(currSameG, currFile),
-                this.squareItems(currDownG, currFile),
-                this.squareItems(currDownG, currFile, false),
-                this.squareItems(currUpG, currFile, false),
+                this.squareItems(currUpG, currFile, settings),
+                this.squareItems(currSameG, currFile, settings),
+                this.squareItems(currDownG, currFile, settings),
+                this.squareItems(currDownG, currFile, settings, false),
+                this.squareItems(currUpG, currFile, settings, false),
             ];
             // SECTION Implied Siblings
             /// Notes with the same parents
@@ -26413,11 +26490,13 @@ class MatrixView extends obsidian.ItemView {
                             (this.unresolvedQ(impliedSibling, currFile.path)
                                 ? " is-unresolved"
                                 : ""),
+                        // TODO get alt for implied siblings
+                        alt: null
                     });
                 });
             });
             /// A real sibling implies the reverse sibling
-            iSameArr.push(...this.squareItems(currSameG, currFile, false));
+            iSameArr.push(...this.squareItems(currSameG, currFile, settings, false));
             // !SECTION
             iUp = this.removeDuplicateImplied(rUp, iUp);
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
@@ -36413,6 +36492,10 @@ function create_each_block_1$1(ctx) {
 		return /*click_handler*/ ctx[11](/*step*/ ctx[24], ...args);
 	}
 
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[12](/*step*/ ctx[24], ...args);
+	}
+
 	return {
 		c() {
 			div1 = element("div");
@@ -36441,7 +36524,7 @@ function create_each_block_1$1(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(div1, "click", click_handler),
-					listen(div1, "mouseover", /*mouseover_handler*/ ctx[12])
+					listen(div1, "mouseover", mouseover_handler)
 				];
 
 				mounted = true;
@@ -36587,7 +36670,7 @@ function create_fragment$1(ctx) {
 	};
 }
 
-function hoverPreview$1(event, view) {
+function hoverPreview$1(event, view, to) {
 	const targetEl = event.target;
 
 	view.app.workspace.trigger("hover-link", {
@@ -36595,7 +36678,7 @@ function hoverPreview$1(event, view) {
 		source: view.getViewType(),
 		hoverParent: view,
 		targetEl,
-		linktext: targetEl.innerText
+		linktext: to
 	});
 }
 
@@ -36673,7 +36756,7 @@ function instance$1($$self, $$props, $$invalidate) {
 
 	const allRuns = transposedTrails.map(runs);
 	const click_handler = (step, e) => openOrSwitch(app, step.value, currFile, e);
-	const mouseover_handler = e => hoverPreview$1(e, activeLeafView);
+	const mouseover_handler = (step, e) => hoverPreview$1(e, activeLeafView, step.value);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -36710,8 +36793,8 @@ class TrailGrid extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-154mvpu-style";
-	style.textContent = "span.breadcrumbs-trail-path-container.svelte-154mvpu{display:flex;justify-content:space-between}";
+	style.id = "svelte-1rndeic-style";
+	style.textContent = "span.breadcrumbs-trail-path-container.svelte-1rndeic{display:flex;justify-content:space-between}";
 	append(document.head, style);
 }
 
@@ -36728,7 +36811,7 @@ function get_each_context_1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (30:16) {:else}
+// (30:8) {:else}
 function create_else_block(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*trail*/ ctx[11];
@@ -36784,7 +36867,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (28:16) {#if trail.length === 0}
+// (28:8) {#if trail.length === 0}
 function create_if_block_1(ctx) {
 	let span;
 	let t_value = /*settings*/ ctx[2].noPathMessage + "";
@@ -36808,7 +36891,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (38:24) {#if i < trail.length - 1}
+// (40:12) {#if i < trail.length - 1}
 function create_if_block_2(ctx) {
 	let span;
 	let t_value = " " + /*settings*/ ctx[2].trailSeperator + " " + "";
@@ -36832,7 +36915,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (31:20) {#each trail as crumb, i}
+// (31:10) {#each trail as crumb, i}
 function create_each_block_1(ctx) {
 	let span;
 	let t0_value = /*crumb*/ ctx[14] + "";
@@ -36844,6 +36927,10 @@ function create_each_block_1(ctx) {
 
 	function click_handler(...args) {
 		return /*click_handler*/ ctx[8](/*crumb*/ ctx[14], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[9](/*crumb*/ ctx[14], ...args);
 	}
 
 	let if_block = /*i*/ ctx[16] < /*trail*/ ctx[11].length - 1 && create_if_block_2(ctx);
@@ -36867,7 +36954,7 @@ function create_each_block_1(ctx) {
 			if (!mounted) {
 				dispose = [
 					listen(span, "click", click_handler),
-					listen(span, "mouseover", /*mouseover_handler*/ ctx[9])
+					listen(span, "mouseover", mouseover_handler)
 				];
 
 				mounted = true;
@@ -36901,7 +36988,7 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (26:8) {#each trailsToShow as trail}
+// (26:4) {#each trailsToShow as trail}
 function create_each_block(ctx) {
 	let div;
 	let t;
@@ -36945,7 +37032,7 @@ function create_each_block(ctx) {
 	};
 }
 
-// (47:4) {#if sortedTrails.length > 1}
+// (49:2) {#if sortedTrails.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let button;
@@ -37006,7 +37093,7 @@ function create_fragment(ctx) {
 			t = space();
 			if (if_block) if_block.c();
 			attr(div, "class", "trails-div");
-			attr(span, "class", "breadcrumbs-trail-path-container svelte-154mvpu");
+			attr(span, "class", "breadcrumbs-trail-path-container svelte-1rndeic");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -37066,7 +37153,7 @@ function create_fragment(ctx) {
 	};
 }
 
-function hoverPreview(event, view) {
+function hoverPreview(event, view, to) {
 	const targetEl = event.target;
 
 	view.app.workspace.trigger("hover-link", {
@@ -37074,7 +37161,7 @@ function hoverPreview(event, view) {
 		source: view.getViewType(),
 		hoverParent: view,
 		targetEl,
-		linktext: targetEl.innerText
+		linktext: to
 	});
 }
 
@@ -37090,7 +37177,7 @@ function instance($$self, $$props, $$invalidate) {
 	const activeLeafView = app.workspace.activeLeaf.view;
 	let showAll = settings.showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, currFile, e);
-	const mouseover_handler = e => hoverPreview(e, activeLeafView);
+	const mouseover_handler = (crumb, e) => hoverPreview(e, activeLeafView, crumb);
 	const click_handler_1 = () => $$invalidate(4, showAll = !showAll);
 
 	$$self.$$set = $$props => {
@@ -37128,7 +37215,7 @@ function instance($$self, $$props, $$invalidate) {
 class TrailPath extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-154mvpu-style")) add_css();
+		if (!document.getElementById("svelte-1rndeic-style")) add_css();
 
 		init$1(this, options, instance, create_fragment, safe_not_equal, {
 			sortedTrails: 0,
@@ -37146,6 +37233,7 @@ const DEFAULT_SETTINGS = {
     hierarchyNoteDownFieldName: "",
     hierarchyNoteUpFieldName: "",
     refreshIndexOnActiveLeafChange: false,
+    altLinkFields: [],
     useAllMetadata: true,
     parseJugglLinksWithoutJuggl: false,
     dvWaitTime: 5000,

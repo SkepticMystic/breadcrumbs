@@ -26,7 +26,7 @@
       : "internal-link breadcrumbs-link";
   }
 
-  function hoverPreview(event: MouseEvent, view: View): void {
+  function hoverPreview(event: MouseEvent, view: View, to: string): void {
     const targetEl = event.target as HTMLElement;
 
     view.app.workspace.trigger("hover-link", {
@@ -34,7 +34,7 @@
       source: view.getViewType(),
       hoverParent: view,
       targetEl,
-      linktext: targetEl.innerText,
+      linktext: to,
     });
   }
 
@@ -123,7 +123,7 @@
             ).toString(16)}`
           : ''}"
         on:click={(e) => openOrSwitch(app, step.value, currFile, e)}
-        on:mouseover={(e) => hoverPreview(e, activeLeafView)}
+        on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
         <div>{step.value}</div>
         {#if step.value && settings.gridDots}

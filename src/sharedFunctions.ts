@@ -384,7 +384,7 @@ export const isInVault = (app: App, note: string): boolean =>
     app.workspace.getActiveFile().path
   );
 
-export function hoverPreview(event: MouseEvent, matrixView: MatrixView): void {
+export function hoverPreview(event: MouseEvent, matrixView: MatrixView, to: string): void {
   const targetEl = event.target as HTMLElement;
 
   matrixView.app.workspace.trigger("hover-link", {
@@ -392,7 +392,7 @@ export function hoverPreview(event: MouseEvent, matrixView: MatrixView): void {
     source: matrixView.getViewType(),
     hoverParent: matrixView,
     targetEl,
-    linktext: targetEl.innerText,
+    linktext: to,
   });
 }
 
@@ -673,7 +673,7 @@ export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: B
         succs.forEach(async succ => {
           const { fieldName } = fieldG.node(succ);
           if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return
-          
+
           const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0]
           let oppField: string = currHier[oppDir][0];
           if (!oppField) oppField = `<Reverse>${fieldName}`
