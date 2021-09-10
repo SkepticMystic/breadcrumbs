@@ -6676,6 +6676,8 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
                 const succs = fieldG.predecessors(file.basename);
                 succs.forEach(async (succ) => {
                     const { fieldName } = fieldG.node(succ);
+                    if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
+                        return;
                     const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0];
                     let oppField = currHier[oppDir][0];
                     if (!oppField)
@@ -24285,13 +24287,29 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                 settings.limitTrailCheckboxStates = {};
                 settings.userHierarchies.forEach(userHier => {
                     userHier.up.forEach(async (field) => {
-                        // First sort out limitTrailCheckboxStates
-                        settings.limitTrailCheckboxStates[field] = true;
-                        await plugin.saveSettings();
+                        if (field !== "") {
+                            settings.limitTrailCheckboxStates[field] = true;
+                            await plugin.saveSettings();
+                        }
                     });
                 });
                 await plugin.saveSettings();
                 drawLimitTrailCheckboxes(checkboxDiv);
+            }
+            async function resetLimitWriteBCCheckboxes() {
+                settings.limitWriteBCCheckboxStates = {};
+                settings.userHierarchies.forEach(userHier => {
+                    DIRECTIONS.forEach(dir => {
+                        userHier.up.forEach(async (field) => {
+                            if (field !== "") {
+                                settings.limitWriteBCCheckboxStates[field] = true;
+                                await plugin.saveSettings();
+                            }
+                        });
+                    });
+                });
+                await plugin.saveSettings();
+                drawLimitWriteBCCheckboxes(checkboxDiv);
             }
             row.createEl("button", { text: "X" }, (el) => {
                 el.addEventListener("click", async () => {
@@ -24302,7 +24320,8 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         await plugin.saveSettings();
                     }
                     // Refresh limitTrailFields
-                    resetLimitTrailCheckboxes();
+                    await resetLimitTrailCheckboxes();
+                    await resetLimitWriteBCCheckboxes();
                     new obsidian.Notice("Hierarchy Removed.");
                 });
             });
@@ -24320,7 +24339,8 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         if (removeIndex > -1) {
                             settings.userHierarchies.splice(removeIndex, 1);
                             await plugin.saveSettings();
-                            resetLimitTrailCheckboxes();
+                            await resetLimitTrailCheckboxes();
+                            await resetLimitWriteBCCheckboxes();
                         }
                     }
                     cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
@@ -24337,7 +24357,8 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
                         });
                         await plugin.saveSettings();
                         new obsidian.Notice("Hierarchy saved.");
-                        resetLimitTrailCheckboxes();
+                        await resetLimitTrailCheckboxes();
+                        await resetLimitWriteBCCheckboxes();
                     }
                 });
             });
@@ -24610,6 +24631,8 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
             const checkboxStates = settings.limitTrailCheckboxStates;
             settings.userHierarchies.forEach(userHier => {
                 userHier.up.forEach(async (field) => {
+                    if (field === '')
+                        return;
                     // First sort out limitTrailCheckboxStates
                     if (checkboxStates[field] === undefined) {
                         checkboxStates[field] = true;
@@ -24766,9 +24789,40 @@ class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
         }));
         const writeBCsToFileDetails = containerEl.createEl("details");
         writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
+        const limitWriteBCDiv = writeBCsToFileDetails.createDiv({ cls: 'limit-ML-fields' });
+        limitWriteBCDiv.createEl('strong', { 'text': 'Limit to only write certain fields to files' });
+        const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({ cls: 'checkboxes' });
+        function drawLimitWriteBCCheckboxes(div) {
+            limitWriteBCCheckboxDiv.empty();
+            const checkboxStates = settings.limitWriteBCCheckboxStates;
+            settings.userHierarchies.forEach(userHier => {
+                DIRECTIONS.forEach(dir => {
+                    userHier[dir].forEach(async (field) => {
+                        if (field === '')
+                            return;
+                        // First sort out limitWriteBCCheckboxStates
+                        if (checkboxStates[field] === undefined) {
+                            checkboxStates[field] = true;
+                            await plugin.saveSettings();
+                        }
+                        const cbDiv = div.createDiv();
+                        const checkedQ = checkboxStates[field];
+                        const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } });
+                        cb.checked = checkedQ;
+                        cbDiv.createEl('label', { text: field, attr: { for: field } });
+                        cb.addEventListener('change', async (event) => {
+                            checkboxStates[field] = cb.checked;
+                            await plugin.saveSettings();
+                            console.log(settings.limitWriteBCCheckboxStates);
+                        });
+                    });
+                });
+            });
+        }
+        drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
         new obsidian.Setting(writeBCsToFileDetails)
             .setName("Show the `Write Breadcrumbs to ALL Files` command")
-            .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not even shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
+            .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
             .addToggle((toggle) => toggle
             .setValue(settings.showWriteAllBCsCmd)
             .onChange(async (value) => {
@@ -37113,6 +37167,7 @@ const DEFAULT_SETTINGS = {
     noPathMessage: `This note has no real or implied parents`,
     trailSeperator: "→",
     respectReadableLineLength: true,
+    limitWriteBCCheckboxStates: {},
     showWriteAllBCsCmd: false,
     visGraph: "Force Directed Graph",
     visRelation: "Parent",

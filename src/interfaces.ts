@@ -29,6 +29,7 @@ export interface BreadcrumbsSettings {
   noPathMessage: string;
   trailSeperator: string;
   respectReadableLineLength: boolean;
+  limitWriteBCCheckboxStates: { [field: string]: boolean };
   showWriteAllBCsCmd: boolean;
   visGraph: visTypes;
   visRelation: Relations;

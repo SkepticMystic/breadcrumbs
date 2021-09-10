@@ -85,14 +85,30 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         settings.limitTrailCheckboxStates = {}
         settings.userHierarchies.forEach(userHier => {
           userHier.up.forEach(async field => {
-            // First sort out limitTrailCheckboxStates
-            settings.limitTrailCheckboxStates[field] = true;
-            await plugin.saveSettings()
-
+            if (field !== "") {
+              settings.limitTrailCheckboxStates[field] = true;
+              await plugin.saveSettings()
+            }
           })
         })
         await plugin.saveSettings()
         drawLimitTrailCheckboxes(checkboxDiv)
+      }
+
+      async function resetLimitWriteBCCheckboxes() {
+        settings.limitWriteBCCheckboxStates = {}
+        settings.userHierarchies.forEach(userHier => {
+          DIRECTIONS.forEach(dir => {
+            userHier.up.forEach(async field => {
+              if (field !== "") {
+                settings.limitWriteBCCheckboxStates[field] = true;
+                await plugin.saveSettings()
+              }
+            })
+          })
+        })
+        await plugin.saveSettings()
+        drawLimitWriteBCCheckboxes(checkboxDiv)
       }
 
       const deleteButton = row.createEl("button", { text: "X" }, (el) => {
@@ -111,7 +127,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           }
 
           // Refresh limitTrailFields
-          resetLimitTrailCheckboxes()
+          await resetLimitTrailCheckboxes()
+          await resetLimitWriteBCCheckboxes()
 
           new Notice("Hierarchy Removed.");
         });
@@ -147,7 +164,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               if (removeIndex > -1) {
                 settings.userHierarchies.splice(removeIndex, 1);
                 await plugin.saveSettings();
-                resetLimitTrailCheckboxes()
+                await resetLimitTrailCheckboxes()
+                await resetLimitWriteBCCheckboxes()
               }
             }
             cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
@@ -170,7 +188,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               await plugin.saveSettings();
               new Notice("Hierarchy saved.");
 
-              resetLimitTrailCheckboxes()
+              await resetLimitTrailCheckboxes()
+              await resetLimitWriteBCCheckboxes()
             }
           });
         }
@@ -530,6 +549,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
       settings.userHierarchies.forEach(userHier => {
         userHier.up.forEach(async field => {
+          if (field === '') return
           // First sort out limitTrailCheckboxStates
           if (checkboxStates[field] === undefined) {
             checkboxStates[field] = true;
@@ -734,10 +754,47 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     const writeBCsToFileDetails: HTMLDetailsElement = containerEl.createEl("details");
     writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
 
+    const limitWriteBCDiv = writeBCsToFileDetails.createDiv({ cls: 'limit-ML-fields' })
+    limitWriteBCDiv.createEl('strong', { 'text': 'Limit to only write certain fields to files' })
+
+    const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({ cls: 'checkboxes' })
+
+    function drawLimitWriteBCCheckboxes(div: HTMLDivElement) {
+      limitWriteBCCheckboxDiv.empty()
+      const checkboxStates = settings.limitWriteBCCheckboxStates
+
+      settings.userHierarchies.forEach(userHier => {
+        DIRECTIONS.forEach(dir => {
+          userHier[dir].forEach(async field => {
+            if (field === '') return
+            // First sort out limitWriteBCCheckboxStates
+            if (checkboxStates[field] === undefined) {
+              checkboxStates[field] = true;
+              await plugin.saveSettings()
+            }
+            const cbDiv = div.createDiv()
+            const checkedQ = checkboxStates[field]
+            const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } })
+            cb.checked = checkedQ
+            const label = cbDiv.createEl('label', { text: field, attr: { for: field } })
+
+            cb.addEventListener('change', async (event) => {
+              checkboxStates[field] = cb.checked;
+              await plugin.saveSettings()
+              console.log(settings.limitWriteBCCheckboxStates)
+            })
+          })
+
+        })
+      })
+    }
+
+    drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv)
+
     new Setting(writeBCsToFileDetails)
       .setName("Show the `Write Breadcrumbs to ALL Files` command")
       .setDesc(
-        "This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not even shown by default (even though it has 3 confirmation boxes to ensure you want to run it"
+        "This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it"
       )
       .addToggle((toggle) =>
         toggle

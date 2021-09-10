@@ -73,6 +73,7 @@ const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   respectReadableLineLength: true,
+  limitWriteBCCheckboxStates: {},
   showWriteAllBCsCmd: false,
   visGraph: "Force Directed Graph",
   visRelation: "Parent",
