@@ -342,6 +342,19 @@ export default class MatrixView extends ItemView {
         }
         // Create the implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
+          const altFieldsQ = !!settings.altLinkFields.length
+          let alt = null;
+          if (altFieldsQ) {
+            const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path)
+            if (toFile) {
+              const metadata = this.app.metadataCache.getFileCache(toFile)
+              settings.altLinkFields.forEach(altLinkField => {
+                const altLink = metadata?.frontmatter?.[altLinkField]
+                if (altLink) { alt = altLink; return }
+              })
+            }
+          }
+
           iSameArr.push({
             to: impliedSibling,
             cls:
@@ -350,7 +363,7 @@ export default class MatrixView extends ItemView {
                 ? " is-unresolved"
                 : ""),
             // TODO get alt for implied siblings
-            alt: null
+            alt
           });
         });
       });

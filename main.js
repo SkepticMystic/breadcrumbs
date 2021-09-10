@@ -26484,6 +26484,22 @@ class MatrixView extends obsidian.ItemView {
                 }
                 // Create the implied sibling SquareProps
                 impliedSiblings.forEach((impliedSibling) => {
+                    const altFieldsQ = !!settings.altLinkFields.length;
+                    let alt = null;
+                    if (altFieldsQ) {
+                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path);
+                        if (toFile) {
+                            const metadata = this.app.metadataCache.getFileCache(toFile);
+                            settings.altLinkFields.forEach(altLinkField => {
+                                var _a;
+                                const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
+                                if (altLink) {
+                                    alt = altLink;
+                                    return;
+                                }
+                            });
+                        }
+                    }
                     iSameArr.push({
                         to: impliedSibling,
                         cls: "internal-link breadcrumbs-link breadcrumbs-implied" +
@@ -26491,7 +26507,7 @@ class MatrixView extends obsidian.ItemView {
                                 ? " is-unresolved"
                                 : ""),
                         // TODO get alt for implied siblings
-                        alt: null
+                        alt
                     });
                 });
             });
