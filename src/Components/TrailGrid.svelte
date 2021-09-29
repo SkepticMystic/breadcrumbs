@@ -111,9 +111,9 @@
   {#each transposedTrails as col, i}
     {#each allRuns[i] as step}
       <div
-        class="breadcrumbs-trail-grid-item 
-            {resolvedClass(step.value, currFile)} 
-            {step.value === '' ? 'breadcrumbs-filler' : ''}"
+        class="breadcrumbs-trail-grid-item {step.value === ''
+          ? 'breadcrumbs-filler'
+          : ''}"
         style="
             grid-area: {step.first + 1} / {i + 1} / 
                 {step.last + 2} / {i + 2};
@@ -125,7 +125,9 @@
         on:click={(e) => openOrSwitch(app, step.value, currFile, e)}
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
-        <div>{step.value}</div>
+        <div class={resolvedClass(step.value, currFile)}>
+          {step.value}
+        </div>
         {#if step.value && settings.gridDots}
           <div class="dots">
             {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}

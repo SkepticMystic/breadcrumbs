@@ -26327,7 +26327,6 @@ class MatrixView extends obsidian.ItemView {
                                 alt = altLink;
                                 return;
                             }
-                            console.log({ alt, altLink });
                         });
                     }
                 }
@@ -36412,7 +36411,7 @@ function get_each_context_2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (93:8) {#if step.value && settings.gridDots}
+// (95:8) {#if step.value && settings.gridDots}
 function create_if_block$1(ctx) {
 	let div;
 	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
@@ -36470,7 +36469,7 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (95:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (97:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2(ctx) {
 	let span;
 
@@ -36496,6 +36495,7 @@ function create_each_block_1$1(ctx) {
 	let div0;
 	let t0_value = /*step*/ ctx[24].value + "";
 	let t0;
+	let div0_class_value;
 	let t1;
 	let t2;
 	let div1_class_value;
@@ -36520,8 +36520,9 @@ function create_each_block_1$1(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			t2 = space();
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(/*resolvedClass*/ ctx[7](/*step*/ ctx[24].value, /*currFile*/ ctx[5])) + " svelte-46v1v3"));
 
-			attr(div1, "class", div1_class_value = "breadcrumbs-trail-grid-item \r\n            " + /*resolvedClass*/ ctx[7](/*step*/ ctx[24].value, /*currFile*/ ctx[5]) + " \r\n            " + (/*step*/ ctx[24].value === ""
+			attr(div1, "class", div1_class_value = "breadcrumbs-trail-grid-item " + (/*step*/ ctx[24].value === ""
 			? "breadcrumbs-filler"
 			: "") + " svelte-46v1v3");
 
@@ -36591,7 +36592,7 @@ function create_each_block$1(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*resolvedClass, allRuns, currFile, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts*/ 766) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, resolvedClass*/ 766) {
 				each_value_1 = /*allRuns*/ ctx[9][/*i*/ ctx[23]];
 				let i;
 
@@ -36650,7 +36651,7 @@ function create_fragment$1(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, resolvedClass, currFile, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts*/ 766) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, resolvedClass*/ 766) {
 				each_value = /*transposedTrails*/ ctx[8];
 				let i;
 

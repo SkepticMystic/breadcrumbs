@@ -144,7 +144,6 @@ export default class MatrixView extends ItemView {
             settings.altLinkFields.forEach(altLinkField => {
               const altLink = metadata?.frontmatter?.[altLinkField]
               if (altLink) { alt = altLink; return }
-              console.log({ alt, altLink })
             })
           }
         }
