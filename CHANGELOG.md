@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.72](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.71...0.10.72) (2021-09-29)
+
+
+### Bug Fixes
+
+* **Grid View:** :bug: .internal-link was a level too high ([e971c8e](https://github.com/SkepticMystic/breadcrumbs/commit/e971c8e80404ba35e46d182fd1cd8e970be6aa90))
+
 ### [0.10.71](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.70...0.10.71) (2021-09-10)
 
 
