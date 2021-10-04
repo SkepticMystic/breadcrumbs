@@ -26415,41 +26415,8 @@ class MatrixView extends obsidian.ItemView {
         });
         return index;
     }
-    async draw() {
-        this.contentEl.empty();
-        const settings = this.plugin.settings;
-        debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
-        const hierGs = this.plugin.currGraphs;
-        const { userHierarchies } = this.plugin.settings;
-        const currFile = this.app.workspace.getActiveFile();
-        const viewToggleButton = this.contentEl.createEl("button", {
-            text: this.matrixQ ? "List" : "Matrix",
-        });
-        viewToggleButton.addEventListener("click", async () => {
-            this.matrixQ = !this.matrixQ;
-            viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
-            await this.draw();
-        });
-        const refreshIndexButton = this.contentEl.createEl("button", {
-            text: "Refresh Index",
-        });
-        refreshIndexButton.addEventListener("click", async () => {
-            await this.plugin.refreshIndex();
-        });
-        const data = hierGs.hierGs.map((hier) => {
-            const hierData = {
-                up: undefined,
-                same: undefined,
-                down: undefined,
-            };
-            DIRECTIONS.forEach((dir) => {
-                // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-                hierData[dir] = mergeGs(...Object.values(hier[dir]));
-            });
-            return hierData;
-        });
-        debug(settings, { data });
-        const hierSquares = userHierarchies.map((hier, i) => {
+    getHierSquares(userHierarchies, data, currFile, settings) {
+        return userHierarchies.map((hier, i) => {
             var _a;
             const [currUpG, currSameG, currDownG] = [
                 data[i].up,
@@ -26516,6 +26483,13 @@ class MatrixView extends obsidian.ItemView {
             iUp = this.removeDuplicateImplied(rUp, iUp);
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
             iDown = this.removeDuplicateImplied(rDown, iDown);
+            const iSameNoDup = [];
+            iSameArr.forEach(impSib => {
+                if (iSameNoDup.every(noDup => noDup.to !== impSib.to)) {
+                    iSameNoDup.push(impSib);
+                }
+            });
+            iSameArr = iSameNoDup;
             debug(settings, {
                 rUp,
                 iUp,
@@ -26547,31 +26521,59 @@ class MatrixView extends obsidian.ItemView {
             };
             return [upSquare, sameSquare, downSquare];
         });
+    }
+    async draw() {
+        this.contentEl.empty();
+        const { settings } = this.plugin;
+        debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
+        const hierGs = this.plugin.currGraphs;
+        const { userHierarchies } = settings;
+        const currFile = this.app.workspace.getActiveFile();
+        const viewToggleButton = this.contentEl.createEl("button", {
+            text: this.matrixQ ? "List" : "Matrix",
+        });
+        viewToggleButton.addEventListener("click", async () => {
+            this.matrixQ = !this.matrixQ;
+            viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
+            await this.draw();
+        });
+        const refreshIndexButton = this.contentEl.createEl("button", {
+            text: "Refresh Index",
+        });
+        refreshIndexButton.addEventListener("click", async () => {
+            await this.plugin.refreshIndex();
+        });
+        const data = hierGs.hierGs.map((hier) => {
+            const hierData = {
+                up: undefined,
+                same: undefined,
+                down: undefined,
+            };
+            DIRECTIONS.forEach((dir) => {
+                // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
+                hierData[dir] = mergeGs(...Object.values(hier[dir]));
+            });
+            return hierData;
+        });
+        debug(settings, { data });
+        const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings);
         debug(settings, { hierSquares });
         const filteredSquaresArr = hierSquares.filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
+        const compInput = {
+            target: this.contentEl,
+            props: {
+                filteredSquaresArr,
+                currFile,
+                settings,
+                matrixView: this,
+                app: this.app,
+            },
+        };
         if (this.matrixQ) {
-            this.view = new Matrix({
-                target: this.contentEl,
-                props: {
-                    filteredSquaresArr,
-                    currFile,
-                    settings: settings,
-                    matrixView: this,
-                    app: this.app,
-                },
-            });
+            this.view = new Matrix(compInput);
         }
         else {
-            this.view = new Lists({
-                target: this.contentEl,
-                props: {
-                    filteredSquaresArr,
-                    currFile,
-                    settings: settings,
-                    matrixView: this,
-                    app: this.app,
-                },
-            });
+            this.view = new Lists(compInput);
         }
         debugGroupEnd(settings, "debugMode");
     }
