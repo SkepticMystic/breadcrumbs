@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.73](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.72...0.10.73) (2021-10-04)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Remove duplicate implied siblings ([0d0a187](https://github.com/SkepticMystic/breadcrumbs/commit/0d0a18714473a64a440336b2f67725fafbd5dc74))
+
 ### [0.10.72](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.71...0.10.72) (2021-09-29)
 
 
