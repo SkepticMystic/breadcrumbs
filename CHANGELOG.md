@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.74](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.73...0.10.74) (2021-10-08)
+
+
+### Features
+
+* **CSV Crumbs:** :sparkles: Use a CSV file to add Breadcrumbs ([d794db9](https://github.com/SkepticMystic/breadcrumbs/commit/d794db91498acd48acc445f9893614a4228f1187))
+
 ### [0.10.73](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.72...0.10.73) (2021-10-04)
 
 
