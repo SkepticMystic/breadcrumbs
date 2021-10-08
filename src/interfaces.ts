@@ -4,6 +4,7 @@ import type { FrontMatterCache, Pos, TFile } from "obsidian";
 export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
   indexNote: string[];
+  CSVPaths: string;
   hierarchyNotes: string[];
   hierarchyNoteDownFieldName: string;
   hierarchyNoteUpFieldName: string;

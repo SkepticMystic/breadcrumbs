@@ -3,6 +3,7 @@ import {
   addIcon,
   EventRef,
   MarkdownView,
+  normalizePath,
   Notice, Plugin,
   TFile,
   WorkspaceLeaf
@@ -35,17 +36,27 @@ import {
   getObsMetadataCache,
   mergeGs,
   oppFields, removeDuplicates,
+  splitAndTrim,
   writeBCToFile
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
+import * as fs from 'fs'
+import { promises as fsp } from 'fs';
+// import csv2json from "csv2json";
+import { csvParse } from "d3-dsv";
+import { head } from "lodash";
+// import csv from 'csv-parse';
+// import csv2json from 'csv2json'
+// import { csvParse } from "d3-dsv";
 
 
 const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],
   indexNote: [""],
+  CSVPaths: '',
   hierarchyNotes: [""],
   hierarchyNoteDownFieldName: "",
   hierarchyNoteUpFieldName: "",
@@ -485,6 +496,36 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
   }
 
+  async getCSVRows(basePath: string) {
+    const { CSVPaths } = this.settings
+    if (CSVPaths[0] === '') return
+    const fullPath = normalizePath(CSVPaths[0])
+
+    const content = await this.app.vault.adapter.read(fullPath)
+    const lines = content.split('\n')
+
+    const headers = lines[0].split(',').map(head => head.trim())
+    const CSVRows: { [key: string]: string }[] = []
+    lines.slice(1).forEach(row => {
+      const rowObj = {}
+      row.split(',').map(head => head.trim()).forEach((item, i) => {
+        rowObj[headers[i]] = item
+      })
+      CSVRows.push(rowObj)
+    })
+
+    console.log({ CSVRows })
+    return CSVRows
+
+  }
+  addCSVCrumbs(g: Graph, CSVRows: { [key: string]: string }[], dir: Directions, fieldName: string) {
+    CSVRows.forEach(row => {
+      g.setNode(row.file, { dir, fieldName });
+      if (fieldName === "" || !row[fieldName]) return;
+      g.setEdge(row.file, row[fieldName], { dir, fieldName })
+    })
+  }
+
   async initGraphs(): Promise<BCIndex> {
     const settings = this.settings;
     debugGroupStart(settings, "debugMode", "Initialise Graphs");
@@ -551,20 +592,25 @@ export default class BreadcrumbsPlugin extends Plugin {
       graphs.hierGs.push(newGraphs);
     });
 
-    relObjArr.forEach((relObj) => {
-      const currFileName = relObj.current.basename || relObj.current.name;
+    if (settings.CSVPaths !== '') {
+      const { basePath } = this.app.vault.adapter
+      const CSVRows = await this.getCSVRows(basePath)
+      relObjArr.forEach((relObj) => {
+        const currFileName = relObj.current.basename || relObj.current.name;
 
-      relObj.hierarchies.forEach((hier, i) => {
-        DIRECTIONS.forEach((dir: Directions) => {
-          Object.keys(hier[dir]).forEach((fieldName) => {
-            const g = graphs.hierGs[i][dir][fieldName];
-            const fieldValues = hier[dir][fieldName];
+        relObj.hierarchies.forEach((hier, i) => {
+          DIRECTIONS.forEach((dir: Directions) => {
+            Object.keys(hier[dir]).forEach((fieldName) => {
+              const g = graphs.hierGs[i][dir][fieldName];
+              const fieldValues = hier[dir][fieldName];
 
-            this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
+              this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
+              this.addCSVCrumbs(g, CSVRows, dir, fieldName);
+            });
           });
         });
       });
-    });
+    }
 
     if (hierarchyNotesArr.length) {
       const { hierarchyNoteUpFieldName, hierarchyNoteDownFieldName } = settings;

@@ -350,6 +350,17 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     generalDetails.createEl("summary", { text: "General Options" });
 
     new Setting(generalDetails)
+      .setName('CSV Breadcrumb Paths')
+      .setDesc('The file path of a csv files with breadcrumbs information.')
+      .addText(text => {
+        text.setValue(settings.CSVPaths)
+        text.inputEl.onblur = async () => {
+          settings.CSVPaths = text.inputEl.value
+          await plugin.saveSettings()
+        }
+      })
+
+    new Setting(generalDetails)
       .setName("Refresh Index on Note Change")
       .setDesc(
         "Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default."
