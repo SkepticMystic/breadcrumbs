@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.75](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.74...0.10.75) (2021-10-09)
+
+
+### Bug Fixes
+
+* **CSV Crumbs:** :bug: fixes [#142](https://github.com/SkepticMystic/breadcrumbs/issues/142) CSV File shouldn't be needed to show regular BCs ([df3de06](https://github.com/SkepticMystic/breadcrumbs/commit/df3de06683c03ec8c213931ee8d468d2f2c1cf12))
+
 ### [0.10.74](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.73...0.10.74) (2021-10-08)
 
 
