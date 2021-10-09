@@ -621,7 +621,14 @@ export function hierToStr(hier: userHierarchy) {
 export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
 }
-
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {{[fun:string]:(...args:any} api
+ */
 export const createOrUpdateYaml = async (
   key: string,
   value: string,
