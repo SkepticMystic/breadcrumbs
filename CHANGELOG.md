@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.75...0.11.0) (2021-11-03)
+
+
+### Bug Fixes
+
+* :bug: Properly await dvIndex ([42f0440](https://github.com/SkepticMystic/breadcrumbs/commit/42f04406b7d4aa3e953451a15aa4869d19b17478))
+
 ### [0.10.75](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.74...0.10.75) (2021-10-09)
 
 
