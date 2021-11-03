@@ -20,6 +20,7 @@ import {
   debugGroupEnd,
   debugGroupStart,
   mergeGs,
+  unresolvedQ,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -37,7 +38,7 @@ export default class MatrixView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     const { settings } = this.plugin;
-    this.matrixQ = this.plugin.settings.defaultView;
+    this.matrixQ = settings.defaultView;
     await this.draw();
 
     this.plugin.addCommand({
@@ -45,12 +46,10 @@ export default class MatrixView extends ItemView {
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
         const currFile = this.app.workspace.getActiveFile().basename;
-
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const allPaths = this.dfsAllPaths(closedParents, currFile);
         const index = this.createIndex(currFile + "\n", allPaths, settings);
-        debug(settings, { index });
         await copy(index);
       },
     });
@@ -70,8 +69,6 @@ export default class MatrixView extends ItemView {
           const allPaths = this.dfsAllPaths(closedParents, terminal);
           globalIndex = this.createIndex(globalIndex, allPaths, settings);
         });
-
-        debug(settings, { globalIndex });
         await copy(globalIndex);
       },
     });
@@ -95,20 +92,13 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  unresolvedQ(to: string, from: string): boolean {
-    const { unresolvedLinks } = this.app.metadataCache;
-    if (!unresolvedLinks[from]) {
-      return false;
-    }
-    return unresolvedLinks[from][to] > 0;
-  }
-
   squareItems(
     g: Graph,
     currFile: TFile,
     settings: BreadcrumbsSettings,
     realQ = true
   ): internalLinkObj[] {
+    const { app } = this;
     let items: string[];
     const altFieldsQ = !!settings.altLinkFields.length;
 
@@ -124,12 +114,9 @@ export default class MatrixView extends ItemView {
       items.forEach((to: string) => {
         let alt = null;
         if (altFieldsQ) {
-          const toFile = this.app.metadataCache.getFirstLinkpathDest(
-            to,
-            currFile.path
-          );
+          const toFile = app.metadataCache.getFirstLinkpathDest(to, "");
           if (toFile) {
-            const metadata = this.app.metadataCache.getFileCache(toFile);
+            const metadata = app.metadataCache.getFileCache(toFile);
             settings.altLinkFields.forEach((altLinkField) => {
               const altLink = metadata?.frontmatter?.[altLinkField];
               if (altLink) {
@@ -143,7 +130,7 @@ export default class MatrixView extends ItemView {
           to,
           cls:
             "internal-link breadcrumbs-link" +
-            (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
+            (unresolvedQ(app, to, currFile.path) ? " is-unresolved" : "") +
             (realQ ? "" : " breadcrumbs-implied"),
           alt,
         });
@@ -201,7 +188,6 @@ export default class MatrixView extends ItemView {
     const indent = "  ";
     const visited: { [node: string]: number[] } = {};
 
-    const activeFile = this.app.workspace.getActiveFile();
     reversed.forEach((path) => {
       for (let depth = 0; depth < path.length; depth++) {
         const currNode = path[depth];
@@ -221,7 +207,7 @@ export default class MatrixView extends ItemView {
           if (settings.aliasesInIndex) {
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
               currNode,
-              activeFile.path
+              ""
             );
 
             if (currFile !== null) {
@@ -301,7 +287,7 @@ export default class MatrixView extends ItemView {
           if (altFieldsQ) {
             const toFile = this.app.metadataCache.getFirstLinkpathDest(
               impliedSibling,
-              currFile.path
+              ""
             );
             if (toFile) {
               const metadata = this.app.metadataCache.getFileCache(toFile);
@@ -319,7 +305,7 @@ export default class MatrixView extends ItemView {
             to: impliedSibling,
             cls:
               "internal-link breadcrumbs-link breadcrumbs-implied" +
-              (this.unresolvedQ(impliedSibling, currFile.path)
+              (unresolvedQ(this.app, impliedSibling, currFile.path)
                 ? " is-unresolved"
                 : ""),
             // TODO get alt for implied siblings

@@ -34,7 +34,7 @@
     try {
       wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(
         cell,
-        currFile.path
+        ""
       ).stat.size;
     } catch (error) {
       console.log(error);

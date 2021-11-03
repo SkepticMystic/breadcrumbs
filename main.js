@@ -26220,6 +26220,47 @@ const DIRECTIONS = ["up", "same", "down"];
 const RELATIONS = ["Parent", "Sibling", "Child"];
 const REAlCLOSED = ["Real", "Closed"];
 const ALLUNLINKED = ["All", "No Unlinked"];
+const DEFAULT_SETTINGS = {
+    userHierarchies: [],
+    indexNote: [""],
+    CSVPaths: "",
+    hierarchyNotes: [""],
+    hierarchyNoteDownFieldName: "",
+    hierarchyNoteUpFieldName: "",
+    refreshIndexOnActiveLeafChange: false,
+    altLinkFields: [],
+    useAllMetadata: true,
+    parseJugglLinksWithoutJuggl: false,
+    dvWaitTime: 5000,
+    refreshIntervalTime: 0,
+    defaultView: true,
+    showNameOrType: true,
+    showRelationType: true,
+    filterImpliedSiblingsOfDifferentTypes: false,
+    rlLeaf: true,
+    showTrail: true,
+    limitTrailCheckboxStates: {},
+    hideTrailFieldName: "hide-trail",
+    trailOrTable: 3,
+    gridDots: false,
+    dotsColour: "#000000",
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+    showAll: false,
+    noPathMessage: `This note has no real or implied parents`,
+    trailSeperator: "→",
+    respectReadableLineLength: true,
+    limitWriteBCCheckboxStates: {},
+    showWriteAllBCsCmd: false,
+    visGraph: "Force Directed Graph",
+    visRelation: "Parent",
+    visClosed: "Real",
+    visAll: "All",
+    wikilinkIndex: true,
+    aliasesInIndex: false,
+    debugMode: false,
+    superDebugMode: false,
+};
 
 const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
 const nameRegex = '[^\\W\\d]\\w*';
@@ -26511,13 +26552,13 @@ function closeImpliedLinks(real, implied) {
 const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, "");
 async function openOrSwitch(app, dest, currFile, event) {
     const { workspace } = app;
-    let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
+    let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
     // If dest doesn't exist, make it
     if (!destFile) {
         const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
         const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
         await app.vault.create(newFilePath, "");
-        destFile = app.metadataCache.getFirstLinkpathDest(newFilePath, currFile.path);
+        destFile = app.metadataCache.getFirstLinkpathDest(newFilePath, "");
     }
     // Check if it's already open
     const leavesWithDestAlreadyOpen = [];
@@ -26728,6 +26769,13 @@ async function waitForDataview(app, delay, max = 200) {
         console.log(error);
         throw error;
     }
+}
+function unresolvedQ(app, to, from) {
+    const { unresolvedLinks } = app.metadataCache;
+    if (!unresolvedLinks[from]) {
+        return false;
+    }
+    return unresolvedLinks[from][to] > 0;
 }
 
 function noop$1() { }
@@ -28305,7 +28353,7 @@ class MatrixView extends obsidian_1.ItemView {
     async onload() {
         super.onload();
         const { settings } = this.plugin;
-        this.matrixQ = this.plugin.settings.defaultView;
+        this.matrixQ = settings.defaultView;
         await this.draw();
         this.plugin.addCommand({
             id: "local-index",
@@ -28315,7 +28363,6 @@ class MatrixView extends obsidian_1.ItemView {
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const allPaths = this.dfsAllPaths(closedParents, currFile);
                 const index = this.createIndex(currFile + "\n", allPaths, settings);
-                debug(settings, { index });
                 await copy$1(index);
             },
         });
@@ -28332,7 +28379,6 @@ class MatrixView extends obsidian_1.ItemView {
                     const allPaths = this.dfsAllPaths(closedParents, terminal);
                     globalIndex = this.createIndex(globalIndex, allPaths, settings);
                 });
-                debug(settings, { globalIndex });
                 await copy$1(globalIndex);
             },
         });
@@ -28350,15 +28396,9 @@ class MatrixView extends obsidian_1.ItemView {
         }
         return Promise.resolve();
     }
-    unresolvedQ(to, from) {
-        const { unresolvedLinks } = this.app.metadataCache;
-        if (!unresolvedLinks[from]) {
-            return false;
-        }
-        return unresolvedLinks[from][to] > 0;
-    }
     squareItems(g, currFile, settings, realQ = true) {
         var _a, _b;
+        const { app } = this;
         let items;
         const altFieldsQ = !!settings.altLinkFields.length;
         if (realQ) {
@@ -28374,9 +28414,9 @@ class MatrixView extends obsidian_1.ItemView {
             items.forEach((to) => {
                 let alt = null;
                 if (altFieldsQ) {
-                    const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path);
+                    const toFile = app.metadataCache.getFirstLinkpathDest(to, "");
                     if (toFile) {
-                        const metadata = this.app.metadataCache.getFileCache(toFile);
+                        const metadata = app.metadataCache.getFileCache(toFile);
                         settings.altLinkFields.forEach((altLinkField) => {
                             var _a;
                             const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
@@ -28390,7 +28430,7 @@ class MatrixView extends obsidian_1.ItemView {
                 internalLinkObjArr.push({
                     to,
                     cls: "internal-link breadcrumbs-link" +
-                        (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
+                        (unresolvedQ(app, to, currFile.path) ? " is-unresolved" : "") +
                         (realQ ? "" : " breadcrumbs-implied"),
                     alt,
                 });
@@ -28432,7 +28472,6 @@ class MatrixView extends obsidian_1.ItemView {
         reversed.forEach((path) => path.shift());
         const indent = "  ";
         const visited = {};
-        const activeFile = this.app.workspace.getActiveFile();
         reversed.forEach((path) => {
             var _a, _b, _c, _d;
             for (let depth = 0; depth < path.length; depth++) {
@@ -28448,7 +28487,7 @@ class MatrixView extends obsidian_1.ItemView {
                     index += currNode;
                     index += settings.wikilinkIndex ? "]]" : "";
                     if (settings.aliasesInIndex) {
-                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, activeFile.path);
+                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, "");
                         if (currFile !== null) {
                             const cache = this.app.metadataCache.getFileCache(currFile);
                             const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
@@ -28510,7 +28549,7 @@ class MatrixView extends obsidian_1.ItemView {
                     const altFieldsQ = !!settings.altLinkFields.length;
                     let alt = null;
                     if (altFieldsQ) {
-                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path);
+                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, "");
                         if (toFile) {
                             const metadata = this.app.metadataCache.getFileCache(toFile);
                             settings.altLinkFields.forEach((altLinkField) => {
@@ -28526,7 +28565,7 @@ class MatrixView extends obsidian_1.ItemView {
                     iSameArr.push({
                         to: impliedSibling,
                         cls: "internal-link breadcrumbs-link breadcrumbs-implied" +
-                            (this.unresolvedQ(impliedSibling, currFile.path)
+                            (unresolvedQ(this.app, impliedSibling, currFile.path)
                                 ? " is-unresolved"
                                 : ""),
                         // TODO get alt for implied siblings
@@ -39553,7 +39592,7 @@ function instance$1($$self, $$props, $$invalidate) {
 
 	allCells.forEach(cell => {
 		try {
-			$$invalidate(2, wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(cell, currFile.path).stat.size, wordCounts);
+			$$invalidate(2, wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(cell, "").stat.size, wordCounts);
 		} catch(error) {
 			console.log(error);
 			console.log({ currFile });
@@ -40064,47 +40103,6 @@ class TrailPath extends SvelteComponent {
 	}
 }
 
-const DEFAULT_SETTINGS = {
-    userHierarchies: [],
-    indexNote: [""],
-    CSVPaths: "",
-    hierarchyNotes: [""],
-    hierarchyNoteDownFieldName: "",
-    hierarchyNoteUpFieldName: "",
-    refreshIndexOnActiveLeafChange: false,
-    altLinkFields: [],
-    useAllMetadata: true,
-    parseJugglLinksWithoutJuggl: false,
-    dvWaitTime: 5000,
-    refreshIntervalTime: 0,
-    defaultView: true,
-    showNameOrType: true,
-    showRelationType: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
-    rlLeaf: true,
-    showTrail: true,
-    limitTrailCheckboxStates: {},
-    hideTrailFieldName: "hide-trail",
-    trailOrTable: 3,
-    gridDots: false,
-    dotsColour: "#000000",
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
-    showAll: false,
-    noPathMessage: `This note has no real or implied parents`,
-    trailSeperator: "→",
-    respectReadableLineLength: true,
-    limitWriteBCCheckboxStates: {},
-    showWriteAllBCsCmd: false,
-    visGraph: "Force Directed Graph",
-    visRelation: "Parent",
-    visClosed: "Real",
-    visAll: "All",
-    wikilinkIndex: true,
-    aliasesInIndex: false,
-    debugMode: false,
-    superDebugMode: false,
-};
 class BreadcrumbsPlugin extends obsidian_1.Plugin {
     constructor() {
         super(...arguments);
@@ -40231,27 +40229,6 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
         };
     }
     async refreshIndex() {
-        // if (!this.activeLeafChangeEventRef) {
-        //   this.activeLeafChangeEventRef = this.app.workspace.on(
-        //     "active-leaf-change",
-        //     async () => {
-        //       if (this.settings.refreshIndexOnActiveLeafChange) {
-        //         // refreshIndex does everything in one
-        //         await this.refreshIndex();
-        //       } else {
-        //         // If it is not called, active-leaf-change still needs to trigger a redraw
-        //         const activeView = this.getActiveMatrixView();
-        //         if (activeView) {
-        //           await activeView.draw();
-        //         }
-        //         if (this.settings.showTrail) {
-        //           await this.drawTrail();
-        //         }
-        //       }
-        //     }
-        //   );
-        //   this.registerEvent(this.activeLeafChangeEventRef);
-        // }
         this.currGraphs = await this.initGraphs();
         const activeView = this.getActiveMatrixView();
         if (activeView) {
@@ -40396,10 +40373,9 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
         let hierarchyNotesArr = [];
         if (settings.hierarchyNotes[0] !== "") {
-            const currPath = this.app.workspace.getActiveFile().path;
             const contentArr = [];
             settings.hierarchyNotes.forEach(async (note) => {
-                const file = this.app.metadataCache.getFirstLinkpathDest(note, currPath);
+                const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
                 if (file) {
                     const content = await this.app.vault.cachedRead(file);
                     contentArr.push(content);
@@ -40422,7 +40398,7 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
         };
         userHierarchies.forEach((hier, i) => {
             const newGraphs = { up: {}, same: {}, down: {} };
-            Object.keys(hier).forEach((dir) => {
+            DIRECTIONS.forEach((dir) => {
                 hier[dir].forEach((dirField) => {
                     newGraphs[dir][dirField] = new graphlib.Graph();
                 });
@@ -40430,10 +40406,9 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
             graphs.hierGs.push(newGraphs);
         });
         const useCSV = settings.CSVPaths !== "";
-        let basePath;
         let CSVRows;
         if (useCSV) {
-            basePath = this.app.vault.adapter.basePath;
+            const basePath = this.app.vault.adapter.basePath;
             CSVRows = await this.getCSVRows(basePath);
         }
         relObjArr.forEach((relObj) => {
@@ -40481,13 +40456,10 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
             const dirMerged = mergeGs(...Object.values(allXGs));
             graphs.mergedGs[dir] = dirMerged;
         });
+        // Don't merge with this forEach ↑. The bottom one needs the results from the first
         DIRECTIONS.forEach((dir) => {
-            if (dir !== "same") {
-                graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[dir === "up" ? "down" : "up"]);
-            }
-            else {
-                graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[dir]);
-            }
+            const oppDir = getOppDir(dir);
+            graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[oppDir]);
         });
         // LimitTrailG
         if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
@@ -40600,16 +40572,16 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
             return;
         }
         const activeMDView = this.app.workspace.getActiveViewOfType(obsidian_1.MarkdownView);
+        if (!activeMDView) {
+            debugGroupEnd(settings, "debugMode");
+            return;
+        }
         const currFile = activeMDView.file;
         const currMetadata = this.app.metadataCache.getFileCache(currFile);
         const previewView = activeMDView.contentEl.querySelector(".markdown-preview-view");
         if ((_a = currMetadata.frontmatter) === null || _a === void 0 ? void 0 : _a.hasOwnProperty(settings.hideTrailFieldName)) {
             debugGroupEnd(settings, "debugMode");
             (_b = previewView.querySelector("div.breadcrumbs-trail")) === null || _b === void 0 ? void 0 : _b.remove();
-            return;
-        }
-        if (!activeMDView) {
-            debugGroupEnd(settings, "debugMode");
             return;
         }
         const frontm = (_d = (_c = this.app.metadataCache.getFileCache(currFile)) === null || _c === void 0 ? void 0 : _c.frontmatter) !== null && _d !== void 0 ? _d : {};
@@ -40671,15 +40643,8 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
     }
     onunload() {
         console.log("unloading");
-        // Detach matrix view
-        const openLeaves = [
-            VIEW_TYPE_BREADCRUMBS_MATRIX,
-            VIEW_TYPE_BREADCRUMBS_STATS,
-        ]
-            .map((type) => this.app.workspace.getLeavesOfType(type))
-            .flat(1);
-        openLeaves.forEach((leaf) => leaf.detach());
-        // Empty trailDiv
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS);
         this.visited.forEach((visit) => visit[1].remove());
     }
 }

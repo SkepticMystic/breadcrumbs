@@ -1,4 +1,4 @@
-import type { Directions, Relations, visTypes } from "src/interfaces";
+import type { BreadcrumbsSettings, visTypes } from "src/interfaces";
 
 export const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
 export const VIEW_TYPE_BREADCRUMBS_STATS = "breadcrumbs-stats";
@@ -22,7 +22,52 @@ export const VISTYPES: visTypes[] = [
   "Radial Tree",
 ];
 
-export const DIRECTIONS: Directions[] = ["up", "same", "down"];
-export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
+export const DIRECTIONS = ["up", "same", "down"] as const;
+
+export const RELATIONS = ["Parent", "Sibling", "Child"] as const;
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
+
+export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
+  userHierarchies: [],
+  indexNote: [""],
+  CSVPaths: "",
+  hierarchyNotes: [""],
+  hierarchyNoteDownFieldName: "",
+  hierarchyNoteUpFieldName: "",
+  refreshIndexOnActiveLeafChange: false,
+  altLinkFields: [],
+  useAllMetadata: true,
+  parseJugglLinksWithoutJuggl: false,
+  dvWaitTime: 5000,
+  refreshIntervalTime: 0,
+  defaultView: true,
+  showNameOrType: true,
+  showRelationType: true,
+  filterImpliedSiblingsOfDifferentTypes: false,
+  rlLeaf: true,
+  showTrail: true,
+  limitTrailCheckboxStates: {},
+  hideTrailFieldName: "hide-trail",
+  trailOrTable: 3,
+  gridDots: false,
+  dotsColour: "#000000",
+  gridHeatmap: false,
+  heatmapColour: getComputedStyle(document.body).getPropertyValue(
+    "--text-accent"
+  ),
+  showAll: false,
+  noPathMessage: `This note has no real or implied parents`,
+  trailSeperator: "→",
+  respectReadableLineLength: true,
+  limitWriteBCCheckboxStates: {},
+  showWriteAllBCsCmd: false,
+  visGraph: "Force Directed Graph",
+  visRelation: "Parent",
+  visClosed: "Real",
+  visAll: "All",
+  wikilinkIndex: true,
+  aliasesInIndex: false,
+  debugMode: false,
+  superDebugMode: false,
+};

@@ -387,7 +387,7 @@ export async function openOrSwitch(
   event: MouseEvent
 ): Promise<void> {
   const { workspace } = app;
-  let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
+  let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
 
   // If dest doesn't exist, make it
   if (!destFile) {
@@ -396,10 +396,7 @@ export async function openOrSwitch(
       newFileFolder === "/" ? "" : "/"
     }${dest}.md`;
     await app.vault.create(newFilePath, "");
-    destFile = app.metadataCache.getFirstLinkpathDest(
-      newFilePath,
-      currFile.path
-    );
+    destFile = app.metadataCache.getFirstLinkpathDest(newFilePath, "");
   }
 
   // Check if it's already open
@@ -716,4 +713,12 @@ export async function waitForDataview(
     console.log(error);
     throw error;
   }
+}
+
+export function unresolvedQ(app: App, to: string, from: string): boolean {
+  const { unresolvedLinks } = app.metadataCache;
+  if (!unresolvedLinks[from]) {
+    return false;
+  }
+  return unresolvedLinks[from][to] > 0;
 }

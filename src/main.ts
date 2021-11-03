@@ -12,6 +12,7 @@ import {
 import { openView, waitForResolvedLinks } from "obsidian-community-lib";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
+  DEFAULT_SETTINGS,
   DIRECTIONS,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
@@ -36,6 +37,7 @@ import {
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
+  getOppDir,
   mergeGs,
   oppFields,
   removeDuplicates,
@@ -47,72 +49,6 @@ import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
 
-const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-  userHierarchies: [],
-  indexNote: [""],
-  CSVPaths: "",
-  hierarchyNotes: [""],
-  hierarchyNoteDownFieldName: "",
-  hierarchyNoteUpFieldName: "",
-  refreshIndexOnActiveLeafChange: false,
-  altLinkFields: [],
-  useAllMetadata: true,
-  parseJugglLinksWithoutJuggl: false,
-  dvWaitTime: 5000,
-  refreshIntervalTime: 0,
-  defaultView: true,
-  showNameOrType: true,
-  showRelationType: true,
-  filterImpliedSiblingsOfDifferentTypes: false,
-  rlLeaf: true,
-  showTrail: true,
-  limitTrailCheckboxStates: {},
-  hideTrailFieldName: "hide-trail",
-  trailOrTable: 3,
-  gridDots: false,
-  dotsColour: "#000000",
-  gridHeatmap: false,
-  heatmapColour: getComputedStyle(document.body).getPropertyValue(
-    "--text-accent"
-  ),
-  showAll: false,
-  noPathMessage: `This note has no real or implied parents`,
-  trailSeperator: "→",
-  respectReadableLineLength: true,
-  limitWriteBCCheckboxStates: {},
-  showWriteAllBCsCmd: false,
-  visGraph: "Force Directed Graph",
-  visRelation: "Parent",
-  visClosed: "Real",
-  visAll: "All",
-  wikilinkIndex: true,
-  aliasesInIndex: false,
-  debugMode: false,
-  superDebugMode: false,
-};
-
-declare module "obsidian" {
-  interface App {
-    plugins: {
-      plugins: {
-        dataview: { api: { index: { pages: Map<string, {}> } } };
-        juggl: any;
-        metaedit: {
-          api: {
-            getAutopropFunction: () => any;
-            getUpdateFunction: () => any;
-            getFileFromTFileOrPath: () => any;
-            getGetPropertyValueFunction: () => any;
-            getGetFilesWithPropertyFunction: () => any;
-            getCreateYamlPropertyFunction: () => any;
-            getGetPropertiesInFile: () => any;
-          };
-        };
-      };
-    };
-  }
-}
-
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
   visited: [string, HTMLDivElement][] = [];
@@ -121,29 +57,6 @@ export default class BreadcrumbsPlugin extends Plugin {
   activeLeafChangeEventRef: EventRef;
 
   async refreshIndex() {
-    // if (!this.activeLeafChangeEventRef) {
-    //   this.activeLeafChangeEventRef = this.app.workspace.on(
-    //     "active-leaf-change",
-    //     async () => {
-    //       if (this.settings.refreshIndexOnActiveLeafChange) {
-    //         // refreshIndex does everything in one
-    //         await this.refreshIndex();
-    //       } else {
-    //         // If it is not called, active-leaf-change still needs to trigger a redraw
-    //         const activeView = this.getActiveMatrixView();
-    //         if (activeView) {
-    //           await activeView.draw();
-    //         }
-    //         if (this.settings.showTrail) {
-    //           await this.drawTrail();
-    //         }
-    //       }
-    //     }
-    //   );
-
-    //   this.registerEvent(this.activeLeafChangeEventRef);
-    // }
-
     this.currGraphs = await this.initGraphs();
     const activeView = this.getActiveMatrixView();
     if (activeView) {
@@ -496,14 +409,10 @@ export default class BreadcrumbsPlugin extends Plugin {
       children: string[];
     }[] = [];
     if (settings.hierarchyNotes[0] !== "") {
-      const currPath = this.app.workspace.getActiveFile().path;
       const contentArr: string[] = [];
 
       settings.hierarchyNotes.forEach(async (note) => {
-        const file = this.app.metadataCache.getFirstLinkpathDest(
-          note,
-          currPath
-        );
+        const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
         if (file) {
           const content = await this.app.vault.cachedRead(file);
           contentArr.push(content);
@@ -533,7 +442,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     userHierarchies.forEach((hier, i) => {
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
-      Object.keys(hier).forEach((dir: Directions) => {
+      DIRECTIONS.forEach((dir: Directions) => {
         hier[dir].forEach((dirField) => {
           newGraphs[dir][dirField] = new Graph();
         });
@@ -543,11 +452,10 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     const useCSV = settings.CSVPaths !== "";
-    let basePath: string;
     let CSVRows: { [key: string]: string }[];
 
     if (useCSV) {
-      basePath = this.app.vault.adapter.basePath;
+      const basePath: string = this.app.vault.adapter.basePath;
       CSVRows = await this.getCSVRows(basePath);
     }
 
@@ -607,19 +515,13 @@ export default class BreadcrumbsPlugin extends Plugin {
       const dirMerged = mergeGs(...Object.values(allXGs));
       graphs.mergedGs[dir] = dirMerged;
     });
-
+    // Don't merge with this forEach ↑. The bottom one needs the results from the first
     DIRECTIONS.forEach((dir) => {
-      if (dir !== "same") {
-        graphs.closedGs[dir] = closeImpliedLinks(
-          graphs.mergedGs[dir],
-          graphs.mergedGs[dir === "up" ? "down" : "up"]
-        );
-      } else {
-        graphs.closedGs[dir] = closeImpliedLinks(
-          graphs.mergedGs[dir],
-          graphs.mergedGs[dir]
-        );
-      }
+      const oppDir = getOppDir(dir);
+      graphs.closedGs[dir] = closeImpliedLinks(
+        graphs.mergedGs[dir],
+        graphs.mergedGs[oppDir]
+      );
     });
 
     // LimitTrailG
@@ -763,6 +665,11 @@ export default class BreadcrumbsPlugin extends Plugin {
       return;
     }
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeMDView) {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
+
     const currFile = activeMDView.file;
     const currMetadata = this.app.metadataCache.getFileCache(currFile);
 
@@ -772,11 +679,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     if (currMetadata.frontmatter?.hasOwnProperty(settings.hideTrailFieldName)) {
       debugGroupEnd(settings, "debugMode");
       previewView.querySelector("div.breadcrumbs-trail")?.remove();
-      return;
-    }
-
-    if (!activeMDView) {
-      debugGroupEnd(settings, "debugMode");
       return;
     }
 
@@ -852,17 +754,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   onunload(): void {
     console.log("unloading");
-    // Detach matrix view
-    const openLeaves = [
-      VIEW_TYPE_BREADCRUMBS_MATRIX,
-      VIEW_TYPE_BREADCRUMBS_STATS,
-    ]
-      .map((type) => this.app.workspace.getLeavesOfType(type))
-      .flat(1);
-
-    openLeaves.forEach((leaf) => leaf.detach());
-
-    // Empty trailDiv
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX);
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS);
     this.visited.forEach((visit) => visit[1].remove());
   }
 }
