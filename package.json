@@ -46,7 +46,7 @@
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
     "obsidian": "^0.12.17",
-    "obsidian-community-lib": "^1.0.0",
+    "obsidian-community-lib": "^1.0.1",
     "svelte": "3.35.0"
   }
 }

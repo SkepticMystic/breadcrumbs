@@ -378,26 +378,7 @@ export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
 }
 
 export const isInVault = (app: App, note: string): boolean =>
-  !!app.metadataCache.getFirstLinkpathDest(
-    note,
-    app.workspace.getActiveFile().path
-  );
-
-export function hoverPreview(
-  event: MouseEvent,
-  matrixView: MatrixView,
-  to: string
-): void {
-  const targetEl = event.target as HTMLElement;
-
-  matrixView.app.workspace.trigger("hover-link", {
-    event,
-    source: matrixView.getViewType(),
-    hoverParent: matrixView,
-    targetEl,
-    linktext: to,
-  });
-}
+  !!app.metadataCache.getFirstLinkpathDest(note, "");
 
 export async function openOrSwitch(
   app: App,
@@ -657,6 +638,13 @@ export const createOrUpdateYaml = async (
   }
 };
 
+export function getOppDir(dir: Directions) {
+  let oppDir: Directions = "same";
+  if (dir === "up") oppDir = "down";
+  if (dir === "down") oppDir = "up";
+  return oppDir;
+}
+
 export const writeBCToFile = (
   app: App,
   plugin: BreadcrumbsPlugin,
@@ -673,10 +661,7 @@ export const writeBCToFile = (
 
   currGraphs.hierGs.forEach((hier) => {
     DIRECTIONS.forEach((dir) => {
-      let oppDir: Directions;
-      if (dir === "up") oppDir = "down";
-      if (dir === "down") oppDir = "up";
-      if (dir === "same") oppDir = "same";
+      const oppDir = getOppDir(dir);
 
       Object.keys(hier[dir]).forEach((field) => {
         const fieldG = hier[dir][field];
@@ -686,9 +671,9 @@ export const writeBCToFile = (
           const { fieldName } = fieldG.node(succ);
           if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return;
 
-          const currHier = plugin.settings.userHierarchies.filter((hier) =>
+          const currHier = plugin.settings.userHierarchies.find((hier) =>
             hier[dir].includes(fieldName)
-          )[0];
+          );
           let oppField: string = currHier[oppDir][0];
           if (!oppField) oppField = `<Reverse>${fieldName}`;
 
@@ -704,10 +689,7 @@ export function oppFields(
   dir: Directions,
   userHierarchies: userHierarchy[]
 ): string[] {
-  let oppDir: Directions = "same";
-  if (dir !== "same") {
-    oppDir = dir === "up" ? "down" : "up";
-  }
+  const oppDir = getOppDir(dir);
   return (
     userHierarchies.find((hier) => hier[oppDir].includes(field))?.[oppDir] ?? []
   );

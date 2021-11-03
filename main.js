@@ -8717,19 +8717,18 @@ exports.isInVault = isInVault;
  * You probably have to hold down `Ctrl` when hovering the link for the preview to appear!
  * @param  {MouseEvent} event
  * @param  {YourView} view The view with the link being hovered
- * @param  {string} to The basename of the note to preview. Not necessary if the element being hovered has `to` as its `innerText`
+ * @param  {string} to The basename of the note to preview.
  * @template YourView The ViewType of your view
  * @returns void
  */
 function hoverPreview(event, view, to) {
     const targetEl = event.target;
-    const linkText = to ?? targetEl.innerText;
     view.app.workspace.trigger("hover-link", {
         event,
         source: view.getViewType(),
         hoverParent: view,
         targetEl,
-        linkText,
+        linktext: to,
     });
 }
 exports.hoverPreview = hoverPreview;
@@ -26509,17 +26508,7 @@ function closeImpliedLinks(real, implied) {
     });
     return closedG;
 }
-const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, app.workspace.getActiveFile().path);
-function hoverPreview$2(event, matrixView, to) {
-    const targetEl = event.target;
-    matrixView.app.workspace.trigger("hover-link", {
-        event,
-        source: matrixView.getViewType(),
-        hoverParent: matrixView,
-        targetEl,
-        linktext: to,
-    });
-}
+const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, "");
 async function openOrSwitch(app, dest, currFile, event) {
     const { workspace } = app;
     let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
@@ -26681,6 +26670,14 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
 };
+function getOppDir(dir) {
+    let oppDir = "same";
+    if (dir === "up")
+        oppDir = "down";
+    if (dir === "down")
+        oppDir = "up";
+    return oppDir;
+}
 const writeBCToFile = (app, plugin, currGraphs, file) => {
     var _a, _b;
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
@@ -26691,13 +26688,7 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
     }
     currGraphs.hierGs.forEach((hier) => {
         DIRECTIONS.forEach((dir) => {
-            let oppDir;
-            if (dir === "up")
-                oppDir = "down";
-            if (dir === "down")
-                oppDir = "up";
-            if (dir === "same")
-                oppDir = "same";
+            const oppDir = getOppDir(dir);
             Object.keys(hier[dir]).forEach((field) => {
                 const fieldG = hier[dir][field];
                 const succs = fieldG.predecessors(file.basename);
@@ -26705,7 +26696,7 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
                     const { fieldName } = fieldG.node(succ);
                     if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
                         return;
-                    const currHier = plugin.settings.userHierarchies.filter((hier) => hier[dir].includes(fieldName))[0];
+                    const currHier = plugin.settings.userHierarchies.find((hier) => hier[dir].includes(fieldName));
                     let oppField = currHier[oppDir][0];
                     if (!oppField)
                         oppField = `<Reverse>${fieldName}`;
@@ -26717,10 +26708,7 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
 };
 function oppFields(field, dir, userHierarchies) {
     var _a, _b;
-    let oppDir = "same";
-    if (dir !== "same") {
-        oppDir = dir === "up" ? "down" : "up";
-    }
+    const oppDir = getOppDir(dir);
     return ((_b = (_a = userHierarchies.find((hier) => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : []);
 }
 function dataviewReady(app, noFiles) {
@@ -27055,7 +27043,7 @@ function get_each_context_3$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (21:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (22:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$3(ctx) {
 	let details;
 	let summary;
@@ -27125,7 +27113,7 @@ function create_if_block$3(ctx) {
 	};
 }
 
-// (24:12) {#if square.realItems.length}
+// (25:12) {#if square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let t;
 	let ol;
@@ -27202,7 +27190,7 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (25:14) {#if settings.showRelationType}
+// (26:14) {#if settings.showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -27221,7 +27209,7 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (30:16) {#each square.realItems as realItem}
+// (31:16) {#each square.realItems as realItem}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
@@ -27286,7 +27274,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (48:12) {#if square.impliedItems.length}
+// (49:12) {#if square.impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
@@ -27369,7 +27357,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (49:14) {#if settings.showRelationType}
+// (50:14) {#if settings.showRelationType}
 function create_if_block_2$2(ctx) {
 	let h5;
 
@@ -27388,7 +27376,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (57:16) {#each square.impliedItems as impliedItem}
+// (58:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
@@ -27451,7 +27439,7 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (20:6) {#each squares as square}
+// (21:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$3(ctx);
@@ -27486,7 +27474,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (14:2) {#each filteredSquaresArr as squares}
+// (15:2) {#each filteredSquaresArr as squares}
 function create_each_block$5(ctx) {
 	let details;
 	let summary;
@@ -27632,10 +27620,10 @@ function instance$6($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = (realItem, e) => hoverPreview$2(e, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = (impliedItem, e) => hoverPreview$2(e, matrixView, impliedItem.to);
+	const click_handler = async (realItem, e) => await openOrSwitch(app, realItem.to, currFile, e);
+	const mouseover_handler = (realItem, e) => dist.hoverPreview(e, matrixView, realItem.to);
+	const click_handler_1 = async (impliedItem, e) => await openOrSwitch(app, impliedItem.to, currFile, e);
+	const mouseover_handler_1 = (impliedItem, e) => dist.hoverPreview(e, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -27706,7 +27694,7 @@ function get_each_context_3$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (17:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (18:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$2(ctx) {
 	let div;
 	let h3;
@@ -27775,7 +27763,7 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (21:12) {#if square.realItems.length}
+// (22:12) {#if square.realItems.length}
 function create_if_block_3(ctx) {
 	let t;
 	let ol;
@@ -27852,7 +27840,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (22:14) {#if settings.showRelationType}
+// (23:14) {#if settings.showRelationType}
 function create_if_block_4(ctx) {
 	let h5;
 
@@ -27871,7 +27859,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (26:16) {#each square.realItems as realItem}
+// (27:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
@@ -27936,7 +27924,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (44:12) {#if square.impliedItems.length}
+// (45:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let t;
 	let ol;
@@ -28019,7 +28007,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (45:14) {#if settings.showRelationType}
+// (46:14) {#if settings.showRelationType}
 function create_if_block_2$1(ctx) {
 	let h5;
 
@@ -28038,7 +28026,7 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (49:16) {#each square.impliedItems as impliedItem}
+// (50:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
@@ -28101,7 +28089,7 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (16:6) {#each squares as square}
+// (17:6) {#each squares as square}
 function create_each_block_1$4(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$2(ctx);
@@ -28136,7 +28124,7 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (14:2) {#each filteredSquaresArr as squares}
+// (15:2) {#each filteredSquaresArr as squares}
 function create_each_block$4(ctx) {
 	let div;
 	let t;
@@ -28267,10 +28255,10 @@ function instance$5($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = (realItem, event) => hoverPreview$2(event, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = (impliedItem, event) => hoverPreview$2(event, matrixView, impliedItem.to);
+	const click_handler = async (realItem, e) => await openOrSwitch(app, realItem.to, currFile, e);
+	const mouseover_handler = (realItem, event) => dist.hoverPreview(event, matrixView, realItem.to);
+	const click_handler_1 = async (impliedItem, e) => await openOrSwitch(app, impliedItem.to, currFile, e);
+	const mouseover_handler_1 = (impliedItem, event) => dist.hoverPreview(event, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -39268,7 +39256,7 @@ function get_each_context_2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (95:8) {#if step.value && settings.gridDots}
+// (86:8) {#if step.value && settings.gridDots}
 function create_if_block$1(ctx) {
 	let div;
 	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
@@ -39326,7 +39314,7 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (97:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (88:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2(ctx) {
 	let span;
 
@@ -39346,7 +39334,7 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (76:4) {#each allRuns[i] as step}
+// (67:4) {#each allRuns[i] as step}
 function create_each_block_1$1(ctx) {
 	let div1;
 	let div0;
@@ -39423,7 +39411,7 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (75:2) {#each transposedTrails as col, i}
+// (66:2) {#each transposedTrails as col, i}
 function create_each_block$1(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*allRuns*/ ctx[9][/*i*/ ctx[23]];
@@ -39544,18 +39532,6 @@ function create_fragment$1(ctx) {
 	};
 }
 
-function hoverPreview$1(event, view, to) {
-	const targetEl = event.target;
-
-	view.app.workspace.trigger("hover-link", {
-		event,
-		source: view.getViewType(),
-		hoverParent: view,
-		targetEl,
-		linktext: to
-	});
-}
-
 function instance$1($$self, $$props, $$invalidate) {
 	
 	
@@ -39629,8 +39605,8 @@ function instance$1($$self, $$props, $$invalidate) {
 	const transposedTrails = transpose(paddedTrails);
 
 	const allRuns = transposedTrails.map(runs);
-	const click_handler = (step, e) => openOrSwitch(app, step.value, currFile, e);
-	const mouseover_handler = (step, e) => hoverPreview$1(e, activeLeafView, step.value);
+	const click_handler = async (step, e) => await openOrSwitch(app, step.value, currFile, e);
+	const mouseover_handler = (step, e) => dist.hoverPreview(e, activeLeafView, step.value);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -39685,7 +39661,7 @@ function get_each_context_1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (30:8) {:else}
+// (21:8) {:else}
 function create_else_block(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*trail*/ ctx[11];
@@ -39741,7 +39717,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (28:8) {#if trail.length === 0}
+// (19:8) {#if trail.length === 0}
 function create_if_block_1(ctx) {
 	let span;
 	let t_value = /*settings*/ ctx[2].noPathMessage + "";
@@ -39765,7 +39741,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (40:12) {#if i < trail.length - 1}
+// (31:12) {#if i < trail.length - 1}
 function create_if_block_2(ctx) {
 	let span;
 	let t_value = " " + /*settings*/ ctx[2].trailSeperator + " " + "";
@@ -39789,7 +39765,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (31:10) {#each trail as crumb, i}
+// (22:10) {#each trail as crumb, i}
 function create_each_block_1(ctx) {
 	let span;
 	let t0_value = /*crumb*/ ctx[14] + "";
@@ -39862,7 +39838,7 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (26:4) {#each trailsToShow as trail}
+// (17:4) {#each trailsToShow as trail}
 function create_each_block(ctx) {
 	let div;
 	let t;
@@ -39906,7 +39882,7 @@ function create_each_block(ctx) {
 	};
 }
 
-// (49:2) {#if sortedTrails.length > 1}
+// (40:2) {#if sortedTrails.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let button;
@@ -40027,18 +40003,6 @@ function create_fragment(ctx) {
 	};
 }
 
-function hoverPreview(event, view, to) {
-	const targetEl = event.target;
-
-	view.app.workspace.trigger("hover-link", {
-		event,
-		source: view.getViewType(),
-		hoverParent: view,
-		targetEl,
-		linktext: to
-	});
-}
-
 function instance($$self, $$props, $$invalidate) {
 	let buttonText;
 	let trailsToShow;
@@ -40051,7 +40015,7 @@ function instance($$self, $$props, $$invalidate) {
 	const activeLeafView = app.workspace.activeLeaf.view;
 	let showAll = settings.showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, currFile, e);
-	const mouseover_handler = (crumb, e) => hoverPreview(e, activeLeafView, crumb);
+	const mouseover_handler = (crumb, e) => dist.hoverPreview(e, activeLeafView, crumb);
 	const click_handler_1 = () => $$invalidate(4, showAll = !showAll);
 
 	$$self.$$set = $$props => {
