@@ -216,6 +216,14 @@ export default class BreadcrumbsPlugin extends Plugin {
       checkCallback: () => this.settings.showWriteAllBCsCmd,
     });
 
+    this.addCommand({
+      id: "open-BC-vis-view",
+      name: "Open Breadcrumbs Visualisation View",
+      callback: () => {
+        new VisModal(this.app, this).open();
+      },
+    });
+
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()
     );
