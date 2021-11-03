@@ -16,12 +16,7 @@ export default class StatsView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     await this.plugin.saveSettings();
-    this.app.workspace.onLayoutReady(async () => {
-      setTimeout(
-        async () => await this.draw(),
-        this.plugin.settings.dvWaitTime
-      );
-    });
+    await this.draw();
   }
 
   getViewType() {
@@ -33,9 +28,7 @@ export default class StatsView extends ItemView {
 
   icon = "info";
 
-  async onOpen(): Promise<void> {
-    await this.plugin.saveSettings();
-  }
+  async onOpen(): Promise<void> {}
 
   onClose(): Promise<void> {
     if (this.view) {

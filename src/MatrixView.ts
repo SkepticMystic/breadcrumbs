@@ -4,14 +4,14 @@ import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DIRECTIONS,
   TRAIL_ICON,
-  VIEW_TYPE_BREADCRUMBS_MATRIX
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
   BreadcrumbsSettings,
   Directions,
   internalLinkObj,
   SquareProps,
-  userHierarchy
+  userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import {
@@ -19,7 +19,7 @@ import {
   debug,
   debugGroupEnd,
   debugGroupStart,
-  mergeGs
+  mergeGs,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -36,25 +36,14 @@ export default class MatrixView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    await this.plugin.saveSettings();
+    const { settings } = this.plugin;
     this.matrixQ = this.plugin.settings.defaultView;
-
-    this.app.workspace.onLayoutReady(async () => {
-      setTimeout(
-        async () => await this.draw(),
-        this.app.plugins.plugins.dataview
-          ? this.app.plugins.plugins.dataview.api
-            ? 1
-            : this.plugin.settings.dvWaitTime
-          : 3000
-      );
-    });
+    await this.draw();
 
     this.plugin.addCommand({
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
-        const settings = this.plugin.settings;
         const currFile = this.app.workspace.getActiveFile().basename;
 
         const closedParents = this.plugin.currGraphs.closedGs.down;
@@ -74,7 +63,6 @@ export default class MatrixView extends ItemView {
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const terminals = up.sinks();
-        const settings = this.plugin.settings;
 
         let globalIndex = "";
         terminals.forEach((terminal) => {
@@ -98,15 +86,7 @@ export default class MatrixView extends ItemView {
 
   icon = TRAIL_ICON;
 
-  async onOpen(): Promise<void> {
-    await this.plugin.saveSettings();
-    // this.app.workspace.onLayoutReady(async () => {
-    //   setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-    // });
-    // this.app.workspace.on("dataview:api-ready", () =>
-    //   console.log("dv ready")
-    // );
-  }
+  async onOpen(): Promise<void> {}
 
   onClose(): Promise<void> {
     if (this.view) {
@@ -123,9 +103,14 @@ export default class MatrixView extends ItemView {
     return unresolvedLinks[from][to] > 0;
   }
 
-  squareItems(g: Graph, currFile: TFile, settings: BreadcrumbsSettings, realQ = true): internalLinkObj[] {
+  squareItems(
+    g: Graph,
+    currFile: TFile,
+    settings: BreadcrumbsSettings,
+    realQ = true
+  ): internalLinkObj[] {
     let items: string[];
-    const altFieldsQ = !!settings.altLinkFields.length
+    const altFieldsQ = !!settings.altLinkFields.length;
 
     if (realQ) {
       items = (g.successors(currFile.basename) ?? []) as string[];
@@ -139,13 +124,19 @@ export default class MatrixView extends ItemView {
       items.forEach((to: string) => {
         let alt = null;
         if (altFieldsQ) {
-          const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path)
+          const toFile = this.app.metadataCache.getFirstLinkpathDest(
+            to,
+            currFile.path
+          );
           if (toFile) {
-            const metadata = this.app.metadataCache.getFileCache(toFile)
-            settings.altLinkFields.forEach(altLinkField => {
-              const altLink = metadata?.frontmatter?.[altLinkField]
-              if (altLink) { alt = altLink; return }
-            })
+            const metadata = this.app.metadataCache.getFileCache(toFile);
+            settings.altLinkFields.forEach((altLinkField) => {
+              const altLink = metadata?.frontmatter?.[altLinkField];
+              if (altLink) {
+                alt = altLink;
+                return;
+              }
+            });
           }
         }
         internalLinkObjArr.push({
@@ -154,7 +145,7 @@ export default class MatrixView extends ItemView {
             "internal-link breadcrumbs-link" +
             (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
             (realQ ? "" : " breadcrumbs-implied"),
-          alt
+          alt,
         });
       });
     }
@@ -228,7 +219,6 @@ export default class MatrixView extends ItemView {
           index += settings.wikilinkIndex ? "]]" : "";
 
           if (settings.aliasesInIndex) {
-
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
               currNode,
               activeFile.path
@@ -262,7 +252,12 @@ export default class MatrixView extends ItemView {
     return index;
   }
 
-  getHierSquares(userHierarchies: userHierarchy[], data: { [dir in Directions]: Graph }[], currFile: TFile, settings: BreadcrumbsSettings) {
+  getHierSquares(
+    userHierarchies: userHierarchy[],
+    data: { [dir in Directions]: Graph }[],
+    currFile: TFile,
+    settings: BreadcrumbsSettings
+  ) {
     return userHierarchies.map((hier, i) => {
       const [currUpG, currSameG, currDownG] = [
         data[i].up,
@@ -301,16 +296,22 @@ export default class MatrixView extends ItemView {
         }
         // Create the implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
-          const altFieldsQ = !!settings.altLinkFields.length
+          const altFieldsQ = !!settings.altLinkFields.length;
           let alt = null;
           if (altFieldsQ) {
-            const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path)
+            const toFile = this.app.metadataCache.getFirstLinkpathDest(
+              impliedSibling,
+              currFile.path
+            );
             if (toFile) {
-              const metadata = this.app.metadataCache.getFileCache(toFile)
-              settings.altLinkFields.forEach(altLinkField => {
-                const altLink = metadata?.frontmatter?.[altLinkField]
-                if (altLink) { alt = altLink; return }
-              })
+              const metadata = this.app.metadataCache.getFileCache(toFile);
+              settings.altLinkFields.forEach((altLinkField) => {
+                const altLink = metadata?.frontmatter?.[altLinkField];
+                if (altLink) {
+                  alt = altLink;
+                  return;
+                }
+              });
             }
           }
 
@@ -322,7 +323,7 @@ export default class MatrixView extends ItemView {
                 ? " is-unresolved"
                 : ""),
             // TODO get alt for implied siblings
-            alt
+            alt,
           });
         });
       });
@@ -336,13 +337,13 @@ export default class MatrixView extends ItemView {
       iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
       iDown = this.removeDuplicateImplied(rDown, iDown);
 
-      const iSameNoDup: internalLinkObj[] = []
-      iSameArr.forEach(impSib => {
-        if (iSameNoDup.every(noDup => noDup.to !== impSib.to)) {
-          iSameNoDup.push(impSib)
+      const iSameNoDup: internalLinkObj[] = [];
+      iSameArr.forEach((impSib) => {
+        if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
+          iSameNoDup.push(impSib);
         }
-      })
-      iSameArr = iSameNoDup
+      });
+      iSameArr = iSameNoDup;
 
       debug(settings, {
         rUp,
@@ -425,7 +426,12 @@ export default class MatrixView extends ItemView {
     });
     debug(settings, { data });
 
-    const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings)
+    const hierSquares = this.getHierSquares(
+      userHierarchies,
+      data,
+      currFile,
+      settings
+    );
     debug(settings, { hierSquares });
 
     const filteredSquaresArr = hierSquares.filter((squareArr) =>
@@ -443,7 +449,7 @@ export default class MatrixView extends ItemView {
         matrixView: this,
         app: this.app,
       },
-    }
+    };
 
     if (this.matrixQ) {
       this.view = new Matrix(compInput);

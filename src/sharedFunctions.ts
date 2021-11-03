@@ -7,8 +7,9 @@ import {
   Notice,
   Pos,
   TFile,
-  WorkspaceLeaf
+  WorkspaceLeaf,
 } from "obsidian";
+import { wait } from "obsidian-community-lib";
 import { DIRECTIONS, dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BCIndex,
@@ -19,12 +20,10 @@ import type {
   HierarchyFields,
   HierarchyGraphs,
   JugglLink,
-  userHierarchy
+  userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
-
-
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -384,7 +383,11 @@ export const isInVault = (app: App, note: string): boolean =>
     app.workspace.getActiveFile().path
   );
 
-export function hoverPreview(event: MouseEvent, matrixView: MatrixView, to: string): void {
+export function hoverPreview(
+  event: MouseEvent,
+  matrixView: MatrixView,
+  to: string
+): void {
   const targetEl = event.target as HTMLElement;
 
   matrixView.app.workspace.trigger("hover-link", {
@@ -408,7 +411,9 @@ export async function openOrSwitch(
   // If dest doesn't exist, make it
   if (!destFile) {
     const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
-    const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
+    const newFilePath = `${newFileFolder}${
+      newFileFolder === "/" ? "" : "/"
+    }${dest}.md`;
     await app.vault.create(newFilePath, "");
     destFile = app.metadataCache.getFirstLinkpathDest(
       newFilePath,
@@ -430,9 +435,10 @@ export async function openOrSwitch(
     workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
   } else {
     const mode = (app.vault as any).getConfig("defaultViewMode");
-    const leaf = (event.ctrlKey || event.getModifierState('Meta'))
-      ? workspace.splitActiveLeaf()
-      : workspace.getUnpinnedLeaf();
+    const leaf =
+      event.ctrlKey || event.getModifierState("Meta")
+        ? workspace.splitActiveLeaf()
+        : workspace.getUnpinnedLeaf();
 
     await leaf.openFile(destFile, { active: true, mode });
   }
@@ -598,18 +604,17 @@ export function getAllGsInDir(
 
 export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
   const fieldGs: Graph[] = [];
-  currGraphs.forEach(hierGs => {
-    DIRECTIONS.forEach(dir => {
-      Object.keys(hierGs[dir]).forEach(fieldName => {
+  currGraphs.forEach((hierGs) => {
+    DIRECTIONS.forEach((dir) => {
+      Object.keys(hierGs[dir]).forEach((fieldName) => {
         if (fields.includes(fieldName)) {
           const fieldG = hierGs[dir][fieldName];
-          if (fieldG instanceof graphlib.Graph) fieldGs.push(fieldG)
+          if (fieldG instanceof graphlib.Graph) fieldGs.push(fieldG);
         }
-      })
-    })
-  })
-  return fieldGs
-
+      });
+    });
+  });
+  return fieldGs;
 }
 
 export function hierToStr(hier: userHierarchy) {
@@ -636,66 +641,97 @@ export const createOrUpdateYaml = async (
   frontmatter: FrontMatterCache | undefined,
   api: { [fun: string]: (...args: any) => any }
 ) => {
-  let valueStr = value.toString()
+  let valueStr = value.toString();
 
   if (!frontmatter || frontmatter[key] === undefined) {
-    console.log(`Creating: ${key}: ${valueStr}`)
+    console.log(`Creating: ${key}: ${valueStr}`);
     await api.createYamlProperty(key, `['${valueStr}']`, file);
-  } else if ([...[frontmatter[key]]].flat(3).some(val => val == valueStr)) {
-    console.log('Already Exists!')
-    return
-  }
-  else {
+  } else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+    console.log("Already Exists!");
+    return;
+  } else {
     const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
-    const newValue = [...oldValueFlat, valueStr].map(val => `'${val}'`);
-    console.log(`Updating: ${key}: ${newValue}`)
+    const newValue = [...oldValueFlat, valueStr].map((val) => `'${val}'`);
+    console.log(`Updating: ${key}: ${newValue}`);
     await api.update(key, `[${newValue.join(", ")}]`, file);
   }
+};
 
-}
-
-export const writeBCToFile = (app: App, plugin: BreadcrumbsPlugin, currGraphs: BCIndex, file: TFile) => {
-
+export const writeBCToFile = (
+  app: App,
+  plugin: BreadcrumbsPlugin,
+  currGraphs: BCIndex,
+  file: TFile
+) => {
   const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
-  const api = app.plugins.plugins.metaedit?.api
+  const api = app.plugins.plugins.metaedit?.api;
 
   if (!api) {
-    new Notice('Metaedit must be enabled for this function to work');
-    return
+    new Notice("Metaedit must be enabled for this function to work");
+    return;
   }
 
-  currGraphs.hierGs.forEach(hier => {
-    DIRECTIONS.forEach(dir => {
+  currGraphs.hierGs.forEach((hier) => {
+    DIRECTIONS.forEach((dir) => {
       let oppDir: Directions;
-      if (dir === 'up') oppDir = 'down';
-      if (dir === 'down') oppDir = 'up';
-      if (dir === 'same') oppDir = 'same';
+      if (dir === "up") oppDir = "down";
+      if (dir === "down") oppDir = "up";
+      if (dir === "same") oppDir = "same";
 
-      Object.keys(hier[dir]).forEach(field => {
-
-
+      Object.keys(hier[dir]).forEach((field) => {
         const fieldG = hier[dir][field];
         const succs = fieldG.predecessors(file.basename) as string[];
 
-        succs.forEach(async succ => {
+        succs.forEach(async (succ) => {
           const { fieldName } = fieldG.node(succ);
-          if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return
+          if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return;
 
-          const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0]
+          const currHier = plugin.settings.userHierarchies.filter((hier) =>
+            hier[dir].includes(fieldName)
+          )[0];
           let oppField: string = currHier[oppDir][0];
-          if (!oppField) oppField = `<Reverse>${fieldName}`
+          if (!oppField) oppField = `<Reverse>${fieldName}`;
 
-          await createOrUpdateYaml(oppField, succ, file, frontmatter, api)
-        })
-      })
-    })
-  })
+          await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
+        });
+      });
+    });
+  });
+};
+
+export function oppFields(
+  field: string,
+  dir: Directions,
+  userHierarchies: userHierarchy[]
+): string[] {
+  let oppDir: Directions = "same";
+  if (dir !== "same") {
+    oppDir = dir === "up" ? "down" : "up";
+  }
+  return (
+    userHierarchies.find((hier) => hier[oppDir].includes(field))?.[oppDir] ?? []
+  );
 }
 
-export function oppFields(field: string, dir: Directions, userHierarchies: userHierarchy[]): string[] {
-  let oppDir: Directions = 'same';
-  if (dir !== "same") {
-    oppDir = dir === "up" ? "down" : "up"
+function dataviewReady(app: App, noFiles: number) {
+  const pages = app.plugins.plugins.dataview?.api?.index.pages;
+  return pages?.size === noFiles;
+}
+
+export async function waitForDataview(
+  app: App,
+  delay: number,
+  max: number = 200
+) {
+  const noFiles = app.vault.getMarkdownFiles().length;
+  let i = 0;
+  while (!dataviewReady(app, noFiles) && i < max) {
+    await wait(delay);
+    i++;
   }
-  return userHierarchies.find(hier => hier[oppDir].includes(field))?.[oppDir] ?? []
+  if (i === max) {
+    const error = new Error("DV Not ready, but `max` was reached");
+    console.log(error);
+    throw error;
+  }
 }
