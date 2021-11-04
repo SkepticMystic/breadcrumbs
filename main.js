@@ -26471,7 +26471,9 @@ function getFieldValues(frontmatterCache, field, settings) {
                     }
                 }
                 else if (rawItem.path) {
-                    values.push(rawItem.path.split("/").last());
+                    const value = rawItem.path.split("/").last();
+                    superDebug(settings, { value });
+                    values.push(value);
                 }
             });
         }
@@ -28359,6 +28361,7 @@ class MatrixView extends obsidian_1.ItemView {
             id: "local-index",
             name: "Copy a Local Index to the clipboard",
             callback: async () => {
+                const { settings } = this.plugin;
                 const currFile = this.app.workspace.getActiveFile().basename;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const allPaths = this.dfsAllPaths(closedParents, currFile);
@@ -28373,6 +28376,7 @@ class MatrixView extends obsidian_1.ItemView {
                 const { up } = this.plugin.currGraphs.mergedGs;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const terminals = up.sinks();
+                const { settings } = this.plugin;
                 let globalIndex = "";
                 terminals.forEach((terminal) => {
                     globalIndex += terminal + "\n";
@@ -40229,6 +40233,26 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
         };
     }
     async refreshIndex() {
+        if (!this.activeLeafChangeEventRef) {
+            console.log("activeLeafChangeEventRef wasn't registered onLoad, registering now");
+            this.activeLeafChangeEventRef = this.app.workspace.on("active-leaf-change", async () => {
+                if (this.settings.refreshIndexOnActiveLeafChange) {
+                    // refreshIndex does everything in one
+                    await this.refreshIndex();
+                }
+                else {
+                    // If it is not called, active-leaf-change still needs to trigger a redraw
+                    const activeView = this.getActiveMatrixView();
+                    if (activeView) {
+                        await activeView.draw();
+                    }
+                    if (this.settings.showTrail) {
+                        await this.drawTrail();
+                    }
+                }
+            });
+            this.registerEvent(this.activeLeafChangeEventRef);
+        }
         this.currGraphs = await this.initGraphs();
         const activeView = this.getActiveMatrixView();
         if (activeView) {
@@ -40243,7 +40267,7 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
         this.app.workspace.onLayoutReady(async () => {
-            await this.initEverything();
+            setTimeout(this.initEverything, 10000);
         });
         obsidian_1.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         this.addCommand({
@@ -40306,6 +40330,13 @@ class BreadcrumbsPlugin extends obsidian_1.Plugin {
                 }
             },
             checkCallback: () => this.settings.showWriteAllBCsCmd,
+        });
+        this.addCommand({
+            id: "open-BC-vis-view",
+            name: "Open Breadcrumbs Visualisation View",
+            callback: () => {
+                new VisModal(this.app, this).open();
+            },
         });
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));

@@ -57,6 +57,32 @@ export default class BreadcrumbsPlugin extends Plugin {
   activeLeafChangeEventRef: EventRef;
 
   async refreshIndex() {
+    if (!this.activeLeafChangeEventRef) {
+      console.log(
+        "activeLeafChangeEventRef wasn't registered onLoad, registering now"
+      );
+      this.activeLeafChangeEventRef = this.app.workspace.on(
+        "active-leaf-change",
+        async () => {
+          if (this.settings.refreshIndexOnActiveLeafChange) {
+            // refreshIndex does everything in one
+            await this.refreshIndex();
+          } else {
+            // If it is not called, active-leaf-change still needs to trigger a redraw
+            const activeView = this.getActiveMatrixView();
+            if (activeView) {
+              await activeView.draw();
+            }
+            if (this.settings.showTrail) {
+              await this.drawTrail();
+            }
+          }
+        }
+      );
+
+      this.registerEvent(this.activeLeafChangeEventRef);
+    }
+
     this.currGraphs = await this.initGraphs();
     const activeView = this.getActiveMatrixView();
     if (activeView) {

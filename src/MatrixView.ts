@@ -45,6 +45,7 @@ export default class MatrixView extends ItemView {
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
+        const { settings } = this.plugin;
         const currFile = this.app.workspace.getActiveFile().basename;
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
@@ -62,6 +63,7 @@ export default class MatrixView extends ItemView {
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const terminals = up.sinks();
+        const { settings } = this.plugin;
 
         let globalIndex = "";
         terminals.forEach((terminal) => {

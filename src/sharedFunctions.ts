@@ -23,7 +23,6 @@ import type {
   userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import type MatrixView from "src/MatrixView";
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -265,7 +264,9 @@ export function getFieldValues(
             values.push(rawItemAsString.split("/").last());
           }
         } else if (rawItem.path) {
-          values.push((rawItem as dvLink).path.split("/").last());
+          const value = (rawItem as dvLink).path.split("/").last();
+          superDebug(settings, { value });
+          values.push(value);
         }
       });
     }
