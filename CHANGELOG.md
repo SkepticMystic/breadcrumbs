@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.4](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.3...0.11.4) (2021-11-04)
+
+
+### Bug Fixes
+
+* :bug: I think this'll work ([20e8d7f](https://github.com/SkepticMystic/breadcrumbs/commit/20e8d7f5c36299ee7ecd04d0a70a0c9cc36c8c9f))
+
 ### [0.11.3](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.2...0.11.3) (2021-11-04)
 
 
