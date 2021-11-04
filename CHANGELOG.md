@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.3](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.2...0.11.3) (2021-11-04)
+
+
+### Bug Fixes
+
+* :bug: Revert back to timeout for dvIndex ([470b09c](https://github.com/SkepticMystic/breadcrumbs/commit/470b09cc13bfeefd79944c0d7fbddd917727fb1d))
+
 ### [0.11.2](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.1...0.11.2) (2021-11-03)
 
 
