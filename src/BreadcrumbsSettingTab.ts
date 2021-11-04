@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import {
   App,
   ButtonComponent,
@@ -6,6 +7,7 @@ import {
   PluginSettingTab,
   Setting,
 } from "obsidian";
+import { openView } from "obsidian-community-lib";
 import {
   ALLUNLINKED,
   DIRECTIONS,
@@ -16,8 +18,8 @@ import {
 } from "src/constants";
 import type { Relations, userHierarchy, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
+import MatrixView from "src/MatrixView";
 import { debug, hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
-import { isEqual } from "lodash";
 import KoFi from "./Components/KoFi.svelte";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
@@ -82,33 +84,33 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
       async function resetLimitTrailCheckboxes() {
-        settings.limitTrailCheckboxStates = {}
-        settings.userHierarchies.forEach(userHier => {
-          userHier.up.forEach(async field => {
+        settings.limitTrailCheckboxStates = {};
+        settings.userHierarchies.forEach((userHier) => {
+          userHier.up.forEach(async (field) => {
             if (field !== "") {
               settings.limitTrailCheckboxStates[field] = true;
-              await plugin.saveSettings()
+              await plugin.saveSettings();
             }
-          })
-        })
-        await plugin.saveSettings()
-        drawLimitTrailCheckboxes(checkboxDiv)
+          });
+        });
+        await plugin.saveSettings();
+        drawLimitTrailCheckboxes(checkboxDiv);
       }
 
       async function resetLimitWriteBCCheckboxes() {
-        settings.limitWriteBCCheckboxStates = {}
-        settings.userHierarchies.forEach(userHier => {
-          DIRECTIONS.forEach(dir => {
-            userHier.up.forEach(async field => {
+        settings.limitWriteBCCheckboxStates = {};
+        settings.userHierarchies.forEach((userHier) => {
+          DIRECTIONS.forEach((dir) => {
+            userHier.up.forEach(async (field) => {
               if (field !== "") {
                 settings.limitWriteBCCheckboxStates[field] = true;
-                await plugin.saveSettings()
+                await plugin.saveSettings();
               }
-            })
-          })
-        })
-        await plugin.saveSettings()
-        drawLimitWriteBCCheckboxes(checkboxDiv)
+            });
+          });
+        });
+        await plugin.saveSettings();
+        drawLimitWriteBCCheckboxes(checkboxDiv);
       }
 
       const deleteButton = row.createEl("button", { text: "X" }, (el) => {
@@ -127,8 +129,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           }
 
           // Refresh limitTrailFields
-          await resetLimitTrailCheckboxes()
-          await resetLimitWriteBCCheckboxes()
+          await resetLimitTrailCheckboxes();
+          await resetLimitWriteBCCheckboxes();
 
           new Notice("Hierarchy Removed.");
         });
@@ -164,8 +166,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               if (removeIndex > -1) {
                 settings.userHierarchies.splice(removeIndex, 1);
                 await plugin.saveSettings();
-                await resetLimitTrailCheckboxes()
-                await resetLimitWriteBCCheckboxes()
+                await resetLimitTrailCheckboxes();
+                await resetLimitWriteBCCheckboxes();
               }
             }
             cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
@@ -188,8 +190,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
               await plugin.saveSettings();
               new Notice("Hierarchy saved.");
 
-              await resetLimitTrailCheckboxes()
-              await resetLimitWriteBCCheckboxes()
+              await resetLimitTrailCheckboxes();
+              await resetLimitWriteBCCheckboxes();
             }
           });
         }
@@ -350,15 +352,15 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     generalDetails.createEl("summary", { text: "General Options" });
 
     new Setting(generalDetails)
-      .setName('CSV Breadcrumb Paths')
-      .setDesc('The file path of a csv files with breadcrumbs information.')
-      .addText(text => {
-        text.setValue(settings.CSVPaths)
+      .setName("CSV Breadcrumb Paths")
+      .setDesc("The file path of a csv files with breadcrumbs information.")
+      .addText((text) => {
+        text.setValue(settings.CSVPaths);
         text.inputEl.onblur = async () => {
-          settings.CSVPaths = text.inputEl.value
-          await plugin.saveSettings()
-        }
-      })
+          settings.CSVPaths = text.inputEl.value;
+          await plugin.saveSettings();
+        };
+      });
 
     new Setting(generalDetails)
       .setName("Refresh Index on Note Change")
@@ -375,22 +377,21 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       );
 
     new Setting(generalDetails)
-      .setName('Fields used for Alternative note names (Aliases)')
-      .setDesc('A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.')
-      .addText(text => {
+      .setName("Fields used for Alternative note names (Aliases)")
+      .setDesc(
+        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example."
+      )
+      .addText((text) => {
         let finalValue: string;
 
-        text
-          .setValue(settings.altLinkFields.join(', '))
-          .onChange(str => {
-            finalValue = str
-          });
+        text.setValue(settings.altLinkFields.join(", ")).onChange((str) => {
+          finalValue = str;
+        });
         text.inputEl.onblur = async () => {
           settings.altLinkFields = splitAndTrim(finalValue);
-          await plugin.saveSettings()
-        }
-      })
-
+          await plugin.saveSettings();
+        };
+      });
 
     new Setting(generalDetails)
       .setName("Use yaml or inline fields for hierarchy data")
@@ -494,7 +495,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-
     // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
     new Setting(MLViewDetails)
       .setName("Show all field names or just relation types")
@@ -547,7 +547,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           settings.rlLeaf = value;
           await plugin.saveSettings();
           await plugin.getActiveMatrixView()?.onClose();
-          await plugin.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+          await openView(this.app, VIEW_TYPE_BREADCRUMBS_MATRIX, MatrixView);
         })
       );
 
@@ -567,40 +567,49 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    const limitTrailFieldsDiv = trailDetails.createDiv({ cls: 'limit-ML-fields' })
-    limitTrailFieldsDiv.createEl('strong', { 'text': 'Limit M/L View to only show certain fields' })
+    const limitTrailFieldsDiv = trailDetails.createDiv({
+      cls: "limit-ML-fields",
+    });
+    limitTrailFieldsDiv.createEl("strong", {
+      text: "Limit M/L View to only show certain fields",
+    });
 
-    const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: 'checkboxes' })
+    const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: "checkboxes" });
 
     function drawLimitTrailCheckboxes(div: HTMLDivElement) {
-      checkboxDiv.empty()
-      const checkboxStates = settings.limitTrailCheckboxStates
+      checkboxDiv.empty();
+      const checkboxStates = settings.limitTrailCheckboxStates;
 
-      settings.userHierarchies.forEach(userHier => {
-        userHier.up.forEach(async field => {
-          if (field === '') return
+      settings.userHierarchies.forEach((userHier) => {
+        userHier.up.forEach(async (field) => {
+          if (field === "") return;
           // First sort out limitTrailCheckboxStates
           if (checkboxStates[field] === undefined) {
             checkboxStates[field] = true;
-            await plugin.saveSettings()
+            await plugin.saveSettings();
           }
-          const cbDiv = div.createDiv()
-          const checkedQ = checkboxStates[field]
-          const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } })
-          cb.checked = checkedQ
-          const label = cbDiv.createEl('label', { text: field, attr: { for: field } })
+          const cbDiv = div.createDiv();
+          const checkedQ = checkboxStates[field];
+          const cb = cbDiv.createEl("input", {
+            type: "checkbox",
+            attr: { id: field },
+          });
+          cb.checked = checkedQ;
+          const label = cbDiv.createEl("label", {
+            text: field,
+            attr: { for: field },
+          });
 
-          cb.addEventListener('change', async (event) => {
+          cb.addEventListener("change", async (event) => {
             checkboxStates[field] = cb.checked;
-            await plugin.saveSettings()
-            console.log(settings.limitTrailCheckboxStates)
-          })
-        })
-      })
+            await plugin.saveSettings();
+            console.log(settings.limitTrailCheckboxStates);
+          });
+        });
+      });
     }
 
-    drawLimitTrailCheckboxes(checkboxDiv)
-
+    drawLimitTrailCheckboxes(checkboxDiv);
 
     new Setting(trailDetails)
       .setName("Field name to hide trail")
@@ -608,12 +617,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`."
       )
       .addText((text) => {
-        text
-          .setValue(settings.hideTrailFieldName);
+        text.setValue(settings.hideTrailFieldName);
         text.inputEl.onblur = async () => {
           settings.hideTrailFieldName = text.getValue();
           await plugin.saveSettings();
-        }
+        };
       });
 
     new Setting(trailDetails)
@@ -780,45 +788,59 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
           })
       );
 
-    const writeBCsToFileDetails: HTMLDetailsElement = containerEl.createEl("details");
-    writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
+    const writeBCsToFileDetails: HTMLDetailsElement =
+      containerEl.createEl("details");
+    writeBCsToFileDetails.createEl("summary", {
+      text: "Write Breadcrumbs to File",
+    });
 
-    const limitWriteBCDiv = writeBCsToFileDetails.createDiv({ cls: 'limit-ML-fields' })
-    limitWriteBCDiv.createEl('strong', { 'text': 'Limit to only write certain fields to files' })
+    const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
+      cls: "limit-ML-fields",
+    });
+    limitWriteBCDiv.createEl("strong", {
+      text: "Limit to only write certain fields to files",
+    });
 
-    const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({ cls: 'checkboxes' })
+    const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({
+      cls: "checkboxes",
+    });
 
     function drawLimitWriteBCCheckboxes(div: HTMLDivElement) {
-      limitWriteBCCheckboxDiv.empty()
-      const checkboxStates = settings.limitWriteBCCheckboxStates
+      limitWriteBCCheckboxDiv.empty();
+      const checkboxStates = settings.limitWriteBCCheckboxStates;
 
-      settings.userHierarchies.forEach(userHier => {
-        DIRECTIONS.forEach(dir => {
-          userHier[dir].forEach(async field => {
-            if (field === '') return
+      settings.userHierarchies.forEach((userHier) => {
+        DIRECTIONS.forEach((dir) => {
+          userHier[dir].forEach(async (field) => {
+            if (field === "") return;
             // First sort out limitWriteBCCheckboxStates
             if (checkboxStates[field] === undefined) {
               checkboxStates[field] = true;
-              await plugin.saveSettings()
+              await plugin.saveSettings();
             }
-            const cbDiv = div.createDiv()
-            const checkedQ = checkboxStates[field]
-            const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } })
-            cb.checked = checkedQ
-            const label = cbDiv.createEl('label', { text: field, attr: { for: field } })
+            const cbDiv = div.createDiv();
+            const checkedQ = checkboxStates[field];
+            const cb = cbDiv.createEl("input", {
+              type: "checkbox",
+              attr: { id: field },
+            });
+            cb.checked = checkedQ;
+            const label = cbDiv.createEl("label", {
+              text: field,
+              attr: { for: field },
+            });
 
-            cb.addEventListener('change', async (event) => {
+            cb.addEventListener("change", async (event) => {
               checkboxStates[field] = cb.checked;
-              await plugin.saveSettings()
-              console.log(settings.limitWriteBCCheckboxStates)
-            })
-          })
-
-        })
-      })
+              await plugin.saveSettings();
+              console.log(settings.limitWriteBCCheckboxStates);
+            });
+          });
+        });
+      });
     }
 
-    drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv)
+    drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
 
     new Setting(writeBCsToFileDetails)
       .setName("Show the `Write Breadcrumbs to ALL Files` command")
@@ -826,12 +848,10 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         "This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it"
       )
       .addToggle((toggle) =>
-        toggle
-          .setValue(settings.showWriteAllBCsCmd)
-          .onChange(async (value) => {
-            settings.showWriteAllBCsCmd = value;
-            await plugin.saveSettings();
-          })
+        toggle.setValue(settings.showWriteAllBCsCmd).onChange(async (value) => {
+          settings.showWriteAllBCsCmd = value;
+          await plugin.saveSettings();
+        })
       );
 
     const visModalDetails: HTMLDetailsElement = containerEl.createEl("details");
@@ -945,9 +965,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
         })
       );
 
-    debugDetails.createEl('button', { text: 'Console log `settings`' }, (el) => {
-      el.addEventListener('click', () => console.log(settings))
-    })
+    debugDetails.createEl(
+      "button",
+      { text: "Console log `settings`" },
+      (el) => {
+        el.addEventListener("click", () => console.log(settings));
+      }
+    );
 
     new KoFi({ target: this.containerEl });
   }

@@ -1,7 +1,11 @@
 'use strict';
 
-var obsidian = require('obsidian');
+var obsidian_1 = require('obsidian');
 require('path');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var obsidian_1__default = /*#__PURE__*/_interopDefaultLegacy(obsidian_1);
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -2045,9 +2049,9 @@ function initCloneArray(array) {
 var _initCloneArray = initCloneArray;
 
 /** Built-in value references. */
-var Uint8Array = _root.Uint8Array;
+var Uint8Array$1 = _root.Uint8Array;
 
-var _Uint8Array = Uint8Array;
+var _Uint8Array = Uint8Array$1;
 
 /**
  * Creates a clone of `arrayBuffer`.
@@ -6181,343 +6185,2619 @@ var graphlib = {
   version: lib.version
 };
 
-const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
-const VIEW_TYPE_BREADCRUMBS_STATS = "breadcrumbs-stats";
-const TRAIL_ICON = "breadcrumbs-trail-icon";
-const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
-const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
-const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-const VISTYPES = [
-    "Force Directed Graph",
-    "Tidy Tree",
-    "Circle Packing",
-    "Edge Bundling",
-    "Arc Diagram",
-    "Sunburst",
-    "Tree Map",
-    "Icicle",
-    "Radial Tree",
+var feather = createCommonjsModule(function (module, exports) {
+(function webpackUniversalModuleDefinition(root, factory) {
+	module.exports = factory();
+})(typeof self !== 'undefined' ? self : commonjsGlobal, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./dist/icons.json":
+/*!*************************!*\
+  !*** ./dist/icons.json ***!
+  \*************************/
+/*! exports provided: activity, airplay, alert-circle, alert-octagon, alert-triangle, align-center, align-justify, align-left, align-right, anchor, aperture, archive, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, award, bar-chart-2, bar-chart, battery-charging, battery, bell-off, bell, bluetooth, bold, book-open, book, bookmark, box, briefcase, calendar, camera-off, camera, cast, check-circle, check-square, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, chrome, circle, clipboard, clock, cloud-drizzle, cloud-lightning, cloud-off, cloud-rain, cloud-snow, cloud, code, codepen, codesandbox, coffee, columns, command, compass, copy, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, cpu, credit-card, crop, crosshair, database, delete, disc, divide-circle, divide-square, divide, dollar-sign, download-cloud, download, dribbble, droplet, edit-2, edit-3, edit, external-link, eye-off, eye, facebook, fast-forward, feather, figma, file-minus, file-plus, file-text, file, film, filter, flag, folder-minus, folder-plus, folder, framer, frown, gift, git-branch, git-commit, git-merge, git-pull-request, github, gitlab, globe, grid, hard-drive, hash, headphones, heart, help-circle, hexagon, home, image, inbox, info, instagram, italic, key, layers, layout, life-buoy, link-2, link, linkedin, list, loader, lock, log-in, log-out, mail, map-pin, map, maximize-2, maximize, meh, menu, message-circle, message-square, mic-off, mic, minimize-2, minimize, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, mouse-pointer, move, music, navigation-2, navigation, octagon, package, paperclip, pause-circle, pause, pen-tool, percent, phone-call, phone-forwarded, phone-incoming, phone-missed, phone-off, phone-outgoing, phone, pie-chart, play-circle, play, plus-circle, plus-square, plus, pocket, power, printer, radio, refresh-ccw, refresh-cw, repeat, rewind, rotate-ccw, rotate-cw, rss, save, scissors, search, send, server, settings, share-2, share, shield-off, shield, shopping-bag, shopping-cart, shuffle, sidebar, skip-back, skip-forward, slack, slash, sliders, smartphone, smile, speaker, square, star, stop-circle, sun, sunrise, sunset, tablet, tag, target, terminal, thermometer, thumbs-down, thumbs-up, toggle-left, toggle-right, tool, trash-2, trash, trello, trending-down, trending-up, triangle, truck, tv, twitch, twitter, type, umbrella, underline, unlock, upload-cloud, upload, user-check, user-minus, user-plus, user-x, user, users, video-off, video, voicemail, volume-1, volume-2, volume-x, volume, watch, wifi-off, wifi, wind, x-circle, x-octagon, x-square, x, youtube, zap-off, zap, zoom-in, zoom-out, default */
+/***/ (function(module) {
+
+module.exports = {"activity":"<polyline points=\"22 12 18 12 15 21 9 3 6 12 2 12\"></polyline>","airplay":"<path d=\"M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1\"></path><polygon points=\"12 15 17 21 7 21 12 15\"></polygon>","alert-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"></line>","alert-octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12.01\" y2=\"16\"></line>","alert-triangle":"<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"></path><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"></line><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line>","align-center":"<line x1=\"18\" y1=\"10\" x2=\"6\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"18\" y1=\"18\" x2=\"6\" y2=\"18\"></line>","align-justify":"<line x1=\"21\" y1=\"10\" x2=\"3\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"21\" y1=\"18\" x2=\"3\" y2=\"18\"></line>","align-left":"<line x1=\"17\" y1=\"10\" x2=\"3\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"17\" y1=\"18\" x2=\"3\" y2=\"18\"></line>","align-right":"<line x1=\"21\" y1=\"10\" x2=\"7\" y2=\"10\"></line><line x1=\"21\" y1=\"6\" x2=\"3\" y2=\"6\"></line><line x1=\"21\" y1=\"14\" x2=\"3\" y2=\"14\"></line><line x1=\"21\" y1=\"18\" x2=\"7\" y2=\"18\"></line>","anchor":"<circle cx=\"12\" cy=\"5\" r=\"3\"></circle><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"8\"></line><path d=\"M5 12H2a10 10 0 0 0 20 0h-3\"></path>","aperture":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"14.31\" y1=\"8\" x2=\"20.05\" y2=\"17.94\"></line><line x1=\"9.69\" y1=\"8\" x2=\"21.17\" y2=\"8\"></line><line x1=\"7.38\" y1=\"12\" x2=\"13.12\" y2=\"2.06\"></line><line x1=\"9.69\" y1=\"16\" x2=\"3.95\" y2=\"6.06\"></line><line x1=\"14.31\" y1=\"16\" x2=\"2.83\" y2=\"16\"></line><line x1=\"16.62\" y1=\"12\" x2=\"10.88\" y2=\"21.94\"></line>","archive":"<polyline points=\"21 8 21 21 3 21 3 8\"></polyline><rect x=\"1\" y=\"3\" width=\"22\" height=\"5\"></rect><line x1=\"10\" y1=\"12\" x2=\"14\" y2=\"12\"></line>","arrow-down-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"8 12 12 16 16 12\"></polyline><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line>","arrow-down-left":"<line x1=\"17\" y1=\"7\" x2=\"7\" y2=\"17\"></line><polyline points=\"17 17 7 17 7 7\"></polyline>","arrow-down-right":"<line x1=\"7\" y1=\"7\" x2=\"17\" y2=\"17\"></line><polyline points=\"17 7 17 17 7 17\"></polyline>","arrow-down":"<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"></line><polyline points=\"19 12 12 19 5 12\"></polyline>","arrow-left-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 8 8 12 12 16\"></polyline><line x1=\"16\" y1=\"12\" x2=\"8\" y2=\"12\"></line>","arrow-left":"<line x1=\"19\" y1=\"12\" x2=\"5\" y2=\"12\"></line><polyline points=\"12 19 5 12 12 5\"></polyline>","arrow-right-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 16 16 12 12 8\"></polyline><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","arrow-right":"<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line><polyline points=\"12 5 19 12 12 19\"></polyline>","arrow-up-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"16 12 12 8 8 12\"></polyline><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"8\"></line>","arrow-up-left":"<line x1=\"17\" y1=\"17\" x2=\"7\" y2=\"7\"></line><polyline points=\"7 17 7 7 17 7\"></polyline>","arrow-up-right":"<line x1=\"7\" y1=\"17\" x2=\"17\" y2=\"7\"></line><polyline points=\"7 7 17 7 17 17\"></polyline>","arrow-up":"<line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"5\"></line><polyline points=\"5 12 12 5 19 12\"></polyline>","at-sign":"<circle cx=\"12\" cy=\"12\" r=\"4\"></circle><path d=\"M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94\"></path>","award":"<circle cx=\"12\" cy=\"8\" r=\"7\"></circle><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\"></polyline>","bar-chart-2":"<line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"></line><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"></line>","bar-chart":"<line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"10\"></line><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"16\"></line>","battery-charging":"<path d=\"M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19\"></path><line x1=\"23\" y1=\"13\" x2=\"23\" y2=\"11\"></line><polyline points=\"11 6 7 12 13 12 9 18\"></polyline>","battery":"<rect x=\"1\" y=\"6\" width=\"18\" height=\"12\" rx=\"2\" ry=\"2\"></rect><line x1=\"23\" y1=\"13\" x2=\"23\" y2=\"11\"></line>","bell-off":"<path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path><path d=\"M18.63 13A17.89 17.89 0 0 1 18 8\"></path><path d=\"M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14\"></path><path d=\"M18 8a6 6 0 0 0-9.33-5\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","bell":"<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9\"></path><path d=\"M13.73 21a2 2 0 0 1-3.46 0\"></path>","bluetooth":"<polyline points=\"6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5\"></polyline>","bold":"<path d=\"M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z\"></path><path d=\"M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z\"></path>","book-open":"<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"></path><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"></path>","book":"<path d=\"M4 19.5A2.5 2.5 0 0 1 6.5 17H20\"></path><path d=\"M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z\"></path>","bookmark":"<path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path>","box":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","briefcase":"<rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\" ry=\"2\"></rect><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"></path>","calendar":"<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line>","camera-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56\"></path>","camera":"<path d=\"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z\"></path><circle cx=\"12\" cy=\"13\" r=\"4\"></circle>","cast":"<path d=\"M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6\"></path><line x1=\"2\" y1=\"20\" x2=\"2.01\" y2=\"20\"></line>","check-circle":"<path d=\"M22 11.08V12a10 10 0 1 1-5.93-9.14\"></path><polyline points=\"22 4 12 14.01 9 11.01\"></polyline>","check-square":"<polyline points=\"9 11 12 14 22 4\"></polyline><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"></path>","check":"<polyline points=\"20 6 9 17 4 12\"></polyline>","chevron-down":"<polyline points=\"6 9 12 15 18 9\"></polyline>","chevron-left":"<polyline points=\"15 18 9 12 15 6\"></polyline>","chevron-right":"<polyline points=\"9 18 15 12 9 6\"></polyline>","chevron-up":"<polyline points=\"18 15 12 9 6 15\"></polyline>","chevrons-down":"<polyline points=\"7 13 12 18 17 13\"></polyline><polyline points=\"7 6 12 11 17 6\"></polyline>","chevrons-left":"<polyline points=\"11 17 6 12 11 7\"></polyline><polyline points=\"18 17 13 12 18 7\"></polyline>","chevrons-right":"<polyline points=\"13 17 18 12 13 7\"></polyline><polyline points=\"6 17 11 12 6 7\"></polyline>","chevrons-up":"<polyline points=\"17 11 12 6 7 11\"></polyline><polyline points=\"17 18 12 13 7 18\"></polyline>","chrome":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"21.17\" y1=\"8\" x2=\"12\" y2=\"8\"></line><line x1=\"3.95\" y1=\"6.06\" x2=\"8.54\" y2=\"14\"></line><line x1=\"10.88\" y1=\"21.94\" x2=\"15.46\" y2=\"14\"></line>","circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle>","clipboard":"<path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"></path><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\"></rect>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polyline points=\"12 6 12 12 16 14\"></polyline>","cloud-drizzle":"<line x1=\"8\" y1=\"19\" x2=\"8\" y2=\"21\"></line><line x1=\"8\" y1=\"13\" x2=\"8\" y2=\"15\"></line><line x1=\"16\" y1=\"19\" x2=\"16\" y2=\"21\"></line><line x1=\"16\" y1=\"13\" x2=\"16\" y2=\"15\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"></line><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"17\"></line><path d=\"M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25\"></path>","cloud-lightning":"<path d=\"M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9\"></path><polyline points=\"13 11 9 17 15 17 11 23\"></polyline>","cloud-off":"<path d=\"M22.61 16.95A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6M5 5a8 8 0 0 0 4 15h9a5 5 0 0 0 1.7-.3\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","cloud-rain":"<line x1=\"16\" y1=\"13\" x2=\"16\" y2=\"21\"></line><line x1=\"8\" y1=\"13\" x2=\"8\" y2=\"21\"></line><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"23\"></line><path d=\"M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25\"></path>","cloud-snow":"<path d=\"M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25\"></path><line x1=\"8\" y1=\"16\" x2=\"8.01\" y2=\"16\"></line><line x1=\"8\" y1=\"20\" x2=\"8.01\" y2=\"20\"></line><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line><line x1=\"12\" y1=\"22\" x2=\"12.01\" y2=\"22\"></line><line x1=\"16\" y1=\"16\" x2=\"16.01\" y2=\"16\"></line><line x1=\"16\" y1=\"20\" x2=\"16.01\" y2=\"20\"></line>","cloud":"<path d=\"M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z\"></path>","code":"<polyline points=\"16 18 22 12 16 6\"></polyline><polyline points=\"8 6 2 12 8 18\"></polyline>","codepen":"<polygon points=\"12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2\"></polygon><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"15.5\"></line><polyline points=\"22 8.5 12 15.5 2 8.5\"></polyline><polyline points=\"2 15.5 12 8.5 22 15.5\"></polyline><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"8.5\"></line>","codesandbox":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"7.5 4.21 12 6.81 16.5 4.21\"></polyline><polyline points=\"7.5 19.79 7.5 14.6 3 12\"></polyline><polyline points=\"21 12 16.5 14.6 16.5 19.79\"></polyline><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","coffee":"<path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line>","columns":"<path d=\"M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18\"></path>","command":"<path d=\"M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z\"></path>","compass":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polygon points=\"16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76\"></polygon>","copy":"<rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\" ry=\"2\"></rect><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"></path>","corner-down-left":"<polyline points=\"9 10 4 15 9 20\"></polyline><path d=\"M20 4v7a4 4 0 0 1-4 4H4\"></path>","corner-down-right":"<polyline points=\"15 10 20 15 15 20\"></polyline><path d=\"M4 4v7a4 4 0 0 0 4 4h12\"></path>","corner-left-down":"<polyline points=\"14 15 9 20 4 15\"></polyline><path d=\"M20 4h-7a4 4 0 0 0-4 4v12\"></path>","corner-left-up":"<polyline points=\"14 9 9 4 4 9\"></polyline><path d=\"M20 20h-7a4 4 0 0 1-4-4V4\"></path>","corner-right-down":"<polyline points=\"10 15 15 20 20 15\"></polyline><path d=\"M4 4h7a4 4 0 0 1 4 4v12\"></path>","corner-right-up":"<polyline points=\"10 9 15 4 20 9\"></polyline><path d=\"M4 20h7a4 4 0 0 0 4-4V4\"></path>","corner-up-left":"<polyline points=\"9 14 4 9 9 4\"></polyline><path d=\"M20 20v-7a4 4 0 0 0-4-4H4\"></path>","corner-up-right":"<polyline points=\"15 14 20 9 15 4\"></polyline><path d=\"M4 20v-7a4 4 0 0 1 4-4h12\"></path>","cpu":"<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\" ry=\"2\"></rect><rect x=\"9\" y=\"9\" width=\"6\" height=\"6\"></rect><line x1=\"9\" y1=\"1\" x2=\"9\" y2=\"4\"></line><line x1=\"15\" y1=\"1\" x2=\"15\" y2=\"4\"></line><line x1=\"9\" y1=\"20\" x2=\"9\" y2=\"23\"></line><line x1=\"15\" y1=\"20\" x2=\"15\" y2=\"23\"></line><line x1=\"20\" y1=\"9\" x2=\"23\" y2=\"9\"></line><line x1=\"20\" y1=\"14\" x2=\"23\" y2=\"14\"></line><line x1=\"1\" y1=\"9\" x2=\"4\" y2=\"9\"></line><line x1=\"1\" y1=\"14\" x2=\"4\" y2=\"14\"></line>","credit-card":"<rect x=\"1\" y=\"4\" width=\"22\" height=\"16\" rx=\"2\" ry=\"2\"></rect><line x1=\"1\" y1=\"10\" x2=\"23\" y2=\"10\"></line>","crop":"<path d=\"M6.13 1L6 16a2 2 0 0 0 2 2h15\"></path><path d=\"M1 6.13L16 6a2 2 0 0 1 2 2v15\"></path>","crosshair":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"22\" y1=\"12\" x2=\"18\" y2=\"12\"></line><line x1=\"6\" y1=\"12\" x2=\"2\" y2=\"12\"></line><line x1=\"12\" y1=\"6\" x2=\"12\" y2=\"2\"></line><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"18\"></line>","database":"<ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"></ellipse><path d=\"M21 12c0 1.66-4 3-9 3s-9-1.34-9-3\"></path><path d=\"M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5\"></path>","delete":"<path d=\"M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z\"></path><line x1=\"18\" y1=\"9\" x2=\"12\" y2=\"15\"></line><line x1=\"12\" y1=\"9\" x2=\"18\" y2=\"15\"></line>","disc":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>","divide-circle":"<line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"16\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"8\"></line><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>","divide-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"16\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"8\"></line>","divide":"<circle cx=\"12\" cy=\"6\" r=\"2\"></circle><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line><circle cx=\"12\" cy=\"18\" r=\"2\"></circle>","dollar-sign":"<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"></line><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"></path>","download-cloud":"<polyline points=\"8 17 12 21 16 17\"></polyline><line x1=\"12\" y1=\"12\" x2=\"12\" y2=\"21\"></line><path d=\"M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29\"></path>","download":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><polyline points=\"7 10 12 15 17 10\"></polyline><line x1=\"12\" y1=\"15\" x2=\"12\" y2=\"3\"></line>","dribbble":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32\"></path>","droplet":"<path d=\"M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z\"></path>","edit-2":"<path d=\"M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z\"></path>","edit-3":"<path d=\"M12 20h9\"></path><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z\"></path>","edit":"<path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"></path><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"></path>","external-link":"<path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"></path><polyline points=\"15 3 21 3 21 9\"></polyline><line x1=\"10\" y1=\"14\" x2=\"21\" y2=\"3\"></line>","eye-off":"<path d=\"M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","eye":"<path d=\"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>","facebook":"<path d=\"M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z\"></path>","fast-forward":"<polygon points=\"13 19 22 12 13 5 13 19\"></polygon><polygon points=\"2 19 11 12 2 5 2 19\"></polygon>","feather":"<path d=\"M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z\"></path><line x1=\"16\" y1=\"8\" x2=\"2\" y2=\"22\"></line><line x1=\"17.5\" y1=\"15\" x2=\"9\" y2=\"15\"></line>","figma":"<path d=\"M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z\"></path><path d=\"M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z\"></path><path d=\"M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z\"></path><path d=\"M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z\"></path><path d=\"M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z\"></path>","file-minus":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"9\" y1=\"15\" x2=\"15\" y2=\"15\"></line>","file-plus":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"12\"></line><line x1=\"9\" y1=\"15\" x2=\"15\" y2=\"15\"></line>","file-text":"<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"></path><polyline points=\"14 2 14 8 20 8\"></polyline><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"></line><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"></line><polyline points=\"10 9 9 9 8 9\"></polyline>","file":"<path d=\"M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z\"></path><polyline points=\"13 2 13 9 20 9\"></polyline>","film":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"2.18\" ry=\"2.18\"></rect><line x1=\"7\" y1=\"2\" x2=\"7\" y2=\"22\"></line><line x1=\"17\" y1=\"2\" x2=\"17\" y2=\"22\"></line><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"2\" y1=\"7\" x2=\"7\" y2=\"7\"></line><line x1=\"2\" y1=\"17\" x2=\"7\" y2=\"17\"></line><line x1=\"17\" y1=\"17\" x2=\"22\" y2=\"17\"></line><line x1=\"17\" y1=\"7\" x2=\"22\" y2=\"7\"></line>","filter":"<polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\"></polygon>","flag":"<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\"></path><line x1=\"4\" y1=\"22\" x2=\"4\" y2=\"15\"></line>","folder-minus":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"></line>","folder-plus":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path><line x1=\"12\" y1=\"11\" x2=\"12\" y2=\"17\"></line><line x1=\"9\" y1=\"14\" x2=\"15\" y2=\"14\"></line>","folder":"<path d=\"M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z\"></path>","framer":"<path d=\"M5 16V9h14V2H5l14 14h-7m-7 0l7 7v-7m-7 0h7\"></path>","frown":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M16 16s-1.5-2-4-2-4 2-4 2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","gift":"<polyline points=\"20 12 20 22 4 22 4 12\"></polyline><rect x=\"2\" y=\"7\" width=\"20\" height=\"5\"></rect><line x1=\"12\" y1=\"22\" x2=\"12\" y2=\"7\"></line><path d=\"M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z\"></path><path d=\"M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z\"></path>","git-branch":"<line x1=\"6\" y1=\"3\" x2=\"6\" y2=\"15\"></line><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M18 9a9 9 0 0 1-9 9\"></path>","git-commit":"<circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"1.05\" y1=\"12\" x2=\"7\" y2=\"12\"></line><line x1=\"17.01\" y1=\"12\" x2=\"22.96\" y2=\"12\"></line>","git-merge":"<circle cx=\"18\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M6 21V9a9 9 0 0 0 9 9\"></path>","git-pull-request":"<circle cx=\"18\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M13 6h3a2 2 0 0 1 2 2v7\"></path><line x1=\"6\" y1=\"9\" x2=\"6\" y2=\"21\"></line>","github":"<path d=\"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22\"></path>","gitlab":"<path d=\"M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z\"></path>","globe":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><path d=\"M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z\"></path>","grid":"<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"></rect><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"></rect><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"></rect><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"></rect>","hard-drive":"<line x1=\"22\" y1=\"12\" x2=\"2\" y2=\"12\"></line><path d=\"M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path><line x1=\"6\" y1=\"16\" x2=\"6.01\" y2=\"16\"></line><line x1=\"10\" y1=\"16\" x2=\"10.01\" y2=\"16\"></line>","hash":"<line x1=\"4\" y1=\"9\" x2=\"20\" y2=\"9\"></line><line x1=\"4\" y1=\"15\" x2=\"20\" y2=\"15\"></line><line x1=\"10\" y1=\"3\" x2=\"8\" y2=\"21\"></line><line x1=\"16\" y1=\"3\" x2=\"14\" y2=\"21\"></line>","headphones":"<path d=\"M3 18v-6a9 9 0 0 1 18 0v6\"></path><path d=\"M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z\"></path>","heart":"<path d=\"M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z\"></path>","help-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line>","hexagon":"<path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path>","home":"<path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline>","image":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"></circle><polyline points=\"21 15 16 10 5 21\"></polyline>","inbox":"<polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"></polyline><path d=\"M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path>","info":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"></line>","instagram":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"5\" ry=\"5\"></rect><path d=\"M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z\"></path><line x1=\"17.5\" y1=\"6.5\" x2=\"17.51\" y2=\"6.5\"></line>","italic":"<line x1=\"19\" y1=\"4\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"20\" x2=\"5\" y2=\"20\"></line><line x1=\"15\" y1=\"4\" x2=\"9\" y2=\"20\"></line>","key":"<path d=\"M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4\"></path>","layers":"<polygon points=\"12 2 2 7 12 12 22 7 12 2\"></polygon><polyline points=\"2 17 12 22 22 17\"></polyline><polyline points=\"2 12 12 17 22 12\"></polyline>","layout":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"3\" y1=\"9\" x2=\"21\" y2=\"9\"></line><line x1=\"9\" y1=\"21\" x2=\"9\" y2=\"9\"></line>","life-buoy":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"4\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"9.17\" y2=\"9.17\"></line><line x1=\"14.83\" y1=\"14.83\" x2=\"19.07\" y2=\"19.07\"></line><line x1=\"14.83\" y1=\"9.17\" x2=\"19.07\" y2=\"4.93\"></line><line x1=\"14.83\" y1=\"9.17\" x2=\"18.36\" y2=\"5.64\"></line><line x1=\"4.93\" y1=\"19.07\" x2=\"9.17\" y2=\"14.83\"></line>","link-2":"<path d=\"M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3\"></path><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","link":"<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"></path><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"></path>","linkedin":"<path d=\"M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z\"></path><rect x=\"2\" y=\"9\" width=\"4\" height=\"12\"></rect><circle cx=\"4\" cy=\"4\" r=\"2\"></circle>","list":"<line x1=\"8\" y1=\"6\" x2=\"21\" y2=\"6\"></line><line x1=\"8\" y1=\"12\" x2=\"21\" y2=\"12\"></line><line x1=\"8\" y1=\"18\" x2=\"21\" y2=\"18\"></line><line x1=\"3\" y1=\"6\" x2=\"3.01\" y2=\"6\"></line><line x1=\"3\" y1=\"12\" x2=\"3.01\" y2=\"12\"></line><line x1=\"3\" y1=\"18\" x2=\"3.01\" y2=\"18\"></line>","loader":"<line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"6\"></line><line x1=\"12\" y1=\"18\" x2=\"12\" y2=\"22\"></line><line x1=\"4.93\" y1=\"4.93\" x2=\"7.76\" y2=\"7.76\"></line><line x1=\"16.24\" y1=\"16.24\" x2=\"19.07\" y2=\"19.07\"></line><line x1=\"2\" y1=\"12\" x2=\"6\" y2=\"12\"></line><line x1=\"18\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"4.93\" y1=\"19.07\" x2=\"7.76\" y2=\"16.24\"></line><line x1=\"16.24\" y1=\"7.76\" x2=\"19.07\" y2=\"4.93\"></line>","lock":"<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path>","log-in":"<path d=\"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4\"></path><polyline points=\"10 17 15 12 10 7\"></polyline><line x1=\"15\" y1=\"12\" x2=\"3\" y2=\"12\"></line>","log-out":"<path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"></path><polyline points=\"16 17 21 12 16 7\"></polyline><line x1=\"21\" y1=\"12\" x2=\"9\" y2=\"12\"></line>","mail":"<path d=\"M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z\"></path><polyline points=\"22,6 12,13 2,6\"></polyline>","map-pin":"<path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle>","map":"<polygon points=\"1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6\"></polygon><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"18\"></line><line x1=\"16\" y1=\"6\" x2=\"16\" y2=\"22\"></line>","maximize-2":"<polyline points=\"15 3 21 3 21 9\"></polyline><polyline points=\"9 21 3 21 3 15\"></polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line>","maximize":"<path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path>","meh":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"8\" y1=\"15\" x2=\"16\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","menu":"<line x1=\"3\" y1=\"12\" x2=\"21\" y2=\"12\"></line><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line><line x1=\"3\" y1=\"18\" x2=\"21\" y2=\"18\"></line>","message-circle":"<path d=\"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z\"></path>","message-square":"<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"></path>","mic-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6\"></path><path d=\"M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23\"></path><line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"23\"></line><line x1=\"8\" y1=\"23\" x2=\"16\" y2=\"23\"></line>","mic":"<path d=\"M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z\"></path><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"></path><line x1=\"12\" y1=\"19\" x2=\"12\" y2=\"23\"></line><line x1=\"8\" y1=\"23\" x2=\"16\" y2=\"23\"></line>","minimize-2":"<polyline points=\"4 14 10 14 10 20\"></polyline><polyline points=\"20 10 14 10 14 4\"></polyline><line x1=\"14\" y1=\"10\" x2=\"21\" y2=\"3\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line>","minimize":"<path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path>","minus-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","minus-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","minus":"<line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line>","monitor":"<rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\" ry=\"2\"></rect><line x1=\"8\" y1=\"21\" x2=\"16\" y2=\"21\"></line><line x1=\"12\" y1=\"17\" x2=\"12\" y2=\"21\"></line>","moon":"<path d=\"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z\"></path>","more-horizontal":"<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"19\" cy=\"12\" r=\"1\"></circle><circle cx=\"5\" cy=\"12\" r=\"1\"></circle>","more-vertical":"<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"12\" cy=\"5\" r=\"1\"></circle><circle cx=\"12\" cy=\"19\" r=\"1\"></circle>","mouse-pointer":"<path d=\"M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z\"></path><path d=\"M13 13l6 6\"></path>","move":"<polyline points=\"5 9 2 12 5 15\"></polyline><polyline points=\"9 5 12 2 15 5\"></polyline><polyline points=\"15 19 12 22 9 19\"></polyline><polyline points=\"19 9 22 12 19 15\"></polyline><line x1=\"2\" y1=\"12\" x2=\"22\" y2=\"12\"></line><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"22\"></line>","music":"<path d=\"M9 18V5l12-2v13\"></path><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><circle cx=\"18\" cy=\"16\" r=\"3\"></circle>","navigation-2":"<polygon points=\"12 2 19 21 12 17 5 21 12 2\"></polygon>","navigation":"<polygon points=\"3 11 22 2 13 21 11 13 3 11\"></polygon>","octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon>","package":"<line x1=\"16.5\" y1=\"9.4\" x2=\"7.5\" y2=\"4.21\"></line><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line>","paperclip":"<path d=\"M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48\"></path>","pause-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"10\" y1=\"15\" x2=\"10\" y2=\"9\"></line><line x1=\"14\" y1=\"15\" x2=\"14\" y2=\"9\"></line>","pause":"<rect x=\"6\" y=\"4\" width=\"4\" height=\"16\"></rect><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\"></rect>","pen-tool":"<path d=\"M12 19l7-7 3 3-7 7-3-3z\"></path><path d=\"M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z\"></path><path d=\"M2 2l7.586 7.586\"></path><circle cx=\"11\" cy=\"11\" r=\"2\"></circle>","percent":"<line x1=\"19\" y1=\"5\" x2=\"5\" y2=\"19\"></line><circle cx=\"6.5\" cy=\"6.5\" r=\"2.5\"></circle><circle cx=\"17.5\" cy=\"17.5\" r=\"2.5\"></circle>","phone-call":"<path d=\"M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-forwarded":"<polyline points=\"19 1 23 5 19 9\"></polyline><line x1=\"15\" y1=\"5\" x2=\"23\" y2=\"5\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-incoming":"<polyline points=\"16 2 16 8 22 8\"></polyline><line x1=\"23\" y1=\"1\" x2=\"16\" y2=\"8\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-missed":"<line x1=\"23\" y1=\"1\" x2=\"17\" y2=\"7\"></line><line x1=\"17\" y1=\"1\" x2=\"23\" y2=\"7\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone-off":"<path d=\"M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91\"></path><line x1=\"23\" y1=\"1\" x2=\"1\" y2=\"23\"></line>","phone-outgoing":"<polyline points=\"23 7 23 1 17 1\"></polyline><line x1=\"16\" y1=\"8\" x2=\"23\" y2=\"1\"></line><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","phone":"<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"></path>","pie-chart":"<path d=\"M21.21 15.89A10 10 0 1 1 8 2.83\"></path><path d=\"M22 12A10 10 0 0 0 12 2v10z\"></path>","play-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><polygon points=\"10 8 16 12 10 16 10 8\"></polygon>","play":"<polygon points=\"5 3 19 12 5 21 5 3\"></polygon>","plus-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","plus-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"16\"></line><line x1=\"8\" y1=\"12\" x2=\"16\" y2=\"12\"></line>","plus":"<line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"></line><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"></line>","pocket":"<path d=\"M4 3h16a2 2 0 0 1 2 2v6a10 10 0 0 1-10 10A10 10 0 0 1 2 11V5a2 2 0 0 1 2-2z\"></path><polyline points=\"8 10 12 14 16 10\"></polyline>","power":"<path d=\"M18.36 6.64a9 9 0 1 1-12.73 0\"></path><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"12\"></line>","printer":"<polyline points=\"6 9 6 2 18 2 18 9\"></polyline><path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"></path><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\"></rect>","radio":"<circle cx=\"12\" cy=\"12\" r=\"2\"></circle><path d=\"M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14\"></path>","refresh-ccw":"<polyline points=\"1 4 1 10 7 10\"></polyline><polyline points=\"23 20 23 14 17 14\"></polyline><path d=\"M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15\"></path>","refresh-cw":"<polyline points=\"23 4 23 10 17 10\"></polyline><polyline points=\"1 20 1 14 7 14\"></polyline><path d=\"M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15\"></path>","repeat":"<polyline points=\"17 1 21 5 17 9\"></polyline><path d=\"M3 11V9a4 4 0 0 1 4-4h14\"></path><polyline points=\"7 23 3 19 7 15\"></polyline><path d=\"M21 13v2a4 4 0 0 1-4 4H3\"></path>","rewind":"<polygon points=\"11 19 2 12 11 5 11 19\"></polygon><polygon points=\"22 19 13 12 22 5 22 19\"></polygon>","rotate-ccw":"<polyline points=\"1 4 1 10 7 10\"></polyline><path d=\"M3.51 15a9 9 0 1 0 2.13-9.36L1 10\"></path>","rotate-cw":"<polyline points=\"23 4 23 10 17 10\"></polyline><path d=\"M20.49 15a9 9 0 1 1-2.12-9.36L23 10\"></path>","rss":"<path d=\"M4 11a9 9 0 0 1 9 9\"></path><path d=\"M4 4a16 16 0 0 1 16 16\"></path><circle cx=\"5\" cy=\"19\" r=\"1\"></circle>","save":"<path d=\"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z\"></path><polyline points=\"17 21 17 13 7 13 7 21\"></polyline><polyline points=\"7 3 7 8 15 8\"></polyline>","scissors":"<circle cx=\"6\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><line x1=\"20\" y1=\"4\" x2=\"8.12\" y2=\"15.88\"></line><line x1=\"14.47\" y1=\"14.48\" x2=\"20\" y2=\"20\"></line><line x1=\"8.12\" y1=\"8.12\" x2=\"12\" y2=\"12\"></line>","search":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line>","send":"<line x1=\"22\" y1=\"2\" x2=\"11\" y2=\"13\"></line><polygon points=\"22 2 15 22 11 13 2 9 22 2\"></polygon>","server":"<rect x=\"2\" y=\"2\" width=\"20\" height=\"8\" rx=\"2\" ry=\"2\"></rect><rect x=\"2\" y=\"14\" width=\"20\" height=\"8\" rx=\"2\" ry=\"2\"></rect><line x1=\"6\" y1=\"6\" x2=\"6.01\" y2=\"6\"></line><line x1=\"6\" y1=\"18\" x2=\"6.01\" y2=\"18\"></line>","settings":"<circle cx=\"12\" cy=\"12\" r=\"3\"></circle><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z\"></path>","share-2":"<circle cx=\"18\" cy=\"5\" r=\"3\"></circle><circle cx=\"6\" cy=\"12\" r=\"3\"></circle><circle cx=\"18\" cy=\"19\" r=\"3\"></circle><line x1=\"8.59\" y1=\"13.51\" x2=\"15.42\" y2=\"17.49\"></line><line x1=\"15.41\" y1=\"6.51\" x2=\"8.59\" y2=\"10.49\"></line>","share":"<path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\"></path><polyline points=\"16 6 12 2 8 6\"></polyline><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"15\"></line>","shield-off":"<path d=\"M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18\"></path><path d=\"M4.73 4.73L4 5v7c0 6 8 10 8 10a20.29 20.29 0 0 0 5.62-4.38\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","shield":"<path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"></path>","shopping-bag":"<path d=\"M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z\"></path><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"></line><path d=\"M16 10a4 4 0 0 1-8 0\"></path>","shopping-cart":"<circle cx=\"9\" cy=\"21\" r=\"1\"></circle><circle cx=\"20\" cy=\"21\" r=\"1\"></circle><path d=\"M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6\"></path>","shuffle":"<polyline points=\"16 3 21 3 21 8\"></polyline><line x1=\"4\" y1=\"20\" x2=\"21\" y2=\"3\"></line><polyline points=\"21 16 21 21 16 21\"></polyline><line x1=\"15\" y1=\"15\" x2=\"21\" y2=\"21\"></line><line x1=\"4\" y1=\"4\" x2=\"9\" y2=\"9\"></line>","sidebar":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"9\" y1=\"3\" x2=\"9\" y2=\"21\"></line>","skip-back":"<polygon points=\"19 20 9 12 19 4 19 20\"></polygon><line x1=\"5\" y1=\"19\" x2=\"5\" y2=\"5\"></line>","skip-forward":"<polygon points=\"5 4 15 12 5 20 5 4\"></polygon><line x1=\"19\" y1=\"5\" x2=\"19\" y2=\"19\"></line>","slack":"<path d=\"M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z\"></path><path d=\"M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z\"></path><path d=\"M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z\"></path><path d=\"M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z\"></path><path d=\"M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z\"></path><path d=\"M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z\"></path><path d=\"M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z\"></path><path d=\"M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z\"></path>","slash":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line>","sliders":"<line x1=\"4\" y1=\"21\" x2=\"4\" y2=\"14\"></line><line x1=\"4\" y1=\"10\" x2=\"4\" y2=\"3\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12\" y2=\"3\"></line><line x1=\"20\" y1=\"21\" x2=\"20\" y2=\"16\"></line><line x1=\"20\" y1=\"12\" x2=\"20\" y2=\"3\"></line><line x1=\"1\" y1=\"14\" x2=\"7\" y2=\"14\"></line><line x1=\"9\" y1=\"8\" x2=\"15\" y2=\"8\"></line><line x1=\"17\" y1=\"16\" x2=\"23\" y2=\"16\"></line>","smartphone":"<rect x=\"5\" y=\"2\" width=\"14\" height=\"20\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line>","smile":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line>","speaker":"<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\" ry=\"2\"></rect><circle cx=\"12\" cy=\"14\" r=\"4\"></circle><line x1=\"12\" y1=\"6\" x2=\"12.01\" y2=\"6\"></line>","square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect>","star":"<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"></polygon>","stop-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><rect x=\"9\" y=\"9\" width=\"6\" height=\"6\"></rect>","sun":"<circle cx=\"12\" cy=\"12\" r=\"5\"></circle><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"></line><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"></line><line x1=\"4.22\" y1=\"4.22\" x2=\"5.64\" y2=\"5.64\"></line><line x1=\"18.36\" y1=\"18.36\" x2=\"19.78\" y2=\"19.78\"></line><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"></line><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"></line><line x1=\"4.22\" y1=\"19.78\" x2=\"5.64\" y2=\"18.36\"></line><line x1=\"18.36\" y1=\"5.64\" x2=\"19.78\" y2=\"4.22\"></line>","sunrise":"<path d=\"M17 18a5 5 0 0 0-10 0\"></path><line x1=\"12\" y1=\"2\" x2=\"12\" y2=\"9\"></line><line x1=\"4.22\" y1=\"10.22\" x2=\"5.64\" y2=\"11.64\"></line><line x1=\"1\" y1=\"18\" x2=\"3\" y2=\"18\"></line><line x1=\"21\" y1=\"18\" x2=\"23\" y2=\"18\"></line><line x1=\"18.36\" y1=\"11.64\" x2=\"19.78\" y2=\"10.22\"></line><line x1=\"23\" y1=\"22\" x2=\"1\" y2=\"22\"></line><polyline points=\"8 6 12 2 16 6\"></polyline>","sunset":"<path d=\"M17 18a5 5 0 0 0-10 0\"></path><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"2\"></line><line x1=\"4.22\" y1=\"10.22\" x2=\"5.64\" y2=\"11.64\"></line><line x1=\"1\" y1=\"18\" x2=\"3\" y2=\"18\"></line><line x1=\"21\" y1=\"18\" x2=\"23\" y2=\"18\"></line><line x1=\"18.36\" y1=\"11.64\" x2=\"19.78\" y2=\"10.22\"></line><line x1=\"23\" y1=\"22\" x2=\"1\" y2=\"22\"></line><polyline points=\"16 5 12 9 8 5\"></polyline>","tablet":"<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\" ry=\"2\"></rect><line x1=\"12\" y1=\"18\" x2=\"12.01\" y2=\"18\"></line>","tag":"<path d=\"M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z\"></path><line x1=\"7\" y1=\"7\" x2=\"7.01\" y2=\"7\"></line>","target":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"6\"></circle><circle cx=\"12\" cy=\"12\" r=\"2\"></circle>","terminal":"<polyline points=\"4 17 10 11 4 5\"></polyline><line x1=\"12\" y1=\"19\" x2=\"20\" y2=\"19\"></line>","thermometer":"<path d=\"M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z\"></path>","thumbs-down":"<path d=\"M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17\"></path>","thumbs-up":"<path d=\"M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3\"></path>","toggle-left":"<rect x=\"1\" y=\"5\" width=\"22\" height=\"14\" rx=\"7\" ry=\"7\"></rect><circle cx=\"8\" cy=\"12\" r=\"3\"></circle>","toggle-right":"<rect x=\"1\" y=\"5\" width=\"22\" height=\"14\" rx=\"7\" ry=\"7\"></rect><circle cx=\"16\" cy=\"12\" r=\"3\"></circle>","tool":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\"></path>","trash-2":"<polyline points=\"3 6 5 6 21 6\"></polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path><line x1=\"10\" y1=\"11\" x2=\"10\" y2=\"17\"></line><line x1=\"14\" y1=\"11\" x2=\"14\" y2=\"17\"></line>","trash":"<polyline points=\"3 6 5 6 21 6\"></polyline><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"></path>","trello":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><rect x=\"7\" y=\"7\" width=\"3\" height=\"9\"></rect><rect x=\"14\" y=\"7\" width=\"3\" height=\"5\"></rect>","trending-down":"<polyline points=\"23 18 13.5 8.5 8.5 13.5 1 6\"></polyline><polyline points=\"17 18 23 18 23 12\"></polyline>","trending-up":"<polyline points=\"23 6 13.5 15.5 8.5 10.5 1 18\"></polyline><polyline points=\"17 6 23 6 23 12\"></polyline>","triangle":"<path d=\"M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z\"></path>","truck":"<rect x=\"1\" y=\"3\" width=\"15\" height=\"13\"></rect><polygon points=\"16 8 20 8 23 11 23 16 16 16 16 8\"></polygon><circle cx=\"5.5\" cy=\"18.5\" r=\"2.5\"></circle><circle cx=\"18.5\" cy=\"18.5\" r=\"2.5\"></circle>","tv":"<rect x=\"2\" y=\"7\" width=\"20\" height=\"15\" rx=\"2\" ry=\"2\"></rect><polyline points=\"17 2 12 7 7 2\"></polyline>","twitch":"<path d=\"M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7\"></path>","twitter":"<path d=\"M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z\"></path>","type":"<polyline points=\"4 7 4 4 20 4 20 7\"></polyline><line x1=\"9\" y1=\"20\" x2=\"15\" y2=\"20\"></line><line x1=\"12\" y1=\"4\" x2=\"12\" y2=\"20\"></line>","umbrella":"<path d=\"M23 12a11.05 11.05 0 0 0-22 0zm-5 7a3 3 0 0 1-6 0v-7\"></path>","underline":"<path d=\"M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3\"></path><line x1=\"4\" y1=\"21\" x2=\"20\" y2=\"21\"></line>","unlock":"<rect x=\"3\" y=\"11\" width=\"18\" height=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"></path>","upload-cloud":"<polyline points=\"16 16 12 12 8 16\"></polyline><line x1=\"12\" y1=\"12\" x2=\"12\" y2=\"21\"></line><path d=\"M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3\"></path><polyline points=\"16 16 12 12 8 16\"></polyline>","upload":"<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><polyline points=\"17 8 12 3 7 8\"></polyline><line x1=\"12\" y1=\"3\" x2=\"12\" y2=\"15\"></line>","user-check":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><polyline points=\"17 11 19 13 23 9\"></polyline>","user-minus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"23\" y1=\"11\" x2=\"17\" y2=\"11\"></line>","user-plus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"20\" y1=\"8\" x2=\"20\" y2=\"14\"></line><line x1=\"23\" y1=\"11\" x2=\"17\" y2=\"11\"></line>","user-x":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"8.5\" cy=\"7\" r=\"4\"></circle><line x1=\"18\" y1=\"8\" x2=\"23\" y2=\"13\"></line><line x1=\"23\" y1=\"8\" x2=\"18\" y2=\"13\"></line>","user":"<path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle>","users":"<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path>","video-off":"<path d=\"M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10\"></path><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","video":"<polygon points=\"23 7 16 12 23 17 23 7\"></polygon><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\" ry=\"2\"></rect>","voicemail":"<circle cx=\"5.5\" cy=\"11.5\" r=\"4.5\"></circle><circle cx=\"18.5\" cy=\"11.5\" r=\"4.5\"></circle><line x1=\"5.5\" y1=\"16\" x2=\"18.5\" y2=\"16\"></line>","volume-1":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><path d=\"M15.54 8.46a5 5 0 0 1 0 7.07\"></path>","volume-2":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><path d=\"M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07\"></path>","volume-x":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon><line x1=\"23\" y1=\"9\" x2=\"17\" y2=\"15\"></line><line x1=\"17\" y1=\"9\" x2=\"23\" y2=\"15\"></line>","volume":"<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"></polygon>","watch":"<circle cx=\"12\" cy=\"12\" r=\"7\"></circle><polyline points=\"12 9 12 12 13.5 13.5\"></polyline><path d=\"M16.51 17.35l-.35 3.83a2 2 0 0 1-2 1.82H9.83a2 2 0 0 1-2-1.82l-.35-3.83m.01-10.7l.35-3.83A2 2 0 0 1 9.83 1h4.35a2 2 0 0 1 2 1.82l.35 3.83\"></path>","wifi-off":"<line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line><path d=\"M16.72 11.06A10.94 10.94 0 0 1 19 12.55\"></path><path d=\"M5 12.55a10.94 10.94 0 0 1 5.17-2.39\"></path><path d=\"M10.71 5.05A16 16 0 0 1 22.58 9\"></path><path d=\"M1.42 9a15.91 15.91 0 0 1 4.7-2.88\"></path><path d=\"M8.53 16.11a6 6 0 0 1 6.95 0\"></path><line x1=\"12\" y1=\"20\" x2=\"12.01\" y2=\"20\"></line>","wifi":"<path d=\"M5 12.55a11 11 0 0 1 14.08 0\"></path><path d=\"M1.42 9a16 16 0 0 1 21.16 0\"></path><path d=\"M8.53 16.11a6 6 0 0 1 6.95 0\"></path><line x1=\"12\" y1=\"20\" x2=\"12.01\" y2=\"20\"></line>","wind":"<path d=\"M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2\"></path>","x-circle":"<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line>","x-octagon":"<polygon points=\"7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2\"></polygon><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line>","x-square":"<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"9\" y1=\"9\" x2=\"15\" y2=\"15\"></line><line x1=\"15\" y1=\"9\" x2=\"9\" y2=\"15\"></line>","x":"<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\"></line><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\"></line>","youtube":"<path d=\"M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z\"></path><polygon points=\"9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02\"></polygon>","zap-off":"<polyline points=\"12.41 6.75 13 2 10.57 4.92\"></polyline><polyline points=\"18.57 12.91 21 10 15.66 10\"></polyline><polyline points=\"8 8 3 14 12 14 11 22 16 16\"></polyline><line x1=\"1\" y1=\"1\" x2=\"23\" y2=\"23\"></line>","zap":"<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"></polygon>","zoom-in":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line><line x1=\"11\" y1=\"8\" x2=\"11\" y2=\"14\"></line><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"></line>","zoom-out":"<circle cx=\"11\" cy=\"11\" r=\"8\"></circle><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line><line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"></line>"};
+
+/***/ }),
+
+/***/ "./node_modules/classnames/dedupe.js":
+/*!*******************************************!*\
+  !*** ./node_modules/classnames/dedupe.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2016 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+
+	var classNames = (function () {
+		// don't inherit from Object so we can skip hasOwnProperty check later
+		// http://stackoverflow.com/questions/15518328/creating-js-object-with-object-createnull#answer-21079232
+		function StorageObject() {}
+		StorageObject.prototype = Object.create(null);
+
+		function _parseArray (resultSet, array) {
+			var length = array.length;
+
+			for (var i = 0; i < length; ++i) {
+				_parse(resultSet, array[i]);
+			}
+		}
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function _parseNumber (resultSet, num) {
+			resultSet[num] = true;
+		}
+
+		function _parseObject (resultSet, object) {
+			for (var k in object) {
+				if (hasOwn.call(object, k)) {
+					// set value to false instead of deleting it to avoid changing object structure
+					// https://www.smashingmagazine.com/2012/11/writing-fast-memory-efficient-javascript/#de-referencing-misconceptions
+					resultSet[k] = !!object[k];
+				}
+			}
+		}
+
+		var SPACE = /\s+/;
+		function _parseString (resultSet, str) {
+			var array = str.split(SPACE);
+			var length = array.length;
+
+			for (var i = 0; i < length; ++i) {
+				resultSet[array[i]] = true;
+			}
+		}
+
+		function _parse (resultSet, arg) {
+			if (!arg) return;
+			var argType = typeof arg;
+
+			// 'foo bar'
+			if (argType === 'string') {
+				_parseString(resultSet, arg);
+
+			// ['foo', 'bar', ...]
+			} else if (Array.isArray(arg)) {
+				_parseArray(resultSet, arg);
+
+			// { 'foo': true, ... }
+			} else if (argType === 'object') {
+				_parseObject(resultSet, arg);
+
+			// '130'
+			} else if (argType === 'number') {
+				_parseNumber(resultSet, arg);
+			}
+		}
+
+		function _classNames () {
+			// don't leak arguments
+			// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments
+			var len = arguments.length;
+			var args = Array(len);
+			for (var i = 0; i < len; i++) {
+				args[i] = arguments[i];
+			}
+
+			var classSet = new StorageObject();
+			_parseArray(classSet, args);
+
+			var list = [];
+
+			for (var k in classSet) {
+				if (classSet[k]) {
+					list.push(k);
+				}
+			}
+
+			return list.join(' ');
+		}
+
+		return _classNames;
+	})();
+
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	} else {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}
+}());
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/es/array/from.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/es/array/from.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*! ../../modules/es.string.iterator */ "./node_modules/core-js/modules/es.string.iterator.js");
+__webpack_require__(/*! ../../modules/es.array.from */ "./node_modules/core-js/modules/es.array.from.js");
+var path = __webpack_require__(/*! ../../internals/path */ "./node_modules/core-js/internals/path.js");
+
+module.exports = path.Array.from;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/a-function.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/a-function.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  if (typeof it != 'function') {
+    throw TypeError(String(it) + ' is not a function');
+  } return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/an-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/an-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+module.exports = function (it) {
+  if (!isObject(it)) {
+    throw TypeError(String(it) + ' is not an object');
+  } return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/array-from.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/array-from.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var bind = __webpack_require__(/*! ../internals/bind-context */ "./node_modules/core-js/internals/bind-context.js");
+var toObject = __webpack_require__(/*! ../internals/to-object */ "./node_modules/core-js/internals/to-object.js");
+var callWithSafeIterationClosing = __webpack_require__(/*! ../internals/call-with-safe-iteration-closing */ "./node_modules/core-js/internals/call-with-safe-iteration-closing.js");
+var isArrayIteratorMethod = __webpack_require__(/*! ../internals/is-array-iterator-method */ "./node_modules/core-js/internals/is-array-iterator-method.js");
+var toLength = __webpack_require__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var createProperty = __webpack_require__(/*! ../internals/create-property */ "./node_modules/core-js/internals/create-property.js");
+var getIteratorMethod = __webpack_require__(/*! ../internals/get-iterator-method */ "./node_modules/core-js/internals/get-iterator-method.js");
+
+// `Array.from` method
+// https://tc39.github.io/ecma262/#sec-array.from
+module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undefined */) {
+  var O = toObject(arrayLike);
+  var C = typeof this == 'function' ? this : Array;
+  var argumentsLength = arguments.length;
+  var mapfn = argumentsLength > 1 ? arguments[1] : undefined;
+  var mapping = mapfn !== undefined;
+  var index = 0;
+  var iteratorMethod = getIteratorMethod(O);
+  var length, result, step, iterator;
+  if (mapping) mapfn = bind(mapfn, argumentsLength > 2 ? arguments[2] : undefined, 2);
+  // if the target is not iterable or it's an array with the default iterator - use a simple case
+  if (iteratorMethod != undefined && !(C == Array && isArrayIteratorMethod(iteratorMethod))) {
+    iterator = iteratorMethod.call(O);
+    result = new C();
+    for (;!(step = iterator.next()).done; index++) {
+      createProperty(result, index, mapping
+        ? callWithSafeIterationClosing(iterator, mapfn, [step.value, index], true)
+        : step.value
+      );
+    }
+  } else {
+    length = toLength(O.length);
+    result = new C(length);
+    for (;length > index; index++) {
+      createProperty(result, index, mapping ? mapfn(O[index], index) : O[index]);
+    }
+  }
+  result.length = index;
+  return result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/array-includes.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/array-includes.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toIndexedObject = __webpack_require__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var toLength = __webpack_require__(/*! ../internals/to-length */ "./node_modules/core-js/internals/to-length.js");
+var toAbsoluteIndex = __webpack_require__(/*! ../internals/to-absolute-index */ "./node_modules/core-js/internals/to-absolute-index.js");
+
+// `Array.prototype.{ indexOf, includes }` methods implementation
+// false -> Array#indexOf
+// https://tc39.github.io/ecma262/#sec-array.prototype.indexof
+// true  -> Array#includes
+// https://tc39.github.io/ecma262/#sec-array.prototype.includes
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIndexedObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/bind-context.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/internals/bind-context.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var aFunction = __webpack_require__(/*! ../internals/a-function */ "./node_modules/core-js/internals/a-function.js");
+
+// optional / simple context binding
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 0: return function () {
+      return fn.call(that);
+    };
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/call-with-safe-iteration-closing.js":
+/*!****************************************************************************!*\
+  !*** ./node_modules/core-js/internals/call-with-safe-iteration-closing.js ***!
+  \****************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+// call something on iterator step with safe closing on error
+module.exports = function (iterator, fn, value, ENTRIES) {
+  try {
+    return ENTRIES ? fn(anObject(value)[0], value[1]) : fn(value);
+  // 7.4.6 IteratorClose(iterator, completion)
+  } catch (error) {
+    var returnMethod = iterator['return'];
+    if (returnMethod !== undefined) anObject(returnMethod.call(iterator));
+    throw error;
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/check-correctness-of-iteration.js":
+/*!**************************************************************************!*\
+  !*** ./node_modules/core-js/internals/check-correctness-of-iteration.js ***!
+  \**************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var SAFE_CLOSING = false;
+
+try {
+  var called = 0;
+  var iteratorWithReturn = {
+    next: function () {
+      return { done: !!called++ };
+    },
+    'return': function () {
+      SAFE_CLOSING = true;
+    }
+  };
+  iteratorWithReturn[ITERATOR] = function () {
+    return this;
+  };
+  // eslint-disable-next-line no-throw-literal
+  Array.from(iteratorWithReturn, function () { throw 2; });
+} catch (error) { /* empty */ }
+
+module.exports = function (exec, SKIP_CLOSING) {
+  if (!SKIP_CLOSING && !SAFE_CLOSING) return false;
+  var ITERATION_SUPPORT = false;
+  try {
+    var object = {};
+    object[ITERATOR] = function () {
+      return {
+        next: function () {
+          return { done: ITERATION_SUPPORT = true };
+        }
+      };
+    };
+    exec(object);
+  } catch (error) { /* empty */ }
+  return ITERATION_SUPPORT;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/classof-raw.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/classof-raw.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/classof.js":
+/*!***************************************************!*\
+  !*** ./node_modules/core-js/internals/classof.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var classofRaw = __webpack_require__(/*! ../internals/classof-raw */ "./node_modules/core-js/internals/classof-raw.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+// ES3 wrong here
+var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (error) { /* empty */ }
+};
+
+// getting tag from ES6+ `Object.prototype.toString`
+module.exports = function (it) {
+  var O, tag, result;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
+    // builtinTag case
+    : CORRECT_ARGUMENTS ? classofRaw(O)
+    // ES3 arguments fallback
+    : (result = classofRaw(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/copy-constructor-properties.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/core-js/internals/copy-constructor-properties.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var ownKeys = __webpack_require__(/*! ../internals/own-keys */ "./node_modules/core-js/internals/own-keys.js");
+var getOwnPropertyDescriptorModule = __webpack_require__(/*! ../internals/object-get-own-property-descriptor */ "./node_modules/core-js/internals/object-get-own-property-descriptor.js");
+var definePropertyModule = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+
+module.exports = function (target, source) {
+  var keys = ownKeys(source);
+  var defineProperty = definePropertyModule.f;
+  var getOwnPropertyDescriptor = getOwnPropertyDescriptorModule.f;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/correct-prototype-getter.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/correct-prototype-getter.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+module.exports = !fails(function () {
+  function F() { /* empty */ }
+  F.prototype.constructor = null;
+  return Object.getPrototypeOf(new F()) !== F.prototype;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-iterator-constructor.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/core-js/internals/create-iterator-constructor.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var IteratorPrototype = __webpack_require__(/*! ../internals/iterators-core */ "./node_modules/core-js/internals/iterators-core.js").IteratorPrototype;
+var create = __webpack_require__(/*! ../internals/object-create */ "./node_modules/core-js/internals/object-create.js");
+var createPropertyDescriptor = __webpack_require__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+var setToStringTag = __webpack_require__(/*! ../internals/set-to-string-tag */ "./node_modules/core-js/internals/set-to-string-tag.js");
+var Iterators = __webpack_require__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+
+var returnThis = function () { return this; };
+
+module.exports = function (IteratorConstructor, NAME, next) {
+  var TO_STRING_TAG = NAME + ' Iterator';
+  IteratorConstructor.prototype = create(IteratorPrototype, { next: createPropertyDescriptor(1, next) });
+  setToStringTag(IteratorConstructor, TO_STRING_TAG, false, true);
+  Iterators[TO_STRING_TAG] = returnThis;
+  return IteratorConstructor;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-property-descriptor.js":
+/*!**********************************************************************!*\
+  !*** ./node_modules/core-js/internals/create-property-descriptor.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/create-property.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/create-property.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toPrimitive = __webpack_require__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+var definePropertyModule = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var createPropertyDescriptor = __webpack_require__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+
+module.exports = function (object, key, value) {
+  var propertyKey = toPrimitive(key);
+  if (propertyKey in object) definePropertyModule.f(object, propertyKey, createPropertyDescriptor(0, value));
+  else object[propertyKey] = value;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/define-iterator.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/define-iterator.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var $ = __webpack_require__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var createIteratorConstructor = __webpack_require__(/*! ../internals/create-iterator-constructor */ "./node_modules/core-js/internals/create-iterator-constructor.js");
+var getPrototypeOf = __webpack_require__(/*! ../internals/object-get-prototype-of */ "./node_modules/core-js/internals/object-get-prototype-of.js");
+var setPrototypeOf = __webpack_require__(/*! ../internals/object-set-prototype-of */ "./node_modules/core-js/internals/object-set-prototype-of.js");
+var setToStringTag = __webpack_require__(/*! ../internals/set-to-string-tag */ "./node_modules/core-js/internals/set-to-string-tag.js");
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var redefine = __webpack_require__(/*! ../internals/redefine */ "./node_modules/core-js/internals/redefine.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var IS_PURE = __webpack_require__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+var Iterators = __webpack_require__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+var IteratorsCore = __webpack_require__(/*! ../internals/iterators-core */ "./node_modules/core-js/internals/iterators-core.js");
+
+var IteratorPrototype = IteratorsCore.IteratorPrototype;
+var BUGGY_SAFARI_ITERATORS = IteratorsCore.BUGGY_SAFARI_ITERATORS;
+var ITERATOR = wellKnownSymbol('iterator');
+var KEYS = 'keys';
+var VALUES = 'values';
+var ENTRIES = 'entries';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, IS_SET, FORCED) {
+  createIteratorConstructor(IteratorConstructor, NAME, next);
+
+  var getIterationMethod = function (KIND) {
+    if (KIND === DEFAULT && defaultIterator) return defaultIterator;
+    if (!BUGGY_SAFARI_ITERATORS && KIND in IterablePrototype) return IterablePrototype[KIND];
+    switch (KIND) {
+      case KEYS: return function keys() { return new IteratorConstructor(this, KIND); };
+      case VALUES: return function values() { return new IteratorConstructor(this, KIND); };
+      case ENTRIES: return function entries() { return new IteratorConstructor(this, KIND); };
+    } return function () { return new IteratorConstructor(this); };
+  };
+
+  var TO_STRING_TAG = NAME + ' Iterator';
+  var INCORRECT_VALUES_NAME = false;
+  var IterablePrototype = Iterable.prototype;
+  var nativeIterator = IterablePrototype[ITERATOR]
+    || IterablePrototype['@@iterator']
+    || DEFAULT && IterablePrototype[DEFAULT];
+  var defaultIterator = !BUGGY_SAFARI_ITERATORS && nativeIterator || getIterationMethod(DEFAULT);
+  var anyNativeIterator = NAME == 'Array' ? IterablePrototype.entries || nativeIterator : nativeIterator;
+  var CurrentIteratorPrototype, methods, KEY;
+
+  // fix native
+  if (anyNativeIterator) {
+    CurrentIteratorPrototype = getPrototypeOf(anyNativeIterator.call(new Iterable()));
+    if (IteratorPrototype !== Object.prototype && CurrentIteratorPrototype.next) {
+      if (!IS_PURE && getPrototypeOf(CurrentIteratorPrototype) !== IteratorPrototype) {
+        if (setPrototypeOf) {
+          setPrototypeOf(CurrentIteratorPrototype, IteratorPrototype);
+        } else if (typeof CurrentIteratorPrototype[ITERATOR] != 'function') {
+          hide(CurrentIteratorPrototype, ITERATOR, returnThis);
+        }
+      }
+      // Set @@toStringTag to native iterators
+      setToStringTag(CurrentIteratorPrototype, TO_STRING_TAG, true, true);
+      if (IS_PURE) Iterators[TO_STRING_TAG] = returnThis;
+    }
+  }
+
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEFAULT == VALUES && nativeIterator && nativeIterator.name !== VALUES) {
+    INCORRECT_VALUES_NAME = true;
+    defaultIterator = function values() { return nativeIterator.call(this); };
+  }
+
+  // define iterator
+  if ((!IS_PURE || FORCED) && IterablePrototype[ITERATOR] !== defaultIterator) {
+    hide(IterablePrototype, ITERATOR, defaultIterator);
+  }
+  Iterators[NAME] = defaultIterator;
+
+  // export additional methods
+  if (DEFAULT) {
+    methods = {
+      values: getIterationMethod(VALUES),
+      keys: IS_SET ? defaultIterator : getIterationMethod(KEYS),
+      entries: getIterationMethod(ENTRIES)
+    };
+    if (FORCED) for (KEY in methods) {
+      if (BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME || !(KEY in IterablePrototype)) {
+        redefine(IterablePrototype, KEY, methods[KEY]);
+      }
+    } else $({ target: NAME, proto: true, forced: BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME }, methods);
+  }
+
+  return methods;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/descriptors.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/descriptors.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !fails(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/document-create-element.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/document-create-element.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+var document = global.document;
+// typeof document.createElement is 'object' in old IE
+var exist = isObject(document) && isObject(document.createElement);
+
+module.exports = function (it) {
+  return exist ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/enum-bug-keys.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/enum-bug-keys.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// IE8- don't enum bug keys
+module.exports = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
 ];
-const DIRECTIONS = ["up", "same", "down"];
-const RELATIONS = ["Parent", "Sibling", "Child"];
-const REAlCLOSED = ["Real", "Closed"];
-const ALLUNLINKED = ["All", "No Unlinked"];
 
-const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
-const nameRegex = '[^\\W\\d]\\w*';
-const regexEscape = function (str) {
-    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-const parseTypedLink = function (link, line, typedLinkPrefix) {
-    // TODO: This is something specific I use, but shouldn't keep being in this repo.
-    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
-    const matchPI = regexPublishedIn.exec(line);
-    if (!(matchPI === null)) {
-        return {
-            class: 'type-publishedIn',
-            isInline: false,
-            properties: {
-                year: matchPI[2],
-                context: '',
-                type: 'publishedIn',
-            },
-        };
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/export.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/export.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var getOwnPropertyDescriptor = __webpack_require__(/*! ../internals/object-get-own-property-descriptor */ "./node_modules/core-js/internals/object-get-own-property-descriptor.js").f;
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var redefine = __webpack_require__(/*! ../internals/redefine */ "./node_modules/core-js/internals/redefine.js");
+var setGlobal = __webpack_require__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var copyConstructorProperties = __webpack_require__(/*! ../internals/copy-constructor-properties */ "./node_modules/core-js/internals/copy-constructor-properties.js");
+var isForced = __webpack_require__(/*! ../internals/is-forced */ "./node_modules/core-js/internals/is-forced.js");
+
+/*
+  options.target      - name of the target object
+  options.global      - target is the global object
+  options.stat        - export as static methods of target
+  options.proto       - export as prototype methods of target
+  options.real        - real prototype method for the `pure` version
+  options.forced      - export even if the native feature is available
+  options.bind        - bind methods to the target, required for the `pure` version
+  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
+  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
+  options.sham        - add a flag to not completely full polyfills
+  options.enumerable  - export as enumerable property
+  options.noTargetGet - prevent calling a getter on target
+*/
+module.exports = function (options, source) {
+  var TARGET = options.target;
+  var GLOBAL = options.global;
+  var STATIC = options.stat;
+  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+  if (GLOBAL) {
+    target = global;
+  } else if (STATIC) {
+    target = global[TARGET] || setGlobal(TARGET, {});
+  } else {
+    target = (global[TARGET] || {}).prototype;
+  }
+  if (target) for (key in source) {
+    sourceProperty = source[key];
+    if (options.noTargetGet) {
+      descriptor = getOwnPropertyDescriptor(target, key);
+      targetProperty = descriptor && descriptor.value;
+    } else targetProperty = target[key];
+    FORCED = isForced(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
+    // contained in target
+    if (!FORCED && targetProperty !== undefined) {
+      if (typeof sourceProperty === typeof targetProperty) continue;
+      copyConstructorProperties(sourceProperty, targetProperty);
     }
-    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
-    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
-    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
-    const match = regex.exec(line);
-    const splitLink = link.original.split('|');
-    let alias = null;
-    if (splitLink.length > 1) {
-        alias = splitLink.slice(1).join().slice(0, -2);
+    // add a flag to not completely full polyfills
+    if (options.sham || (targetProperty && targetProperty.sham)) {
+      hide(sourceProperty, 'sham', true);
     }
-    if (!(match === null)) {
-        return {
-            class: `type-${match[1]}`,
-            isInline: false,
-            properties: {
-                alias: alias,
-                context: '',
-                type: match[1],
-            },
-        };
-    }
-    return null;
+    // extend global
+    redefine(target, key, sourceProperty, options);
+  }
 };
 
-function normalise(arr) {
-    const max = Math.max(...arr);
-    return arr.map((item) => item / max);
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/fails.js":
+/*!*************************************************!*\
+  !*** ./node_modules/core-js/internals/fails.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (error) {
+    return true;
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/function-to-string.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/core-js/internals/function-to-string.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+
+module.exports = shared('native-function-to-string', Function.toString);
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/get-iterator-method.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/core-js/internals/get-iterator-method.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var classof = __webpack_require__(/*! ../internals/classof */ "./node_modules/core-js/internals/classof.js");
+var Iterators = __webpack_require__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+
+module.exports = function (it) {
+  if (it != undefined) return it[ITERATOR]
+    || it['@@iterator']
+    || Iterators[classof(it)];
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/global.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/global.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var O = 'object';
+var check = function (it) {
+  return it && it.Math == Math && it;
+};
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+module.exports =
+  // eslint-disable-next-line no-undef
+  check(typeof globalThis == O && globalThis) ||
+  check(typeof window == O && window) ||
+  check(typeof self == O && self) ||
+  check(typeof global == O && global) ||
+  // eslint-disable-next-line no-new-func
+  Function('return this')();
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")));
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/has.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/internals/has.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var hasOwnProperty = {}.hasOwnProperty;
+
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/hidden-keys.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/hidden-keys.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/hide.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/hide.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var definePropertyModule = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var createPropertyDescriptor = __webpack_require__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+
+module.exports = DESCRIPTORS ? function (object, key, value) {
+  return definePropertyModule.f(object, key, createPropertyDescriptor(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/html.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/html.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+
+var document = global.document;
+
+module.exports = document && document.documentElement;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/ie8-dom-define.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/ie8-dom-define.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var createElement = __webpack_require__(/*! ../internals/document-create-element */ "./node_modules/core-js/internals/document-create-element.js");
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !DESCRIPTORS && !fails(function () {
+  return Object.defineProperty(createElement('div'), 'a', {
+    get: function () { return 7; }
+  }).a != 7;
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/indexed-object.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/indexed-object.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+var classof = __webpack_require__(/*! ../internals/classof-raw */ "./node_modules/core-js/internals/classof-raw.js");
+
+var split = ''.split;
+
+module.exports = fails(function () {
+  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+  // eslint-disable-next-line no-prototype-builtins
+  return !Object('z').propertyIsEnumerable(0);
+}) ? function (it) {
+  return classof(it) == 'String' ? split.call(it, '') : Object(it);
+} : Object;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/internal-state.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/internal-state.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var NATIVE_WEAK_MAP = __webpack_require__(/*! ../internals/native-weak-map */ "./node_modules/core-js/internals/native-weak-map.js");
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var objectHas = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var sharedKey = __webpack_require__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var hiddenKeys = __webpack_require__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+
+var WeakMap = global.WeakMap;
+var set, get, has;
+
+var enforce = function (it) {
+  return has(it) ? get(it) : set(it, {});
+};
+
+var getterFor = function (TYPE) {
+  return function (it) {
+    var state;
+    if (!isObject(it) || (state = get(it)).type !== TYPE) {
+      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
+    } return state;
+  };
+};
+
+if (NATIVE_WEAK_MAP) {
+  var store = new WeakMap();
+  var wmget = store.get;
+  var wmhas = store.has;
+  var wmset = store.set;
+  set = function (it, metadata) {
+    wmset.call(store, it, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return wmget.call(store, it) || {};
+  };
+  has = function (it) {
+    return wmhas.call(store, it);
+  };
+} else {
+  var STATE = sharedKey('state');
+  hiddenKeys[STATE] = true;
+  set = function (it, metadata) {
+    hide(it, STATE, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return objectHas(it, STATE) ? it[STATE] : {};
+  };
+  has = function (it) {
+    return objectHas(it, STATE);
+  };
 }
-function debug(settings, log) {
-    if (settings.debugMode) {
-        console.log(log);
+
+module.exports = {
+  set: set,
+  get: get,
+  has: has,
+  enforce: enforce,
+  getterFor: getterFor
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-array-iterator-method.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/is-array-iterator-method.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var Iterators = __webpack_require__(/*! ../internals/iterators */ "./node_modules/core-js/internals/iterators.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var ArrayPrototype = Array.prototype;
+
+// check on default Array iterator
+module.exports = function (it) {
+  return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-forced.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/is-forced.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+var replacement = /#|\.prototype\./;
+
+var isForced = function (feature, detection) {
+  var value = data[normalize(feature)];
+  return value == POLYFILL ? true
+    : value == NATIVE ? false
+    : typeof detection == 'function' ? fails(detection)
+    : !!detection;
+};
+
+var normalize = isForced.normalize = function (string) {
+  return String(string).replace(replacement, '.').toLowerCase();
+};
+
+var data = isForced.data = {};
+var NATIVE = isForced.NATIVE = 'N';
+var POLYFILL = isForced.POLYFILL = 'P';
+
+module.exports = isForced;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/is-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/is-pure.js":
+/*!***************************************************!*\
+  !*** ./node_modules/core-js/internals/is-pure.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = false;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/iterators-core.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/core-js/internals/iterators-core.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getPrototypeOf = __webpack_require__(/*! ../internals/object-get-prototype-of */ "./node_modules/core-js/internals/object-get-prototype-of.js");
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+var IS_PURE = __webpack_require__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+
+var ITERATOR = wellKnownSymbol('iterator');
+var BUGGY_SAFARI_ITERATORS = false;
+
+var returnThis = function () { return this; };
+
+// `%IteratorPrototype%` object
+// https://tc39.github.io/ecma262/#sec-%iteratorprototype%-object
+var IteratorPrototype, PrototypeOfArrayIteratorPrototype, arrayIterator;
+
+if ([].keys) {
+  arrayIterator = [].keys();
+  // Safari 8 has buggy iterators w/o `next`
+  if (!('next' in arrayIterator)) BUGGY_SAFARI_ITERATORS = true;
+  else {
+    PrototypeOfArrayIteratorPrototype = getPrototypeOf(getPrototypeOf(arrayIterator));
+    if (PrototypeOfArrayIteratorPrototype !== Object.prototype) IteratorPrototype = PrototypeOfArrayIteratorPrototype;
+  }
+}
+
+if (IteratorPrototype == undefined) IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+if (!IS_PURE && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
+
+module.exports = {
+  IteratorPrototype: IteratorPrototype,
+  BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/iterators.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/iterators.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/native-symbol.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/native-symbol.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fails = __webpack_require__(/*! ../internals/fails */ "./node_modules/core-js/internals/fails.js");
+
+module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
+  // Chrome 38 Symbol has incorrect toString conversion
+  // eslint-disable-next-line no-undef
+  return !String(Symbol());
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/native-weak-map.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/core-js/internals/native-weak-map.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var nativeFunctionToString = __webpack_require__(/*! ../internals/function-to-string */ "./node_modules/core-js/internals/function-to-string.js");
+
+var WeakMap = global.WeakMap;
+
+module.exports = typeof WeakMap === 'function' && /native code/.test(nativeFunctionToString.call(WeakMap));
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-create.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/core-js/internals/object-create.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var defineProperties = __webpack_require__(/*! ../internals/object-define-properties */ "./node_modules/core-js/internals/object-define-properties.js");
+var enumBugKeys = __webpack_require__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+var hiddenKeys = __webpack_require__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+var html = __webpack_require__(/*! ../internals/html */ "./node_modules/core-js/internals/html.js");
+var documentCreateElement = __webpack_require__(/*! ../internals/document-create-element */ "./node_modules/core-js/internals/document-create-element.js");
+var sharedKey = __webpack_require__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var IE_PROTO = sharedKey('IE_PROTO');
+
+var PROTOTYPE = 'prototype';
+var Empty = function () { /* empty */ };
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = documentCreateElement('iframe');
+  var length = enumBugKeys.length;
+  var lt = '<';
+  var script = 'script';
+  var gt = '>';
+  var js = 'java' + script + ':';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  html.appendChild(iframe);
+  iframe.src = String(js);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + script + gt + 'document.F=Object' + lt + '/' + script + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while (length--) delete createDict[PROTOTYPE][enumBugKeys[length]];
+  return createDict();
+};
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty();
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : defineProperties(result, Properties);
+};
+
+hiddenKeys[IE_PROTO] = true;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-define-properties.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-define-properties.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var definePropertyModule = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js");
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var objectKeys = __webpack_require__(/*! ../internals/object-keys */ "./node_modules/core-js/internals/object-keys.js");
+
+module.exports = DESCRIPTORS ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = objectKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var key;
+  while (length > i) definePropertyModule.f(O, key = keys[i++], Properties[key]);
+  return O;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-define-property.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-define-property.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var IE8_DOM_DEFINE = __webpack_require__(/*! ../internals/ie8-dom-define */ "./node_modules/core-js/internals/ie8-dom-define.js");
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+var toPrimitive = __webpack_require__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+
+var nativeDefineProperty = Object.defineProperty;
+
+exports.f = DESCRIPTORS ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return nativeDefineProperty(O, P, Attributes);
+  } catch (error) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-descriptor.js":
+/*!******************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-descriptor.js ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(/*! ../internals/descriptors */ "./node_modules/core-js/internals/descriptors.js");
+var propertyIsEnumerableModule = __webpack_require__(/*! ../internals/object-property-is-enumerable */ "./node_modules/core-js/internals/object-property-is-enumerable.js");
+var createPropertyDescriptor = __webpack_require__(/*! ../internals/create-property-descriptor */ "./node_modules/core-js/internals/create-property-descriptor.js");
+var toIndexedObject = __webpack_require__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var toPrimitive = __webpack_require__(/*! ../internals/to-primitive */ "./node_modules/core-js/internals/to-primitive.js");
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var IE8_DOM_DEFINE = __webpack_require__(/*! ../internals/ie8-dom-define */ "./node_modules/core-js/internals/ie8-dom-define.js");
+
+var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+exports.f = DESCRIPTORS ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+  O = toIndexedObject(O);
+  P = toPrimitive(P, true);
+  if (IE8_DOM_DEFINE) try {
+    return nativeGetOwnPropertyDescriptor(O, P);
+  } catch (error) { /* empty */ }
+  if (has(O, P)) return createPropertyDescriptor(!propertyIsEnumerableModule.f.call(O, P), O[P]);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-names.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-names.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var internalObjectKeys = __webpack_require__(/*! ../internals/object-keys-internal */ "./node_modules/core-js/internals/object-keys-internal.js");
+var enumBugKeys = __webpack_require__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+
+var hiddenKeys = enumBugKeys.concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return internalObjectKeys(O, hiddenKeys);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-own-property-symbols.js":
+/*!***************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-own-property-symbols.js ***!
+  \***************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-get-prototype-of.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-get-prototype-of.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var toObject = __webpack_require__(/*! ../internals/to-object */ "./node_modules/core-js/internals/to-object.js");
+var sharedKey = __webpack_require__(/*! ../internals/shared-key */ "./node_modules/core-js/internals/shared-key.js");
+var CORRECT_PROTOTYPE_GETTER = __webpack_require__(/*! ../internals/correct-prototype-getter */ "./node_modules/core-js/internals/correct-prototype-getter.js");
+
+var IE_PROTO = sharedKey('IE_PROTO');
+var ObjectPrototype = Object.prototype;
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+module.exports = CORRECT_PROTOTYPE_GETTER ? Object.getPrototypeOf : function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectPrototype : null;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-keys-internal.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-keys-internal.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var toIndexedObject = __webpack_require__(/*! ../internals/to-indexed-object */ "./node_modules/core-js/internals/to-indexed-object.js");
+var arrayIncludes = __webpack_require__(/*! ../internals/array-includes */ "./node_modules/core-js/internals/array-includes.js");
+var hiddenKeys = __webpack_require__(/*! ../internals/hidden-keys */ "./node_modules/core-js/internals/hidden-keys.js");
+
+var arrayIndexOf = arrayIncludes(false);
+
+module.exports = function (object, names) {
+  var O = toIndexedObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) !has(hiddenKeys, key) && has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-keys.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/internals/object-keys.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var internalObjectKeys = __webpack_require__(/*! ../internals/object-keys-internal */ "./node_modules/core-js/internals/object-keys-internal.js");
+var enumBugKeys = __webpack_require__(/*! ../internals/enum-bug-keys */ "./node_modules/core-js/internals/enum-bug-keys.js");
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+module.exports = Object.keys || function keys(O) {
+  return internalObjectKeys(O, enumBugKeys);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-property-is-enumerable.js":
+/*!*************************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-property-is-enumerable.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// Nashorn ~ JDK8 bug
+var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
+
+exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+  var descriptor = getOwnPropertyDescriptor(this, V);
+  return !!descriptor && descriptor.enumerable;
+} : nativePropertyIsEnumerable;
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/object-set-prototype-of.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/core-js/internals/object-set-prototype-of.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var validateSetPrototypeOfArguments = __webpack_require__(/*! ../internals/validate-set-prototype-of-arguments */ "./node_modules/core-js/internals/validate-set-prototype-of-arguments.js");
+
+// Works with __proto__ only. Old v8 can't work with null proto objects.
+/* eslint-disable no-proto */
+module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
+  var correctSetter = false;
+  var test = {};
+  var setter;
+  try {
+    setter = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__').set;
+    setter.call(test, []);
+    correctSetter = test instanceof Array;
+  } catch (error) { /* empty */ }
+  return function setPrototypeOf(O, proto) {
+    validateSetPrototypeOfArguments(O, proto);
+    if (correctSetter) setter.call(O, proto);
+    else O.__proto__ = proto;
+    return O;
+  };
+}() : undefined);
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/own-keys.js":
+/*!****************************************************!*\
+  !*** ./node_modules/core-js/internals/own-keys.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var getOwnPropertyNamesModule = __webpack_require__(/*! ../internals/object-get-own-property-names */ "./node_modules/core-js/internals/object-get-own-property-names.js");
+var getOwnPropertySymbolsModule = __webpack_require__(/*! ../internals/object-get-own-property-symbols */ "./node_modules/core-js/internals/object-get-own-property-symbols.js");
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+var Reflect = global.Reflect;
+
+// all object keys, includes non-enumerable and symbols
+module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
+  var keys = getOwnPropertyNamesModule.f(anObject(it));
+  var getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
+  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/path.js":
+/*!************************************************!*\
+  !*** ./node_modules/core-js/internals/path.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/redefine.js":
+/*!****************************************************!*\
+  !*** ./node_modules/core-js/internals/redefine.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var shared = __webpack_require__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var setGlobal = __webpack_require__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var nativeFunctionToString = __webpack_require__(/*! ../internals/function-to-string */ "./node_modules/core-js/internals/function-to-string.js");
+var InternalStateModule = __webpack_require__(/*! ../internals/internal-state */ "./node_modules/core-js/internals/internal-state.js");
+
+var getInternalState = InternalStateModule.get;
+var enforceInternalState = InternalStateModule.enforce;
+var TEMPLATE = String(nativeFunctionToString).split('toString');
+
+shared('inspectSource', function (it) {
+  return nativeFunctionToString.call(it);
+});
+
+(module.exports = function (O, key, value, options) {
+  var unsafe = options ? !!options.unsafe : false;
+  var simple = options ? !!options.enumerable : false;
+  var noTargetGet = options ? !!options.noTargetGet : false;
+  if (typeof value == 'function') {
+    if (typeof key == 'string' && !has(value, 'name')) hide(value, 'name', key);
+    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
+  }
+  if (O === global) {
+    if (simple) O[key] = value;
+    else setGlobal(key, value);
+    return;
+  } else if (!unsafe) {
+    delete O[key];
+  } else if (!noTargetGet && O[key]) {
+    simple = true;
+  }
+  if (simple) O[key] = value;
+  else hide(O, key, value);
+// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+})(Function.prototype, 'toString', function toString() {
+  return typeof this == 'function' && getInternalState(this).source || nativeFunctionToString.call(this);
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/require-object-coercible.js":
+/*!********************************************************************!*\
+  !*** ./node_modules/core-js/internals/require-object-coercible.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// `RequireObjectCoercible` abstract operation
+// https://tc39.github.io/ecma262/#sec-requireobjectcoercible
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on " + it);
+  return it;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/set-global.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/set-global.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var hide = __webpack_require__(/*! ../internals/hide */ "./node_modules/core-js/internals/hide.js");
+
+module.exports = function (key, value) {
+  try {
+    hide(global, key, value);
+  } catch (error) {
+    global[key] = value;
+  } return value;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/set-to-string-tag.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/set-to-string-tag.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var defineProperty = __webpack_require__(/*! ../internals/object-define-property */ "./node_modules/core-js/internals/object-define-property.js").f;
+var has = __webpack_require__(/*! ../internals/has */ "./node_modules/core-js/internals/has.js");
+var wellKnownSymbol = __webpack_require__(/*! ../internals/well-known-symbol */ "./node_modules/core-js/internals/well-known-symbol.js");
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+
+module.exports = function (it, TAG, STATIC) {
+  if (it && !has(it = STATIC ? it : it.prototype, TO_STRING_TAG)) {
+    defineProperty(it, TO_STRING_TAG, { configurable: true, value: TAG });
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/shared-key.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/shared-key.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var uid = __webpack_require__(/*! ../internals/uid */ "./node_modules/core-js/internals/uid.js");
+
+var keys = shared('keys');
+
+module.exports = function (key) {
+  return keys[key] || (keys[key] = uid(key));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/shared.js":
+/*!**************************************************!*\
+  !*** ./node_modules/core-js/internals/shared.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var setGlobal = __webpack_require__(/*! ../internals/set-global */ "./node_modules/core-js/internals/set-global.js");
+var IS_PURE = __webpack_require__(/*! ../internals/is-pure */ "./node_modules/core-js/internals/is-pure.js");
+
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || setGlobal(SHARED, {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: '3.1.3',
+  mode: IS_PURE ? 'pure' : 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/string-at.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/string-at.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+var requireObjectCoercible = __webpack_require__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+// CONVERT_TO_STRING: true  -> String#at
+// CONVERT_TO_STRING: false -> String#codePointAt
+module.exports = function (that, pos, CONVERT_TO_STRING) {
+  var S = String(requireObjectCoercible(that));
+  var position = toInteger(pos);
+  var size = S.length;
+  var first, second;
+  if (position < 0 || position >= size) return CONVERT_TO_STRING ? '' : undefined;
+  first = S.charCodeAt(position);
+  return first < 0xD800 || first > 0xDBFF || position + 1 === size
+    || (second = S.charCodeAt(position + 1)) < 0xDC00 || second > 0xDFFF
+      ? CONVERT_TO_STRING ? S.charAt(position) : first
+      : CONVERT_TO_STRING ? S.slice(position, position + 2) : (first - 0xD800 << 10) + (second - 0xDC00) + 0x10000;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-absolute-index.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/to-absolute-index.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+
+var max = Math.max;
+var min = Math.min;
+
+// Helper for a popular repeating case of the spec:
+// Let integer be ? ToInteger(index).
+// If integer < 0, let result be max((length + integer), 0); else let result be min(length, length).
+module.exports = function (index, length) {
+  var integer = toInteger(index);
+  return integer < 0 ? max(integer + length, 0) : min(integer, length);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-indexed-object.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/to-indexed-object.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// toObject with fallback for non-array-like ES3 strings
+var IndexedObject = __webpack_require__(/*! ../internals/indexed-object */ "./node_modules/core-js/internals/indexed-object.js");
+var requireObjectCoercible = __webpack_require__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+module.exports = function (it) {
+  return IndexedObject(requireObjectCoercible(it));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-integer.js":
+/*!******************************************************!*\
+  !*** ./node_modules/core-js/internals/to-integer.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var ceil = Math.ceil;
+var floor = Math.floor;
+
+// `ToInteger` abstract operation
+// https://tc39.github.io/ecma262/#sec-tointeger
+module.exports = function (argument) {
+  return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-length.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/to-length.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(/*! ../internals/to-integer */ "./node_modules/core-js/internals/to-integer.js");
+
+var min = Math.min;
+
+// `ToLength` abstract operation
+// https://tc39.github.io/ecma262/#sec-tolength
+module.exports = function (argument) {
+  return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-object.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/core-js/internals/to-object.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var requireObjectCoercible = __webpack_require__(/*! ../internals/require-object-coercible */ "./node_modules/core-js/internals/require-object-coercible.js");
+
+// `ToObject` abstract operation
+// https://tc39.github.io/ecma262/#sec-toobject
+module.exports = function (argument) {
+  return Object(requireObjectCoercible(argument));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/to-primitive.js":
+/*!********************************************************!*\
+  !*** ./node_modules/core-js/internals/to-primitive.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/uid.js":
+/*!***********************************************!*\
+  !*** ./node_modules/core-js/internals/uid.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var id = 0;
+var postfix = Math.random();
+
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + postfix).toString(36));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/validate-set-prototype-of-arguments.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/core-js/internals/validate-set-prototype-of-arguments.js ***!
+  \*******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(/*! ../internals/is-object */ "./node_modules/core-js/internals/is-object.js");
+var anObject = __webpack_require__(/*! ../internals/an-object */ "./node_modules/core-js/internals/an-object.js");
+
+module.exports = function (O, proto) {
+  anObject(O);
+  if (!isObject(proto) && proto !== null) {
+    throw TypeError("Can't set " + String(proto) + ' as a prototype');
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/internals/well-known-symbol.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/core-js/internals/well-known-symbol.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(/*! ../internals/global */ "./node_modules/core-js/internals/global.js");
+var shared = __webpack_require__(/*! ../internals/shared */ "./node_modules/core-js/internals/shared.js");
+var uid = __webpack_require__(/*! ../internals/uid */ "./node_modules/core-js/internals/uid.js");
+var NATIVE_SYMBOL = __webpack_require__(/*! ../internals/native-symbol */ "./node_modules/core-js/internals/native-symbol.js");
+
+var Symbol = global.Symbol;
+var store = shared('wks');
+
+module.exports = function (name) {
+  return store[name] || (store[name] = NATIVE_SYMBOL && Symbol[name]
+    || (NATIVE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.array.from.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/core-js/modules/es.array.from.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var $ = __webpack_require__(/*! ../internals/export */ "./node_modules/core-js/internals/export.js");
+var from = __webpack_require__(/*! ../internals/array-from */ "./node_modules/core-js/internals/array-from.js");
+var checkCorrectnessOfIteration = __webpack_require__(/*! ../internals/check-correctness-of-iteration */ "./node_modules/core-js/internals/check-correctness-of-iteration.js");
+
+var INCORRECT_ITERATION = !checkCorrectnessOfIteration(function (iterable) {
+  Array.from(iterable);
+});
+
+// `Array.from` method
+// https://tc39.github.io/ecma262/#sec-array.from
+$({ target: 'Array', stat: true, forced: INCORRECT_ITERATION }, {
+  from: from
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/core-js/modules/es.string.iterator.js":
+/*!************************************************************!*\
+  !*** ./node_modules/core-js/modules/es.string.iterator.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var codePointAt = __webpack_require__(/*! ../internals/string-at */ "./node_modules/core-js/internals/string-at.js");
+var InternalStateModule = __webpack_require__(/*! ../internals/internal-state */ "./node_modules/core-js/internals/internal-state.js");
+var defineIterator = __webpack_require__(/*! ../internals/define-iterator */ "./node_modules/core-js/internals/define-iterator.js");
+
+var STRING_ITERATOR = 'String Iterator';
+var setInternalState = InternalStateModule.set;
+var getInternalState = InternalStateModule.getterFor(STRING_ITERATOR);
+
+// `String.prototype[@@iterator]` method
+// https://tc39.github.io/ecma262/#sec-string.prototype-@@iterator
+defineIterator(String, 'String', function (iterated) {
+  setInternalState(this, {
+    type: STRING_ITERATOR,
+    string: String(iterated),
+    index: 0
+  });
+// `%StringIteratorPrototype%.next` method
+// https://tc39.github.io/ecma262/#sec-%stringiteratorprototype%.next
+}, function next() {
+  var state = getInternalState(this);
+  var string = state.string;
+  var index = state.index;
+  var point;
+  if (index >= string.length) return { value: undefined, done: true };
+  point = codePointAt(string, index, true);
+  state.index += point.length;
+  return { value: point, done: false };
+});
+
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "./src/default-attrs.json":
+/*!********************************!*\
+  !*** ./src/default-attrs.json ***!
+  \********************************/
+/*! exports provided: xmlns, width, height, viewBox, fill, stroke, stroke-width, stroke-linecap, stroke-linejoin, default */
+/***/ (function(module) {
+
+module.exports = {"xmlns":"http://www.w3.org/2000/svg","width":24,"height":24,"viewBox":"0 0 24 24","fill":"none","stroke":"currentColor","stroke-width":2,"stroke-linecap":"round","stroke-linejoin":"round"};
+
+/***/ }),
+
+/***/ "./src/icon.js":
+/*!*********************!*\
+  !*** ./src/icon.js ***!
+  \*********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dedupe = __webpack_require__(/*! classnames/dedupe */ "./node_modules/classnames/dedupe.js");
+
+var _dedupe2 = _interopRequireDefault(_dedupe);
+
+var _defaultAttrs = __webpack_require__(/*! ./default-attrs.json */ "./src/default-attrs.json");
+
+var _defaultAttrs2 = _interopRequireDefault(_defaultAttrs);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Icon = function () {
+  function Icon(name, contents) {
+    var tags = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+
+    _classCallCheck(this, Icon);
+
+    this.name = name;
+    this.contents = contents;
+    this.tags = tags;
+    this.attrs = _extends({}, _defaultAttrs2.default, { class: 'feather feather-' + name });
+  }
+
+  /**
+   * Create an SVG string.
+   * @param {Object} attrs
+   * @returns {string}
+   */
+
+
+  _createClass(Icon, [{
+    key: 'toSvg',
+    value: function toSvg() {
+      var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      var combinedAttrs = _extends({}, this.attrs, attrs, { class: (0, _dedupe2.default)(this.attrs.class, attrs.class) });
+
+      return '<svg ' + attrsToString(combinedAttrs) + '>' + this.contents + '</svg>';
     }
-}
-function superDebug(settings, log) {
-    if (settings.superDebugMode) {
-        console.log(log);
+
+    /**
+     * Return string representation of an `Icon`.
+     *
+     * Added for backward compatibility. If old code expects `feather.icons.<name>`
+     * to be a string, `toString()` will get implicitly called.
+     *
+     * @returns {string}
+     */
+
+  }, {
+    key: 'toString',
+    value: function toString() {
+      return this.contents;
     }
+  }]);
+
+  return Icon;
+}();
+
+/**
+ * Convert attributes object to string of HTML attributes.
+ * @param {Object} attrs
+ * @returns {string}
+ */
+
+
+function attrsToString(attrs) {
+  return Object.keys(attrs).map(function (key) {
+    return key + '="' + attrs[key] + '"';
+  }).join(' ');
 }
-function debugGroupStart(settings, type, group) {
-    if (settings[type]) {
-        console.groupCollapsed(group);
-    }
+
+exports.default = Icon;
+
+/***/ }),
+
+/***/ "./src/icons.js":
+/*!**********************!*\
+  !*** ./src/icons.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _icon = __webpack_require__(/*! ./icon */ "./src/icon.js");
+
+var _icon2 = _interopRequireDefault(_icon);
+
+var _icons = __webpack_require__(/*! ../dist/icons.json */ "./dist/icons.json");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+var _tags = __webpack_require__(/*! ./tags.json */ "./src/tags.json");
+
+var _tags2 = _interopRequireDefault(_tags);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = Object.keys(_icons2.default).map(function (key) {
+  return new _icon2.default(key, _icons2.default[key], _tags2.default[key]);
+}).reduce(function (object, icon) {
+  object[icon.name] = icon;
+  return object;
+}, {});
+
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var _icons = __webpack_require__(/*! ./icons */ "./src/icons.js");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+var _toSvg = __webpack_require__(/*! ./to-svg */ "./src/to-svg.js");
+
+var _toSvg2 = _interopRequireDefault(_toSvg);
+
+var _replace = __webpack_require__(/*! ./replace */ "./src/replace.js");
+
+var _replace2 = _interopRequireDefault(_replace);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = { icons: _icons2.default, toSvg: _toSvg2.default, replace: _replace2.default };
+
+/***/ }),
+
+/***/ "./src/replace.js":
+/*!************************!*\
+  !*** ./src/replace.js ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /* eslint-env browser */
+
+
+var _dedupe = __webpack_require__(/*! classnames/dedupe */ "./node_modules/classnames/dedupe.js");
+
+var _dedupe2 = _interopRequireDefault(_dedupe);
+
+var _icons = __webpack_require__(/*! ./icons */ "./src/icons.js");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Replace all HTML elements that have a `data-feather` attribute with SVG markup
+ * corresponding to the element's `data-feather` attribute value.
+ * @param {Object} attrs
+ */
+function replace() {
+  var attrs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  if (typeof document === 'undefined') {
+    throw new Error('`feather.replace()` only works in a browser environment.');
+  }
+
+  var elementsToReplace = document.querySelectorAll('[data-feather]');
+
+  Array.from(elementsToReplace).forEach(function (element) {
+    return replaceElement(element, attrs);
+  });
 }
-function debugGroupEnd(settings, type) {
-    if (settings[type]) {
-        console.groupEnd();
-    }
+
+/**
+ * Replace a single HTML element with SVG markup
+ * corresponding to the element's `data-feather` attribute value.
+ * @param {HTMLElement} element
+ * @param {Object} attrs
+ */
+function replaceElement(element) {
+  var attrs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  var elementAttrs = getAttrs(element);
+  var name = elementAttrs['data-feather'];
+  delete elementAttrs['data-feather'];
+
+  var svgString = _icons2.default[name].toSvg(_extends({}, attrs, elementAttrs, { class: (0, _dedupe2.default)(attrs.class, elementAttrs.class) }));
+  var svgDocument = new DOMParser().parseFromString(svgString, 'image/svg+xml');
+  var svgElement = svgDocument.querySelector('svg');
+
+  element.parentNode.replaceChild(svgElement, element);
 }
-function getDVMetadataCache(app, settings, files) {
-    debugGroupStart(settings, "debugMode", "getDVMetadataCache");
-    debug(settings, "Using Dataview");
-    debugGroupStart(settings, "superDebugMode", "dvCaches");
-    const fileFrontmatterArr = [];
-    files.forEach((file) => {
-        superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
-        const dvCache = app.plugins.plugins.dataview.api.page(file.path);
-        superDebug(settings, { dvCache });
-        fileFrontmatterArr.push(dvCache);
+
+/**
+ * Get the attributes of an HTML element.
+ * @param {HTMLElement} element
+ * @returns {Object}
+ */
+function getAttrs(element) {
+  return Array.from(element.attributes).reduce(function (attrs, attr) {
+    attrs[attr.name] = attr.value;
+    return attrs;
+  }, {});
+}
+
+exports.default = replace;
+
+/***/ }),
+
+/***/ "./src/tags.json":
+/*!***********************!*\
+  !*** ./src/tags.json ***!
+  \***********************/
+/*! exports provided: activity, airplay, alert-circle, alert-octagon, alert-triangle, align-center, align-justify, align-left, align-right, anchor, archive, at-sign, award, aperture, bar-chart, bar-chart-2, battery, battery-charging, bell, bell-off, bluetooth, book-open, book, bookmark, box, briefcase, calendar, camera, cast, circle, clipboard, clock, cloud-drizzle, cloud-lightning, cloud-rain, cloud-snow, cloud, codepen, codesandbox, code, coffee, columns, command, compass, copy, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, cpu, credit-card, crop, crosshair, database, delete, disc, dollar-sign, droplet, edit, edit-2, edit-3, eye, eye-off, external-link, facebook, fast-forward, figma, file-minus, file-plus, file-text, film, filter, flag, folder-minus, folder-plus, folder, framer, frown, gift, git-branch, git-commit, git-merge, git-pull-request, github, gitlab, globe, hard-drive, hash, headphones, heart, help-circle, hexagon, home, image, inbox, instagram, key, layers, layout, life-bouy, link, link-2, linkedin, list, lock, log-in, log-out, mail, map-pin, map, maximize, maximize-2, meh, menu, message-circle, message-square, mic-off, mic, minimize, minimize-2, minus, monitor, moon, more-horizontal, more-vertical, mouse-pointer, move, music, navigation, navigation-2, octagon, package, paperclip, pause, pause-circle, pen-tool, percent, phone-call, phone-forwarded, phone-incoming, phone-missed, phone-off, phone-outgoing, phone, play, pie-chart, play-circle, plus, plus-circle, plus-square, pocket, power, printer, radio, refresh-cw, refresh-ccw, repeat, rewind, rotate-ccw, rotate-cw, rss, save, scissors, search, send, settings, share-2, shield, shield-off, shopping-bag, shopping-cart, shuffle, skip-back, skip-forward, slack, slash, sliders, smartphone, smile, speaker, star, stop-circle, sun, sunrise, sunset, tablet, tag, target, terminal, thermometer, thumbs-down, thumbs-up, toggle-left, toggle-right, tool, trash, trash-2, triangle, truck, tv, twitch, twitter, type, umbrella, unlock, user-check, user-minus, user-plus, user-x, user, users, video-off, video, voicemail, volume, volume-1, volume-2, volume-x, watch, wifi-off, wifi, wind, x-circle, x-octagon, x-square, x, youtube, zap-off, zap, zoom-in, zoom-out, default */
+/***/ (function(module) {
+
+module.exports = {"activity":["pulse","health","action","motion"],"airplay":["stream","cast","mirroring"],"alert-circle":["warning","alert","danger"],"alert-octagon":["warning","alert","danger"],"alert-triangle":["warning","alert","danger"],"align-center":["text alignment","center"],"align-justify":["text alignment","justified"],"align-left":["text alignment","left"],"align-right":["text alignment","right"],"anchor":[],"archive":["index","box"],"at-sign":["mention","at","email","message"],"award":["achievement","badge"],"aperture":["camera","photo"],"bar-chart":["statistics","diagram","graph"],"bar-chart-2":["statistics","diagram","graph"],"battery":["power","electricity"],"battery-charging":["power","electricity"],"bell":["alarm","notification","sound"],"bell-off":["alarm","notification","silent"],"bluetooth":["wireless"],"book-open":["read","library"],"book":["read","dictionary","booklet","magazine","library"],"bookmark":["read","clip","marker","tag"],"box":["cube"],"briefcase":["work","bag","baggage","folder"],"calendar":["date"],"camera":["photo"],"cast":["chromecast","airplay"],"circle":["off","zero","record"],"clipboard":["copy"],"clock":["time","watch","alarm"],"cloud-drizzle":["weather","shower"],"cloud-lightning":["weather","bolt"],"cloud-rain":["weather"],"cloud-snow":["weather","blizzard"],"cloud":["weather"],"codepen":["logo"],"codesandbox":["logo"],"code":["source","programming"],"coffee":["drink","cup","mug","tea","cafe","hot","beverage"],"columns":["layout"],"command":["keyboard","cmd","terminal","prompt"],"compass":["navigation","safari","travel","direction"],"copy":["clone","duplicate"],"corner-down-left":["arrow","return"],"corner-down-right":["arrow"],"corner-left-down":["arrow"],"corner-left-up":["arrow"],"corner-right-down":["arrow"],"corner-right-up":["arrow"],"corner-up-left":["arrow"],"corner-up-right":["arrow"],"cpu":["processor","technology"],"credit-card":["purchase","payment","cc"],"crop":["photo","image"],"crosshair":["aim","target"],"database":["storage","memory"],"delete":["remove"],"disc":["album","cd","dvd","music"],"dollar-sign":["currency","money","payment"],"droplet":["water"],"edit":["pencil","change"],"edit-2":["pencil","change"],"edit-3":["pencil","change"],"eye":["view","watch"],"eye-off":["view","watch","hide","hidden"],"external-link":["outbound"],"facebook":["logo","social"],"fast-forward":["music"],"figma":["logo","design","tool"],"file-minus":["delete","remove","erase"],"file-plus":["add","create","new"],"file-text":["data","txt","pdf"],"film":["movie","video"],"filter":["funnel","hopper"],"flag":["report"],"folder-minus":["directory"],"folder-plus":["directory"],"folder":["directory"],"framer":["logo","design","tool"],"frown":["emoji","face","bad","sad","emotion"],"gift":["present","box","birthday","party"],"git-branch":["code","version control"],"git-commit":["code","version control"],"git-merge":["code","version control"],"git-pull-request":["code","version control"],"github":["logo","version control"],"gitlab":["logo","version control"],"globe":["world","browser","language","translate"],"hard-drive":["computer","server","memory","data"],"hash":["hashtag","number","pound"],"headphones":["music","audio","sound"],"heart":["like","love","emotion"],"help-circle":["question mark"],"hexagon":["shape","node.js","logo"],"home":["house","living"],"image":["picture"],"inbox":["email"],"instagram":["logo","camera"],"key":["password","login","authentication","secure"],"layers":["stack"],"layout":["window","webpage"],"life-bouy":["help","life ring","support"],"link":["chain","url"],"link-2":["chain","url"],"linkedin":["logo","social media"],"list":["options"],"lock":["security","password","secure"],"log-in":["sign in","arrow","enter"],"log-out":["sign out","arrow","exit"],"mail":["email","message"],"map-pin":["location","navigation","travel","marker"],"map":["location","navigation","travel"],"maximize":["fullscreen"],"maximize-2":["fullscreen","arrows","expand"],"meh":["emoji","face","neutral","emotion"],"menu":["bars","navigation","hamburger"],"message-circle":["comment","chat"],"message-square":["comment","chat"],"mic-off":["record","sound","mute"],"mic":["record","sound","listen"],"minimize":["exit fullscreen","close"],"minimize-2":["exit fullscreen","arrows","close"],"minus":["subtract"],"monitor":["tv","screen","display"],"moon":["dark","night"],"more-horizontal":["ellipsis"],"more-vertical":["ellipsis"],"mouse-pointer":["arrow","cursor"],"move":["arrows"],"music":["note"],"navigation":["location","travel"],"navigation-2":["location","travel"],"octagon":["stop"],"package":["box","container"],"paperclip":["attachment"],"pause":["music","stop"],"pause-circle":["music","audio","stop"],"pen-tool":["vector","drawing"],"percent":["discount"],"phone-call":["ring"],"phone-forwarded":["call"],"phone-incoming":["call"],"phone-missed":["call"],"phone-off":["call","mute"],"phone-outgoing":["call"],"phone":["call"],"play":["music","start"],"pie-chart":["statistics","diagram"],"play-circle":["music","start"],"plus":["add","new"],"plus-circle":["add","new"],"plus-square":["add","new"],"pocket":["logo","save"],"power":["on","off"],"printer":["fax","office","device"],"radio":["signal"],"refresh-cw":["synchronise","arrows"],"refresh-ccw":["arrows"],"repeat":["loop","arrows"],"rewind":["music"],"rotate-ccw":["arrow"],"rotate-cw":["arrow"],"rss":["feed","subscribe"],"save":["floppy disk"],"scissors":["cut"],"search":["find","magnifier","magnifying glass"],"send":["message","mail","email","paper airplane","paper aeroplane"],"settings":["cog","edit","gear","preferences"],"share-2":["network","connections"],"shield":["security","secure"],"shield-off":["security","insecure"],"shopping-bag":["ecommerce","cart","purchase","store"],"shopping-cart":["ecommerce","cart","purchase","store"],"shuffle":["music"],"skip-back":["music"],"skip-forward":["music"],"slack":["logo"],"slash":["ban","no"],"sliders":["settings","controls"],"smartphone":["cellphone","device"],"smile":["emoji","face","happy","good","emotion"],"speaker":["audio","music"],"star":["bookmark","favorite","like"],"stop-circle":["media","music"],"sun":["brightness","weather","light"],"sunrise":["weather","time","morning","day"],"sunset":["weather","time","evening","night"],"tablet":["device"],"tag":["label"],"target":["logo","bullseye"],"terminal":["code","command line","prompt"],"thermometer":["temperature","celsius","fahrenheit","weather"],"thumbs-down":["dislike","bad","emotion"],"thumbs-up":["like","good","emotion"],"toggle-left":["on","off","switch"],"toggle-right":["on","off","switch"],"tool":["settings","spanner"],"trash":["garbage","delete","remove","bin"],"trash-2":["garbage","delete","remove","bin"],"triangle":["delta"],"truck":["delivery","van","shipping","transport","lorry"],"tv":["television","stream"],"twitch":["logo"],"twitter":["logo","social"],"type":["text"],"umbrella":["rain","weather"],"unlock":["security"],"user-check":["followed","subscribed"],"user-minus":["delete","remove","unfollow","unsubscribe"],"user-plus":["new","add","create","follow","subscribe"],"user-x":["delete","remove","unfollow","unsubscribe","unavailable"],"user":["person","account"],"users":["group"],"video-off":["camera","movie","film"],"video":["camera","movie","film"],"voicemail":["phone"],"volume":["music","sound","mute"],"volume-1":["music","sound"],"volume-2":["music","sound"],"volume-x":["music","sound","mute"],"watch":["clock","time"],"wifi-off":["disabled"],"wifi":["connection","signal","wireless"],"wind":["weather","air"],"x-circle":["cancel","close","delete","remove","times","clear"],"x-octagon":["delete","stop","alert","warning","times","clear"],"x-square":["cancel","close","delete","remove","times","clear"],"x":["cancel","close","delete","remove","times","clear"],"youtube":["logo","video","play"],"zap-off":["flash","camera","lightning"],"zap":["flash","camera","lightning"],"zoom-in":["magnifying glass"],"zoom-out":["magnifying glass"]};
+
+/***/ }),
+
+/***/ "./src/to-svg.js":
+/*!***********************!*\
+  !*** ./src/to-svg.js ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _icons = __webpack_require__(/*! ./icons */ "./src/icons.js");
+
+var _icons2 = _interopRequireDefault(_icons);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Create an SVG string.
+ * @deprecated
+ * @param {string} name
+ * @param {Object} attrs
+ * @returns {string}
+ */
+function toSvg(name) {
+  var attrs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  console.warn('feather.toSvg() is deprecated. Please use feather.icons[name].toSvg() instead.');
+
+  if (!name) {
+    throw new Error('The required `key` (icon name) parameter is missing.');
+  }
+
+  if (!_icons2.default[name]) {
+    throw new Error('No icon matching \'' + name + '\'. See the complete list of icons at https://feathericons.com');
+  }
+
+  return _icons2.default[name].toSvg(attrs);
+}
+
+exports.default = toSvg;
+
+/***/ }),
+
+/***/ 0:
+/*!**************************************************!*\
+  !*** multi core-js/es/array/from ./src/index.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*! core-js/es/array/from */"./node_modules/core-js/es/array/from.js");
+module.exports = __webpack_require__(/*! /home/travis/build/feathericons/feather/src/index.js */"./src/index.js");
+
+
+/***/ })
+
+/******/ });
+});
+
+});
+
+var utils = createCommonjsModule(function (module, exports) {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.waitForResolvedLinks = exports.resolvedLinksComplete = exports.addRenderedMarkdownButton = exports.RenderedMarkdownModal = exports.saveViewSide = exports.openView = exports.linkedQ = exports.openOrSwitch = exports.stripMD = exports.addMD = exports.createNewMDNote = exports.hoverPreview = exports.isInVault = exports.getSelectionFromCurrFile = exports.getSelectionFromEditor = exports.copy = exports.getAvailablePathForAttachments = exports.base64ToArrayBuffer = exports.addFeatherIcon = exports.addAllFeatherIcons = exports.wait = void 0;
+/**
+ * This module contains various utility functions commonly used in Obsidian plugins.
+ * @module obsidian-community-lib
+ */
+
+
+/**
+ * You can await this Function to delay execution
+ *
+ * @param delay The delay in ms
+ */
+async function wait(delay) {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+}
+exports.wait = wait;
+/**
+ * Adds all official Feather Icons to Obsidian.
+ * https://feathericons.com/
+ *
+ * @param attr SVG Attributes for the Icon. The default should work for most usecases.
+ */
+function addAllFeatherIcons(attr = { viewBox: "0 0 24 24", width: "100", height: "100" }) {
+    Object.values(feather.icons).forEach((i) => {
+        const svg = i.toSvg(attr);
+        (0, obsidian_1__default['default'].addIcon)(`feather-${i.name}`, svg);
     });
-    debugGroupEnd(settings, "superDebugMode");
-    debug(settings, { fileFrontmatterArr });
-    debugGroupEnd(settings, "debugMode");
-    return fileFrontmatterArr;
 }
-function getObsMetadataCache(app, settings, files) {
-    debugGroupStart(settings, "debugMode", "getObsMetadataCache");
-    debug(settings, "Using Obsidian");
-    debugGroupStart(settings, "superDebugMode", "obsCaches");
-    const fileFrontmatterArr = [];
-    files.forEach((file) => {
-        var _a;
-        superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
-        const obs = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
-        superDebug(settings, { obs });
-        if (obs) {
-            fileFrontmatterArr.push(Object.assign({ file }, obs));
+exports.addAllFeatherIcons = addAllFeatherIcons;
+/**
+ * Adds a specific Feather Icon to Obsidian.
+ *
+ * @param name official Name of the Icon (https://feathericons.com/)
+ * @param attr SVG Attributes for the Icon. The default should work for most usecases.
+ * @returns {string} Icon name
+ */
+function addFeatherIcon(name, attr = { viewBox: "0 0 24 24", width: "100", height: "100" }) {
+    if (feather.icons[name]) {
+        const iconName = `feather-${name}`;
+        (0, obsidian_1__default['default'].addIcon)(iconName, feather.icons[name].toSvg(attr));
+        return iconName;
+    }
+    else {
+        throw Error(`This Icon (${name}) doesn't exist in the Feather Library.`);
+    }
+}
+exports.addFeatherIcon = addFeatherIcon;
+/**
+ * Convert a base64 String to an ArrayBuffer.
+ * You can then use the ArrayBuffer to save the asset to disk.
+ *
+ * @param base64 base64 string to be converted.
+ * @returns ArrayBuffer
+ */
+function base64ToArrayBuffer(base64) {
+    const binary_string = window.atob(base64);
+    const len = binary_string.length;
+    let bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+exports.base64ToArrayBuffer = base64ToArrayBuffer;
+/**
+ * This is a helper method for an undocumented API of Obsidian.
+ *
+ * @param vault You can get this via `this.app.vault`
+ * @param fileName The Filename for your Attachment
+ * @param format The Fileformat of your Attachment
+ * @param sourceFile The Sourcefile from where the Attachment gets added, this is needed because the Attachment Folder might be different based on where it gets inserted.
+ * @returns The Attachment Path
+ */
+function getAvailablePathForAttachments(vault, fileName, format, sourceFile) {
+    //@ts-expect-error
+    return vault.getAvailablePathForAttachments(fileName, format, sourceFile);
+}
+exports.getAvailablePathForAttachments = getAvailablePathForAttachments;
+/**
+ * Copy `content` to the users clipboard.
+ *
+ * @param {string} content The content to be copied to clipboard.
+ * @param {() => any} success The callback to run when text is successfully copied. Default throws a new `Notice`
+ * @param {(reason?) => any} failure The callback to run when text was not able to be copied. Default throws a new `Notice`, and console logs the error.`
+ */
+async function copy(content, success = () => new obsidian_1__default['default'].Notice("Copied to clipboard"), failure = (reason) => {
+    new obsidian_1__default['default'].Notice("Could not copy to clipboard");
+    console.log({ reason });
+}) {
+    await navigator.clipboard.writeText(content).then(success, failure);
+}
+exports.copy = copy;
+/**
+ * Given an editor, check if something is selected and return that selection, otherwise return the entire content of the editor
+ * @param  {Editor} editor
+ */
+function getSelectionFromEditor(editor) {
+    if (editor.somethingSelected()) {
+        return editor.getSelection();
+    }
+    else {
+        return editor.getValue();
+    }
+}
+exports.getSelectionFromEditor = getSelectionFromEditor;
+/**
+ * Check if something is selected in the current file and return that selection, otherwise return the entire content of the current file.
+ * @param  {App} app
+ * @param  {boolean} [cached=true] Use `cachedRead` or `read`. `cachedRead` by default.
+ */
+async function getSelectionFromCurrFile(app, cached = true) {
+    const text = window?.getSelection()?.toString();
+    if (text) {
+        return text;
+    }
+    else {
+        const currFile = app.workspace.getActiveFile();
+        if (currFile instanceof obsidian_1__default['default'].TFile) {
+            if (cached) {
+                return await app.vault.cachedRead(currFile);
+            }
+            else {
+                return await app.vault.read(currFile);
+            }
         }
         else {
-            fileFrontmatterArr.push({ file });
+            new obsidian_1__default['default'].Notice("You must be focused on a markdown file.");
         }
-    });
-    debugGroupEnd(settings, "superDebugMode");
-    debug(settings, { fileFrontmatterArr });
-    debugGroupEnd(settings, "debugMode");
-    return fileFrontmatterArr;
-}
-// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
-// => {[note: string]: {type: string, linksInLine: string[]}[]}
-async function getJugglLinks(app, settings) {
-    debugGroupStart(settings, "debugMode", "getJugglLinks");
-    debug(settings, "Using Juggl");
-    const files = app.vault.getMarkdownFiles();
-    const { userHierarchies } = settings;
-    // Add Juggl links
-    const typedLinksArr = await Promise.all(files.map(async (file) => {
-        var _a, _b;
-        const jugglLink = { note: file.basename, links: [] };
-        // Use Obs metadatacache to get the links in the current file
-        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
-        // TODO Only get cachedRead if links.length
-        const content = await app.vault.cachedRead(file);
-        links.forEach((link) => {
-            var _a, _b, _c, _d, _e, _f, _g;
-            // Get the line no. of each link
-            const lineNo = link.position.start.line;
-            // And the corresponding line content
-            const line = content.split("\n")[lineNo];
-            // Get an array of inner text of each link
-            const linksInLine = (_c = (_b = (_a = line
-                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
-            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
-            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
-            const type = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
-            let typeDir = "";
-            DIRECTIONS.forEach((dir) => {
-                userHierarchies.forEach((hier) => {
-                    if (hier[dir].includes(type)) {
-                        typeDir = dir;
-                        return;
-                    }
-                });
-            });
-            jugglLink.links.push({
-                dir: typeDir,
-                type,
-                linksInLine,
-            });
-        });
-        return jugglLink;
-    }));
-    debug(settings, { typedLinksArr });
-    const allFields = settings.userHierarchies
-        .map((hier) => Object.values(hier))
-        .flat(2)
-        .filter((field) => field !== "");
-    typedLinksArr.forEach((jugglLink) => {
-        // Filter out links whose type is not in allFields
-        const fieldTypesOnly = jugglLink.links.filter((link) => allFields.includes(link.type));
-        // // const fieldTypesOnly = [];
-        // jugglLink.links.forEach((link) => {
-        //   if (allFields.includes(link.type)) {
-        //     fieldTypesOnly.push(link);
-        //   }
-        // });
-        // I don't remember why I'm mutating the links instead of making a new obj
-        jugglLink.links = fieldTypesOnly;
-    });
-    // Filter out the juggl links with no links
-    const filteredLinks = typedLinksArr.filter((jugglLink) => jugglLink.links.length);
-    debug(settings, { filteredLinks });
-    debugGroupEnd(settings, "debugMode");
-    return filteredLinks;
-}
-function getFieldValues(frontmatterCache, field, settings) {
-    var _a;
-    const values = [];
-    try {
-        const rawValuesPreFlat = frontmatterCache === null || frontmatterCache === void 0 ? void 0 : frontmatterCache[field];
-        if (!rawValuesPreFlat)
-            return [];
-        if (typeof rawValuesPreFlat === "string") {
-            const splits = rawValuesPreFlat.match(splitLinksRegex);
-            if (splits !== null) {
-                const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
-                values.push(...strs);
-            }
-            // else {
-            //    Dont't add anything, it's not a link
-            // }
-        }
-        else {
-            const rawValues = [rawValuesPreFlat].flat(4);
-            superDebug(settings, `${field} of: ${(_a = frontmatterCache === null || frontmatterCache === void 0 ? void 0 : frontmatterCache.file) === null || _a === void 0 ? void 0 : _a.path}`);
-            superDebug(settings, rawValues);
-            rawValues.forEach((rawItem) => {
-                if (!rawItem)
-                    return;
-                if (typeof rawItem === "string" || typeof rawItem === "number") {
-                    // Obs cache converts link of form: [[\d+]] to number[][]
-                    const rawItemAsString = rawItem.toString();
-                    const splits = rawItemAsString.match(splitLinksRegex);
-                    if (splits !== null) {
-                        const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
-                        values.push(...strs);
-                    }
-                    else {
-                        values.push(rawItemAsString.split("/").last());
-                    }
-                }
-                else if (rawItem.path) {
-                    values.push(rawItem.path.split("/").last());
-                }
-            });
-        }
-        return values;
-    }
-    catch (error) {
-        console.log(error);
-        return values;
     }
 }
-const splitAndTrim = (fields) => fields.split(",").map((str) => str.trim());
-async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
-    const { settings } = plugin;
-    const { userHierarchies } = settings;
-    if (settings.debugMode || settings.superDebugMode) {
-        console.groupCollapsed("getNeighbourObjArr");
-    }
-    let jugglLinks = [];
-    if (plugin.app.plugins.plugins.juggl !== undefined ||
-        plugin.settings.parseJugglLinksWithoutJuggl) {
-        jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
-    }
-    const neighbourObjArr = fileFrontmatterArr.map((fileFrontmatter) => {
-        const currFileName = fileFrontmatter.file.basename || fileFrontmatter.file.name;
-        const hierFields = {
-            current: fileFrontmatter.file,
-            hierarchies: [],
-        };
-        userHierarchies.forEach((hier, i) => {
-            const fieldsArr = Object.values(hier);
-            const newHier = { up: {}, same: {}, down: {} };
-            // Add regular metadata links
-            if (settings.useAllMetadata) {
-                DIRECTIONS.forEach((dir, i) => {
-                    fieldsArr[i].forEach((field) => {
-                        newHier[dir][field] = getFieldValues(fileFrontmatter, field, settings);
-                    });
-                });
-            }
-            // Add Juggl Links
-            if (jugglLinks.length) {
-                const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
-                    return jugglLink.note === currFileName;
-                })[0];
-                if (jugglLinksInFile) {
-                    jugglLinksInFile.links.forEach((line) => {
-                        var _a;
-                        if (hier[line.dir].includes(line.type)) {
-                            newHier[line.dir][line.type] = [
-                                ...new Set([
-                                    ...((_a = newHier[line.dir][line.type]) !== null && _a !== void 0 ? _a : []),
-                                    ...line.linksInLine,
-                                ]),
-                            ];
-                        }
-                    });
-                }
-            }
-            hierFields.hierarchies.push(newHier);
-        });
-        return hierFields;
-    });
-    debug(settings, { neighbourObjArr });
-    if (settings.debugMode || settings.superDebugMode) {
-        console.groupEnd();
-    }
-    return neighbourObjArr;
-}
-// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
-// It makes implied relations real
-function closeImpliedLinks(real, implied) {
-    const closedG = graphlib.json.read(graphlib.json.write(real));
-    implied.edges().forEach((impliedEdge) => {
-        closedG.setEdge(impliedEdge.w, impliedEdge.v);
-    });
-    return closedG;
-}
-const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, app.workspace.getActiveFile().path);
-function hoverPreview$2(event, matrixView, to) {
+exports.getSelectionFromCurrFile = getSelectionFromCurrFile;
+/**
+ * Check if `noteName` is the name of a note that exists in the vault.
+ * @param  {App} app
+ * @param  {string} noteName Basename of the note to search for.
+ * @param  {string} [sourcePath=""] Optional file path to start searching from. Default is the current file.
+ * @returns boolean
+ */
+const isInVault = (app, noteName, sourcePath = "") => !!app.metadataCache.getFirstLinkpathDest(noteName, sourcePath);
+exports.isInVault = isInVault;
+/**
+ * When hovering a link going to `to`, show the Obsidian hover-preview of that note.
+ *
+ * You probably have to hold down `Ctrl` when hovering the link for the preview to appear!
+ * @param  {MouseEvent} event
+ * @param  {YourView} view The view with the link being hovered
+ * @param  {string} to The basename of the note to preview.
+ * @template YourView The ViewType of your view
+ * @returns void
+ */
+function hoverPreview(event, view, to) {
     const targetEl = event.target;
-    matrixView.app.workspace.trigger("hover-link", {
+    view.app.workspace.trigger("hover-link", {
         event,
-        source: matrixView.getViewType(),
-        hoverParent: matrixView,
+        source: view.getViewType(),
+        hoverParent: view,
         targetEl,
         linktext: to,
     });
 }
-async function openOrSwitch(app, dest, currFile, event) {
+exports.hoverPreview = hoverPreview;
+/**
+ * Create a new markdown note named `newName` in the user's preffered new-note-folder.
+ * @param  {App} app
+ * @param  {string} newName Name of new note (with or without '.md')
+ * @param  {string} [currFilePath=""] File path of the current note. Use an empty string if there is no active file.
+ * @returns {Promise<TFile>} new TFile
+ */
+async function createNewMDNote(app, newName, currFilePath = "") {
+    const newFileFolder = app.fileManager.getNewFileParent(currFilePath).path;
+    if (!newName.endsWith(".md")) {
+        newName += ".md";
+    }
+    const newFilePath = (0, obsidian_1__default['default'].normalizePath)(`${newFileFolder}${newFileFolder === "/" ? "" : "/"}${newName}.md`);
+    return await app.vault.create(newFilePath, "");
+}
+exports.createNewMDNote = createNewMDNote;
+/**
+ * Add '.md' to a `noteName` if it isn't already there.
+ * @param  {string} noteName with or without '.md' on the end.
+ * @returns {string} noteName with '.md' on the end.
+ */
+const addMD = (noteName) => {
+    let withMD = noteName.slice();
+    if (!withMD.endsWith(".md")) {
+        withMD += ".md";
+    }
+    return withMD;
+};
+exports.addMD = addMD;
+/**
+ * Strip '.md' off the end of a note name to get its basename.
+ *
+ * Works with the edgecase where a note has '.md' in its basename: `Obsidian.md.md`, for example.
+ * @param  {string} noteName with or without '.md' on the end.
+ * @returns {string} noteName without '.md'
+ */
+const stripMD = (noteName) => noteName.split(".md").slice(0, -1).join(".md");
+exports.stripMD = stripMD;
+/**
+ * When clicking a link, check if that note is already open in another leaf, and switch to that leaf, if so. Otherwise, open the note in a new pane.
+ * @param  {App} app
+ * @param  {string} dest Basename of note to open to open
+ * @param  {MouseEvent} event
+ * @param  {{createNewFile:boolean}} [options={createNewFile:true}] Whether or not to create `dest` file if it doesn't exist. If `false`, simply return from the function.
+ * @returns Promise
+ */
+async function openOrSwitch(app, dest, event, options = { createNewFile: true }) {
     const { workspace } = app;
-    let destFile = app.metadataCache.getFirstLinkpathDest(dest, currFile.path);
+    const destStripped = (0, exports.stripMD)(dest);
+    let destFile = app.metadataCache.getFirstLinkpathDest(destStripped, "");
     // If dest doesn't exist, make it
     if (!destFile) {
-        const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
-        const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
-        await app.vault.create(newFilePath, "");
-        destFile = app.metadataCache.getFirstLinkpathDest(newFilePath, currFile.path);
+        if (options.createNewFile) {
+            destFile = await createNewMDNote(app, destStripped);
+        }
+        else
+            return;
     }
     // Check if it's already open
     const leavesWithDestAlreadyOpen = [];
     // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
     workspace.iterateAllLeaves((leaf) => {
-        var _a, _b;
-        if (((_b = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file) === null || _b === void 0 ? void 0 : _b.basename) === dest) {
-            leavesWithDestAlreadyOpen.push(leaf);
+        if (leaf.view instanceof obsidian_1__default['default'].MarkdownView) {
+            if (leaf.view?.file?.basename === destStripped) {
+                leavesWithDestAlreadyOpen.push(leaf);
+            }
         }
     });
     // Rather switch to it if it is open
@@ -6525,185 +8805,200 @@ async function openOrSwitch(app, dest, currFile, event) {
         workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
     }
     else {
+        // @ts-ignore
         const mode = app.vault.getConfig("defaultViewMode");
-        const leaf = (event.ctrlKey || event.getModifierState('Meta'))
+        const leaf = event.ctrlKey || event.getModifierState("Meta")
             ? workspace.splitActiveLeaf()
             : workspace.getUnpinnedLeaf();
         await leaf.openFile(destFile, { active: true, mode });
     }
 }
-function padArray(arr, finalLength, filler = "") {
-    const copy = [...arr];
-    const currLength = copy.length;
-    if (currLength > finalLength) {
-        throw new Error("Current length is greater than final length");
-    }
-    else if (currLength === finalLength) {
-        return copy;
-    }
-    else {
-        for (let i = currLength; i < finalLength; i++) {
-            copy.push(filler);
-        }
-        return copy;
-    }
-}
-function transpose(A) {
-    const cols = A[0].length;
-    const AT = [];
-    // For each column
-    for (let j = 0; j < cols; j++) {
-        // Add a new row to AT
-        AT.push([]);
-        // And fill it with the values in the jth column of A
-        A.forEach((row) => AT[j].push(row[j]));
-    }
-    return AT;
-}
-function runs(arr) {
-    const runs = [];
-    let i = 0;
-    while (i < arr.length) {
-        const currValue = arr[i];
-        runs.push({ value: currValue, first: i, last: undefined });
-        while (currValue === arr[i]) {
-            i++;
-        }
-        runs.last().last = i - 1;
-    }
-    return runs;
-}
-async function copy$1(content) {
-    await navigator.clipboard.writeText(content).then(() => new obsidian.Notice("Copied to clipboard"), () => new obsidian.Notice("Could not copy to clipboard"));
-}
-function mergeGs(...graphs) {
-    const outG = new graphlib.Graph();
-    graphs.forEach((graph) => {
-        graph.edges().forEach((edge) => {
-            const nodeLabel = graph.node(edge.v);
-            outG.setNode(edge.v, nodeLabel);
-            const edgeLabel = graph.edge(edge);
-            outG.setEdge(edge, edgeLabel);
-        });
-    });
-    return outG;
-}
-function removeUnlinkedNodes(g) {
-    const copy = graphlib.json.read(graphlib.json.write(g));
-    const nodes = copy.nodes();
-    const unlinkedNodes = nodes.filter((node) => !copy.neighbors(node).length);
-    unlinkedNodes.forEach((node) => copy.removeNode(node));
-    return copy;
-}
-function getAllGsInDir(userHierarchies, currGraphs, dir) {
-    const target = {};
-    const allGsInDir = Object.assign(target, ...currGraphs.map((hierGs) => hierGs[dir]));
-    // const fieldNamesInXDir = userHierarchies
-    //   .map((hier) => hier[dir])
-    //   .filter((field) => field.join() !== "")
-    //   .flat();
-    // const allXGs: { [rel: string]: Graph } = {};
-    // currGraphs.forEach((hierarchyGs) => {
-    //   fieldNamesInXDir.forEach((field) => {
-    //     const graph = hierarchyGs[dir][field];
-    //     if (graph) {
-    //       allXGs[field] = graph;
-    //     }
-    //   });
-    // });
-    // console.log({ allXGs, allGsInDir });
-    return allGsInDir;
-}
-function getAllFieldGs(fields, currGraphs) {
-    const fieldGs = [];
-    currGraphs.forEach(hierGs => {
-        DIRECTIONS.forEach(dir => {
-            Object.keys(hierGs[dir]).forEach(fieldName => {
-                if (fields.includes(fieldName)) {
-                    const fieldG = hierGs[dir][fieldName];
-                    if (fieldG instanceof graphlib.Graph)
-                        fieldGs.push(fieldG);
-                }
-            });
-        });
-    });
-    return fieldGs;
-}
-function hierToStr(hier) {
-    return `↑: ${hier.up.join(", ")}
-→: ${hier.same.join(", ")}
-↓: ${hier.down.join(", ")}`;
-}
-function removeDuplicates(arr) {
-    return [...new Set(arr)];
-}
+exports.openOrSwitch = openOrSwitch;
 /**
- * Adds or updates the given yaml `key` to `value` in the given TFile
- * @param  {string} key
- * @param  {string} value
- * @param  {TFile} file
- * @param  {FrontMatterCache|undefined} frontmatter
- * @param  {{[fun:string]:(...args:any} api
+ * Given a list of resolved links from app.metadataCache, check if `from` has a link to `to`
+ * @param  {ResolvedLinks} resolvedLinks
+ * @param  {string} from Note name with link leaving (With or without '.md')
+ * @param  {string} to Note name with link arriving (With or without '.md')
+ * @param {boolean} [directed=true] Only check if `from` has a link to `to`. If not directed, check in both directions
  */
-const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    let valueStr = value.toString();
-    if (!frontmatter || frontmatter[key] === undefined) {
-        console.log(`Creating: ${key}: ${valueStr}`);
-        await api.createYamlProperty(key, `['${valueStr}']`, file);
+function linkedQ(resolvedLinks, from, to, directed = true) {
+    if (!from.endsWith(".md")) {
+        from += ".md";
     }
-    else if ([...[frontmatter[key]]].flat(3).some(val => val == valueStr)) {
-        console.log('Already Exists!');
-        return;
+    if (!to.endsWith(".md")) {
+        to += ".md";
     }
-    else {
-        const oldValueFlat = [...[frontmatter[key]]].flat(4);
-        const newValue = [...oldValueFlat, valueStr].map(val => `'${val}'`);
-        console.log(`Updating: ${key}: ${newValue}`);
-        await api.update(key, `[${newValue.join(", ")}]`, file);
+    const fromTo = resolvedLinks[from]?.hasOwnProperty(to);
+    if (!fromTo && !directed) {
+        const toFrom = resolvedLinks[to]?.hasOwnProperty(from);
+        return toFrom;
     }
-};
-const writeBCToFile = (app, plugin, currGraphs, file) => {
-    var _a, _b;
-    const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
-    const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
-    if (!api) {
-        new obsidian.Notice('Metaedit must be enabled for this function to work');
-        return;
-    }
-    currGraphs.hierGs.forEach(hier => {
-        DIRECTIONS.forEach(dir => {
-            let oppDir;
-            if (dir === 'up')
-                oppDir = 'down';
-            if (dir === 'down')
-                oppDir = 'up';
-            if (dir === 'same')
-                oppDir = 'same';
-            Object.keys(hier[dir]).forEach(field => {
-                const fieldG = hier[dir][field];
-                const succs = fieldG.predecessors(file.basename);
-                succs.forEach(async (succ) => {
-                    const { fieldName } = fieldG.node(succ);
-                    if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
-                        return;
-                    const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0];
-                    let oppField = currHier[oppDir][0];
-                    if (!oppField)
-                        oppField = `<Reverse>${fieldName}`;
-                    await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
-                });
-            });
-        });
-    });
-};
-function oppFields(field, dir, userHierarchies) {
-    var _a, _b;
-    let oppDir = 'same';
-    if (dir !== "same") {
-        oppDir = dir === "up" ? "down" : "up";
-    }
-    return (_b = (_a = userHierarchies.find(hier => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : [];
+    else
+        return fromTo;
 }
+exports.linkedQ = linkedQ;
+/**
+ * Open your view on the chosen `side` if it isn't already open
+ * @param  {App} app
+ * @param  {string} viewType
+ * @param  {Constructor<YourView>} viewClass The class constructor of your view
+ * @param  {"left"|"right"} [side="right"]
+ * @returns {Promise<void>}
+ */
+async function openView(app, viewType, viewClass, side = "right") {
+    let leaf = null;
+    for (leaf of app.workspace.getLeavesOfType(viewType)) {
+        if (leaf.view instanceof viewClass) {
+            return;
+        }
+        await leaf.setViewState({ type: "empty" });
+        break;
+    }
+    leaf =
+        leaf ?? side === "right"
+            ? app.workspace.getRightLeaf(false)
+            : app.workspace.getLeftLeaf(false);
+    leaf.setViewState({
+        type: viewType,
+        active: true,
+    });
+}
+exports.openView = openView;
+/**
+ * Check which side of the workspace your `viewType` is on, and save it into `plugin.settings[settingName]`.
+ *
+ * **Tip**: Run this function on `plugin.unload` to save the last side your view was on when closing, then {@link openView} on the same side it was last.
+ * @param  {App} app
+ * @param  {YourPlugin} plugin
+ * @param  {string} viewType
+ * @param  {string} settingName
+ * @returns {"left" | "right"} `side`
+ */
+async function saveViewSide(app, plugin, viewType, settingName) {
+    const leaf = app.workspace.getLeavesOfType(viewType)[0];
+    if (!leaf) {
+        console.info(`Obsidian-Community-Lib: No instance of '${viewType}' open, cannot save side`);
+        return;
+    }
+    //@ts-ignore
+    const side = leaf.getRoot().side;
+    //@ts-ignore
+    plugin.settings[settingName] = side;
+    //@ts-ignore
+    await plugin.saveSettings();
+    return side;
+}
+exports.saveViewSide = saveViewSide;
+/**
+ * A Modal used in {@link addRenderedMarkdownButton} to display rendered markdown from a raw string, or fetched from a provided url.
+ *
+ * ![](https://i.imgur.com/NMwM50E.png)
+ * @param  {App} app
+ * @param  {YourPlugin} plugin
+ * @param  {string} source Raw markdown content or url to find raw markdown.
+ * @param  {boolean} fetch True → fetch markdown from `source` as url. False → `source` is already a markdown string.
+ */
+class RenderedMarkdownModal extends obsidian_1__default['default'].Modal {
+    constructor(app, plugin, source, fetch) {
+        super(app);
+        this.plugin = plugin;
+        this.source = source;
+        this.fetch = fetch;
+    }
+    async onOpen() {
+        let { contentEl, source, plugin, fetch } = this;
+        let content = source;
+        if (fetch) {
+            contentEl.createDiv({ text: `Waiting for content from: '${source}'` });
+            content = await (0, obsidian_1__default['default'].request)({ url: source });
+            contentEl.empty();
+        }
+        const logDiv = contentEl.createDiv({ cls: "OCL-RenderedMarkdownModal" });
+        obsidian_1__default['default'].MarkdownRenderer.renderMarkdown(content, logDiv, "", plugin);
+    }
+    onClose() {
+        this.contentEl.empty();
+    }
+}
+exports.RenderedMarkdownModal = RenderedMarkdownModal;
+/**
+ * Add a button to an HTMLELement, which, when clicked, pops up a {@link RenderedMarkdownModal} showing rendered markdown.
+ *
+ * Use `fetch` to indicate whether the markdown string needs to be fetched, or if it has been provided as a string already.
+ *
+ * ![](https://i.imgur.com/Hi4gyyv.png)
+ * @param  {App} app
+ * @param  {YourPlugin} plugin
+ * @param  {HTMLElement} containerEl HTMLElement to add the button to
+ * @param  {string} source Raw markdown content or url to find raw markdown.
+ * @param  {boolean} fetch True → fetch markdown from `source` as url. False → `source` is already a markdown string.
+ * @param  {string} displayText Text to display in the button.
+ */
+function addRenderedMarkdownButton(app, plugin, containerEl, source, fetch, displayText) {
+    containerEl.createEl("button", { text: displayText }, (but) => but.onClickEvent(() => {
+        new RenderedMarkdownModal(app, plugin, source, fetch).open();
+    }));
+}
+exports.addRenderedMarkdownButton = addRenderedMarkdownButton;
+/**
+ * Check if `app.metadataCache.ResolvedLinks` have fully initalised.
+ *
+ * Used with {@link waitForResolvedLinks}.
+ * @param {App} app
+ * @param  {number} noFiles Number of files in your vault.
+ * @returns {boolean}
+ */
+function resolvedLinksComplete(app, noFiles) {
+    const { resolvedLinks } = app.metadataCache;
+    return Object.keys(resolvedLinks).length === noFiles;
+}
+exports.resolvedLinksComplete = resolvedLinksComplete;
+/**
+ * Wait for `app.metadataCache.ResolvedLinks` to have fully initialised.
+ * @param {App} app
+ * @param  {number} [delay=1000] Number of milliseconds to wait between each check.
+ * @param {number} [max=50] Maximum number of iterations to check before throwing an error and breaking out of the loop.
+ */
+async function waitForResolvedLinks(app, delay = 1000, max = 50) {
+    const noFiles = app.vault.getMarkdownFiles().length;
+    let i = 0;
+    while (!resolvedLinksComplete(app, noFiles) && i < max) {
+        await wait(delay);
+        i++;
+    }
+    if (i === max) {
+        throw Error("Obsidian-Community-Lib: ResolvedLinks did not finish initialising. `max` iterations was reached first.");
+    }
+}
+exports.waitForResolvedLinks = waitForResolvedLinks;
+});
+
+var dist = createCommonjsModule(function (module, exports) {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.waitForResolvedLinks = exports.resolvedLinksComplete = exports.stripMD = exports.addMD = exports.saveViewSide = exports.openView = exports.RenderedMarkdownModal = exports.addRenderedMarkdownButton = exports.linkedQ = exports.openOrSwitch = exports.createNewMDNote = exports.isInVault = exports.hoverPreview = exports.getSelectionFromEditor = exports.getSelectionFromCurrFile = exports.copy = exports.wait = exports.getAvailablePathForAttachments = exports.base64ToArrayBuffer = exports.addFeatherIcon = exports.addAllFeatherIcons = void 0;
+
+Object.defineProperty(exports, "addAllFeatherIcons", { enumerable: true, get: function () { return utils.addAllFeatherIcons; } });
+Object.defineProperty(exports, "addFeatherIcon", { enumerable: true, get: function () { return utils.addFeatherIcon; } });
+Object.defineProperty(exports, "base64ToArrayBuffer", { enumerable: true, get: function () { return utils.base64ToArrayBuffer; } });
+Object.defineProperty(exports, "getAvailablePathForAttachments", { enumerable: true, get: function () { return utils.getAvailablePathForAttachments; } });
+Object.defineProperty(exports, "wait", { enumerable: true, get: function () { return utils.wait; } });
+Object.defineProperty(exports, "copy", { enumerable: true, get: function () { return utils.copy; } });
+Object.defineProperty(exports, "getSelectionFromCurrFile", { enumerable: true, get: function () { return utils.getSelectionFromCurrFile; } });
+Object.defineProperty(exports, "getSelectionFromEditor", { enumerable: true, get: function () { return utils.getSelectionFromEditor; } });
+Object.defineProperty(exports, "hoverPreview", { enumerable: true, get: function () { return utils.hoverPreview; } });
+Object.defineProperty(exports, "isInVault", { enumerable: true, get: function () { return utils.isInVault; } });
+Object.defineProperty(exports, "createNewMDNote", { enumerable: true, get: function () { return utils.createNewMDNote; } });
+Object.defineProperty(exports, "openOrSwitch", { enumerable: true, get: function () { return utils.openOrSwitch; } });
+Object.defineProperty(exports, "linkedQ", { enumerable: true, get: function () { return utils.linkedQ; } });
+Object.defineProperty(exports, "addRenderedMarkdownButton", { enumerable: true, get: function () { return utils.addRenderedMarkdownButton; } });
+Object.defineProperty(exports, "RenderedMarkdownModal", { enumerable: true, get: function () { return utils.RenderedMarkdownModal; } });
+Object.defineProperty(exports, "openView", { enumerable: true, get: function () { return utils.openView; } });
+Object.defineProperty(exports, "saveViewSide", { enumerable: true, get: function () { return utils.saveViewSide; } });
+Object.defineProperty(exports, "addMD", { enumerable: true, get: function () { return utils.addMD; } });
+Object.defineProperty(exports, "stripMD", { enumerable: true, get: function () { return utils.stripMD; } });
+Object.defineProperty(exports, "resolvedLinksComplete", { enumerable: true, get: function () { return utils.resolvedLinksComplete; } });
+Object.defineProperty(exports, "waitForResolvedLinks", { enumerable: true, get: function () { return utils.waitForResolvedLinks; } });
+});
 
 /**
  * @license
@@ -23904,6 +26199,587 @@ var lodash = createCommonjsModule(function (module, exports) {
 }.call(commonjsGlobal));
 });
 
+const VIEW_TYPE_BREADCRUMBS_MATRIX = "breadcrumbs-matrix";
+const VIEW_TYPE_BREADCRUMBS_STATS = "breadcrumbs-stats";
+const TRAIL_ICON = "breadcrumbs-trail-icon";
+const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
+const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+const VISTYPES = [
+    "Force Directed Graph",
+    "Tidy Tree",
+    "Circle Packing",
+    "Edge Bundling",
+    "Arc Diagram",
+    "Sunburst",
+    "Tree Map",
+    "Icicle",
+    "Radial Tree",
+];
+const DIRECTIONS = ["up", "same", "down"];
+const RELATIONS = ["Parent", "Sibling", "Child"];
+const REAlCLOSED = ["Real", "Closed"];
+const ALLUNLINKED = ["All", "No Unlinked"];
+const DEFAULT_SETTINGS = {
+    userHierarchies: [],
+    indexNote: [""],
+    CSVPaths: "",
+    hierarchyNotes: [""],
+    hierarchyNoteDownFieldName: "",
+    hierarchyNoteUpFieldName: "",
+    refreshIndexOnActiveLeafChange: false,
+    altLinkFields: [],
+    useAllMetadata: true,
+    parseJugglLinksWithoutJuggl: false,
+    dvWaitTime: 5000,
+    refreshIntervalTime: 0,
+    defaultView: true,
+    showNameOrType: true,
+    showRelationType: true,
+    filterImpliedSiblingsOfDifferentTypes: false,
+    rlLeaf: true,
+    showTrail: true,
+    limitTrailCheckboxStates: {},
+    hideTrailFieldName: "hide-trail",
+    trailOrTable: 3,
+    gridDots: false,
+    dotsColour: "#000000",
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+    showAll: false,
+    noPathMessage: `This note has no real or implied parents`,
+    trailSeperator: "→",
+    respectReadableLineLength: true,
+    limitWriteBCCheckboxStates: {},
+    showWriteAllBCsCmd: false,
+    visGraph: "Force Directed Graph",
+    visRelation: "Parent",
+    visClosed: "Real",
+    visAll: "All",
+    wikilinkIndex: true,
+    aliasesInIndex: false,
+    debugMode: false,
+    superDebugMode: false,
+};
+
+const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
+const nameRegex = '[^\\W\\d]\\w*';
+const regexEscape = function (str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+const parseTypedLink = function (link, line, typedLinkPrefix) {
+    // TODO: This is something specific I use, but shouldn't keep being in this repo.
+    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
+    const matchPI = regexPublishedIn.exec(line);
+    if (!(matchPI === null)) {
+        return {
+            class: 'type-publishedIn',
+            isInline: false,
+            properties: {
+                year: matchPI[2],
+                context: '',
+                type: 'publishedIn',
+            },
+        };
+    }
+    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
+    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
+    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
+    const match = regex.exec(line);
+    const splitLink = link.original.split('|');
+    let alias = null;
+    if (splitLink.length > 1) {
+        alias = splitLink.slice(1).join().slice(0, -2);
+    }
+    if (!(match === null)) {
+        return {
+            class: `type-${match[1]}`,
+            isInline: false,
+            properties: {
+                alias: alias,
+                context: '',
+                type: match[1],
+            },
+        };
+    }
+    return null;
+};
+
+function normalise(arr) {
+    const max = Math.max(...arr);
+    return arr.map((item) => item / max);
+}
+function debug(settings, log) {
+    if (settings.debugMode) {
+        console.log(log);
+    }
+}
+function superDebug(settings, log) {
+    if (settings.superDebugMode) {
+        console.log(log);
+    }
+}
+function debugGroupStart(settings, type, group) {
+    if (settings[type]) {
+        console.groupCollapsed(group);
+    }
+}
+function debugGroupEnd(settings, type) {
+    if (settings[type]) {
+        console.groupEnd();
+    }
+}
+function getDVMetadataCache(app, settings, files) {
+    debugGroupStart(settings, "debugMode", "getDVMetadataCache");
+    debug(settings, "Using Dataview");
+    debugGroupStart(settings, "superDebugMode", "dvCaches");
+    const fileFrontmatterArr = [];
+    files.forEach((file) => {
+        superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
+        const dvCache = app.plugins.plugins.dataview.api.page(file.path);
+        superDebug(settings, { dvCache });
+        fileFrontmatterArr.push(dvCache);
+    });
+    debugGroupEnd(settings, "superDebugMode");
+    debug(settings, { fileFrontmatterArr });
+    debugGroupEnd(settings, "debugMode");
+    return fileFrontmatterArr;
+}
+function getObsMetadataCache(app, settings, files) {
+    debugGroupStart(settings, "debugMode", "getObsMetadataCache");
+    debug(settings, "Using Obsidian");
+    debugGroupStart(settings, "superDebugMode", "obsCaches");
+    const fileFrontmatterArr = [];
+    files.forEach((file) => {
+        var _a;
+        superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
+        const obs = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
+        superDebug(settings, { obs });
+        if (obs) {
+            fileFrontmatterArr.push(Object.assign({ file }, obs));
+        }
+        else {
+            fileFrontmatterArr.push({ file });
+        }
+    });
+    debugGroupEnd(settings, "superDebugMode");
+    debug(settings, { fileFrontmatterArr });
+    debugGroupEnd(settings, "debugMode");
+    return fileFrontmatterArr;
+}
+// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
+// => {[note: string]: {type: string, linksInLine: string[]}[]}
+async function getJugglLinks(app, settings) {
+    debugGroupStart(settings, "debugMode", "getJugglLinks");
+    debug(settings, "Using Juggl");
+    const files = app.vault.getMarkdownFiles();
+    const { userHierarchies } = settings;
+    // Add Juggl links
+    const typedLinksArr = await Promise.all(files.map(async (file) => {
+        var _a, _b;
+        const jugglLink = { note: file.basename, links: [] };
+        // Use Obs metadatacache to get the links in the current file
+        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
+        // TODO Only get cachedRead if links.length
+        const content = await app.vault.cachedRead(file);
+        links.forEach((link) => {
+            var _a, _b, _c, _d, _e, _f, _g;
+            // Get the line no. of each link
+            const lineNo = link.position.start.line;
+            // And the corresponding line content
+            const line = content.split("\n")[lineNo];
+            // Get an array of inner text of each link
+            const linksInLine = (_c = (_b = (_a = line
+                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
+            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
+            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
+            const type = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
+            let typeDir = "";
+            DIRECTIONS.forEach((dir) => {
+                userHierarchies.forEach((hier) => {
+                    if (hier[dir].includes(type)) {
+                        typeDir = dir;
+                        return;
+                    }
+                });
+            });
+            jugglLink.links.push({
+                dir: typeDir,
+                type,
+                linksInLine,
+            });
+        });
+        return jugglLink;
+    }));
+    debug(settings, { typedLinksArr });
+    const allFields = settings.userHierarchies
+        .map((hier) => Object.values(hier))
+        .flat(2)
+        .filter((field) => field !== "");
+    typedLinksArr.forEach((jugglLink) => {
+        // Filter out links whose type is not in allFields
+        const fieldTypesOnly = jugglLink.links.filter((link) => allFields.includes(link.type));
+        // // const fieldTypesOnly = [];
+        // jugglLink.links.forEach((link) => {
+        //   if (allFields.includes(link.type)) {
+        //     fieldTypesOnly.push(link);
+        //   }
+        // });
+        // I don't remember why I'm mutating the links instead of making a new obj
+        jugglLink.links = fieldTypesOnly;
+    });
+    // Filter out the juggl links with no links
+    const filteredLinks = typedLinksArr.filter((jugglLink) => jugglLink.links.length);
+    debug(settings, { filteredLinks });
+    debugGroupEnd(settings, "debugMode");
+    return filteredLinks;
+}
+function getFieldValues(frontmatterCache, field, settings) {
+    var _a;
+    const values = [];
+    try {
+        const rawValuesPreFlat = frontmatterCache === null || frontmatterCache === void 0 ? void 0 : frontmatterCache[field];
+        if (!rawValuesPreFlat)
+            return [];
+        if (typeof rawValuesPreFlat === "string") {
+            const splits = rawValuesPreFlat.match(splitLinksRegex);
+            if (splits !== null) {
+                const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
+                values.push(...strs);
+            }
+            // else {
+            //    Dont't add anything, it's not a link
+            // }
+        }
+        else {
+            const rawValues = [rawValuesPreFlat].flat(4);
+            superDebug(settings, `${field} of: ${(_a = frontmatterCache === null || frontmatterCache === void 0 ? void 0 : frontmatterCache.file) === null || _a === void 0 ? void 0 : _a.path}`);
+            superDebug(settings, rawValues);
+            rawValues.forEach((rawItem) => {
+                if (!rawItem)
+                    return;
+                if (typeof rawItem === "string" || typeof rawItem === "number") {
+                    // Obs cache converts link of form: [[\d+]] to number[][]
+                    const rawItemAsString = rawItem.toString();
+                    const splits = rawItemAsString.match(splitLinksRegex);
+                    if (splits !== null) {
+                        const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
+                        values.push(...strs);
+                    }
+                    else {
+                        values.push(rawItemAsString.split("/").last());
+                    }
+                }
+                else if (rawItem.path) {
+                    const value = rawItem.path.split("/").last();
+                    superDebug(settings, { value });
+                    values.push(value);
+                }
+            });
+        }
+        return values;
+    }
+    catch (error) {
+        console.log(error);
+        return values;
+    }
+}
+const splitAndTrim = (fields) => fields.split(",").map((str) => str.trim());
+async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
+    const { settings } = plugin;
+    const { userHierarchies } = settings;
+    if (settings.debugMode || settings.superDebugMode) {
+        console.groupCollapsed("getNeighbourObjArr");
+    }
+    let jugglLinks = [];
+    if (plugin.app.plugins.plugins.juggl !== undefined ||
+        plugin.settings.parseJugglLinksWithoutJuggl) {
+        jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
+    }
+    const neighbourObjArr = fileFrontmatterArr.map((fileFrontmatter) => {
+        const currFileName = fileFrontmatter.file.basename || fileFrontmatter.file.name;
+        const hierFields = {
+            current: fileFrontmatter.file,
+            hierarchies: [],
+        };
+        userHierarchies.forEach((hier, i) => {
+            const fieldsArr = Object.values(hier);
+            const newHier = { up: {}, same: {}, down: {} };
+            // Add regular metadata links
+            if (settings.useAllMetadata) {
+                DIRECTIONS.forEach((dir, i) => {
+                    fieldsArr[i].forEach((field) => {
+                        newHier[dir][field] = getFieldValues(fileFrontmatter, field, settings);
+                    });
+                });
+            }
+            // Add Juggl Links
+            if (jugglLinks.length) {
+                const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
+                    return jugglLink.note === currFileName;
+                })[0];
+                if (jugglLinksInFile) {
+                    jugglLinksInFile.links.forEach((line) => {
+                        var _a;
+                        if (hier[line.dir].includes(line.type)) {
+                            newHier[line.dir][line.type] = [
+                                ...new Set([
+                                    ...((_a = newHier[line.dir][line.type]) !== null && _a !== void 0 ? _a : []),
+                                    ...line.linksInLine,
+                                ]),
+                            ];
+                        }
+                    });
+                }
+            }
+            hierFields.hierarchies.push(newHier);
+        });
+        return hierFields;
+    });
+    debug(settings, { neighbourObjArr });
+    if (settings.debugMode || settings.superDebugMode) {
+        console.groupEnd();
+    }
+    return neighbourObjArr;
+}
+// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
+// It makes implied relations real
+function closeImpliedLinks(real, implied) {
+    const closedG = graphlib.json.read(graphlib.json.write(real));
+    implied.edges().forEach((impliedEdge) => {
+        closedG.setEdge(impliedEdge.w, impliedEdge.v);
+    });
+    return closedG;
+}
+const isInVault = (app, note) => !!app.metadataCache.getFirstLinkpathDest(note, "");
+async function openOrSwitch(app, dest, currFile, event) {
+    const { workspace } = app;
+    let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
+    // If dest doesn't exist, make it
+    if (!destFile) {
+        const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
+        const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"}${dest}.md`;
+        await app.vault.create(newFilePath, "");
+        destFile = app.metadataCache.getFirstLinkpathDest(newFilePath, "");
+    }
+    // Check if it's already open
+    const leavesWithDestAlreadyOpen = [];
+    // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
+    workspace.iterateAllLeaves((leaf) => {
+        var _a, _b;
+        if (((_b = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file) === null || _b === void 0 ? void 0 : _b.basename) === dest) {
+            leavesWithDestAlreadyOpen.push(leaf);
+        }
+    });
+    // Rather switch to it if it is open
+    if (leavesWithDestAlreadyOpen.length > 0) {
+        workspace.setActiveLeaf(leavesWithDestAlreadyOpen[0]);
+    }
+    else {
+        const mode = app.vault.getConfig("defaultViewMode");
+        const leaf = event.ctrlKey || event.getModifierState("Meta")
+            ? workspace.splitActiveLeaf()
+            : workspace.getUnpinnedLeaf();
+        await leaf.openFile(destFile, { active: true, mode });
+    }
+}
+function padArray(arr, finalLength, filler = "") {
+    const copy = [...arr];
+    const currLength = copy.length;
+    if (currLength > finalLength) {
+        throw new Error("Current length is greater than final length");
+    }
+    else if (currLength === finalLength) {
+        return copy;
+    }
+    else {
+        for (let i = currLength; i < finalLength; i++) {
+            copy.push(filler);
+        }
+        return copy;
+    }
+}
+function transpose(A) {
+    const cols = A[0].length;
+    const AT = [];
+    // For each column
+    for (let j = 0; j < cols; j++) {
+        // Add a new row to AT
+        AT.push([]);
+        // And fill it with the values in the jth column of A
+        A.forEach((row) => AT[j].push(row[j]));
+    }
+    return AT;
+}
+function runs(arr) {
+    const runs = [];
+    let i = 0;
+    while (i < arr.length) {
+        const currValue = arr[i];
+        runs.push({ value: currValue, first: i, last: undefined });
+        while (currValue === arr[i]) {
+            i++;
+        }
+        runs.last().last = i - 1;
+    }
+    return runs;
+}
+async function copy$1(content) {
+    await navigator.clipboard.writeText(content).then(() => new obsidian_1.Notice("Copied to clipboard"), () => new obsidian_1.Notice("Could not copy to clipboard"));
+}
+function mergeGs(...graphs) {
+    const outG = new graphlib.Graph();
+    graphs.forEach((graph) => {
+        graph.edges().forEach((edge) => {
+            const nodeLabel = graph.node(edge.v);
+            outG.setNode(edge.v, nodeLabel);
+            const edgeLabel = graph.edge(edge);
+            outG.setEdge(edge, edgeLabel);
+        });
+    });
+    return outG;
+}
+function removeUnlinkedNodes(g) {
+    const copy = graphlib.json.read(graphlib.json.write(g));
+    const nodes = copy.nodes();
+    const unlinkedNodes = nodes.filter((node) => !copy.neighbors(node).length);
+    unlinkedNodes.forEach((node) => copy.removeNode(node));
+    return copy;
+}
+function getAllGsInDir(userHierarchies, currGraphs, dir) {
+    const target = {};
+    const allGsInDir = Object.assign(target, ...currGraphs.map((hierGs) => hierGs[dir]));
+    // const fieldNamesInXDir = userHierarchies
+    //   .map((hier) => hier[dir])
+    //   .filter((field) => field.join() !== "")
+    //   .flat();
+    // const allXGs: { [rel: string]: Graph } = {};
+    // currGraphs.forEach((hierarchyGs) => {
+    //   fieldNamesInXDir.forEach((field) => {
+    //     const graph = hierarchyGs[dir][field];
+    //     if (graph) {
+    //       allXGs[field] = graph;
+    //     }
+    //   });
+    // });
+    // console.log({ allXGs, allGsInDir });
+    return allGsInDir;
+}
+function getAllFieldGs(fields, currGraphs) {
+    const fieldGs = [];
+    currGraphs.forEach((hierGs) => {
+        DIRECTIONS.forEach((dir) => {
+            Object.keys(hierGs[dir]).forEach((fieldName) => {
+                if (fields.includes(fieldName)) {
+                    const fieldG = hierGs[dir][fieldName];
+                    if (fieldG instanceof graphlib.Graph)
+                        fieldGs.push(fieldG);
+                }
+            });
+        });
+    });
+    return fieldGs;
+}
+function hierToStr(hier) {
+    return `↑: ${hier.up.join(", ")}
+→: ${hier.same.join(", ")}
+↓: ${hier.down.join(", ")}`;
+}
+function removeDuplicates(arr) {
+    return [...new Set(arr)];
+}
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {{[fun:string]:(...args:any} api
+ */
+const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
+    let valueStr = value.toString();
+    if (!frontmatter || frontmatter[key] === undefined) {
+        console.log(`Creating: ${key}: ${valueStr}`);
+        await api.createYamlProperty(key, `['${valueStr}']`, file);
+    }
+    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+        console.log("Already Exists!");
+        return;
+    }
+    else {
+        const oldValueFlat = [...[frontmatter[key]]].flat(4);
+        const newValue = [...oldValueFlat, valueStr].map((val) => `'${val}'`);
+        console.log(`Updating: ${key}: ${newValue}`);
+        await api.update(key, `[${newValue.join(", ")}]`, file);
+    }
+};
+function getOppDir(dir) {
+    let oppDir = "same";
+    if (dir === "up")
+        oppDir = "down";
+    if (dir === "down")
+        oppDir = "up";
+    return oppDir;
+}
+const writeBCToFile = (app, plugin, currGraphs, file) => {
+    var _a, _b;
+    const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
+    const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
+    if (!api) {
+        new obsidian_1.Notice("Metaedit must be enabled for this function to work");
+        return;
+    }
+    currGraphs.hierGs.forEach((hier) => {
+        DIRECTIONS.forEach((dir) => {
+            const oppDir = getOppDir(dir);
+            Object.keys(hier[dir]).forEach((field) => {
+                const fieldG = hier[dir][field];
+                const succs = fieldG.predecessors(file.basename);
+                succs.forEach(async (succ) => {
+                    const { fieldName } = fieldG.node(succ);
+                    if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
+                        return;
+                    const currHier = plugin.settings.userHierarchies.find((hier) => hier[dir].includes(fieldName));
+                    let oppField = currHier[oppDir][0];
+                    if (!oppField)
+                        oppField = `<Reverse>${fieldName}`;
+                    await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
+                });
+            });
+        });
+    });
+};
+function oppFields(field, dir, userHierarchies) {
+    var _a, _b;
+    const oppDir = getOppDir(dir);
+    return ((_b = (_a = userHierarchies.find((hier) => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : []);
+}
+function dataviewReady(app, noFiles) {
+    var _a, _b;
+    const pages = (_b = (_a = app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api) === null || _b === void 0 ? void 0 : _b.index.pages;
+    return (pages === null || pages === void 0 ? void 0 : pages.size) === noFiles;
+}
+async function waitForDataview(app, delay, max = 200) {
+    const noFiles = app.vault.getMarkdownFiles().length;
+    let i = 0;
+    while (!dataviewReady(app, noFiles) && i < max) {
+        await dist.wait(delay);
+        i++;
+    }
+    if (i === max) {
+        const error = new Error("DV Not ready, but `max` was reached");
+        console.log(error);
+        throw error;
+    }
+}
+function unresolvedQ(app, to, from) {
+    const { unresolvedLinks } = app.metadataCache;
+    if (!unresolvedLinks[from]) {
+        return false;
+    }
+    return unresolvedLinks[from][to] > 0;
+}
+
 function noop$1() { }
 function run(fn) {
     return fn();
@@ -24184,777 +27060,6 @@ class SvelteComponent {
     }
 }
 
-/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
-
-function create_fragment$6(ctx) {
-	let script;
-	let script_src_value;
-	let t;
-	let div;
-	let mounted;
-	let dispose;
-
-	return {
-		c() {
-			script = element("script");
-			t = space();
-			div = element("div");
-			attr(script, "type", "text/javascript");
-			if (script.src !== (script_src_value = "https://ko-fi.com/widgets/widget_2.js")) attr(script, "src", script_src_value);
-		},
-		m(target, anchor) {
-			append(document.head, script);
-			insert(target, t, anchor);
-			insert(target, div, anchor);
-			/*div_binding*/ ctx[2](div);
-
-			if (!mounted) {
-				dispose = listen(script, "load", /*initializeKofi*/ ctx[1]);
-				mounted = true;
-			}
-		},
-		p: noop$1,
-		i: noop$1,
-		o: noop$1,
-		d(detaching) {
-			detach(script);
-			if (detaching) detach(t);
-			if (detaching) detach(div);
-			/*div_binding*/ ctx[2](null);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-function instance$6($$self, $$props, $$invalidate) {
-	let button;
-
-	var initializeKofi = () => {
-		kofiwidget2.init("Support Breadcrumbs development!", "#29abe0", "G2G454TZF");
-		$$invalidate(0, button.innerHTML = kofiwidget2.getHTML(), button);
-	};
-
-	function div_binding($$value) {
-		binding_callbacks[$$value ? "unshift" : "push"](() => {
-			button = $$value;
-			$$invalidate(0, button);
-		});
-	}
-
-	return [button, initializeKofi, div_binding];
-}
-
-class KoFi extends SvelteComponent {
-	constructor(options) {
-		super();
-		init$1(this, options, instance$6, create_fragment$6, safe_not_equal, {});
-	}
-}
-
-class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
-    constructor(app, plugin) {
-        super(app, plugin);
-        this.plugin = plugin;
-    }
-    display() {
-        const plugin = this.plugin;
-        const { settings } = plugin;
-        const { containerEl } = this;
-        containerEl.empty();
-        containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
-        function hierIndex(currHiers, values) {
-            return currHiers.findIndex((hier) => lodash.isEqual(hier.up, values[0]) &&
-                lodash.isEqual(hier.same, values[1]) &&
-                lodash.isEqual(hier.down, values[2]));
-        }
-        const addHierarchyRow = (values = { up: [""], same: [""], down: [""] }, existing = false) => {
-            const row = createSpan({ cls: "hierarchy-row" });
-            const hierarchyNames = row.createSpan({});
-            hierarchyNames.createEl("label", { attr: { for: "up" }, text: "↑" });
-            const upInput = hierarchyNames.createEl("input", {
-                attr: { id: "up", placeholder: "↑" },
-                value: values.up.join(", "),
-            });
-            hierarchyNames.createEl("label", { attr: { for: "same" }, text: "→" });
-            const sameInput = hierarchyNames.createEl("input", {
-                attr: { id: "same", placeholder: "→" },
-                value: values.same.join(", "),
-            });
-            hierarchyNames.createEl("label", { attr: { for: "down" }, text: "↓" });
-            const downInput = hierarchyNames.createEl("input", {
-                attr: { id: "down", placeholder: "↓" },
-                value: values.down.join(", "),
-            });
-            let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
-            [upInput, sameInput, downInput].forEach((input) => input.addEventListener("change", () => {
-                saveButton.toggleClass("hierarchy-unsaved", true);
-                saveButton.textContent = "Save";
-            }));
-            async function resetLimitTrailCheckboxes() {
-                settings.limitTrailCheckboxStates = {};
-                settings.userHierarchies.forEach(userHier => {
-                    userHier.up.forEach(async (field) => {
-                        if (field !== "") {
-                            settings.limitTrailCheckboxStates[field] = true;
-                            await plugin.saveSettings();
-                        }
-                    });
-                });
-                await plugin.saveSettings();
-                drawLimitTrailCheckboxes(checkboxDiv);
-            }
-            async function resetLimitWriteBCCheckboxes() {
-                settings.limitWriteBCCheckboxStates = {};
-                settings.userHierarchies.forEach(userHier => {
-                    DIRECTIONS.forEach(dir => {
-                        userHier.up.forEach(async (field) => {
-                            if (field !== "") {
-                                settings.limitWriteBCCheckboxStates[field] = true;
-                                await plugin.saveSettings();
-                            }
-                        });
-                    });
-                });
-                await plugin.saveSettings();
-                drawLimitWriteBCCheckboxes(checkboxDiv);
-            }
-            row.createEl("button", { text: "X" }, (el) => {
-                el.addEventListener("click", async () => {
-                    row.remove();
-                    const removeIndex = hierIndex(settings.userHierarchies, [upInput.value, sameInput.value, downInput.value].map(splitAndTrim));
-                    if (removeIndex > -1) {
-                        settings.userHierarchies.splice(removeIndex, 1);
-                        await plugin.saveSettings();
-                    }
-                    // Refresh limitTrailFields
-                    await resetLimitTrailCheckboxes();
-                    await resetLimitWriteBCCheckboxes();
-                    new obsidian.Notice("Hierarchy Removed.");
-                });
-            });
-            const saveButton = row.createEl("button", {
-                text: existing ? "Saved" : "Save",
-                cls: (existing ? "" : "hierarchy-unsaved ") + "save-hierarchy-button",
-            }, function (el) {
-                el.addEventListener("click", async () => {
-                    if (hierIndex(settings.userHierarchies, [upInput.value, sameInput.value, downInput.value].map(splitAndTrim)) > -1) {
-                        new obsidian.Notice("A hierarchy with these Up, Same, and Down values already exists.");
-                        return;
-                    }
-                    if (saveButton.hasClass("hierarchy-unsaved")) {
-                        const removeIndex = hierIndex(settings.userHierarchies, cleanInputs);
-                        if (removeIndex > -1) {
-                            settings.userHierarchies.splice(removeIndex, 1);
-                            await plugin.saveSettings();
-                            await resetLimitTrailCheckboxes();
-                            await resetLimitWriteBCCheckboxes();
-                        }
-                    }
-                    cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
-                    saveButton.toggleClass("hierarchy-unsaved", false);
-                    saveButton.textContent = "Saved";
-                    if (hierIndex(settings.userHierarchies, cleanInputs) > -1) {
-                        new obsidian.Notice("A hierarchy with these Up, Same, and Down values already exists.");
-                    }
-                    else {
-                        settings.userHierarchies.push({
-                            up: splitAndTrim(upInput.value),
-                            same: splitAndTrim(sameInput.value),
-                            down: splitAndTrim(downInput.value),
-                        });
-                        await plugin.saveSettings();
-                        new obsidian.Notice("Hierarchy saved.");
-                        await resetLimitTrailCheckboxes();
-                        await resetLimitWriteBCCheckboxes();
-                    }
-                });
-            });
-            return row;
-        };
-        const fieldDetails = containerEl.createEl("details", {
-            cls: "field-details",
-        });
-        fieldDetails.createEl("summary", { text: "Hierarchies" });
-        fieldDetails.createEl("p", {
-            text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
-        });
-        fieldDetails.createEl("p", {
-            text: "For each direction (up, same, down), you can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
-        });
-        new obsidian.Setting(fieldDetails)
-            .setName("Add Hierarchy")
-            .setDesc("Add a new hierarchy.")
-            .addButton((button) => {
-            button
-                .setTooltip("Add Additional")
-                .setButtonText("+")
-                .onClick(async () => {
-                fieldDetails.append(addHierarchyRow());
-            });
-        });
-        fieldDetails.createEl("button", { text: "Reset Hierarchies" }, async (el) => {
-            el.addEventListener("click", async () => {
-                const rows = fieldDetails.querySelectorAll(".hierarchy-row");
-                rows.forEach((row) => row.remove());
-                settings.userHierarchies = [];
-                await plugin.saveSettings();
-                new obsidian.Notice("Hierarchies reset.");
-            });
-        });
-        fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
-            el.addEventListener("click", () => {
-                if (settings.userHierarchies.length) {
-                    new obsidian.Notice(settings.userHierarchies.map(hierToStr).join("\n\n"));
-                }
-                else {
-                    new obsidian.Notice("No hierarchies currently exist.");
-                }
-                console.log({ hierarchies: settings.userHierarchies });
-            });
-        });
-        settings.userHierarchies.forEach((userHier) => {
-            fieldDetails.append(addHierarchyRow(userHier, true));
-        });
-        const hierarchyNoteDetails = containerEl.createEl("details");
-        hierarchyNoteDetails.createEl("summary", { text: "Hierarchy Notes" });
-        new obsidian.Setting(hierarchyNoteDetails)
-            .setName("Hierarchy Note(s)")
-            .setDesc("A list of notes used to create external Breadcrumb structures.")
-            .addText((text) => {
-            let finalValue;
-            text
-                .setPlaceholder("Hierarchy Note(s)")
-                .setValue([settings.hierarchyNotes].flat().join(", "))
-                .onChange(async (value) => {
-                finalValue = splitAndTrim(value);
-            });
-            text.inputEl.onblur = async () => {
-                if (finalValue[0] === "") {
-                    settings.hierarchyNotes = finalValue;
-                    await plugin.saveSettings();
-                }
-                else if (finalValue.every((note) => isInVault(this.app, note))) {
-                    settings.hierarchyNotes = finalValue;
-                    await plugin.saveSettings();
-                }
-                else {
-                    new obsidian.Notice("Atleast one of the notes is not in your vault");
-                }
-            };
-        });
-        new obsidian.Setting(hierarchyNoteDetails)
-            .setName("Hierarchy Note Up Field Name")
-            .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↑ type should they count as? This has to be one of the ↑ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
-            .addText((text) => {
-            let finalValue = settings.hierarchyNoteUpFieldName;
-            text.setPlaceholder("").setValue(settings.hierarchyNoteUpFieldName);
-            text.inputEl.onblur = async () => {
-                finalValue = text.getValue();
-                if (finalValue === "") {
-                    settings.hierarchyNoteUpFieldName = finalValue;
-                    await plugin.saveSettings();
-                }
-                else {
-                    const downFieldNames = settings.userHierarchies
-                        .map((hier) => hier.up)
-                        .flat(3);
-                    debug(settings, { downFieldNames, finalValue });
-                    if (downFieldNames.includes(finalValue)) {
-                        settings.hierarchyNoteUpFieldName = finalValue;
-                        await plugin.saveSettings();
-                    }
-                    else {
-                        new obsidian.Notice("The field name must be one of the exisitng ↓ fields in your hierarchies.");
-                    }
-                }
-            };
-        });
-        new obsidian.Setting(hierarchyNoteDetails)
-            .setName("Hierarchy Note Down Field Name")
-            .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↓ type should they count as? This has to be one of the ↓ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
-            .addText((text) => {
-            let finalValue = settings.hierarchyNoteDownFieldName;
-            text.setPlaceholder("").setValue(settings.hierarchyNoteDownFieldName);
-            text.inputEl.onblur = async () => {
-                finalValue = text.getValue();
-                if (finalValue === "") {
-                    settings.hierarchyNoteDownFieldName = finalValue;
-                    await plugin.saveSettings();
-                }
-                else {
-                    const downFieldNames = settings.userHierarchies
-                        .map((hier) => hier.down)
-                        .flat(3);
-                    debug(settings, { downFieldNames, finalValue });
-                    if (downFieldNames.includes(finalValue)) {
-                        settings.hierarchyNoteDownFieldName = finalValue;
-                        await plugin.saveSettings();
-                    }
-                    else {
-                        new obsidian.Notice("The field name must be one of the exisitng ↓ fields in your hierarchies.");
-                    }
-                }
-            };
-        });
-        const generalDetails = containerEl.createEl("details");
-        generalDetails.createEl("summary", { text: "General Options" });
-        new obsidian.Setting(generalDetails)
-            .setName('CSV Breadcrumb Paths')
-            .setDesc('The file path of a csv files with breadcrumbs information.')
-            .addText(text => {
-            text.setValue(settings.CSVPaths);
-            text.inputEl.onblur = async () => {
-                settings.CSVPaths = text.inputEl.value;
-                await plugin.saveSettings();
-            };
-        });
-        new obsidian.Setting(generalDetails)
-            .setName("Refresh Index on Note Change")
-            .setDesc("Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default.")
-            .addToggle((toggle) => toggle
-            .setValue(settings.refreshIndexOnActiveLeafChange)
-            .onChange(async (value) => {
-            settings.refreshIndexOnActiveLeafChange = value;
-            await plugin.saveSettings();
-        }));
-        new obsidian.Setting(generalDetails)
-            .setName('Fields used for Alternative note names (Aliases)')
-            .setDesc('A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.')
-            .addText(text => {
-            let finalValue;
-            text
-                .setValue(settings.altLinkFields.join(', '))
-                .onChange(str => {
-                finalValue = str;
-            });
-            text.inputEl.onblur = async () => {
-                settings.altLinkFields = splitAndTrim(finalValue);
-                await plugin.saveSettings();
-            };
-        });
-        new obsidian.Setting(generalDetails)
-            .setName("Use yaml or inline fields for hierarchy data")
-            .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below).")
-            .addToggle((toggle) => toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
-            settings.useAllMetadata = value;
-            await plugin.saveSettings();
-            await plugin.refreshIndex();
-        }));
-        new obsidian.Setting(generalDetails)
-            .setName("Use Juggl link syntax without having Juggl installed.")
-            .setDesc("Should Breadcrumbs look for [Juggl links](https://juggl.io/Link+Types) even if you don't have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.")
-            .addToggle((toggle) => toggle
-            .setValue(settings.parseJugglLinksWithoutJuggl)
-            .onChange(async (value) => {
-            settings.parseJugglLinksWithoutJuggl = value;
-            await plugin.saveSettings();
-        }));
-        if (this.app.plugins.plugins.dataview !== undefined) {
-            new obsidian.Setting(generalDetails)
-                .setName("Dataview Wait Time")
-                .setDesc('Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. If you see an error in the console saying "Cannot destructure currGraphs of undefined", try making this time longer. If you don\'t get that error, you can make this time shorter to make the Breadcrumbs load faster. The default is 5 seconds.')
-                .addText((text) => text
-                .setPlaceholder("Seconds")
-                .setValue((settings.dvWaitTime / 1000).toString())
-                .onChange(async (value) => {
-                const num = Number(value);
-                if (num > 0) {
-                    settings.dvWaitTime = num * 1000;
-                    await plugin.saveSettings();
-                }
-                else {
-                    new obsidian.Notice("The interval must be a non-negative number");
-                }
-            }));
-        }
-        new obsidian.Setting(generalDetails)
-            .setName("Refresh Interval")
-            .setDesc("Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)")
-            .addText((text) => text
-            .setPlaceholder("Seconds")
-            .setValue(settings.refreshIntervalTime.toString())
-            .onChange(async (value) => {
-            clearInterval(plugin.refreshIntervalID);
-            const num = Number(value);
-            if (num > 0) {
-                settings.refreshIntervalTime = num;
-                await plugin.saveSettings();
-                plugin.refreshIntervalID = window.setInterval(async () => {
-                    plugin.currGraphs = await plugin.initGraphs();
-                    if (settings.showTrail) {
-                        await plugin.drawTrail();
-                    }
-                    if (plugin.getActiveMatrixView()) {
-                        await plugin.getActiveMatrixView().draw();
-                    }
-                }, num * 1000);
-                plugin.registerInterval(plugin.refreshIntervalID);
-            }
-            else if (num === 0) {
-                settings.refreshIntervalTime = num;
-                await plugin.saveSettings();
-                clearInterval(plugin.refreshIntervalID);
-            }
-            else {
-                new obsidian.Notice("The interval must be a non-negative number");
-            }
-        }));
-        const MLViewDetails = containerEl.createEl("details");
-        MLViewDetails.createEl("summary", { text: "Matrix/List View" });
-        new obsidian.Setting(MLViewDetails)
-            .setName("Show Matrix or List view by default")
-            .setDesc("When Obsidian first loads, which view should it show? On = Matrix, Off = List")
-            .addToggle((toggle) => toggle.setValue(settings.defaultView).onChange(async (value) => {
-            settings.defaultView = value;
-            await plugin.saveSettings();
-        }));
-        // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
-        new obsidian.Setting(MLViewDetails)
-            .setName("Show all field names or just relation types")
-            .setDesc("This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names.")
-            .addToggle((toggle) => toggle.setValue(settings.showNameOrType).onChange(async (value) => {
-            settings.showNameOrType = value;
-            await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
-        }));
-        new obsidian.Setting(MLViewDetails)
-            .setName("Show Relationship Type")
-            .setDesc("Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A.")
-            .addToggle((toggle) => toggle.setValue(settings.showRelationType).onChange(async (value) => {
-            settings.showRelationType = value;
-            await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
-        }));
-        new obsidian.Setting(MLViewDetails)
-            .setName("Filter Implied Siblings")
-            .setDesc("Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).")
-            .addToggle((toggle) => toggle
-            .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
-            .onChange(async (value) => {
-            settings.filterImpliedSiblingsOfDifferentTypes = value;
-            await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
-        }));
-        new obsidian.Setting(MLViewDetails)
-            .setName("Open View in Right or Left side")
-            .setDesc("When loading the matrix view, should it open on the left or right side leaf? On = Right, Off = Left.")
-            .addToggle((toggle) => toggle.setValue(settings.rlLeaf).onChange(async (value) => {
-            var _a;
-            settings.rlLeaf = value;
-            await plugin.saveSettings();
-            await ((_a = plugin.getActiveMatrixView()) === null || _a === void 0 ? void 0 : _a.onClose());
-            await plugin.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-        }));
-        const trailDetails = containerEl.createEl("details");
-        trailDetails.createEl("summary", { text: "Trail/Grid" });
-        new obsidian.Setting(trailDetails)
-            .setName("Show Breadcrumbs")
-            .setDesc("Show a trail of notes leading from your index note down to the current note you are in (if a path exists)")
-            .addToggle((toggle) => toggle.setValue(settings.showTrail).onChange(async (value) => {
-            settings.showTrail = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        const limitTrailFieldsDiv = trailDetails.createDiv({ cls: 'limit-ML-fields' });
-        limitTrailFieldsDiv.createEl('strong', { 'text': 'Limit M/L View to only show certain fields' });
-        const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: 'checkboxes' });
-        function drawLimitTrailCheckboxes(div) {
-            checkboxDiv.empty();
-            const checkboxStates = settings.limitTrailCheckboxStates;
-            settings.userHierarchies.forEach(userHier => {
-                userHier.up.forEach(async (field) => {
-                    if (field === '')
-                        return;
-                    // First sort out limitTrailCheckboxStates
-                    if (checkboxStates[field] === undefined) {
-                        checkboxStates[field] = true;
-                        await plugin.saveSettings();
-                    }
-                    const cbDiv = div.createDiv();
-                    const checkedQ = checkboxStates[field];
-                    const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } });
-                    cb.checked = checkedQ;
-                    cbDiv.createEl('label', { text: field, attr: { for: field } });
-                    cb.addEventListener('change', async (event) => {
-                        checkboxStates[field] = cb.checked;
-                        await plugin.saveSettings();
-                        console.log(settings.limitTrailCheckboxStates);
-                    });
-                });
-            });
-        }
-        drawLimitTrailCheckboxes(checkboxDiv);
-        new obsidian.Setting(trailDetails)
-            .setName("Field name to hide trail")
-            .setDesc("A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`.")
-            .addText((text) => {
-            text
-                .setValue(settings.hideTrailFieldName);
-            text.inputEl.onblur = async () => {
-                settings.hideTrailFieldName = text.getValue();
-                await plugin.saveSettings();
-            };
-        });
-        new obsidian.Setting(trailDetails)
-            .setName("Trail or Table or Both")
-            .setDesc("Wether to show the regular breadcrumb trails, the table view, neither, or both. 1 = Only Trail, 2 = Only Grid, 3 = Both")
-            .addText((text) => {
-            text
-                .setValue(settings.trailOrTable.toString())
-                .onChange(async (value) => {
-                const num = parseInt(value);
-                if ([1, 2, 3].includes(num)) {
-                    settings.trailOrTable = num;
-                    await plugin.saveSettings();
-                    await plugin.drawTrail();
-                }
-                else {
-                    new obsidian.Notice("The value has to be 1, 2, or 3");
-                }
-            });
-        });
-        new obsidian.Setting(trailDetails)
-            .setName("Grid view dots")
-            .setDesc("If the grid view is visible, shows dots based on the file size of each cell.")
-            .addToggle((toggle) => toggle.setValue(settings.gridDots).onChange(async (value) => {
-            settings.gridDots = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        const dotsColour = trailDetails.createDiv();
-        dotsColour.createEl("h4", {
-            text: "Dots colour",
-        });
-        const dotsColourPicker = dotsColour.createEl("input", {
-            type: "color",
-        });
-        dotsColourPicker.value = settings.dotsColour;
-        dotsColourPicker.addEventListener("change", async () => {
-            settings.dotsColour = dotsColourPicker.value;
-            await plugin.saveSettings();
-        });
-        new obsidian.Setting(trailDetails)
-            .setName("Grid view heatmap")
-            .setDesc("If the grid view is visible, change the background colour of squares based on the number of children leaving that note.")
-            .addToggle((toggle) => toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
-            settings.gridHeatmap = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        const heatmapColour = trailDetails.createDiv();
-        heatmapColour.createEl("h4", {
-            text: "Heat map colour",
-        });
-        const heatmapColourPicker = heatmapColour.createEl("input", {
-            type: "color",
-        });
-        heatmapColourPicker.value = settings.heatmapColour;
-        heatmapColourPicker.addEventListener("change", async () => {
-            settings.heatmapColour = heatmapColourPicker.value;
-            await plugin.saveSettings();
-        });
-        new obsidian.Setting(trailDetails)
-            .setName("Index/Home Note(s)")
-            .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
-            .addText((text) => {
-            let finalValue;
-            text
-                .setPlaceholder("Index Note")
-                .setValue([settings.indexNote].flat().join(", "))
-                .onChange(async (value) => {
-                finalValue = splitAndTrim(value);
-            });
-            text.inputEl.onblur = async () => {
-                // TODO Refactor this to general purpose isInVault function
-                if (finalValue[0] === "") {
-                    settings.indexNote = finalValue;
-                    await plugin.saveSettings();
-                }
-                else if (finalValue.every((index) => isInVault(this.app, index))) {
-                    settings.indexNote = finalValue;
-                    await plugin.saveSettings();
-                }
-                else {
-                    new obsidian.Notice(`Atleast one of the notes is not in your vault`);
-                }
-            };
-        });
-        new obsidian.Setting(trailDetails)
-            .setName("Default: All or Shortest")
-            .setDesc("If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest")
-            .addToggle((toggle) => toggle.setValue(settings.showAll).onChange(async (value) => {
-            settings.showAll = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        new obsidian.Setting(trailDetails)
-            .setName("Breadcrumb trail seperator")
-            .setDesc("The character to show between crumbs in the breadcrumb trail. The default is '→'")
-            .addText((text) => text
-            .setPlaceholder("→")
-            .setValue(settings.trailSeperator)
-            .onChange(async (value) => {
-            settings.trailSeperator = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        new obsidian.Setting(trailDetails)
-            .setName("No path found message")
-            .setDesc("The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)")
-            .addText((text) => text
-            .setPlaceholder(`No path to index note was found`)
-            .setValue(settings.noPathMessage)
-            .onChange(async (value) => {
-            settings.noPathMessage = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        new obsidian.Setting(trailDetails)
-            .setName("Respect Readable Line Length")
-            .setDesc("Should the breadcrumbs trail adjust its width to the readable line length, or use as much space as possible? On = use readable line length.")
-            .addToggle((toggle) => toggle
-            .setValue(settings.respectReadableLineLength)
-            .onChange(async (value) => {
-            settings.respectReadableLineLength = value;
-            await plugin.saveSettings();
-            await plugin.drawTrail();
-        }));
-        const writeBCsToFileDetails = containerEl.createEl("details");
-        writeBCsToFileDetails.createEl("summary", { text: "Write Breadcrumbs to File" });
-        const limitWriteBCDiv = writeBCsToFileDetails.createDiv({ cls: 'limit-ML-fields' });
-        limitWriteBCDiv.createEl('strong', { 'text': 'Limit to only write certain fields to files' });
-        const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({ cls: 'checkboxes' });
-        function drawLimitWriteBCCheckboxes(div) {
-            limitWriteBCCheckboxDiv.empty();
-            const checkboxStates = settings.limitWriteBCCheckboxStates;
-            settings.userHierarchies.forEach(userHier => {
-                DIRECTIONS.forEach(dir => {
-                    userHier[dir].forEach(async (field) => {
-                        if (field === '')
-                            return;
-                        // First sort out limitWriteBCCheckboxStates
-                        if (checkboxStates[field] === undefined) {
-                            checkboxStates[field] = true;
-                            await plugin.saveSettings();
-                        }
-                        const cbDiv = div.createDiv();
-                        const checkedQ = checkboxStates[field];
-                        const cb = cbDiv.createEl('input', { type: 'checkbox', attr: { id: field } });
-                        cb.checked = checkedQ;
-                        cbDiv.createEl('label', { text: field, attr: { for: field } });
-                        cb.addEventListener('change', async (event) => {
-                            checkboxStates[field] = cb.checked;
-                            await plugin.saveSettings();
-                            console.log(settings.limitWriteBCCheckboxStates);
-                        });
-                    });
-                });
-            });
-        }
-        drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
-        new obsidian.Setting(writeBCsToFileDetails)
-            .setName("Show the `Write Breadcrumbs to ALL Files` command")
-            .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
-            .addToggle((toggle) => toggle
-            .setValue(settings.showWriteAllBCsCmd)
-            .onChange(async (value) => {
-            settings.showWriteAllBCsCmd = value;
-            await plugin.saveSettings();
-        }));
-        const visModalDetails = containerEl.createEl("details");
-        visModalDetails.createEl("summary", { text: "Visualisation Modal" });
-        new obsidian.Setting(visModalDetails)
-            .setName("Default Visualisation Type")
-            .setDesc("Which visualisation to show by defualt")
-            .addDropdown((cb) => {
-            VISTYPES.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visGraph);
-            cb.onChange(async (value) => {
-                settings.visGraph = value;
-                await plugin.saveSettings();
-            });
-        });
-        new obsidian.Setting(visModalDetails)
-            .setName("Default Relation")
-            .setDesc("Which relation type to show first when opening the modal")
-            .addDropdown((cb) => {
-            RELATIONS.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visRelation);
-            cb.onChange(async (value) => {
-                settings.visRelation = value;
-                await plugin.saveSettings();
-            });
-        });
-        new obsidian.Setting(visModalDetails)
-            .setName("Default Real/Closed")
-            .setDesc("Show the real or closed graph by default")
-            .addDropdown((cb) => {
-            REAlCLOSED.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visClosed);
-            cb.onChange(async (value) => {
-                settings.visClosed = value;
-                await plugin.saveSettings();
-            });
-        });
-        new obsidian.Setting(visModalDetails)
-            .setName("Default Unlinked")
-            .setDesc("Show all nodes or only those which have links by default")
-            .addDropdown((cb) => {
-            ALLUNLINKED.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visAll);
-            cb.onChange(async (value) => {
-                settings.visAll = value;
-                await plugin.saveSettings();
-            });
-        });
-        const createIndexDetails = containerEl.createEl("details");
-        createIndexDetails.createEl("summary", { text: "Create Index" });
-        new obsidian.Setting(createIndexDetails)
-            .setName("Add wiklink brackets")
-            .setDesc("When creating an index, should it wrap the note name in wikilinks `[[]]` or not. On = yes, off = no.")
-            .addToggle((toggle) => toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
-            settings.wikilinkIndex = value;
-            await plugin.saveSettings();
-        }));
-        new obsidian.Setting(createIndexDetails)
-            .setName("Show aliases of notes in index")
-            .setDesc("Show the aliases of each note in brackets. On = yes, off = no.")
-            .addToggle((toggle) => toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
-            settings.aliasesInIndex = value;
-            await plugin.saveSettings();
-        }));
-        const debugDetails = containerEl.createEl("details");
-        debugDetails.createEl("summary", { text: "Debugging" });
-        new obsidian.Setting(debugDetails)
-            .setName("Debug Mode")
-            .setDesc("Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail.")
-            .addToggle((toggle) => toggle.setValue(settings.debugMode).onChange(async (value) => {
-            settings.debugMode = value;
-            await plugin.saveSettings();
-        }));
-        new obsidian.Setting(debugDetails)
-            .setName("Super Debug Mode")
-            .setDesc("Toggling this on will enable ALOT of console logs")
-            .addToggle((toggle) => toggle.setValue(settings.superDebugMode).onChange(async (value) => {
-            settings.superDebugMode = value;
-            await plugin.saveSettings();
-        }));
-        debugDetails.createEl('button', { text: 'Console log `settings`' }, (el) => {
-            el.addEventListener('click', () => console.log(settings));
-        });
-        new KoFi({ target: this.containerEl });
-    }
-}
-
 /* src\Components\Lists.svelte generated by Svelte v3.35.0 */
 
 function add_css$4() {
@@ -24988,7 +27093,7 @@ function get_each_context_3$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (21:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (22:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$3(ctx) {
 	let details;
 	let summary;
@@ -25058,7 +27163,7 @@ function create_if_block$3(ctx) {
 	};
 }
 
-// (24:12) {#if square.realItems.length}
+// (25:12) {#if square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let t;
 	let ol;
@@ -25135,7 +27240,7 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (25:14) {#if settings.showRelationType}
+// (26:14) {#if settings.showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -25154,7 +27259,7 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (30:16) {#each square.realItems as realItem}
+// (31:16) {#each square.realItems as realItem}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
@@ -25219,7 +27324,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (48:12) {#if square.impliedItems.length}
+// (49:12) {#if square.impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
@@ -25302,7 +27407,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (49:14) {#if settings.showRelationType}
+// (50:14) {#if settings.showRelationType}
 function create_if_block_2$2(ctx) {
 	let h5;
 
@@ -25321,7 +27426,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (57:16) {#each square.impliedItems as impliedItem}
+// (58:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
@@ -25384,7 +27489,7 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (20:6) {#each squares as square}
+// (21:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$3(ctx);
@@ -25419,7 +27524,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (14:2) {#each filteredSquaresArr as squares}
+// (15:2) {#each filteredSquaresArr as squares}
 function create_each_block$5(ctx) {
 	let details;
 	let summary;
@@ -25494,7 +27599,7 @@ function create_each_block$5(ctx) {
 	};
 }
 
-function create_fragment$5(ctx) {
+function create_fragment$6(ctx) {
 	let div;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
@@ -25555,7 +27660,7 @@ function create_fragment$5(ctx) {
 
 const func = square => square.fieldName;
 
-function instance$5($$self, $$props, $$invalidate) {
+function instance$6($$self, $$props, $$invalidate) {
 	
 	
 	
@@ -25565,10 +27670,10 @@ function instance$5($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = (realItem, e) => hoverPreview$2(e, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = (impliedItem, e) => hoverPreview$2(e, matrixView, impliedItem.to);
+	const click_handler = async (realItem, e) => await openOrSwitch(app, realItem.to, currFile, e);
+	const mouseover_handler = (realItem, e) => dist.hoverPreview(e, matrixView, realItem.to);
+	const click_handler_1 = async (impliedItem, e) => await openOrSwitch(app, impliedItem.to, currFile, e);
+	const mouseover_handler_1 = (impliedItem, e) => dist.hoverPreview(e, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -25596,7 +27701,7 @@ class Lists extends SvelteComponent {
 		super();
 		if (!document.getElementById("svelte-fwoihq-style")) add_css$4();
 
-		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, {
+		init$1(this, options, instance$6, create_fragment$6, safe_not_equal, {
 			filteredSquaresArr: 0,
 			currFile: 1,
 			settings: 2,
@@ -25639,7 +27744,7 @@ function get_each_context_3$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (17:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (18:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$2(ctx) {
 	let div;
 	let h3;
@@ -25708,7 +27813,7 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (21:12) {#if square.realItems.length}
+// (22:12) {#if square.realItems.length}
 function create_if_block_3(ctx) {
 	let t;
 	let ol;
@@ -25785,7 +27890,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (22:14) {#if settings.showRelationType}
+// (23:14) {#if settings.showRelationType}
 function create_if_block_4(ctx) {
 	let h5;
 
@@ -25804,7 +27909,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (26:16) {#each square.realItems as realItem}
+// (27:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
@@ -25869,7 +27974,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (44:12) {#if square.impliedItems.length}
+// (45:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let t;
 	let ol;
@@ -25952,7 +28057,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (45:14) {#if settings.showRelationType}
+// (46:14) {#if settings.showRelationType}
 function create_if_block_2$1(ctx) {
 	let h5;
 
@@ -25971,7 +28076,7 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (49:16) {#each square.impliedItems as impliedItem}
+// (50:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
@@ -26034,7 +28139,7 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (16:6) {#each squares as square}
+// (17:6) {#each squares as square}
 function create_each_block_1$4(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$2(ctx);
@@ -26069,7 +28174,7 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (14:2) {#each filteredSquaresArr as squares}
+// (15:2) {#each filteredSquaresArr as squares}
 function create_each_block$4(ctx) {
 	let div;
 	let t;
@@ -26131,7 +28236,7 @@ function create_each_block$4(ctx) {
 	};
 }
 
-function create_fragment$4(ctx) {
+function create_fragment$5(ctx) {
 	let div;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
@@ -26190,7 +28295,7 @@ function create_fragment$4(ctx) {
 	};
 }
 
-function instance$4($$self, $$props, $$invalidate) {
+function instance$5($$self, $$props, $$invalidate) {
 	
 	
 	
@@ -26200,10 +28305,10 @@ function instance$4($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
-	const mouseover_handler = (realItem, event) => hoverPreview$2(event, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = (impliedItem, event) => hoverPreview$2(event, matrixView, impliedItem.to);
+	const click_handler = async (realItem, e) => await openOrSwitch(app, realItem.to, currFile, e);
+	const mouseover_handler = (realItem, event) => dist.hoverPreview(event, matrixView, realItem.to);
+	const click_handler_1 = async (impliedItem, e) => await openOrSwitch(app, impliedItem.to, currFile, e);
+	const mouseover_handler_1 = (impliedItem, event) => dist.hoverPreview(event, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -26231,7 +28336,7 @@ class Matrix extends SvelteComponent {
 		super();
 		if (!document.getElementById("svelte-fq6v4k-style")) add_css$3();
 
-		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, {
+		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, {
 			filteredSquaresArr: 0,
 			currFile: 1,
 			settings: 2,
@@ -26241,7 +28346,7 @@ class Matrix extends SvelteComponent {
 	}
 }
 
-class MatrixView extends obsidian.ItemView {
+class MatrixView extends obsidian_1.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.icon = TRAIL_ICON;
@@ -26262,7 +28367,7 @@ class MatrixView extends obsidian.ItemView {
             id: "local-index",
             name: "Copy a Local Index to the clipboard",
             callback: async () => {
-                const settings = this.plugin.settings;
+                const { settings } = this.plugin;
                 const currFile = this.app.workspace.getActiveFile().basename;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const allPaths = this.dfsAllPaths(closedParents, currFile);
@@ -26278,7 +28383,7 @@ class MatrixView extends obsidian.ItemView {
                 const { up } = this.plugin.currGraphs.mergedGs;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const terminals = up.sinks();
-                const settings = this.plugin.settings;
+                const { settings } = this.plugin;
                 let globalIndex = "";
                 terminals.forEach((terminal) => {
                     globalIndex += terminal + "\n";
@@ -26296,30 +28401,16 @@ class MatrixView extends obsidian.ItemView {
     getDisplayText() {
         return "Breadcrumbs Matrix";
     }
-    async onOpen() {
-        await this.plugin.saveSettings();
-        // this.app.workspace.onLayoutReady(async () => {
-        //   setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-        // });
-        // this.app.workspace.on("dataview:api-ready", () =>
-        //   console.log("dv ready")
-        // );
-    }
+    async onOpen() { }
     onClose() {
         if (this.view) {
             this.view.$destroy();
         }
         return Promise.resolve();
     }
-    unresolvedQ(to, from) {
-        const { unresolvedLinks } = this.app.metadataCache;
-        if (!unresolvedLinks[from]) {
-            return false;
-        }
-        return unresolvedLinks[from][to] > 0;
-    }
     squareItems(g, currFile, settings, realQ = true) {
         var _a, _b;
+        const { app } = this;
         let items;
         const altFieldsQ = !!settings.altLinkFields.length;
         if (realQ) {
@@ -26335,10 +28426,10 @@ class MatrixView extends obsidian.ItemView {
             items.forEach((to) => {
                 let alt = null;
                 if (altFieldsQ) {
-                    const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path);
+                    const toFile = app.metadataCache.getFirstLinkpathDest(to, "");
                     if (toFile) {
-                        const metadata = this.app.metadataCache.getFileCache(toFile);
-                        settings.altLinkFields.forEach(altLinkField => {
+                        const metadata = app.metadataCache.getFileCache(toFile);
+                        settings.altLinkFields.forEach((altLinkField) => {
                             var _a;
                             const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
                             if (altLink) {
@@ -26351,9 +28442,9 @@ class MatrixView extends obsidian.ItemView {
                 internalLinkObjArr.push({
                     to,
                     cls: "internal-link breadcrumbs-link" +
-                        (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
+                        (unresolvedQ(app, to, currFile.path) ? " is-unresolved" : "") +
                         (realQ ? "" : " breadcrumbs-implied"),
-                    alt
+                    alt,
                 });
             });
         }
@@ -26393,7 +28484,6 @@ class MatrixView extends obsidian.ItemView {
         reversed.forEach((path) => path.shift());
         const indent = "  ";
         const visited = {};
-        const activeFile = this.app.workspace.getActiveFile();
         reversed.forEach((path) => {
             var _a, _b, _c, _d;
             for (let depth = 0; depth < path.length; depth++) {
@@ -26409,7 +28499,7 @@ class MatrixView extends obsidian.ItemView {
                     index += currNode;
                     index += settings.wikilinkIndex ? "]]" : "";
                     if (settings.aliasesInIndex) {
-                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, activeFile.path);
+                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, "");
                         if (currFile !== null) {
                             const cache = this.app.metadataCache.getFileCache(currFile);
                             const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
@@ -26471,10 +28561,10 @@ class MatrixView extends obsidian.ItemView {
                     const altFieldsQ = !!settings.altLinkFields.length;
                     let alt = null;
                     if (altFieldsQ) {
-                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path);
+                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, "");
                         if (toFile) {
                             const metadata = this.app.metadataCache.getFileCache(toFile);
-                            settings.altLinkFields.forEach(altLinkField => {
+                            settings.altLinkFields.forEach((altLinkField) => {
                                 var _a;
                                 const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
                                 if (altLink) {
@@ -26487,11 +28577,11 @@ class MatrixView extends obsidian.ItemView {
                     iSameArr.push({
                         to: impliedSibling,
                         cls: "internal-link breadcrumbs-link breadcrumbs-implied" +
-                            (this.unresolvedQ(impliedSibling, currFile.path)
+                            (unresolvedQ(this.app, impliedSibling, currFile.path)
                                 ? " is-unresolved"
                                 : ""),
                         // TODO get alt for implied siblings
-                        alt
+                        alt,
                     });
                 });
             });
@@ -26502,8 +28592,8 @@ class MatrixView extends obsidian.ItemView {
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
             iDown = this.removeDuplicateImplied(rDown, iDown);
             const iSameNoDup = [];
-            iSameArr.forEach(impSib => {
-                if (iSameNoDup.every(noDup => noDup.to !== impSib.to)) {
+            iSameArr.forEach((impSib) => {
+                if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
                     iSameNoDup.push(impSib);
                 }
             });
@@ -26594,6 +28684,796 @@ class MatrixView extends obsidian.ItemView {
             this.view = new Lists(compInput);
         }
         debugGroupEnd(settings, "debugMode");
+    }
+}
+
+/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
+
+function create_fragment$4(ctx) {
+	let script;
+	let script_src_value;
+	let t;
+	let div;
+	let mounted;
+	let dispose;
+
+	return {
+		c() {
+			script = element("script");
+			t = space();
+			div = element("div");
+			attr(script, "type", "text/javascript");
+			if (script.src !== (script_src_value = "https://ko-fi.com/widgets/widget_2.js")) attr(script, "src", script_src_value);
+		},
+		m(target, anchor) {
+			append(document.head, script);
+			insert(target, t, anchor);
+			insert(target, div, anchor);
+			/*div_binding*/ ctx[2](div);
+
+			if (!mounted) {
+				dispose = listen(script, "load", /*initializeKofi*/ ctx[1]);
+				mounted = true;
+			}
+		},
+		p: noop$1,
+		i: noop$1,
+		o: noop$1,
+		d(detaching) {
+			detach(script);
+			if (detaching) detach(t);
+			if (detaching) detach(div);
+			/*div_binding*/ ctx[2](null);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function instance$4($$self, $$props, $$invalidate) {
+	let button;
+
+	var initializeKofi = () => {
+		kofiwidget2.init("Support Breadcrumbs development!", "#29abe0", "G2G454TZF");
+		$$invalidate(0, button.innerHTML = kofiwidget2.getHTML(), button);
+	};
+
+	function div_binding($$value) {
+		binding_callbacks[$$value ? "unshift" : "push"](() => {
+			button = $$value;
+			$$invalidate(0, button);
+		});
+	}
+
+	return [button, initializeKofi, div_binding];
+}
+
+class KoFi extends SvelteComponent {
+	constructor(options) {
+		super();
+		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, {});
+	}
+}
+
+class BreadcrumbsSettingTab extends obsidian_1.PluginSettingTab {
+    constructor(app, plugin) {
+        super(app, plugin);
+        this.plugin = plugin;
+    }
+    display() {
+        const plugin = this.plugin;
+        const { settings } = plugin;
+        const { containerEl } = this;
+        containerEl.empty();
+        containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
+        function hierIndex(currHiers, values) {
+            return currHiers.findIndex((hier) => lodash.isEqual(hier.up, values[0]) &&
+                lodash.isEqual(hier.same, values[1]) &&
+                lodash.isEqual(hier.down, values[2]));
+        }
+        const addHierarchyRow = (values = { up: [""], same: [""], down: [""] }, existing = false) => {
+            const row = createSpan({ cls: "hierarchy-row" });
+            const hierarchyNames = row.createSpan({});
+            hierarchyNames.createEl("label", { attr: { for: "up" }, text: "↑" });
+            const upInput = hierarchyNames.createEl("input", {
+                attr: { id: "up", placeholder: "↑" },
+                value: values.up.join(", "),
+            });
+            hierarchyNames.createEl("label", { attr: { for: "same" }, text: "→" });
+            const sameInput = hierarchyNames.createEl("input", {
+                attr: { id: "same", placeholder: "→" },
+                value: values.same.join(", "),
+            });
+            hierarchyNames.createEl("label", { attr: { for: "down" }, text: "↓" });
+            const downInput = hierarchyNames.createEl("input", {
+                attr: { id: "down", placeholder: "↓" },
+                value: values.down.join(", "),
+            });
+            let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
+            [upInput, sameInput, downInput].forEach((input) => input.addEventListener("change", () => {
+                saveButton.toggleClass("hierarchy-unsaved", true);
+                saveButton.textContent = "Save";
+            }));
+            async function resetLimitTrailCheckboxes() {
+                settings.limitTrailCheckboxStates = {};
+                settings.userHierarchies.forEach((userHier) => {
+                    userHier.up.forEach(async (field) => {
+                        if (field !== "") {
+                            settings.limitTrailCheckboxStates[field] = true;
+                            await plugin.saveSettings();
+                        }
+                    });
+                });
+                await plugin.saveSettings();
+                drawLimitTrailCheckboxes(checkboxDiv);
+            }
+            async function resetLimitWriteBCCheckboxes() {
+                settings.limitWriteBCCheckboxStates = {};
+                settings.userHierarchies.forEach((userHier) => {
+                    DIRECTIONS.forEach((dir) => {
+                        userHier.up.forEach(async (field) => {
+                            if (field !== "") {
+                                settings.limitWriteBCCheckboxStates[field] = true;
+                                await plugin.saveSettings();
+                            }
+                        });
+                    });
+                });
+                await plugin.saveSettings();
+                drawLimitWriteBCCheckboxes(checkboxDiv);
+            }
+            row.createEl("button", { text: "X" }, (el) => {
+                el.addEventListener("click", async () => {
+                    row.remove();
+                    const removeIndex = hierIndex(settings.userHierarchies, [upInput.value, sameInput.value, downInput.value].map(splitAndTrim));
+                    if (removeIndex > -1) {
+                        settings.userHierarchies.splice(removeIndex, 1);
+                        await plugin.saveSettings();
+                    }
+                    // Refresh limitTrailFields
+                    await resetLimitTrailCheckboxes();
+                    await resetLimitWriteBCCheckboxes();
+                    new obsidian_1.Notice("Hierarchy Removed.");
+                });
+            });
+            const saveButton = row.createEl("button", {
+                text: existing ? "Saved" : "Save",
+                cls: (existing ? "" : "hierarchy-unsaved ") + "save-hierarchy-button",
+            }, function (el) {
+                el.addEventListener("click", async () => {
+                    if (hierIndex(settings.userHierarchies, [upInput.value, sameInput.value, downInput.value].map(splitAndTrim)) > -1) {
+                        new obsidian_1.Notice("A hierarchy with these Up, Same, and Down values already exists.");
+                        return;
+                    }
+                    if (saveButton.hasClass("hierarchy-unsaved")) {
+                        const removeIndex = hierIndex(settings.userHierarchies, cleanInputs);
+                        if (removeIndex > -1) {
+                            settings.userHierarchies.splice(removeIndex, 1);
+                            await plugin.saveSettings();
+                            await resetLimitTrailCheckboxes();
+                            await resetLimitWriteBCCheckboxes();
+                        }
+                    }
+                    cleanInputs = [upInput.value, sameInput.value, downInput.value].map(splitAndTrim);
+                    saveButton.toggleClass("hierarchy-unsaved", false);
+                    saveButton.textContent = "Saved";
+                    if (hierIndex(settings.userHierarchies, cleanInputs) > -1) {
+                        new obsidian_1.Notice("A hierarchy with these Up, Same, and Down values already exists.");
+                    }
+                    else {
+                        settings.userHierarchies.push({
+                            up: splitAndTrim(upInput.value),
+                            same: splitAndTrim(sameInput.value),
+                            down: splitAndTrim(downInput.value),
+                        });
+                        await plugin.saveSettings();
+                        new obsidian_1.Notice("Hierarchy saved.");
+                        await resetLimitTrailCheckboxes();
+                        await resetLimitWriteBCCheckboxes();
+                    }
+                });
+            });
+            return row;
+        };
+        const fieldDetails = containerEl.createEl("details", {
+            cls: "field-details",
+        });
+        fieldDetails.createEl("summary", { text: "Hierarchies" });
+        fieldDetails.createEl("p", {
+            text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
+        });
+        fieldDetails.createEl("p", {
+            text: "For each direction (up, same, down), you can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
+        });
+        new obsidian_1.Setting(fieldDetails)
+            .setName("Add Hierarchy")
+            .setDesc("Add a new hierarchy.")
+            .addButton((button) => {
+            button
+                .setTooltip("Add Additional")
+                .setButtonText("+")
+                .onClick(async () => {
+                fieldDetails.append(addHierarchyRow());
+            });
+        });
+        fieldDetails.createEl("button", { text: "Reset Hierarchies" }, async (el) => {
+            el.addEventListener("click", async () => {
+                const rows = fieldDetails.querySelectorAll(".hierarchy-row");
+                rows.forEach((row) => row.remove());
+                settings.userHierarchies = [];
+                await plugin.saveSettings();
+                new obsidian_1.Notice("Hierarchies reset.");
+            });
+        });
+        fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
+            el.addEventListener("click", () => {
+                if (settings.userHierarchies.length) {
+                    new obsidian_1.Notice(settings.userHierarchies.map(hierToStr).join("\n\n"));
+                }
+                else {
+                    new obsidian_1.Notice("No hierarchies currently exist.");
+                }
+                console.log({ hierarchies: settings.userHierarchies });
+            });
+        });
+        settings.userHierarchies.forEach((userHier) => {
+            fieldDetails.append(addHierarchyRow(userHier, true));
+        });
+        const hierarchyNoteDetails = containerEl.createEl("details");
+        hierarchyNoteDetails.createEl("summary", { text: "Hierarchy Notes" });
+        new obsidian_1.Setting(hierarchyNoteDetails)
+            .setName("Hierarchy Note(s)")
+            .setDesc("A list of notes used to create external Breadcrumb structures.")
+            .addText((text) => {
+            let finalValue;
+            text
+                .setPlaceholder("Hierarchy Note(s)")
+                .setValue([settings.hierarchyNotes].flat().join(", "))
+                .onChange(async (value) => {
+                finalValue = splitAndTrim(value);
+            });
+            text.inputEl.onblur = async () => {
+                if (finalValue[0] === "") {
+                    settings.hierarchyNotes = finalValue;
+                    await plugin.saveSettings();
+                }
+                else if (finalValue.every((note) => isInVault(this.app, note))) {
+                    settings.hierarchyNotes = finalValue;
+                    await plugin.saveSettings();
+                }
+                else {
+                    new obsidian_1.Notice("Atleast one of the notes is not in your vault");
+                }
+            };
+        });
+        new obsidian_1.Setting(hierarchyNoteDetails)
+            .setName("Hierarchy Note Up Field Name")
+            .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↑ type should they count as? This has to be one of the ↑ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
+            .addText((text) => {
+            let finalValue = settings.hierarchyNoteUpFieldName;
+            text.setPlaceholder("").setValue(settings.hierarchyNoteUpFieldName);
+            text.inputEl.onblur = async () => {
+                finalValue = text.getValue();
+                if (finalValue === "") {
+                    settings.hierarchyNoteUpFieldName = finalValue;
+                    await plugin.saveSettings();
+                }
+                else {
+                    const downFieldNames = settings.userHierarchies
+                        .map((hier) => hier.up)
+                        .flat(3);
+                    debug(settings, { downFieldNames, finalValue });
+                    if (downFieldNames.includes(finalValue)) {
+                        settings.hierarchyNoteUpFieldName = finalValue;
+                        await plugin.saveSettings();
+                    }
+                    else {
+                        new obsidian_1.Notice("The field name must be one of the exisitng ↓ fields in your hierarchies.");
+                    }
+                }
+            };
+        });
+        new obsidian_1.Setting(hierarchyNoteDetails)
+            .setName("Hierarchy Note Down Field Name")
+            .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↓ type should they count as? This has to be one of the ↓ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
+            .addText((text) => {
+            let finalValue = settings.hierarchyNoteDownFieldName;
+            text.setPlaceholder("").setValue(settings.hierarchyNoteDownFieldName);
+            text.inputEl.onblur = async () => {
+                finalValue = text.getValue();
+                if (finalValue === "") {
+                    settings.hierarchyNoteDownFieldName = finalValue;
+                    await plugin.saveSettings();
+                }
+                else {
+                    const downFieldNames = settings.userHierarchies
+                        .map((hier) => hier.down)
+                        .flat(3);
+                    debug(settings, { downFieldNames, finalValue });
+                    if (downFieldNames.includes(finalValue)) {
+                        settings.hierarchyNoteDownFieldName = finalValue;
+                        await plugin.saveSettings();
+                    }
+                    else {
+                        new obsidian_1.Notice("The field name must be one of the exisitng ↓ fields in your hierarchies.");
+                    }
+                }
+            };
+        });
+        const generalDetails = containerEl.createEl("details");
+        generalDetails.createEl("summary", { text: "General Options" });
+        new obsidian_1.Setting(generalDetails)
+            .setName("CSV Breadcrumb Paths")
+            .setDesc("The file path of a csv files with breadcrumbs information.")
+            .addText((text) => {
+            text.setValue(settings.CSVPaths);
+            text.inputEl.onblur = async () => {
+                settings.CSVPaths = text.inputEl.value;
+                await plugin.saveSettings();
+            };
+        });
+        new obsidian_1.Setting(generalDetails)
+            .setName("Refresh Index on Note Change")
+            .setDesc("Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.refreshIndexOnActiveLeafChange)
+            .onChange(async (value) => {
+            settings.refreshIndexOnActiveLeafChange = value;
+            await plugin.saveSettings();
+        }));
+        new obsidian_1.Setting(generalDetails)
+            .setName("Fields used for Alternative note names (Aliases)")
+            .setDesc("A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.")
+            .addText((text) => {
+            let finalValue;
+            text.setValue(settings.altLinkFields.join(", ")).onChange((str) => {
+                finalValue = str;
+            });
+            text.inputEl.onblur = async () => {
+                settings.altLinkFields = splitAndTrim(finalValue);
+                await plugin.saveSettings();
+            };
+        });
+        new obsidian_1.Setting(generalDetails)
+            .setName("Use yaml or inline fields for hierarchy data")
+            .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled). If this is disabled, it will only use Juggl links for it's metadata (See below).")
+            .addToggle((toggle) => toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
+            settings.useAllMetadata = value;
+            await plugin.saveSettings();
+            await plugin.refreshIndex();
+        }));
+        new obsidian_1.Setting(generalDetails)
+            .setName("Use Juggl link syntax without having Juggl installed.")
+            .setDesc("Should Breadcrumbs look for [Juggl links](https://juggl.io/Link+Types) even if you don't have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.parseJugglLinksWithoutJuggl)
+            .onChange(async (value) => {
+            settings.parseJugglLinksWithoutJuggl = value;
+            await plugin.saveSettings();
+        }));
+        if (this.app.plugins.plugins.dataview !== undefined) {
+            new obsidian_1.Setting(generalDetails)
+                .setName("Dataview Wait Time")
+                .setDesc('Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. If you see an error in the console saying "Cannot destructure currGraphs of undefined", try making this time longer. If you don\'t get that error, you can make this time shorter to make the Breadcrumbs load faster. The default is 5 seconds.')
+                .addText((text) => text
+                .setPlaceholder("Seconds")
+                .setValue((settings.dvWaitTime / 1000).toString())
+                .onChange(async (value) => {
+                const num = Number(value);
+                if (num > 0) {
+                    settings.dvWaitTime = num * 1000;
+                    await plugin.saveSettings();
+                }
+                else {
+                    new obsidian_1.Notice("The interval must be a non-negative number");
+                }
+            }));
+        }
+        new obsidian_1.Setting(generalDetails)
+            .setName("Refresh Interval")
+            .setDesc("Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)")
+            .addText((text) => text
+            .setPlaceholder("Seconds")
+            .setValue(settings.refreshIntervalTime.toString())
+            .onChange(async (value) => {
+            clearInterval(plugin.refreshIntervalID);
+            const num = Number(value);
+            if (num > 0) {
+                settings.refreshIntervalTime = num;
+                await plugin.saveSettings();
+                plugin.refreshIntervalID = window.setInterval(async () => {
+                    plugin.currGraphs = await plugin.initGraphs();
+                    if (settings.showTrail) {
+                        await plugin.drawTrail();
+                    }
+                    if (plugin.getActiveMatrixView()) {
+                        await plugin.getActiveMatrixView().draw();
+                    }
+                }, num * 1000);
+                plugin.registerInterval(plugin.refreshIntervalID);
+            }
+            else if (num === 0) {
+                settings.refreshIntervalTime = num;
+                await plugin.saveSettings();
+                clearInterval(plugin.refreshIntervalID);
+            }
+            else {
+                new obsidian_1.Notice("The interval must be a non-negative number");
+            }
+        }));
+        const MLViewDetails = containerEl.createEl("details");
+        MLViewDetails.createEl("summary", { text: "Matrix/List View" });
+        new obsidian_1.Setting(MLViewDetails)
+            .setName("Show Matrix or List view by default")
+            .setDesc("When Obsidian first loads, which view should it show? On = Matrix, Off = List")
+            .addToggle((toggle) => toggle.setValue(settings.defaultView).onChange(async (value) => {
+            settings.defaultView = value;
+            await plugin.saveSettings();
+        }));
+        // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
+        new obsidian_1.Setting(MLViewDetails)
+            .setName("Show all field names or just relation types")
+            .setDesc("This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names.")
+            .addToggle((toggle) => toggle.setValue(settings.showNameOrType).onChange(async (value) => {
+            settings.showNameOrType = value;
+            await plugin.saveSettings();
+            await plugin.getActiveMatrixView().draw();
+        }));
+        new obsidian_1.Setting(MLViewDetails)
+            .setName("Show Relationship Type")
+            .setDesc("Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A.")
+            .addToggle((toggle) => toggle.setValue(settings.showRelationType).onChange(async (value) => {
+            settings.showRelationType = value;
+            await plugin.saveSettings();
+            await plugin.getActiveMatrixView().draw();
+        }));
+        new obsidian_1.Setting(MLViewDetails)
+            .setName("Filter Implied Siblings")
+            .setDesc("Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).")
+            .addToggle((toggle) => toggle
+            .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
+            .onChange(async (value) => {
+            settings.filterImpliedSiblingsOfDifferentTypes = value;
+            await plugin.saveSettings();
+            await plugin.getActiveMatrixView().draw();
+        }));
+        new obsidian_1.Setting(MLViewDetails)
+            .setName("Open View in Right or Left side")
+            .setDesc("When loading the matrix view, should it open on the left or right side leaf? On = Right, Off = Left.")
+            .addToggle((toggle) => toggle.setValue(settings.rlLeaf).onChange(async (value) => {
+            var _a;
+            settings.rlLeaf = value;
+            await plugin.saveSettings();
+            await ((_a = plugin.getActiveMatrixView()) === null || _a === void 0 ? void 0 : _a.onClose());
+            await dist.openView(this.app, VIEW_TYPE_BREADCRUMBS_MATRIX, MatrixView);
+        }));
+        const trailDetails = containerEl.createEl("details");
+        trailDetails.createEl("summary", { text: "Trail/Grid" });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Show Breadcrumbs")
+            .setDesc("Show a trail of notes leading from your index note down to the current note you are in (if a path exists)")
+            .addToggle((toggle) => toggle.setValue(settings.showTrail).onChange(async (value) => {
+            settings.showTrail = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        const limitTrailFieldsDiv = trailDetails.createDiv({
+            cls: "limit-ML-fields",
+        });
+        limitTrailFieldsDiv.createEl("strong", {
+            text: "Limit M/L View to only show certain fields",
+        });
+        const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: "checkboxes" });
+        function drawLimitTrailCheckboxes(div) {
+            checkboxDiv.empty();
+            const checkboxStates = settings.limitTrailCheckboxStates;
+            settings.userHierarchies.forEach((userHier) => {
+                userHier.up.forEach(async (field) => {
+                    if (field === "")
+                        return;
+                    // First sort out limitTrailCheckboxStates
+                    if (checkboxStates[field] === undefined) {
+                        checkboxStates[field] = true;
+                        await plugin.saveSettings();
+                    }
+                    const cbDiv = div.createDiv();
+                    const checkedQ = checkboxStates[field];
+                    const cb = cbDiv.createEl("input", {
+                        type: "checkbox",
+                        attr: { id: field },
+                    });
+                    cb.checked = checkedQ;
+                    cbDiv.createEl("label", {
+                        text: field,
+                        attr: { for: field },
+                    });
+                    cb.addEventListener("change", async (event) => {
+                        checkboxStates[field] = cb.checked;
+                        await plugin.saveSettings();
+                        console.log(settings.limitTrailCheckboxStates);
+                    });
+                });
+            });
+        }
+        drawLimitTrailCheckboxes(checkboxDiv);
+        new obsidian_1.Setting(trailDetails)
+            .setName("Field name to hide trail")
+            .setDesc("A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`.")
+            .addText((text) => {
+            text.setValue(settings.hideTrailFieldName);
+            text.inputEl.onblur = async () => {
+                settings.hideTrailFieldName = text.getValue();
+                await plugin.saveSettings();
+            };
+        });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Trail or Table or Both")
+            .setDesc("Wether to show the regular breadcrumb trails, the table view, neither, or both. 1 = Only Trail, 2 = Only Grid, 3 = Both")
+            .addText((text) => {
+            text
+                .setValue(settings.trailOrTable.toString())
+                .onChange(async (value) => {
+                const num = parseInt(value);
+                if ([1, 2, 3].includes(num)) {
+                    settings.trailOrTable = num;
+                    await plugin.saveSettings();
+                    await plugin.drawTrail();
+                }
+                else {
+                    new obsidian_1.Notice("The value has to be 1, 2, or 3");
+                }
+            });
+        });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Grid view dots")
+            .setDesc("If the grid view is visible, shows dots based on the file size of each cell.")
+            .addToggle((toggle) => toggle.setValue(settings.gridDots).onChange(async (value) => {
+            settings.gridDots = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        const dotsColour = trailDetails.createDiv();
+        dotsColour.createEl("h4", {
+            text: "Dots colour",
+        });
+        const dotsColourPicker = dotsColour.createEl("input", {
+            type: "color",
+        });
+        dotsColourPicker.value = settings.dotsColour;
+        dotsColourPicker.addEventListener("change", async () => {
+            settings.dotsColour = dotsColourPicker.value;
+            await plugin.saveSettings();
+        });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Grid view heatmap")
+            .setDesc("If the grid view is visible, change the background colour of squares based on the number of children leaving that note.")
+            .addToggle((toggle) => toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
+            settings.gridHeatmap = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        const heatmapColour = trailDetails.createDiv();
+        heatmapColour.createEl("h4", {
+            text: "Heat map colour",
+        });
+        const heatmapColourPicker = heatmapColour.createEl("input", {
+            type: "color",
+        });
+        heatmapColourPicker.value = settings.heatmapColour;
+        heatmapColourPicker.addEventListener("change", async () => {
+            settings.heatmapColour = heatmapColourPicker.value;
+            await plugin.saveSettings();
+        });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Index/Home Note(s)")
+            .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
+            .addText((text) => {
+            let finalValue;
+            text
+                .setPlaceholder("Index Note")
+                .setValue([settings.indexNote].flat().join(", "))
+                .onChange(async (value) => {
+                finalValue = splitAndTrim(value);
+            });
+            text.inputEl.onblur = async () => {
+                // TODO Refactor this to general purpose isInVault function
+                if (finalValue[0] === "") {
+                    settings.indexNote = finalValue;
+                    await plugin.saveSettings();
+                }
+                else if (finalValue.every((index) => isInVault(this.app, index))) {
+                    settings.indexNote = finalValue;
+                    await plugin.saveSettings();
+                }
+                else {
+                    new obsidian_1.Notice(`Atleast one of the notes is not in your vault`);
+                }
+            };
+        });
+        new obsidian_1.Setting(trailDetails)
+            .setName("Default: All or Shortest")
+            .setDesc("If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest")
+            .addToggle((toggle) => toggle.setValue(settings.showAll).onChange(async (value) => {
+            settings.showAll = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        new obsidian_1.Setting(trailDetails)
+            .setName("Breadcrumb trail seperator")
+            .setDesc("The character to show between crumbs in the breadcrumb trail. The default is '→'")
+            .addText((text) => text
+            .setPlaceholder("→")
+            .setValue(settings.trailSeperator)
+            .onChange(async (value) => {
+            settings.trailSeperator = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        new obsidian_1.Setting(trailDetails)
+            .setName("No path found message")
+            .setDesc("The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)")
+            .addText((text) => text
+            .setPlaceholder(`No path to index note was found`)
+            .setValue(settings.noPathMessage)
+            .onChange(async (value) => {
+            settings.noPathMessage = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        new obsidian_1.Setting(trailDetails)
+            .setName("Respect Readable Line Length")
+            .setDesc("Should the breadcrumbs trail adjust its width to the readable line length, or use as much space as possible? On = use readable line length.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.respectReadableLineLength)
+            .onChange(async (value) => {
+            settings.respectReadableLineLength = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        const writeBCsToFileDetails = containerEl.createEl("details");
+        writeBCsToFileDetails.createEl("summary", {
+            text: "Write Breadcrumbs to File",
+        });
+        const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
+            cls: "limit-ML-fields",
+        });
+        limitWriteBCDiv.createEl("strong", {
+            text: "Limit to only write certain fields to files",
+        });
+        const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({
+            cls: "checkboxes",
+        });
+        function drawLimitWriteBCCheckboxes(div) {
+            limitWriteBCCheckboxDiv.empty();
+            const checkboxStates = settings.limitWriteBCCheckboxStates;
+            settings.userHierarchies.forEach((userHier) => {
+                DIRECTIONS.forEach((dir) => {
+                    userHier[dir].forEach(async (field) => {
+                        if (field === "")
+                            return;
+                        // First sort out limitWriteBCCheckboxStates
+                        if (checkboxStates[field] === undefined) {
+                            checkboxStates[field] = true;
+                            await plugin.saveSettings();
+                        }
+                        const cbDiv = div.createDiv();
+                        const checkedQ = checkboxStates[field];
+                        const cb = cbDiv.createEl("input", {
+                            type: "checkbox",
+                            attr: { id: field },
+                        });
+                        cb.checked = checkedQ;
+                        cbDiv.createEl("label", {
+                            text: field,
+                            attr: { for: field },
+                        });
+                        cb.addEventListener("change", async (event) => {
+                            checkboxStates[field] = cb.checked;
+                            await plugin.saveSettings();
+                            console.log(settings.limitWriteBCCheckboxStates);
+                        });
+                    });
+                });
+            });
+        }
+        drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
+        new obsidian_1.Setting(writeBCsToFileDetails)
+            .setName("Show the `Write Breadcrumbs to ALL Files` command")
+            .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
+            .addToggle((toggle) => toggle.setValue(settings.showWriteAllBCsCmd).onChange(async (value) => {
+            settings.showWriteAllBCsCmd = value;
+            await plugin.saveSettings();
+        }));
+        const visModalDetails = containerEl.createEl("details");
+        visModalDetails.createEl("summary", { text: "Visualisation Modal" });
+        new obsidian_1.Setting(visModalDetails)
+            .setName("Default Visualisation Type")
+            .setDesc("Which visualisation to show by defualt")
+            .addDropdown((cb) => {
+            VISTYPES.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visGraph);
+            cb.onChange(async (value) => {
+                settings.visGraph = value;
+                await plugin.saveSettings();
+            });
+        });
+        new obsidian_1.Setting(visModalDetails)
+            .setName("Default Relation")
+            .setDesc("Which relation type to show first when opening the modal")
+            .addDropdown((cb) => {
+            RELATIONS.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visRelation);
+            cb.onChange(async (value) => {
+                settings.visRelation = value;
+                await plugin.saveSettings();
+            });
+        });
+        new obsidian_1.Setting(visModalDetails)
+            .setName("Default Real/Closed")
+            .setDesc("Show the real or closed graph by default")
+            .addDropdown((cb) => {
+            REAlCLOSED.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visClosed);
+            cb.onChange(async (value) => {
+                settings.visClosed = value;
+                await plugin.saveSettings();
+            });
+        });
+        new obsidian_1.Setting(visModalDetails)
+            .setName("Default Unlinked")
+            .setDesc("Show all nodes or only those which have links by default")
+            .addDropdown((cb) => {
+            ALLUNLINKED.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visAll);
+            cb.onChange(async (value) => {
+                settings.visAll = value;
+                await plugin.saveSettings();
+            });
+        });
+        const createIndexDetails = containerEl.createEl("details");
+        createIndexDetails.createEl("summary", { text: "Create Index" });
+        new obsidian_1.Setting(createIndexDetails)
+            .setName("Add wiklink brackets")
+            .setDesc("When creating an index, should it wrap the note name in wikilinks `[[]]` or not. On = yes, off = no.")
+            .addToggle((toggle) => toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
+            settings.wikilinkIndex = value;
+            await plugin.saveSettings();
+        }));
+        new obsidian_1.Setting(createIndexDetails)
+            .setName("Show aliases of notes in index")
+            .setDesc("Show the aliases of each note in brackets. On = yes, off = no.")
+            .addToggle((toggle) => toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
+            settings.aliasesInIndex = value;
+            await plugin.saveSettings();
+        }));
+        const debugDetails = containerEl.createEl("details");
+        debugDetails.createEl("summary", { text: "Debugging" });
+        new obsidian_1.Setting(debugDetails)
+            .setName("Debug Mode")
+            .setDesc("Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail.")
+            .addToggle((toggle) => toggle.setValue(settings.debugMode).onChange(async (value) => {
+            settings.debugMode = value;
+            await plugin.saveSettings();
+        }));
+        new obsidian_1.Setting(debugDetails)
+            .setName("Super Debug Mode")
+            .setDesc("Toggling this on will enable ALOT of console logs")
+            .addToggle((toggle) => toggle.setValue(settings.superDebugMode).onChange(async (value) => {
+            settings.superDebugMode = value;
+            await plugin.saveSettings();
+        }));
+        debugDetails.createEl("button", { text: "Console log `settings`" }, (el) => {
+            el.addEventListener("click", () => console.log(settings));
+        });
+        new KoFi({ target: this.containerEl });
     }
 }
 
@@ -27593,7 +30473,7 @@ class Stats extends SvelteComponent {
 	}
 }
 
-class StatsView extends obsidian.ItemView {
+class StatsView extends obsidian_1.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.icon = "info";
@@ -27612,9 +30492,7 @@ class StatsView extends obsidian.ItemView {
     getDisplayText() {
         return "Breadcrumbs Stats";
     }
-    async onOpen() {
-        await this.plugin.saveSettings();
-    }
+    async onOpen() { }
     onClose() {
         if (this.view) {
             this.view.$destroy();
@@ -36380,14 +39258,14 @@ stratify()
     .parentId(function (d) {
     return d.parentId;
 });
-class VisModal extends obsidian.Modal {
+class VisModal extends obsidian_1.Modal {
     constructor(app, plugin) {
         super(app);
         this.plugin = plugin;
         this.modal = this;
     }
     onOpen() {
-        new obsidian.Notice("Alot of these features may not work, it is still very experimental.");
+        new obsidian_1.Notice("Alot of these features may not work, it is still very experimental.");
         let { contentEl } = this;
         contentEl.empty();
         new VisComp({
@@ -36431,7 +39309,7 @@ function get_each_context_2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (95:8) {#if step.value && settings.gridDots}
+// (86:8) {#if step.value && settings.gridDots}
 function create_if_block$1(ctx) {
 	let div;
 	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
@@ -36489,7 +39367,7 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (97:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (88:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2(ctx) {
 	let span;
 
@@ -36509,7 +39387,7 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (76:4) {#each allRuns[i] as step}
+// (67:4) {#each allRuns[i] as step}
 function create_each_block_1$1(ctx) {
 	let div1;
 	let div0;
@@ -36586,7 +39464,7 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (75:2) {#each transposedTrails as col, i}
+// (66:2) {#each transposedTrails as col, i}
 function create_each_block$1(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*allRuns*/ ctx[9][/*i*/ ctx[23]];
@@ -36707,18 +39585,6 @@ function create_fragment$1(ctx) {
 	};
 }
 
-function hoverPreview$1(event, view, to) {
-	const targetEl = event.target;
-
-	view.app.workspace.trigger("hover-link", {
-		event,
-		source: view.getViewType(),
-		hoverParent: view,
-		targetEl,
-		linktext: to
-	});
-}
-
 function instance$1($$self, $$props, $$invalidate) {
 	
 	
@@ -36740,7 +39606,7 @@ function instance$1($$self, $$props, $$invalidate) {
 
 	allCells.forEach(cell => {
 		try {
-			$$invalidate(2, wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(cell, currFile.path).stat.size, wordCounts);
+			$$invalidate(2, wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(cell, "").stat.size, wordCounts);
 		} catch(error) {
 			console.log(error);
 			console.log({ currFile });
@@ -36792,8 +39658,8 @@ function instance$1($$self, $$props, $$invalidate) {
 	const transposedTrails = transpose(paddedTrails);
 
 	const allRuns = transposedTrails.map(runs);
-	const click_handler = (step, e) => openOrSwitch(app, step.value, currFile, e);
-	const mouseover_handler = (step, e) => hoverPreview$1(e, activeLeafView, step.value);
+	const click_handler = async (step, e) => await openOrSwitch(app, step.value, currFile, e);
+	const mouseover_handler = (step, e) => dist.hoverPreview(e, activeLeafView, step.value);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -36848,7 +39714,7 @@ function get_each_context_1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (30:8) {:else}
+// (21:8) {:else}
 function create_else_block(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*trail*/ ctx[11];
@@ -36904,7 +39770,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (28:8) {#if trail.length === 0}
+// (19:8) {#if trail.length === 0}
 function create_if_block_1(ctx) {
 	let span;
 	let t_value = /*settings*/ ctx[2].noPathMessage + "";
@@ -36928,7 +39794,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (40:12) {#if i < trail.length - 1}
+// (31:12) {#if i < trail.length - 1}
 function create_if_block_2(ctx) {
 	let span;
 	let t_value = " " + /*settings*/ ctx[2].trailSeperator + " " + "";
@@ -36952,7 +39818,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (31:10) {#each trail as crumb, i}
+// (22:10) {#each trail as crumb, i}
 function create_each_block_1(ctx) {
 	let span;
 	let t0_value = /*crumb*/ ctx[14] + "";
@@ -37025,7 +39891,7 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (26:4) {#each trailsToShow as trail}
+// (17:4) {#each trailsToShow as trail}
 function create_each_block(ctx) {
 	let div;
 	let t;
@@ -37069,7 +39935,7 @@ function create_each_block(ctx) {
 	};
 }
 
-// (49:2) {#if sortedTrails.length > 1}
+// (40:2) {#if sortedTrails.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let button;
@@ -37190,18 +40056,6 @@ function create_fragment(ctx) {
 	};
 }
 
-function hoverPreview(event, view, to) {
-	const targetEl = event.target;
-
-	view.app.workspace.trigger("hover-link", {
-		event,
-		source: view.getViewType(),
-		hoverParent: view,
-		targetEl,
-		linktext: to
-	});
-}
-
 function instance($$self, $$props, $$invalidate) {
 	let buttonText;
 	let trailsToShow;
@@ -37214,7 +40068,7 @@ function instance($$self, $$props, $$invalidate) {
 	const activeLeafView = app.workspace.activeLeaf.view;
 	let showAll = settings.showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, currFile, e);
-	const mouseover_handler = (crumb, e) => hoverPreview(e, activeLeafView, crumb);
+	const mouseover_handler = (crumb, e) => dist.hoverPreview(e, activeLeafView, crumb);
 	const click_handler_1 = () => $$invalidate(4, showAll = !showAll);
 
 	$$self.$$set = $$props => {
@@ -37263,50 +40117,57 @@ class TrailPath extends SvelteComponent {
 	}
 }
 
-const DEFAULT_SETTINGS = {
-    userHierarchies: [],
-    indexNote: [""],
-    CSVPaths: '',
-    hierarchyNotes: [""],
-    hierarchyNoteDownFieldName: "",
-    hierarchyNoteUpFieldName: "",
-    refreshIndexOnActiveLeafChange: false,
-    altLinkFields: [],
-    useAllMetadata: true,
-    parseJugglLinksWithoutJuggl: false,
-    dvWaitTime: 5000,
-    refreshIntervalTime: 0,
-    defaultView: true,
-    showNameOrType: true,
-    showRelationType: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
-    rlLeaf: true,
-    showTrail: true,
-    limitTrailCheckboxStates: {},
-    hideTrailFieldName: 'hide-trail',
-    trailOrTable: 3,
-    gridDots: false,
-    dotsColour: "#000000",
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
-    showAll: false,
-    noPathMessage: `This note has no real or implied parents`,
-    trailSeperator: "→",
-    respectReadableLineLength: true,
-    limitWriteBCCheckboxStates: {},
-    showWriteAllBCsCmd: false,
-    visGraph: "Force Directed Graph",
-    visRelation: "Parent",
-    visClosed: "Real",
-    visAll: "All",
-    wikilinkIndex: true,
-    aliasesInIndex: false,
-    debugMode: false,
-    superDebugMode: false,
-};
-class BreadcrumbsPlugin extends obsidian.Plugin {
+class BreadcrumbsPlugin extends obsidian_1.Plugin {
     constructor() {
         super(...arguments);
+        this.visited = [];
+        this.initEverything = async () => {
+            if (this.app.plugins.plugins.dataview) {
+                await waitForDataview(this.app, 200);
+            }
+            else {
+                await dist.waitForResolvedLinks(this.app);
+            }
+            this.registerView(VIEW_TYPE_BREADCRUMBS_STATS, (leaf) => new StatsView(leaf, this));
+            this.registerView(VIEW_TYPE_BREADCRUMBS_MATRIX, (leaf) => new MatrixView(leaf, this));
+            this.currGraphs = await this.initGraphs();
+            await dist.openView(this.app, VIEW_TYPE_BREADCRUMBS_STATS, StatsView);
+            await dist.openView(this.app, VIEW_TYPE_BREADCRUMBS_MATRIX, MatrixView);
+            if (this.settings.showTrail) {
+                await this.drawTrail();
+            }
+            this.activeLeafChangeEventRef = this.app.workspace.on("active-leaf-change", async () => {
+                if (this.settings.refreshIndexOnActiveLeafChange) {
+                    // refreshIndex does everything in one
+                    await this.refreshIndex();
+                }
+                else {
+                    // If it is not called, active-leaf-change still needs to trigger a redraw
+                    const activeView = this.getActiveMatrixView();
+                    if (activeView) {
+                        await activeView.draw();
+                    }
+                    if (this.settings.showTrail) {
+                        await this.drawTrail();
+                    }
+                }
+            });
+            this.registerEvent(this.activeLeafChangeEventRef);
+            // ANCHOR autorefresh interval
+            if (this.settings.refreshIntervalTime > 0) {
+                this.refreshIntervalID = window.setInterval(async () => {
+                    this.currGraphs = await this.initGraphs();
+                    if (this.settings.showTrail) {
+                        await this.drawTrail();
+                    }
+                    const activeView = this.getActiveMatrixView();
+                    if (activeView) {
+                        await activeView.draw();
+                    }
+                }, this.settings.refreshIntervalTime * 1000);
+                this.registerInterval(this.refreshIntervalID);
+            }
+        };
         this.hierarchyNoteAdjList = (str) => {
             let noteContent = str;
             const settings = this.settings;
@@ -37330,7 +40191,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                 .map(Math.abs);
             const lcm = Math.min(...posFilteredDifferences);
             if (!posFilteredDifferences.every((diff) => diff % lcm === 0)) {
-                new obsidian.Notice("Please make sure the indentation is consistent in your hierarchy note.");
+                new obsidian_1.Notice("Please make sure the indentation is consistent in your hierarchy note.");
                 return [];
             }
             const difference = lcm;
@@ -37380,42 +40241,6 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             });
             return hier;
         };
-        this.initMatrixView = async (type) => {
-            let leaf = null;
-            for (leaf of this.app.workspace.getLeavesOfType(type)) {
-                if (leaf.view instanceof MatrixView) {
-                    return;
-                }
-                await leaf.setViewState({ type: "empty" });
-                break;
-            }
-            if (this.settings.rlLeaf) {
-                (leaf !== null && leaf !== void 0 ? leaf : this.app.workspace.getRightLeaf(false)).setViewState({
-                    type,
-                    active: false,
-                });
-            }
-            else {
-                (leaf !== null && leaf !== void 0 ? leaf : this.app.workspace.getLeftLeaf(false)).setViewState({
-                    type,
-                    active: false,
-                });
-            }
-        };
-        this.initStatsView = async (type) => {
-            let leaf = null;
-            for (leaf of this.app.workspace.getLeavesOfType(type)) {
-                if (leaf.view instanceof StatsView) {
-                    return;
-                }
-                await leaf.setViewState({ type: "empty" });
-                break;
-            }
-            (leaf !== null && leaf !== void 0 ? leaf : this.app.workspace.getRightLeaf(false)).setViewState({
-                type,
-                active: false,
-            });
-        };
     }
     async refreshIndex() {
         if (!this.activeLeafChangeEventRef) {
@@ -37446,107 +40271,15 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         if (this.settings.showTrail) {
             await this.drawTrail();
         }
-        new obsidian.Notice("Index refreshed");
+        new obsidian_1.Notice("Index refreshed");
     }
-    // this.app.metadataCache.on("dataview:api-ready", console.log("dv ready"));
     async onload() {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
-        this.activeLeafChangeEventRef = undefined;
-        this.visited = [];
-        this.registerView(VIEW_TYPE_BREADCRUMBS_STATS, (leaf) => new StatsView(leaf, this));
-        this.registerView(VIEW_TYPE_BREADCRUMBS_MATRIX, (leaf) => new MatrixView(leaf, this));
-        const initEverything = async () => {
-            this.currGraphs = await this.initGraphs();
-            this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
-            this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
-            if (this.settings.showTrail) {
-                await this.drawTrail();
-            }
-            this.activeLeafChangeEventRef = this.app.workspace.on("active-leaf-change", async () => {
-                if (this.settings.refreshIndexOnActiveLeafChange) {
-                    // refreshIndex does everything in one
-                    await this.refreshIndex();
-                }
-                else {
-                    // If it is not called, active-leaf-change still needs to trigger a redraw
-                    const activeView = this.getActiveMatrixView();
-                    if (activeView) {
-                        await activeView.draw();
-                    }
-                    if (this.settings.showTrail) {
-                        await this.drawTrail();
-                    }
-                }
-            });
-            this.registerEvent(this.activeLeafChangeEventRef);
-            // const editorToggleEventRef = this.app.workspace.on('markdown:toggle-preview', () => { console.log('working') })
-            // this.registerEvent(editorToggleEventRef)
-            // ANCHOR autorefresh interval
-            if (this.settings.refreshIntervalTime > 0) {
-                this.refreshIntervalID = window.setInterval(async () => {
-                    this.currGraphs = await this.initGraphs();
-                    if (this.settings.showTrail) {
-                        await this.drawTrail();
-                    }
-                    const activeView = this.getActiveMatrixView();
-                    if (activeView) {
-                        await activeView.draw();
-                    }
-                }, this.settings.refreshIntervalTime * 1000);
-                this.registerInterval(this.refreshIntervalID);
-            }
-        };
-        // let waiting1 = 0;
-        // let waiting2 = 0;
-        // const waitForDv = async (thenRun: () => any) => {
-        //   if (this.app.plugins.plugins.dataview) {
-        //     console.log("dv yes");
-        //     if (this.app.plugins.plugins.dataview.api) {
-        //       console.log("api yes");
-        //       setTimeout(async () => await thenRun(), 5000);
-        //       this.app.metadataCache.on("dv:api-ready", () =>
-        //         console.log("custom dv ready")
-        //       );
-        //       this.app.metadataCache.trigger("dv:api-ready");
-        //     } else {
-        //       console.log({ waiting2 });
-        //       waiting2++;
-        //       if (waiting2 > 300) {
-        //         new Notice("Dataview has not loaded yet");
-        //         setTimeout(async () => await thenRun(), 5000);
-        //       } else {
-        //         setTimeout(() => waitForDv(thenRun), 30);
-        //       }
-        //     }
-        //   } else {
-        //     console.log({ waiting1 });
-        //     waiting1++;
-        //     if (waiting1 > 100) {
-        //       setTimeout(async () => await thenRun(), 5000);
-        //     } else {
-        //       setTimeout(() => waitForDv(thenRun), 30);
-        //     }
-        //   }
-        // };
-        // waitForDv();
-        // if (this.app.plugins.plugins.dataview?.api) {
-        //   initEverything();
-        // } else {
-        //   this.registerEvent(
-        //     this.app.metadataCache.on("dataview:api-ready", initEverything)
-        //   );
-        // }
         this.app.workspace.onLayoutReady(async () => {
-            setTimeout(async () => {
-                await initEverything();
-            }, this.app.plugins.plugins.dataview
-                ? this.app.plugins.plugins.dataview.api
-                    ? 1
-                    : this.settings.dvWaitTime
-                : 3000);
+            setTimeout(async () => await this.initEverything(), 10000);
         });
-        obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
+        obsidian_1.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         this.addCommand({
             id: "show-breadcrumbs-matrix-view",
             name: "Open Matrix View",
@@ -37555,7 +40288,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                     return (this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)
                         .length === 0);
                 }
-                this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+                dist.openView(this.app, VIEW_TYPE_BREADCRUMBS_MATRIX, MatrixView);
             },
         });
         this.addCommand({
@@ -37566,7 +40299,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                     return (this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS)
                         .length === 0);
                 }
-                this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
+                dist.openView(this.app, VIEW_TYPE_BREADCRUMBS_STATS, StatsView);
             },
         });
         this.addCommand({
@@ -37588,23 +40321,32 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             callback: () => {
                 const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
                 if (first) {
-                    const second = window.confirm('Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.');
+                    const second = window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.");
                     if (second) {
-                        const third = window.confirm('For real, please make a back up before');
+                        const third = window.confirm("For real, please make a back up before");
                         if (third) {
                             try {
-                                this.app.vault.getMarkdownFiles().forEach(file => writeBCToFile(this.app, this, this.currGraphs, file));
-                                new obsidian.Notice('Operation Complete');
+                                this.app.vault
+                                    .getMarkdownFiles()
+                                    .forEach((file) => writeBCToFile(this.app, this, this.currGraphs, file));
+                                new obsidian_1.Notice("Operation Complete");
                             }
                             catch (error) {
-                                new obsidian.Notice(error);
+                                new obsidian_1.Notice(error);
                                 console.log(error);
                             }
                         }
                     }
                 }
             },
-            checkCallback: () => this.settings.showWriteAllBCsCmd
+            checkCallback: () => this.settings.showWriteAllBCsCmd,
+        });
+        this.addCommand({
+            id: "open-BC-vis-view",
+            name: "Open Breadcrumbs Visualisation View",
+            callback: () => {
+                new VisModal(this.app, this).open();
+            },
         });
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
@@ -37631,16 +40373,19 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
     async getCSVRows(basePath) {
         const { CSVPaths } = this.settings;
         const CSVRows = [];
-        if (CSVPaths[0] === '') {
+        if (CSVPaths[0] === "") {
             return CSVRows;
         }
-        const fullPath = obsidian.normalizePath(CSVPaths[0]);
+        const fullPath = obsidian_1.normalizePath(CSVPaths[0]);
         const content = await this.app.vault.adapter.read(fullPath);
-        const lines = content.split('\n');
-        const headers = lines[0].split(',').map(head => head.trim());
-        lines.slice(1).forEach(row => {
+        const lines = content.split("\n");
+        const headers = lines[0].split(",").map((head) => head.trim());
+        lines.slice(1).forEach((row) => {
             const rowObj = {};
-            row.split(',').map(head => head.trim()).forEach((item, i) => {
+            row
+                .split(",")
+                .map((head) => head.trim())
+                .forEach((item, i) => {
                 rowObj[headers[i]] = item;
             });
             CSVRows.push(rowObj);
@@ -37649,7 +40394,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         return CSVRows;
     }
     addCSVCrumbs(g, CSVRows, dir, fieldName) {
-        CSVRows.forEach(row => {
+        CSVRows.forEach((row) => {
             g.setNode(row.file, { dir, fieldName });
             if (fieldName === "" || !row[fieldName])
                 return;
@@ -37669,16 +40414,15 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
         let hierarchyNotesArr = [];
         if (settings.hierarchyNotes[0] !== "") {
-            const currPath = this.app.workspace.getActiveFile().path;
             const contentArr = [];
             settings.hierarchyNotes.forEach(async (note) => {
-                const file = this.app.metadataCache.getFirstLinkpathDest(note, currPath);
+                const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
                 if (file) {
                     const content = await this.app.vault.cachedRead(file);
                     contentArr.push(content);
                 }
                 else {
-                    new obsidian.Notice(`${note} is no long in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`);
+                    new obsidian_1.Notice(`${note} is no long in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`);
                 }
             });
             await Promise.all(contentArr);
@@ -37691,22 +40435,21 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             hierGs: [],
             mergedGs: { up: undefined, same: undefined, down: undefined },
             closedGs: { up: undefined, same: undefined, down: undefined },
-            limitTrailG: undefined
+            limitTrailG: undefined,
         };
         userHierarchies.forEach((hier, i) => {
             const newGraphs = { up: {}, same: {}, down: {} };
-            Object.keys(hier).forEach((dir) => {
+            DIRECTIONS.forEach((dir) => {
                 hier[dir].forEach((dirField) => {
                     newGraphs[dir][dirField] = new graphlib.Graph();
                 });
             });
             graphs.hierGs.push(newGraphs);
         });
-        const useCSV = settings.CSVPaths !== '';
-        let basePath;
+        const useCSV = settings.CSVPaths !== "";
         let CSVRows;
         if (useCSV) {
-            basePath = this.app.vault.adapter.basePath;
+            const basePath = this.app.vault.adapter.basePath;
             CSVRows = await this.getCSVRows(basePath);
         }
         relObjArr.forEach((relObj) => {
@@ -37754,27 +40497,24 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             const dirMerged = mergeGs(...Object.values(allXGs));
             graphs.mergedGs[dir] = dirMerged;
         });
+        // Don't merge with this forEach ↑. The bottom one needs the results from the first
         DIRECTIONS.forEach((dir) => {
-            if (dir !== "same") {
-                graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[dir === "up" ? "down" : "up"]);
-            }
-            else {
-                graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[dir]);
-            }
+            const oppDir = getOppDir(dir);
+            graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[oppDir]);
         });
         // LimitTrailG
-        if (Object.values(settings.limitTrailCheckboxStates).every(val => val)) {
+        if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
             graphs.limitTrailG = graphs.closedGs.up;
         }
         else {
-            const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, 'up');
-            const allLimitedTrailsGsKeys = Object.keys(allUps).filter(field => settings.limitTrailCheckboxStates[field]);
+            const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, "up");
+            const allLimitedTrailsGsKeys = Object.keys(allUps).filter((field) => settings.limitTrailCheckboxStates[field]);
             const allLimitedTrailsGs = [];
-            allLimitedTrailsGsKeys.forEach(key => allLimitedTrailsGs.push(allUps[key]));
+            allLimitedTrailsGsKeys.forEach((key) => allLimitedTrailsGs.push(allUps[key]));
             const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
             const allLimitedDownGs = [];
-            Object.keys(settings.limitTrailCheckboxStates).forEach(limitedField => {
-                const oppFieldsArr = oppFields(limitedField, 'up', userHierarchies);
+            Object.keys(settings.limitTrailCheckboxStates).forEach((limitedField) => {
+                const oppFieldsArr = oppFields(limitedField, "up", userHierarchies);
                 const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs);
                 allLimitedDownGs.push(...oppGs);
             });
@@ -37872,17 +40612,17 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const activeMDView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
+        const activeMDView = this.app.workspace.getActiveViewOfType(obsidian_1.MarkdownView);
+        if (!activeMDView) {
+            debugGroupEnd(settings, "debugMode");
+            return;
+        }
         const currFile = activeMDView.file;
         const currMetadata = this.app.metadataCache.getFileCache(currFile);
         const previewView = activeMDView.contentEl.querySelector(".markdown-preview-view");
         if ((_a = currMetadata.frontmatter) === null || _a === void 0 ? void 0 : _a.hasOwnProperty(settings.hideTrailFieldName)) {
             debugGroupEnd(settings, "debugMode");
             (_b = previewView.querySelector("div.breadcrumbs-trail")) === null || _b === void 0 ? void 0 : _b.remove();
-            return;
-        }
-        if (!activeMDView) {
-            debugGroupEnd(settings, "debugMode");
             return;
         }
         const frontm = (_d = (_c = this.app.metadataCache.getFileCache(currFile)) === null || _c === void 0 ? void 0 : _c.frontmatter) !== null && _d !== void 0 ? _d : {};
@@ -37906,7 +40646,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                 : ""}`,
         });
         this.visited.push([currFile.path, trailDiv]);
-        previewView.querySelector('.markdown-preview-sizer').before(trailDiv);
+        previewView.querySelector(".markdown-preview-sizer").before(trailDiv);
         trailDiv.empty();
         if (sortedTrails.length === 0) {
             trailDiv.innerText = settings.noPathMessage;
@@ -37944,15 +40684,8 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
     }
     onunload() {
         console.log("unloading");
-        // Detach matrix view
-        const openLeaves = [
-            VIEW_TYPE_BREADCRUMBS_MATRIX,
-            VIEW_TYPE_BREADCRUMBS_STATS,
-        ]
-            .map((type) => this.app.workspace.getLeavesOfType(type))
-            .flat(1);
-        openLeaves.forEach((leaf) => leaf.detach());
-        // Empty trailDiv
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS);
         this.visited.forEach((visit) => visit[1].remove());
     }
 }

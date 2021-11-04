@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.3](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.2...0.11.3) (2021-11-04)
+
+
+### Bug Fixes
+
+* :bug: Revert back to timeout for dvIndex ([470b09c](https://github.com/SkepticMystic/breadcrumbs/commit/470b09cc13bfeefd79944c0d7fbddd917727fb1d))
+
+### [0.11.2](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.1...0.11.2) (2021-11-03)
+
+
+### Features
+
+* **Vis View:** :sparkles: Cmd to open ([4ded5a2](https://github.com/SkepticMystic/breadcrumbs/commit/4ded5a239274b804c68e666ceac4aef01c8a0dc7))
+
+### [0.11.1](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.0...0.11.1) (2021-11-03)
+
+## [0.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.75...0.11.0) (2021-11-03)
+
+
+### Bug Fixes
+
+* :bug: Properly await dvIndex ([42f0440](https://github.com/SkepticMystic/breadcrumbs/commit/42f04406b7d4aa3e953451a15aa4869d19b17478))
+
 ### [0.10.75](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.74...0.10.75) (2021-10-09)
 
 

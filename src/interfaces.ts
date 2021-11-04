@@ -1,5 +1,6 @@
 import type { Edge, Graph } from "graphlib";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
+import type { DIRECTIONS, RELATIONS } from "src/constants";
 
 export interface BreadcrumbsSettings {
   userHierarchies: userHierarchy[];
@@ -46,16 +47,16 @@ export interface BreadcrumbsSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-  | string
-  | string[]
-  | string[][]
-  | dvLink
-  | dvLink[]
-  | Pos
-  | TFile;
+    | string
+    | string[]
+    | string[][]
+    | dvLink
+    | dvLink[]
+    | Pos
+    | TFile;
 }
 
-export type Directions = "up" | "same" | "down";
+export type Directions = typeof DIRECTIONS[number];
 export type userHierarchy = {
   [dir in Directions]: string[];
 };
@@ -145,7 +146,7 @@ export interface d3Graph {
   links: d3Link[];
 }
 
-export type Relations = "Parent" | "Sibling" | "Child";
+export type Relations = typeof RELATIONS[number];
 
 export type VisGraphs = {
   [relation in Relations]: {
@@ -200,3 +201,25 @@ export type MergedGraphs = {
 export type ClosedGraphs = {
   [dir in Directions]: Graph;
 };
+
+declare module "obsidian" {
+  interface App {
+    plugins: {
+      plugins: {
+        dataview: { api: { index: { pages: Map<string, {}> } } };
+        juggl: any;
+        metaedit: {
+          api: {
+            getAutopropFunction: () => any;
+            getUpdateFunction: () => any;
+            getFileFromTFileOrPath: () => any;
+            getGetPropertyValueFunction: () => any;
+            getGetFilesWithPropertyFunction: () => any;
+            getCreateYamlPropertyFunction: () => any;
+            getGetPropertiesInFile: () => any;
+          };
+        };
+      };
+    };
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "breadcrumbs-plugin",
-  "version": "0.10.75",
+  "version": "0.11.3",
   "description": "Visualise & navigate your vault's structure",
   "main": "main.js",
   "scripts": {
@@ -26,9 +26,9 @@
     "@typescript-eslint/parser": "^4.27.0",
     "auto-plugin-obsidian": "^0.1.4",
     "eslint": "^7.29.0",
-    "obsidian": "^0.12.0",
     "rollup": "^2.32.1",
     "rollup-plugin-svelte": "7.1.0",
+    "obsidian": "^0.12.17",
     "standard-version": "^9.3.1",
     "svelte-check": "1.1.14",
     "svelte-preprocess": "4.7.3",
@@ -45,6 +45,8 @@
     "graphlib": "^2.1.8",
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
+    "obsidian": "^0.12.17",
+    "obsidian-community-lib": "^1.0.1",
     "svelte": "3.35.0"
   }
 }

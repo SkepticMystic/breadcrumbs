@@ -4,14 +4,14 @@ import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import {
   DIRECTIONS,
   TRAIL_ICON,
-  VIEW_TYPE_BREADCRUMBS_MATRIX
+  VIEW_TYPE_BREADCRUMBS_MATRIX,
 } from "src/constants";
 import type {
   BreadcrumbsSettings,
   Directions,
   internalLinkObj,
   SquareProps,
-  userHierarchy
+  userHierarchy,
 } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
 import {
@@ -19,7 +19,8 @@ import {
   debug,
   debugGroupEnd,
   debugGroupStart,
-  mergeGs
+  mergeGs,
+  unresolvedQ,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -54,7 +55,7 @@ export default class MatrixView extends ItemView {
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
-        const settings = this.plugin.settings;
+        const { settings } = this.plugin;
         const currFile = this.app.workspace.getActiveFile().basename;
 
         const closedParents = this.plugin.currGraphs.closedGs.down;
@@ -74,7 +75,7 @@ export default class MatrixView extends ItemView {
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
         const terminals = up.sinks();
-        const settings = this.plugin.settings;
+        const { settings } = this.plugin;
 
         let globalIndex = "";
         terminals.forEach((terminal) => {
@@ -98,15 +99,7 @@ export default class MatrixView extends ItemView {
 
   icon = TRAIL_ICON;
 
-  async onOpen(): Promise<void> {
-    await this.plugin.saveSettings();
-    // this.app.workspace.onLayoutReady(async () => {
-    //   setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-    // });
-    // this.app.workspace.on("dataview:api-ready", () =>
-    //   console.log("dv ready")
-    // );
-  }
+  async onOpen(): Promise<void> {}
 
   onClose(): Promise<void> {
     if (this.view) {
@@ -115,17 +108,15 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  unresolvedQ(to: string, from: string): boolean {
-    const { unresolvedLinks } = this.app.metadataCache;
-    if (!unresolvedLinks[from]) {
-      return false;
-    }
-    return unresolvedLinks[from][to] > 0;
-  }
-
-  squareItems(g: Graph, currFile: TFile, settings: BreadcrumbsSettings, realQ = true): internalLinkObj[] {
+  squareItems(
+    g: Graph,
+    currFile: TFile,
+    settings: BreadcrumbsSettings,
+    realQ = true
+  ): internalLinkObj[] {
+    const { app } = this;
     let items: string[];
-    const altFieldsQ = !!settings.altLinkFields.length
+    const altFieldsQ = !!settings.altLinkFields.length;
 
     if (realQ) {
       items = (g.successors(currFile.basename) ?? []) as string[];
@@ -139,22 +130,25 @@ export default class MatrixView extends ItemView {
       items.forEach((to: string) => {
         let alt = null;
         if (altFieldsQ) {
-          const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path)
+          const toFile = app.metadataCache.getFirstLinkpathDest(to, "");
           if (toFile) {
-            const metadata = this.app.metadataCache.getFileCache(toFile)
-            settings.altLinkFields.forEach(altLinkField => {
-              const altLink = metadata?.frontmatter?.[altLinkField]
-              if (altLink) { alt = altLink; return }
-            })
+            const metadata = app.metadataCache.getFileCache(toFile);
+            settings.altLinkFields.forEach((altLinkField) => {
+              const altLink = metadata?.frontmatter?.[altLinkField];
+              if (altLink) {
+                alt = altLink;
+                return;
+              }
+            });
           }
         }
         internalLinkObjArr.push({
           to,
           cls:
             "internal-link breadcrumbs-link" +
-            (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
+            (unresolvedQ(app, to, currFile.path) ? " is-unresolved" : "") +
             (realQ ? "" : " breadcrumbs-implied"),
-          alt
+          alt,
         });
       });
     }
@@ -210,7 +204,6 @@ export default class MatrixView extends ItemView {
     const indent = "  ";
     const visited: { [node: string]: number[] } = {};
 
-    const activeFile = this.app.workspace.getActiveFile();
     reversed.forEach((path) => {
       for (let depth = 0; depth < path.length; depth++) {
         const currNode = path[depth];
@@ -228,10 +221,9 @@ export default class MatrixView extends ItemView {
           index += settings.wikilinkIndex ? "]]" : "";
 
           if (settings.aliasesInIndex) {
-
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
               currNode,
-              activeFile.path
+              ""
             );
 
             if (currFile !== null) {
@@ -262,7 +254,12 @@ export default class MatrixView extends ItemView {
     return index;
   }
 
-  getHierSquares(userHierarchies: userHierarchy[], data: { [dir in Directions]: Graph }[], currFile: TFile, settings: BreadcrumbsSettings) {
+  getHierSquares(
+    userHierarchies: userHierarchy[],
+    data: { [dir in Directions]: Graph }[],
+    currFile: TFile,
+    settings: BreadcrumbsSettings
+  ) {
     return userHierarchies.map((hier, i) => {
       const [currUpG, currSameG, currDownG] = [
         data[i].up,
@@ -301,16 +298,22 @@ export default class MatrixView extends ItemView {
         }
         // Create the implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
-          const altFieldsQ = !!settings.altLinkFields.length
+          const altFieldsQ = !!settings.altLinkFields.length;
           let alt = null;
           if (altFieldsQ) {
-            const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path)
+            const toFile = this.app.metadataCache.getFirstLinkpathDest(
+              impliedSibling,
+              ""
+            );
             if (toFile) {
-              const metadata = this.app.metadataCache.getFileCache(toFile)
-              settings.altLinkFields.forEach(altLinkField => {
-                const altLink = metadata?.frontmatter?.[altLinkField]
-                if (altLink) { alt = altLink; return }
-              })
+              const metadata = this.app.metadataCache.getFileCache(toFile);
+              settings.altLinkFields.forEach((altLinkField) => {
+                const altLink = metadata?.frontmatter?.[altLinkField];
+                if (altLink) {
+                  alt = altLink;
+                  return;
+                }
+              });
             }
           }
 
@@ -318,11 +321,11 @@ export default class MatrixView extends ItemView {
             to: impliedSibling,
             cls:
               "internal-link breadcrumbs-link breadcrumbs-implied" +
-              (this.unresolvedQ(impliedSibling, currFile.path)
+              (unresolvedQ(this.app, impliedSibling, currFile.path)
                 ? " is-unresolved"
                 : ""),
             // TODO get alt for implied siblings
-            alt
+            alt,
           });
         });
       });
@@ -336,13 +339,13 @@ export default class MatrixView extends ItemView {
       iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
       iDown = this.removeDuplicateImplied(rDown, iDown);
 
-      const iSameNoDup: internalLinkObj[] = []
-      iSameArr.forEach(impSib => {
-        if (iSameNoDup.every(noDup => noDup.to !== impSib.to)) {
-          iSameNoDup.push(impSib)
+      const iSameNoDup: internalLinkObj[] = [];
+      iSameArr.forEach((impSib) => {
+        if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
+          iSameNoDup.push(impSib);
         }
-      })
-      iSameArr = iSameNoDup
+      });
+      iSameArr = iSameNoDup;
 
       debug(settings, {
         rUp,
@@ -425,7 +428,12 @@ export default class MatrixView extends ItemView {
     });
     debug(settings, { data });
 
-    const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings)
+    const hierSquares = this.getHierSquares(
+      userHierarchies,
+      data,
+      currFile,
+      settings
+    );
     debug(settings, { hierSquares });
 
     const filteredSquaresArr = hierSquares.filter((squareArr) =>
@@ -443,7 +451,7 @@ export default class MatrixView extends ItemView {
         matrixView: this,
         app: this.app,
       },
-    }
+    };
 
     if (this.matrixQ) {
       this.view = new Matrix(compInput);

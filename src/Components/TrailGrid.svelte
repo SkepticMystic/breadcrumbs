@@ -1,6 +1,7 @@
 <script lang="ts">
   import { range } from "lodash";
-  import type { App, TFile, View } from "obsidian";
+  import type { App, ItemView, TFile } from "obsidian";
+  import { hoverPreview } from "obsidian-community-lib";
   import type BreadcrumbsPlugin from "src/main";
   import {
     closeImpliedLinks,
@@ -18,24 +19,12 @@
   const settings = plugin.settings;
 
   const currFile = app.workspace.getActiveFile();
-  const activeLeafView = app.workspace.activeLeaf.view;
+  const activeLeafView = app.workspace.activeLeaf.view as ItemView;
 
   function resolvedClass(toFile: string, currFile: TFile): string {
     return app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
-  }
-
-  function hoverPreview(event: MouseEvent, view: View, to: string): void {
-    const targetEl = event.target as HTMLElement;
-
-    view.app.workspace.trigger("hover-link", {
-      event,
-      source: view.getViewType(),
-      hoverParent: view,
-      targetEl,
-      linktext: to,
-    });
   }
 
   const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
@@ -45,7 +34,7 @@
     try {
       wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(
         cell,
-        currFile.path
+        ""
       ).stat.size;
     } catch (error) {
       console.log(error);
@@ -122,7 +111,7 @@
               children[step.value] * 200 + 55
             ).toString(16)}`
           : ''}"
-        on:click={(e) => openOrSwitch(app, step.value, currFile, e)}
+        on:click={async (e) => await openOrSwitch(app, step.value, currFile, e)}
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
         <div class={resolvedClass(step.value, currFile)}>
