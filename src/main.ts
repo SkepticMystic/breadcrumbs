@@ -134,7 +134,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     await this.loadSettings();
 
     this.app.workspace.onLayoutReady(async () => {
-      await this.initEverything();
+      setTimeout(this.initEverything, 10000);
     });
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
