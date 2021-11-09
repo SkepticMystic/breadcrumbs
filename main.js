@@ -37266,7 +37266,7 @@ class TrailPath extends SvelteComponent {
 const DEFAULT_SETTINGS = {
     userHierarchies: [],
     indexNote: [""],
-    CSVPaths: '',
+    CSVPaths: "",
     hierarchyNotes: [""],
     hierarchyNoteDownFieldName: "",
     hierarchyNoteUpFieldName: "",
@@ -37283,7 +37283,7 @@ const DEFAULT_SETTINGS = {
     rlLeaf: true,
     showTrail: true,
     limitTrailCheckboxStates: {},
-    hideTrailFieldName: 'hide-trail',
+    hideTrailFieldName: "hide-trail",
     trailOrTable: 3,
     gridDots: false,
     dotsColour: "#000000",
@@ -37588,13 +37588,15 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             callback: () => {
                 const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
                 if (first) {
-                    const second = window.confirm('Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.');
+                    const second = window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.");
                     if (second) {
-                        const third = window.confirm('For real, please make a back up before');
+                        const third = window.confirm("For real, please make a back up before");
                         if (third) {
                             try {
-                                this.app.vault.getMarkdownFiles().forEach(file => writeBCToFile(this.app, this, this.currGraphs, file));
-                                new obsidian.Notice('Operation Complete');
+                                this.app.vault
+                                    .getMarkdownFiles()
+                                    .forEach((file) => writeBCToFile(this.app, this, this.currGraphs, file));
+                                new obsidian.Notice("Operation Complete");
                             }
                             catch (error) {
                                 new obsidian.Notice(error);
@@ -37604,7 +37606,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                     }
                 }
             },
-            checkCallback: () => this.settings.showWriteAllBCsCmd
+            checkCallback: () => this.settings.showWriteAllBCsCmd,
         });
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
@@ -37631,16 +37633,19 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
     async getCSVRows(basePath) {
         const { CSVPaths } = this.settings;
         const CSVRows = [];
-        if (CSVPaths[0] === '') {
+        if (CSVPaths[0] === "") {
             return CSVRows;
         }
         const fullPath = obsidian.normalizePath(CSVPaths[0]);
         const content = await this.app.vault.adapter.read(fullPath);
-        const lines = content.split('\n');
-        const headers = lines[0].split(',').map(head => head.trim());
-        lines.slice(1).forEach(row => {
+        const lines = content.split("\n");
+        const headers = lines[0].split(",").map((head) => head.trim());
+        lines.slice(1).forEach((row) => {
             const rowObj = {};
-            row.split(',').map(head => head.trim()).forEach((item, i) => {
+            row
+                .split(",")
+                .map((head) => head.trim())
+                .forEach((item, i) => {
                 rowObj[headers[i]] = item;
             });
             CSVRows.push(rowObj);
@@ -37649,7 +37654,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         return CSVRows;
     }
     addCSVCrumbs(g, CSVRows, dir, fieldName) {
-        CSVRows.forEach(row => {
+        CSVRows.forEach((row) => {
             g.setNode(row.file, { dir, fieldName });
             if (fieldName === "" || !row[fieldName])
                 return;
@@ -37691,7 +37696,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             hierGs: [],
             mergedGs: { up: undefined, same: undefined, down: undefined },
             closedGs: { up: undefined, same: undefined, down: undefined },
-            limitTrailG: undefined
+            limitTrailG: undefined,
         };
         userHierarchies.forEach((hier, i) => {
             const newGraphs = { up: {}, same: {}, down: {} };
@@ -37702,7 +37707,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             });
             graphs.hierGs.push(newGraphs);
         });
-        const useCSV = settings.CSVPaths !== '';
+        const useCSV = settings.CSVPaths !== "";
         let basePath;
         let CSVRows;
         if (useCSV) {
@@ -37763,18 +37768,18 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             }
         });
         // LimitTrailG
-        if (Object.values(settings.limitTrailCheckboxStates).every(val => val)) {
+        if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
             graphs.limitTrailG = graphs.closedGs.up;
         }
         else {
-            const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, 'up');
-            const allLimitedTrailsGsKeys = Object.keys(allUps).filter(field => settings.limitTrailCheckboxStates[field]);
+            const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, "up");
+            const allLimitedTrailsGsKeys = Object.keys(allUps).filter((field) => settings.limitTrailCheckboxStates[field]);
             const allLimitedTrailsGs = [];
-            allLimitedTrailsGsKeys.forEach(key => allLimitedTrailsGs.push(allUps[key]));
+            allLimitedTrailsGsKeys.forEach((key) => allLimitedTrailsGs.push(allUps[key]));
             const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
             const allLimitedDownGs = [];
-            Object.keys(settings.limitTrailCheckboxStates).forEach(limitedField => {
-                const oppFieldsArr = oppFields(limitedField, 'up', userHierarchies);
+            Object.keys(settings.limitTrailCheckboxStates).forEach((limitedField) => {
+                const oppFieldsArr = oppFields(limitedField, "up", userHierarchies);
                 const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs);
                 allLimitedDownGs.push(...oppGs);
             });
@@ -37906,7 +37911,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
                 : ""}`,
         });
         this.visited.push([currFile.path, trailDiv]);
-        previewView.querySelector('.markdown-preview-sizer').before(trailDiv);
+        previewView.querySelector(".markdown-preview-sizer").before(trailDiv);
         trailDiv.empty();
         if (sortedTrails.length === 0) {
             trailDiv.innerText = settings.noPathMessage;
