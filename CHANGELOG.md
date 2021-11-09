@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.76](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.4...0.10.76) (2021-11-09)
+
+
+### Bug Fixes
+
+* :bug: Properly reset back to old version ([cd95a47](https://github.com/SkepticMystic/breadcrumbs/commit/cd95a4795b73ff555f07b245d6c8c21f1079d0c0))
+
 ### [0.10.75](https://github.com/SkepticMystic/breadcrumbs/compare/0.10.74...0.10.75) (2021-10-09)
 
 
