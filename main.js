@@ -6411,8 +6411,12 @@ function getFieldValues(frontmatterCache, field, settings) {
                         values.push(rawItemAsString.split("/").last());
                     }
                 }
-                else if (rawItem.path) {
-                    values.push(rawItem.path.split("/").last());
+                else if (rawItem.path !== undefined) {
+                    superDebug(settings, { rawItem });
+                    const lastSplit = rawItem.path.split("/").last();
+                    if (lastSplit !== undefined) {
+                        values.push(lastSplit);
+                    }
                 }
             });
         }
@@ -6526,7 +6530,7 @@ async function openOrSwitch(app, dest, currFile, event) {
     }
     else {
         const mode = app.vault.getConfig("defaultViewMode");
-        const leaf = (event.ctrlKey || event.getModifierState('Meta'))
+        const leaf = event.ctrlKey || event.getModifierState("Meta")
             ? workspace.splitActiveLeaf()
             : workspace.getUnpinnedLeaf();
         await leaf.openFile(destFile, { active: true, mode });
@@ -6616,9 +6620,9 @@ function getAllGsInDir(userHierarchies, currGraphs, dir) {
 }
 function getAllFieldGs(fields, currGraphs) {
     const fieldGs = [];
-    currGraphs.forEach(hierGs => {
-        DIRECTIONS.forEach(dir => {
-            Object.keys(hierGs[dir]).forEach(fieldName => {
+    currGraphs.forEach((hierGs) => {
+        DIRECTIONS.forEach((dir) => {
+            Object.keys(hierGs[dir]).forEach((fieldName) => {
                 if (fields.includes(fieldName)) {
                     const fieldG = hierGs[dir][fieldName];
                     if (fieldG instanceof graphlib.Graph)
@@ -6651,13 +6655,13 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
         console.log(`Creating: ${key}: ${valueStr}`);
         await api.createYamlProperty(key, `['${valueStr}']`, file);
     }
-    else if ([...[frontmatter[key]]].flat(3).some(val => val == valueStr)) {
-        console.log('Already Exists!');
+    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+        console.log("Already Exists!");
         return;
     }
     else {
         const oldValueFlat = [...[frontmatter[key]]].flat(4);
-        const newValue = [...oldValueFlat, valueStr].map(val => `'${val}'`);
+        const newValue = [...oldValueFlat, valueStr].map((val) => `'${val}'`);
         console.log(`Updating: ${key}: ${newValue}`);
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
@@ -6667,26 +6671,26 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
     const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
     if (!api) {
-        new obsidian.Notice('Metaedit must be enabled for this function to work');
+        new obsidian.Notice("Metaedit must be enabled for this function to work");
         return;
     }
-    currGraphs.hierGs.forEach(hier => {
-        DIRECTIONS.forEach(dir => {
+    currGraphs.hierGs.forEach((hier) => {
+        DIRECTIONS.forEach((dir) => {
             let oppDir;
-            if (dir === 'up')
-                oppDir = 'down';
-            if (dir === 'down')
-                oppDir = 'up';
-            if (dir === 'same')
-                oppDir = 'same';
-            Object.keys(hier[dir]).forEach(field => {
+            if (dir === "up")
+                oppDir = "down";
+            if (dir === "down")
+                oppDir = "up";
+            if (dir === "same")
+                oppDir = "same";
+            Object.keys(hier[dir]).forEach((field) => {
                 const fieldG = hier[dir][field];
                 const succs = fieldG.predecessors(file.basename);
                 succs.forEach(async (succ) => {
                     const { fieldName } = fieldG.node(succ);
                     if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
                         return;
-                    const currHier = plugin.settings.userHierarchies.filter(hier => hier[dir].includes(fieldName))[0];
+                    const currHier = plugin.settings.userHierarchies.filter((hier) => hier[dir].includes(fieldName))[0];
                     let oppField = currHier[oppDir][0];
                     if (!oppField)
                         oppField = `<Reverse>${fieldName}`;
@@ -6698,11 +6702,11 @@ const writeBCToFile = (app, plugin, currGraphs, file) => {
 };
 function oppFields(field, dir, userHierarchies) {
     var _a, _b;
-    let oppDir = 'same';
+    let oppDir = "same";
     if (dir !== "same") {
         oppDir = dir === "up" ? "down" : "up";
     }
-    return (_b = (_a = userHierarchies.find(hier => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : [];
+    return ((_b = (_a = userHierarchies.find((hier) => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : []);
 }
 
 /**
