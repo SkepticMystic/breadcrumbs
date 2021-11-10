@@ -45,6 +45,7 @@
     "graphlib": "^2.1.8",
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
+    "nodejs": "^0.0.0",
     "svelte": "3.35.0"
   }
 }

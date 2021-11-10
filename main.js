@@ -1,7 +1,12 @@
 'use strict';
 
 var obsidian = require('obsidian');
+var util = require('util');
 require('path');
+
+function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+var util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -6399,25 +6404,63 @@ function getFieldValues(frontmatterCache, field, settings) {
             rawValues.forEach((rawItem) => {
                 if (!rawItem)
                     return;
-                if (typeof rawItem === "string" || typeof rawItem === "number") {
-                    // Obs cache converts link of form: [[\d+]] to number[][]
-                    const rawItemAsString = rawItem.toString();
-                    const splits = rawItemAsString.match(splitLinksRegex);
-                    if (splits !== null) {
-                        const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
-                        values.push(...strs);
-                    }
-                    else {
-                        values.push(rawItemAsString.split("/").last());
-                    }
+                let unProxied = [rawItem];
+                if (util__default['default'].types.isProxy(rawItem)) {
+                    unProxied = [];
+                    // Definitely a proxy the first time
+                    const firstValue = Object.assign({}, rawItem);
+                    firstValue.values.forEach((firstVal) => {
+                        if (util__default['default'].types.isProxy(firstVal)) {
+                            const secondValue = Object.assign({}, firstVal);
+                            const secondValues = secondValue.values;
+                            if (secondValues) {
+                                secondValues.forEach((secondVal) => {
+                                    if (util__default['default'].types.isProxy(secondVal)) {
+                                        const thirdValues = Object.assign({}, secondVal).values;
+                                        thirdValues.forEach((thirdVal) => {
+                                            unProxied.push(thirdVal);
+                                        });
+                                    }
+                                    else {
+                                        if (typeof secondValues === "string") {
+                                            unProxied.push(secondValues);
+                                        }
+                                        else {
+                                            unProxied.push(...secondValues);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                unProxied.push(secondValue);
+                            }
+                        }
+                        else {
+                            unProxied.push(firstVal);
+                        }
+                    });
                 }
-                else if (rawItem.path !== undefined) {
-                    superDebug(settings, { rawItem });
-                    const lastSplit = rawItem.path.split("/").last();
-                    if (lastSplit !== undefined) {
-                        values.push(lastSplit);
+                unProxied.forEach((value) => {
+                    console.log({ unproxiedValue: value });
+                    if (typeof value === "string" || typeof value === "number") {
+                        // Obs cache converts link of form: [[\d+]] to number[][]
+                        const rawItemAsString = value.toString();
+                        const splits = rawItemAsString.match(splitLinksRegex);
+                        if (splits !== null) {
+                            const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
+                            values.push(...strs);
+                        }
+                        else {
+                            values.push(rawItemAsString.split("/").last());
+                        }
                     }
-                }
+                    else if (value.path !== undefined) {
+                        const lastSplit = value.path.split("/").last();
+                        if (lastSplit !== undefined) {
+                            values.push(lastSplit);
+                        }
+                    }
+                });
             });
         }
         return values;
