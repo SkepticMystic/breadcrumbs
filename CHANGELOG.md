@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.11.7](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.6...0.11.7) (2021-11-10)
+
+
+### Bug Fixes
+
+* **getFieldValues:** :bug: Handle DataArrays (dv proxies) ([63e57d7](https://github.com/SkepticMystic/breadcrumbs/commit/63e57d785dc28ea846bf22243be759177bf61ff1))
+
 ### [0.11.6](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.5...0.11.6) (2021-11-09)
 
 
