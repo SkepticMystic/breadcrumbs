@@ -6408,31 +6408,26 @@ function getFieldValues(frontmatterCache, field, settings) {
                 if (util__default['default'].types.isProxy(rawItem)) {
                     unProxied = [];
                     // Definitely a proxy the first time
-                    const firstValue = Object.assign({}, rawItem);
-                    firstValue.values.forEach((firstVal) => {
+                    const first = Object.assign({}, rawItem);
+                    first.values.forEach((firstVal) => {
                         if (util__default['default'].types.isProxy(firstVal)) {
-                            const secondValue = Object.assign({}, firstVal);
-                            const secondValues = secondValue.values;
+                            const second = Object.assign({}, firstVal);
+                            const secondValues = second.values;
                             if (secondValues) {
                                 secondValues.forEach((secondVal) => {
                                     if (util__default['default'].types.isProxy(secondVal)) {
-                                        const thirdValues = Object.assign({}, secondVal).values;
-                                        thirdValues.forEach((thirdVal) => {
+                                        const third = Object.assign({}, secondVal).values;
+                                        third.forEach((thirdVal) => {
                                             unProxied.push(thirdVal);
                                         });
                                     }
                                     else {
-                                        if (typeof secondValues === "string") {
-                                            unProxied.push(secondValues);
-                                        }
-                                        else {
-                                            unProxied.push(...secondValues);
-                                        }
+                                        unProxied.push(secondVal);
                                     }
                                 });
                             }
                             else {
-                                unProxied.push(secondValue);
+                                unProxied.push(second);
                             }
                         }
                         else {

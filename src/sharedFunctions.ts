@@ -258,28 +258,24 @@ export function getFieldValues(
           unProxied = [];
 
           // Definitely a proxy the first time
-          const firstValue = Object.assign({}, rawItem);
-          firstValue.values.forEach((firstVal: RawValue | typeof Proxy) => {
+          const first = Object.assign({}, rawItem);
+          first.values.forEach((firstVal: RawValue | typeof Proxy) => {
             if (util.types.isProxy(firstVal)) {
-              const secondValue = Object.assign({}, firstVal);
-              const secondValues = secondValue.values;
+              const second = Object.assign({}, firstVal);
+              const secondValues = second.values;
               if (secondValues) {
                 secondValues.forEach((secondVal: RawValue | typeof Proxy) => {
                   if (util.types.isProxy(secondVal)) {
-                    const thirdValues = Object.assign({}, secondVal).values;
-                    thirdValues.forEach((thirdVal: RawValue | typeof Proxy) => {
+                    const third = Object.assign({}, secondVal).values;
+                    third.forEach((thirdVal: RawValue | typeof Proxy) => {
                       unProxied.push(thirdVal);
                     });
                   } else {
-                    if (typeof secondValues === "string") {
-                      unProxied.push(secondValues);
-                    } else {
-                      unProxied.push(...secondValues);
-                    }
+                    unProxied.push(secondVal);
                   }
                 });
               } else {
-                unProxied.push(secondValue);
+                unProxied.push(second);
               }
             } else {
               unProxied.push(firstVal);
