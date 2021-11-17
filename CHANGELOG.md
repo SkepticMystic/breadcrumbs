@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.9...0.12.0) (2021-11-17)
+
+
+### Features
+
+* :sparkles: Use Svelte for Hierarchy Note settings ([3c891ea](https://github.com/SkepticMystic/breadcrumbs/commit/3c891ea85375209ccc33913a0be42e4966301921))
+
+
+### Bug Fixes
+
+* **Grid View:** :bug: Closing gs in wrong direction ([8cfa81e](https://github.com/SkepticMystic/breadcrumbs/commit/8cfa81e2250ae4f1a5652c825a0c344382bb30ce))
+
 ### [0.11.9](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.8...0.11.9) (2021-11-17)
 
 ### [0.11.8](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.7...0.11.8) (2021-11-10)
