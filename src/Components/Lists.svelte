@@ -1,18 +1,17 @@
 <script lang="ts">
   import type { App, TFile } from "obsidian";
-  import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
-  import type { SquareProps } from "src/interfaces";
-  import type { BreadcrumbsSettings } from "src/interfaces";
+  import type { BCSettings, SquareProps } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
+  import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
 
   export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;
-  export let settings: BreadcrumbsSettings;
+  export let settings: BCSettings;
   export let matrixView: MatrixView;
   export let app: App;
 </script>
 
-<div class="breadcrumbs-list">
+<div class="BC-list">
   {#each filteredSquaresArr as squares}
     <details open>
       <summary class="hier-summary"
@@ -21,11 +20,11 @@
 
       {#each squares as square}
         {#if square.realItems.length > 0 || square.impliedItems.length > 0}
-          <details open class="breadcrumbs-details">
+          <details open class="BC-details">
             <summary>{square.fieldName}</summary>
             {#if square.realItems.length}
               {#if settings.showRelationType}
-                <h5 class="breadcrumbs-header">Real</h5>
+                <h5 class="BC-header">Real</h5>
               {/if}
 
               <ol class="markdown-preview-view">
@@ -38,9 +37,7 @@
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, realItem.to)}
                     >
-                      {realItem.alt
-                        ? realItem.alt
-                        : realItem.to.split("/").last()}
+                      {realItem.alt ?? realItem.to.split("/").last()}
                     </div>
                   </li>
                 {/each}
@@ -49,7 +46,7 @@
 
             {#if square.impliedItems.length}
               {#if settings.showRelationType}
-                <h5 class="breadcrumbs-header">Implied</h5>
+                <h5 class="BC-header">Implied</h5>
               {/if}
 
               <ol
@@ -57,7 +54,7 @@
                 start={square.realItems.length + 1}
               >
                 {#each square.impliedItems as impliedItem}
-                  <li class="breadcrumbs-implied">
+                  <li class="BC-Implied">
                     <div
                       class={impliedItem.cls}
                       on:click={async (e) =>
@@ -65,9 +62,7 @@
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, impliedItem.to)}
                     >
-                      {impliedItem.alt
-                        ? impliedItem.alt
-                        : impliedItem.to.split("/").last()}
+                      {impliedItem.alt ?? impliedItem.to.split("/").last()}
                     </div>
                   </li>
                 {/each}
@@ -89,7 +84,7 @@
     /* margin: 3px; */
     color: var(--text-title-h3);
   }
-  h5.breadcrumbs-header {
+  h5.BC-header {
     /* margin: 3px; */
     color: var(--text-title-h5);
   }

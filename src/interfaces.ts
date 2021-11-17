@@ -1,7 +1,7 @@
 import type Graph from "graphology";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
-export interface BreadcrumbsSettings {
+export interface BCSettings {
   userHierarchies: userHierarchy[];
   indexNote: string[];
   CSVPaths: string;

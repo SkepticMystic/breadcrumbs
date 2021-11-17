@@ -1,21 +1,21 @@
-div.breadcrumbs-trail {
+div.BC-trail {
   border: 1px solid var(--background-modifier-border);
   border-radius: 5px;
   padding: 5px;
 }
 
-.breadcrumbs-matrix-square li {
+.BC-matrix-square li {
   text-align: left;
 }
 
-li.breadcrumbs-implied::marker {
+li.BC-Implied::marker {
 }
 
-.internal-link.breadcrumbs-link {
+.internal-link.BC-Link {
   color: var(--text-accent);
 }
 
-.internal-link.breadcrumbs-link:hover {
+.internal-link.BC-Link:hover {
   color: var(--text-accent-hover, var(--text-accent));
 }
 

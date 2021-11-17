@@ -1,31 +1,26 @@
 <script lang="ts">
   import { range } from "lodash";
-  import type { App, TFile } from "obsidian";
-  import type BreadcrumbsPlugin from "src/main";
+  import type { App } from "obsidian";
+  import { hoverPreview } from "obsidian-community-lib/dist/utils";
+  import type BCPlugin from "src/main";
   import {
     closeImpliedLinks,
+    linkClass,
     normalise,
     openOrSwitch,
     padArray,
     runs,
     transpose,
   } from "src/sharedFunctions";
-  import { hoverPreview } from "obsidian-community-lib/dist/utils";
 
   export let sortedTrails: string[][];
   export let app: App;
-  export let plugin: BreadcrumbsPlugin;
+  export let plugin: BCPlugin;
 
   const settings = plugin.settings;
 
   const currFile = app.workspace.getActiveFile();
   const activeLeafView = app.workspace.activeLeaf.view;
-
-  function resolvedClass(toFile: string, currFile: TFile): string {
-    return app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
-      ? "internal-link is-unresolved breadcrumbs-link"
-      : "internal-link breadcrumbs-link";
-  }
 
   const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
 
@@ -92,7 +87,7 @@
 </script>
 
 <div
-  class="breadcrumbs-trail-grid"
+  class="BC-trail-grid"
   style="
     grid-template-columns: {'1fr '.repeat(transposedTrails.length)};
     grid-template-rows: {'1fr '.repeat(sortedTrails.length)}"
@@ -100,9 +95,7 @@
   {#each transposedTrails as col, i}
     {#each allRuns[i] as step}
       <div
-        class="breadcrumbs-trail-grid-item {step.value === ''
-          ? 'breadcrumbs-filler'
-          : ''}"
+        class="BC-trail-grid-item {step.value === '' ? 'BC-filler' : ''}"
         style="
             grid-area: {step.first + 1} / {i + 1} / 
                 {step.last + 2} / {i + 2};
@@ -114,7 +107,7 @@
         on:click={(e) => openOrSwitch(app, step.value, currFile, e)}
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
-        <div class={resolvedClass(step.value, currFile)}>
+        <div class={linkClass(app, step.value)}>
           {step.value}
         </div>
         {#if step.value && settings.gridDots}
@@ -133,7 +126,7 @@
 </div>
 
 <style>
-  div.breadcrumbs-trail-grid {
+  div.BC-trail-grid {
     border: 2px solid var(--background-modifier-border);
     display: grid;
     align-items: stretch;
@@ -141,7 +134,7 @@
     height: auto;
   }
 
-  div.breadcrumbs-trail-grid-item {
+  div.BC-trail-grid-item {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--background-modifier-border);
@@ -152,7 +145,7 @@
     /* height: auto; */
   }
 
-  div.breadcrumbs-trail-grid-item.breadcrumbs-filler {
+  div.BC-trail-grid-item.BC-filler {
     opacity: 0.7;
   }
 

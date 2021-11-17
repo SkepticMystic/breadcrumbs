@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import type Graph from "graphology";
 import { App, Modal, Notice } from "obsidian";
 import type { AdjListItem, d3Graph } from "src/interfaces";
-import type BreadcrumbsPlugin from "src/main";
+import type BCPlugin from "src/main";
 import { getSinks } from "src/sharedFunctions";
 import VisComp from "./Components/VisComp.svelte";
 
@@ -204,10 +204,10 @@ export const stratify = d3
     return d.parentId;
   });
 export class VisModal extends Modal {
-  plugin: BreadcrumbsPlugin;
+  plugin: BCPlugin;
   modal: VisModal;
 
-  constructor(app: App, plugin: BreadcrumbsPlugin) {
+  constructor(app: App, plugin: BCPlugin) {
     super(app);
     this.plugin = plugin;
     this.modal = this;

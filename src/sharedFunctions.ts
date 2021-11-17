@@ -11,7 +11,7 @@ import {
 import { DIRECTIONS, dropHeaderOrAlias, splitLinksRegex } from "src/constants";
 import type {
   BCIndex,
-  BreadcrumbsSettings,
+  BCSettings,
   Directions,
   dvFrontmatterCache,
   dvLink,
@@ -20,7 +20,7 @@ import type {
   JugglLink,
   userHierarchy,
 } from "src/interfaces";
-import type BreadcrumbsPlugin from "src/main";
+import type BCPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
 import util from "util";
 
@@ -36,20 +36,20 @@ export function normalise(arr: number[]): number[] {
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
 
-export function debug(settings: BreadcrumbsSettings, log: any): void {
+export function debug(settings: BCSettings, log: any): void {
   if (settings.debugMode) {
     console.log(log);
   }
 }
 
-export function superDebug(settings: BreadcrumbsSettings, log: any): void {
+export function superDebug(settings: BCSettings, log: any): void {
   if (settings.superDebugMode) {
     console.log(log);
   }
 }
 
 export function debugGroupStart(
-  settings: BreadcrumbsSettings,
+  settings: BCSettings,
   type: "debugMode" | "superDebugMode",
   group: string
 ) {
@@ -58,7 +58,7 @@ export function debugGroupStart(
   }
 }
 export function debugGroupEnd(
-  settings: BreadcrumbsSettings,
+  settings: BCSettings,
   type: "debugMode" | "superDebugMode"
 ) {
   if (settings[type]) {
@@ -68,7 +68,7 @@ export function debugGroupEnd(
 
 export function getDVMetadataCache(
   app: App,
-  settings: BreadcrumbsSettings,
+  settings: BCSettings,
   files: TFile[]
 ) {
   debugGroupStart(settings, "debugMode", "getDVMetadataCache");
@@ -95,7 +95,7 @@ export function getDVMetadataCache(
 
 export function getObsMetadataCache(
   app: App,
-  settings: BreadcrumbsSettings,
+  settings: BCSettings,
   files: TFile[]
 ) {
   debugGroupStart(settings, "debugMode", "getObsMetadataCache");
@@ -133,7 +133,7 @@ export function splitAndDrop(str: string): string[] | [] {
 // => {[note: string]: {type: string, linksInLine: string[]}[]}
 export async function getJugglLinks(
   app: App,
-  settings: BreadcrumbsSettings
+  settings: BCSettings
 ): Promise<JugglLink[]> {
   debugGroupStart(settings, "debugMode", "getJugglLinks");
   debug(settings, "Using Juggl");
@@ -226,7 +226,7 @@ export async function getJugglLinks(
 export function getFieldValues(
   frontmatterCache: dvFrontmatterCache,
   field: string,
-  settings: BreadcrumbsSettings
+  settings: BCSettings
 ) {
   const values: string[] = [];
   try {
@@ -316,12 +316,12 @@ export const splitAndTrim = (fields: string): string[] =>
 
 /**
  *
- * @param  {BreadcrumbsPlugin} plugin
+ * @param  {BCPlugin} plugin
  * @param  {dvFrontmatterCache[]} fileFrontmatterArr
  * @returns HierarchyFields
  */
 export async function getNeighbourObjArr(
-  plugin: BreadcrumbsPlugin,
+  plugin: BCPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
 ): Promise<
   {
@@ -466,6 +466,7 @@ export async function openOrSwitch(
   const leavesWithDestAlreadyOpen: WorkspaceLeaf[] = [];
   // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
   workspace.iterateAllLeaves((leaf) => {
+    //@ts-ignore
     if (leaf.view?.file?.basename === dest) {
       leavesWithDestAlreadyOpen.push(leaf);
     }
@@ -681,7 +682,7 @@ export const getOppDir = (dir: Directions): Directions =>
 
 export const writeBCToFile = (
   app: App,
-  plugin: BreadcrumbsPlugin,
+  plugin: BCPlugin,
   currGraphs: BCIndex,
   file: TFile
 ) => {
@@ -753,4 +754,10 @@ export function swapItems<T>(i: number, j: number, arr: T[]) {
   arr[i] = arr[j];
   arr[j] = tmp;
   return arr;
+}
+
+export function linkClass(app: App, to: string, realQ = true) {
+  return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
+    realQ ? "" : "BC-Implied"
+  }`;
 }

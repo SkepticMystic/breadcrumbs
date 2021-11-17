@@ -2,7 +2,7 @@
   import { sum } from "lodash";
   import { DIRECTIONS } from "src/constants";
   import type { Directions, HierData } from "src/interfaces";
-  import type BreadcrumbsPlugin from "src/main";
+  import type BCPlugin from "src/main";
   import {
     closeImpliedLinks,
     copy,
@@ -11,7 +11,7 @@
     mergeGs,
   } from "src/sharedFunctions";
 
-  export let plugin: BreadcrumbsPlugin;
+  export let plugin: BCPlugin;
 
   const { settings } = plugin;
   const { userHierarchies } = settings;

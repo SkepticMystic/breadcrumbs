@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
   import type {
-    BreadcrumbsSettings,
+    BCSettings,
     VisGraphs,
     visTypes,
   } from "src/interfaces";
@@ -18,7 +18,7 @@
   import { treeMap } from "src/Visualisations/TreeMap";
 
   export let modal: VisModal;
-  export let settings: BreadcrumbsSettings;
+  export let settings: BCSettings;
 
   const { app } = modal;
   const { plugin } = modal;

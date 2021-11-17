@@ -1,14 +1,14 @@
 import type Graph from "graphology";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { STATS_VIEW } from "src/constants";
-import type BreadcrumbsPlugin from "src/main";
+import type BCPlugin from "src/main";
 import Stats from "./Components/Stats.svelte";
 
 export default class StatsView extends ItemView {
-  private plugin: BreadcrumbsPlugin;
+  private plugin: BCPlugin;
   private view: Stats;
 
-  constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
     super(leaf);
     this.plugin = plugin;
   }

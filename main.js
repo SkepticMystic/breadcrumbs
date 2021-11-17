@@ -2455,9 +2455,9 @@ async function openView(app, viewType, viewClass, side = "right") {
     return leaf.view;
 }
 
-const MATRIX_VIEW = "breadcrumbs-matrix";
-const STATS_VIEW = "breadcrumbs-stats";
-const TRAIL_ICON = "breadcrumbs-trail-icon";
+const MATRIX_VIEW = "BC-matrix";
+const STATS_VIEW = "BC-stats";
+const TRAIL_ICON = "BC-trail-icon";
 const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
 const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
@@ -19984,7 +19984,7 @@ function getFieldValues(frontmatterCache, field, settings) {
 const splitAndTrim = (fields) => fields.split(",").map((str) => str.trim());
 /**
  *
- * @param  {BreadcrumbsPlugin} plugin
+ * @param  {BCPlugin} plugin
  * @param  {dvFrontmatterCache[]} fileFrontmatterArr
  * @returns HierarchyFields
  */
@@ -20080,6 +20080,7 @@ async function openOrSwitch(app, dest, currFile, event) {
     // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
     workspace.iterateAllLeaves((leaf) => {
         var _a, _b;
+        //@ts-ignore
         if (((_b = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file) === null || _b === void 0 ? void 0 : _b.basename) === dest) {
             leavesWithDestAlreadyOpen.push(leaf);
         }
@@ -20264,6 +20265,9 @@ function swapItems(i, j, arr) {
     arr[i] = arr[j];
     arr[j] = tmp;
     return arr;
+}
+function linkClass(app, to, realQ = true) {
+    return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 }
 
 function noop$1() { }
@@ -20659,8 +20663,8 @@ class SvelteComponent {
 
 function add_css$6() {
 	var style = element("style");
-	style.id = "svelte-fwoihq-style";
-	style.textContent = "summary.hier-summary.svelte-fwoihq{color:var(--text-title-h2);font-size:larger}summary.svelte-fwoihq{color:var(--text-title-h3)}h5.breadcrumbs-header.svelte-fwoihq{color:var(--text-title-h5)}ol.markdown-preview-view.svelte-fwoihq{padding-top:3px;padding-bottom:5px}";
+	style.id = "svelte-ifpk85-style";
+	style.textContent = "summary.hier-summary.svelte-ifpk85{color:var(--text-title-h2);font-size:larger}summary.svelte-ifpk85{color:var(--text-title-h3)}h5.BC-header.svelte-ifpk85{color:var(--text-title-h5)}ol.markdown-preview-view.svelte-ifpk85{padding-top:3px;padding-bottom:5px}";
 	append(document.head, style);
 }
 
@@ -20688,7 +20692,7 @@ function get_each_context_3$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (21:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (20:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$4(ctx) {
 	let details;
 	let summary;
@@ -20708,9 +20712,9 @@ function create_if_block$4(ctx) {
 			if (if_block0) if_block0.c();
 			t2 = space();
 			if (if_block1) if_block1.c();
-			attr(summary, "class", "svelte-fwoihq");
+			attr(summary, "class", "svelte-ifpk85");
 			details.open = true;
-			attr(details, "class", "breadcrumbs-details");
+			attr(details, "class", "BC-details");
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);
@@ -20758,7 +20762,7 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (24:12) {#if square.realItems.length}
+// (23:12) {#if square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let t;
 	let ol;
@@ -20780,7 +20784,7 @@ function create_if_block_3$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "markdown-preview-view svelte-fwoihq");
+			attr(ol, "class", "markdown-preview-view svelte-ifpk85");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -20835,7 +20839,7 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (25:14) {#if settings.showRelationType}
+// (24:14) {#if settings.showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -20843,7 +20847,7 @@ function create_if_block_4$1(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Real";
-			attr(h5, "class", "breadcrumbs-header svelte-fwoihq");
+			attr(h5, "class", "BC-header svelte-ifpk85");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -20854,15 +20858,11 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (30:16) {#each square.realItems as realItem}
+// (29:16) {#each square.realItems as realItem}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
-
-	let t0_value = (/*realItem*/ ctx[18].alt
-	? /*realItem*/ ctx[18].alt
-	: /*realItem*/ ctx[18].to.split("/").last()) + "";
-
+	let t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -20902,10 +20902,7 @@ function create_each_block_3$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt
-			? /*realItem*/ ctx[18].alt
-			: /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*realItem*/ ctx[18].cls)) {
 				attr(div, "class", div_class_value);
@@ -20919,7 +20916,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (48:12) {#if square.impliedItems.length}
+// (45:12) {#if square.impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
@@ -20942,7 +20939,7 @@ function create_if_block_1$2(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "markdown-preview-view svelte-fwoihq");
+			attr(ol, "class", "markdown-preview-view svelte-ifpk85");
 			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
 		},
 		m(target, anchor) {
@@ -21002,7 +20999,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (49:14) {#if settings.showRelationType}
+// (46:14) {#if settings.showRelationType}
 function create_if_block_2$2(ctx) {
 	let h5;
 
@@ -21010,7 +21007,7 @@ function create_if_block_2$2(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Implied";
-			attr(h5, "class", "breadcrumbs-header svelte-fwoihq");
+			attr(h5, "class", "BC-header svelte-ifpk85");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -21021,15 +21018,11 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (57:16) {#each square.impliedItems as impliedItem}
+// (54:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
-
-	let t_value = (/*impliedItem*/ ctx[15].alt
-	? /*impliedItem*/ ctx[15].alt
-	: /*impliedItem*/ ctx[15].to.split("/").last()) + "";
-
+	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
 	let t;
 	let div_class_value;
 	let mounted;
@@ -21049,7 +21042,7 @@ function create_each_block_2$3(ctx) {
 			div = element("div");
 			t = text(t_value);
 			attr(div, "class", div_class_value = /*impliedItem*/ ctx[15].cls);
-			attr(li, "class", "breadcrumbs-implied");
+			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -21067,10 +21060,7 @@ function create_each_block_2$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt
-			? /*impliedItem*/ ctx[15].alt
-			: /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*impliedItem*/ ctx[15].cls)) {
 				attr(div, "class", div_class_value);
@@ -21084,7 +21074,7 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (20:6) {#each squares as square}
+// (19:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$4(ctx);
@@ -21119,7 +21109,7 @@ function create_each_block_1$6(ctx) {
 	};
 }
 
-// (14:2) {#each filteredSquaresArr as squares}
+// (13:2) {#each filteredSquaresArr as squares}
 function create_each_block$6(ctx) {
 	let details;
 	let summary;
@@ -21146,7 +21136,7 @@ function create_each_block$6(ctx) {
 			}
 
 			t2 = space();
-			attr(summary, "class", "hier-summary svelte-fwoihq");
+			attr(summary, "class", "hier-summary svelte-ifpk85");
 			details.open = true;
 		},
 		m(target, anchor) {
@@ -21211,7 +21201,7 @@ function create_fragment$b(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "breadcrumbs-list");
+			attr(div, "class", "BC-list");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -21259,7 +21249,6 @@ function instance$b($$self, $$props, $$invalidate) {
 	
 	
 	
-	
 	let { filteredSquaresArr } = $$props;
 	let { currFile } = $$props;
 	let { settings } = $$props;
@@ -21294,7 +21283,7 @@ function instance$b($$self, $$props, $$invalidate) {
 class Lists extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-fwoihq-style")) add_css$6();
+		if (!document.getElementById("svelte-ifpk85-style")) add_css$6();
 
 		init$1(this, options, instance$b, create_fragment$b, safe_not_equal, {
 			filteredSquaresArr: 0,
@@ -21310,8 +21299,8 @@ class Lists extends SvelteComponent {
 
 function add_css$5() {
 	var style = element("style");
-	style.id = "svelte-fq6v4k-style";
-	style.textContent = "div.breadcrumbs-matrix.svelte-fq6v4k.svelte-fq6v4k{padding:5px}div.breadcrumbs-matrix.svelte-fq6v4k>div.svelte-fq6v4k{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.breadcrumbs-matrix-square.svelte-fq6v4k.svelte-fq6v4k{border:1px solid var(--background-modifier-border)}.breadcrumbs-matrix-header.svelte-fq6v4k.svelte-fq6v4k{margin:2px}h3.breadcrumbs-matrix-header.svelte-fq6v4k.svelte-fq6v4k{color:var(--text-title-h3)}h5.breadcrumbs-matrix-header.svelte-fq6v4k.svelte-fq6v4k{color:var(--text-title-h5)}ol.svelte-fq6v4k.svelte-fq6v4k{margin:3px;padding-left:20px}";
+	style.id = "svelte-1wt9kkm-style";
+	style.textContent = "div.BC-Matrix.svelte-1wt9kkm.svelte-1wt9kkm{padding:5px}div.BC-Matrix.svelte-1wt9kkm>div.svelte-1wt9kkm{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-1wt9kkm.svelte-1wt9kkm{border:1px solid var(--background-modifier-border)}.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{margin:2px}h3.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{color:var(--text-title-h3)}h5.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{color:var(--text-title-h5)}ol.svelte-1wt9kkm.svelte-1wt9kkm{margin:3px;padding-left:20px}";
 	append(document.head, style);
 }
 
@@ -21359,8 +21348,8 @@ function create_if_block$3(ctx) {
 			if (if_block0) if_block0.c();
 			t2 = space();
 			if (if_block1) if_block1.c();
-			attr(h3, "class", "breadcrumbs-matrix-header svelte-fq6v4k");
-			attr(div, "class", "breadcrumbs-matrix-square svelte-fq6v4k");
+			attr(h3, "class", "BC-Matrix-header svelte-1wt9kkm");
+			attr(div, "class", "BC-Matrix-square svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -21430,7 +21419,7 @@ function create_if_block_3(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "svelte-fq6v4k");
+			attr(ol, "class", "svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -21493,7 +21482,7 @@ function create_if_block_4(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Real";
-			attr(h5, "class", "breadcrumbs-matrix-header svelte-fq6v4k");
+			attr(h5, "class", "BC-Matrix-header svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -21508,11 +21497,7 @@ function create_if_block_4(ctx) {
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
-
-	let t0_value = (/*realItem*/ ctx[18].alt
-	? /*realItem*/ ctx[18].alt
-	: /*realItem*/ ctx[18].to.split("/").last()) + "";
-
+	let t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -21533,7 +21518,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-fq6v4k"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1wt9kkm"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -21552,12 +21537,9 @@ function create_each_block_3$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt
-			? /*realItem*/ ctx[18].alt
-			: /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
-
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-fq6v4k"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1wt9kkm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -21569,7 +21551,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (44:12) {#if square.impliedItems.length}
+// (42:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let t;
 	let ol;
@@ -21593,7 +21575,7 @@ function create_if_block_1$1(ctx) {
 			}
 
 			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
-			attr(ol, "class", "svelte-fq6v4k");
+			attr(ol, "class", "svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -21652,7 +21634,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (45:14) {#if settings.showRelationType}
+// (43:14) {#if settings.showRelationType}
 function create_if_block_2$1(ctx) {
 	let h5;
 
@@ -21660,7 +21642,7 @@ function create_if_block_2$1(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Implied";
-			attr(h5, "class", "breadcrumbs-matrix-header svelte-fq6v4k");
+			attr(h5, "class", "BC-Matrix-header svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -21671,15 +21653,11 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (49:16) {#each square.impliedItems as impliedItem}
+// (47:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
-
-	let t_value = (/*impliedItem*/ ctx[15].alt
-	? /*impliedItem*/ ctx[15].alt
-	: /*impliedItem*/ ctx[15].to.split("/").last()) + "";
-
+	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
 	let t;
 	let div_class_value;
 	let mounted;
@@ -21698,8 +21676,8 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-fq6v4k"));
-			attr(li, "class", "breadcrumbs-implied");
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1wt9kkm"));
+			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -21717,12 +21695,9 @@ function create_each_block_2$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt
-			? /*impliedItem*/ ctx[15].alt
-			: /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
-
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-fq6v4k"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1wt9kkm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -21789,7 +21764,7 @@ function create_each_block$5(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "svelte-fq6v4k");
+			attr(div, "class", "svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -21848,7 +21823,7 @@ function create_fragment$a(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "breadcrumbs-matrix  markdown-preview-view svelte-fq6v4k");
+			attr(div, "class", "BC-Matrix  markdown-preview-view svelte-1wt9kkm");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -21903,7 +21878,7 @@ function instance$a($$self, $$props, $$invalidate) {
 	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, currFile, e);
 	const mouseover_handler = (realItem, event) => hoverPreview(event, matrixView, realItem.to);
 	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, currFile, e);
-	const mouseover_handler_1 = (impliedItem, event) => hoverPreview(event, matrixView, impliedItem.to);
+	const mouseover_handler_1 = (impliedItem, e) => hoverPreview(e, matrixView, impliedItem.to);
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
@@ -21929,7 +21904,7 @@ function instance$a($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-fq6v4k-style")) add_css$5();
+		if (!document.getElementById("svelte-1wt9kkm-style")) add_css$5();
 
 		init$1(this, options, instance$a, create_fragment$a, safe_not_equal, {
 			filteredSquaresArr: 0,
@@ -21949,7 +21924,6 @@ class MatrixView extends obsidian.ItemView {
     }
     async onload() {
         super.onload();
-        await this.plugin.saveSettings();
         this.matrixQ = this.plugin.settings.defaultView;
         this.app.workspace.onLayoutReady(async () => {
             setTimeout(async () => await this.draw(), this.app.plugins.plugins.dataview
@@ -21962,7 +21936,7 @@ class MatrixView extends obsidian.ItemView {
             id: "local-index",
             name: "Copy a Local Index to the clipboard",
             callback: async () => {
-                const settings = this.plugin.settings;
+                const { settings } = this.plugin;
                 const currFile = this.app.workspace.getActiveFile().basename;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const allPaths = this.dfsAllPaths(closedParents, currFile);
@@ -21978,7 +21952,7 @@ class MatrixView extends obsidian.ItemView {
                 const { up } = this.plugin.currGraphs.mergedGs;
                 const closedParents = this.plugin.currGraphs.closedGs.down;
                 const sinks = getSinks(up);
-                const settings = this.plugin.settings;
+                const { settings } = this.plugin;
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
                     globalIndex += terminal + "\n";
@@ -21996,66 +21970,35 @@ class MatrixView extends obsidian.ItemView {
     getDisplayText() {
         return "Breadcrumbs Matrix";
     }
-    async onOpen() {
-        await this.plugin.saveSettings();
-        // this.app.workspace.onLayoutReady(async () => {
-        //   setTimeout(async () => await this.draw(), DATAVIEW_INDEX_DELAY);
-        // });
-        // this.app.workspace.on("dataview:api-ready", () =>
-        //   console.log("dv ready")
-        // );
-    }
+    async onOpen() { }
     onClose() {
-        if (this.view) {
-            this.view.$destroy();
-        }
+        var _a;
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
-    unresolvedQ(to, from) {
-        const { unresolvedLinks } = this.app.metadataCache;
-        if (!unresolvedLinks[from]) {
-            return false;
-        }
-        return unresolvedLinks[from][to] > 0;
-    }
     squareItems(g, currFile, settings, realQ = true) {
-        let items;
-        const altFieldsQ = !!settings.altLinkFields.length;
-        if (realQ) {
-            items = g.outNeighbors(currFile.basename);
-        }
-        else {
-            items = g.inNeighbors(currFile.basename);
-        }
+        const items = realQ
+            ? g.outNeighbors(currFile.basename)
+            : g.inNeighbors(currFile.basename);
         const internalLinkObjArr = [];
-        // TODO I don't think I need to check the length here
-        /// forEach won't run if it's empty anyway
-        if (items.length) {
-            items.forEach((to) => {
-                let alt = null;
-                if (altFieldsQ) {
-                    const toFile = this.app.metadataCache.getFirstLinkpathDest(to, currFile.path);
-                    if (toFile) {
-                        const metadata = this.app.metadataCache.getFileCache(toFile);
-                        settings.altLinkFields.forEach((altLinkField) => {
-                            var _a;
-                            const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
-                            if (altLink) {
-                                alt = altLink;
-                                return;
-                            }
-                        });
-                    }
+        items.forEach((to) => {
+            let alt = null;
+            if (settings.altLinkFields.length) {
+                const toFile = this.app.metadataCache.getFirstLinkpathDest(to, "");
+                if (toFile) {
+                    const metadata = this.app.metadataCache.getFileCache(toFile);
+                    settings.altLinkFields.forEach((altLinkField) => {
+                        var _a;
+                        alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
+                    });
                 }
-                internalLinkObjArr.push({
-                    to,
-                    cls: "internal-link breadcrumbs-link" +
-                        (this.unresolvedQ(to, currFile.path) ? " is-unresolved" : "") +
-                        (realQ ? "" : " breadcrumbs-implied"),
-                    alt,
-                });
+            }
+            internalLinkObjArr.push({
+                to,
+                cls: linkClass(this.app, to, realQ),
+                alt,
             });
-        }
+        });
         return internalLinkObjArr;
     }
     // ANCHOR Remove duplicate implied links
@@ -22071,27 +22014,23 @@ class MatrixView extends obsidian.ItemView {
         let i = 0;
         while (queue.length > 0 && i < 1000) {
             i++;
-            const currPath = queue.shift();
-            const newNodes = g.outNeighbors(currPath.node);
-            const extPath = [currPath.node, ...currPath.path];
-            queue.unshift(...newNodes.map((n) => {
+            const { node, path } = queue.shift();
+            const extPath = [node, ...path];
+            queue.unshift(...g.mapOutNeighbors(node, (n) => {
                 return { node: n, path: extPath };
             }));
-            if (newNodes.length === 0) {
+            if (!g.outDegree(node))
                 pathsArr.push(extPath);
-            }
         }
         return pathsArr;
     }
-    createIndex(
-    // Gotta give it a starting index. This allows it to work for the global index feat
-    index, allPaths, settings) {
+    createIndex(index, allPaths, settings) {
+        const { wikilinkIndex } = settings;
         const copy = lodash.cloneDeep(allPaths);
         const reversed = copy.map((path) => path.reverse());
         reversed.forEach((path) => path.shift());
         const indent = "  ";
         const visited = {};
-        const activeFile = this.app.workspace.getActiveFile();
         reversed.forEach((path) => {
             var _a, _b, _c, _d;
             for (let depth = 0; depth < path.length; depth++) {
@@ -22102,12 +22041,9 @@ class MatrixView extends obsidian.ItemView {
                     continue;
                 }
                 else {
-                    index += `${indent.repeat(depth)}- `;
-                    index += settings.wikilinkIndex ? "[[" : "";
-                    index += currNode;
-                    index += settings.wikilinkIndex ? "]]" : "";
+                    index += `${indent.repeat(depth)}- ${wikilinkIndex ? "[[" : ""}${currNode}${wikilinkIndex ? "]]" : ""}`;
                     if (settings.aliasesInIndex) {
-                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, activeFile.path);
+                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, "");
                         if (currFile !== null) {
                             const cache = this.app.metadataCache.getFileCache(currFile);
                             const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
@@ -22122,9 +22058,8 @@ class MatrixView extends obsidian.ItemView {
                         }
                     }
                     index += "\n";
-                    if (!visited.hasOwnProperty(currNode)) {
+                    if (!visited.hasOwnProperty(currNode))
                         visited[currNode] = [];
-                    }
                     visited[currNode].push(depth);
                 }
             }
@@ -22132,67 +22067,54 @@ class MatrixView extends obsidian.ItemView {
         return index;
     }
     getHierSquares(userHierarchies, data, currFile, settings) {
+        const { basename } = currFile;
         return userHierarchies.map((hier, i) => {
-            const [currUpG, currSameG, currDownG] = [
-                data[i].up,
-                data[i].same,
-                data[i].down,
-            ];
+            const { up, same, down } = data[i];
             let [rUp, rSame, rDown, iUp, iDown] = [
-                this.squareItems(currUpG, currFile, settings),
-                this.squareItems(currSameG, currFile, settings),
-                this.squareItems(currDownG, currFile, settings),
-                this.squareItems(currDownG, currFile, settings, false),
-                this.squareItems(currUpG, currFile, settings, false),
+                this.squareItems(up, currFile, settings),
+                this.squareItems(same, currFile, settings),
+                this.squareItems(down, currFile, settings),
+                this.squareItems(down, currFile, settings, false),
+                this.squareItems(up, currFile, settings, false),
             ];
             // SECTION Implied Siblings
             /// Notes with the same parents
-            const currParents = currUpG.outNeighbors(currFile.basename);
             let iSameArr = [];
+            const currParents = up.outNeighbors(basename);
             currParents.forEach((parent) => {
-                let impliedSiblings = currUpG.inNeighbors(parent);
+                let impliedSiblings = up.inNeighbors(parent);
                 // The current note is always it's own implied sibling, so remove it from the list
-                const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
+                const indexCurrNote = impliedSiblings.indexOf(basename);
                 impliedSiblings.splice(indexCurrNote, 1);
                 if (settings.filterImpliedSiblingsOfDifferentTypes) {
+                    const currNodeType = up.getNodeAttribute(basename, "fieldName");
                     impliedSiblings = impliedSiblings.filter((iSibling) => {
-                        const iSiblingType = currUpG.getNodeAttribute(iSibling, "fieldName");
-                        const currNodeType = currUpG.getNodeAttribute(currFile.basename, "fieldName");
-                        console.log({ iSiblingType, currNodeType });
+                        const iSiblingType = up.getNodeAttribute(iSibling, "fieldName");
                         return iSiblingType === currNodeType;
                     });
                 }
                 // Create the implied sibling SquareProps
                 impliedSiblings.forEach((impliedSibling) => {
-                    const altFieldsQ = !!settings.altLinkFields.length;
                     let alt = null;
-                    if (altFieldsQ) {
-                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, currFile.path);
+                    if (settings.altLinkFields.length) {
+                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, "");
                         if (toFile) {
                             const metadata = this.app.metadataCache.getFileCache(toFile);
                             settings.altLinkFields.forEach((altLinkField) => {
                                 var _a;
-                                const altLink = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
-                                if (altLink) {
-                                    alt = altLink;
-                                    return;
-                                }
+                                alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
                             });
                         }
                     }
                     iSameArr.push({
                         to: impliedSibling,
-                        cls: "internal-link breadcrumbs-link breadcrumbs-implied" +
-                            (this.unresolvedQ(impliedSibling, currFile.path)
-                                ? " is-unresolved"
-                                : ""),
-                        // TODO get alt for implied siblings
+                        cls: linkClass(this.app, impliedSibling, false),
                         alt,
                     });
                 });
             });
             /// A real sibling implies the reverse sibling
-            iSameArr.push(...this.squareItems(currSameG, currFile, settings, false));
+            iSameArr.push(...this.squareItems(same, currFile, settings, false));
             // !SECTION
             iUp = this.removeDuplicateImplied(rUp, iUp);
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
@@ -22204,14 +22126,6 @@ class MatrixView extends obsidian.ItemView {
                 }
             });
             iSameArr = iSameNoDup;
-            debug(settings, {
-                rUp,
-                iUp,
-                rSame,
-                iSameArr,
-                rDown,
-                iDown,
-            });
             const upSquare = {
                 realItems: rUp,
                 impliedItems: iUp,
@@ -22240,7 +22154,7 @@ class MatrixView extends obsidian.ItemView {
         this.contentEl.empty();
         const { settings } = this.plugin;
         debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
-        const hierGs = this.plugin.currGraphs;
+        const { currGraphs } = this.plugin;
         const { userHierarchies } = settings;
         const currFile = this.app.workspace.getActiveFile();
         const viewToggleButton = this.contentEl.createEl("button", {
@@ -22257,7 +22171,7 @@ class MatrixView extends obsidian.ItemView {
         refreshIndexButton.addEventListener("click", async () => {
             await this.plugin.refreshIndex();
         });
-        const data = hierGs.hierGs.map((hier) => {
+        const data = currGraphs.hierGs.map((hier) => {
             const hierData = {
                 up: undefined,
                 same: undefined,
@@ -22283,12 +22197,9 @@ class MatrixView extends obsidian.ItemView {
                 app: this.app,
             },
         };
-        if (this.matrixQ) {
-            this.view = new Matrix(compInput);
-        }
-        else {
-            this.view = new Lists(compInput);
-        }
+        this.matrixQ
+            ? (this.view = new Matrix(compInput))
+            : (this.view = new Lists(compInput));
         debugGroupEnd(settings, "debugMode");
     }
 }
@@ -22744,8 +22655,8 @@ class FaRegTrashAlt extends SvelteComponent {
 
 function add_css$3() {
 	var style = element("style");
-	style.id = "svelte-cve01y-style";
-	style.textContent = "div.GA-Buttons.svelte-cve01y.svelte-cve01y{padding-bottom:5px}details.BC-Hier-Details.svelte-cve01y.svelte-cve01y{padding-left:10px;margin-bottom:15px}.BC-Hier-Details.svelte-cve01y summary.svelte-cve01y::marker{font-size:10px}.BC-Hier-Details.svelte-cve01y summary button.svelte-cve01y{float:right}.icon.svelte-cve01y.svelte-cve01y{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
+	style.id = "svelte-18759ns-style";
+	style.textContent = "div.GA-Buttons.svelte-18759ns.svelte-18759ns{padding-bottom:5px}details.BC-Hier-Details.svelte-18759ns.svelte-18759ns{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-18759ns summary.svelte-18759ns::marker{font-size:10px}.BC-Hier-Details.svelte-18759ns summary button.svelte-18759ns{float:right}.icon.svelte-18759ns.svelte-18759ns{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
@@ -22762,7 +22673,7 @@ function get_each_context_1$4(ctx, list, i) {
 	return child_ctx;
 }
 
-// (76:6) {#each DIRECTIONS as dir}
+// (77:6) {#each DIRECTIONS as dir}
 function create_each_block_1$4(ctx) {
 	let label;
 	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[13]] + "";
@@ -22819,7 +22730,7 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (47:2) {#each userHierarchies as hier, i}
+// (48:2) {#each userHierarchies as hier, i}
 function create_each_block$4(ctx) {
 	let details;
 	let summary;
@@ -22881,13 +22792,13 @@ function create_each_block$4(ctx) {
 
 			t8 = space();
 			attr(button0, "aria-label", "Swap with Hierarchy Above");
-			attr(button0, "class", "svelte-cve01y");
+			attr(button0, "class", "svelte-18759ns");
 			attr(button1, "aria-label", "Swap with Hierarchy Below");
-			attr(button1, "class", "svelte-cve01y");
+			attr(button1, "class", "svelte-18759ns");
 			attr(button2, "aria-label", "Remove Hierarchy");
-			attr(button2, "class", "svelte-cve01y");
-			attr(summary, "class", "svelte-cve01y");
-			attr(details, "class", "BC-Hier-Details svelte-cve01y");
+			attr(button2, "class", "svelte-18759ns");
+			attr(summary, "class", "svelte-18759ns");
+			attr(details, "class", "BC-Hier-Details svelte-18759ns");
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);
@@ -23002,13 +22913,13 @@ function create_fragment$4(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "icon svelte-cve01y");
+			attr(div0, "class", "icon svelte-18759ns");
 			attr(button0, "aria-label", "Add New Hierarchy");
-			attr(div1, "class", "icon svelte-cve01y");
+			attr(div1, "class", "icon svelte-18759ns");
 			attr(button1, "aria-label", "Reset All Hierarchies");
-			attr(div2, "class", "icon svelte-cve01y");
+			attr(div2, "class", "icon svelte-18759ns");
 			attr(button2, "aria-label", "Show Hierarchies");
-			attr(div3, "class", "GA-Buttons svelte-cve01y");
+			attr(div3, "class", "GA-Buttons svelte-18759ns");
 		},
 		m(target, anchor) {
 			insert(target, div4, anchor);
@@ -23099,12 +23010,13 @@ function instance$4($$self, $$props, $$invalidate) {
 	const click_handler = async () => {
 		userHierarchies.push(blankUserHier());
 		$$invalidate(1, userHierarchies);
-		await plugin.saveSettings();
 	};
 
 	const click_handler_1 = async () => {
-		$$invalidate(1, userHierarchies = []);
-		await plugin.saveSettings();
+		if (window.confirm("Are you sure you want to reset all hierarchies?")) {
+			$$invalidate(1, userHierarchies = []);
+			await plugin.saveSettings();
+		}
 	};
 
 	const click_handler_2 = () => new obsidian.Notice(userHierarchies.map(hierToStr).join("\n\n"));
@@ -23152,12 +23064,12 @@ function instance$4($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-cve01y-style")) add_css$3();
+		if (!document.getElementById("svelte-18759ns-style")) add_css$3();
 		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 0 });
 	}
 }
 
-class BreadcrumbsSettingTab extends obsidian.PluginSettingTab {
+class BCSettingTab extends obsidian.PluginSettingTab {
     constructor(app, plugin) {
         super(app, plugin);
         this.plugin = plugin;
@@ -33558,34 +33470,34 @@ class VisModal extends obsidian.Modal {
 
 function add_css$1() {
 	var style = element("style");
-	style.id = "svelte-46v1v3-style";
-	style.textContent = "div.breadcrumbs-trail-grid.svelte-46v1v3{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.breadcrumbs-trail-grid-item.svelte-46v1v3{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.breadcrumbs-trail-grid-item.breadcrumbs-filler.svelte-46v1v3{opacity:0.7}.dot.svelte-46v1v3{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	style.id = "svelte-gk73kp-style";
+	style.textContent = "div.BC-trail-grid.svelte-gk73kp{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-gk73kp{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-gk73kp{opacity:0.7}.dot.svelte-gk73kp{height:5px;width:5px;border-radius:50%;display:inline-block}";
 	append(document.head, style);
 }
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[21] = list[i];
-	child_ctx[23] = i;
+	child_ctx[20] = list[i];
+	child_ctx[22] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[24] = list[i];
+	child_ctx[23] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[22] = list[i];
 	return child_ctx;
 }
 
-// (87:8) {#if step.value && settings.gridDots}
+// (80:8) {#if step.value && settings.gridDots}
 function create_if_block$1(ctx) {
 	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
+	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[23].value] / 1000));
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -33611,7 +33523,7 @@ function create_if_block$1(ctx) {
 		},
 		p(ctx, dirty) {
 			if (dirty & /*settings, wordCounts*/ 20) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
+				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[23].value] / 1000));
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -33640,14 +33552,14 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (89:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (82:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			attr(span, "class", "dot svelte-46v1v3");
+			attr(span, "class", "dot svelte-gk73kp");
 			set_style(span, "background-color", /*settings*/ ctx[4].dotsColour);
 		},
 		m(target, anchor) {
@@ -33660,11 +33572,11 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (68:4) {#each allRuns[i] as step}
+// (63:4) {#each allRuns[i] as step}
 function create_each_block_1$1(ctx) {
 	let div1;
 	let div0;
-	let t0_value = /*step*/ ctx[24].value + "";
+	let t0_value = /*step*/ ctx[23].value + "";
 	let t0;
 	let div0_class_value;
 	let t1;
@@ -33673,14 +33585,14 @@ function create_each_block_1$1(ctx) {
 	let div1_style_value;
 	let mounted;
 	let dispose;
-	let if_block = /*step*/ ctx[24].value && /*settings*/ ctx[4].gridDots && create_if_block$1(ctx);
+	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[4].gridDots && create_if_block$1(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[11](/*step*/ ctx[24], ...args);
+		return /*click_handler*/ ctx[10](/*step*/ ctx[23], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[12](/*step*/ ctx[24], ...args);
+		return /*mouseover_handler*/ ctx[11](/*step*/ ctx[23], ...args);
 	}
 
 	return {
@@ -33691,14 +33603,11 @@ function create_each_block_1$1(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(/*resolvedClass*/ ctx[7](/*step*/ ctx[24].value, /*currFile*/ ctx[5])) + " svelte-46v1v3"));
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-gk73kp"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-gk73kp");
 
-			attr(div1, "class", div1_class_value = "breadcrumbs-trail-grid-item " + (/*step*/ ctx[24].value === ""
-			? "breadcrumbs-filler"
-			: "") + " svelte-46v1v3");
-
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[24].first + 1) + " / " + (/*i*/ ctx[23] + 1) + " / \r\n                " + (/*step*/ ctx[24].last + 2) + " / " + (/*i*/ ctx[23] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[24].value] * 200 + 55).toString(16)}`
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
 			: ""));
 		},
 		m(target, anchor) {
@@ -33720,10 +33629,15 @@ function create_each_block_1$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (/*step*/ ctx[24].value && /*settings*/ ctx[4].gridDots) if_block.p(ctx, dirty);
 
-			if (dirty & /*children*/ 8 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[24].first + 1) + " / " + (/*i*/ ctx[23] + 1) + " / \r\n                " + (/*step*/ ctx[24].last + 2) + " / " + (/*i*/ ctx[23] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[24].value] * 200 + 55).toString(16)}`
+			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-gk73kp"))) {
+				attr(div0, "class", div0_class_value);
+			}
+
+			if (/*step*/ ctx[23].value && /*settings*/ ctx[4].gridDots) if_block.p(ctx, dirty);
+
+			if (dirty & /*children*/ 8 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
 			: ""))) {
 				attr(div1, "style", div1_style_value);
 			}
@@ -33737,10 +33651,10 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (67:2) {#each transposedTrails as col, i}
+// (62:2) {#each transposedTrails as col, i}
 function create_each_block$1(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[9][/*i*/ ctx[23]];
+	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -33763,8 +33677,8 @@ function create_each_block$1(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, resolvedClass*/ 766) {
-				each_value_1 = /*allRuns*/ ctx[9][/*i*/ ctx[23]];
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, linkClass*/ 382) {
+				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -33795,7 +33709,7 @@ function create_each_block$1(ctx) {
 
 function create_fragment$1(ctx) {
 	let div;
-	let each_value = /*transposedTrails*/ ctx[8];
+	let each_value = /*transposedTrails*/ ctx[7];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -33810,8 +33724,8 @@ function create_fragment$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "breadcrumbs-trail-grid svelte-46v1v3");
-			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[8].length));
+			attr(div, "class", "BC-trail-grid svelte-gk73kp");
+			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
 			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 		},
 		m(target, anchor) {
@@ -33822,8 +33736,8 @@ function create_fragment$1(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, resolvedClass*/ 766) {
-				each_value = /*transposedTrails*/ ctx[8];
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, linkClass*/ 382) {
+				each_value = /*transposedTrails*/ ctx[7];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -33867,13 +33781,6 @@ function instance$1($$self, $$props, $$invalidate) {
 	const settings = plugin.settings;
 	const currFile = app.workspace.getActiveFile();
 	const activeLeafView = app.workspace.activeLeaf.view;
-
-	function resolvedClass(toFile, currFile) {
-		return app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
-		? "internal-link is-unresolved breadcrumbs-link"
-		: "internal-link breadcrumbs-link";
-	}
-
 	const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
 	const wordCounts = {};
 
@@ -33933,7 +33840,7 @@ function instance$1($$self, $$props, $$invalidate) {
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
 		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(10, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(9, plugin = $$props.plugin);
 	};
 
 	return [
@@ -33944,7 +33851,6 @@ function instance$1($$self, $$props, $$invalidate) {
 		settings,
 		currFile,
 		activeLeafView,
-		resolvedClass,
 		transposedTrails,
 		allRuns,
 		plugin,
@@ -33956,8 +33862,8 @@ function instance$1($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-46v1v3-style")) add_css$1();
-		init$1(this, options, instance$1, create_fragment$1, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 10 });
+		if (!document.getElementById("svelte-gk73kp-style")) add_css$1();
+		init$1(this, options, instance$1, create_fragment$1, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 9 });
 	}
 }
 
@@ -33965,8 +33871,8 @@ class TrailGrid extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-1rndeic-style";
-	style.textContent = "span.breadcrumbs-trail-path-container.svelte-1rndeic{display:flex;justify-content:space-between}";
+	style.id = "svelte-3c1frp-style";
+	style.textContent = "span.BC-trail-path-container.svelte-3c1frp{display:flex;justify-content:space-between}";
 	append(document.head, style);
 }
 
@@ -34114,7 +34020,7 @@ function create_each_block_1(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			if_block_anchor = empty$1();
-			attr(span, "class", "internal-link breadcrumbs-link");
+			attr(span, "class", "internal-link BC-Link");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -34266,7 +34172,7 @@ function create_fragment(ctx) {
 			t = space();
 			if (if_block) if_block.c();
 			attr(div, "class", "trails-div");
-			attr(span, "class", "breadcrumbs-trail-path-container svelte-1rndeic");
+			attr(span, "class", "BC-trail-path-container svelte-3c1frp");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -34370,7 +34276,7 @@ function instance($$self, $$props, $$invalidate) {
 class TrailPath extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1rndeic-style")) add_css();
+		if (!document.getElementById("svelte-3c1frp-style")) add_css();
 
 		init$1(this, options, instance, create_fragment, safe_not_equal, {
 			sortedTrails: 0,
@@ -34381,7 +34287,7 @@ class TrailPath extends SvelteComponent {
 	}
 }
 
-class BreadcrumbsPlugin extends obsidian.Plugin {
+class BCPlugin extends obsidian.Plugin {
     constructor() {
         super(...arguments);
         this.visited = [];
@@ -34601,7 +34507,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         });
         // TODO get a better icon for this
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
-        this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
+        this.addSettingTab(new BCSettingTab(this.app, this));
     }
     getActiveMatrixView() {
         const leaves = this.app.workspace.getLeavesOfType(MATRIX_VIEW);
@@ -34690,6 +34596,8 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             limitTrailG: undefined,
         };
         userHierarchies.forEach((hier, i) => {
+            if (Object.values(hier).every((t) => t.length === 0))
+                return;
             const newGraphs = { up: {}, same: {}, down: {} };
             DIRECTIONS.forEach((dir) => {
                 hier[dir].forEach((dirField) => {
@@ -34775,15 +34683,6 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
     }
     // !SECTION OneSource
     // SECTION Breadcrumbs
-    resolvedClass(toFile, currFile) {
-        const { unresolvedLinks } = this.app.metadataCache;
-        if (!unresolvedLinks[currFile.path]) {
-            return "internal-link breadcrumbs-link";
-        }
-        return unresolvedLinks[currFile.path][toFile] > 0
-            ? "internal-link is-unresolved breadcrumbs-link"
-            : "internal-link breadcrumbs-link";
-    }
     bfsAllPaths(g, startNode) {
         const pathsArr = [];
         const queue = [
@@ -34827,7 +34726,7 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         return sortedTrails;
     }
     async drawTrail() {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d;
         const { settings } = this;
         debugGroupStart(settings, "debugMode", "Draw Trail");
         if (!settings.showTrail) {
@@ -34835,15 +34734,15 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             return;
         }
         const activeMDView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
+        if (!activeMDView) {
+            debugGroupEnd(settings, "debugMode");
+            return;
+        }
         const currFile = activeMDView.file;
         const currMetadata = this.app.metadataCache.getFileCache(currFile);
         const previewView = activeMDView.contentEl.querySelector(".markdown-preview-view");
-        if ((_a = currMetadata.frontmatter) === null || _a === void 0 ? void 0 : _a.hasOwnProperty(settings.hideTrailFieldName)) {
-            debugGroupEnd(settings, "debugMode");
-            (_b = previewView.querySelector("div.breadcrumbs-trail")) === null || _b === void 0 ? void 0 : _b.remove();
-            return;
-        }
-        if (!activeMDView) {
+        (_a = previewView.querySelector("div.BC-trail")) === null || _a === void 0 ? void 0 : _a.remove();
+        if ((_b = currMetadata.frontmatter) === null || _b === void 0 ? void 0 : _b.hasOwnProperty(settings.hideTrailFieldName)) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
@@ -34855,15 +34754,12 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
         const closedUp = this.currGraphs.limitTrailG;
         const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
         debug(settings, { sortedTrails });
-        // Get the container div of the active note
-        // Make sure it's empty
-        (_e = previewView.querySelector("div.breadcrumbs-trail")) === null || _e === void 0 ? void 0 : _e.remove();
         if (sortedTrails.length === 0 && settings.noPathMessage === "") {
             debugGroupEnd(settings, "debugMode");
             return;
         }
         const trailDiv = createDiv({
-            cls: `breadcrumbs-trail ${settings.respectReadableLineLength
+            cls: `BC-trail ${settings.respectReadableLineLength
                 ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
                 : ""}`,
         });
@@ -34875,26 +34771,28 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
             debugGroupEnd(settings, "debugMode");
             return;
         }
+        const pathProps = { sortedTrails, app: this.app, settings, currFile };
+        const gridProps = { sortedTrails, app: this.app, plugin: this };
         if (settings.trailOrTable === 1) {
             new TrailPath({
                 target: trailDiv,
-                props: { sortedTrails, app: this.app, settings, currFile },
+                props: pathProps,
             });
         }
         else if (settings.trailOrTable === 2) {
             new TrailGrid({
                 target: trailDiv,
-                props: { sortedTrails, app: this.app, plugin: this },
+                props: gridProps,
             });
         }
         else {
             new TrailPath({
                 target: trailDiv,
-                props: { sortedTrails, app: this.app, settings, currFile },
+                props: pathProps,
             });
             new TrailGrid({
                 target: trailDiv,
-                props: { sortedTrails, app: this.app, plugin: this },
+                props: gridProps,
             });
         }
     }
@@ -34906,14 +34804,10 @@ class BreadcrumbsPlugin extends obsidian.Plugin {
     }
     onunload() {
         console.log("unloading");
-        // Detach matrix view
-        const openLeaves = [MATRIX_VIEW, STATS_VIEW]
-            .map((type) => this.app.workspace.getLeavesOfType(type))
-            .flat(1);
-        openLeaves.forEach((leaf) => leaf.detach());
+        [MATRIX_VIEW, STATS_VIEW].forEach((type) => this.app.workspace.detachLeavesOfType(type));
         // Empty trailDiv
         this.visited.forEach((visit) => visit[1].remove());
     }
 }
 
-module.exports = BreadcrumbsPlugin;
+module.exports = BCPlugin;

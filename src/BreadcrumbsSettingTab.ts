@@ -15,16 +15,16 @@ import {
   VISTYPES,
 } from "src/constants";
 import type { Relations, visTypes } from "src/interfaces";
-import type BreadcrumbsPlugin from "src/main";
+import type BCPlugin from "src/main";
 import MatrixView from "src/MatrixView";
 import { debug, isInVault, splitAndTrim } from "src/sharedFunctions";
 import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
 
-export class BreadcrumbsSettingTab extends PluginSettingTab {
-  plugin: BreadcrumbsPlugin;
+export class BCSettingTab extends PluginSettingTab {
+  plugin: BCPlugin;
 
-  constructor(app: App, plugin: BreadcrumbsPlugin) {
+  constructor(app: App, plugin: BCPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

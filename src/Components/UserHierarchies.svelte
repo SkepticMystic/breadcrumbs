@@ -1,13 +1,13 @@
 <script lang="ts">
   import { Notice } from "obsidian";
   import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "src/constants";
-  import type BreadcrumbsPlugin from "src/main";
+  import type BCPlugin from "src/main";
   import { hierToStr, splitAndTrim, swapItems } from "src/sharedFunctions";
   import FaListUl from "svelte-icons/fa/FaListUl.svelte";
   import FaPlus from "svelte-icons/fa/FaPlus.svelte";
   import FaRegTrashAlt from "svelte-icons/fa/FaRegTrashAlt.svelte";
 
-  export let plugin: BreadcrumbsPlugin;
+  export let plugin: BCPlugin;
 
   let { userHierarchies } = plugin.settings;
 </script>
@@ -19,7 +19,6 @@
       on:click={async () => {
         userHierarchies.push(blankUserHier());
         userHierarchies = userHierarchies;
-        await plugin.saveSettings();
       }}
     >
       <div class="icon">
@@ -29,8 +28,10 @@
     <button
       aria-label="Reset All Hierarchies"
       on:click={async () => {
-        userHierarchies = [];
-        await plugin.saveSettings();
+        if (window.confirm("Are you sure you want to reset all hierarchies?")) {
+          userHierarchies = [];
+          await plugin.saveSettings();
+        }
       }}
     >
       <div class="icon">
@@ -99,7 +100,9 @@
   }
 
   details.BC-Hier-Details {
-    padding-left: 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 10px;
+    padding: 10px 5px 10px 10px;
     margin-bottom: 15px;
   }
   .BC-Hier-Details summary::marker {

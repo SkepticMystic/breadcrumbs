@@ -10,7 +10,7 @@ import {
   WorkspaceLeaf,
 } from "obsidian";
 import { openView } from "obsidian-community-lib/dist/utils";
-import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
+import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
   DIRECTIONS,
@@ -21,7 +21,7 @@ import {
 } from "src/constants";
 import type {
   BCIndex,
-  BreadcrumbsSettings,
+  BCSettings,
   Directions,
   dvFrontmatterCache,
   HierarchyGraphs,
@@ -50,8 +50,8 @@ import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
 
-export default class BreadcrumbsPlugin extends Plugin {
-  settings: BreadcrumbsSettings;
+export default class BCPlugin extends Plugin {
+  settings: BCSettings;
   visited: [string, HTMLDivElement][] = [];
   refreshIntervalID: number;
   currGraphs: BCIndex;
@@ -235,7 +235,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       new VisModal(this.app, this).open()
     );
 
-    this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
+    this.addSettingTab(new BCSettingTab(this.app, this));
   }
 
   getActiveMatrixView(): MatrixView | null {
@@ -454,6 +454,7 @@ export default class BreadcrumbsPlugin extends Plugin {
     };
 
     userHierarchies.forEach((hier, i) => {
+      if (Object.values(hier).every((t) => t.length === 0)) return;
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
       DIRECTIONS.forEach((dir: Directions) => {
@@ -470,7 +471,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
-
       relObj.hierarchies.forEach((hier, i) => {
         DIRECTIONS.forEach((dir) => {
           for (const fieldName in hier[dir]) {
@@ -574,16 +574,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   // SECTION Breadcrumbs
 
-  resolvedClass(toFile: string, currFile: TFile): string {
-    const { unresolvedLinks } = this.app.metadataCache;
-    if (!unresolvedLinks[currFile.path]) {
-      return "internal-link breadcrumbs-link";
-    }
-    return unresolvedLinks[currFile.path][toFile] > 0
-      ? "internal-link is-unresolved breadcrumbs-link"
-      : "internal-link breadcrumbs-link";
-  }
-
   bfsAllPaths(g: Graph, startNode: string): string[][] {
     const pathsArr: string[][] = [];
     const queue: { node: string; path: string[] }[] = [
@@ -641,19 +631,18 @@ export default class BreadcrumbsPlugin extends Plugin {
       return;
     }
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeMDView) {
+      debugGroupEnd(settings, "debugMode");
+      return;
+    }
     const currFile = activeMDView.file;
     const currMetadata = this.app.metadataCache.getFileCache(currFile);
 
     const previewView = activeMDView.contentEl.querySelector(
       ".markdown-preview-view"
     );
+    previewView.querySelector("div.BC-trail")?.remove();
     if (currMetadata.frontmatter?.hasOwnProperty(settings.hideTrailFieldName)) {
-      debugGroupEnd(settings, "debugMode");
-      previewView.querySelector("div.breadcrumbs-trail")?.remove();
-      return;
-    }
-
-    if (!activeMDView) {
       debugGroupEnd(settings, "debugMode");
       return;
     }
@@ -669,17 +658,13 @@ export default class BreadcrumbsPlugin extends Plugin {
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
     debug(settings, { sortedTrails });
 
-    // Get the container div of the active note
-    // Make sure it's empty
-    previewView.querySelector("div.breadcrumbs-trail")?.remove();
-
     if (sortedTrails.length === 0 && settings.noPathMessage === "") {
       debugGroupEnd(settings, "debugMode");
       return;
     }
 
     const trailDiv = createDiv({
-      cls: `breadcrumbs-trail ${
+      cls: `BC-trail ${
         settings.respectReadableLineLength
           ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
           : ""
@@ -698,24 +683,27 @@ export default class BreadcrumbsPlugin extends Plugin {
       return;
     }
 
+    const pathProps = { sortedTrails, app: this.app, settings, currFile };
+    const gridProps = { sortedTrails, app: this.app, plugin: this };
+
     if (settings.trailOrTable === 1) {
       new TrailPath({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, settings, currFile },
+        props: pathProps,
       });
     } else if (settings.trailOrTable === 2) {
       new TrailGrid({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, plugin: this },
+        props: gridProps,
       });
     } else {
       new TrailPath({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, settings, currFile },
+        props: pathProps,
       });
       new TrailGrid({
         target: trailDiv,
-        props: { sortedTrails, app: this.app, plugin: this },
+        props: gridProps,
       });
     }
   }
@@ -730,12 +718,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   onunload(): void {
     console.log("unloading");
-    // Detach matrix view
-    const openLeaves = [MATRIX_VIEW, STATS_VIEW]
-      .map((type) => this.app.workspace.getLeavesOfType(type))
-      .flat(1);
-
-    openLeaves.forEach((leaf) => leaf.detach());
+    [MATRIX_VIEW, STATS_VIEW].forEach((type) =>
+      this.app.workspace.detachLeavesOfType(type)
+    );
 
     // Empty trailDiv
     this.visited.forEach((visit) => visit[1].remove());
