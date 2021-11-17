@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import * as graphlib from "graphlib";
 import { openOrSwitch } from "src/sharedFunctions";
 import type { d3Node } from "src/interfaces";
 import { graphlibToD3, VisModal } from "src/VisModal";
@@ -19,7 +18,7 @@ export const forceDirectedG = (
   console.log({ nodeToGetTo });
 
   console.time("Find all paths");
-  let pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
+  // let pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
   console.timeEnd("Find all paths");
 
   const defaultNodeColour = getComputedStyle(document.body).getPropertyValue(
@@ -193,7 +192,7 @@ export const forceDirectedG = (
         } else return currNodeColour;
       });
 
-      pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
+      // pathsFromNodeToGetTo = graphlib.alg.dijkstra(graph, nodeToGetTo);
     }
   });
 
@@ -208,26 +207,26 @@ export const forceDirectedG = (
     return !!linkedArr;
   }
 
-  function walkDijkstraPaths(
-    paths: { [node: string]: graphlib.Path },
-    startNode: string
-  ) {
-    if (startNode === nodeToGetTo || paths[startNode].distance === Infinity)
-      return [];
-    let step = startNode;
+  // function walkDijkstraPaths(
+  //   paths: { [node: string]: graphlib.Path },
+  //   startNode: string
+  // ) {
+  //   if (startNode === nodeToGetTo || paths[startNode].distance === Infinity)
+  //     return [];
+  //   let step = startNode;
 
-    const path: string[] = [startNode];
-    let i = 0;
-    const MAX = 300;
-    while (paths[step].predecessor !== nodeToGetTo && i < MAX) {
-      i++;
-      step = paths[step].predecessor;
-      path.push(step);
-    }
-    if (i >= MAX) return [];
-    path.push(nodeToGetTo);
-    return path;
-  }
+  //   const path: string[] = [startNode];
+  //   let i = 0;
+  //   const MAX = 300;
+  //   while (paths[step].predecessor !== nodeToGetTo && i < MAX) {
+  //     i++;
+  //     step = paths[step].predecessor;
+  //     path.push(step);
+  //   }
+  //   if (i >= MAX) return [];
+  //   path.push(nodeToGetTo);
+  //   return path;
+  // }
 
   node
     .on("mouseover", (event: MouseEvent, d: { index: number }) => {
@@ -248,30 +247,30 @@ export const forceDirectedG = (
 
       // Highlight path from hovered node to currNode
       const hoveredNode = nameFromIndex(d);
-      const path = walkDijkstraPaths(pathsFromNodeToGetTo, hoveredNode);
-      if (path.length) {
-        link
-          .transition()
-          .duration(150)
-          .style("stroke", function (link) {
-            if (
-              path.includes(nameFromIndex(link.source)) &&
-              path.includes(nameFromIndex(link.target))
-            )
-              return currNodeColour;
-          })
-          .style("opacity", function (link) {
-            if (
-              path.includes(nameFromIndex(link.source)) &&
-              path.includes(nameFromIndex(link.target))
-            )
-              return 1;
-          });
-      }
+      // const path = walkDijkstraPaths(pathsFromNodeToGetTo, hoveredNode);
+      // if (path.length) {
+      //   link
+      //     .transition()
+      //     .duration(150)
+      //     .style("stroke", function (link) {
+      //       if (
+      //         path.includes(nameFromIndex(link.source)) &&
+      //         path.includes(nameFromIndex(link.target))
+      //       )
+      //         return currNodeColour;
+      //     })
+      //     .style("opacity", function (link) {
+      //       if (
+      //         path.includes(nameFromIndex(link.source)) &&
+      //         path.includes(nameFromIndex(link.target))
+      //       )
+      //         return 1;
+      //     });
+      // }
     })
     .on("mouseout", unfocus);
 
-  function focusNeighbours(d, event: MouseEvent) { }
+  function focusNeighbours(d, event: MouseEvent) {}
 
   function unfocus() {
     // labelNode.attr("display", "block");
@@ -305,7 +304,7 @@ export const forceDirectedG = (
   );
 
   function saveGraph() {
-    const clone = svg.clone(true)
-    localStorage.setItem('FDG', JSON.stringify(clone))
+    const clone = svg.clone(true);
+    localStorage.setItem("FDG", JSON.stringify(clone));
   }
 };
