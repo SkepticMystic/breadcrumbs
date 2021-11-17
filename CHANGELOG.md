@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.1](https://github.com/SkepticMystic/breadcrumbs/compare/0.12.0...0.12.1) (2021-11-17)
+
+
+### Bug Fixes
+
+* Safety check on in/outNeighbors ([f616a5a](https://github.com/SkepticMystic/breadcrumbs/commit/f616a5aa882640fd723c40153ad08d36b59f7eab))
+
 ## [0.12.0](https://github.com/SkepticMystic/breadcrumbs/compare/0.11.9...0.12.0) (2021-11-17)
 
 
