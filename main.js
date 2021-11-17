@@ -20201,7 +20201,7 @@ function removeDuplicates(arr) {
  * @param  {{[fun:string]:(...args:any} api
  */
 const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    let valueStr = value.toString();
+    const valueStr = value.toString();
     if (!frontmatter || frontmatter[key] === undefined) {
         console.log(`Creating: ${key}: ${valueStr}`);
         await api.createYamlProperty(key, `['${valueStr}']`, file);
@@ -20247,14 +20247,12 @@ function oppFields(field, dir, userHierarchies) {
     return ((_b = (_a = userHierarchies.find((hier) => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : []);
 }
 function addNodeIfNot(g, node, attr) {
-    if (!g.hasNode(node)) {
+    if (!g.hasNode(node))
         g.addNode(node, attr);
-    }
 }
 function addEdgeIfNot(g, source, target, attr) {
-    if (!g.hasEdge(source, target)) {
+    if (!g.hasEdge(source, target))
         g.addEdge(source, target, attr);
-    }
 }
 const getSinks = (g) => g.filterNodes((node) => !getOutNeighbours(g, node).length);
 function swapItems(i, j, arr) {
@@ -20266,9 +20264,7 @@ function swapItems(i, j, arr) {
     arr[j] = tmp;
     return arr;
 }
-function linkClass(app, to, realQ = true) {
-    return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
-}
+const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
 const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
 
@@ -47527,7 +47523,7 @@ class BCPlugin extends obsidian.Plugin {
                 noteContent = noteContent.split("---").slice(2).join("---");
             }
             const layers = noteContent.split("\n").filter((line) => line);
-            const getDepth = (line) => line.split(/[-\*\+]/)[0].length;
+            const getDepth = (line) => line.split(/[-*+]/)[0].length;
             const depths = layers.map(getDepth);
             const differences = [];
             depths.forEach((dep, i) => {
@@ -47547,7 +47543,7 @@ class BCPlugin extends obsidian.Plugin {
             const difference = lcm;
             const adjItems = [];
             // TODO Allow user to pick the field name they want
-            const lineRegex = new RegExp(/\s*[-\*\+] \[\[(.*)\]\]/);
+            const lineRegex = new RegExp(/\s*[-*+] \[\[(.*)\]\]/);
             const pushNoteUp = (hier, currNote, currDepth) => {
                 const copy = [...hier];
                 const noteUp = copy
@@ -47570,7 +47566,8 @@ class BCPlugin extends obsidian.Plugin {
                         adjItems[lineNo].children.push(nextNote);
                         pushNoteUp(adjItems, currNote, currDepth);
                     }
-                    else if (currDepth === 0) ;
+                    else if (currDepth === 0)
+                        return;
                     else {
                         pushNoteUp(adjItems, currNote, currDepth);
                     }
@@ -47945,7 +47942,7 @@ class BCPlugin extends obsidian.Plugin {
         if (indexNotes[0] !== "" && allTrails[0].length > 0) {
             allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
         }
-        let sortedTrails = allTrails
+        const sortedTrails = allTrails
             .filter((trail) => trail.length > 0)
             .sort((a, b) => a.length - b.length);
         debug(this.settings, { sortedTrails });

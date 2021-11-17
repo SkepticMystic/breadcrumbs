@@ -262,7 +262,7 @@ export default class BCPlugin extends Plugin {
 
     const layers = noteContent.split("\n").filter((line) => line);
 
-    const getDepth = (line: string) => line.split(/[-\*\+]/)[0].length;
+    const getDepth = (line: string) => line.split(/[-*+]/)[0].length;
 
     const depths = layers.map(getDepth);
     const differences = [];
@@ -293,7 +293,7 @@ export default class BCPlugin extends Plugin {
     const adjItems: adjItem[] = [];
 
     // TODO Allow user to pick the field name they want
-    const lineRegex = new RegExp(/\s*[-\*\+] \[\[(.*)\]\]/);
+    const lineRegex = new RegExp(/\s*[-*+] \[\[(.*)\]\]/);
 
     const pushNoteUp = (
       hier: adjItem[],
@@ -324,8 +324,8 @@ export default class BCPlugin extends Plugin {
         if (nextDepth > currDepth) {
           adjItems[lineNo].children.push(nextNote);
           pushNoteUp(adjItems, currNote, currDepth);
-        } else if (currDepth === 0) {
-        } else {
+        } else if (currDepth === 0) return;
+        else {
           pushNoteUp(adjItems, currNote, currDepth);
         }
       } else {
@@ -615,7 +615,7 @@ export default class BCPlugin extends Plugin {
     if (indexNotes[0] !== "" && allTrails[0].length > 0) {
       allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
     }
-    let sortedTrails = allTrails
+    const sortedTrails = allTrails
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 

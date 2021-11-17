@@ -1,4 +1,5 @@
 import Graph from "graphology";
+import type Attributes from 'graphology'
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -660,7 +661,7 @@ export const createOrUpdateYaml = async (
   frontmatter: FrontMatterCache | undefined,
   api: { [fun: string]: (...args: any) => any }
 ) => {
-  let valueStr = value.toString();
+  const valueStr = value.toString();
 
   if (!frontmatter || frontmatter[key] === undefined) {
     console.log(`Creating: ${key}: ${valueStr}`);
@@ -723,21 +724,17 @@ export function oppFields(
   );
 }
 
-export function addNodeIfNot(g: Graph, node: string, attr?: {}) {
-  if (!g.hasNode(node)) {
-    g.addNode(node, attr);
-  }
+export function addNodeIfNot(g: Graph, node: string, attr?: Attributes) {
+  if (!g.hasNode(node)) g.addNode(node, attr);
 }
 
 export function addEdgeIfNot(
   g: Graph,
   source: string,
   target: string,
-  attr?: {}
+  attr?: Attributes
 ) {
-  if (!g.hasEdge(source, target)) {
-    g.addEdge(source, target, attr);
-  }
+  if (!g.hasEdge(source, target)) g.addEdge(source, target, attr);
 }
 
 export const getSinks = (g: Graph) =>
@@ -755,10 +752,9 @@ export function swapItems<T>(i: number, j: number, arr: T[]) {
   return arr;
 }
 
-export function linkClass(app: App, to: string, realQ = true) {
-  return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
-    }`;
-}
+export const linkClass = (app: App, to: string, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
+  }`;
+
 
 export const getOutNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.outNeighbors(node) : []
 export const getInNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.inNeighbors(node) : []
