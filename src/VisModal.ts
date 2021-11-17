@@ -1,8 +1,9 @@
 import * as d3 from "d3";
-import type { Graph } from "graphlib";
+import type Graph from "graphology";
 import { App, Modal, Notice } from "obsidian";
-import type { AdjListItem, d3Graph, d3Tree } from "src/interfaces";
+import type { AdjListItem, d3Graph } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
+import { getSinks } from "src/sharedFunctions";
 import VisComp from "./Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {
@@ -13,17 +14,17 @@ export function graphlibToD3(g: Graph): d3Graph {
     d3Graph.nodes.push({ id: i, name: node });
     edgeIDs[node] = i;
   });
-  g.edges().forEach((edge) => {
+  g.forEachEdge((k, a, s, t) => {
     d3Graph.links.push({
-      source: edgeIDs[edge.v],
-      target: edgeIDs[edge.w],
+      source: edgeIDs[s],
+      target: edgeIDs[t],
     });
   });
   return d3Graph;
 }
 
 export function bfsFromAllSinks(g: Graph) {
-  const queue: string[] = g.sinks();
+  const queue: string[] = getSinks(g);
   const adjList: AdjListItem[] = [];
 
   let i = 0;
@@ -31,7 +32,7 @@ export function bfsFromAllSinks(g: Graph) {
     i++;
 
     const currNode = queue.shift();
-    const newNodes = g.predecessors(currNode) as string[];
+    const newNodes = g.inNeighbors(currNode);
 
     if (newNodes.length) {
       newNodes.forEach((pre) => {
@@ -66,7 +67,7 @@ export function dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
     i++;
 
     const currNode = queue.shift();
-    const newNodes = g.successors(currNode) as string[];
+    const newNodes = g.outNeighbors(currNode);
 
     if (newNodes.length) {
       newNodes.forEach((succ) => {
@@ -102,8 +103,8 @@ export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
 
     const currNode = queue.shift();
     const neighbours = {
-      succs: g.successors(currNode) as string[],
-      pres: g.predecessors(currNode) as string[],
+      succs: g.outNeighbors(currNode),
+      pres: g.inNeighbors(currNode),
     };
     console.log({ currNode, neighbours });
 
@@ -146,7 +147,7 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
     i++;
 
     const currNode = queue.shift();
-    const next = g.successors(currNode) as string[];
+    const next = g.outNeighbors(currNode);
 
     if (next.length) {
       queue.unshift(...next);

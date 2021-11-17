@@ -1,4 +1,4 @@
-import type { Edge, Graph } from "graphlib";
+import type Graph from "graphology";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
 export interface BreadcrumbsSettings {
@@ -46,13 +46,13 @@ export interface BreadcrumbsSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-  | string
-  | string[]
-  | string[][]
-  | dvLink
-  | dvLink[]
-  | Pos
-  | TFile;
+    | string
+    | string[]
+    | string[][]
+    | dvLink
+    | dvLink[]
+    | Pos
+    | TFile;
 }
 
 export type Directions = "up" | "same" | "down";
@@ -172,7 +172,7 @@ export type HierData = {
       graph?: Graph;
       nodes: string[];
       nodesStr: string;
-      edges: Edge[];
+      edges: string[];
       edgesStr: string;
     };
   };

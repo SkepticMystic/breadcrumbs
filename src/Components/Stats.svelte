@@ -25,29 +25,31 @@
     hierData: HierData,
     nodesToo = true
   ) {
-    const g = hierData[dir][gType].graph;
+    const gInfo = hierData[dir][gType];
 
     if (nodesToo) {
-      const nodes = hierData[dir][gType].graph.nodes();
-      hierData[dir][gType].nodes = nodes;
-      hierData[dir][gType].nodesStr = nodes.join("\n");
+      const nodes = gInfo.graph.nodes();
+      gInfo.nodes = nodes;
+      gInfo.nodesStr = nodes.join("\n");
     }
 
-    const edges = hierData[dir][gType].graph.edges();
-    hierData[dir][gType].edges = edges;
-    let edgeStrArr = edges.map(
-      (e) =>
-        `${nodesToo ? e.v : e.w} ${
-          nodesToo || dir !== "same" ? separator : "⟷"
-        } ${nodesToo ? e.w : e.v}`
+    gInfo.edges = gInfo.graph.edges();
+    const edgeStrArr = gInfo.graph.mapEdges(
+      (k, a, s, t) =>
+        `${nodesToo ? s : t} ${nodesToo || dir !== "same" ? separator : "⟷"} ${
+          nodesToo ? t : s
+        }`
     );
-    hierData[dir][gType].edgesStr = edgeStrArr.join("\n");
+    gInfo.edgesStr = edgeStrArr.join("\n");
   }
 
   const data = hierGs.hierGs.map((hier) => {
     const hierData: HierData = {
+      //@ts-ignore
       up: { Merged: {}, Closed: {}, Implied: {} },
+      //@ts-ignore
       same: { Merged: {}, Closed: {}, Implied: {} },
+      //@ts-ignore
       down: { Merged: {}, Closed: {}, Implied: {} },
     };
     DIRECTIONS.forEach((dir) => {

@@ -2,7 +2,7 @@
   import type { App, TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
   import type { SquareProps } from "src/interfaces";
-  import type BreadcrumbsSettings from "src/main";
+  import type { BreadcrumbsSettings } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
 
   export let filteredSquaresArr: SquareProps[][];

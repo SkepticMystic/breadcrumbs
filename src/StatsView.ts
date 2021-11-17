@@ -1,4 +1,4 @@
-import type { Graph } from "graphlib";
+import type Graph from "graphology";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { STATS_VIEW } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
@@ -24,8 +24,12 @@ export default class StatsView extends ItemView {
     });
   }
 
-  getViewType = () => STATS_VIEW;
-  getDisplayText = () => "Breadcrumbs Stats";
+  getViewType() {
+    return STATS_VIEW;
+  }
+  getDisplayText() {
+    return "Breadcrumbs Stats";
+  }
 
   icon = "info";
 
@@ -53,7 +57,7 @@ export default class StatsView extends ItemView {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const newNodes = g.outNeighbors(currPath.node);
       const extPath = [currPath.node, ...currPath.path];
       queue.unshift(
         ...newNodes.map((n: string) => {

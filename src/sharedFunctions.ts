@@ -1,5 +1,4 @@
-import * as graphlib from "graphlib";
-import { Graph } from "graphlib";
+import Graph from "graphology";
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -406,9 +405,9 @@ export async function getNeighbourObjArr(
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
-  const closedG = graphlib.json.read(graphlib.json.write(real));
-  implied.edges().forEach((impliedEdge) => {
-    closedG.setEdge(impliedEdge.w, impliedEdge.v);
+  const closedG = real.copy();
+  implied.forEachEdge((key, a, s, t) => {
+    closedG.mergeEdge(s, t, a);
   });
   return closedG;
 }
@@ -577,78 +576,55 @@ export function makeWiki(wikiQ: boolean, str: string) {
   return copy;
 }
 
-export function mergeGraphs(g1: Graph, g2: Graph) {
-  const copy1 = graphlib.json.read(graphlib.json.write(g1));
-  g2.edges().forEach((edge) => {
-    copy1.setEdge(edge.v, edge.w);
-  });
-  return copy1;
-}
-
 export function mergeGs(...graphs: Graph[]) {
   const outG = new Graph();
-  graphs.forEach((graph) => {
-    graph.edges().forEach((edge) => {
-      const nodeLabel = graph.node(edge.v);
-      outG.setNode(edge.v, nodeLabel);
-      const edgeLabel = graph.edge(edge);
-      outG.setEdge(edge, edgeLabel);
+
+  graphs.forEach((g) => {
+    g.forEachNode((node, a) => {
+      outG.mergeNode(node, a);
+    });
+    g.forEachEdge((key, a, s, t) => {
+      outG.mergeEdge(s, t, a);
     });
   });
   return outG;
 }
 
 export function removeUnlinkedNodes(g: Graph) {
-  const copy = graphlib.json.read(graphlib.json.write(g));
-  const nodes = copy.nodes();
-  const unlinkedNodes = nodes.filter(
-    (node) => !(copy.neighbors(node) as string[]).length
-  );
-  unlinkedNodes.forEach((node) => copy.removeNode(node));
+  const copy = g.copy();
+  copy.forEachNode((node) => {
+    if (!copy.neighbors(node).length) copy.dropNode(node);
+  });
   return copy;
 }
 
-export function getAllGsInDir(
-  userHierarchies: userHierarchy[],
-  currGraphs: HierarchyGraphs[],
-  dir: Directions
-) {
+export function getAllGsInDir(currGraphs: HierarchyGraphs[], dir: Directions) {
   const target = {};
   const allGsInDir: { [field: string]: Graph } = Object.assign(
     target,
     ...currGraphs.map((hierGs) => hierGs[dir])
   );
-
-  // const fieldNamesInXDir = userHierarchies
-  //   .map((hier) => hier[dir])
-  //   .filter((field) => field.join() !== "")
-  //   .flat();
-
-  // const allXGs: { [rel: string]: Graph } = {};
-
-  // currGraphs.forEach((hierarchyGs) => {
-  //   fieldNamesInXDir.forEach((field) => {
-  //     const graph = hierarchyGs[dir][field];
-  //     if (graph) {
-  //       allXGs[field] = graph;
-  //     }
-  //   });
-  // });
-  // console.log({ allXGs, allGsInDir });
   return allGsInDir;
+}
+
+export function iterateAllGs(
+  currGraphs: HierarchyGraphs[],
+  cb: (g: Graph, dir: Directions, fieldName: string) => any
+) {
+  for (const hierGs of currGraphs) {
+    for (const dir of DIRECTIONS) {
+      for (const fieldName in hierGs[dir]) {
+        const g = hierGs[dir][fieldName];
+        cb(g, dir, fieldName);
+      }
+    }
+  }
 }
 
 export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
   const fieldGs: Graph[] = [];
-  currGraphs.forEach((hierGs) => {
-    DIRECTIONS.forEach((dir) => {
-      Object.keys(hierGs[dir]).forEach((fieldName) => {
-        if (fields.includes(fieldName)) {
-          const fieldG = hierGs[dir][fieldName];
-          if (fieldG instanceof graphlib.Graph) fieldGs.push(fieldG);
-        }
-      });
-    });
+  iterateAllGs(currGraphs, (g, dir, fieldName) => {
+    if (fields.includes(fieldName)) fieldGs.push(g);
   });
   return fieldGs;
 }
@@ -662,6 +638,7 @@ export function hierToStr(hier: userHierarchy) {
 export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
 }
+
 /**
  * Adds or updates the given yaml `key` to `value` in the given TFile
  * @param  {string} key
@@ -693,6 +670,9 @@ export const createOrUpdateYaml = async (
   }
 };
 
+export const getOppDir = (dir: Directions): Directions =>
+  dir === "same" ? "same" : dir === "up" ? "down" : "up";
+
 export const writeBCToFile = (
   app: App,
   plugin: BreadcrumbsPlugin,
@@ -707,30 +687,21 @@ export const writeBCToFile = (
     return;
   }
 
-  currGraphs.hierGs.forEach((hier) => {
-    DIRECTIONS.forEach((dir) => {
-      let oppDir: Directions;
-      if (dir === "up") oppDir = "down";
-      if (dir === "down") oppDir = "up";
-      if (dir === "same") oppDir = "same";
+  iterateAllGs(currGraphs.hierGs, (fieldG, dir, fieldName) => {
+    const oppDir = getOppDir(dir);
+    const succs = fieldG.inNeighbors(file.basename);
 
-      Object.keys(hier[dir]).forEach((field) => {
-        const fieldG = hier[dir][field];
-        const succs = fieldG.predecessors(file.basename) as string[];
+    succs.forEach(async (succ) => {
+      const { fieldName } = fieldG.getNodeAttributes(succ);
+      if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return;
 
-        succs.forEach(async (succ) => {
-          const { fieldName } = fieldG.node(succ);
-          if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return;
+      const currHier = plugin.settings.userHierarchies.find((hier) =>
+        hier[dir].includes(fieldName)
+      );
+      let oppField: string = currHier[oppDir][0];
+      if (!oppField) oppField = `<Reverse>${fieldName}`;
 
-          const currHier = plugin.settings.userHierarchies.filter((hier) =>
-            hier[dir].includes(fieldName)
-          )[0];
-          let oppField: string = currHier[oppDir][0];
-          if (!oppField) oppField = `<Reverse>${fieldName}`;
-
-          await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
-        });
-      });
+      await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
     });
   });
 };
@@ -740,11 +711,31 @@ export function oppFields(
   dir: Directions,
   userHierarchies: userHierarchy[]
 ): string[] {
-  let oppDir: Directions = "same";
-  if (dir !== "same") {
-    oppDir = dir === "up" ? "down" : "up";
-  }
+  const oppDir = getOppDir(dir);
   return (
     userHierarchies.find((hier) => hier[oppDir].includes(field))?.[oppDir] ?? []
   );
 }
+
+export function addNodeIfNot(g: Graph, node: string, attr?: {}) {
+  if (!g.hasNode(node)) {
+    g.addNode(node, attr);
+  }
+}
+
+export function addEdgeIfNot(
+  g: Graph,
+  source: string,
+  target: string,
+  attr?: {}
+) {
+  if (!g.hasEdge(source, target)) {
+    g.addEdge(source, target, attr);
+  }
+}
+
+export const getSinks = (g: Graph) =>
+  g.filterNodes((node) => !g.outNeighbors(node).length);
+
+export const getSources = (g: Graph) =>
+  g.filterNodes((node) => !g.inNeighbors(node).length);

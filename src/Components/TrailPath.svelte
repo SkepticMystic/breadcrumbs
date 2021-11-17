@@ -2,6 +2,7 @@
   import type { App, TFile, View } from "obsidian";
   import type { BreadcrumbsSettings } from "src/interfaces";
   import { openOrSwitch } from "src/sharedFunctions";
+  import { hoverPreview } from "obsidian-community-lib/dist/utils";
 
   export let sortedTrails: string[][];
   export let app: App;
@@ -9,18 +10,6 @@
   export let currFile: TFile;
 
   const activeLeafView = app.workspace.activeLeaf.view;
-
-  function hoverPreview(event: MouseEvent, view: View, to: string): void {
-    const targetEl = event.target as HTMLElement;
-
-    view.app.workspace.trigger("hover-link", {
-      event,
-      source: view.getViewType(),
-      hoverParent: view,
-      targetEl,
-      linktext: to,
-    });
-  }
 
   let showAll = settings.showAll;
   $: buttonText = showAll ? "Shortest" : "All";

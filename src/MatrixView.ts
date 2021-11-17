@@ -1,11 +1,7 @@
-import type { Graph } from "graphlib";
+import type Graph from "graphology";
 import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import {
-  DIRECTIONS,
-  TRAIL_ICON,
-  MATRIX_VIEW,
-} from "src/constants";
+import { DIRECTIONS, MATRIX_VIEW, TRAIL_ICON } from "src/constants";
 import type {
   BreadcrumbsSettings,
   Directions,
@@ -20,6 +16,7 @@ import {
   debugGroupEnd,
   debugGroupStart,
   mergeGs,
+  getSinks,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -73,11 +70,11 @@ export default class MatrixView extends ItemView {
         const { up } = this.plugin.currGraphs.mergedGs;
         const closedParents = this.plugin.currGraphs.closedGs.down;
 
-        const terminals = up.sinks();
+        const sinks = getSinks(up);
         const settings = this.plugin.settings;
 
         let globalIndex = "";
-        terminals.forEach((terminal) => {
+        sinks.forEach((terminal) => {
           globalIndex += terminal + "\n";
           const allPaths = this.dfsAllPaths(closedParents, terminal);
           globalIndex = this.createIndex(globalIndex, allPaths, settings);
@@ -133,9 +130,9 @@ export default class MatrixView extends ItemView {
     const altFieldsQ = !!settings.altLinkFields.length;
 
     if (realQ) {
-      items = (g.successors(currFile.basename) ?? []) as string[];
+      items = g.outNeighbors(currFile.basename);
     } else {
-      items = (g.predecessors(currFile.basename) ?? []) as string[];
+      items = g.inNeighbors(currFile.basename);
     }
     const internalLinkObjArr: internalLinkObj[] = [];
     // TODO I don't think I need to check the length here
@@ -193,7 +190,7 @@ export default class MatrixView extends ItemView {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const newNodes = g.outNeighbors(currPath.node);
       const extPath = [currPath.node, ...currPath.path];
       queue.unshift(
         ...newNodes.map((n: string) => {
@@ -295,12 +292,11 @@ export default class MatrixView extends ItemView {
 
       // SECTION Implied Siblings
       /// Notes with the same parents
-      const currParents = (currUpG.successors(currFile.basename) ??
-        []) as string[];
+      const currParents = currUpG.outNeighbors(currFile.basename);
       let iSameArr: internalLinkObj[] = [];
 
       currParents.forEach((parent) => {
-        let impliedSiblings = (currUpG.predecessors(parent) ?? []) as string[];
+        let impliedSiblings = currUpG.inNeighbors(parent);
 
         // The current note is always it's own implied sibling, so remove it from the list
         const indexCurrNote = impliedSiblings.indexOf(currFile.basename);
@@ -308,8 +304,14 @@ export default class MatrixView extends ItemView {
 
         if (settings.filterImpliedSiblingsOfDifferentTypes) {
           impliedSiblings = impliedSiblings.filter((iSibling) => {
-            const iSiblingType = currUpG.node(iSibling).fieldName;
-            const currNodeType = currUpG.node(currFile.basename).fieldName;
+            const iSiblingType = currUpG.getNodeAttribute(
+              iSibling,
+              "fieldName"
+            );
+            const currNodeType = currUpG.getNodeAttribute(
+              currFile.basename,
+              "fieldName"
+            );
             console.log({ iSiblingType, currNodeType });
             return iSiblingType === currNodeType;
           });

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { App, TFile } from "obsidian";
   import type { SquareProps } from "src/interfaces";
-  import type BreadcrumbsSettings from "src/main";
+  import type { BreadcrumbsSettings } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
   import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
 

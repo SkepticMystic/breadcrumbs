@@ -1,6 +1,6 @@
 <script lang="ts">
   import { range } from "lodash";
-  import type { App, TFile, View } from "obsidian";
+  import type { App, TFile } from "obsidian";
   import type BreadcrumbsPlugin from "src/main";
   import {
     closeImpliedLinks,
@@ -10,6 +10,7 @@
     runs,
     transpose,
   } from "src/sharedFunctions";
+  import { hoverPreview } from "obsidian-community-lib/dist/utils";
 
   export let sortedTrails: string[][];
   export let app: App;
@@ -24,18 +25,6 @@
     return app.metadataCache.unresolvedLinks[currFile.path][toFile] > 0
       ? "internal-link is-unresolved breadcrumbs-link"
       : "internal-link breadcrumbs-link";
-  }
-
-  function hoverPreview(event: MouseEvent, view: View, to: string): void {
-    const targetEl = event.target as HTMLElement;
-
-    view.app.workspace.trigger("hover-link", {
-      event,
-      source: view.getViewType(),
-      hoverParent: view,
-      targetEl,
-      linktext: to,
-    });
   }
 
   const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
@@ -63,7 +52,7 @@
 
   const children: { [cell: string]: number } = {};
   allCells.forEach(
-    (cell) => (children[cell] = (closedParents.successors(cell) ?? []).length)
+    (cell) => (children[cell] = closedParents.outNeighbors(cell).length)
   );
 
   const normalisedData = normalise(Object.values(children));

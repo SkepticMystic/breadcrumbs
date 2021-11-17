@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import type { Graph } from "graphlib";
+import type Graph from "graphology";
 import * as graphlib from "graphlib";
 import { openOrSwitch } from "src/sharedFunctions";
 import type { d3Node } from "src/interfaces";

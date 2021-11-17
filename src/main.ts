@@ -1,4 +1,4 @@
-import { Graph } from "graphlib";
+import Graph from "graphology";
 import {
   addIcon,
   EventRef,
@@ -28,6 +28,8 @@ import type {
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
+  addEdgeIfNot,
+  addNodeIfNot,
   closeImpliedLinks,
   debug,
   debugGroupEnd,
@@ -37,6 +39,7 @@ import {
   getDVMetadataCache,
   getNeighbourObjArr,
   getObsMetadataCache,
+  getOppDir,
   mergeGs,
   oppFields,
   removeDuplicates,
@@ -316,7 +319,6 @@ export default class BreadcrumbsPlugin extends Plugin {
         const nextDepth = getDepth(nextLine);
 
         if (nextDepth > currDepth) {
-          debug(settings, { currNote, nextNote });
           adjItems[lineNo].children.push(nextNote);
           pushNoteUp(adjItems, currNote, currDepth);
         } else if (currDepth === 0) {
@@ -349,10 +351,12 @@ export default class BreadcrumbsPlugin extends Plugin {
     dir: Directions,
     fieldName: string
   ): void {
-    g.setNode(currFileName, { dir, fieldName });
+    addNodeIfNot(g, currFileName, { dir, fieldName });
+
     if (fieldName === "") return;
     fields.forEach((field) => {
-      g.setEdge(currFileName, field, { dir, fieldName });
+      addNodeIfNot(g, field, { dir, fieldName });
+      addEdgeIfNot(g, currFileName, field, { dir, fieldName });
     });
   }
 
@@ -390,9 +394,11 @@ export default class BreadcrumbsPlugin extends Plugin {
     fieldName: string
   ) {
     CSVRows.forEach((row) => {
-      g.setNode(row.file, { dir, fieldName });
+      addNodeIfNot(g, row.file);
       if (fieldName === "" || !row[fieldName]) return;
-      g.setEdge(row.file, row[fieldName], { dir, fieldName });
+
+      addNodeIfNot(g, row[fieldName]);
+      g.addEdge(row.file, row[fieldName], { dir, fieldName });
     });
   }
 
@@ -499,7 +505,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         hierarchyNotesArr.forEach((adjListItem) => {
           adjListItem.children.forEach((child) => {
-            gUp.setEdge(child, adjListItem.note, {
+            addNodeIfNot(gUp, adjListItem.note, { dir: "up" });
+            gUp.addEdge(child, adjListItem.note, {
               dir: "up",
               fieldName: hierarchyNoteUpFieldName,
             });
@@ -513,7 +520,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
         hierarchyNotesArr.forEach((adjListItem) => {
           adjListItem.children.forEach((child) => {
-            gDown.setEdge(adjListItem.note, child, {
+            addNodeIfNot(gDown, adjListItem.note, { dir: "down" });
+            gDown.addEdge(adjListItem.note, child, {
               dir: "down",
               fieldName: hierarchyNoteDownFieldName,
             });
@@ -523,30 +531,24 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
 
     DIRECTIONS.forEach((dir) => {
-      const allXGs = getAllGsInDir(userHierarchies, graphs.hierGs, dir);
+      const allXGs = getAllGsInDir(graphs.hierGs, dir);
       const dirMerged = mergeGs(...Object.values(allXGs));
       graphs.mergedGs[dir] = dirMerged;
     });
 
     DIRECTIONS.forEach((dir) => {
-      if (dir !== "same") {
-        graphs.closedGs[dir] = closeImpliedLinks(
-          graphs.mergedGs[dir],
-          graphs.mergedGs[dir === "up" ? "down" : "up"]
-        );
-      } else {
-        graphs.closedGs[dir] = closeImpliedLinks(
-          graphs.mergedGs[dir],
-          graphs.mergedGs[dir]
-        );
-      }
+      const oppDir = getOppDir(dir);
+      graphs.closedGs[dir] = closeImpliedLinks(
+        graphs.mergedGs[dir],
+        graphs.mergedGs[oppDir]
+      );
     });
 
     // LimitTrailG
     if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
       graphs.limitTrailG = graphs.closedGs.up;
     } else {
-      const allUps = getAllGsInDir(userHierarchies, graphs.hierGs, "up");
+      const allUps = getAllGsInDir(graphs.hierGs, "up");
       const allLimitedTrailsGsKeys: string[] = Object.keys(allUps).filter(
         (field) => settings.limitTrailCheckboxStates[field]
       );
@@ -605,7 +607,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const newNodes = g.outNeighbors(currPath.node);
       const extPath = [currPath.node, ...currPath.path];
       queue.push(
         ...newNodes.map((n: string) => {
@@ -638,7 +640,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = (g.successors(currPath.node) ?? []) as string[];
+      const newNodes = g.outNeighbors(currPath.node);
       const extPath = [currPath.node, ...currPath.path];
       queue.unshift(
         ...newNodes.map((n: string) => {

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import type { Graph } from "graphlib";
+import type Graph from "graphology";
 import type { App, TFile } from "obsidian";
 import type { AdjListItem, d3Link, d3Node } from "src/interfaces";
 import { openOrSwitch } from "src/sharedFunctions";
