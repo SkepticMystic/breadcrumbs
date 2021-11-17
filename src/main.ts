@@ -40,6 +40,7 @@ import {
   getNeighbourObjArr,
   getObsMetadataCache,
   getOppDir,
+  getOutNeighbours,
   mergeGs,
   oppFields,
   removeDuplicates,
@@ -586,7 +587,7 @@ export default class BCPlugin extends Plugin {
       const { node, path } = queue.shift();
       const extPath = [node, ...path];
       queue.push(
-        ...g.outNeighbors(node).map((n) => {
+        ...getOutNeighbours(g, node).map((n) => {
           return { node: n, path: extPath };
         })
       );
@@ -664,11 +665,10 @@ export default class BCPlugin extends Plugin {
     }
 
     const trailDiv = createDiv({
-      cls: `BC-trail ${
-        settings.respectReadableLineLength
+      cls: `BC-trail ${settings.respectReadableLineLength
           ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
           : ""
-      }`,
+        }`,
     });
 
     this.visited.push([currFile.path, trailDiv]);

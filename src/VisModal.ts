@@ -3,7 +3,7 @@ import type Graph from "graphology";
 import { App, Modal, Notice } from "obsidian";
 import type { AdjListItem, d3Graph } from "src/interfaces";
 import type BCPlugin from "src/main";
-import { getSinks } from "src/sharedFunctions";
+import { getInNeighbours, getOutNeighbours, getSinks } from "src/sharedFunctions";
 import VisComp from "./Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {
@@ -32,7 +32,7 @@ export function bfsFromAllSinks(g: Graph) {
     i++;
 
     const currNode = queue.shift();
-    const newNodes = g.inNeighbors(currNode);
+    const newNodes = getInNeighbours(g, currNode);
 
     if (newNodes.length) {
       newNodes.forEach((pre) => {
@@ -67,7 +67,7 @@ export function dfsAdjList(g: Graph, startNode: string): AdjListItem[] {
     i++;
 
     const currNode = queue.shift();
-    const newNodes = g.outNeighbors(currNode);
+    const newNodes = getOutNeighbours(g, currNode);
 
     if (newNodes.length) {
       newNodes.forEach((succ) => {
@@ -103,8 +103,8 @@ export function bfsAdjList(g: Graph, startNode: string): AdjListItem[] {
 
     const currNode = queue.shift();
     const neighbours = {
-      succs: g.outNeighbors(currNode),
-      pres: g.inNeighbors(currNode),
+      succs: getOutNeighbours(g, currNode),
+      pres: getInNeighbours(g, currNode),
     };
     console.log({ currNode, neighbours });
 
@@ -147,7 +147,7 @@ export function dfsFlatAdjList(g: Graph, startNode: string) {
     i++;
 
     const currNode = queue.shift();
-    const next = g.outNeighbors(currNode);
+    const next = getOutNeighbours(g, currNode);
 
     if (next.length) {
       queue.unshift(...next);

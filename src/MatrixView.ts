@@ -15,6 +15,8 @@ import {
   debug,
   debugGroupEnd,
   debugGroupStart,
+  getInNeighbours,
+  getOutNeighbours,
   getSinks,
   linkClass,
   mergeGs,
@@ -95,7 +97,7 @@ export default class MatrixView extends ItemView {
 
   icon = TRAIL_ICON;
 
-  async onOpen(): Promise<void> {}
+  async onOpen(): Promise<void> { }
 
   onClose(): Promise<void> {
     this.view?.$destroy();
@@ -108,9 +110,7 @@ export default class MatrixView extends ItemView {
     settings: BCSettings,
     realQ = true
   ): internalLinkObj[] {
-    const items = realQ
-      ? g.outNeighbors(currFile.basename)
-      : g.inNeighbors(currFile.basename);
+    const items = realQ ? getOutNeighbours(g, currFile.basename) : getInNeighbours(g, currFile.basename);
 
     const internalLinkObjArr: internalLinkObj[] = [];
 
@@ -195,9 +195,8 @@ export default class MatrixView extends ItemView {
         ) {
           continue;
         } else {
-          index += `${indent.repeat(depth)}- ${
-            wikilinkIndex ? "[[" : ""
-          }${currNode}${wikilinkIndex ? "]]" : ""}`;
+          index += `${indent.repeat(depth)}- ${wikilinkIndex ? "[[" : ""
+            }${currNode}${wikilinkIndex ? "]]" : ""}`;
 
           if (settings.aliasesInIndex) {
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
@@ -253,10 +252,10 @@ export default class MatrixView extends ItemView {
       /// Notes with the same parents
 
       let iSameArr: internalLinkObj[] = [];
-      const currParents = up.outNeighbors(basename);
+      const currParents = getOutNeighbours(up, basename);
 
       currParents.forEach((parent) => {
-        let impliedSiblings = up.inNeighbors(parent);
+        let impliedSiblings = getInNeighbours(up, parent);
 
         // The current note is always it's own implied sibling, so remove it from the list
         const indexCurrNote = impliedSiblings.indexOf(basename);

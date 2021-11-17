@@ -452,9 +452,8 @@ export async function openOrSwitch(
   // If dest doesn't exist, make it
   if (!destFile) {
     const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
-    const newFilePath = `${newFileFolder}${
-      newFileFolder === "/" ? "" : "/"
-    }${dest}.md`;
+    const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"
+      }${dest}.md`;
     await app.vault.create(newFilePath, "");
     destFile = app.metadataCache.getFirstLinkpathDest(
       newFilePath,
@@ -696,7 +695,7 @@ export const writeBCToFile = (
 
   iterateAllGs(currGraphs.hierGs, (fieldG, dir, fieldName) => {
     const oppDir = getOppDir(dir);
-    const succs = fieldG.inNeighbors(file.basename);
+    const succs = getInNeighbours(fieldG, file.basename);
 
     succs.forEach(async (succ) => {
       const { fieldName } = fieldG.getNodeAttributes(succ);
@@ -742,10 +741,10 @@ export function addEdgeIfNot(
 }
 
 export const getSinks = (g: Graph) =>
-  g.filterNodes((node) => !g.outNeighbors(node).length);
+  g.filterNodes((node) => !getOutNeighbours(g, node).length);
 
 export const getSources = (g: Graph) =>
-  g.filterNodes((node) => !g.inNeighbors(node).length);
+  g.filterNodes((node) => !getInNeighbours(g, node).length);
 
 export function swapItems<T>(i: number, j: number, arr: T[]) {
   const max = arr.length - 1;
@@ -757,7 +756,9 @@ export function swapItems<T>(i: number, j: number, arr: T[]) {
 }
 
 export function linkClass(app: App, to: string, realQ = true) {
-  return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
-    realQ ? "" : "BC-Implied"
-  }`;
+  return `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
+    }`;
 }
+
+export const getOutNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.outNeighbors(node) : []
+export const getInNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.inNeighbors(node) : []

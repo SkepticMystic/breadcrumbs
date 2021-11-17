@@ -5,6 +5,7 @@
   import type BCPlugin from "src/main";
   import {
     closeImpliedLinks,
+    getOutNeighbours,
     linkClass,
     normalise,
     openOrSwitch,
@@ -47,7 +48,7 @@
 
   const children: { [cell: string]: number } = {};
   allCells.forEach(
-    (cell) => (children[cell] = closedParents.outNeighbors(cell).length)
+    (cell) => (children[cell] = getOutNeighbours(closedParents, cell).length)
   );
 
   const normalisedData = normalise(Object.values(children));

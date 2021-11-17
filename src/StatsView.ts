@@ -1,5 +1,6 @@
 import type Graph from "graphology";
 import { ItemView, WorkspaceLeaf } from "obsidian";
+import { getOutNeighbours } from "src/sharedFunctions";
 import { STATS_VIEW } from "src/constants";
 import type BCPlugin from "src/main";
 import Stats from "./Components/Stats.svelte";
@@ -57,7 +58,7 @@ export default class StatsView extends ItemView {
       i++;
       const currPath = queue.shift();
 
-      const newNodes = g.outNeighbors(currPath.node);
+      const newNodes = getOutNeighbours(g, currPath.node);
       const extPath = [currPath.node, ...currPath.path];
       queue.unshift(
         ...newNodes.map((n: string) => {
