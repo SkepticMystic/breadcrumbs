@@ -82,6 +82,7 @@ export function getDVMetadataCache(
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
       file.path
     );
+
     superDebug(settings, { dvCache });
     fileFrontmatterArr.push(dvCache);
   });
@@ -282,7 +283,6 @@ export function getFieldValues(
           });
         }
         unProxied.forEach((value) => {
-          console.log({ unproxiedValue: value });
           if (typeof value === "string" || typeof value === "number") {
             // Obs cache converts link of form: [[\d+]] to number[][]
             const rawItemAsString = value.toString();
@@ -407,7 +407,7 @@ export async function getNeighbourObjArr(
 export function closeImpliedLinks(real: Graph, implied: Graph): Graph {
   const closedG = real.copy();
   implied.forEachEdge((key, a, s, t) => {
-    closedG.mergeEdge(s, t, a);
+    closedG.mergeEdge(t, s, a);
   });
   return closedG;
 }

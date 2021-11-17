@@ -43,6 +43,7 @@
     "d3": "^6.7.0",
     "fs": "0.0.1-security",
     "graphology": "^0.23.1",
+    "graphology-traversal": "^0.2.2",
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
     "nodejs": "^0.0.0",

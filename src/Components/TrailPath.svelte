@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { App, TFile, View } from "obsidian";
+  import type { App, TFile } from "obsidian";
+  import { hoverPreview } from "obsidian-community-lib/dist/utils";
   import type { BreadcrumbsSettings } from "src/interfaces";
   import { openOrSwitch } from "src/sharedFunctions";
-  import { hoverPreview } from "obsidian-community-lib/dist/utils";
 
   export let sortedTrails: string[][];
   export let app: App;
@@ -12,7 +12,7 @@
   const activeLeafView = app.workspace.activeLeaf.view;
 
   let showAll = settings.showAll;
-  $: buttonText = showAll ? "Shortest" : "All";
+
   $: trailsToShow = showAll ? sortedTrails : [sortedTrails[0]];
 </script>
 
@@ -44,7 +44,7 @@
   {#if sortedTrails.length > 1}
     <div>
       <button class="button-div" on:click={() => (showAll = !showAll)}>
-        {buttonText}
+        {showAll ? "Shortest" : "All"}
       </button>
     </div>
   {/if}
