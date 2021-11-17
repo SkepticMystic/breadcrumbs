@@ -1,6 +1,6 @@
 import type { Graph } from "graphlib";
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import { VIEW_TYPE_BREADCRUMBS_STATS } from "src/constants";
+import { STATS_VIEW } from "src/constants";
 import type BreadcrumbsPlugin from "src/main";
 import Stats from "./Components/Stats.svelte";
 
@@ -24,12 +24,8 @@ export default class StatsView extends ItemView {
     });
   }
 
-  getViewType() {
-    return VIEW_TYPE_BREADCRUMBS_STATS;
-  }
-  getDisplayText() {
-    return "Breadcrumbs Stats";
-  }
+  getViewType = () => STATS_VIEW;
+  getDisplayText = () => "Breadcrumbs Stats";
 
   icon = "info";
 

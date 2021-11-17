@@ -9,13 +9,15 @@ import {
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
+import { openView } from "obsidian-community-lib/dist/utils";
 import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
+  DEFAULT_SETTINGS,
   DIRECTIONS,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
-  VIEW_TYPE_BREADCRUMBS_MATRIX,
-  VIEW_TYPE_BREADCRUMBS_STATS,
+  MATRIX_VIEW,
+  STATS_VIEW,
 } from "src/constants";
 import type {
   BCIndex,
@@ -45,85 +47,16 @@ import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
 
-const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-  userHierarchies: [],
-  indexNote: [""],
-  CSVPaths: "",
-  hierarchyNotes: [""],
-  hierarchyNoteDownFieldName: "",
-  hierarchyNoteUpFieldName: "",
-  refreshIndexOnActiveLeafChange: false,
-  altLinkFields: [],
-  useAllMetadata: true,
-  parseJugglLinksWithoutJuggl: false,
-  dvWaitTime: 5000,
-  refreshIntervalTime: 0,
-  defaultView: true,
-  showNameOrType: true,
-  showRelationType: true,
-  filterImpliedSiblingsOfDifferentTypes: false,
-  rlLeaf: true,
-  showTrail: true,
-  limitTrailCheckboxStates: {},
-  hideTrailFieldName: "hide-trail",
-  trailOrTable: 3,
-  gridDots: false,
-  dotsColour: "#000000",
-  gridHeatmap: false,
-  heatmapColour: getComputedStyle(document.body).getPropertyValue(
-    "--text-accent"
-  ),
-  showAll: false,
-  noPathMessage: `This note has no real or implied parents`,
-  trailSeperator: "→",
-  respectReadableLineLength: true,
-  limitWriteBCCheckboxStates: {},
-  showWriteAllBCsCmd: false,
-  visGraph: "Force Directed Graph",
-  visRelation: "Parent",
-  visClosed: "Real",
-  visAll: "All",
-  wikilinkIndex: true,
-  aliasesInIndex: false,
-  debugMode: false,
-  superDebugMode: false,
-};
-
-declare module "obsidian" {
-  interface App {
-    plugins: {
-      plugins: {
-        dataview: { api: any };
-        juggl: any;
-        metaedit: {
-          api: {
-            getAutopropFunction: () => any;
-            getUpdateFunction: () => any;
-            getFileFromTFileOrPath: () => any;
-            getGetPropertyValueFunction: () => any;
-            getGetFilesWithPropertyFunction: () => any;
-            getCreateYamlPropertyFunction: () => any;
-            getGetPropertiesInFile: () => any;
-          };
-        };
-      };
-    };
-  }
-}
-
 export default class BreadcrumbsPlugin extends Plugin {
   settings: BreadcrumbsSettings;
-  visited: [string, HTMLDivElement][];
+  visited: [string, HTMLDivElement][] = [];
   refreshIntervalID: number;
   currGraphs: BCIndex;
-  activeLeafChangeEventRef: EventRef;
+  activeLeafChange: EventRef = undefined;
 
   async refreshIndex() {
-    if (!this.activeLeafChangeEventRef) {
-      console.log(
-        "activeLeafChangeEventRef wasn't registered onLoad, registering now"
-      );
-      this.activeLeafChangeEventRef = this.app.workspace.on(
+    if (!this.activeLeafChange) {
+      this.activeLeafChange = this.app.workspace.on(
         "active-leaf-change",
         async () => {
           if (this.settings.refreshIndexOnActiveLeafChange) {
@@ -142,144 +75,81 @@ export default class BreadcrumbsPlugin extends Plugin {
         }
       );
 
-      this.registerEvent(this.activeLeafChangeEventRef);
+      this.registerEvent(this.activeLeafChange);
     }
 
     this.currGraphs = await this.initGraphs();
     const activeView = this.getActiveMatrixView();
-    if (activeView) {
-      await activeView.draw();
-    }
-    if (this.settings.showTrail) {
-      await this.drawTrail();
-    }
+
+    if (activeView) await activeView.draw();
+    if (this.settings.showTrail) await this.drawTrail();
+
     new Notice("Index refreshed");
   }
 
-  // this.app.metadataCache.on("dataview:api-ready", console.log("dv ready"));
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
 
-    this.activeLeafChangeEventRef = undefined;
-    this.visited = [];
-
     this.registerView(
-      VIEW_TYPE_BREADCRUMBS_STATS,
+      STATS_VIEW,
       (leaf: WorkspaceLeaf) => new StatsView(leaf, this)
     );
-
     this.registerView(
-      VIEW_TYPE_BREADCRUMBS_MATRIX,
+      MATRIX_VIEW,
       (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
     );
 
     const initEverything = async () => {
+      const { settings } = this;
       this.currGraphs = await this.initGraphs();
 
-      this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
-      this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+      await openView(this.app, MATRIX_VIEW, MatrixView);
+      await openView(this.app, STATS_VIEW, StatsView);
 
-      if (this.settings.showTrail) {
-        await this.drawTrail();
-      }
+      if (settings.showTrail) await this.drawTrail();
 
-      this.activeLeafChangeEventRef = this.app.workspace.on(
+      this.activeLeafChange = this.app.workspace.on(
         "active-leaf-change",
         async () => {
-          if (this.settings.refreshIndexOnActiveLeafChange) {
-            // refreshIndex does everything in one
+          if (settings.refreshIndexOnActiveLeafChange) {
             await this.refreshIndex();
           } else {
-            // If it is not called, active-leaf-change still needs to trigger a redraw
             const activeView = this.getActiveMatrixView();
-            if (activeView) {
-              await activeView.draw();
-            }
-            if (this.settings.showTrail) {
-              await this.drawTrail();
-            }
+            if (activeView) await activeView.draw();
+            if (settings.showTrail) await this.drawTrail();
           }
         }
       );
 
-      this.registerEvent(this.activeLeafChangeEventRef);
-
-      // const editorToggleEventRef = this.app.workspace.on('markdown:toggle-preview', () => { console.log('working') })
-
-      // this.registerEvent(editorToggleEventRef)
+      this.registerEvent(this.activeLeafChange);
 
       // ANCHOR autorefresh interval
-      if (this.settings.refreshIntervalTime > 0) {
+      if (settings.refreshIntervalTime > 0) {
         this.refreshIntervalID = window.setInterval(async () => {
           this.currGraphs = await this.initGraphs();
-          if (this.settings.showTrail) {
-            await this.drawTrail();
-          }
+          if (settings.showTrail) await this.drawTrail();
+
           const activeView = this.getActiveMatrixView();
-          if (activeView) {
-            await activeView.draw();
-          }
-        }, this.settings.refreshIntervalTime * 1000);
+          if (activeView) await activeView.draw();
+        }, settings.refreshIntervalTime * 1000);
         this.registerInterval(this.refreshIntervalID);
       }
     };
 
-    // let waiting1 = 0;
-    // let waiting2 = 0;
-    // const waitForDv = async (thenRun: () => any) => {
-    //   if (this.app.plugins.plugins.dataview) {
-    //     console.log("dv yes");
-    //     if (this.app.plugins.plugins.dataview.api) {
-    //       console.log("api yes");
-    //       setTimeout(async () => await thenRun(), 5000);
-    //       this.app.metadataCache.on("dv:api-ready", () =>
-    //         console.log("custom dv ready")
-    //       );
-    //       this.app.metadataCache.trigger("dv:api-ready");
-    //     } else {
-    //       console.log({ waiting2 });
-    //       waiting2++;
-    //       if (waiting2 > 300) {
-    //         new Notice("Dataview has not loaded yet");
-    //         setTimeout(async () => await thenRun(), 5000);
-    //       } else {
-    //         setTimeout(() => waitForDv(thenRun), 30);
-    //       }
-    //     }
-    //   } else {
-    //     console.log({ waiting1 });
-    //     waiting1++;
-    //     if (waiting1 > 100) {
-    //       setTimeout(async () => await thenRun(), 5000);
-    //     } else {
-    //       setTimeout(() => waitForDv(thenRun), 30);
-    //     }
-    //   }
-    // };
-
-    // waitForDv();
-
-    // if (this.app.plugins.plugins.dataview?.api) {
-    //   initEverything();
-    // } else {
-    //   this.registerEvent(
-    //     this.app.metadataCache.on("dataview:api-ready", initEverything)
-    //   );
-    // }
-
     this.app.workspace.onLayoutReady(async () => {
-      setTimeout(
-        async () => {
-          await initEverything();
-        },
-        this.app.plugins.plugins.dataview
-          ? this.app.plugins.plugins.dataview.api
-            ? 1
-            : this.settings.dvWaitTime
-          : 3000
-      );
+      if (this.app.plugins.enabledPlugins.has("dataview")) {
+        const api = this.app.plugins.plugins.dataview?.api;
+        if (api) await initEverything();
+        else
+          this.registerEvent(
+            this.app.metadataCache.on("dataview:api-ready", async () => {
+              console.log("dv ready");
+              await initEverything();
+            })
+          );
+      }
     });
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
@@ -287,28 +157,22 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.addCommand({
       id: "show-breadcrumbs-matrix-view",
       name: "Open Matrix View",
-      checkCallback: (checking: boolean) => {
+      checkCallback: async (checking: boolean) => {
         if (checking) {
-          return (
-            this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_MATRIX)
-              .length === 0
-          );
+          return this.app.workspace.getLeavesOfType(MATRIX_VIEW).length === 0;
         }
-        this.initMatrixView(VIEW_TYPE_BREADCRUMBS_MATRIX);
+        await openView(this.app, MATRIX_VIEW, MatrixView);
       },
     });
 
     this.addCommand({
       id: "show-breadcrumbs-stats-view",
       name: "Open Stats View",
-      checkCallback: (checking: boolean) => {
+      checkCallback: async (checking: boolean) => {
         if (checking) {
-          return (
-            this.app.workspace.getLeavesOfType(VIEW_TYPE_BREADCRUMBS_STATS)
-              .length === 0
-          );
+          return this.app.workspace.getLeavesOfType(STATS_VIEW).length === 0;
         }
-        this.initStatsView(VIEW_TYPE_BREADCRUMBS_STATS);
+        await openView(this.app, STATS_VIEW, StatsView);
       },
     });
 
@@ -361,6 +225,7 @@ export default class BreadcrumbsPlugin extends Plugin {
       checkCallback: () => this.settings.showWriteAllBCsCmd,
     });
 
+    // TODO get a better icon for this
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()
     );
@@ -369,9 +234,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   getActiveMatrixView(): MatrixView | null {
-    const leaves = this.app.workspace.getLeavesOfType(
-      VIEW_TYPE_BREADCRUMBS_MATRIX
-    );
+    const leaves = this.app.workspace.getLeavesOfType(MATRIX_VIEW);
     if (leaves && leaves.length >= 1) {
       const view = leaves[0].view;
       if (view instanceof MatrixView) {
@@ -383,19 +246,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
   hierarchyNoteAdjList = (str: string) => {
     let noteContent = str;
-    const settings = this.settings;
+    const { settings } = this;
 
     const yamlRegex = new RegExp(/^---.*/);
-    const hasYaml = !!noteContent.match(yamlRegex);
+    const hasYaml = yamlRegex.test(noteContent);
     if (hasYaml) {
       noteContent = noteContent.split("---").slice(2).join("---");
     }
 
     const layers = noteContent.split("\n").filter((line) => line);
 
-    const depth = (line: string) => line.split(/[-\*\+]/)[0].length;
+    const getDepth = (line: string) => line.split(/[-\*\+]/)[0].length;
 
-    const depths = layers.map(depth);
+    const depths = layers.map(getDepth);
     const differences = [];
 
     depths.forEach((dep, i) => {
@@ -406,13 +269,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 
     debug(settings, { differences });
 
-    const posFilteredDifferences = differences
+    const posDifferences = differences
       .filter((diff) => diff !== 0)
       .map(Math.abs);
 
-    const lcm = Math.min(...posFilteredDifferences);
+    const lcm = Math.min(...posDifferences);
 
-    if (!posFilteredDifferences.every((diff) => diff % lcm === 0)) {
+    if (!posDifferences.every((diff) => diff % lcm === 0)) {
       new Notice(
         "Please make sure the indentation is consistent in your hierarchy note."
       );
@@ -420,23 +283,22 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
     const difference = lcm;
 
-    const hier: { note: string; depth: number; children: string[] }[] = [];
+    type adjItem = { note: string; depth: number; children: string[] };
+    const adjItems: adjItem[] = [];
 
+    // TODO Allow user to pick the field name they want
     const lineRegex = new RegExp(/\s*[-\*\+] \[\[(.*)\]\]/);
 
     const pushNoteUp = (
-      hier: { note: string; depth: number; children: string[] }[],
+      hier: adjItem[],
       currNote: string,
       currDepth: number
     ) => {
       const copy = [...hier];
-      const noteUp = copy.reverse().find((adjItem, i) => {
-        return adjItem.depth === currDepth - difference;
-      });
-      debug(settings, { noteUp });
-      if (noteUp) {
-        hier[hier.indexOf(noteUp)].children.push(currNote);
-      }
+      const noteUp = copy
+        .reverse()
+        .findIndex((adjItem) => adjItem.depth === currDepth - difference);
+      if (noteUp > -1) hier[noteUp].children.push(currNote);
     };
 
     let lineNo = 0;
@@ -444,38 +306,38 @@ export default class BreadcrumbsPlugin extends Plugin {
       const currLine = layers[lineNo];
 
       const currNote = currLine.match(lineRegex)[1];
-      const currDepth = depth(currLine);
+      const currDepth = getDepth(currLine);
 
-      hier[lineNo] = { note: currNote, depth: currDepth, children: [] };
+      adjItems[lineNo] = { note: currNote, depth: currDepth, children: [] };
 
       if (lineNo !== layers.length - 1) {
         const nextLine = layers[lineNo + 1];
         const nextNote = nextLine.match(lineRegex)[1];
-        const nextDepth = depth(nextLine);
+        const nextDepth = getDepth(nextLine);
 
         if (nextDepth > currDepth) {
           debug(settings, { currNote, nextNote });
-          hier[lineNo].children.push(nextNote);
-          pushNoteUp(hier, currNote, currDepth);
+          adjItems[lineNo].children.push(nextNote);
+          pushNoteUp(adjItems, currNote, currDepth);
         } else if (currDepth === 0) {
         } else {
-          pushNoteUp(hier, currNote, currDepth);
+          pushNoteUp(adjItems, currNote, currDepth);
         }
       } else {
         const prevLine = layers[lineNo - 1];
-        const prevDepth = depth(prevLine);
+        const prevDepth = getDepth(prevLine);
 
         if (prevDepth >= currDepth) {
-          pushNoteUp(hier, currNote, currDepth);
+          pushNoteUp(adjItems, currNote, currDepth);
         }
       }
 
       lineNo++;
     }
-    hier.forEach((item) => {
+    adjItems.forEach((item) => {
       item.children = removeDuplicates(item.children);
     });
-    return hier;
+    return adjItems;
   };
 
   // SECTION OneSource
@@ -900,43 +762,6 @@ export default class BreadcrumbsPlugin extends Plugin {
     }
   }
 
-  initMatrixView = async (type: string): Promise<void> => {
-    let leaf: WorkspaceLeaf = null;
-    for (leaf of this.app.workspace.getLeavesOfType(type)) {
-      if (leaf.view instanceof MatrixView) {
-        return;
-      }
-      await leaf.setViewState({ type: "empty" });
-      break;
-    }
-    if (this.settings.rlLeaf) {
-      (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
-        type,
-        active: false,
-      });
-    } else {
-      (leaf ?? this.app.workspace.getLeftLeaf(false)).setViewState({
-        type,
-        active: false,
-      });
-    }
-  };
-
-  initStatsView = async (type: string): Promise<void> => {
-    let leaf: WorkspaceLeaf = null;
-    for (leaf of this.app.workspace.getLeavesOfType(type)) {
-      if (leaf.view instanceof StatsView) {
-        return;
-      }
-      await leaf.setViewState({ type: "empty" });
-      break;
-    }
-    (leaf ?? this.app.workspace.getRightLeaf(false)).setViewState({
-      type,
-      active: false,
-    });
-  };
-
   async loadSettings(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
@@ -948,10 +773,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   onunload(): void {
     console.log("unloading");
     // Detach matrix view
-    const openLeaves = [
-      VIEW_TYPE_BREADCRUMBS_MATRIX,
-      VIEW_TYPE_BREADCRUMBS_STATS,
-    ]
+    const openLeaves = [MATRIX_VIEW, STATS_VIEW]
       .map((type) => this.app.workspace.getLeavesOfType(type))
       .flat(1);
 
