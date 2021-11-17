@@ -22698,7 +22698,7 @@ function create_each_block_1$4(ctx) {
 			input = element("input");
 			attr(label, "for", label_for_value = /*dir*/ ctx[13]);
 			attr(input, "type", "text");
-			attr(input, "size", "6");
+			attr(input, "size", "10");
 			attr(input, "name", input_name_value = /*dir*/ ctx[13]);
 			input.value = input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]].join(", ");
 		},

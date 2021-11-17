@@ -81,7 +81,7 @@
         <label for={dir}>{ARROW_DIRECTIONS[dir]}</label>
         <input
           type="text"
-          size="6"
+          size="10"
           name={dir}
           value={hier[dir].join(", ")}
           on:change={async (e) => {
