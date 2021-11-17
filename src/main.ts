@@ -14,10 +14,10 @@ import { BreadcrumbsSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
   DIRECTIONS,
-  TRAIL_ICON,
-  TRAIL_ICON_SVG,
   MATRIX_VIEW,
   STATS_VIEW,
+  TRAIL_ICON,
+  TRAIL_ICON_SVG,
 } from "src/constants";
 import type {
   BCIndex,
@@ -144,14 +144,16 @@ export default class BreadcrumbsPlugin extends Plugin {
     this.app.workspace.onLayoutReady(async () => {
       if (this.app.plugins.enabledPlugins.has("dataview")) {
         const api = this.app.plugins.plugins.dataview?.api;
-        if (api) await initEverything();
-        else
+        if (api) {
+          await initEverything();
+        } else {
           this.registerEvent(
             this.app.metadataCache.on("dataview:api-ready", async () => {
               console.log("dv ready");
               await initEverything();
             })
           );
+        }
       }
     });
 
@@ -347,25 +349,24 @@ export default class BreadcrumbsPlugin extends Plugin {
   populateGraph(
     g: Graph,
     currFileName: string,
-    fields: string[],
+    fieldValues: string[],
     dir: Directions,
     fieldName: string
   ): void {
     addNodeIfNot(g, currFileName, { dir, fieldName });
 
     if (fieldName === "") return;
-    fields.forEach((field) => {
-      addNodeIfNot(g, field, { dir, fieldName });
-      addEdgeIfNot(g, currFileName, field, { dir, fieldName });
+    fieldValues.forEach((value) => {
+      addNodeIfNot(g, value, { dir, fieldName });
+      addEdgeIfNot(g, currFileName, value, { dir, fieldName });
     });
   }
 
-  async getCSVRows(basePath: string) {
+  async getCSVRows() {
     const { CSVPaths } = this.settings;
     const CSVRows: { [key: string]: string }[] = [];
-    if (CSVPaths[0] === "") {
-      return CSVRows;
-    }
+    if (CSVPaths[0] === "") return CSVRows;
+
     const fullPath = normalizePath(CSVPaths[0]);
 
     const content = await this.app.vault.adapter.read(fullPath);
@@ -403,11 +404,11 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async initGraphs(): Promise<BCIndex> {
-    const settings = this.settings;
+    const { settings } = this;
     debugGroupStart(settings, "debugMode", "Initialise Graphs");
     const files = this.app.vault.getMarkdownFiles();
 
-    const dvQ = !!this.app.plugins.plugins.dataview?.api;
+    const dvQ = !!this.app.plugins.enabledPlugins.has("dataview");
 
     const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
       ? getDVMetadataCache(this.app, settings, files)
@@ -422,14 +423,10 @@ export default class BreadcrumbsPlugin extends Plugin {
       children: string[];
     }[] = [];
     if (settings.hierarchyNotes[0] !== "") {
-      const currPath = this.app.workspace.getActiveFile().path;
       const contentArr: string[] = [];
 
       settings.hierarchyNotes.forEach(async (note) => {
-        const file = this.app.metadataCache.getFirstLinkpathDest(
-          note,
-          currPath
-        );
+        const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
         if (file) {
           const content = await this.app.vault.cachedRead(file);
           contentArr.push(content);
@@ -459,38 +456,30 @@ export default class BreadcrumbsPlugin extends Plugin {
     userHierarchies.forEach((hier, i) => {
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
-      Object.keys(hier).forEach((dir: Directions) => {
+      DIRECTIONS.forEach((dir: Directions) => {
         hier[dir].forEach((dirField) => {
           newGraphs[dir][dirField] = new Graph();
         });
       });
-
       graphs.hierGs.push(newGraphs);
     });
 
     const useCSV = settings.CSVPaths !== "";
-    let basePath: string;
-    let CSVRows: { [key: string]: string }[];
 
-    if (useCSV) {
-      basePath = this.app.vault.adapter.basePath;
-      CSVRows = await this.getCSVRows(basePath);
-    }
+    let CSVRows = useCSV ? await this.getCSVRows() : [];
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
 
       relObj.hierarchies.forEach((hier, i) => {
-        DIRECTIONS.forEach((dir: Directions) => {
-          Object.keys(hier[dir]).forEach((fieldName) => {
+        DIRECTIONS.forEach((dir) => {
+          for (const fieldName in hier[dir]) {
             const g = graphs.hierGs[i][dir][fieldName];
             const fieldValues = hier[dir][fieldName];
 
             this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
-            if (useCSV) {
-              this.addCSVCrumbs(g, CSVRows, dir, fieldName);
-            }
-          });
+            if (useCSV) this.addCSVCrumbs(g, CSVRows, dir, fieldName);
+          }
         });
       });
     });
@@ -537,10 +526,9 @@ export default class BreadcrumbsPlugin extends Plugin {
     });
 
     DIRECTIONS.forEach((dir) => {
-      const oppDir = getOppDir(dir);
       graphs.closedGs[dir] = closeImpliedLinks(
         graphs.mergedGs[dir],
-        graphs.mergedGs[oppDir]
+        graphs.mergedGs[getOppDir(dir)]
       );
     });
 
@@ -597,68 +585,36 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   bfsAllPaths(g: Graph, startNode: string): string[][] {
+    const pathsArr: string[][] = [];
     const queue: { node: string; path: string[] }[] = [
       { node: startNode, path: [] },
     ];
-    const pathsArr: string[][] = [];
 
     let i = 0;
     while (queue.length !== 0 && i < 1000) {
       i++;
-      const currPath = queue.shift();
-
-      const newNodes = g.outNeighbors(currPath.node);
-      const extPath = [currPath.node, ...currPath.path];
+      const { node, path } = queue.shift();
+      const extPath = [node, ...path];
       queue.push(
-        ...newNodes.map((n: string) => {
+        ...g.outNeighbors(node).map((n) => {
           return { node: n, path: extPath };
         })
       );
       // terminal node
-      if (newNodes.length === 0) {
+      if (!g.outDegree(node)) {
         pathsArr.push(extPath);
       }
     }
     // Splice off the current note from the path
     pathsArr.forEach((path) => {
-      if (path.length) {
-        path.splice(path.length - 1, 1);
-      }
+      if (path.length) path.splice(path.length - 1, 1);
     });
     debug(this.settings, { pathsArr });
     return pathsArr;
   }
 
-  dfsAllPaths(g: Graph, startNode: string): string[][] {
-    const queue: { node: string; path: string[] }[] = [
-      { node: startNode, path: [] },
-    ];
-    const pathsArr: string[][] = [];
-
-    let i = 0;
-    while (queue.length > 0 && i < 1000) {
-      i++;
-      const currPath = queue.shift();
-
-      const newNodes = g.outNeighbors(currPath.node);
-      const extPath = [currPath.node, ...currPath.path];
-      queue.unshift(
-        ...newNodes.map((n: string) => {
-          return { node: n, path: extPath };
-        })
-      );
-
-      if (newNodes.length === 0) {
-        pathsArr.push(extPath);
-      }
-    }
-    return pathsArr;
-  }
-
   getBreadcrumbs(g: Graph, currFile: TFile): string[][] | null {
-    if (currFile.extension !== "md") {
-      return null;
-    }
+    if (currFile.extension !== "md") return null;
 
     const from = currFile.basename;
     const indexNotes: string[] = [this.settings.indexNote].flat();
@@ -678,7 +634,7 @@ export default class BreadcrumbsPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    const settings = this.settings;
+    const { settings } = this;
     debugGroupStart(settings, "debugMode", "Draw Trail");
     if (!settings.showTrail) {
       debugGroupEnd(settings, "debugMode");

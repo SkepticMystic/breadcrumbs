@@ -48,6 +48,7 @@
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
     "nodejs": "^0.0.0",
     "obsidian-community-lib": "^1.2.0",
-    "svelte": "3.35.0"
+    "svelte": "3.35.0",
+    "svelte-icons": "^2.1.0"
   }
 }

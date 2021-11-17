@@ -2,6 +2,7 @@ import type {
   BreadcrumbsSettings,
   Directions,
   Relations,
+  userHierarchy,
   visTypes,
 } from "src/interfaces";
 
@@ -28,9 +29,18 @@ export const VISTYPES: visTypes[] = [
 ];
 
 export const DIRECTIONS: Directions[] = ["up", "same", "down"];
+export const ARROW_DIRECTIONS = {
+  up: "↑",
+  same: "→",
+  down: "↓",
+};
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
+
+export const blankUserHier = (): userHierarchy => {
+  return { up: [], same: [], down: [] };
+};
 
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
   userHierarchies: [],

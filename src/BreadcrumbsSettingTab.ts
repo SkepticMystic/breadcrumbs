@@ -1,26 +1,25 @@
 import {
   App,
-  ButtonComponent,
   DropdownComponent,
   Notice,
   PluginSettingTab,
   Setting,
 } from "obsidian";
+import { openView } from "obsidian-community-lib";
 import {
   ALLUNLINKED,
   DIRECTIONS,
+  MATRIX_VIEW,
   REAlCLOSED,
   RELATIONS,
-  MATRIX_VIEW,
   VISTYPES,
 } from "src/constants";
-import type { Relations, userHierarchy, visTypes } from "src/interfaces";
+import type { Relations, visTypes } from "src/interfaces";
 import type BreadcrumbsPlugin from "src/main";
-import { debug, hierToStr, isInVault, splitAndTrim } from "src/sharedFunctions";
-import { isEqual } from "lodash";
-import KoFi from "./Components/KoFi.svelte";
-import { openView } from "obsidian-community-lib";
 import MatrixView from "src/MatrixView";
+import { debug, isInVault, splitAndTrim } from "src/sharedFunctions";
+import KoFi from "./Components/KoFi.svelte";
+import UserHierarchies from "./Components/UserHierarchies.svelte";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
   plugin: BreadcrumbsPlugin;
@@ -34,171 +33,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
     const plugin = this.plugin;
     const { settings } = plugin;
     const { containerEl } = this;
+    const { userHierarchies } = settings;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
-
-    function hierIndex(
-      currHiers: userHierarchy[],
-      values: [string[], string[], string[]]
-    ) {
-      return currHiers.findIndex(
-        (hier) =>
-          isEqual(hier.up, values[0]) &&
-          isEqual(hier.same, values[1]) &&
-          isEqual(hier.down, values[2])
-      );
-    }
-
-    const addHierarchyRow = (
-      values: userHierarchy = { up: [""], same: [""], down: [""] },
-      existing = false
-    ) => {
-      const row = createSpan({ cls: "hierarchy-row" });
-
-      const hierarchyNames = row.createSpan({});
-
-      hierarchyNames.createEl("label", { attr: { for: "up" }, text: "↑" });
-      const upInput = hierarchyNames.createEl("input", {
-        attr: { id: "up", placeholder: "↑" },
-        value: values.up.join(", "),
-      });
-      hierarchyNames.createEl("label", { attr: { for: "same" }, text: "→" });
-      const sameInput = hierarchyNames.createEl("input", {
-        attr: { id: "same", placeholder: "→" },
-        value: values.same.join(", "),
-      });
-      hierarchyNames.createEl("label", { attr: { for: "down" }, text: "↓" });
-      const downInput = hierarchyNames.createEl("input", {
-        attr: { id: "down", placeholder: "↓" },
-        value: values.down.join(", "),
-      });
-      let cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
-        splitAndTrim
-      ) as [string[], string[], string[]];
-
-      [upInput, sameInput, downInput].forEach((input) =>
-        input.addEventListener("change", () => {
-          saveButton.toggleClass("hierarchy-unsaved", true);
-          saveButton.textContent = "Save";
-        })
-      );
-
-      async function resetLimitTrailCheckboxes() {
-        settings.limitTrailCheckboxStates = {};
-        settings.userHierarchies.forEach((userHier) => {
-          userHier.up.forEach(async (field) => {
-            if (field !== "") {
-              settings.limitTrailCheckboxStates[field] = true;
-              await plugin.saveSettings();
-            }
-          });
-        });
-        await plugin.saveSettings();
-        drawLimitTrailCheckboxes(checkboxDiv);
-      }
-
-      async function resetLimitWriteBCCheckboxes() {
-        settings.limitWriteBCCheckboxStates = {};
-        settings.userHierarchies.forEach((userHier) => {
-          DIRECTIONS.forEach((dir) => {
-            userHier.up.forEach(async (field) => {
-              if (field !== "") {
-                settings.limitWriteBCCheckboxStates[field] = true;
-                await plugin.saveSettings();
-              }
-            });
-          });
-        });
-        await plugin.saveSettings();
-        drawLimitWriteBCCheckboxes(checkboxDiv);
-      }
-
-      const deleteButton = row.createEl("button", { text: "X" }, (el) => {
-        el.addEventListener("click", async () => {
-          row.remove();
-          const removeIndex = hierIndex(
-            settings.userHierarchies,
-            [upInput.value, sameInput.value, downInput.value].map(
-              splitAndTrim
-            ) as [string[], string[], string[]]
-          );
-
-          if (removeIndex > -1) {
-            settings.userHierarchies.splice(removeIndex, 1);
-            await plugin.saveSettings();
-          }
-
-          // Refresh limitTrailFields
-          await resetLimitTrailCheckboxes();
-          await resetLimitWriteBCCheckboxes();
-
-          new Notice("Hierarchy Removed.");
-        });
-      });
-
-      const saveButton = row.createEl(
-        "button",
-        {
-          text: existing ? "Saved" : "Save",
-          cls: (existing ? "" : "hierarchy-unsaved ") + "save-hierarchy-button",
-        },
-        function (el) {
-          el.addEventListener("click", async () => {
-            if (
-              hierIndex(
-                settings.userHierarchies,
-                [upInput.value, sameInput.value, downInput.value].map(
-                  splitAndTrim
-                ) as [string[], string[], string[]]
-              ) > -1
-            ) {
-              new Notice(
-                "A hierarchy with these Up, Same, and Down values already exists."
-              );
-              return;
-            }
-            if (saveButton.hasClass("hierarchy-unsaved")) {
-              const removeIndex = hierIndex(
-                settings.userHierarchies,
-                cleanInputs
-              );
-
-              if (removeIndex > -1) {
-                settings.userHierarchies.splice(removeIndex, 1);
-                await plugin.saveSettings();
-                await resetLimitTrailCheckboxes();
-                await resetLimitWriteBCCheckboxes();
-              }
-            }
-            cleanInputs = [upInput.value, sameInput.value, downInput.value].map(
-              splitAndTrim
-            ) as [string[], string[], string[]];
-
-            saveButton.toggleClass("hierarchy-unsaved", false);
-            saveButton.textContent = "Saved";
-
-            if (hierIndex(settings.userHierarchies, cleanInputs) > -1) {
-              new Notice(
-                "A hierarchy with these Up, Same, and Down values already exists."
-              );
-            } else {
-              settings.userHierarchies.push({
-                up: splitAndTrim(upInput.value),
-                same: splitAndTrim(sameInput.value),
-                down: splitAndTrim(downInput.value),
-              });
-              await plugin.saveSettings();
-              new Notice("Hierarchy saved.");
-
-              await resetLimitTrailCheckboxes();
-              await resetLimitWriteBCCheckboxes();
-            }
-          });
-        }
-      );
-
-      return row;
-    };
 
     const fieldDetails: HTMLDetailsElement = containerEl.createEl("details", {
       cls: "field-details",
@@ -212,45 +49,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
       text: "For each direction (up, same, down), you can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
     });
 
-    new Setting(fieldDetails)
-      .setName("Add Hierarchy")
-      .setDesc("Add a new hierarchy.")
-      .addButton((button: ButtonComponent) => {
-        let b = button
-          .setTooltip("Add Additional")
-          .setButtonText("+")
-          .onClick(async () => {
-            fieldDetails.append(addHierarchyRow());
-          });
-      });
-
-    fieldDetails.createEl(
-      "button",
-      { text: "Reset Hierarchies" },
-      async (el) => {
-        el.addEventListener("click", async () => {
-          const rows = fieldDetails.querySelectorAll(".hierarchy-row");
-          rows.forEach((row) => row.remove());
-          settings.userHierarchies = [];
-          await plugin.saveSettings();
-          new Notice("Hierarchies reset.");
-        });
-      }
-    );
-
-    fieldDetails.createEl("button", { text: "Show Hierarchies" }, (el) => {
-      el.addEventListener("click", () => {
-        if (settings.userHierarchies.length) {
-          new Notice(settings.userHierarchies.map(hierToStr).join("\n\n"));
-        } else {
-          new Notice("No hierarchies currently exist.");
-        }
-        console.log({ hierarchies: settings.userHierarchies });
-      });
-    });
-
-    settings.userHierarchies.forEach((userHier) => {
-      fieldDetails.append(addHierarchyRow(userHier, true));
+    new UserHierarchies({
+      target: fieldDetails,
+      props: { plugin },
     });
 
     const hierarchyNoteDetails: HTMLDetailsElement =
@@ -297,7 +98,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             settings.hierarchyNoteUpFieldName = finalValue;
             await plugin.saveSettings();
           } else {
-            const downFieldNames = settings.userHierarchies
+            const downFieldNames = userHierarchies
               .map((hier) => hier.up)
               .flat(3);
 
@@ -330,7 +131,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
             settings.hierarchyNoteDownFieldName = finalValue;
             await plugin.saveSettings();
           } else {
-            const downFieldNames = settings.userHierarchies
+            const downFieldNames = userHierarchies
               .map((hier) => hier.down)
               .flat(3);
 

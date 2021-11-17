@@ -314,6 +314,12 @@ export function getFieldValues(
 export const splitAndTrim = (fields: string): string[] =>
   fields.split(",").map((str: string) => str.trim());
 
+/**
+ *
+ * @param  {BreadcrumbsPlugin} plugin
+ * @param  {dvFrontmatterCache[]} fileFrontmatterArr
+ * @returns HierarchyFields
+ */
 export async function getNeighbourObjArr(
   plugin: BreadcrumbsPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
@@ -739,3 +745,12 @@ export const getSinks = (g: Graph) =>
 
 export const getSources = (g: Graph) =>
   g.filterNodes((node) => !g.inNeighbors(node).length);
+
+export function swapItems<T>(i: number, j: number, arr: T[]) {
+  const max = arr.length - 1;
+  if (i < 0 || i > max || j < 0 || j > max) return arr;
+  const tmp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = tmp;
+  return arr;
+}
