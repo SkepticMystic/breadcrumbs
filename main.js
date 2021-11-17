@@ -22734,7 +22734,7 @@ function create_each_block_1$4(ctx) {
 function create_each_block$4(ctx) {
 	let details;
 	let summary;
-	let t0_value = (DIRECTIONS.map(func).flat().join(", ") || "Empty Hierarchy") + "";
+	let t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "";
 	let t0;
 	let t1;
 	let button0;
@@ -22830,7 +22830,7 @@ function create_each_block$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*userHierarchies*/ 2 && t0_value !== (t0_value = (DIRECTIONS.map(func).flat().join(", ") || "Empty Hierarchy") + "")) set_data(t0, t0_value);
+			if (dirty & /*userHierarchies*/ 2 && t0_value !== (t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "")) set_data(t0, t0_value);
 
 			if (dirty & /*DIRECTIONS, userHierarchies, splitAndTrim, plugin, ARROW_DIRECTIONS*/ 3) {
 				each_value_1 = DIRECTIONS;
@@ -23002,6 +23002,8 @@ function create_fragment$4(ctx) {
 	};
 }
 
+const func_1 = dirFields => `(${dirFields})`;
+
 function instance$4($$self, $$props, $$invalidate) {
 	
 	let { plugin } = $$props;
@@ -23020,7 +23022,7 @@ function instance$4($$self, $$props, $$invalidate) {
 	};
 
 	const click_handler_2 = () => new obsidian.Notice(userHierarchies.map(hierToStr).join("\n\n"));
-	const func = (hier, dir) => hier[dir].map(field => field);
+	const func = (hier, dir) => hier[dir].join(", ");
 
 	const click_handler_3 = async i => {
 		$$invalidate(1, userHierarchies = swapItems(i, i - 1, userHierarchies));
@@ -47819,7 +47821,7 @@ class BCPlugin extends obsidian.Plugin {
             closedGs: { up: undefined, same: undefined, down: undefined },
             limitTrailG: undefined,
         };
-        userHierarchies.forEach((hier, i) => {
+        userHierarchies.forEach((hier) => {
             if (Object.values(hier).every((t) => t.length === 0))
                 return;
             const newGraphs = { up: {}, same: {}, down: {} };
@@ -47831,7 +47833,7 @@ class BCPlugin extends obsidian.Plugin {
             graphs.hierGs.push(newGraphs);
         });
         const useCSV = settings.CSVPaths !== "";
-        let CSVRows = useCSV ? await this.getCSVRows() : [];
+        const CSVRows = useCSV ? await this.getCSVRows() : [];
         relObjArr.forEach((relObj) => {
             const currFileName = relObj.current.basename || relObj.current.name;
             relObj.hierarchies.forEach((hier, i) => {

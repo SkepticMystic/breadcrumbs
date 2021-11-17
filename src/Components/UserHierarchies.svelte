@@ -51,9 +51,9 @@
   {#each userHierarchies as hier, i}
     <details class="BC-Hier-Details">
       <summary>
-        {DIRECTIONS.map((dir) => hier[dir].map((field) => field))
-          .flat()
-          .join(", ") || "Empty Hierarchy"}
+        {DIRECTIONS.map((dir) => hier[dir].join(", "))
+          .map((dirFields) => `(${dirFields})`)
+          .join(" ")}
         <button
           aria-label="Swap with Hierarchy Above"
           on:click={async () => {

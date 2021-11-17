@@ -454,7 +454,7 @@ export default class BCPlugin extends Plugin {
       limitTrailG: undefined,
     };
 
-    userHierarchies.forEach((hier, i) => {
+    userHierarchies.forEach((hier) => {
       if (Object.values(hier).every((t) => t.length === 0)) return;
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
@@ -467,8 +467,7 @@ export default class BCPlugin extends Plugin {
     });
 
     const useCSV = settings.CSVPaths !== "";
-
-    let CSVRows = useCSV ? await this.getCSVRows() : [];
+    const CSVRows = useCSV ? await this.getCSVRows() : [];
 
     relObjArr.forEach((relObj) => {
       const currFileName = relObj.current.basename || relObj.current.name;
@@ -666,8 +665,8 @@ export default class BCPlugin extends Plugin {
 
     const trailDiv = createDiv({
       cls: `BC-trail ${settings.respectReadableLineLength
-          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-          : ""
+        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+        : ""
         }`,
     });
 
