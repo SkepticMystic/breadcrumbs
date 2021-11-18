@@ -20093,12 +20093,12 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
         jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
     }
     const neighbourObjArr = fileFrontmatterArr.map((fileFrontmatter) => {
-        const currFileName = fileFrontmatter.file.basename || fileFrontmatter.file.name;
+        const currNode = fileFrontmatter.file.basename || fileFrontmatter.file.name;
         const hierFields = {
             current: fileFrontmatter.file,
             hierarchies: [],
         };
-        userHierarchies.forEach((hier, i) => {
+        userHierarchies.forEach((hier) => {
             const fieldsArr = Object.values(hier);
             const newHier = {
                 up: {},
@@ -20110,23 +20110,24 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
             // Add regular metadata links
             if (settings.useAllMetadata) {
                 DIRECTIONS.forEach((dir, i) => {
-                    fieldsArr[i].forEach((field) => {
+                    var _a;
+                    (_a = fieldsArr[i]) === null || _a === void 0 ? void 0 : _a.forEach((field) => {
                         newHier[dir][field] = getFieldValues(fileFrontmatter, field, settings);
                     });
                 });
             }
             // Add Juggl Links
             if (jugglLinks.length) {
-                const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
-                    return jugglLink.note === currFileName;
-                })[0];
+                const jugglLinksInFile = jugglLinks.find((jugglLink) => {
+                    return jugglLink.note === currNode;
+                });
                 if (jugglLinksInFile) {
                     jugglLinksInFile.links.forEach((line) => {
-                        var _a;
-                        if (hier[line.dir].includes(line.type)) {
+                        var _a, _b;
+                        if ((_a = hier[line.dir]) === null || _a === void 0 ? void 0 : _a.includes(line.type)) {
                             newHier[line.dir][line.type] = [
                                 ...new Set([
-                                    ...((_a = newHier[line.dir][line.type]) !== null && _a !== void 0 ? _a : []),
+                                    ...((_b = newHier[line.dir][line.type]) !== null && _b !== void 0 ? _b : []),
                                     ...line.linksInLine,
                                 ]),
                             ];
@@ -22847,22 +22848,22 @@ function add_css$4() {
 
 function get_each_context$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[11] = list[i];
-	child_ctx[13] = i;
+	child_ctx[12] = list[i];
+	child_ctx[14] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[14] = list[i];
+	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
-// (80:6) {#each DIRECTIONS as dir}
+// (95:6) {#each DIRECTIONS as dir}
 function create_each_block_1$5(ctx) {
 	let div;
 	let label;
-	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[14]] + "";
+	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[15]] + "";
 	let t0;
 	let label_for_value;
 	let t1;
@@ -22873,7 +22874,7 @@ function create_each_block_1$5(ctx) {
 	let dispose;
 
 	function change_handler(...args) {
-		return /*change_handler*/ ctx[9](/*i*/ ctx[13], /*dir*/ ctx[14], ...args);
+		return /*change_handler*/ ctx[10](/*i*/ ctx[14], /*dir*/ ctx[15], ...args);
 	}
 
 	return {
@@ -22884,11 +22885,11 @@ function create_each_block_1$5(ctx) {
 			t1 = space();
 			input = element("input");
 			attr(label, "class", "BC-Arrow-Label svelte-5y4abu");
-			attr(label, "for", label_for_value = /*dir*/ ctx[14]);
+			attr(label, "for", label_for_value = /*dir*/ ctx[15]);
 			attr(input, "type", "text");
 			attr(input, "size", "20");
-			attr(input, "name", input_name_value = /*dir*/ ctx[14]);
-			input.value = input_value_value = /*hier*/ ctx[11][/*dir*/ ctx[14]]?.join(", ") ?? "";
+			attr(input, "name", input_name_value = /*dir*/ ctx[15]);
+			input.value = input_value_value = /*hier*/ ctx[12][/*dir*/ ctx[15]]?.join(", ") ?? "";
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -22905,7 +22906,7 @@ function create_each_block_1$5(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*userHierarchies*/ 2 && input_value_value !== (input_value_value = /*hier*/ ctx[11][/*dir*/ ctx[14]]?.join(", ") ?? "") && input.value !== input_value_value) {
+			if (dirty & /*currHiers*/ 1 && input_value_value !== (input_value_value = /*hier*/ ctx[12][/*dir*/ ctx[15]]?.join(", ") ?? "") && input.value !== input_value_value) {
 				input.value = input_value_value;
 			}
 		},
@@ -22917,7 +22918,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (48:2) {#each userHierarchies as hier, i}
+// (63:2) {#each currHiers as hier, i}
 function create_each_block$5(ctx) {
 	let details;
 	let summary;
@@ -22936,19 +22937,19 @@ function create_each_block$5(ctx) {
 	let dispose;
 
 	function func(...args) {
-		return /*func*/ ctx[5](/*hier*/ ctx[11], ...args);
+		return /*func*/ ctx[6](/*hier*/ ctx[12], ...args);
 	}
 
 	function click_handler_3() {
-		return /*click_handler_3*/ ctx[6](/*i*/ ctx[13]);
+		return /*click_handler_3*/ ctx[7](/*i*/ ctx[14]);
 	}
 
 	function click_handler_4() {
-		return /*click_handler_4*/ ctx[7](/*i*/ ctx[13]);
+		return /*click_handler_4*/ ctx[8](/*i*/ ctx[14]);
 	}
 
 	function click_handler_5() {
-		return /*click_handler_5*/ ctx[8](/*i*/ ctx[13]);
+		return /*click_handler_5*/ ctx[9](/*i*/ ctx[14]);
 	}
 
 	let each_value_1 = DIRECTIONS;
@@ -23021,9 +23022,9 @@ function create_each_block$5(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*userHierarchies*/ 2 && t0_value !== (t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "")) set_data(t0, t0_value);
+			if (dirty & /*currHiers*/ 1 && t0_value !== (t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "")) set_data(t0, t0_value);
 
-			if (dirty & /*DIRECTIONS, userHierarchies, splitAndTrim, plugin, ARROW_DIRECTIONS*/ 3) {
+			if (dirty & /*DIRECTIONS, currHiers, splitAndTrim, update, ARROW_DIRECTIONS*/ 3) {
 				each_value_1 = DIRECTIONS;
 				let i;
 
@@ -23076,7 +23077,7 @@ function create_fragment$5(ctx) {
 	faplus = new FaPlus({});
 	faregtrashalt = new FaRegTrashAlt({});
 	falistul = new FaListUl({});
-	let each_value = /*userHierarchies*/ ctx[1];
+	let each_value = /*currHiers*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -23136,17 +23137,17 @@ function create_fragment$5(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(button0, "click", /*click_handler*/ ctx[2]),
-					listen(button1, "click", /*click_handler_1*/ ctx[3]),
-					listen(button2, "click", /*click_handler_2*/ ctx[4])
+					listen(button0, "click", /*click_handler*/ ctx[3]),
+					listen(button1, "click", /*click_handler_1*/ ctx[4]),
+					listen(button2, "click", /*click_handler_2*/ ctx[5])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*DIRECTIONS, userHierarchies, splitAndTrim, plugin, ARROW_DIRECTIONS, swapItems*/ 3) {
-				each_value = /*userHierarchies*/ ctx[1];
+			if (dirty & /*DIRECTIONS, currHiers, splitAndTrim, update, ARROW_DIRECTIONS, swapItems*/ 3) {
+				each_value = /*currHiers*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -23196,52 +23197,96 @@ function create_fragment$5(ctx) {
 const func_1 = dirFields => `(${dirFields})`;
 
 function instance$5($$self, $$props, $$invalidate) {
+	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+		function adopt(value) {
+			return value instanceof P
+			? value
+			: new P(function (resolve) {
+						resolve(value);
+					});
+		}
+
+		return new (P || (P = Promise))(function (resolve, reject) {
+				function fulfilled(value) {
+					try {
+						step(generator.next(value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function rejected(value) {
+					try {
+						step(generator["throw"](value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function step(result) {
+					result.done
+					? resolve(result.value)
+					: adopt(result.value).then(fulfilled, rejected);
+				}
+
+				step((generator = generator.apply(thisArg, _arguments || [])).next());
+			});
+	};
+
 	
 	let { plugin } = $$props;
-	let { userHierarchies } = plugin.settings;
+	let currHiers = [...plugin.settings.userHierarchies];
+
+	function update(currHiers) {
+		return __awaiter(this, void 0, void 0, function* () {
+			$$invalidate(2, plugin.settings.userHierarchies = currHiers, plugin);
+			yield plugin.saveSettings();
+		});
+	}
 
 	const click_handler = async () => {
-		$$invalidate(1, userHierarchies = [...userHierarchies, blankUserHier()]);
-	};
+		$$invalidate(0, currHiers = [...currHiers, blankUserHier()]);
+	}; // await update(currHiers);
 
 	const click_handler_1 = async () => {
 		if (window.confirm("Are you sure you want to reset all hierarchies?")) {
-			$$invalidate(1, userHierarchies = []);
-			await plugin.saveSettings();
+			$$invalidate(0, currHiers = []);
+			await update(currHiers);
 		}
 	};
 
-	const click_handler_2 = () => new obsidian.Notice(userHierarchies.map(hierToStr).join("\n\n"));
+	const click_handler_2 = () => new obsidian.Notice(currHiers.map(hierToStr).join("\n\n"));
 	const func = (hier, dir) => hier[dir]?.join(", ") ?? "";
 
 	const click_handler_3 = async i => {
-		$$invalidate(1, userHierarchies = swapItems(i, i - 1, userHierarchies));
-		await plugin.saveSettings();
+		$$invalidate(0, currHiers = swapItems(i, i - 1, currHiers));
+		await update(currHiers);
 	};
 
 	const click_handler_4 = async i => {
-		$$invalidate(1, userHierarchies = swapItems(i, i + 1, userHierarchies));
-		await plugin.saveSettings();
+		$$invalidate(0, currHiers = swapItems(i, i + 1, currHiers));
+		await update(currHiers);
 	};
 
 	const click_handler_5 = async i => {
-		userHierarchies.splice(i, 1);
-		$$invalidate(1, userHierarchies);
-		await plugin.saveSettings();
+		currHiers.splice(i, 1);
+		$$invalidate(0, currHiers);
+		await update(currHiers);
 	};
 
 	const change_handler = async (i, dir, e) => {
-		$$invalidate(1, userHierarchies[i][dir] = splitAndTrim(e.target.value), userHierarchies);
-		await plugin.saveSettings();
+		$$invalidate(0, currHiers[i][dir] = splitAndTrim(e.target.value), currHiers);
+		await update(currHiers);
 	};
 
 	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
 	};
 
 	return [
+		currHiers,
+		update,
 		plugin,
-		userHierarchies,
 		click_handler,
 		click_handler_1,
 		click_handler_2,
@@ -23257,7 +23302,7 @@ class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
 		if (!document.getElementById("svelte-5y4abu-style")) add_css$4();
-		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, { plugin: 0 });
+		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, { plugin: 2 });
 	}
 }
 

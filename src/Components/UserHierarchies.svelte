@@ -9,8 +9,11 @@
 
   export let plugin: BCPlugin;
 
-  let { userHierarchies } = plugin.settings;
-  let f: HTMLDetailsElement;
+  let currHiers = [...plugin.settings.userHierarchies];
+  async function update(currHiers) {
+    plugin.settings.userHierarchies = currHiers;
+    await plugin.saveSettings();
+  }
 </script>
 
 <div>
@@ -18,7 +21,8 @@
     <button
       aria-label="Add New Hierarchy"
       on:click={async () => {
-        userHierarchies = [...userHierarchies, blankUserHier()];
+        currHiers = [...currHiers, blankUserHier()];
+        // await update(currHiers);
       }}
     >
       <div class="icon">
@@ -29,8 +33,8 @@
       aria-label="Reset All Hierarchies"
       on:click={async () => {
         if (window.confirm("Are you sure you want to reset all hierarchies?")) {
-          userHierarchies = [];
-          await plugin.saveSettings();
+          currHiers = [];
+          await update(currHiers);
         }
       }}
     >
@@ -40,7 +44,7 @@
     </button>
     <button
       aria-label="Show Hierarchies"
-      on:click={() => new Notice(userHierarchies.map(hierToStr).join("\n\n"))}
+      on:click={() => new Notice(currHiers.map(hierToStr).join("\n\n"))}
     >
       <div class="icon">
         <FaListUl />
@@ -48,7 +52,7 @@
     </button>
   </div>
 
-  {#each userHierarchies as hier, i}
+  {#each currHiers as hier, i}
     <details class="BC-Hier-Details">
       <summary>
         {DIRECTIONS.map((dir) => hier[dir]?.join(", ") ?? "")
@@ -59,23 +63,23 @@
           <button
             aria-label="Swap with Hierarchy Above"
             on:click={async () => {
-              userHierarchies = swapItems(i, i - 1, userHierarchies);
-              await plugin.saveSettings();
+              currHiers = swapItems(i, i - 1, currHiers);
+              await update(currHiers);
             }}>↑</button
           >
           <button
             aria-label="Swap with Hierarchy Below"
             on:click={async () => {
-              userHierarchies = swapItems(i, i + 1, userHierarchies);
-              await plugin.saveSettings();
+              currHiers = swapItems(i, i + 1, currHiers);
+              await update(currHiers);
             }}>↓</button
           >
           <button
             aria-label="Remove Hierarchy"
             on:click={async () => {
-              userHierarchies.splice(i, 1);
-              userHierarchies = userHierarchies;
-              await plugin.saveSettings();
+              currHiers.splice(i, 1);
+              currHiers = currHiers;
+              await update(currHiers);
             }}>X</button
           >
         </span>
@@ -91,8 +95,8 @@
             name={dir}
             value={hier[dir]?.join(", ") ?? ""}
             on:change={async (e) => {
-              userHierarchies[i][dir] = splitAndTrim(e.target.value);
-              await plugin.saveSettings();
+              currHiers[i][dir] = splitAndTrim(e.target.value);
+              await update(currHiers);
             }}
           />
         </div>
