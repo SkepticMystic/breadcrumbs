@@ -11,26 +11,30 @@
 
 <div class="BC-NextPrev-Container">
   <div class="BC-prevs">
-    {#if prev.length}←{/if}
-    {#each prev as p}
-      <div
-        class={linkClass(app, p.to, p.real)}
-        on:click={async (e) => openOrSwitch(app, p.to, e)}
-      >
-        {p.to}
-      </div>
-    {/each}
+    {#if prev.length}<span class="BC-left-arrow">←</span>{/if}
+    <span>
+      {#each prev as p}
+        <div
+          on:click={async (e) => openOrSwitch(app, p.to, e)}
+          class={linkClass(app, p.to, p.real)}
+        >
+          {p.to}
+        </div>
+      {/each}
+    </span>
   </div>
   <div class="BC-nexts">
-    {#if next.length}→{/if}
-    {#each next as n}
-      <div
-        class={linkClass(app, n.to, n.real)}
-        on:click={async (e) => openOrSwitch(app, n.to, e)}
-      >
-        {n.to}
-      </div>
-    {/each}
+    <span>
+      {#if next.length}<span class="BC-right-arrow">→</span>{/if}
+      {#each next as n}
+        <div
+          on:click={async (e) => openOrSwitch(app, n.to, e)}
+          class="{linkClass(app, n.to, n.real)} BC-next"
+        >
+          {n.to}
+        </div>
+      {/each}
+    </span>
   </div>
 </div>
 
@@ -42,16 +46,33 @@
   .BC-prevs span {
     color: red;
   }
-  .BC-nexts span {
-    color: blue;
-  } */
+  */
+  .BC-nexts div {
+    text-align: right;
+  }
 
-  /* .BC-nexts {
+  .BC-right-arrow {
+    padding-left: 5px;
     float: right;
-  } */
+  }
+
+  .BC-left-arrow {
+    padding-right: 5px;
+    float: left;
+  }
+
+  .BC-nexts {
+    border-left: 1px solid var(--background-modifier-border);
+  }
+  .BC-prevs {
+    border-right: 1px solid var(--background-modifier-border);
+  }
 
   .BC-NextPrev-Container {
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .BC-NextPrev-Container div {
   }
 </style>

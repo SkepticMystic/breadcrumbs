@@ -34548,8 +34548,8 @@ class TrailPath extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-1cjpw4-style";
-	style.textContent = ".BC-NextPrev-Container.svelte-1cjpw4{display:grid;grid-template-columns:1fr 1fr}";
+	style.id = "svelte-1cqb0v5-style";
+	style.textContent = ".BC-nexts.svelte-1cqb0v5 div.svelte-1cqb0v5{text-align:right}.BC-right-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-left:5px;float:right}.BC-left-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-right:5px;float:left}.BC-nexts.svelte-1cqb0v5.svelte-1cqb0v5{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-1cqb0v5.svelte-1cqb0v5{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-1cqb0v5.svelte-1cqb0v5{display:grid;grid-template-columns:1fr 1fr}";
 	append(document.head, style);
 }
 
@@ -34567,22 +34567,24 @@ function get_each_context_1(ctx, list, i) {
 
 // (13:4) {#if prev.length}
 function create_if_block_1(ctx) {
-	let t;
+	let span;
 
 	return {
 		c() {
-			t = text("←");
+			span = element("span");
+			span.textContent = "←";
+			attr(span, "class", "BC-left-arrow svelte-1cqb0v5");
 		},
 		m(target, anchor) {
-			insert(target, t, anchor);
+			insert(target, span, anchor);
 		},
 		d(detaching) {
-			if (detaching) detach(t);
+			if (detaching) detach(span);
 		}
 	};
 }
 
-// (14:4) {#each prev as p}
+// (15:6) {#each prev as p}
 function create_each_block_1(ctx) {
 	let div;
 	let t0_value = /*p*/ ctx[9].to + "";
@@ -34601,7 +34603,7 @@ function create_each_block_1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cjpw4"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -34617,7 +34619,7 @@ function create_each_block_1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].to + "")) set_data(t0, t0_value);
 
-			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cjpw4"))) {
+			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -34629,24 +34631,26 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (24:4) {#if next.length}
+// (27:6) {#if next.length}
 function create_if_block(ctx) {
-	let t;
+	let span;
 
 	return {
 		c() {
-			t = text("→");
+			span = element("span");
+			span.textContent = "→";
+			attr(span, "class", "BC-right-arrow svelte-1cqb0v5");
 		},
 		m(target, anchor) {
-			insert(target, t, anchor);
+			insert(target, span, anchor);
 		},
 		d(detaching) {
-			if (detaching) detach(t);
+			if (detaching) detach(span);
 		}
 	};
 }
 
-// (25:4) {#each next as n}
+// (28:6) {#each next as n}
 function create_each_block(ctx) {
 	let div;
 	let t0_value = /*n*/ ctx[6].to + "";
@@ -34665,7 +34669,7 @@ function create_each_block(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real)) + " svelte-1cjpw4"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -34681,7 +34685,7 @@ function create_each_block(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
 
-			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real)) + " svelte-1cjpw4"))) {
+			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -34697,8 +34701,10 @@ function create_fragment(ctx) {
 	let div2;
 	let div0;
 	let t0;
+	let span0;
 	let t1;
 	let div1;
+	let span1;
 	let t2;
 	let if_block0 = /*prev*/ ctx[2].length && create_if_block_1();
 	let each_value_1 = /*prev*/ ctx[2];
@@ -34722,6 +34728,7 @@ function create_fragment(ctx) {
 			div0 = element("div");
 			if (if_block0) if_block0.c();
 			t0 = space();
+			span0 = element("span");
 
 			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].c();
@@ -34729,6 +34736,7 @@ function create_fragment(ctx) {
 
 			t1 = space();
 			div1 = element("div");
+			span1 = element("span");
 			if (if_block1) if_block1.c();
 			t2 = space();
 
@@ -34736,27 +34744,29 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "BC-prevs");
-			attr(div1, "class", "BC-nexts");
-			attr(div2, "class", "BC-NextPrev-Container svelte-1cjpw4");
+			attr(div0, "class", "BC-prevs svelte-1cqb0v5");
+			attr(div1, "class", "BC-nexts svelte-1cqb0v5");
+			attr(div2, "class", "BC-NextPrev-Container svelte-1cqb0v5");
 		},
 		m(target, anchor) {
 			insert(target, div2, anchor);
 			append(div2, div0);
 			if (if_block0) if_block0.m(div0, null);
 			append(div0, t0);
+			append(div0, span0);
 
 			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(div0, null);
+				each_blocks_1[i].m(span0, null);
 			}
 
 			append(div2, t1);
 			append(div2, div1);
-			if (if_block1) if_block1.m(div1, null);
-			append(div1, t2);
+			append(div1, span1);
+			if (if_block1) if_block1.m(span1, null);
+			append(span1, t2);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div1, null);
+				each_blocks[i].m(span1, null);
 			}
 		},
 		p(ctx, [dirty]) {
@@ -34783,7 +34793,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks_1[i] = create_each_block_1(child_ctx);
 						each_blocks_1[i].c();
-						each_blocks_1[i].m(div0, null);
+						each_blocks_1[i].m(span0, null);
 					}
 				}
 
@@ -34798,7 +34808,7 @@ function create_fragment(ctx) {
 				if (if_block1) ; else {
 					if_block1 = create_if_block();
 					if_block1.c();
-					if_block1.m(div1, t2);
+					if_block1.m(span1, t2);
 				}
 			} else if (if_block1) {
 				if_block1.d(1);
@@ -34817,7 +34827,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(div1, null);
+						each_blocks[i].m(span1, null);
 					}
 				}
 
@@ -34863,7 +34873,7 @@ function instance($$self, $$props, $$invalidate) {
 class NextPrev extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1cjpw4-style")) add_css();
+		if (!document.getElementById("svelte-1cqb0v5-style")) add_css();
 		init$1(this, options, instance, create_fragment, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
 	}
 }
