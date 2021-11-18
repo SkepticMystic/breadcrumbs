@@ -359,7 +359,13 @@ export async function getNeighbourObjArr(
     };
 
     userHierarchies.forEach((hier) => {
-      const fieldsArr = Object.values(hier) as [string[], string[], string[]];
+      const fieldsArr = Object.values(hier) as [
+        string[],
+        string[],
+        string[],
+        string[],
+        string[]
+      ];
       const newHier: HierarchyFields = {
         up: {},
         same: {},

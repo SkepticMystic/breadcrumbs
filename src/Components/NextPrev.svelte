@@ -27,7 +27,7 @@
   });
 </script>
 
-<span class="BC-NextPrev-Container">
+<div class="BC-NextPrev-Container">
   <span class="BC-prevs">
     {#if prev.length}←{/if}
     {#each prev as p}
@@ -46,7 +46,7 @@
     {/each}
     {#if next.length}→{/if}
   </span>
-</span>
+</div>
 
 <style>
   /* span {

@@ -11,6 +11,7 @@
         "Hierarchy Note",
         "WriteBCToFile",
         "LimitTrailFields",
-        "CSV Crumbs"
+        "CSV Crumbs",
+        "nextPrev"
     ]
 }
