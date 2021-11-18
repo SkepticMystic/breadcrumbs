@@ -7,7 +7,7 @@ import {
   Notice,
   Plugin,
   TFile,
-  WorkspaceLeaf
+  WorkspaceLeaf,
 } from "obsidian";
 import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
@@ -17,14 +17,14 @@ import {
   MATRIX_VIEW,
   STATS_VIEW,
   TRAIL_ICON,
-  TRAIL_ICON_SVG
+  TRAIL_ICON_SVG,
 } from "src/constants";
 import type {
   BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs
+  HierarchyGraphs,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -45,7 +45,7 @@ import {
   mergeGs,
   oppFields,
   removeDuplicates,
-  writeBCToFile
+  writeBCToFile,
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
@@ -683,16 +683,40 @@ export default class BCPlugin extends Plugin {
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
     debug(settings, { sortedTrails });
 
-    if (sortedTrails.length === 0 && settings.noPathMessage === "") {
+    const { basename } = currFile;
+    const { main } = this.currGraphs;
+
+    const next: { to: string; real: boolean }[] = [];
+    const prev: { to: string; real: boolean }[] = [];
+    main.forEachEdge(basename, (k, a, s, t) => {
+      if (a.dir === "next" && s === basename) {
+        next.push({ to: t, real: true });
+      }
+      if (a.dir === "prev" && t === basename) {
+        next.push({ to: s, real: false });
+      }
+      if (a.dir === "prev" && s === basename) {
+        prev.push({ to: t, real: true });
+      }
+      if (a.dir === "next" && t === basename) {
+        prev.push({ to: s, real: false });
+      }
+    });
+
+    const noItems =
+      sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+
+    if (noItems && settings.noPathMessage === "") {
       debugGroupEnd(settings, "debugMode");
       return;
     }
 
     const trailDiv = createDiv({
-      cls: `BC-trail ${settings.respectReadableLineLength
-        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-        : ""
-        }`,
+      cls: `BC-trail ${
+        settings.respectReadableLineLength
+          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+          : ""
+      }`,
     });
 
     this.visited.push([currFile.path, trailDiv]);
@@ -701,7 +725,7 @@ export default class BCPlugin extends Plugin {
 
     trailDiv.empty();
 
-    if (sortedTrails.length === 0) {
+    if (noItems) {
       trailDiv.innerText = settings.noPathMessage;
       debugGroupEnd(settings, "debugMode");
       return;
@@ -710,18 +734,23 @@ export default class BCPlugin extends Plugin {
     const pathProps = { sortedTrails, app: this.app, settings, currFile };
     const gridProps = { sortedTrails, app: this.app, plugin: this };
 
-    if (settings.showTrail) {
+    if (settings.showTrail && sortedTrails.length) {
       new TrailPath({
         target: trailDiv,
         props: pathProps,
       });
-    } if (settings.showGrid) {
+    }
+    if (settings.showGrid && sortedTrails.length) {
       new TrailGrid({
         target: trailDiv,
         props: gridProps,
       });
-    } if (settings.showPrevNext) {
-      new NextPrev({ target: trailDiv, props: { app: this.app, plugin: this } })
+    }
+    if (settings.showPrevNext && (next.length || prev.length)) {
+      new NextPrev({
+        target: trailDiv,
+        props: { app: this.app, plugin: this, next, prev },
+      });
     }
   }
 
