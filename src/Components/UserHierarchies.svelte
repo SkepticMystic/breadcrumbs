@@ -20,10 +20,7 @@
   <div class="GA-Buttons">
     <button
       aria-label="Add New Hierarchy"
-      on:click={async () => {
-        currHiers = [...currHiers, blankUserHier()];
-        // await update(currHiers);
-      }}
+      on:click={async () => (currHiers = [...currHiers, blankUserHier()])}
     >
       <div class="icon">
         <FaPlus />

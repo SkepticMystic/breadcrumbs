@@ -3,10 +3,11 @@
   import { openOrSwitch } from "obsidian-community-lib";
   import { linkClass } from "src/sharedFunctions";
   import type BCPlugin from "src/main";
+  import type { PrevNext } from "src/interfaces";
   export let app: App;
   export let plugin: BCPlugin;
-  export let next: { to: string; real: boolean }[];
-  export let prev: { to: string; real: boolean }[];
+  export let next: PrevNext[];
+  export let prev: PrevNext[];
 </script>
 
 <div class="BC-NextPrev-Container">
@@ -18,6 +19,7 @@
           on:click={async (e) => openOrSwitch(app, p.to, e)}
           class={linkClass(app, p.to, p.real)}
         >
+          <strong>{p.fieldName}</strong>
           {p.to}
         </div>
       {/each}
@@ -31,7 +33,7 @@
           on:click={async (e) => openOrSwitch(app, n.to, e)}
           class="{linkClass(app, n.to, n.real)} BC-next"
         >
-          {n.to}
+          {n.to} <strong>{n.fieldName}</strong>
         </div>
       {/each}
     </span>

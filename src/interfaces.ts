@@ -49,13 +49,13 @@ export interface BCSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-  | string
-  | string[]
-  | string[][]
-  | dvLink
-  | dvLink[]
-  | Pos
-  | TFile;
+    | string
+    | string[]
+    | string[][]
+    | dvLink
+    | dvLink[]
+    | Pos
+    | TFile;
 }
 
 export type Directions = "up" | "same" | "down" | "next" | "prev";
@@ -204,3 +204,5 @@ export type MergedGraphs = {
 export type ClosedGraphs = {
   [dir in Directions]: Graph;
 };
+
+export type PrevNext = { to: string; real: boolean; fieldName: string };

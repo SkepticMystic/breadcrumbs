@@ -1,5 +1,5 @@
-import Graph from "graphology";
 import type NodeAttributes from "graphology";
+import Graph from "graphology";
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -9,7 +9,12 @@ import {
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { DIRECTIONS, dropHeaderOrAlias, splitLinksRegex } from "src/constants";
+import {
+  ARROW_DIRECTIONS,
+  DIRECTIONS,
+  dropHeaderOrAlias,
+  splitLinksRegex,
+} from "src/constants";
 import type {
   BCIndex,
   BCSettings,
@@ -19,6 +24,7 @@ import type {
   HierarchyFields,
   HierarchyGraphs,
   JugglLink,
+  PrevNext,
   userHierarchy,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
@@ -748,6 +754,30 @@ export function oppFields(
   );
 }
 
+/**
+ *  Get the hierarchy and direction that `field` is in
+ * */
+export function getFieldInfo(userHierarchies: userHierarchy[], field: string) {
+  let fieldDir: Directions;
+  let fieldHier: userHierarchy;
+  DIRECTIONS.forEach((dir) => {
+    userHierarchies.forEach((hier) => {
+      if (hier[dir].includes(field)) {
+        fieldDir = dir;
+        fieldHier = hier;
+        return;
+      }
+    });
+  });
+  return { fieldHier, fieldDir };
+}
+
+export function getOppFields(userHierarchies: userHierarchy[], field: string) {
+  const { fieldHier, fieldDir } = getFieldInfo(userHierarchies, field);
+  const oppDir = getOppDir(fieldDir);
+  return fieldHier[oppDir];
+}
+
 export function addNodeIfNot(g: Graph, node: string, attr?: NodeAttributes) {
   if (!g.hasNode(node)) g.addNode(node, attr);
 }
@@ -785,3 +815,33 @@ export const getOutNeighbours = (g: Graph, node: string): string[] =>
   g.hasNode(node) ? g.outNeighbors(node) : [];
 export const getInNeighbours = (g: Graph, node: string): string[] =>
   g.hasNode(node) ? g.inNeighbors(node) : [];
+
+export function getPrevNext(plugin: BCPlugin, currNode: string) {
+  const [rPrev, rNext, iPrev, iNext]: PrevNext[][] = [[], [], [], []];
+  const { userHierarchies } = plugin.settings;
+
+  plugin.currGraphs.main.forEachEdge(currNode, (k, a, s, t) => {
+    const { fieldName } = a;
+    if (a.dir === "next" && s === currNode) {
+      rNext.push({ to: t, real: true, fieldName });
+    }
+    if (a.dir === "prev" && t === currNode) {
+      iNext.push({
+        to: s,
+        real: false,
+        fieldName: getOppFields(userHierarchies, fieldName)[0],
+      });
+    }
+    if (a.dir === "prev" && s === currNode) {
+      rPrev.push({ to: t, real: true, fieldName });
+    }
+    if (a.dir === "next" && t === currNode) {
+      iPrev.push({
+        to: s,
+        real: false,
+        fieldName: getOppFields(userHierarchies, fieldName)[0],
+      });
+    }
+  });
+  return { rPrev, rNext, iPrev, iNext };
+}

@@ -7,7 +7,7 @@ import {
   Notice,
   Plugin,
   TFile,
-  WorkspaceLeaf,
+  WorkspaceLeaf
 } from "obsidian";
 import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
@@ -17,14 +17,14 @@ import {
   MATRIX_VIEW,
   STATS_VIEW,
   TRAIL_ICON,
-  TRAIL_ICON_SVG,
+  TRAIL_ICON_SVG
 } from "src/constants";
 import type {
   BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs,
+  HierarchyGraphs
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -41,17 +41,18 @@ import {
   getObsMetadataCache,
   getOppDir,
   getOutNeighbours,
+  getPrevNext,
   iterateAllGs,
   mergeGs,
   oppFields,
   removeDuplicates,
-  writeBCToFile,
+  writeBCToFile
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
+import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
-import NextPrev from "./Components/NextPrev.svelte";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -684,24 +685,10 @@ export default class BCPlugin extends Plugin {
     debug(settings, { sortedTrails });
 
     const { basename } = currFile;
-    const { main } = this.currGraphs;
 
-    const next: { to: string; real: boolean }[] = [];
-    const prev: { to: string; real: boolean }[] = [];
-    main.forEachEdge(basename, (k, a, s, t) => {
-      if (a.dir === "next" && s === basename) {
-        next.push({ to: t, real: true });
-      }
-      if (a.dir === "prev" && t === basename) {
-        next.push({ to: s, real: false });
-      }
-      if (a.dir === "prev" && s === basename) {
-        prev.push({ to: t, real: true });
-      }
-      if (a.dir === "next" && t === basename) {
-        prev.push({ to: s, real: false });
-      }
-    });
+    const { rPrev, rNext, iPrev, iNext } = getPrevNext(this, basename);
+    const next = [...rNext, ...iNext];
+    const prev = [...rPrev, ...iPrev];
 
     const noItems =
       sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
