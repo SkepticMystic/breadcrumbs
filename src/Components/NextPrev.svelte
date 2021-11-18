@@ -5,47 +5,33 @@
   import type BCPlugin from "src/main";
   export let app: App;
   export let plugin: BCPlugin;
-
-  const { basename } = app.workspace.getActiveFile();
-  const { main } = plugin.currGraphs;
-
-  const next: { to: string; real: boolean }[] = [];
-  const prev: { to: string; real: boolean }[] = [];
-  main.forEachEdge(basename, (k, a, s, t) => {
-    if (a.dir === "next" && s === basename) {
-      next.push({ to: t, real: true });
-    }
-    if (a.dir === "prev" && t === basename) {
-      next.push({ to: s, real: false });
-    }
-    if (a.dir === "prev" && s === basename) {
-      prev.push({ to: t, real: true });
-    }
-    if (a.dir === "next" && t === basename) {
-      prev.push({ to: s, real: false });
-    }
-  });
+  export let next: { to: string; real: boolean }[];
+  export let prev: { to: string; real: boolean }[];
 </script>
 
 <div class="BC-NextPrev-Container">
-  <span class="BC-prevs">
+  <div class="BC-prevs">
     {#if prev.length}←{/if}
     {#each prev as p}
-      <span
+      <div
         class={linkClass(app, p.to, p.real)}
-        on:click={async (e) => openOrSwitch(app, p.to, e)}>{p.to}</span
+        on:click={async (e) => openOrSwitch(app, p.to, e)}
       >
+        {p.to}
+      </div>
     {/each}
-  </span>
-  <span class="BC-nexts">
-    {#each next as n}
-      <span
-        class={linkClass(app, n.to, n.real)}
-        on:click={async (e) => openOrSwitch(app, n.to, e)}>{n.to}</span
-      >
-    {/each}
+  </div>
+  <div class="BC-nexts">
     {#if next.length}→{/if}
-  </span>
+    {#each next as n}
+      <div
+        class={linkClass(app, n.to, n.real)}
+        on:click={async (e) => openOrSwitch(app, n.to, e)}
+      >
+        {n.to}
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
@@ -60,7 +46,12 @@
     color: blue;
   } */
 
-  .BC-nexts {
+  /* .BC-nexts {
     float: right;
+  } */
+
+  .BC-NextPrev-Container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 </style>

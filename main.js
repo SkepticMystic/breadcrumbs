@@ -34548,24 +34548,24 @@ class TrailPath extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-1kcj4cn-style";
-	style.textContent = ".BC-nexts.svelte-1kcj4cn{float:right}";
+	style.id = "svelte-1cjpw4-style";
+	style.textContent = ".BC-NextPrev-Container.svelte-1cjpw4{display:grid;grid-template-columns:1fr 1fr}";
 	append(document.head, style);
 }
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[8] = list[i];
+	child_ctx[6] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[11] = list[i];
+	child_ctx[9] = list[i];
 	return child_ctx;
 }
 
-// (29:4) {#if prev.length}
+// (13:4) {#if prev.length}
 function create_if_block_1(ctx) {
 	let t;
 
@@ -34582,93 +34582,54 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (30:4) {#each prev as p}
+// (14:4) {#each prev as p}
 function create_each_block_1(ctx) {
-	let span;
-	let t_value = /*p*/ ctx[11].to + "";
-	let t;
-	let span_class_value;
+	let div;
+	let t0_value = /*p*/ ctx[9].to + "";
+	let t0;
+	let t1;
+	let div_class_value;
 	let mounted;
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[4](/*p*/ ctx[11], ...args);
+		return /*click_handler*/ ctx[4](/*p*/ ctx[9], ...args);
 	}
 
 	return {
 		c() {
-			span = element("span");
-			t = text(t_value);
-			attr(span, "class", span_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[11].to, /*p*/ ctx[11].real)) + " svelte-1kcj4cn"));
+			div = element("div");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cjpw4"));
 		},
 		m(target, anchor) {
-			insert(target, span, anchor);
-			append(span, t);
+			insert(target, div, anchor);
+			append(div, t0);
+			append(div, t1);
 
 			if (!mounted) {
-				dispose = listen(span, "click", click_handler);
+				dispose = listen(div, "click", click_handler);
 				mounted = true;
 			}
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
+			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].to + "")) set_data(t0, t0_value);
 
-			if (dirty & /*app*/ 1 && span_class_value !== (span_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[11].to, /*p*/ ctx[11].real)) + " svelte-1kcj4cn"))) {
-				attr(span, "class", span_class_value);
+			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cjpw4"))) {
+				attr(div, "class", div_class_value);
 			}
 		},
 		d(detaching) {
-			if (detaching) detach(span);
+			if (detaching) detach(div);
 			mounted = false;
 			dispose();
 		}
 	};
 }
 
-// (38:4) {#each next as n}
-function create_each_block(ctx) {
-	let span;
-	let t_value = /*n*/ ctx[8].to + "";
-	let t;
-	let span_class_value;
-	let mounted;
-	let dispose;
-
-	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[5](/*n*/ ctx[8], ...args);
-	}
-
-	return {
-		c() {
-			span = element("span");
-			t = text(t_value);
-			attr(span, "class", span_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[8].to, /*n*/ ctx[8].real)) + " svelte-1kcj4cn"));
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-			append(span, t);
-
-			if (!mounted) {
-				dispose = listen(span, "click", click_handler_1);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-
-			if (dirty & /*app*/ 1 && span_class_value !== (span_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[8].to, /*n*/ ctx[8].real)) + " svelte-1kcj4cn"))) {
-				attr(span, "class", span_class_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(span);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (44:4) {#if next.length}
+// (24:4) {#if next.length}
 function create_if_block(ctx) {
 	let t;
 
@@ -34685,12 +34646,59 @@ function create_if_block(ctx) {
 	};
 }
 
-function create_fragment(ctx) {
-	let span2;
-	let span0;
+// (25:4) {#each next as n}
+function create_each_block(ctx) {
+	let div;
+	let t0_value = /*n*/ ctx[6].to + "";
 	let t0;
 	let t1;
-	let span1;
+	let div_class_value;
+	let mounted;
+	let dispose;
+
+	function click_handler_1(...args) {
+		return /*click_handler_1*/ ctx[5](/*n*/ ctx[6], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real)) + " svelte-1cjpw4"));
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, t0);
+			append(div, t1);
+
+			if (!mounted) {
+				dispose = listen(div, "click", click_handler_1);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
+
+			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real)) + " svelte-1cjpw4"))) {
+				attr(div, "class", div_class_value);
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function create_fragment(ctx) {
+	let div2;
+	let div0;
+	let t0;
+	let t1;
+	let div1;
 	let t2;
 	let if_block0 = /*prev*/ ctx[2].length && create_if_block_1();
 	let each_value_1 = /*prev*/ ctx[2];
@@ -34700,6 +34708,7 @@ function create_fragment(ctx) {
 		each_blocks_1[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
 	}
 
+	let if_block1 = /*next*/ ctx[1].length && create_if_block();
 	let each_value = /*next*/ ctx[1];
 	let each_blocks = [];
 
@@ -34707,12 +34716,10 @@ function create_fragment(ctx) {
 		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
 	}
 
-	let if_block1 = /*next*/ ctx[1].length && create_if_block();
-
 	return {
 		c() {
-			span2 = element("span");
-			span0 = element("span");
+			div2 = element("div");
+			div0 = element("div");
 			if (if_block0) if_block0.c();
 			t0 = space();
 
@@ -34721,39 +34728,49 @@ function create_fragment(ctx) {
 			}
 
 			t1 = space();
-			span1 = element("span");
+			div1 = element("div");
+			if (if_block1) if_block1.c();
+			t2 = space();
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			t2 = space();
-			if (if_block1) if_block1.c();
-			attr(span0, "class", "BC-prevs");
-			attr(span1, "class", "BC-nexts svelte-1kcj4cn");
-			attr(span2, "class", "BC-NextPrev-Container");
+			attr(div0, "class", "BC-prevs");
+			attr(div1, "class", "BC-nexts");
+			attr(div2, "class", "BC-NextPrev-Container svelte-1cjpw4");
 		},
 		m(target, anchor) {
-			insert(target, span2, anchor);
-			append(span2, span0);
-			if (if_block0) if_block0.m(span0, null);
-			append(span0, t0);
+			insert(target, div2, anchor);
+			append(div2, div0);
+			if (if_block0) if_block0.m(div0, null);
+			append(div0, t0);
 
 			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(span0, null);
+				each_blocks_1[i].m(div0, null);
 			}
 
-			append(span2, t1);
-			append(span2, span1);
+			append(div2, t1);
+			append(div2, div1);
+			if (if_block1) if_block1.m(div1, null);
+			append(div1, t2);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(span1, null);
+				each_blocks[i].m(div1, null);
 			}
-
-			append(span1, t2);
-			if (if_block1) if_block1.m(span1, null);
 		},
 		p(ctx, [dirty]) {
+			if (/*prev*/ ctx[2].length) {
+				if (if_block0) ; else {
+					if_block0 = create_if_block_1();
+					if_block0.c();
+					if_block0.m(div0, t0);
+				}
+			} else if (if_block0) {
+				if_block0.d(1);
+				if_block0 = null;
+			}
+
 			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 5) {
 				each_value_1 = /*prev*/ ctx[2];
 				let i;
@@ -34766,7 +34783,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks_1[i] = create_each_block_1(child_ctx);
 						each_blocks_1[i].c();
-						each_blocks_1[i].m(span0, null);
+						each_blocks_1[i].m(div0, null);
 					}
 				}
 
@@ -34775,6 +34792,17 @@ function create_fragment(ctx) {
 				}
 
 				each_blocks_1.length = each_value_1.length;
+			}
+
+			if (/*next*/ ctx[1].length) {
+				if (if_block1) ; else {
+					if_block1 = create_if_block();
+					if_block1.c();
+					if_block1.m(div1, t2);
+				}
+			} else if (if_block1) {
+				if_block1.d(1);
+				if_block1 = null;
 			}
 
 			if (dirty & /*linkClass, app, next, openOrSwitch*/ 3) {
@@ -34789,7 +34817,7 @@ function create_fragment(ctx) {
 					} else {
 						each_blocks[i] = create_each_block(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(span1, t2);
+						each_blocks[i].m(div1, null);
 					}
 				}
 
@@ -34803,11 +34831,11 @@ function create_fragment(ctx) {
 		i: noop$1,
 		o: noop$1,
 		d(detaching) {
-			if (detaching) detach(span2);
+			if (detaching) detach(div2);
 			if (if_block0) if_block0.d();
 			destroy_each(each_blocks_1, detaching);
-			destroy_each(each_blocks, detaching);
 			if (if_block1) if_block1.d();
+			destroy_each(each_blocks, detaching);
 		}
 	};
 }
@@ -34817,35 +34845,16 @@ function instance($$self, $$props, $$invalidate) {
 	
 	let { app } = $$props;
 	let { plugin } = $$props;
-	const { basename } = app.workspace.getActiveFile();
-	const { main } = plugin.currGraphs;
-	const next = [];
-	const prev = [];
-
-	main.forEachEdge(basename, (k, a, s, t) => {
-		if (a.dir === "next" && s === basename) {
-			next.push({ to: t, real: true });
-		}
-
-		if (a.dir === "prev" && t === basename) {
-			next.push({ to: s, real: false });
-		}
-
-		if (a.dir === "prev" && s === basename) {
-			prev.push({ to: t, real: true });
-		}
-
-		if (a.dir === "next" && t === basename) {
-			prev.push({ to: s, real: false });
-		}
-	});
-
+	let { next } = $$props;
+	let { prev } = $$props;
 	const click_handler = async (p, e) => openOrSwitch$1(app, p.to, e);
 	const click_handler_1 = async (n, e) => openOrSwitch$1(app, n.to, e);
 
 	$$self.$$set = $$props => {
 		if ("app" in $$props) $$invalidate(0, app = $$props.app);
 		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
+		if ("next" in $$props) $$invalidate(1, next = $$props.next);
+		if ("prev" in $$props) $$invalidate(2, prev = $$props.prev);
 	};
 
 	return [app, next, prev, plugin, click_handler, click_handler_1];
@@ -34854,8 +34863,8 @@ function instance($$self, $$props, $$invalidate) {
 class NextPrev extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1kcj4cn-style")) add_css();
-		init$1(this, options, instance, create_fragment, safe_not_equal, { app: 0, plugin: 3 });
+		if (!document.getElementById("svelte-1cjpw4-style")) add_css();
+		init$1(this, options, instance, create_fragment, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
 	}
 }
 
@@ -35349,7 +35358,26 @@ class BCPlugin extends obsidian.Plugin {
         const closedUp = this.currGraphs.limitTrailG;
         const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
         debug(settings, { sortedTrails });
-        if (sortedTrails.length === 0 && settings.noPathMessage === "") {
+        const { basename } = currFile;
+        const { main } = this.currGraphs;
+        const next = [];
+        const prev = [];
+        main.forEachEdge(basename, (k, a, s, t) => {
+            if (a.dir === "next" && s === basename) {
+                next.push({ to: t, real: true });
+            }
+            if (a.dir === "prev" && t === basename) {
+                next.push({ to: s, real: false });
+            }
+            if (a.dir === "prev" && s === basename) {
+                prev.push({ to: t, real: true });
+            }
+            if (a.dir === "next" && t === basename) {
+                prev.push({ to: s, real: false });
+            }
+        });
+        const noItems = sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+        if (noItems && settings.noPathMessage === "") {
             debugGroupEnd(settings, "debugMode");
             return;
         }
@@ -35361,27 +35389,30 @@ class BCPlugin extends obsidian.Plugin {
         this.visited.push([currFile.path, trailDiv]);
         previewView.querySelector(".markdown-preview-sizer").before(trailDiv);
         trailDiv.empty();
-        if (sortedTrails.length === 0) {
+        if (noItems) {
             trailDiv.innerText = settings.noPathMessage;
             debugGroupEnd(settings, "debugMode");
             return;
         }
         const pathProps = { sortedTrails, app: this.app, settings, currFile };
         const gridProps = { sortedTrails, app: this.app, plugin: this };
-        if (settings.showTrail) {
+        if (settings.showTrail && sortedTrails.length) {
             new TrailPath({
                 target: trailDiv,
                 props: pathProps,
             });
         }
-        if (settings.showGrid) {
+        if (settings.showGrid && sortedTrails.length) {
             new TrailGrid({
                 target: trailDiv,
                 props: gridProps,
             });
         }
-        if (settings.showPrevNext) {
-            new NextPrev({ target: trailDiv, props: { app: this.app, plugin: this } });
+        if (settings.showPrevNext && (next.length || prev.length)) {
+            new NextPrev({
+                target: trailDiv,
+                props: { app: this.app, plugin: this, next, prev },
+            });
         }
     }
     async loadSettings() {
