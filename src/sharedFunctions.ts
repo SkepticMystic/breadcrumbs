@@ -174,7 +174,7 @@ export async function getJugglLinks(
         let typeDir: Directions | "" = "";
         DIRECTIONS.forEach((dir) => {
           userHierarchies.forEach((hier) => {
-            if (hier[dir].includes(type)) {
+            if (hier[dir]?.includes(type)) {
               typeDir = dir;
               return;
             }

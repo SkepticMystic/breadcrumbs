@@ -19952,7 +19952,8 @@ async function getJugglLinks(app, settings) {
             let typeDir = "";
             DIRECTIONS.forEach((dir) => {
                 userHierarchies.forEach((hier) => {
-                    if (hier[dir].includes(type)) {
+                    var _a;
+                    if ((_a = hier[dir]) === null || _a === void 0 ? void 0 : _a.includes(type)) {
                         typeDir = dir;
                         return;
                     }
@@ -23573,22 +23574,31 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         new obsidian.Setting(trailDetails)
             .setName("Views to show")
             .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view.")
-            .addToggle(toggle => {
-            toggle.setTooltip('Show Trail view').setValue(settings.showTrail).onChange(async (value) => {
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Show Trail view")
+                .setValue(settings.showTrail)
+                .onChange(async (value) => {
                 settings.showTrail = value;
                 await plugin.saveSettings();
                 await plugin.drawTrail();
             });
         })
-            .addToggle(toggle => {
-            toggle.setTooltip('Show Grid view').setValue(settings.showGrid).onChange(async (value) => {
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Show Grid view")
+                .setValue(settings.showGrid)
+                .onChange(async (value) => {
                 settings.showGrid = value;
                 await plugin.saveSettings();
                 await plugin.drawTrail();
             });
         })
-            .addToggle(toggle => {
-            toggle.setTooltip('Show Next/Previous view').setValue(settings.showPrevNext).onChange(async (value) => {
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Show Next/Previous view")
+                .setValue(settings.showPrevNext)
+                .onChange(async (value) => {
                 settings.showPrevNext = value;
                 await plugin.saveSettings();
                 await plugin.drawTrail();
@@ -23718,7 +23728,8 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             const checkboxStates = settings.limitWriteBCCheckboxStates;
             settings.userHierarchies.forEach((userHier) => {
                 DIRECTIONS.forEach((dir) => {
-                    userHier[dir].forEach(async (field) => {
+                    var _a;
+                    (_a = userHier[dir]) === null || _a === void 0 ? void 0 : _a.forEach(async (field) => {
                         if (field === "")
                             return;
                         // First sort out limitWriteBCCheckboxStates

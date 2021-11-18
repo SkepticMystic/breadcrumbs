@@ -357,9 +357,7 @@ export class BCSettingTab extends PluginSettingTab {
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
-      .setDesc(
-        "Show a set of different views at the top of the current note."
-      )
+      .setDesc("Show a set of different views at the top of the current note.")
       .addToggle((toggle) =>
         toggle.setValue(settings.showBCs).onChange(async (value) => {
           settings.showBCs = value;
@@ -430,27 +428,36 @@ export class BCSettingTab extends PluginSettingTab {
       .setDesc(
         "Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view."
       )
-      .addToggle(toggle => {
-        toggle.setTooltip('Show Trail view').setValue(settings.showTrail).onChange(async (value) => {
-          settings.showTrail = value;
-          await plugin.saveSettings();
-          await plugin.drawTrail();
-        })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Show Trail view")
+          .setValue(settings.showTrail)
+          .onChange(async (value) => {
+            settings.showTrail = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          });
       })
-      .addToggle(toggle => {
-        toggle.setTooltip('Show Grid view').setValue(settings.showGrid).onChange(async (value) => {
-          settings.showGrid = value;
-          await plugin.saveSettings();
-          await plugin.drawTrail();
-        })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Show Grid view")
+          .setValue(settings.showGrid)
+          .onChange(async (value) => {
+            settings.showGrid = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          });
       })
-      .addToggle(toggle => {
-        toggle.setTooltip('Show Next/Previous view').setValue(settings.showPrevNext).onChange(async (value) => {
-          settings.showPrevNext = value;
-          await plugin.saveSettings();
-          await plugin.drawTrail();
-        })
-      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Show Next/Previous view")
+          .setValue(settings.showPrevNext)
+          .onChange(async (value) => {
+            settings.showPrevNext = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          });
+      });
 
     new Setting(trailDetails)
       .setName("Grid view dots")
@@ -619,7 +626,7 @@ export class BCSettingTab extends PluginSettingTab {
 
       settings.userHierarchies.forEach((userHier) => {
         DIRECTIONS.forEach((dir) => {
-          userHier[dir].forEach(async (field) => {
+          userHier[dir]?.forEach(async (field) => {
             if (field === "") return;
             // First sort out limitWriteBCCheckboxStates
             if (checkboxStates[field] === undefined) {
