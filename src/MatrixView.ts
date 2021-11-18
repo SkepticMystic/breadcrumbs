@@ -282,19 +282,50 @@ export default class MatrixView extends ItemView {
   ) {
     const { basename } = currFile;
     return userHierarchies.map((hier, i) => {
-      const { up, same, down, next, prev } = data[i];
+      const { up, same, down } = data[i];
 
-      let [rUp, rSame, rDown, rNext, rPrev, iUp, iDown, iNext, iPrev] = [
+      let [rUp, rSame, rDown, iUp, iDown] = [
         this.squareItems(up, currFile, settings),
         this.squareItems(same, currFile, settings),
         this.squareItems(down, currFile, settings),
-        this.squareItems(next, currFile, settings),
-        this.squareItems(prev, currFile, settings),
         this.squareItems(down, currFile, settings, false),
         this.squareItems(up, currFile, settings, false),
-        this.squareItems(next, currFile, settings, false),
-        this.squareItems(prev, currFile, settings, false),
       ];
+
+      const rNext: internalLinkObj[] = [];
+      const rPrev: internalLinkObj[] = [];
+      let iNext: internalLinkObj[] = [];
+      let iPrev: internalLinkObj[] = [];
+      this.plugin.currGraphs.main.forEachEdge(basename, (k, a, s, t) => {
+        if (a.dir === "next" && s === basename) {
+          rNext.push({
+            to: t,
+            cls: linkClass(this.app, t, true),
+            alt: this.getAlt(t, settings),
+          });
+        }
+        if (a.dir === "prev" && t === basename) {
+          iNext.push({
+            to: s,
+            cls: linkClass(this.app, s, false),
+            alt: this.getAlt(s, settings),
+          });
+        }
+        if (a.dir === "prev" && s === basename) {
+          rPrev.push({
+            to: t,
+            cls: linkClass(this.app, t, true),
+            alt: this.getAlt(t, settings),
+          });
+        }
+        if (a.dir === "next" && t === basename) {
+          iPrev.push({
+            to: s,
+            cls: linkClass(this.app, s, false),
+            alt: this.getAlt(s, settings),
+          });
+        }
+      });
 
       // SECTION Implied Siblings
       /// Notes with the same parents
