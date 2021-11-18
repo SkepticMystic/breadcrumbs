@@ -21982,6 +21982,32 @@ class MatrixView extends obsidian.ItemView {
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
+    getSquares(g, currNode, fieldName, settings, realQ = true) {
+        const items = realQ
+            ? g.filterOutNeighbors(currNode, (n) => g.getNodeAttribute(n, "fieldName") === fieldName)
+            : g.filterInNeighbors(currNode, (n) => g.getNodeAttribute(n, "fieldName") === fieldName);
+        return items.map((to) => {
+            return {
+                to,
+                cls: linkClass(this.app, to, realQ),
+                alt: this.getAlt(to, settings),
+            };
+        });
+    }
+    getAlt(node, settings) {
+        let alt = null;
+        if (settings.altLinkFields.length) {
+            const toFile = this.app.metadataCache.getFirstLinkpathDest(node, "");
+            if (toFile) {
+                const metadata = this.app.metadataCache.getFileCache(toFile);
+                settings.altLinkFields.forEach((altLinkField) => {
+                    var _a;
+                    alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
+                });
+            }
+        }
+        return alt;
+    }
     squareItems(g, currFile, settings, realQ = true) {
         const items = realQ
             ? getOutNeighbours(g, currFile.basename)

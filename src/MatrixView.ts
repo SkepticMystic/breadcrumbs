@@ -1,3 +1,4 @@
+import type { MultiGraph } from "graphology";
 import type Graph from "graphology";
 import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
@@ -102,6 +103,46 @@ export default class MatrixView extends ItemView {
   onClose(): Promise<void> {
     this.view?.$destroy();
     return Promise.resolve();
+  }
+
+  getSquares(
+    g: MultiGraph,
+    currNode: string,
+    fieldName: string,
+    settings: BCSettings,
+    realQ = true
+  ) {
+    const items = realQ
+      ? g.filterOutNeighbors(
+          currNode,
+          (n) => g.getNodeAttribute(n, "fieldName") === fieldName
+        )
+      : g.filterInNeighbors(
+          currNode,
+          (n) => g.getNodeAttribute(n, "fieldName") === fieldName
+        );
+
+    return items.map((to: string) => {
+      return {
+        to,
+        cls: linkClass(this.app, to, realQ),
+        alt: this.getAlt(to, settings),
+      };
+    });
+  }
+
+  getAlt(node: string, settings: BCSettings) {
+    let alt = null;
+    if (settings.altLinkFields.length) {
+      const toFile = this.app.metadataCache.getFirstLinkpathDest(node, "");
+      if (toFile) {
+        const metadata = this.app.metadataCache.getFileCache(toFile);
+        settings.altLinkFields.forEach((altLinkField) => {
+          alt = metadata?.frontmatter?.[altLinkField];
+        });
+      }
+    }
+    return alt;
   }
 
   squareItems(
