@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.1...1.0.2) (2021-11-18)
+
+
+### Bug Fixes
+
+* :bug: More silent fails if no next/prev yet ([489c3c3](https://github.com/SkepticMystic/breadcrumbs/commit/489c3c338819eafd23c97e032fffb055bfd315f7))
+
 ### [1.0.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.0...1.0.1) (2021-11-18)
 
 
