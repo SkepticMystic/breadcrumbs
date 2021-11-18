@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.4](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.3...1.0.4) (2021-11-18)
+
+
+### Bug Fixes
+
+* **nextPrev:** :bug: Fix overflowing next/prev item ([eec41a7](https://github.com/SkepticMystic/breadcrumbs/commit/eec41a745684bd114d409557a850c949fbb58c56))
+* **nextPrev:** :bug: Still show nextPrev (if there are any) even in no parents ([b1b4c25](https://github.com/SkepticMystic/breadcrumbs/commit/b1b4c25ff5e119abb7cc7540563f3ddc28aa8933))
+
 ### [1.0.3](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.2...1.0.3) (2021-11-18)
 
 
