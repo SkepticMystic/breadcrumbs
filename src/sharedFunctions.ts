@@ -361,7 +361,13 @@ export async function getNeighbourObjArr(
 
     userHierarchies.forEach((hier, i) => {
       const fieldsArr = Object.values(hier) as [string[], string[], string[]];
-      const newHier: HierarchyFields = { up: {}, same: {}, down: {} };
+      const newHier: HierarchyFields = {
+        up: {},
+        same: {},
+        down: {},
+        next: {},
+        prev: {},
+      };
 
       // Add regular metadata links
       if (settings.useAllMetadata) {
@@ -678,8 +684,20 @@ export const createOrUpdateYaml = async (
   }
 };
 
-export const getOppDir = (dir: Directions): Directions =>
-  dir === "same" ? "same" : dir === "up" ? "down" : "up";
+export const getOppDir = (dir: Directions): Directions => {
+  switch (dir) {
+    case "up":
+      return "down";
+    case "down":
+      return "up";
+    case "same":
+      return "same";
+    case "next":
+      return "prev";
+    case "prev":
+      return "next";
+  }
+};
 
 export const writeBCToFile = (
   app: App,

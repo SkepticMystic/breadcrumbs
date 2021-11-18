@@ -51,6 +51,10 @@
       same: { Merged: {}, Closed: {}, Implied: {} },
       //@ts-ignore
       down: { Merged: {}, Closed: {}, Implied: {} },
+      //@ts-ignore
+      next: { Merged: {}, Closed: {}, Implied: {} },
+      //@ts-ignore
+      prev: { Merged: {}, Closed: {}, Implied: {} },
     };
     DIRECTIONS.forEach((dir) => {
       // Merged Graphs

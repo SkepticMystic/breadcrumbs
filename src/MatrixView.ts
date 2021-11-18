@@ -282,14 +282,18 @@ export default class MatrixView extends ItemView {
   ) {
     const { basename } = currFile;
     return userHierarchies.map((hier, i) => {
-      const { up, same, down } = data[i];
+      const { up, same, down, next, prev } = data[i];
 
-      let [rUp, rSame, rDown, iUp, iDown] = [
+      let [rUp, rSame, rDown, rNext, rPrev, iUp, iDown, iNext, iPrev] = [
         this.squareItems(up, currFile, settings),
         this.squareItems(same, currFile, settings),
         this.squareItems(down, currFile, settings),
+        this.squareItems(next, currFile, settings),
+        this.squareItems(prev, currFile, settings),
         this.squareItems(down, currFile, settings, false),
         this.squareItems(up, currFile, settings, false),
+        this.squareItems(next, currFile, settings, false),
+        this.squareItems(prev, currFile, settings, false),
       ];
 
       // SECTION Implied Siblings
@@ -351,6 +355,8 @@ export default class MatrixView extends ItemView {
       iUp = this.removeDuplicateImplied(rUp, iUp);
       iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
       iDown = this.removeDuplicateImplied(rDown, iDown);
+      iNext = this.removeDuplicateImplied(rNext, iNext);
+      iPrev = this.removeDuplicateImplied(rPrev, iPrev);
 
       const iSameNoDup: internalLinkObj[] = [];
       iSameArr.forEach((impSib) => {
@@ -364,9 +370,7 @@ export default class MatrixView extends ItemView {
         realItems: rUp,
         impliedItems: iUp,
         fieldName:
-          hier.up[0] === ""
-            ? `${hier.down.join(",")}<Parents>`
-            : hier.up.join(", "),
+          hier.up[0] === "" ? `${hier.down.join(",")}<Up>` : hier.up.join(", "),
       };
 
       const sameSquare: SquareProps = {
@@ -374,7 +378,7 @@ export default class MatrixView extends ItemView {
         impliedItems: iSameArr,
         fieldName:
           hier.same[0] === ""
-            ? `${hier.up.join(",")}<Siblings>`
+            ? `${hier.up.join(",")}<Same>`
             : hier.same.join(", "),
       };
 
@@ -383,11 +387,27 @@ export default class MatrixView extends ItemView {
         impliedItems: iDown,
         fieldName:
           hier.down[0] === ""
-            ? `${hier.up.join(",")}<Children>`
+            ? `${hier.up.join(",")}<Down>`
             : hier.down.join(", "),
       };
+      const nextSquare: SquareProps = {
+        realItems: rNext,
+        impliedItems: iNext,
+        fieldName:
+          hier.next[0] === ""
+            ? `${hier.prev.join(",")}<Next>`
+            : hier.next.join(", "),
+      };
+      const prevSquare: SquareProps = {
+        realItems: rPrev,
+        impliedItems: iPrev,
+        fieldName:
+          hier.prev[0] === ""
+            ? `${hier.next.join(",")}<Prev>`
+            : hier.prev.join(", "),
+      };
 
-      return [upSquare, sameSquare, downSquare];
+      return [upSquare, sameSquare, downSquare, nextSquare, prevSquare];
     });
   }
 
@@ -422,6 +442,8 @@ export default class MatrixView extends ItemView {
         up: undefined,
         same: undefined,
         down: undefined,
+        next: undefined,
+        prev: undefined,
       };
       DIRECTIONS.forEach((dir) => {
         // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does

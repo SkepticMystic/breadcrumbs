@@ -47,16 +47,16 @@ export interface BCSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-  | string
-  | string[]
-  | string[][]
-  | dvLink
-  | dvLink[]
-  | Pos
-  | TFile;
+    | string
+    | string[]
+    | string[][]
+    | dvLink
+    | dvLink[]
+    | Pos
+    | TFile;
 }
 
-export type Directions = "up" | "same" | "down";
+export type Directions = "up" | "same" | "down" | "next" | "prev";
 export type userHierarchy = {
   [dir in Directions]: string[];
 };

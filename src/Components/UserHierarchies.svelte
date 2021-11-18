@@ -51,7 +51,7 @@
   {#each userHierarchies as hier, i}
     <details class="BC-Hier-Details">
       <summary>
-        {DIRECTIONS.map((dir) => hier[dir].join(", "))
+        {DIRECTIONS.map((dir) => hier[dir]?.join(", ") ?? "")
           .map((dirFields) => `(${dirFields})`)
           .join(" ")}
         <button
@@ -78,23 +78,30 @@
         >
       </summary>
       {#each DIRECTIONS as dir}
-        <label for={dir}>{ARROW_DIRECTIONS[dir]}</label>
-        <input
-          type="text"
-          size="10"
-          name={dir}
-          value={hier[dir].join(", ")}
-          on:change={async (e) => {
-            userHierarchies[i][dir] = splitAndTrim(e.target.value);
-            await plugin.saveSettings();
-          }}
-        />
+        <div>
+          <label class="BC-Arrow-Label" for={dir}>
+            {ARROW_DIRECTIONS[dir]}</label
+          >
+          <input
+            type="text"
+            size="20"
+            name={dir}
+            value={hier[dir]?.join(", ") ?? ""}
+            on:change={async (e) => {
+              userHierarchies[i][dir] = splitAndTrim(e.target.value);
+              await plugin.saveSettings();
+            }}
+          />
+        </div>
       {/each}
     </details>
   {/each}
 </div>
 
 <style>
+  label.BC-Arrow-Label {
+    min-width: 20px !important;
+  }
   div.GA-Buttons {
     padding-bottom: 5px;
   }

@@ -148,6 +148,7 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "show-breadcrumbs-matrix-view",
       name: "Open Matrix View",
+      //@ts-ignore
       checkCallback: async (checking: boolean) => {
         if (checking) {
           return this.app.workspace.getLeavesOfType(MATRIX_VIEW).length === 0;
@@ -159,6 +160,7 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "show-breadcrumbs-stats-view",
       name: "Open Stats View",
+      //@ts-ignore
       checkCallback: async (checking: boolean) => {
         if (checking) {
           return this.app.workspace.getLeavesOfType(STATS_VIEW).length === 0;
@@ -443,13 +445,31 @@ export default class BCPlugin extends Plugin {
     const graphs: BCIndex = {
       main: new MultiGraph(),
       hierGs: [],
-      mergedGs: { up: undefined, same: undefined, down: undefined },
-      closedGs: { up: undefined, same: undefined, down: undefined },
+      mergedGs: {
+        up: undefined,
+        same: undefined,
+        down: undefined,
+        next: undefined,
+        prev: undefined,
+      },
+      closedGs: {
+        up: undefined,
+        same: undefined,
+        down: undefined,
+        next: undefined,
+        prev: undefined,
+      },
       limitTrailG: undefined,
     };
 
     userHierarchies.forEach((hier) => {
-      const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
+      const newGraphs: HierarchyGraphs = {
+        up: {},
+        same: {},
+        down: {},
+        next: {},
+        prev: {},
+      };
 
       DIRECTIONS.forEach((dir: Directions) => {
         hier[dir].forEach((dirField) => {

@@ -19679,17 +19679,19 @@ const VISTYPES = [
     "Icicle",
     "Radial Tree",
 ];
-const DIRECTIONS = ["up", "same", "down"];
+const DIRECTIONS = ["up", "same", "down", "next", "prev"];
 const ARROW_DIRECTIONS = {
     up: "↑",
-    same: "→",
+    same: "↔",
     down: "↓",
+    next: "→",
+    prev: "←",
 };
 const RELATIONS = ["Parent", "Sibling", "Child"];
 const REAlCLOSED = ["Real", "Closed"];
 const ALLUNLINKED = ["All", "No Unlinked"];
 const blankUserHier = () => {
-    return { up: [], same: [], down: [] };
+    return { up: [], same: [], down: [], next: [], prev: [] };
 };
 const DEFAULT_SETTINGS = {
     userHierarchies: [],
@@ -20015,7 +20017,13 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
         };
         userHierarchies.forEach((hier, i) => {
             const fieldsArr = Object.values(hier);
-            const newHier = { up: {}, same: {}, down: {} };
+            const newHier = {
+                up: {},
+                same: {},
+                down: {},
+                next: {},
+                prev: {},
+            };
             // Add regular metadata links
             if (settings.useAllMetadata) {
                 DIRECTIONS.forEach((dir, i) => {
@@ -20225,7 +20233,20 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
 };
-const getOppDir = (dir) => dir === "same" ? "same" : dir === "up" ? "down" : "up";
+const getOppDir = (dir) => {
+    switch (dir) {
+        case "up":
+            return "down";
+        case "down":
+            return "up";
+        case "same":
+            return "same";
+        case "next":
+            return "prev";
+        case "prev":
+            return "next";
+    }
+};
 const writeBCToFile = (app, plugin, currGraphs, file) => {
     var _a, _b;
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
@@ -22101,13 +22122,17 @@ class MatrixView extends obsidian.ItemView {
     getHierSquares(userHierarchies, data, currFile, settings) {
         const { basename } = currFile;
         return userHierarchies.map((hier, i) => {
-            const { up, same, down } = data[i];
-            let [rUp, rSame, rDown, iUp, iDown] = [
+            const { up, same, down, next, prev } = data[i];
+            let [rUp, rSame, rDown, rNext, rPrev, iUp, iDown, iNext, iPrev] = [
                 this.squareItems(up, currFile, settings),
                 this.squareItems(same, currFile, settings),
                 this.squareItems(down, currFile, settings),
+                this.squareItems(next, currFile, settings),
+                this.squareItems(prev, currFile, settings),
                 this.squareItems(down, currFile, settings, false),
                 this.squareItems(up, currFile, settings, false),
+                this.squareItems(next, currFile, settings, false),
+                this.squareItems(prev, currFile, settings, false),
             ];
             // SECTION Implied Siblings
             /// Notes with the same parents
@@ -22151,6 +22176,8 @@ class MatrixView extends obsidian.ItemView {
             iUp = this.removeDuplicateImplied(rUp, iUp);
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
             iDown = this.removeDuplicateImplied(rDown, iDown);
+            iNext = this.removeDuplicateImplied(rNext, iNext);
+            iPrev = this.removeDuplicateImplied(rPrev, iPrev);
             const iSameNoDup = [];
             iSameArr.forEach((impSib) => {
                 if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
@@ -22161,25 +22188,37 @@ class MatrixView extends obsidian.ItemView {
             const upSquare = {
                 realItems: rUp,
                 impliedItems: iUp,
-                fieldName: hier.up[0] === ""
-                    ? `${hier.down.join(",")}<Parents>`
-                    : hier.up.join(", "),
+                fieldName: hier.up[0] === "" ? `${hier.down.join(",")}<Up>` : hier.up.join(", "),
             };
             const sameSquare = {
                 realItems: rSame,
                 impliedItems: iSameArr,
                 fieldName: hier.same[0] === ""
-                    ? `${hier.up.join(",")}<Siblings>`
+                    ? `${hier.up.join(",")}<Same>`
                     : hier.same.join(", "),
             };
             const downSquare = {
                 realItems: rDown,
                 impliedItems: iDown,
                 fieldName: hier.down[0] === ""
-                    ? `${hier.up.join(",")}<Children>`
+                    ? `${hier.up.join(",")}<Down>`
                     : hier.down.join(", "),
             };
-            return [upSquare, sameSquare, downSquare];
+            const nextSquare = {
+                realItems: rNext,
+                impliedItems: iNext,
+                fieldName: hier.next[0] === ""
+                    ? `${hier.prev.join(",")}<Next>`
+                    : hier.next.join(", "),
+            };
+            const prevSquare = {
+                realItems: rPrev,
+                impliedItems: iPrev,
+                fieldName: hier.prev[0] === ""
+                    ? `${hier.next.join(",")}<Prev>`
+                    : hier.prev.join(", "),
+            };
+            return [upSquare, sameSquare, downSquare, nextSquare, prevSquare];
         });
     }
     async draw() {
@@ -22207,6 +22246,8 @@ class MatrixView extends obsidian.ItemView {
                 up: undefined,
                 same: undefined,
                 down: undefined,
+                next: undefined,
+                prev: undefined,
             };
             DIRECTIONS.forEach((dir) => {
                 // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
@@ -22686,8 +22727,8 @@ class FaRegTrashAlt extends SvelteComponent {
 
 function add_css$3() {
 	var style = element("style");
-	style.id = "svelte-18759ns-style";
-	style.textContent = "div.GA-Buttons.svelte-18759ns.svelte-18759ns{padding-bottom:5px}details.BC-Hier-Details.svelte-18759ns.svelte-18759ns{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-18759ns summary.svelte-18759ns::marker{font-size:10px}.BC-Hier-Details.svelte-18759ns summary button.svelte-18759ns{float:right}.icon.svelte-18759ns.svelte-18759ns{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
+	style.id = "svelte-f3qc7b-style";
+	style.textContent = "label.BC-Arrow-Label.svelte-f3qc7b.svelte-f3qc7b{min-width:20px !important}div.GA-Buttons.svelte-f3qc7b.svelte-f3qc7b{padding-bottom:5px}details.BC-Hier-Details.svelte-f3qc7b.svelte-f3qc7b{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-f3qc7b summary.svelte-f3qc7b::marker{font-size:10px}.BC-Hier-Details.svelte-f3qc7b summary button.svelte-f3qc7b{float:right}.icon.svelte-f3qc7b.svelte-f3qc7b{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
@@ -22706,6 +22747,7 @@ function get_each_context_1$4(ctx, list, i) {
 
 // (77:6) {#each DIRECTIONS as dir}
 function create_each_block_1$4(ctx) {
+	let div;
 	let label;
 	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[13]] + "";
 	let t0;
@@ -22723,21 +22765,24 @@ function create_each_block_1$4(ctx) {
 
 	return {
 		c() {
+			div = element("div");
 			label = element("label");
 			t0 = text(t0_value);
 			t1 = space();
 			input = element("input");
+			attr(label, "class", "BC-Arrow-Label svelte-f3qc7b");
 			attr(label, "for", label_for_value = /*dir*/ ctx[13]);
 			attr(input, "type", "text");
-			attr(input, "size", "10");
+			attr(input, "size", "20");
 			attr(input, "name", input_name_value = /*dir*/ ctx[13]);
-			input.value = input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]].join(", ");
+			input.value = input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]]?.join(", ") ?? "";
 		},
 		m(target, anchor) {
-			insert(target, label, anchor);
+			insert(target, div, anchor);
+			append(div, label);
 			append(label, t0);
-			insert(target, t1, anchor);
-			insert(target, input, anchor);
+			append(div, t1);
+			append(div, input);
 
 			if (!mounted) {
 				dispose = listen(input, "change", change_handler);
@@ -22747,14 +22792,12 @@ function create_each_block_1$4(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*userHierarchies*/ 2 && input_value_value !== (input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]].join(", ")) && input.value !== input_value_value) {
+			if (dirty & /*userHierarchies*/ 2 && input_value_value !== (input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]]?.join(", ") ?? "") && input.value !== input_value_value) {
 				input.value = input_value_value;
 			}
 		},
 		d(detaching) {
-			if (detaching) detach(label);
-			if (detaching) detach(t1);
-			if (detaching) detach(input);
+			if (detaching) detach(div);
 			mounted = false;
 			dispose();
 		}
@@ -22823,13 +22866,13 @@ function create_each_block$4(ctx) {
 
 			t8 = space();
 			attr(button0, "aria-label", "Swap with Hierarchy Above");
-			attr(button0, "class", "svelte-18759ns");
+			attr(button0, "class", "svelte-f3qc7b");
 			attr(button1, "aria-label", "Swap with Hierarchy Below");
-			attr(button1, "class", "svelte-18759ns");
+			attr(button1, "class", "svelte-f3qc7b");
 			attr(button2, "aria-label", "Remove Hierarchy");
-			attr(button2, "class", "svelte-18759ns");
-			attr(summary, "class", "svelte-18759ns");
-			attr(details, "class", "BC-Hier-Details svelte-18759ns");
+			attr(button2, "class", "svelte-f3qc7b");
+			attr(summary, "class", "svelte-f3qc7b");
+			attr(details, "class", "BC-Hier-Details svelte-f3qc7b");
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);
@@ -22944,13 +22987,13 @@ function create_fragment$4(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "icon svelte-18759ns");
+			attr(div0, "class", "icon svelte-f3qc7b");
 			attr(button0, "aria-label", "Add New Hierarchy");
-			attr(div1, "class", "icon svelte-18759ns");
+			attr(div1, "class", "icon svelte-f3qc7b");
 			attr(button1, "aria-label", "Reset All Hierarchies");
-			attr(div2, "class", "icon svelte-18759ns");
+			attr(div2, "class", "icon svelte-f3qc7b");
 			attr(button2, "aria-label", "Show Hierarchies");
-			attr(div3, "class", "GA-Buttons svelte-18759ns");
+			attr(div3, "class", "GA-Buttons svelte-f3qc7b");
 		},
 		m(target, anchor) {
 			insert(target, div4, anchor);
@@ -23053,7 +23096,7 @@ function instance$4($$self, $$props, $$invalidate) {
 	};
 
 	const click_handler_2 = () => new obsidian.Notice(userHierarchies.map(hierToStr).join("\n\n"));
-	const func = (hier, dir) => hier[dir].join(", ");
+	const func = (hier, dir) => hier[dir]?.join(", ") ?? "";
 
 	const click_handler_3 = async i => {
 		$$invalidate(1, userHierarchies = swapItems(i, i - 1, userHierarchies));
@@ -23097,7 +23140,7 @@ function instance$4($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-18759ns-style")) add_css$3();
+		if (!document.getElementById("svelte-f3qc7b-style")) add_css$3();
 		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 0 });
 	}
 }
@@ -23738,7 +23781,7 @@ function get_each_context_6(ctx, list, i) {
 	return child_ctx;
 }
 
-// (96:6) {#each ["up", "same", "down"] as dir}
+// (100:6) {#each ["up", "same", "down"] as dir}
 function create_each_block_6(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.nodes.length + "";
@@ -23778,7 +23821,7 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (128:6) {#each ["up", "same", "down"] as dir}
+// (132:6) {#each ["up", "same", "down"] as dir}
 function create_each_block_5(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.edges.length + "";
@@ -23818,7 +23861,7 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (160:6) {#each ["up", "same", "down"] as dir}
+// (164:6) {#each ["up", "same", "down"] as dir}
 function create_each_block_4(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Implied.edges.length + "";
@@ -23858,7 +23901,7 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (90:2) {#each userHierarchies as hier, i}
+// (94:2) {#each userHierarchies as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
@@ -24147,7 +24190,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (194:4) {#each ["up", "same", "down"] as dir}
+// (198:4) {#each ["up", "same", "down"] as dir}
 function create_each_block_2$1(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func)) + "";
@@ -24198,7 +24241,7 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (233:4) {#each ["up", "same", "down"] as dir}
+// (237:4) {#each ["up", "same", "down"] as dir}
 function create_each_block_1$3(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_2)) + "";
@@ -24249,7 +24292,7 @@ function create_each_block_1$3(ctx) {
 	};
 }
 
-// (268:4) {#each ["up", "same", "down"] as dir}
+// (272:4) {#each ["up", "same", "down"] as dir}
 function create_each_block$3(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_4)) + "";
@@ -24581,7 +24624,11 @@ function instance$3($$self, $$props, $$invalidate) {
 			//@ts-ignore
 			same: { Merged: {}, Closed: {}, Implied: {} },
 			//@ts-ignore
-			down: { Merged: {}, Closed: {}, Implied: {} }
+			down: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			next: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			prev: { Merged: {}, Closed: {}, Implied: {} }
 		};
 
 		DIRECTIONS.forEach(dir => {
@@ -34470,6 +34517,7 @@ class BCPlugin extends obsidian.Plugin {
         this.addCommand({
             id: "show-breadcrumbs-matrix-view",
             name: "Open Matrix View",
+            //@ts-ignore
             checkCallback: async (checking) => {
                 if (checking) {
                     return this.app.workspace.getLeavesOfType(MATRIX_VIEW).length === 0;
@@ -34480,6 +34528,7 @@ class BCPlugin extends obsidian.Plugin {
         this.addCommand({
             id: "show-breadcrumbs-stats-view",
             name: "Open Stats View",
+            //@ts-ignore
             checkCallback: async (checking) => {
                 if (checking) {
                     return this.app.workspace.getLeavesOfType(STATS_VIEW).length === 0;
@@ -34620,12 +34669,30 @@ class BCPlugin extends obsidian.Plugin {
         const graphs = {
             main: new graphology_umd_min.MultiGraph(),
             hierGs: [],
-            mergedGs: { up: undefined, same: undefined, down: undefined },
-            closedGs: { up: undefined, same: undefined, down: undefined },
+            mergedGs: {
+                up: undefined,
+                same: undefined,
+                down: undefined,
+                next: undefined,
+                prev: undefined,
+            },
+            closedGs: {
+                up: undefined,
+                same: undefined,
+                down: undefined,
+                next: undefined,
+                prev: undefined,
+            },
             limitTrailG: undefined,
         };
         userHierarchies.forEach((hier) => {
-            const newGraphs = { up: {}, same: {}, down: {} };
+            const newGraphs = {
+                up: {},
+                same: {},
+                down: {},
+                next: {},
+                prev: {},
+            };
             DIRECTIONS.forEach((dir) => {
                 hier[dir].forEach((dirField) => {
                     newGraphs[dir][dirField] = new graphology_umd_min();

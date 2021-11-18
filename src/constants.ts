@@ -28,18 +28,20 @@ export const VISTYPES: visTypes[] = [
   "Radial Tree",
 ];
 
-export const DIRECTIONS: Directions[] = ["up", "same", "down"];
-export const ARROW_DIRECTIONS = {
+export const DIRECTIONS: Directions[] = ["up", "same", "down", "next", "prev"];
+export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
   up: "↑",
-  same: "→",
+  same: "↔",
   down: "↓",
+  next: "→",
+  prev: "←",
 };
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
 
 export const blankUserHier = (): userHierarchy => {
-  return { up: [], same: [], down: [] };
+  return { up: [], same: [], down: [], next: [], prev: [] };
 };
 
 export const DEFAULT_SETTINGS: BCSettings = {
