@@ -349,8 +349,7 @@ export async function getNeighbourObjArr(
     current: TFile;
     hierarchies: HierarchyFields[];
   }[] = fileFrontmatterArr.map((fileFrontmatter) => {
-    const currFileName =
-      fileFrontmatter.file.basename || fileFrontmatter.file.name;
+    const currNode = fileFrontmatter.file.basename || fileFrontmatter.file.name;
     const hierFields: {
       current: TFile;
       hierarchies: HierarchyFields[];
@@ -359,7 +358,7 @@ export async function getNeighbourObjArr(
       hierarchies: [],
     };
 
-    userHierarchies.forEach((hier, i) => {
+    userHierarchies.forEach((hier) => {
       const fieldsArr = Object.values(hier) as [string[], string[], string[]];
       const newHier: HierarchyFields = {
         up: {},
@@ -372,7 +371,7 @@ export async function getNeighbourObjArr(
       // Add regular metadata links
       if (settings.useAllMetadata) {
         DIRECTIONS.forEach((dir, i) => {
-          fieldsArr[i].forEach((field) => {
+          fieldsArr[i]?.forEach((field) => {
             newHier[dir][field] = getFieldValues(
               fileFrontmatter,
               field,
@@ -384,13 +383,13 @@ export async function getNeighbourObjArr(
 
       // Add Juggl Links
       if (jugglLinks.length) {
-        const jugglLinksInFile = jugglLinks.filter((jugglLink) => {
-          return jugglLink.note === currFileName;
-        })[0];
+        const jugglLinksInFile = jugglLinks.find((jugglLink) => {
+          return jugglLink.note === currNode;
+        });
 
         if (jugglLinksInFile) {
           jugglLinksInFile.links.forEach((line) => {
-            if ((hier[line.dir] as string[]).includes(line.type)) {
+            if ((hier[line.dir] as string[])?.includes(line.type)) {
               newHier[line.dir][line.type] = [
                 ...new Set([
                   ...(newHier[line.dir][line.type] ?? []),
