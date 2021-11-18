@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.0...1.1.1) (2021-11-18)
+
+
+### Bug Fixes
+
+* :bug: More safety checks if no next/prev yet ([918b3e0](https://github.com/SkepticMystic/breadcrumbs/commit/918b3e0bd97cf98899132ac0a1e480063579ff2f))
+* **List/Matrix View:** :bug: Unmerge next/prev items ([58691c4](https://github.com/SkepticMystic/breadcrumbs/commit/58691c4241cfccf417c8b34a71fcf63d7a834262))
+
 ## [1.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.5...1.1.0) (2021-11-18)
 
 
