@@ -100,7 +100,8 @@
 
 <style>
   label.BC-Arrow-Label {
-    min-width: 20px !important;
+    display:inline-block;
+    width: 20px !important;
   }
   div.GA-Buttons {
     padding-bottom: 5px;
