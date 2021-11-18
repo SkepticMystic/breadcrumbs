@@ -1,4 +1,5 @@
-import Graph from "graphology";
+import Graph, { MultiGraph } from "graphology";
+import { sum } from "lodash";
 import {
   addIcon,
   EventRef,
@@ -9,7 +10,7 @@ import {
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { openView } from "obsidian-community-lib/dist/utils";
+import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
@@ -41,6 +42,7 @@ import {
   getObsMetadataCache,
   getOppDir,
   getOutNeighbours,
+  iterateAllGs,
   mergeGs,
   oppFields,
   removeDuplicates,
@@ -59,28 +61,7 @@ export default class BCPlugin extends Plugin {
   activeLeafChange: EventRef = undefined;
 
   async refreshIndex() {
-    if (!this.activeLeafChange) {
-      this.activeLeafChange = this.app.workspace.on(
-        "active-leaf-change",
-        async () => {
-          if (this.settings.refreshIndexOnActiveLeafChange) {
-            // refreshIndex does everything in one
-            await this.refreshIndex();
-          } else {
-            // If it is not called, active-leaf-change still needs to trigger a redraw
-            const activeView = this.getActiveMatrixView();
-            if (activeView) {
-              await activeView.draw();
-            }
-            if (this.settings.showTrail) {
-              await this.drawTrail();
-            }
-          }
-        }
-      );
-
-      this.registerEvent(this.activeLeafChange);
-    }
+    if (!this.activeLeafChange) this.registerActiveLeafEvent();
 
     this.currGraphs = await this.initGraphs();
     const activeView = this.getActiveMatrixView();
@@ -90,6 +71,46 @@ export default class BCPlugin extends Plugin {
 
     new Notice("Index refreshed");
   }
+
+  registerActiveLeafEvent() {
+    this.activeLeafChange = this.app.workspace.on(
+      "active-leaf-change",
+      async () => {
+        if (this.settings.refreshIndexOnActiveLeafChange) {
+          await this.refreshIndex();
+        } else {
+          const activeView = this.getActiveMatrixView();
+          if (activeView) await activeView.draw();
+          if (this.settings.showTrail) await this.drawTrail();
+        }
+      }
+    );
+    this.registerEvent(this.activeLeafChange);
+  }
+
+  initEverything = async () => {
+    const { settings } = this;
+    this.currGraphs = await this.initGraphs();
+
+    await openView(this.app, MATRIX_VIEW, MatrixView);
+    await openView(this.app, STATS_VIEW, StatsView);
+
+    if (settings.showTrail) await this.drawTrail();
+
+    this.registerActiveLeafEvent();
+
+    // ANCHOR autorefresh interval
+    if (settings.refreshIntervalTime > 0) {
+      this.refreshIntervalID = window.setInterval(async () => {
+        this.currGraphs = await this.initGraphs();
+        if (settings.showTrail) await this.drawTrail();
+
+        const activeView = this.getActiveMatrixView();
+        if (activeView) await activeView.draw();
+      }, settings.refreshIntervalTime * 1000);
+      this.registerInterval(this.refreshIntervalID);
+    }
+  };
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
@@ -105,53 +126,17 @@ export default class BCPlugin extends Plugin {
       (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
     );
 
-    const initEverything = async () => {
-      const { settings } = this;
-      this.currGraphs = await this.initGraphs();
-
-      await openView(this.app, MATRIX_VIEW, MatrixView);
-      await openView(this.app, STATS_VIEW, StatsView);
-
-      if (settings.showTrail) await this.drawTrail();
-
-      this.activeLeafChange = this.app.workspace.on(
-        "active-leaf-change",
-        async () => {
-          if (settings.refreshIndexOnActiveLeafChange) {
-            await this.refreshIndex();
-          } else {
-            const activeView = this.getActiveMatrixView();
-            if (activeView) await activeView.draw();
-            if (settings.showTrail) await this.drawTrail();
-          }
-        }
-      );
-
-      this.registerEvent(this.activeLeafChange);
-
-      // ANCHOR autorefresh interval
-      if (settings.refreshIntervalTime > 0) {
-        this.refreshIntervalID = window.setInterval(async () => {
-          this.currGraphs = await this.initGraphs();
-          if (settings.showTrail) await this.drawTrail();
-
-          const activeView = this.getActiveMatrixView();
-          if (activeView) await activeView.draw();
-        }, settings.refreshIntervalTime * 1000);
-        this.registerInterval(this.refreshIntervalID);
-      }
-    };
-
     this.app.workspace.onLayoutReady(async () => {
       if (this.app.plugins.enabledPlugins.has("dataview")) {
+        console.log("has dv");
         const api = this.app.plugins.plugins.dataview?.api;
         if (api) {
-          await initEverything();
+          await this.initEverything();
         } else {
           this.registerEvent(
             this.app.metadataCache.on("dataview:api-ready", async () => {
               console.log("dv ready");
-              await initEverything();
+              await this.initEverything();
             })
           );
         }
@@ -411,9 +396,17 @@ export default class BCPlugin extends Plugin {
 
     const dvQ = !!this.app.plugins.enabledPlugins.has("dataview");
 
-    const fileFrontmatterArr: dvFrontmatterCache[] = dvQ
+    let fileFrontmatterArr: dvFrontmatterCache[] = dvQ
       ? getDVMetadataCache(this.app, settings, files)
       : getObsMetadataCache(this.app, settings, files);
+
+    console.log({ fileFrontmatterArr });
+    if (fileFrontmatterArr[0] === undefined) {
+      await wait(1000);
+      fileFrontmatterArr = dvQ
+        ? getDVMetadataCache(this.app, settings, files)
+        : getObsMetadataCache(this.app, settings, files);
+    }
 
     const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
@@ -433,7 +426,7 @@ export default class BCPlugin extends Plugin {
           contentArr.push(content);
         } else {
           new Notice(
-            `${note} is no long in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`
+            `${note} is no longer in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`
           );
         }
       });
@@ -448,6 +441,7 @@ export default class BCPlugin extends Plugin {
     const { userHierarchies } = settings;
 
     const graphs: BCIndex = {
+      main: new MultiGraph(),
       hierGs: [],
       mergedGs: { up: undefined, same: undefined, down: undefined },
       closedGs: { up: undefined, same: undefined, down: undefined },
@@ -455,7 +449,6 @@ export default class BCPlugin extends Plugin {
     };
 
     userHierarchies.forEach((hier) => {
-      if (Object.values(hier).every((t) => t.length === 0)) return;
       const newGraphs: HierarchyGraphs = { up: {}, same: {}, down: {} };
 
       DIRECTIONS.forEach((dir: Directions) => {
@@ -478,6 +471,14 @@ export default class BCPlugin extends Plugin {
             const fieldValues = hier[dir][fieldName];
 
             this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
+            fieldValues.forEach((fieldValue) => {
+              graphs.main.mergeNode(currFileName);
+              graphs.main.mergeEdge(currFileName, fieldValue, {
+                dir,
+                fieldName,
+              });
+            });
+
             if (useCSV) this.addCSVCrumbs(g, CSVRows, dir, fieldName);
           }
         });
@@ -567,6 +568,10 @@ export default class BCPlugin extends Plugin {
 
     debugGroupEnd(settings, "debugMode");
 
+    const hierGInfo = [];
+    iterateAllGs(graphs.hierGs, (g, dir, fieldName) =>
+      hierGInfo.push(g.edges().length)
+    );
     return graphs;
   }
 
@@ -591,7 +596,7 @@ export default class BCPlugin extends Plugin {
         })
       );
       // terminal node
-      if (!g.outDegree(node)) {
+      if (!g.hasNode(node) || !g.outDegree(node)) {
         pathsArr.push(extPath);
       }
     }
@@ -664,10 +669,11 @@ export default class BCPlugin extends Plugin {
     }
 
     const trailDiv = createDiv({
-      cls: `BC-trail ${settings.respectReadableLineLength
-        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-        : ""
-        }`,
+      cls: `BC-trail ${
+        settings.respectReadableLineLength
+          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+          : ""
+      }`,
     });
 
     this.visited.push([currFile.path, trailDiv]);

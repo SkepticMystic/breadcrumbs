@@ -1,3 +1,4 @@
+import type { MultiGraph } from "graphology";
 import type Graph from "graphology";
 import type { FrontMatterCache, Pos, TFile } from "obsidian";
 
@@ -46,13 +47,13 @@ export interface BCSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-    | string
-    | string[]
-    | string[][]
-    | dvLink
-    | dvLink[]
-    | Pos
-    | TFile;
+  | string
+  | string[]
+  | string[][]
+  | dvLink
+  | dvLink[]
+  | Pos
+  | TFile;
 }
 
 export type Directions = "up" | "same" | "down";
@@ -183,6 +184,7 @@ export type HierarchyFields = {
 };
 
 export interface BCIndex {
+  main: MultiGraph;
   hierGs: HierarchyGraphs[];
   mergedGs: MergedGraphs;
   closedGs: ClosedGraphs;

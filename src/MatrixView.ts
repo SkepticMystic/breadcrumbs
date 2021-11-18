@@ -97,7 +97,7 @@ export default class MatrixView extends ItemView {
 
   icon = TRAIL_ICON;
 
-  async onOpen(): Promise<void> { }
+  async onOpen(): Promise<void> {}
 
   onClose(): Promise<void> {
     this.view?.$destroy();
@@ -110,7 +110,9 @@ export default class MatrixView extends ItemView {
     settings: BCSettings,
     realQ = true
   ): internalLinkObj[] {
-    const items = realQ ? getOutNeighbours(g, currFile.basename) : getInNeighbours(g, currFile.basename);
+    const items = realQ
+      ? getOutNeighbours(g, currFile.basename)
+      : getInNeighbours(g, currFile.basename);
 
     const internalLinkObjArr: internalLinkObj[] = [];
 
@@ -195,8 +197,9 @@ export default class MatrixView extends ItemView {
         ) {
           continue;
         } else {
-          index += `${indent.repeat(depth)}- ${wikilinkIndex ? "[[" : ""
-            }${currNode}${wikilinkIndex ? "]]" : ""}`;
+          index += `${indent.repeat(depth)}- ${
+            wikilinkIndex ? "[[" : ""
+          }${currNode}${wikilinkIndex ? "]]" : ""}`;
 
           if (settings.aliasesInIndex) {
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
@@ -350,11 +353,10 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
-    const { settings } = this.plugin;
+    const { settings, currGraphs } = this.plugin;
 
     debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
 
-    const { currGraphs } = this.plugin;
     const { userHierarchies } = settings;
     const currFile = this.app.workspace.getActiveFile();
 

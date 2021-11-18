@@ -1,5 +1,5 @@
 import Graph from "graphology";
-import type Attributes from 'graphology'
+import type NodeAttributes from "graphology";
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -453,8 +453,9 @@ export async function openOrSwitch(
   // If dest doesn't exist, make it
   if (!destFile) {
     const newFileFolder = app.fileManager.getNewFileParent(currFile.path).path;
-    const newFilePath = `${newFileFolder}${newFileFolder === "/" ? "" : "/"
-      }${dest}.md`;
+    const newFilePath = `${newFileFolder}${
+      newFileFolder === "/" ? "" : "/"
+    }${dest}.md`;
     await app.vault.create(newFilePath, "");
     destFile = app.metadataCache.getFirstLinkpathDest(
       newFilePath,
@@ -724,7 +725,7 @@ export function oppFields(
   );
 }
 
-export function addNodeIfNot(g: Graph, node: string, attr?: Attributes) {
+export function addNodeIfNot(g: Graph, node: string, attr?: NodeAttributes) {
   if (!g.hasNode(node)) g.addNode(node, attr);
 }
 
@@ -732,7 +733,7 @@ export function addEdgeIfNot(
   g: Graph,
   source: string,
   target: string,
-  attr?: Attributes
+  attr?: NodeAttributes
 ) {
   if (!g.hasEdge(source, target)) g.addEdge(source, target, attr);
 }
@@ -752,9 +753,12 @@ export function swapItems<T>(i: number, j: number, arr: T[]) {
   return arr;
 }
 
-export const linkClass = (app: App, to: string, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
+export const linkClass = (app: App, to: string, realQ = true) =>
+  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
+    realQ ? "" : "BC-Implied"
   }`;
 
-
-export const getOutNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.outNeighbors(node) : []
-export const getInNeighbours = (g: Graph, node: string): string[] => g.hasNode(node) ? g.inNeighbors(node) : []
+export const getOutNeighbours = (g: Graph, node: string): string[] =>
+  g.hasNode(node) ? g.outNeighbors(node) : [];
+export const getInNeighbours = (g: Graph, node: string): string[] =>
+  g.hasNode(node) ? g.inNeighbors(node) : [];
