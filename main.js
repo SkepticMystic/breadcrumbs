@@ -22840,29 +22840,29 @@ class FaRegTrashAlt extends SvelteComponent {
 
 function add_css$4() {
 	var style = element("style");
-	style.id = "svelte-120vavs-style";
-	style.textContent = "label.BC-Arrow-Label.svelte-120vavs.svelte-120vavs{display:inline-block;width:20px !important}div.GA-Buttons.svelte-120vavs.svelte-120vavs{padding-bottom:5px}details.BC-Hier-Details.svelte-120vavs.svelte-120vavs{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-120vavs summary.svelte-120vavs::marker{font-size:10px}.BC-Hier-Details.svelte-120vavs summary button.svelte-120vavs{float:right}.icon.svelte-120vavs.svelte-120vavs{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
+	style.id = "svelte-5y4abu-style";
+	style.textContent = "label.BC-Arrow-Label.svelte-5y4abu.svelte-5y4abu{display:inline-block;width:20px !important}div.GA-Buttons.svelte-5y4abu.svelte-5y4abu{padding-bottom:5px}details.BC-Hier-Details.svelte-5y4abu.svelte-5y4abu{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-5y4abu summary.svelte-5y4abu::marker{font-size:10px}.BC-Hier-Details.svelte-5y4abu summary button.svelte-5y4abu{float:right}.icon.svelte-5y4abu.svelte-5y4abu{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
 function get_each_context$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[10] = list[i];
-	child_ctx[12] = i;
+	child_ctx[11] = list[i];
+	child_ctx[13] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
-// (77:6) {#each DIRECTIONS as dir}
+// (80:6) {#each DIRECTIONS as dir}
 function create_each_block_1$5(ctx) {
 	let div;
 	let label;
-	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[13]] + "";
+	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[14]] + "";
 	let t0;
 	let label_for_value;
 	let t1;
@@ -22873,7 +22873,7 @@ function create_each_block_1$5(ctx) {
 	let dispose;
 
 	function change_handler(...args) {
-		return /*change_handler*/ ctx[9](/*i*/ ctx[12], /*dir*/ ctx[13], ...args);
+		return /*change_handler*/ ctx[9](/*i*/ ctx[13], /*dir*/ ctx[14], ...args);
 	}
 
 	return {
@@ -22883,12 +22883,12 @@ function create_each_block_1$5(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			input = element("input");
-			attr(label, "class", "BC-Arrow-Label svelte-120vavs");
-			attr(label, "for", label_for_value = /*dir*/ ctx[13]);
+			attr(label, "class", "BC-Arrow-Label svelte-5y4abu");
+			attr(label, "for", label_for_value = /*dir*/ ctx[14]);
 			attr(input, "type", "text");
 			attr(input, "size", "20");
-			attr(input, "name", input_name_value = /*dir*/ ctx[13]);
-			input.value = input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]]?.join(", ") ?? "";
+			attr(input, "name", input_name_value = /*dir*/ ctx[14]);
+			input.value = input_value_value = /*hier*/ ctx[11][/*dir*/ ctx[14]]?.join(", ") ?? "";
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -22905,7 +22905,7 @@ function create_each_block_1$5(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*userHierarchies*/ 2 && input_value_value !== (input_value_value = /*hier*/ ctx[10][/*dir*/ ctx[13]]?.join(", ") ?? "") && input.value !== input_value_value) {
+			if (dirty & /*userHierarchies*/ 2 && input_value_value !== (input_value_value = /*hier*/ ctx[11][/*dir*/ ctx[14]]?.join(", ") ?? "") && input.value !== input_value_value) {
 				input.value = input_value_value;
 			}
 		},
@@ -22924,6 +22924,7 @@ function create_each_block$5(ctx) {
 	let t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "";
 	let t0;
 	let t1;
+	let span;
 	let button0;
 	let t3;
 	let button1;
@@ -22935,19 +22936,19 @@ function create_each_block$5(ctx) {
 	let dispose;
 
 	function func(...args) {
-		return /*func*/ ctx[5](/*hier*/ ctx[10], ...args);
+		return /*func*/ ctx[5](/*hier*/ ctx[11], ...args);
 	}
 
 	function click_handler_3() {
-		return /*click_handler_3*/ ctx[6](/*i*/ ctx[12]);
+		return /*click_handler_3*/ ctx[6](/*i*/ ctx[13]);
 	}
 
 	function click_handler_4() {
-		return /*click_handler_4*/ ctx[7](/*i*/ ctx[12]);
+		return /*click_handler_4*/ ctx[7](/*i*/ ctx[13]);
 	}
 
 	function click_handler_5() {
-		return /*click_handler_5*/ ctx[8](/*i*/ ctx[12]);
+		return /*click_handler_5*/ ctx[8](/*i*/ ctx[13]);
 	}
 
 	let each_value_1 = DIRECTIONS;
@@ -22963,6 +22964,7 @@ function create_each_block$5(ctx) {
 			summary = element("summary");
 			t0 = text(t0_value);
 			t1 = space();
+			span = element("span");
 			button0 = element("button");
 			button0.textContent = "↑";
 			t3 = space();
@@ -22979,24 +22981,26 @@ function create_each_block$5(ctx) {
 
 			t8 = space();
 			attr(button0, "aria-label", "Swap with Hierarchy Above");
-			attr(button0, "class", "svelte-120vavs");
+			attr(button0, "class", "svelte-5y4abu");
 			attr(button1, "aria-label", "Swap with Hierarchy Below");
-			attr(button1, "class", "svelte-120vavs");
+			attr(button1, "class", "svelte-5y4abu");
 			attr(button2, "aria-label", "Remove Hierarchy");
-			attr(button2, "class", "svelte-120vavs");
-			attr(summary, "class", "svelte-120vavs");
-			attr(details, "class", "BC-Hier-Details svelte-120vavs");
+			attr(button2, "class", "svelte-5y4abu");
+			attr(span, "class", "GA-Buttons");
+			attr(summary, "class", "svelte-5y4abu");
+			attr(details, "class", "BC-Hier-Details svelte-5y4abu");
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);
 			append(details, summary);
 			append(summary, t0);
 			append(summary, t1);
-			append(summary, button0);
-			append(summary, t3);
-			append(summary, button1);
-			append(summary, t5);
-			append(summary, button2);
+			append(summary, span);
+			append(span, button0);
+			append(span, t3);
+			append(span, button1);
+			append(span, t5);
+			append(span, button2);
 			append(details, t7);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -23100,13 +23104,13 @@ function create_fragment$5(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "icon svelte-120vavs");
+			attr(div0, "class", "icon svelte-5y4abu");
 			attr(button0, "aria-label", "Add New Hierarchy");
-			attr(div1, "class", "icon svelte-120vavs");
+			attr(div1, "class", "icon svelte-5y4abu");
 			attr(button1, "aria-label", "Reset All Hierarchies");
-			attr(div2, "class", "icon svelte-120vavs");
+			attr(div2, "class", "icon svelte-5y4abu");
 			attr(button2, "aria-label", "Show Hierarchies");
-			attr(div3, "class", "GA-Buttons svelte-120vavs");
+			attr(div3, "class", "GA-Buttons svelte-5y4abu");
 		},
 		m(target, anchor) {
 			insert(target, div4, anchor);
@@ -23197,8 +23201,7 @@ function instance$5($$self, $$props, $$invalidate) {
 	let { userHierarchies } = plugin.settings;
 
 	const click_handler = async () => {
-		userHierarchies.push(blankUserHier());
-		$$invalidate(1, userHierarchies);
+		$$invalidate(1, userHierarchies = [...userHierarchies, blankUserHier()]);
 	};
 
 	const click_handler_1 = async () => {
@@ -23253,7 +23256,7 @@ function instance$5($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-120vavs-style")) add_css$4();
+		if (!document.getElementById("svelte-5y4abu-style")) add_css$4();
 		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, { plugin: 0 });
 	}
 }

@@ -10,6 +10,7 @@
   export let plugin: BCPlugin;
 
   let { userHierarchies } = plugin.settings;
+  let f: HTMLDetailsElement;
 </script>
 
 <div>
@@ -17,8 +18,7 @@
     <button
       aria-label="Add New Hierarchy"
       on:click={async () => {
-        userHierarchies.push(blankUserHier());
-        userHierarchies = userHierarchies;
+        userHierarchies = [...userHierarchies, blankUserHier()];
       }}
     >
       <div class="icon">
@@ -54,28 +54,31 @@
         {DIRECTIONS.map((dir) => hier[dir]?.join(", ") ?? "")
           .map((dirFields) => `(${dirFields})`)
           .join(" ")}
-        <button
-          aria-label="Swap with Hierarchy Above"
-          on:click={async () => {
-            userHierarchies = swapItems(i, i - 1, userHierarchies);
-            await plugin.saveSettings();
-          }}>↑</button
-        >
-        <button
-          aria-label="Swap with Hierarchy Below"
-          on:click={async () => {
-            userHierarchies = swapItems(i, i + 1, userHierarchies);
-            await plugin.saveSettings();
-          }}>↓</button
-        >
-        <button
-          aria-label="Remove Hierarchy"
-          on:click={async () => {
-            userHierarchies.splice(i, 1);
-            userHierarchies = userHierarchies;
-            await plugin.saveSettings();
-          }}>X</button
-        >
+
+        <span class="GA-Buttons">
+          <button
+            aria-label="Swap with Hierarchy Above"
+            on:click={async () => {
+              userHierarchies = swapItems(i, i - 1, userHierarchies);
+              await plugin.saveSettings();
+            }}>↑</button
+          >
+          <button
+            aria-label="Swap with Hierarchy Below"
+            on:click={async () => {
+              userHierarchies = swapItems(i, i + 1, userHierarchies);
+              await plugin.saveSettings();
+            }}>↓</button
+          >
+          <button
+            aria-label="Remove Hierarchy"
+            on:click={async () => {
+              userHierarchies.splice(i, 1);
+              userHierarchies = userHierarchies;
+              await plugin.saveSettings();
+            }}>X</button
+          >
+        </span>
       </summary>
       {#each DIRECTIONS as dir}
         <div>
@@ -100,7 +103,7 @@
 
 <style>
   label.BC-Arrow-Label {
-    display:inline-block;
+    display: inline-block;
     width: 20px !important;
   }
   div.GA-Buttons {
