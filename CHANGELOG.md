@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.5...1.1.0) (2021-11-18)
+
+
+### Features
+
+* **nextPrev:** :sparkles: Show fieldName ([b2e10d4](https://github.com/SkepticMystic/breadcrumbs/commit/b2e10d4b9886ecf56e73e17eb2cfc963bc352795))
+
+
+### Bug Fixes
+
+* :bug: Fix "Show Hierarchies" button ([141b4f9](https://github.com/SkepticMystic/breadcrumbs/commit/141b4f90c404b4134fe1b9f21007fcf5581a7b3b))
+* **nextPrev:** :bug: Remove duplicate implied ([8fc11e9](https://github.com/SkepticMystic/breadcrumbs/commit/8fc11e9131cad2afb4e2688afabc319493ae252b))
+
 ### [1.0.5](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.4...1.0.5) (2021-11-18)
 
 ### [1.0.4](https://github.com/SkepticMystic/breadcrumbs/compare/1.0.3...1.0.4) (2021-11-18)
