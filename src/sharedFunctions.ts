@@ -654,11 +654,10 @@ export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
   return fieldGs;
 }
 
-export function hierToStr(hier: userHierarchy) {
-  return `↑: ${hier.up.join(", ")}
-→: ${hier.same.join(", ")}
-↓: ${hier.down.join(", ")}`;
-}
+export const hierToStr = (hier: userHierarchy) =>
+  DIRECTIONS.map(
+    (dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`
+  ).join("\n");
 
 export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
