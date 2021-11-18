@@ -358,11 +358,11 @@ export class BCSettingTab extends PluginSettingTab {
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
       .setDesc(
-        "Show a trail of notes leading from your index note down to the current note you are in (if a path exists)"
+        "Show a set of different views at the top of the current note."
       )
       .addToggle((toggle) =>
-        toggle.setValue(settings.showTrail).onChange(async (value) => {
-          settings.showTrail = value;
+        toggle.setValue(settings.showBCs).onChange(async (value) => {
+          settings.showBCs = value;
           await plugin.saveSettings();
           await plugin.drawTrail();
         })
@@ -396,12 +396,12 @@ export class BCSettingTab extends PluginSettingTab {
             attr: { id: field },
           });
           cb.checked = checkedQ;
-          const label = cbDiv.createEl("label", {
+          cbDiv.createEl("label", {
             text: field,
             attr: { for: field },
           });
 
-          cb.addEventListener("change", async (event) => {
+          cb.addEventListener("change", async () => {
             checkboxStates[field] = cb.checked;
             await plugin.saveSettings();
             console.log(settings.limitTrailCheckboxStates);
@@ -426,24 +426,31 @@ export class BCSettingTab extends PluginSettingTab {
       });
 
     new Setting(trailDetails)
-      .setName("Trail or Table or Both")
+      .setName("Views to show")
       .setDesc(
-        "Wether to show the regular breadcrumb trails, the table view, neither, or both. 1 = Only Trail, 2 = Only Grid, 3 = Both"
+        "Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view."
       )
-      .addText((text) => {
-        text
-          .setValue(settings.trailOrTable.toString())
-          .onChange(async (value) => {
-            const num = parseInt(value);
-            if ([1, 2, 3].includes(num)) {
-              settings.trailOrTable = num as 1 | 2 | 3;
-              await plugin.saveSettings();
-              await plugin.drawTrail();
-            } else {
-              new Notice("The value has to be 1, 2, or 3");
-            }
-          });
-      });
+      .addToggle(toggle => {
+        toggle.setTooltip('Show Trail view').setValue(settings.showTrail).onChange(async (value) => {
+          settings.showTrail = value;
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
+      })
+      .addToggle(toggle => {
+        toggle.setTooltip('Show Grid view').setValue(settings.showGrid).onChange(async (value) => {
+          settings.showGrid = value;
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
+      })
+      .addToggle(toggle => {
+        toggle.setTooltip('Show Next/Previous view').setValue(settings.showPrevNext).onChange(async (value) => {
+          settings.showPrevNext = value;
+          await plugin.saveSettings();
+          await plugin.drawTrail();
+        })
+      })
 
     new Setting(trailDetails)
       .setName("Grid view dots")

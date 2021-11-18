@@ -217,7 +217,7 @@ export class VisModal extends Modal {
     new Notice(
       "Alot of these features may not work, it is still very experimental."
     );
-    let { contentEl } = this;
+    const { contentEl } = this;
     contentEl.empty();
 
     new VisComp({

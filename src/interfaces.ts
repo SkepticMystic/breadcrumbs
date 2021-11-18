@@ -20,10 +20,12 @@ export interface BCSettings {
   showRelationType: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
   rlLeaf: boolean;
+  showBCs: boolean;
   showTrail: boolean;
+  showGrid: boolean;
+  showPrevNext: boolean;
   limitTrailCheckboxStates: { [field: string]: boolean };
   hideTrailFieldName: string;
-  trailOrTable: 1 | 2 | 3;
   gridDots: boolean;
   dotsColour: string;
   gridHeatmap: boolean;
@@ -47,13 +49,13 @@ export interface BCSettings {
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-    | string
-    | string[]
-    | string[][]
-    | dvLink
-    | dvLink[]
-    | Pos
-    | TFile;
+  | string
+  | string[]
+  | string[][]
+  | dvLink
+  | dvLink[]
+  | Pos
+  | TFile;
 }
 
 export type Directions = "up" | "same" | "down" | "next" | "prev";

@@ -1,5 +1,4 @@
 import Graph, { MultiGraph } from "graphology";
-import { sum } from "lodash";
 import {
   addIcon,
   EventRef,
@@ -8,7 +7,7 @@ import {
   Notice,
   Plugin,
   TFile,
-  WorkspaceLeaf,
+  WorkspaceLeaf
 } from "obsidian";
 import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
@@ -18,14 +17,14 @@ import {
   MATRIX_VIEW,
   STATS_VIEW,
   TRAIL_ICON,
-  TRAIL_ICON_SVG,
+  TRAIL_ICON_SVG
 } from "src/constants";
 import type {
   BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs,
+  HierarchyGraphs
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -46,12 +45,13 @@ import {
   mergeGs,
   oppFields,
   removeDuplicates,
-  writeBCToFile,
+  writeBCToFile
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
+import NextPrev from "./Components/NextPrev.svelte";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -81,7 +81,7 @@ export default class BCPlugin extends Plugin {
         } else {
           const activeView = this.getActiveMatrixView();
           if (activeView) await activeView.draw();
-          if (this.settings.showTrail) await this.drawTrail();
+          if (this.settings.showBCs) await this.drawTrail();
         }
       }
     );
@@ -95,7 +95,7 @@ export default class BCPlugin extends Plugin {
     await openView(this.app, MATRIX_VIEW, MatrixView);
     await openView(this.app, STATS_VIEW, StatsView);
 
-    if (settings.showTrail) await this.drawTrail();
+    if (settings.showBCs) await this.drawTrail();
 
     this.registerActiveLeafEvent();
 
@@ -103,7 +103,7 @@ export default class BCPlugin extends Plugin {
     if (settings.refreshIntervalTime > 0) {
       this.refreshIntervalID = window.setInterval(async () => {
         this.currGraphs = await this.initGraphs();
-        if (settings.showTrail) await this.drawTrail();
+        if (settings.showBCs) await this.drawTrail();
 
         const activeView = this.getActiveMatrixView();
         if (activeView) await activeView.draw();
@@ -651,7 +651,7 @@ export default class BCPlugin extends Plugin {
   async drawTrail(): Promise<void> {
     const { settings } = this;
     debugGroupStart(settings, "debugMode", "Draw Trail");
-    if (!settings.showTrail) {
+    if (!settings.showBCs) {
       debugGroupEnd(settings, "debugMode");
       return;
     }
@@ -689,11 +689,10 @@ export default class BCPlugin extends Plugin {
     }
 
     const trailDiv = createDiv({
-      cls: `BC-trail ${
-        settings.respectReadableLineLength
-          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-          : ""
-      }`,
+      cls: `BC-trail ${settings.respectReadableLineLength
+        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+        : ""
+        }`,
     });
 
     this.visited.push([currFile.path, trailDiv]);
@@ -711,25 +710,18 @@ export default class BCPlugin extends Plugin {
     const pathProps = { sortedTrails, app: this.app, settings, currFile };
     const gridProps = { sortedTrails, app: this.app, plugin: this };
 
-    if (settings.trailOrTable === 1) {
+    if (settings.showTrail) {
       new TrailPath({
         target: trailDiv,
         props: pathProps,
       });
-    } else if (settings.trailOrTable === 2) {
+    } if (settings.showGrid) {
       new TrailGrid({
         target: trailDiv,
         props: gridProps,
       });
-    } else {
-      new TrailPath({
-        target: trailDiv,
-        props: pathProps,
-      });
-      new TrailGrid({
-        target: trailDiv,
-        props: gridProps,
-      });
+    } if (settings.showPrevNext) {
+      new NextPrev({ target: trailDiv, props: { app: this.app, plugin: this } })
     }
   }
 
