@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/0.12.1...1.0.0) (2021-11-18)
+
+
+### Features
+
+* New directions! Show the next/previous note ([e3e56d6](https://github.com/SkepticMystic/breadcrumbs/commit/e3e56d6de5ba465d0e96eed10e7920602b5fc905))
+
+
+### Bug Fixes
+
+* :bug: Prev/Next in MatrixView ([dbec2f5](https://github.com/SkepticMystic/breadcrumbs/commit/dbec2f52edc9f46a135698a509b2cad131507b1c))
+
 ### [0.12.1](https://github.com/SkepticMystic/breadcrumbs/compare/0.12.0...0.12.1) (2021-11-17)
 
 
