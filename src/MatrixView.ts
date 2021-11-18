@@ -18,6 +18,7 @@ import {
   debugGroupStart,
   getInNeighbours,
   getOutNeighbours,
+  getPrevNext,
   getSinks,
   linkClass,
   mergeGs,
@@ -281,6 +282,12 @@ export default class MatrixView extends ItemView {
     settings: BCSettings
   ) {
     const { basename } = currFile;
+    const {
+      iNext: iNextInfo,
+      iPrev: iPrevInfo,
+      rNext: rNextInfo,
+      rPrev: rPrevInfo,
+    } = getPrevNext(this.plugin, basename);
     return userHierarchies.map((hier, i) => {
       const { up, same, down } = data[i];
 
@@ -291,41 +298,6 @@ export default class MatrixView extends ItemView {
         this.squareItems(down, currFile, settings, false),
         this.squareItems(up, currFile, settings, false),
       ];
-
-      const rNext: internalLinkObj[] = [];
-      const rPrev: internalLinkObj[] = [];
-      let iNext: internalLinkObj[] = [];
-      let iPrev: internalLinkObj[] = [];
-      this.plugin.currGraphs.main.forEachEdge(basename, (k, a, s, t) => {
-        if (a.dir === "next" && s === basename) {
-          rNext.push({
-            to: t,
-            cls: linkClass(this.app, t, true),
-            alt: this.getAlt(t, settings),
-          });
-        }
-        if (a.dir === "prev" && t === basename) {
-          iNext.push({
-            to: s,
-            cls: linkClass(this.app, s, false),
-            alt: this.getAlt(s, settings),
-          });
-        }
-        if (a.dir === "prev" && s === basename) {
-          rPrev.push({
-            to: t,
-            cls: linkClass(this.app, t, true),
-            alt: this.getAlt(t, settings),
-          });
-        }
-        if (a.dir === "next" && t === basename) {
-          iPrev.push({
-            to: s,
-            cls: linkClass(this.app, s, false),
-            alt: this.getAlt(s, settings),
-          });
-        }
-      });
 
       // SECTION Implied Siblings
       /// Notes with the same parents
@@ -382,6 +354,28 @@ export default class MatrixView extends ItemView {
       iSameArr.push(...this.squareItems(same, currFile, settings, false));
 
       // !SECTION
+
+      let [iNext, iPrev, rNext, rPrev]: internalLinkObj[][] = [
+        iNextInfo,
+        iPrevInfo,
+        rNextInfo,
+        rPrevInfo,
+      ].map((info) => {
+        return info
+          .filter(
+            (item) =>
+              hier.next.includes(item.fieldName) ||
+              hier.prev.includes(item.fieldName)
+          )
+          .map((item) => {
+            const { to } = item;
+            return {
+              to,
+              cls: linkClass(this.app, to, item.real),
+              alt: this.getAlt(to, settings),
+            };
+          });
+      });
 
       iUp = this.removeDuplicateImplied(rUp, iUp);
       iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
