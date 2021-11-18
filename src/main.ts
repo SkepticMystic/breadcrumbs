@@ -473,6 +473,9 @@ export default class BCPlugin extends Plugin {
       };
 
       DIRECTIONS.forEach((dir: Directions) => {
+        if (!hier[dir]) {
+          hier[dir] = [];
+        }
         hier[dir].forEach((dirField) => {
           newGraphs[dir][dirField] = new Graph();
         });

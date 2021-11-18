@@ -20401,30 +20401,36 @@ const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
 function getPrevNext(plugin, currNode) {
     const [rPrev, rNext, iPrev, iNext] = [[], [], [], []];
     const { userHierarchies } = plugin.settings;
-    plugin.currGraphs.main.forEachEdge(currNode, (k, a, s, t) => {
-        const { fieldName } = a;
-        if (a.dir === "next" && s === currNode) {
-            rNext.push({ to: t, real: true, fieldName });
-        }
-        if (a.dir === "prev" && t === currNode) {
-            iNext.push({
-                to: s,
-                real: false,
-                fieldName: getOppFields(userHierarchies, fieldName)[0],
-            });
-        }
-        if (a.dir === "prev" && s === currNode) {
-            rPrev.push({ to: t, real: true, fieldName });
-        }
-        if (a.dir === "next" && t === currNode) {
-            iPrev.push({
-                to: s,
-                real: false,
-                fieldName: getOppFields(userHierarchies, fieldName)[0],
-            });
-        }
-    });
-    return { rPrev, rNext, iPrev, iNext };
+    try {
+        plugin.currGraphs.main.forEachEdge(currNode, (k, a, s, t) => {
+            const { fieldName } = a;
+            if (a.dir === "next" && s === currNode) {
+                rNext.push({ to: t, real: true, fieldName });
+            }
+            if (a.dir === "prev" && t === currNode) {
+                iNext.push({
+                    to: s,
+                    real: false,
+                    fieldName: getOppFields(userHierarchies, fieldName)[0],
+                });
+            }
+            if (a.dir === "prev" && s === currNode) {
+                rPrev.push({ to: t, real: true, fieldName });
+            }
+            if (a.dir === "next" && t === currNode) {
+                iPrev.push({
+                    to: s,
+                    real: false,
+                    fieldName: getOppFields(userHierarchies, fieldName)[0],
+                });
+            }
+        });
+        return { rPrev, rNext, iPrev, iNext };
+    }
+    catch (e) {
+        console.log(e);
+        return { rPrev, rNext, iPrev, iNext };
+    }
 }
 
 function noop$1() { }
@@ -22251,6 +22257,7 @@ class MatrixView extends obsidian.ItemView {
     }
     getHierSquares(userHierarchies, data, currFile, settings) {
         const { basename } = currFile;
+        const { iNext: iNextInfo, iPrev: iPrevInfo, rNext: rNextInfo, rPrev: rPrevInfo, } = getPrevNext(this.plugin, basename);
         return userHierarchies.map((hier, i) => {
             const { up, same, down } = data[i];
             let [rUp, rSame, rDown, iUp, iDown] = [
@@ -22260,40 +22267,6 @@ class MatrixView extends obsidian.ItemView {
                 this.squareItems(down, currFile, settings, false),
                 this.squareItems(up, currFile, settings, false),
             ];
-            const rNext = [];
-            const rPrev = [];
-            let iNext = [];
-            let iPrev = [];
-            this.plugin.currGraphs.main.forEachEdge(basename, (k, a, s, t) => {
-                if (a.dir === "next" && s === basename) {
-                    rNext.push({
-                        to: t,
-                        cls: linkClass(this.app, t, true),
-                        alt: this.getAlt(t, settings),
-                    });
-                }
-                if (a.dir === "prev" && t === basename) {
-                    iNext.push({
-                        to: s,
-                        cls: linkClass(this.app, s, false),
-                        alt: this.getAlt(s, settings),
-                    });
-                }
-                if (a.dir === "prev" && s === basename) {
-                    rPrev.push({
-                        to: t,
-                        cls: linkClass(this.app, t, true),
-                        alt: this.getAlt(t, settings),
-                    });
-                }
-                if (a.dir === "next" && t === basename) {
-                    iPrev.push({
-                        to: s,
-                        cls: linkClass(this.app, s, false),
-                        alt: this.getAlt(s, settings),
-                    });
-                }
-            });
             // SECTION Implied Siblings
             /// Notes with the same parents
             let iSameArr = [];
@@ -22333,6 +22306,24 @@ class MatrixView extends obsidian.ItemView {
             /// A real sibling implies the reverse sibling
             iSameArr.push(...this.squareItems(same, currFile, settings, false));
             // !SECTION
+            let [iNext, iPrev, rNext, rPrev] = [
+                iNextInfo,
+                iPrevInfo,
+                rNextInfo,
+                rPrevInfo,
+            ].map((info) => {
+                return info
+                    .filter((item) => hier.next.includes(item.fieldName) ||
+                    hier.prev.includes(item.fieldName))
+                    .map((item) => {
+                    const { to } = item;
+                    return {
+                        to,
+                        cls: linkClass(this.app, to, item.real),
+                        alt: this.getAlt(to, settings),
+                    };
+                });
+            });
             iUp = this.removeDuplicateImplied(rUp, iUp);
             iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
             iDown = this.removeDuplicateImplied(rDown, iDown);
@@ -35272,6 +35263,9 @@ class BCPlugin extends obsidian.Plugin {
                 prev: {},
             };
             DIRECTIONS.forEach((dir) => {
+                if (!hier[dir]) {
+                    hier[dir] = [];
+                }
                 hier[dir].forEach((dirField) => {
                     newGraphs[dir][dirField] = new graphology_umd_min();
                 });
