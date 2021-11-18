@@ -35437,8 +35437,19 @@ class BCPlugin extends obsidian.Plugin {
         debug(settings, { sortedTrails });
         const { basename } = currFile;
         const { rPrev, rNext, iPrev, iNext } = getPrevNext(this, basename);
-        const next = [...rNext, ...iNext];
-        const prev = [...rPrev, ...iPrev];
+        // Remove duplicate implied
+        const next = [...rNext];
+        iNext.forEach((i) => {
+            if (next.findIndex((n) => n.to === i.to) === -1) {
+                next.push(i);
+            }
+        });
+        const prev = [...rPrev];
+        iPrev.forEach((i) => {
+            if (prev.findIndex((n) => n.to === i.to) === -1) {
+                prev.push(i);
+            }
+        });
         const noItems = sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
         if (noItems && settings.noPathMessage === "") {
             debugGroupEnd(settings, "debugMode");

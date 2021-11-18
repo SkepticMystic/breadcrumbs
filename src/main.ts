@@ -7,7 +7,7 @@ import {
   Notice,
   Plugin,
   TFile,
-  WorkspaceLeaf
+  WorkspaceLeaf,
 } from "obsidian";
 import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
@@ -17,14 +17,14 @@ import {
   MATRIX_VIEW,
   STATS_VIEW,
   TRAIL_ICON,
-  TRAIL_ICON_SVG
+  TRAIL_ICON_SVG,
 } from "src/constants";
 import type {
   BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs
+  HierarchyGraphs,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
 import {
@@ -46,7 +46,7 @@ import {
   mergeGs,
   oppFields,
   removeDuplicates,
-  writeBCToFile
+  writeBCToFile,
 } from "src/sharedFunctions";
 import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
@@ -687,8 +687,19 @@ export default class BCPlugin extends Plugin {
     const { basename } = currFile;
 
     const { rPrev, rNext, iPrev, iNext } = getPrevNext(this, basename);
-    const next = [...rNext, ...iNext];
-    const prev = [...rPrev, ...iPrev];
+    // Remove duplicate implied
+    const next = [...rNext];
+    iNext.forEach((i) => {
+      if (next.findIndex((n) => n.to === i.to) === -1) {
+        next.push(i);
+      }
+    });
+    const prev = [...rPrev];
+    iPrev.forEach((i) => {
+      if (prev.findIndex((n) => n.to === i.to) === -1) {
+        prev.push(i);
+      }
+    });
 
     const noItems =
       sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
