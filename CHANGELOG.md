@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.1...1.5.2) (2021-11-19)
+
+
+### Bug Fixes
+
+* :bug: Fail safe on adding all nodes to main ([8435b5a](https://github.com/SkepticMystic/breadcrumbs/commit/8435b5ae3dd7d67f9051c5ce07a06a0acb52b0c7))
+
 ### [1.5.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.0...1.5.1) (2021-11-19)
 
 
