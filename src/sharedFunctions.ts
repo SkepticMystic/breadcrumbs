@@ -818,23 +818,21 @@ export const getInNeighbours = (g: Graph, node: string): string[] =>
 export function getPrevNext(plugin: BCPlugin, currNode: string) {
   const [rPrev, rNext, iPrev, iNext]: PrevNext[][] = [[], [], [], []];
   const { userHierarchies } = plugin.settings;
+  const { main } = plugin.currGraphs;
   try {
-    plugin.currGraphs.main.forEachEdge(currNode, (k, a, s, t) => {
+    main.forEachEdge(currNode, (k, a, s, t) => {
       const { fieldName } = a;
       if (a.dir === "next" && s === currNode) {
         rNext.push({ to: t, real: true, fieldName });
-      }
-      if (a.dir === "prev" && t === currNode) {
+      } else if (a.dir === "prev" && t === currNode) {
         iNext.push({
           to: s,
           real: false,
           fieldName: getOppFields(userHierarchies, fieldName)[0],
         });
-      }
-      if (a.dir === "prev" && s === currNode) {
+      } else if (a.dir === "prev" && s === currNode) {
         rPrev.push({ to: t, real: true, fieldName });
-      }
-      if (a.dir === "next" && t === currNode) {
+      } else if (a.dir === "next" && t === currNode) {
         iPrev.push({
           to: s,
           real: false,

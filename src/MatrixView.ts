@@ -17,6 +17,7 @@ import {
   debugGroupEnd,
   debugGroupStart,
   getInNeighbours,
+  getOppDir,
   getOutNeighbours,
   getPrevNext,
   getSinks,
@@ -391,48 +392,42 @@ export default class MatrixView extends ItemView {
       });
       iSameArr = iSameNoDup;
 
-      const upSquare: SquareProps = {
-        realItems: rUp,
-        impliedItems: iUp,
-        fieldName:
-          hier.up[0] === "" ? `${hier.down.join(",")}<Up>` : hier.up.join(", "),
+      const getFieldName = (dir: Directions) => {
+        if (hier[dir] === undefined) return "";
+        return hier[dir][0] === ""
+          ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
+          : hier[dir].join(", ");
       };
 
-      const sameSquare: SquareProps = {
-        realItems: rSame,
-        impliedItems: iSameArr,
-        fieldName:
-          hier.same[0] === ""
-            ? `${hier.up.join(",")}<Same>`
-            : hier.same.join(", "),
-      };
+      return [
+        {
+          realItems: rUp,
+          impliedItems: iUp,
+          fieldName: getFieldName("up"),
+        },
 
-      const downSquare: SquareProps = {
-        realItems: rDown,
-        impliedItems: iDown,
-        fieldName:
-          hier.down[0] === ""
-            ? `${hier.up.join(",")}<Down>`
-            : hier.down.join(", "),
-      };
-      const nextSquare: SquareProps = {
-        realItems: rNext,
-        impliedItems: iNext,
-        fieldName:
-          hier.next[0] === ""
-            ? `${hier.prev.join(",")}<Next>`
-            : hier.next.join(", "),
-      };
-      const prevSquare: SquareProps = {
-        realItems: rPrev,
-        impliedItems: iPrev,
-        fieldName:
-          hier.prev[0] === ""
-            ? `${hier.next.join(",")}<Prev>`
-            : hier.prev.join(", "),
-      };
+        {
+          realItems: rSame,
+          impliedItems: iSameArr,
+          fieldName: getFieldName("same"),
+        },
 
-      return [upSquare, sameSquare, downSquare, nextSquare, prevSquare];
+        {
+          realItems: rDown,
+          impliedItems: iDown,
+          fieldName: getFieldName("down"),
+        },
+        {
+          realItems: rNext,
+          impliedItems: iNext,
+          fieldName: getFieldName("next"),
+        },
+        {
+          realItems: rPrev,
+          impliedItems: iPrev,
+          fieldName: getFieldName("prev"),
+        },
+      ];
     });
   }
 

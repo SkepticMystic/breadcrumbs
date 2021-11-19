@@ -1,15 +1,16 @@
 <script lang="ts">
-  import type { App, TFile } from "obsidian";
+  import type { App } from "obsidian";
   import { hoverPreview } from "obsidian-community-lib/dist/utils";
-  import type { BCSettings } from "src/interfaces";
+  import type BCPlugin from "src/main";
   import { openOrSwitch } from "src/sharedFunctions";
 
   export let sortedTrails: string[][];
   export let app: App;
-  export let settings: BCSettings;
-  export let currFile: TFile;
+  export let plugin: BCPlugin;
 
-  const activeLeafView = app.workspace.activeLeaf.view;
+  const { settings } = plugin;
+  const currFile = app.workspace.getActiveFile();
+  const { view } = app.workspace.activeLeaf;
 
   let showAll = settings.showAll;
 
@@ -28,7 +29,7 @@
               class="internal-link BC-Link"
               on:click={async (e) =>
                 await openOrSwitch(app, crumb, currFile, e)}
-              on:mouseover={(e) => hoverPreview(e, activeLeafView, crumb)}
+              on:mouseover={(e) => hoverPreview(e, view, crumb)}
             >
               {crumb}
             </span>

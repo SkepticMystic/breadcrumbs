@@ -129,14 +129,12 @@ export default class BCPlugin extends Plugin {
 
     this.app.workspace.onLayoutReady(async () => {
       if (this.app.plugins.enabledPlugins.has("dataview")) {
-        console.log("has dv");
         const api = this.app.plugins.plugins.dataview?.api;
         if (api) {
           await this.initEverything();
         } else {
           this.registerEvent(
             this.app.metadataCache.on("dataview:api-ready", async () => {
-              console.log("dv ready");
               await this.initEverything();
             })
           );
@@ -403,7 +401,6 @@ export default class BCPlugin extends Plugin {
       ? getDVMetadataCache(this.app, settings, files)
       : getObsMetadataCache(this.app, settings, files);
 
-    console.log({ fileFrontmatterArr });
     if (fileFrontmatterArr[0] === undefined) {
       await wait(1000);
       fileFrontmatterArr = dvQ
@@ -411,7 +408,7 @@ export default class BCPlugin extends Plugin {
         : getObsMetadataCache(this.app, settings, files);
     }
 
-    const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+    const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
     debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
     let hierarchyNotesArr: {
@@ -446,34 +443,16 @@ export default class BCPlugin extends Plugin {
     const graphs: BCIndex = {
       main: new MultiGraph(),
       hierGs: [],
-      mergedGs: {
-        up: undefined,
-        same: undefined,
-        down: undefined,
-        next: undefined,
-        prev: undefined,
-      },
-      closedGs: {
-        up: undefined,
-        same: undefined,
-        down: undefined,
-        next: undefined,
-        prev: undefined,
-      },
+      mergedGs: blankDirUndef(),
+      closedGs: blankDirUndef(),
       limitTrailG: undefined,
     };
 
     userHierarchies.forEach((hier) => {
-      const newGraphs: HierarchyGraphs = {
-        up: {},
-        same: {},
-        down: {},
-        next: {},
-        prev: {},
-      };
+      const newGraphs: HierarchyGraphs = blankDirObjs();
 
       DIRECTIONS.forEach((dir: Directions) => {
-        if (!hier[dir]) {
+        if (hier[dir] === undefined) {
           hier[dir] = [];
         }
         hier[dir].forEach((dirField) => {
@@ -732,19 +711,18 @@ export default class BCPlugin extends Plugin {
       return;
     }
 
-    const pathProps = { sortedTrails, app: this.app, settings, currFile };
-    const gridProps = { sortedTrails, app: this.app, plugin: this };
+    const props = { sortedTrails, app: this.app, plugin: this };
 
     if (settings.showTrail && sortedTrails.length) {
       new TrailPath({
         target: trailDiv,
-        props: pathProps,
+        props,
       });
     }
     if (settings.showGrid && sortedTrails.length) {
       new TrailGrid({
         target: trailDiv,
-        props: gridProps,
+        props,
       });
     }
     if (settings.showPrevNext && (next.length || prev.length)) {

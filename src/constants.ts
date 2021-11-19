@@ -43,6 +43,24 @@ export const ALLUNLINKED = ["All", "No Unlinked"];
 export const blankUserHier = (): userHierarchy => {
   return { up: [], same: [], down: [], next: [], prev: [] };
 };
+export const blankDirObjs = (): { [dir in Directions]: {} } => {
+  return {
+    up: {},
+    same: {},
+    down: {},
+    next: {},
+    prev: {},
+  };
+};
+export const blankDirUndef = (): { [dir in Directions]: undefined } => {
+  return {
+    up: undefined,
+    same: undefined,
+    down: undefined,
+    next: undefined,
+    prev: undefined,
+  };
+};
 
 export const DEFAULT_SETTINGS: BCSettings = {
   userHierarchies: [],
