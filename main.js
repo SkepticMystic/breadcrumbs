@@ -24018,7 +24018,7 @@ function get_each_context_7(ctx, list, i) {
 	return child_ctx;
 }
 
-// (87:4) {#each DIRECTIONS as dir}
+// (89:4) {#each DIRECTIONS as dir}
 function create_each_block_7(ctx) {
 	let td;
 	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[27]] + "";
@@ -24041,7 +24041,7 @@ function create_each_block_7(ctx) {
 	};
 }
 
-// (99:6) {#each DIRECTIONS as dir}
+// (101:6) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodes.length + "";
@@ -24082,7 +24082,7 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (118:6) {#each DIRECTIONS as dir}
+// (120:6) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edges.length + "";
@@ -24123,7 +24123,7 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (137:6) {#each DIRECTIONS as dir}
+// (139:6) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
 	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edges.length + "";
@@ -24164,7 +24164,7 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (93:2) {#each userHierarchies as hier, i}
+// (95:2) {#each userHierarchies as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
@@ -24438,7 +24438,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (158:4) {#each DIRECTIONS as dir}
+// (160:4) {#each DIRECTIONS as dir}
 function create_each_block_2$1(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_3)) + "";
@@ -24490,7 +24490,7 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (199:4) {#each DIRECTIONS as dir}
+// (201:4) {#each DIRECTIONS as dir}
 function create_each_block_1$4(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_5)) + "";
@@ -24542,7 +24542,7 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (236:4) {#each DIRECTIONS as dir}
+// (238:4) {#each DIRECTIONS as dir}
 function create_each_block$4(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_7)) + "";
@@ -24937,11 +24937,11 @@ function instance$4($$self, $$props, $$invalidate) {
 
 		if (nodesToo) {
 			gInfo.nodes = gInfo.graph.nodes();
-			gInfo.nodesStr = gInfo.nodes.join("\n");
+			gInfo.nodesStr = gInfo.nodes.map(n => makeWiki(settings.wikilinkIndex, n)).join("\n");
 		}
 
 		gInfo.edges = gInfo.graph.edges();
-		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${nodesToo ? s : t} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${nodesToo ? t : s}`);
+		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
 		gInfo.edgesStr = edgeStrArr.join("\n");
 	}
 

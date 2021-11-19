@@ -9,6 +9,7 @@
     debug,
     getOppDir,
     hierToStr,
+    makeWiki,
     mergeGs,
   } from "src/sharedFunctions";
 
@@ -29,15 +30,17 @@
 
     if (nodesToo) {
       gInfo.nodes = gInfo.graph.nodes();
-      gInfo.nodesStr = gInfo.nodes.join("\n");
+      gInfo.nodesStr = gInfo.nodes
+        .map((n) => makeWiki(settings.wikilinkIndex, n))
+        .join("\n");
     }
 
     gInfo.edges = gInfo.graph.edges();
     const edgeStrArr = gInfo.graph.mapEdges(
       (k, a, s, t) =>
-        `${nodesToo ? s : t} ${
+        `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${
           nodesToo || dir !== "same" ? trailSeperator : "⟷"
-        } ${nodesToo ? t : s}`
+        } ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`
     );
     gInfo.edgesStr = edgeStrArr.join("\n");
   }
