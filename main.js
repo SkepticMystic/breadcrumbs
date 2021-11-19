@@ -35219,9 +35219,9 @@ class BCPlugin extends obsidian.Plugin {
     async getCSVRows() {
         const { CSVPaths } = this.settings;
         const CSVRows = [];
-        if (CSVPaths[0] === "")
+        if (CSVPaths === "")
             return CSVRows;
-        const fullPath = obsidian.normalizePath(CSVPaths[0]);
+        const fullPath = obsidian.normalizePath(CSVPaths);
         const content = await this.app.vault.adapter.read(fullPath);
         const lines = content.split("\n");
         const headers = lines[0].split(",").map((head) => head.trim());
@@ -35244,7 +35244,7 @@ class BCPlugin extends obsidian.Plugin {
             if (fieldName === "" || !row[fieldName])
                 return;
             addNodeIfNot(g, row[fieldName]);
-            g.addEdge(row.file, row[fieldName], { dir, fieldName });
+            addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
         });
     }
     async initGraphs() {
@@ -35329,8 +35329,10 @@ class BCPlugin extends obsidian.Plugin {
                                 fieldName,
                             });
                         });
-                        if (useCSV)
+                        if (useCSV) {
                             this.addCSVCrumbs(g, CSVRows, dir, fieldName);
+                            this.addCSVCrumbs(graphs.main, CSVRows, dir, fieldName);
+                        }
                     }
                 });
             });
@@ -35392,8 +35394,6 @@ class BCPlugin extends obsidian.Plugin {
         debug(settings, "graphs inited");
         debug(settings, { graphs });
         debugGroupEnd(settings, "debugMode");
-        const hierGInfo = [];
-        iterateAllGs(graphs.hierGs, (g, dir, fieldName) => hierGInfo.push(g.edges().length));
         return graphs;
     }
     // !SECTION OneSource

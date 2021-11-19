@@ -376,9 +376,9 @@ export default class BCPlugin extends Plugin {
   async getCSVRows() {
     const { CSVPaths } = this.settings;
     const CSVRows: { [key: string]: string }[] = [];
-    if (CSVPaths[0] === "") return CSVRows;
+    if (CSVPaths === "") return CSVRows;
 
-    const fullPath = normalizePath(CSVPaths[0]);
+    const fullPath = normalizePath(CSVPaths);
 
     const content = await this.app.vault.adapter.read(fullPath);
     const lines = content.split("\n");
@@ -410,7 +410,7 @@ export default class BCPlugin extends Plugin {
       if (fieldName === "" || !row[fieldName]) return;
 
       addNodeIfNot(g, row[fieldName]);
-      g.addEdge(row.file, row[fieldName], { dir, fieldName });
+      addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
     });
   }
 
@@ -521,7 +521,10 @@ export default class BCPlugin extends Plugin {
               });
             });
 
-            if (useCSV) this.addCSVCrumbs(g, CSVRows, dir, fieldName);
+            if (useCSV) {
+              this.addCSVCrumbs(g, CSVRows, dir, fieldName);
+              this.addCSVCrumbs(graphs.main, CSVRows, dir, fieldName);
+            }
           }
         });
       });
@@ -610,10 +613,6 @@ export default class BCPlugin extends Plugin {
 
     debugGroupEnd(settings, "debugMode");
 
-    const hierGInfo = [];
-    iterateAllGs(graphs.hierGs, (g, dir, fieldName) =>
-      hierGInfo.push(g.edges().length)
-    );
     return graphs;
   }
 
