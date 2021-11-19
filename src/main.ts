@@ -333,7 +333,7 @@ export default class BCPlugin extends Plugin {
   populateGraph(
     g: Graph,
     currFileName: string,
-    fieldValues: string[],
+    targets: string[],
     dir: Directions,
     fieldName: string
   ): void {
@@ -341,11 +341,11 @@ export default class BCPlugin extends Plugin {
     addNodeIfNot(g, currFileName, { dir, fieldName });
 
     if (fieldName === "") return;
-    fieldValues.forEach((value) => {
+    targets.forEach((target) => {
       //@ts-ignore
-      addNodeIfNot(g, value, { dir, fieldName });
+      addNodeIfNot(g, target, { dir, fieldName });
       //@ts-ignore
-      addEdgeIfNot(g, currFileName, value, { dir, fieldName });
+      addEdgeIfNot(g, currFileName, target, { dir, fieldName });
     });
   }
 
@@ -455,8 +455,6 @@ export default class BCPlugin extends Plugin {
           );
         }
       }
-
-      debug(settings, { hierarchyNotesArr });
     }
     debugGroupEnd(settings, "debugMode");
 
@@ -603,7 +601,12 @@ export default class BCPlugin extends Plugin {
     debug(settings, { graphs });
 
     debugGroupEnd(settings, "debugMode");
-
+    files.forEach((file) => {
+      if (!graphs.main.hasNode(file.basename)) {
+        console.log(`${file.basename} was not in main`);
+        graphs.main.addNode(file.basename);
+      }
+    });
     return graphs;
   }
 

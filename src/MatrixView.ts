@@ -477,10 +477,7 @@ export default class MatrixView extends ItemView {
       data,
       currFile,
       settings
-    );
-    debug(settings, { hierSquares });
-
-    const filteredSquaresArr = hierSquares.filter((squareArr) =>
+    ).filter((squareArr) =>
       squareArr.some(
         (square) => square.realItems.length + square.impliedItems.length > 0
       )
@@ -489,7 +486,7 @@ export default class MatrixView extends ItemView {
     const compInput = {
       target: contentEl,
       props: {
-        filteredSquaresArr,
+        filteredSquaresArr: hierSquares,
         currFile,
         settings,
         matrixView: this,

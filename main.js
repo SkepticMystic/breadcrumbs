@@ -22546,13 +22546,11 @@ class MatrixView extends obsidian.ItemView {
             return hierData;
         });
         debug(settings, { data });
-        const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings);
-        debug(settings, { hierSquares });
-        const filteredSquaresArr = hierSquares.filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
+        const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
         const compInput = {
             target: contentEl,
             props: {
-                filteredSquaresArr,
+                filteredSquaresArr: hierSquares,
                 currFile,
                 settings,
                 matrixView: this,
@@ -35427,16 +35425,16 @@ class BCPlugin extends obsidian.Plugin {
         return hierarchyNoteItems;
     }
     // SECTION OneSource
-    populateGraph(g, currFileName, fieldValues, dir, fieldName) {
+    populateGraph(g, currFileName, targets, dir, fieldName) {
         //@ts-ignore
         addNodeIfNot(g, currFileName, { dir, fieldName });
         if (fieldName === "")
             return;
-        fieldValues.forEach((value) => {
+        targets.forEach((target) => {
             //@ts-ignore
-            addNodeIfNot(g, value, { dir, fieldName });
+            addNodeIfNot(g, target, { dir, fieldName });
             //@ts-ignore
-            addEdgeIfNot(g, currFileName, value, { dir, fieldName });
+            addEdgeIfNot(g, currFileName, target, { dir, fieldName });
         });
     }
     populateMain(main, currFileName, dir, fieldName, targets, neighbours, neighbourObjArr) {
@@ -35517,7 +35515,6 @@ class BCPlugin extends obsidian.Plugin {
                     new obsidian.Notice(`${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`);
                 }
             }
-            debug(settings, { hierarchyNotesArr });
         }
         debugGroupEnd(settings, "debugMode");
         const { userHierarchies } = settings;
@@ -35619,6 +35616,12 @@ class BCPlugin extends obsidian.Plugin {
         debug(settings, "graphs inited");
         debug(settings, { graphs });
         debugGroupEnd(settings, "debugMode");
+        files.forEach((file) => {
+            if (!graphs.main.hasNode(file.basename)) {
+                console.log(`${file.basename} was not in main`);
+                graphs.main.addNode(file.basename);
+            }
+        });
         return graphs;
     }
     // !SECTION OneSource
