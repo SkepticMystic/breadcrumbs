@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.4.0...1.5.0) (2021-11-19)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Much better reliability + indicate field before link (fix [#102](https://github.com/SkepticMystic/breadcrumbs/issues/102)) ([1cedf22](https://github.com/SkepticMystic/breadcrumbs/commit/1cedf226a853a5f039fe5465b867a3e5d2cc4778))
+* **Vis View:** :sparkles: Cmd to open (fix [#145](https://github.com/SkepticMystic/breadcrumbs/issues/145)) ([74992ad](https://github.com/SkepticMystic/breadcrumbs/commit/74992adfe692eb396a8841a450825229770199a2))
+
 ## [1.4.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.3.1...1.4.0) (2021-11-19)
 
 
