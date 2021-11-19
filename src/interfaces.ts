@@ -73,7 +73,7 @@ export interface dvLink {
 }
 
 export interface JugglLink {
-  note: string;
+  file: TFile;
   links: {
     dir: Directions | "";
     type: string;
@@ -234,6 +234,7 @@ declare module "obsidian" {
         metaedit: {
           api: MetaeditApi;
         };
+        juggl: { settings: { typedLinkPrefix: string } };
       };
     };
   }

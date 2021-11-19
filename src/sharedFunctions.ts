@@ -85,8 +85,7 @@ export function getDVMetadataCache(
   debug(settings, "Using Dataview");
   debugGroupStart(settings, "superDebugMode", "dvCaches");
 
-  const fileFrontmatterArr: dvFrontmatterCache[] = [];
-  files.forEach((file) => {
+  const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
     superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
 
     const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
@@ -94,7 +93,7 @@ export function getDVMetadataCache(
     );
 
     superDebug(settings, { dvCache });
-    fileFrontmatterArr.push(dvCache);
+    return dvCache;
   });
 
   debugGroupEnd(settings, "superDebugMode");
@@ -112,17 +111,13 @@ export function getObsMetadataCache(
   debug(settings, "Using Obsidian");
   debugGroupStart(settings, "superDebugMode", "obsCaches");
 
-  const fileFrontmatterArr: dvFrontmatterCache[] = [];
-  files.forEach((file) => {
+  const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
     superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
     const obs: FrontMatterCache =
       app.metadataCache.getFileCache(file)?.frontmatter;
     superDebug(settings, { obs });
-    if (obs) {
-      fileFrontmatterArr.push({ file, ...obs });
-    } else {
-      fileFrontmatterArr.push({ file });
-    }
+    if (obs) return { file, ...obs };
+    else return { file };
   });
 
   debugGroupEnd(settings, "superDebugMode");
@@ -154,20 +149,19 @@ export async function getJugglLinks(
   // Add Juggl links
   const typedLinksArr: JugglLink[] = await Promise.all(
     files.map(async (file) => {
-      const jugglLink: JugglLink = { note: file.basename, links: [] };
+      const jugglLink: JugglLink = { file, links: [] };
 
       // Use Obs metadatacache to get the links in the current file
       const links = app.metadataCache.getFileCache(file)?.links ?? [];
-      // TODO Only get cachedRead if links.length
-      const content = await app.vault.cachedRead(file);
+
+      const content = links.length ? await app.vault.cachedRead(file) : "";
+      const lines = content.split("\n");
 
       links.forEach((link) => {
-        // Get the line no. of each link
         const lineNo = link.position.start.line;
-        // And the corresponding line content
-        const line = content.split("\n")[lineNo];
+        const line = lines[lineNo];
 
-        // Get an array of inner text of each link
+        // Check the line for wikilinks, and return an array of link.innerText
         const linksInLine =
           line
             .match(splitLinksRegex)
@@ -202,32 +196,15 @@ export async function getJugglLinks(
 
   debug(settings, { typedLinksArr });
 
-  const allFields: string[] = settings.userHierarchies
-    .map((hier) => Object.values(hier))
-    .flat(2)
-    .filter((field: string) => field !== "");
+  const allFields = getFields(userHierarchies);
 
-  typedLinksArr.forEach((jugglLink) => {
+  const filteredLinks = typedLinksArr.map((jugglLink) => {
     // Filter out links whose type is not in allFields
-
-    const fieldTypesOnly = jugglLink.links.filter((link) =>
+    jugglLink.links = jugglLink.links.filter((link) =>
       allFields.includes(link.type)
     );
-
-    // // const fieldTypesOnly = [];
-    // jugglLink.links.forEach((link) => {
-    //   if (allFields.includes(link.type)) {
-    //     fieldTypesOnly.push(link);
-    //   }
-    // });
-    // I don't remember why I'm mutating the links instead of making a new obj
-    jugglLink.links = fieldTypesOnly;
+    return jugglLink;
   });
-
-  // Filter out the juggl links with no links
-  const filteredLinks = typedLinksArr.filter(
-    (jugglLink) => jugglLink.links.length
-  );
   debug(settings, { filteredLinks });
   debugGroupEnd(settings, "debugMode");
   return filteredLinks;
@@ -375,9 +352,9 @@ export async function getNeighbourObjArr(
 
         // Add Juggl Links
         if (jugglLinks.length) {
-          const jugglLinksInFile = jugglLinks.find((jugglLink) => {
-            return jugglLink.note === currNode;
-          });
+          const jugglLinksInFile = jugglLinks.find(
+            (jugglLink) => jugglLink.file.basename === currNode
+          );
 
           if (jugglLinksInFile) {
             jugglLinksInFile.links.forEach((line) => {
@@ -395,7 +372,6 @@ export async function getNeighbourObjArr(
 
         hierFields.hierarchies.push(newHier);
       });
-
       return hierFields;
     }
   );

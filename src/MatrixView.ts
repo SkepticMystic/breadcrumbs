@@ -385,7 +385,7 @@ export default class MatrixView extends ItemView {
       const getFieldName = (dir: Directions) => {
         if (hier[dir] === undefined) return "";
         return hier[dir][0] === ""
-          ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
+          ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
           : hier[dir].join(", ");
       };
 

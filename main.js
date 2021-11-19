@@ -20411,12 +20411,11 @@ function getDVMetadataCache(app, settings, files) {
     debugGroupStart(settings, "debugMode", "getDVMetadataCache");
     debug(settings, "Using Dataview");
     debugGroupStart(settings, "superDebugMode", "dvCaches");
-    const fileFrontmatterArr = [];
-    files.forEach((file) => {
+    const fileFrontmatterArr = files.map((file) => {
         superDebug(settings, `GetDVMetadataCache: ${file.basename}`);
         const dvCache = app.plugins.plugins.dataview.api.page(file.path);
         superDebug(settings, { dvCache });
-        fileFrontmatterArr.push(dvCache);
+        return dvCache;
     });
     debugGroupEnd(settings, "superDebugMode");
     debug(settings, { fileFrontmatterArr });
@@ -20427,18 +20426,15 @@ function getObsMetadataCache(app, settings, files) {
     debugGroupStart(settings, "debugMode", "getObsMetadataCache");
     debug(settings, "Using Obsidian");
     debugGroupStart(settings, "superDebugMode", "obsCaches");
-    const fileFrontmatterArr = [];
-    files.forEach((file) => {
+    const fileFrontmatterArr = files.map((file) => {
         var _a;
         superDebug(settings, `GetObsMetadataCache: ${file.basename}`);
         const obs = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
         superDebug(settings, { obs });
-        if (obs) {
-            fileFrontmatterArr.push(Object.assign({ file }, obs));
-        }
-        else {
-            fileFrontmatterArr.push({ file });
-        }
+        if (obs)
+            return Object.assign({ file }, obs);
+        else
+            return { file };
     });
     debugGroupEnd(settings, "superDebugMode");
     debug(settings, { fileFrontmatterArr });
@@ -20455,18 +20451,16 @@ async function getJugglLinks(app, settings) {
     // Add Juggl links
     const typedLinksArr = await Promise.all(files.map(async (file) => {
         var _a, _b;
-        const jugglLink = { note: file.basename, links: [] };
+        const jugglLink = { file, links: [] };
         // Use Obs metadatacache to get the links in the current file
         const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
-        // TODO Only get cachedRead if links.length
-        const content = await app.vault.cachedRead(file);
+        const content = links.length ? await app.vault.cachedRead(file) : "";
+        const lines = content.split("\n");
         links.forEach((link) => {
             var _a, _b, _c, _d, _e, _f, _g;
-            // Get the line no. of each link
             const lineNo = link.position.start.line;
-            // And the corresponding line content
-            const line = content.split("\n")[lineNo];
-            // Get an array of inner text of each link
+            const line = lines[lineNo];
+            // Check the line for wikilinks, and return an array of link.innerText
             const linksInLine = (_c = (_b = (_a = line
                 .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
             const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
@@ -20491,24 +20485,12 @@ async function getJugglLinks(app, settings) {
         return jugglLink;
     }));
     debug(settings, { typedLinksArr });
-    const allFields = settings.userHierarchies
-        .map((hier) => Object.values(hier))
-        .flat(2)
-        .filter((field) => field !== "");
-    typedLinksArr.forEach((jugglLink) => {
+    const allFields = getFields(userHierarchies);
+    const filteredLinks = typedLinksArr.map((jugglLink) => {
         // Filter out links whose type is not in allFields
-        const fieldTypesOnly = jugglLink.links.filter((link) => allFields.includes(link.type));
-        // // const fieldTypesOnly = [];
-        // jugglLink.links.forEach((link) => {
-        //   if (allFields.includes(link.type)) {
-        //     fieldTypesOnly.push(link);
-        //   }
-        // });
-        // I don't remember why I'm mutating the links instead of making a new obj
-        jugglLink.links = fieldTypesOnly;
+        jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.type));
+        return jugglLink;
     });
-    // Filter out the juggl links with no links
-    const filteredLinks = typedLinksArr.filter((jugglLink) => jugglLink.links.length);
     debug(settings, { filteredLinks });
     debugGroupEnd(settings, "debugMode");
     return filteredLinks;
@@ -20635,9 +20617,7 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
             }
             // Add Juggl Links
             if (jugglLinks.length) {
-                const jugglLinksInFile = jugglLinks.find((jugglLink) => {
-                    return jugglLink.note === currNode;
-                });
+                const jugglLinksInFile = jugglLinks.find((jugglLink) => jugglLink.file.basename === currNode);
                 if (jugglLinksInFile) {
                     jugglLinksInFile.links.forEach((line) => {
                         var _a, _b;
@@ -22494,7 +22474,7 @@ class MatrixView extends obsidian.ItemView {
                 if (hier[dir] === undefined)
                     return "";
                 return hier[dir][0] === ""
-                    ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
+                    ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
                     : hier[dir].join(", ");
             };
             [
