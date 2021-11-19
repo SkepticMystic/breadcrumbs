@@ -12,6 +12,8 @@ import {
 import { openView, wait } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
+  blankDirObjs,
+  blankDirUndef,
   DEFAULT_SETTINGS,
   DIRECTIONS,
   MATRIX_VIEW,
@@ -117,6 +119,12 @@ export default class BCPlugin extends Plugin {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
+    ["prev", "next"].forEach((dir) => {
+      this.settings.userHierarchies.forEach(async (hier, i) => {
+        if (hier[dir] === undefined) this.settings.userHierarchies[i][dir] = [];
+        await this.saveSettings();
+      });
+    });
 
     this.registerView(
       STATS_VIEW,
