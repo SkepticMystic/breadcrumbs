@@ -23971,65 +23971,95 @@ function add_css$3() {
 
 function get_each_context$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[30] = list[i];
-	child_ctx[32] = i;
+	child_ctx[34] = list[i];
+	child_ctx[36] = i;
 	return child_ctx;
 }
 
 function get_each_context_4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
-// (100:6) {#each ["up", "same", "down"] as dir}
+function get_each_context_7(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+// (87:4) {#each DIRECTIONS as dir}
+function create_each_block_7(ctx) {
+	let td;
+	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[27]] + "";
+	let t;
+
+	return {
+		c() {
+			td = element("td");
+			t = text(t_value);
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t);
+		},
+		p: noop$1,
+		d(detaching) {
+			if (detaching) detach(td);
+		}
+	};
+}
+
+// (99:6) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.nodes.length + "";
+	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodes.length + "";
 	let t;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
 	function click_handler() {
-		return /*click_handler*/ ctx[4](/*i*/ ctx[32], /*dir*/ ctx[23]);
+		return /*click_handler*/ ctx[5](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
 		c() {
 			td = element("td");
 			t = text(t_value);
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.nodesStr);
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24052,24 +24082,25 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (132:6) {#each ["up", "same", "down"] as dir}
+// (118:6) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.edges.length + "";
+	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edges.length + "";
 	let t;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
 	function click_handler_2() {
-		return /*click_handler_2*/ ctx[6](/*i*/ ctx[32], /*dir*/ ctx[23]);
+		return /*click_handler_2*/ ctx[8](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
 		c() {
 			td = element("td");
 			t = text(t_value);
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Merged.edgesStr);
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edgesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24092,24 +24123,25 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (164:6) {#each ["up", "same", "down"] as dir}
+// (137:6) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Implied.edges.length + "";
+	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edges.length + "";
 	let t;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
 	function click_handler_4() {
-		return /*click_handler_4*/ ctx[8](/*i*/ ctx[32], /*dir*/ ctx[23]);
+		return /*click_handler_4*/ ctx[11](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
 		c() {
 			td = element("td");
 			t = text(t_value);
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[32]][/*dir*/ ctx[23]].Implied.edgesStr);
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edgesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24132,24 +24164,18 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (94:2) {#each userHierarchies as hier, i}
+// (93:2) {#each userHierarchies as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
-	let t0_value = /*hierStrs*/ ctx[2][/*i*/ ctx[32]] + "";
+	let t0_value = /*hierStrs*/ ctx[3][/*i*/ ctx[36]] + "";
 	let t0;
 	let t1;
 	let td1;
 	let t3;
 	let t4;
 	let td2;
-
-	let t5_value = [
-		.../*data*/ ctx[1][/*i*/ ctx[32]].up.Merged.nodes,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].same.Merged.nodes,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].down.Merged.nodes
-	].length + "";
-
+	let t5_value = lodash.sum(DIRECTIONS.map(func)) + "";
 	let t5;
 	let td2_aria_label_value;
 	let t6;
@@ -24158,13 +24184,7 @@ function create_each_block_3(ctx) {
 	let t8;
 	let t9;
 	let td4;
-
-	let t10_value = [
-		.../*data*/ ctx[1][/*i*/ ctx[32]].up.Merged.edges,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].same.Merged.edges,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].down.Merged.edges
-	].length + "";
-
+	let t10_value = lodash.sum(DIRECTIONS.map(func_1)) + "";
 	let t10;
 	let td4_aria_label_value;
 	let t11;
@@ -24173,48 +24193,54 @@ function create_each_block_3(ctx) {
 	let t13;
 	let t14;
 	let td6;
-
-	let t15_value = [
-		.../*data*/ ctx[1][/*i*/ ctx[32]].up.Implied.edges,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].same.Implied.edges,
-		.../*data*/ ctx[1][/*i*/ ctx[32]].down.Implied.edges
-	].length + "";
-
+	let t15_value = lodash.sum(DIRECTIONS.map(func_2)) + "";
 	let t15;
 	let td6_aria_label_value;
 	let mounted;
 	let dispose;
-	let each_value_6 = ["up", "same", "down"];
+	let each_value_6 = DIRECTIONS;
 	let each_blocks_2 = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value_6.length; i += 1) {
 		each_blocks_2[i] = create_each_block_6(get_each_context_6(ctx, each_value_6, i));
 	}
 
-	function click_handler_1() {
-		return /*click_handler_1*/ ctx[5](/*i*/ ctx[32]);
+	function func(...args) {
+		return /*func*/ ctx[6](/*i*/ ctx[36], ...args);
 	}
 
-	let each_value_5 = ["up", "same", "down"];
+	function click_handler_1() {
+		return /*click_handler_1*/ ctx[7](/*i*/ ctx[36]);
+	}
+
+	let each_value_5 = DIRECTIONS;
 	let each_blocks_1 = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value_5.length; i += 1) {
 		each_blocks_1[i] = create_each_block_5(get_each_context_5(ctx, each_value_5, i));
 	}
 
-	function click_handler_3() {
-		return /*click_handler_3*/ ctx[7](/*i*/ ctx[32]);
+	function func_1(...args) {
+		return /*func_1*/ ctx[9](/*i*/ ctx[36], ...args);
 	}
 
-	let each_value_4 = ["up", "same", "down"];
+	function click_handler_3() {
+		return /*click_handler_3*/ ctx[10](/*i*/ ctx[36]);
+	}
+
+	let each_value_4 = DIRECTIONS;
 	let each_blocks = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value_4.length; i += 1) {
 		each_blocks[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
 	}
 
+	function func_2(...args) {
+		return /*func_2*/ ctx[12](/*i*/ ctx[36], ...args);
+	}
+
 	function click_handler_5() {
-		return /*click_handler_5*/ ctx[9](/*i*/ ctx[32]);
+		return /*click_handler_5*/ ctx[13](/*i*/ ctx[36]);
 	}
 
 	return {
@@ -24227,7 +24253,7 @@ function create_each_block_3(ctx) {
 			td1.textContent = "Nodes";
 			t3 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
 				each_blocks_2[i].c();
 			}
 
@@ -24240,7 +24266,7 @@ function create_each_block_3(ctx) {
 			td3.textContent = "Real Edges";
 			t8 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].c();
 			}
 
@@ -24253,7 +24279,7 @@ function create_each_block_3(ctx) {
 			td5.textContent = "Implied Edges";
 			t13 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
@@ -24263,31 +24289,16 @@ function create_each_block_3(ctx) {
 			attr(td0, "rowspan", "3");
 			attr(td0, "class", "svelte-rb5mhu");
 			attr(td1, "class", "svelte-rb5mhu");
-
-			attr(td2, "aria-label", td2_aria_label_value = [
-				/*data*/ ctx[1][/*i*/ ctx[32]].up.Merged.nodesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].same.Merged.nodesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].down.Merged.nodesStr
-			].join("\n"));
-
+			attr(td2, "aria-label-position", "left");
+			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "nodesStr"));
 			attr(td2, "class", "svelte-rb5mhu");
 			attr(td3, "class", "svelte-rb5mhu");
-
-			attr(td4, "aria-label", td4_aria_label_value = [
-				/*data*/ ctx[1][/*i*/ ctx[32]].up.Merged.edgesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].same.Merged.edgesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].down.Merged.edgesStr
-			].join("\n"));
-
+			attr(td4, "aria-label-position", "left");
+			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "edgesStr"));
 			attr(td4, "class", "svelte-rb5mhu");
 			attr(td5, "class", "svelte-rb5mhu");
-
-			attr(td6, "aria-label", td6_aria_label_value = [
-				/*data*/ ctx[1][/*i*/ ctx[32]].up.Implied.edgesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].same.Implied.edgesStr,
-				/*data*/ ctx[1][/*i*/ ctx[32]].down.Implied.edgesStr
-			].join("\n"));
-
+			attr(td6, "aria-label-position", "left");
+			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Implied", "edgesStr"));
 			attr(td6, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24298,7 +24309,7 @@ function create_each_block_3(ctx) {
 			append(tr0, td1);
 			append(tr0, t3);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
 				each_blocks_2[i].m(tr0, null);
 			}
 
@@ -24310,7 +24321,7 @@ function create_each_block_3(ctx) {
 			append(tr1, td3);
 			append(tr1, t8);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].m(tr1, null);
 			}
 
@@ -24322,7 +24333,7 @@ function create_each_block_3(ctx) {
 			append(tr2, td5);
 			append(tr2, t13);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(tr2, null);
 			}
 
@@ -24344,10 +24355,10 @@ function create_each_block_3(ctx) {
 			ctx = new_ctx;
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value_6 = ["up", "same", "down"];
+				each_value_6 = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value_6.length; i += 1) {
 					const child_ctx = get_each_context_6(ctx, each_value_6, i);
 
 					if (each_blocks_2[i]) {
@@ -24359,16 +24370,18 @@ function create_each_block_3(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks_2.length; i += 1) {
 					each_blocks_2[i].d(1);
 				}
+
+				each_blocks_2.length = each_value_6.length;
 			}
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value_5 = ["up", "same", "down"];
+				each_value_5 = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value_5.length; i += 1) {
 					const child_ctx = get_each_context_5(ctx, each_value_5, i);
 
 					if (each_blocks_1[i]) {
@@ -24380,16 +24393,18 @@ function create_each_block_3(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks_1.length; i += 1) {
 					each_blocks_1[i].d(1);
 				}
+
+				each_blocks_1.length = each_value_5.length;
 			}
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value_4 = ["up", "same", "down"];
+				each_value_4 = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value_4.length; i += 1) {
 					const child_ctx = get_each_context_4(ctx, each_value_4, i);
 
 					if (each_blocks[i]) {
@@ -24401,9 +24416,11 @@ function create_each_block_3(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks.length; i += 1) {
 					each_blocks[i].d(1);
 				}
+
+				each_blocks.length = each_value_4.length;
 			}
 		},
 		d(detaching) {
@@ -24421,26 +24438,26 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (198:4) {#each ["up", "same", "down"] as dir}
+// (158:4) {#each DIRECTIONS as dir}
 function create_each_block_2$1(ctx) {
 	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func)) + "";
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_3)) + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
-	function func(...args) {
-		return /*func*/ ctx[10](/*dir*/ ctx[23], ...args);
+	function func_3(...args) {
+		return /*func_3*/ ctx[14](/*dir*/ ctx[27], ...args);
 	}
 
-	function func_1(...args) {
-		return /*func_1*/ ctx[11](/*dir*/ ctx[23], ...args);
+	function func_4(...args) {
+		return /*func_4*/ ctx[15](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_6() {
-		return /*click_handler_6*/ ctx[12](/*dir*/ ctx[23]);
+		return /*click_handler_6*/ ctx[16](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -24448,7 +24465,8 @@ function create_each_block_2$1(ctx) {
 			td = element("td");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_1).join("\n"));
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_4).join("\n"));
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24472,26 +24490,26 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (237:4) {#each ["up", "same", "down"] as dir}
+// (199:4) {#each DIRECTIONS as dir}
 function create_each_block_1$4(ctx) {
 	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_2)) + "";
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_5)) + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
-	function func_2(...args) {
-		return /*func_2*/ ctx[13](/*dir*/ ctx[23], ...args);
+	function func_5(...args) {
+		return /*func_5*/ ctx[17](/*dir*/ ctx[27], ...args);
 	}
 
-	function func_3(...args) {
-		return /*func_3*/ ctx[14](/*dir*/ ctx[23], ...args);
+	function func_6(...args) {
+		return /*func_6*/ ctx[18](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_7() {
-		return /*click_handler_7*/ ctx[15](/*dir*/ ctx[23]);
+		return /*click_handler_7*/ ctx[19](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -24499,7 +24517,8 @@ function create_each_block_1$4(ctx) {
 			td = element("td");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_3).join("\n"));
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_6).join("\n"));
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24523,26 +24542,26 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (272:4) {#each ["up", "same", "down"] as dir}
+// (236:4) {#each DIRECTIONS as dir}
 function create_each_block$4(ctx) {
 	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_4)) + "";
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_7)) + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
 	let mounted;
 	let dispose;
 
-	function func_4(...args) {
-		return /*func_4*/ ctx[16](/*dir*/ ctx[23], ...args);
+	function func_7(...args) {
+		return /*func_7*/ ctx[20](/*dir*/ ctx[27], ...args);
 	}
 
-	function func_5(...args) {
-		return /*func_5*/ ctx[17](/*dir*/ ctx[23], ...args);
+	function func_8(...args) {
+		return /*func_8*/ ctx[21](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_8() {
-		return /*click_handler_8*/ ctx[18](/*dir*/ ctx[23]);
+		return /*click_handler_8*/ ctx[22](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -24550,7 +24569,8 @@ function create_each_block$4(ctx) {
 			td = element("td");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_5).join("\n"));
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_8).join("\n"));
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -24577,23 +24597,41 @@ function create_each_block$4(ctx) {
 function create_fragment$4(ctx) {
 	let table;
 	let thead;
+	let tr0;
+	let th0;
+	let t1;
+	let th1;
+	let t2;
 	let t3;
 	let tr1;
+	let td0;
+	let t4;
+	let td1;
+	let t6;
+	let t7;
+	let td2;
+	let t9;
+	let t10;
+	let tr2;
+	let td3;
+	let t12;
+	let td4;
 	let t14;
 	let t15;
-	let tr2;
-	let td6;
-	let t17;
-	let td7;
-	let t19;
-	let t20;
 	let tr3;
-	let td8;
-	let t22;
-	let t23;
+	let td5;
+	let t17;
+	let t18;
 	let tr4;
-	let td9;
-	let t25;
+	let td6;
+	let t20;
+	let each_value_7 = DIRECTIONS;
+	let each_blocks_4 = [];
+
+	for (let i = 0; i < each_value_7.length; i += 1) {
+		each_blocks_4[i] = create_each_block_7(get_each_context_7(ctx, each_value_7, i));
+	}
+
 	let each_value_3 = /*userHierarchies*/ ctx[0];
 	let each_blocks_3 = [];
 
@@ -24601,24 +24639,24 @@ function create_fragment$4(ctx) {
 		each_blocks_3[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
 	}
 
-	let each_value_2 = ["up", "same", "down"];
+	let each_value_2 = DIRECTIONS;
 	let each_blocks_2 = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value_2.length; i += 1) {
 		each_blocks_2[i] = create_each_block_2$1(get_each_context_2$1(ctx, each_value_2, i));
 	}
 
-	let each_value_1 = ["up", "same", "down"];
+	let each_value_1 = DIRECTIONS;
 	let each_blocks_1 = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value_1.length; i += 1) {
 		each_blocks_1[i] = create_each_block_1$4(get_each_context_1$4(ctx, each_value_1, i));
 	}
 
-	let each_value = ["up", "same", "down"];
+	let each_value = DIRECTIONS;
 	let each_blocks = [];
 
-	for (let i = 0; i < 3; i += 1) {
+	for (let i = 0; i < each_value.length; i += 1) {
 		each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
 	}
 
@@ -24626,108 +24664,162 @@ function create_fragment$4(ctx) {
 		c() {
 			table = element("table");
 			thead = element("thead");
-
-			thead.innerHTML = `<tr><th scope="col" class="svelte-rb5mhu">Hierarchy</th> 
-      <th scope="col" colspan="5" class="svelte-rb5mhu">Count</th></tr>`;
-
+			tr0 = element("tr");
+			th0 = element("th");
+			th0.textContent = "Hierarchy";
+			t1 = space();
+			th1 = element("th");
+			t2 = text("Count");
 			t3 = space();
 			tr1 = element("tr");
+			td0 = element("td");
+			t4 = space();
+			td1 = element("td");
+			td1.textContent = "Measure";
+			t6 = space();
 
-			tr1.innerHTML = `<td class="svelte-rb5mhu"></td> 
-    <td class="svelte-rb5mhu">Measure</td> 
-    <td class="svelte-rb5mhu">↑</td> 
-    <td class="svelte-rb5mhu">→</td> 
-    <td class="svelte-rb5mhu">↓</td> 
-    <td class="svelte-rb5mhu">Total</td>`;
+			for (let i = 0; i < each_blocks_4.length; i += 1) {
+				each_blocks_4[i].c();
+			}
 
-			t14 = space();
+			t7 = space();
+			td2 = element("td");
+			td2.textContent = "Total";
+			t9 = space();
 
 			for (let i = 0; i < each_blocks_3.length; i += 1) {
 				each_blocks_3[i].c();
 			}
 
-			t15 = space();
+			t10 = space();
 			tr2 = element("tr");
-			td6 = element("td");
-			td6.textContent = "Totals";
-			t17 = space();
-			td7 = element("td");
-			td7.textContent = "Nodes";
-			t19 = space();
+			td3 = element("td");
+			td3.textContent = "Totals";
+			t12 = space();
+			td4 = element("td");
+			td4.textContent = "Nodes";
+			t14 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
 				each_blocks_2[i].c();
 			}
 
-			t20 = space();
+			t15 = space();
 			tr3 = element("tr");
-			td8 = element("td");
-			td8.textContent = "Real Edges";
-			t22 = space();
+			td5 = element("td");
+			td5.textContent = "Real Edges";
+			t17 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].c();
 			}
 
-			t23 = space();
+			t18 = space();
 			tr4 = element("tr");
-			td9 = element("td");
-			td9.textContent = "Implied Edges";
-			t25 = space();
+			td6 = element("td");
+			td6.textContent = "Implied Edges";
+			t20 = space();
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			attr(td6, "rowspan", "3");
+			attr(th0, "scope", "col");
+			attr(th0, "class", "svelte-rb5mhu");
+			attr(th1, "scope", "col");
+			attr(th1, "colspan", DIRECTIONS.length + 2);
+			attr(th1, "class", "svelte-rb5mhu");
+			attr(td0, "class", "svelte-rb5mhu");
+			attr(td1, "class", "svelte-rb5mhu");
+			attr(td2, "class", "svelte-rb5mhu");
+			attr(td3, "rowspan", "3");
+			attr(td3, "class", "svelte-rb5mhu");
+			attr(td4, "class", "svelte-rb5mhu");
+			attr(td5, "class", "svelte-rb5mhu");
 			attr(td6, "class", "svelte-rb5mhu");
-			attr(td7, "class", "svelte-rb5mhu");
-			attr(td8, "class", "svelte-rb5mhu");
-			attr(td9, "class", "svelte-rb5mhu");
 			attr(table, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
 			insert(target, table, anchor);
 			append(table, thead);
+			append(thead, tr0);
+			append(tr0, th0);
+			append(tr0, t1);
+			append(tr0, th1);
+			append(th1, t2);
 			append(table, t3);
 			append(table, tr1);
-			append(table, t14);
+			append(tr1, td0);
+			append(tr1, t4);
+			append(tr1, td1);
+			append(tr1, t6);
+
+			for (let i = 0; i < each_blocks_4.length; i += 1) {
+				each_blocks_4[i].m(tr1, null);
+			}
+
+			append(tr1, t7);
+			append(tr1, td2);
+			append(table, t9);
 
 			for (let i = 0; i < each_blocks_3.length; i += 1) {
 				each_blocks_3[i].m(table, null);
 			}
 
-			append(table, t15);
+			append(table, t10);
 			append(table, tr2);
-			append(tr2, td6);
-			append(tr2, t17);
-			append(tr2, td7);
-			append(tr2, t19);
+			append(tr2, td3);
+			append(tr2, t12);
+			append(tr2, td4);
+			append(tr2, t14);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
 				each_blocks_2[i].m(tr2, null);
 			}
 
-			append(table, t20);
+			append(table, t15);
 			append(table, tr3);
-			append(tr3, td8);
-			append(tr3, t22);
+			append(tr3, td5);
+			append(tr3, t17);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].m(tr3, null);
 			}
 
-			append(table, t23);
+			append(table, t18);
 			append(table, tr4);
-			append(tr4, td9);
-			append(tr4, t25);
+			append(tr4, td6);
+			append(tr4, t20);
 
-			for (let i = 0; i < 3; i += 1) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(tr4, null);
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*data, hierStrs*/ 6) {
+			if (dirty & /*ARROW_DIRECTIONS, DIRECTIONS*/ 0) {
+				each_value_7 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_7.length; i += 1) {
+					const child_ctx = get_each_context_7(ctx, each_value_7, i);
+
+					if (each_blocks_4[i]) {
+						each_blocks_4[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_4[i] = create_each_block_7(child_ctx);
+						each_blocks_4[i].c();
+						each_blocks_4[i].m(tr1, t7);
+					}
+				}
+
+				for (; i < each_blocks_4.length; i += 1) {
+					each_blocks_4[i].d(1);
+				}
+
+				each_blocks_4.length = each_value_7.length;
+			}
+
+			if (dirty[0] & /*cellStr, data, hierStrs*/ 14) {
 				each_value_3 = /*userHierarchies*/ ctx[0];
 				let i;
 
@@ -24739,7 +24831,7 @@ function create_fragment$4(ctx) {
 					} else {
 						each_blocks_3[i] = create_each_block_3(child_ctx);
 						each_blocks_3[i].c();
-						each_blocks_3[i].m(table, t15);
+						each_blocks_3[i].m(table, t10);
 					}
 				}
 
@@ -24751,10 +24843,10 @@ function create_fragment$4(ctx) {
 			}
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value_2 = ["up", "same", "down"];
+				each_value_2 = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value_2.length; i += 1) {
 					const child_ctx = get_each_context_2$1(ctx, each_value_2, i);
 
 					if (each_blocks_2[i]) {
@@ -24766,16 +24858,18 @@ function create_fragment$4(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks_2.length; i += 1) {
 					each_blocks_2[i].d(1);
 				}
+
+				each_blocks_2.length = each_value_2.length;
 			}
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value_1 = ["up", "same", "down"];
+				each_value_1 = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value_1.length; i += 1) {
 					const child_ctx = get_each_context_1$4(ctx, each_value_1, i);
 
 					if (each_blocks_1[i]) {
@@ -24787,16 +24881,18 @@ function create_fragment$4(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks_1.length; i += 1) {
 					each_blocks_1[i].d(1);
 				}
+
+				each_blocks_1.length = each_value_1.length;
 			}
 
 			if (dirty[0] & /*data*/ 2) {
-				each_value = ["up", "same", "down"];
+				each_value = DIRECTIONS;
 				let i;
 
-				for (i = 0; i < 3; i += 1) {
+				for (i = 0; i < each_value.length; i += 1) {
 					const child_ctx = get_each_context$4(ctx, each_value, i);
 
 					if (each_blocks[i]) {
@@ -24808,15 +24904,18 @@ function create_fragment$4(ctx) {
 					}
 				}
 
-				for (; i < 3; i += 1) {
+				for (; i < each_blocks.length; i += 1) {
 					each_blocks[i].d(1);
 				}
+
+				each_blocks.length = each_value.length;
 			}
 		},
 		i: noop$1,
 		o: noop$1,
 		d(detaching) {
 			if (detaching) detach(table);
+			destroy_each(each_blocks_4, detaching);
 			destroy_each(each_blocks_3, detaching);
 			destroy_each(each_blocks_2, detaching);
 			destroy_each(each_blocks_1, detaching);
@@ -24830,21 +24929,19 @@ function instance$4($$self, $$props, $$invalidate) {
 	
 	let { plugin } = $$props;
 	const { settings } = plugin;
-	const { userHierarchies } = settings;
-	const separator = settings.trailSeperator;
+	const { userHierarchies, trailSeperator } = settings;
 	const hierGs = plugin.currGraphs;
 
 	function fillInInfo(dir, gType, hierData, nodesToo = true) {
 		const gInfo = hierData[dir][gType];
 
 		if (nodesToo) {
-			const nodes = gInfo.graph.nodes();
-			gInfo.nodes = nodes;
-			gInfo.nodesStr = nodes.join("\n");
+			gInfo.nodes = gInfo.graph.nodes();
+			gInfo.nodesStr = gInfo.nodes.join("\n");
 		}
 
 		gInfo.edges = gInfo.graph.edges();
-		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${nodesToo ? s : t} ${nodesToo || dir !== "same" ? separator : "⟷"} ${nodesToo ? t : s}`);
+		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${nodesToo ? s : t} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${nodesToo ? t : s}`);
 		gInfo.edgesStr = edgeStrArr.join("\n");
 	}
 
@@ -24872,7 +24969,7 @@ function instance$4($$self, $$props, $$invalidate) {
 
 			// Closed graphs
 			if (dir !== "same") {
-				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergeGs(...Object.values(hier[dir === "up" ? "down" : "up"])));
+				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergeGs(...Object.values(hier[getOppDir(dir)])));
 			} else {
 				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergedInDir);
 			}
@@ -24880,7 +24977,7 @@ function instance$4($$self, $$props, $$invalidate) {
 			fillInInfo(dir, "Closed", hierData);
 
 			if (dir !== "same") {
-				hierData[dir].Implied.graph = mergeGs(...Object.values(hier[dir === "up" ? "down" : "up"]));
+				hierData[dir].Implied.graph = mergeGs(...Object.values(hier[getOppDir(dir)]));
 			} else {
 				hierData[dir].Implied.graph = closeImpliedLinks(mergedInDir, mergedInDir);
 			}
@@ -24892,64 +24989,54 @@ function instance$4($$self, $$props, $$invalidate) {
 	});
 
 	debug(settings, { data });
+	const cellStr = (i, type, info) => DIRECTIONS.map(dir => data[i][dir][type][info]).join("\n");
 	let hierStrs = userHierarchies.map(hierToStr);
 	const click_handler = async (i, dir) => await copy$1(data[i][dir].Merged.nodesStr);
-
-	const click_handler_1 = async i => await copy$1([
-		data[i].up.Merged.nodesStr,
-		data[i].same.Merged.nodesStr,
-		data[i].down.Merged.nodesStr
-	].join("\n"));
-
+	const func = (i, dir) => data[i][dir].Merged.nodes.length;
+	const click_handler_1 = async i => await copy$1(cellStr(i, "Merged", "nodesStr"));
 	const click_handler_2 = async (i, dir) => await copy$1(data[i][dir].Merged.edgesStr);
-
-	const click_handler_3 = async i => await copy$1([
-		data[i].up.Merged.edgesStr,
-		data[i].same.Merged.edgesStr,
-		data[i].down.Merged.edgesStr
-	].join("\n"));
-
+	const func_1 = (i, dir) => data[i][dir].Merged.edges.length;
+	const click_handler_3 = async i => await copy$1(cellStr(i, "Merged", "edgesStr"));
 	const click_handler_4 = async (i, dir) => await copy$1(data[i][dir].Implied.edgesStr);
-
-	const click_handler_5 = async i => await copy$1([
-		data[i].up.Implied.edgesStr,
-		data[i].same.Implied.edgesStr,
-		data[i].down.Implied.edgesStr
-	].join("\n"));
-
-	const func = (dir, datum) => datum[dir].Merged.nodes.length;
-	const func_1 = (dir, datum) => datum[dir].Merged.nodesStr;
+	const func_2 = (i, dir) => data[i][dir].Implied.edges.length;
+	const click_handler_5 = async i => await copy$1(cellStr(i, "Implied", "edgesStr"));
+	const func_3 = (dir, datum) => datum[dir].Merged.nodes.length;
+	const func_4 = (dir, datum) => datum[dir].Merged.nodesStr;
 	const click_handler_6 = async dir => await copy$1(data.map(datum => datum[dir].Merged.nodesStr).join("\n"));
-	const func_2 = (dir, datum) => datum[dir].Merged.edges.length;
-	const func_3 = (dir, datum) => datum[dir].Merged.edgesStr;
+	const func_5 = (dir, datum) => datum[dir].Merged.edges.length;
+	const func_6 = (dir, datum) => datum[dir].Merged.edgesStr;
 	const click_handler_7 = async dir => await copy$1(data.map(datum => datum[dir].Merged.edgesStr).join("\n"));
-	const func_4 = (dir, datum) => datum[dir].Implied.edges.length;
-	const func_5 = (dir, datum) => datum[dir].Implied.edgesStr;
+	const func_7 = (dir, datum) => datum[dir].Implied.edges.length;
+	const func_8 = (dir, datum) => datum[dir].Implied.edgesStr;
 	const click_handler_8 = async dir => await copy$1(data.map(datum => datum[dir].Implied.edgesStr).join("\n"));
 
 	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
 	};
 
 	return [
 		userHierarchies,
 		data,
+		cellStr,
 		hierStrs,
 		plugin,
 		click_handler,
+		func,
 		click_handler_1,
 		click_handler_2,
+		func_1,
 		click_handler_3,
 		click_handler_4,
-		click_handler_5,
-		func,
-		func_1,
-		click_handler_6,
 		func_2,
+		click_handler_5,
 		func_3,
-		click_handler_7,
 		func_4,
+		click_handler_6,
 		func_5,
+		func_6,
+		click_handler_7,
+		func_7,
+		func_8,
 		click_handler_8
 	];
 }
@@ -24958,7 +25045,7 @@ class Stats extends SvelteComponent {
 	constructor(options) {
 		super();
 		if (!document.getElementById("svelte-rb5mhu-style")) add_css$3();
-		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 3 }, [-1, -1]);
+		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 4 }, [-1, -1]);
 	}
 }
 
