@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.0...1.5.1) (2021-11-19)
+
+
+### Bug Fixes
+
+* **Juggl:** :bug: Fix juggl links. Wasn't adding all files ([3f2b460](https://github.com/SkepticMystic/breadcrumbs/commit/3f2b460c66a54a33d8c976ddbec28f3d8802adbf))
+
 ## [1.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.4.0...1.5.0) (2021-11-19)
 
 
