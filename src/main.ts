@@ -239,9 +239,10 @@ export default class BCPlugin extends Plugin {
       checkCallback: () => this.settings.showWriteAllBCsCmd,
     });
 
-    // TODO get a better icon for this
-    this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
-      new VisModal(this.app, this).open()
+    this.addRibbonIcon(
+      addFeatherIcon("tv") as string,
+      "Breadcrumbs Visualisation",
+      () => new VisModal(this.app, this).open()
     );
 
     this.statusBatItemEl = this.addStatusBarItem();
