@@ -2574,6 +2574,24 @@ const ALLUNLINKED = ["All", "No Unlinked"];
 const blankUserHier = () => {
     return { up: [], same: [], down: [], next: [], prev: [] };
 };
+const blankDirObjs = () => {
+    return {
+        up: {},
+        same: {},
+        down: {},
+        next: {},
+        prev: {},
+    };
+};
+const blankDirUndef = () => {
+    return {
+        up: undefined,
+        same: undefined,
+        down: undefined,
+        next: undefined,
+        prev: undefined,
+    };
+};
 const DEFAULT_SETTINGS = {
     userHierarchies: [],
     indexNote: [""],
@@ -20099,7 +20117,6 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
             hierarchies: [],
         };
         userHierarchies.forEach((hier) => {
-            const fieldsArr = Object.values(hier);
             const newHier = {
                 up: {},
                 same: {},
@@ -20109,12 +20126,11 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
             };
             // Add regular metadata links
             if (settings.useAllMetadata) {
-                DIRECTIONS.forEach((dir, i) => {
-                    var _a;
-                    (_a = fieldsArr[i]) === null || _a === void 0 ? void 0 : _a.forEach((field) => {
+                for (const dir of DIRECTIONS) {
+                    hier[dir].forEach((field) => {
                         newHier[dir][field] = getFieldValues(fileFrontmatter, field, settings);
                     });
-                });
+                }
             }
             // Add Juggl Links
             if (jugglLinks.length) {
@@ -20382,6 +20398,8 @@ function addNodeIfNot(g, node, attr) {
         g.addNode(node, attr);
 }
 function addEdgeIfNot(g, source, target, attr) {
+    addNodeIfNot(g, source);
+    addNodeIfNot(g, target);
     if (!g.hasEdge(source, target))
         g.addEdge(source, target, attr);
 }
@@ -20401,23 +20419,24 @@ const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
 function getPrevNext(plugin, currNode) {
     const [rPrev, rNext, iPrev, iNext] = [[], [], [], []];
     const { userHierarchies } = plugin.settings;
+    const { main } = plugin.currGraphs;
     try {
-        plugin.currGraphs.main.forEachEdge(currNode, (k, a, s, t) => {
+        main.forEachEdge(currNode, (k, a, s, t) => {
             const { fieldName } = a;
             if (a.dir === "next" && s === currNode) {
                 rNext.push({ to: t, real: true, fieldName });
             }
-            if (a.dir === "prev" && t === currNode) {
+            else if (a.dir === "prev" && t === currNode) {
                 iNext.push({
                     to: s,
                     real: false,
                     fieldName: getOppFields(userHierarchies, fieldName)[0],
                 });
             }
-            if (a.dir === "prev" && s === currNode) {
+            else if (a.dir === "prev" && s === currNode) {
                 rPrev.push({ to: t, real: true, fieldName });
             }
-            if (a.dir === "next" && t === currNode) {
+            else if (a.dir === "next" && t === currNode) {
                 iPrev.push({
                     to: s,
                     real: false,
@@ -20856,7 +20875,7 @@ function get_each_context_3$2(ctx, list, i) {
 }
 
 // (20:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
-function create_if_block$5(ctx) {
+function create_if_block$4(ctx) {
 	let details;
 	let summary;
 	let t0_value = /*square*/ ctx[12].fieldName + "";
@@ -20864,7 +20883,7 @@ function create_if_block$5(ctx) {
 	let t1;
 	let t2;
 	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_3$1(ctx);
-	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$3(ctx);
+	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$2(ctx);
 
 	return {
 		c() {
@@ -20908,7 +20927,7 @@ function create_if_block$5(ctx) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
-					if_block1 = create_if_block_1$3(ctx);
+					if_block1 = create_if_block_1$2(ctx);
 					if_block1.c();
 					if_block1.m(details, null);
 				}
@@ -21080,7 +21099,7 @@ function create_each_block_3$2(ctx) {
 }
 
 // (45:12) {#if square.impliedItems.length}
-function create_if_block_1$3(ctx) {
+function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
@@ -21240,7 +21259,7 @@ function create_each_block_2$3(ctx) {
 // (19:6) {#each squares as square}
 function create_each_block_1$7(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$5(ctx);
+	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -21256,7 +21275,7 @@ function create_each_block_1$7(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$5(ctx);
+					if_block = create_if_block$4(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -21492,7 +21511,7 @@ function get_each_context_3$1(ctx, list, i) {
 }
 
 // (17:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
-function create_if_block$4(ctx) {
+function create_if_block$3(ctx) {
 	let div;
 	let h3;
 	let t0_value = /*square*/ ctx[12].fieldName + "";
@@ -21500,7 +21519,7 @@ function create_if_block$4(ctx) {
 	let t1;
 	let t2;
 	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_3(ctx);
-	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$2(ctx);
+	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$1(ctx);
 
 	return {
 		c() {
@@ -21543,7 +21562,7 @@ function create_if_block$4(ctx) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
-					if_block1 = create_if_block_1$2(ctx);
+					if_block1 = create_if_block_1$1(ctx);
 					if_block1.c();
 					if_block1.m(div, null);
 				}
@@ -21715,7 +21734,7 @@ function create_each_block_3$1(ctx) {
 }
 
 // (42:12) {#if square.impliedItems.length}
-function create_if_block_1$2(ctx) {
+function create_if_block_1$1(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
@@ -21875,7 +21894,7 @@ function create_each_block_2$2(ctx) {
 // (16:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$4(ctx);
+	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$3(ctx);
 
 	return {
 		c() {
@@ -21891,7 +21910,7 @@ function create_each_block_1$6(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$4(ctx);
+					if_block = create_if_block$3(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -22336,40 +22355,40 @@ class MatrixView extends obsidian.ItemView {
                 }
             });
             iSameArr = iSameNoDup;
-            const upSquare = {
-                realItems: rUp,
-                impliedItems: iUp,
-                fieldName: hier.up[0] === "" ? `${hier.down.join(",")}<Up>` : hier.up.join(", "),
+            const getFieldName = (dir) => {
+                if (hier[dir] === undefined)
+                    return "";
+                return hier[dir][0] === ""
+                    ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
+                    : hier[dir].join(", ");
             };
-            const sameSquare = {
-                realItems: rSame,
-                impliedItems: iSameArr,
-                fieldName: hier.same[0] === ""
-                    ? `${hier.up.join(",")}<Same>`
-                    : hier.same.join(", "),
-            };
-            const downSquare = {
-                realItems: rDown,
-                impliedItems: iDown,
-                fieldName: hier.down[0] === ""
-                    ? `${hier.up.join(",")}<Down>`
-                    : hier.down.join(", "),
-            };
-            const nextSquare = {
-                realItems: rNext,
-                impliedItems: iNext,
-                fieldName: hier.next[0] === ""
-                    ? `${hier.prev.join(",")}<Next>`
-                    : hier.next.join(", "),
-            };
-            const prevSquare = {
-                realItems: rPrev,
-                impliedItems: iPrev,
-                fieldName: hier.prev[0] === ""
-                    ? `${hier.next.join(",")}<Prev>`
-                    : hier.prev.join(", "),
-            };
-            return [upSquare, sameSquare, downSquare, nextSquare, prevSquare];
+            return [
+                {
+                    realItems: rUp,
+                    impliedItems: iUp,
+                    fieldName: getFieldName("up"),
+                },
+                {
+                    realItems: rSame,
+                    impliedItems: iSameArr,
+                    fieldName: getFieldName("same"),
+                },
+                {
+                    realItems: rDown,
+                    impliedItems: iDown,
+                    fieldName: getFieldName("down"),
+                },
+                {
+                    realItems: rNext,
+                    impliedItems: iNext,
+                    fieldName: getFieldName("next"),
+                },
+                {
+                    realItems: rPrev,
+                    impliedItems: iPrev,
+                    fieldName: getFieldName("prev"),
+                },
+            ];
         });
     }
     async draw() {
@@ -22505,7 +22524,7 @@ function add_css$5() {
 }
 
 // (18:2) {#if title}
-function create_if_block$3(ctx) {
+function create_if_block$2(ctx) {
 	let title_1;
 	let t;
 
@@ -22531,7 +22550,7 @@ function create_fragment$9(ctx) {
 	let svg;
 	let if_block_anchor;
 	let current;
-	let if_block = /*title*/ ctx[0] && create_if_block$3(ctx);
+	let if_block = /*title*/ ctx[0] && create_if_block$2(ctx);
 	const default_slot_template = /*#slots*/ ctx[3].default;
 	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[2], null);
 
@@ -22561,7 +22580,7 @@ function create_fragment$9(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$3(ctx);
+					if_block = create_if_block$2(ctx);
 					if_block.c();
 					if_block.m(svg, if_block_anchor);
 				}
@@ -33779,26 +33798,7 @@ function get_each_context_1$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (14:4) {#if prev.length}
-function create_if_block_1$1(ctx) {
-	let span;
-
-	return {
-		c() {
-			span = element("span");
-			span.textContent = "←";
-			attr(span, "class", "BC-left-arrow svelte-1cqb0v5");
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
-}
-
-// (16:6) {#each prev as p}
+// (15:6) {#each prev as p}
 function create_each_block_1$2(ctx) {
 	let div;
 	let strong;
@@ -33856,26 +33856,7 @@ function create_each_block_1$2(ctx) {
 	};
 }
 
-// (29:6) {#if next.length}
-function create_if_block$2(ctx) {
-	let span;
-
-	return {
-		c() {
-			span = element("span");
-			span.textContent = "→";
-			attr(span, "class", "BC-right-arrow svelte-1cqb0v5");
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
-}
-
-// (30:6) {#each next as n}
+// (28:6) {#each next as n}
 function create_each_block$2(ctx) {
 	let div;
 	let t0_value = /*n*/ ctx[6].to + "";
@@ -33936,13 +33917,10 @@ function create_each_block$2(ctx) {
 function create_fragment$2(ctx) {
 	let div2;
 	let div0;
-	let t0;
 	let span0;
-	let t1;
+	let t;
 	let div1;
 	let span1;
-	let t2;
-	let if_block0 = /*prev*/ ctx[2].length && create_if_block_1$1();
 	let each_value_1 = /*prev*/ ctx[2];
 	let each_blocks_1 = [];
 
@@ -33950,7 +33928,6 @@ function create_fragment$2(ctx) {
 		each_blocks_1[i] = create_each_block_1$2(get_each_context_1$2(ctx, each_value_1, i));
 	}
 
-	let if_block1 = /*next*/ ctx[1].length && create_if_block$2();
 	let each_value = /*next*/ ctx[1];
 	let each_blocks = [];
 
@@ -33962,19 +33939,15 @@ function create_fragment$2(ctx) {
 		c() {
 			div2 = element("div");
 			div0 = element("div");
-			if (if_block0) if_block0.c();
-			t0 = space();
 			span0 = element("span");
 
 			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].c();
 			}
 
-			t1 = space();
+			t = space();
 			div1 = element("div");
 			span1 = element("span");
-			if (if_block1) if_block1.c();
-			t2 = space();
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
@@ -33987,36 +33960,21 @@ function create_fragment$2(ctx) {
 		m(target, anchor) {
 			insert(target, div2, anchor);
 			append(div2, div0);
-			if (if_block0) if_block0.m(div0, null);
-			append(div0, t0);
 			append(div0, span0);
 
 			for (let i = 0; i < each_blocks_1.length; i += 1) {
 				each_blocks_1[i].m(span0, null);
 			}
 
-			append(div2, t1);
+			append(div2, t);
 			append(div2, div1);
 			append(div1, span1);
-			if (if_block1) if_block1.m(span1, null);
-			append(span1, t2);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(span1, null);
 			}
 		},
 		p(ctx, [dirty]) {
-			if (/*prev*/ ctx[2].length) {
-				if (if_block0) ; else {
-					if_block0 = create_if_block_1$1();
-					if_block0.c();
-					if_block0.m(div0, t0);
-				}
-			} else if (if_block0) {
-				if_block0.d(1);
-				if_block0 = null;
-			}
-
 			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 5) {
 				each_value_1 = /*prev*/ ctx[2];
 				let i;
@@ -34038,17 +33996,6 @@ function create_fragment$2(ctx) {
 				}
 
 				each_blocks_1.length = each_value_1.length;
-			}
-
-			if (/*next*/ ctx[1].length) {
-				if (if_block1) ; else {
-					if_block1 = create_if_block$2();
-					if_block1.c();
-					if_block1.m(span1, t2);
-				}
-			} else if (if_block1) {
-				if_block1.d(1);
-				if_block1 = null;
 			}
 
 			if (dirty & /*linkClass, app, next, openOrSwitch*/ 3) {
@@ -34078,9 +34025,7 @@ function create_fragment$2(ctx) {
 		o: noop$1,
 		d(detaching) {
 			if (detaching) detach(div2);
-			if (if_block0) if_block0.d();
 			destroy_each(each_blocks_1, detaching);
-			if (if_block1) if_block1.d();
 			destroy_each(each_blocks, detaching);
 		}
 	};
@@ -34527,21 +34472,21 @@ function add_css() {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[10] = list[i];
+	child_ctx[11] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
-	child_ctx[15] = i;
+	child_ctx[14] = list[i];
+	child_ctx[16] = i;
 	return child_ctx;
 }
 
-// (20:8) {:else}
+// (21:8) {:else}
 function create_else_block(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*trail*/ ctx[10];
+	let each_value_1 = /*trail*/ ctx[11];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -34564,8 +34509,8 @@ function create_else_block(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, currFile, hoverPreview, activeLeafView*/ 110) {
-				each_value_1 = /*trail*/ ctx[10];
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, currFile, hoverPreview, view*/ 122) {
+				each_value_1 = /*trail*/ ctx[11];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -34594,58 +34539,48 @@ function create_else_block(ctx) {
 	};
 }
 
-// (18:8) {#if trail.length === 0}
+// (19:8) {#if trail.length === 0}
 function create_if_block_1(ctx) {
 	let span;
-	let t_value = /*settings*/ ctx[2].noPathMessage + "";
-	let t;
 
 	return {
 		c() {
 			span = element("span");
-			t = text(t_value);
+			span.textContent = `${/*settings*/ ctx[4].noPathMessage}`;
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
-			append(span, t);
 		},
-		p(ctx, dirty) {
-			if (dirty & /*settings*/ 4 && t_value !== (t_value = /*settings*/ ctx[2].noPathMessage + "")) set_data(t, t_value);
-		},
+		p: noop$1,
 		d(detaching) {
 			if (detaching) detach(span);
 		}
 	};
 }
 
-// (30:12) {#if i < trail.length - 1}
+// (31:12) {#if i < trail.length - 1}
 function create_if_block_2(ctx) {
 	let span;
-	let t_value = " " + /*settings*/ ctx[2].trailSeperator + " " + "";
-	let t;
 
 	return {
 		c() {
 			span = element("span");
-			t = text(t_value);
+			span.textContent = `${" " + /*settings*/ ctx[4].trailSeperator + " "}`;
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
-			append(span, t);
 		},
-		p(ctx, dirty) {
-			if (dirty & /*settings*/ 4 && t_value !== (t_value = " " + /*settings*/ ctx[2].trailSeperator + " " + "")) set_data(t, t_value);
-		},
+		p: noop$1,
 		d(detaching) {
 			if (detaching) detach(span);
 		}
 	};
 }
 
-// (21:10) {#each trail as crumb, i}
+// (22:10) {#each trail as crumb, i}
 function create_each_block_1(ctx) {
 	let span;
-	let t0_value = /*crumb*/ ctx[13] + "";
+	let t0_value = /*crumb*/ ctx[14] + "";
 	let t0;
 	let t1;
 	let if_block_anchor;
@@ -34653,14 +34588,14 @@ function create_each_block_1(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[7](/*crumb*/ ctx[13], ...args);
+		return /*click_handler*/ ctx[8](/*crumb*/ ctx[14], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[8](/*crumb*/ ctx[13], ...args);
+		return /*mouseover_handler*/ ctx[9](/*crumb*/ ctx[14], ...args);
 	}
 
-	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2(ctx);
+	let if_block = /*i*/ ctx[16] < /*trail*/ ctx[11].length - 1 && create_if_block_2(ctx);
 
 	return {
 		c() {
@@ -34689,9 +34624,9 @@ function create_each_block_1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*trailsToShow*/ 32 && t0_value !== (t0_value = /*crumb*/ ctx[13] + "")) set_data(t0, t0_value);
+			if (dirty & /*trailsToShow*/ 8 && t0_value !== (t0_value = /*crumb*/ ctx[14] + "")) set_data(t0, t0_value);
 
-			if (/*i*/ ctx[15] < /*trail*/ ctx[10].length - 1) {
+			if (/*i*/ ctx[16] < /*trail*/ ctx[11].length - 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -34715,13 +34650,13 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (16:4) {#each trailsToShow as trail}
+// (17:4) {#each trailsToShow as trail}
 function create_each_block(ctx) {
 	let div;
 	let t;
 
 	function select_block_type(ctx, dirty) {
-		if (/*trail*/ ctx[10].length === 0) return create_if_block_1;
+		if (/*trail*/ ctx[11].length === 0) return create_if_block_1;
 		return create_else_block;
 	}
 
@@ -34759,11 +34694,11 @@ function create_each_block(ctx) {
 	};
 }
 
-// (39:2) {#if sortedTrails.length > 1}
+// (40:2) {#if sortedTrails.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let button;
-	let t_value = (/*showAll*/ ctx[4] ? "Shortest" : "All") + "";
+	let t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "";
 	let t;
 	let mounted;
 	let dispose;
@@ -34781,12 +34716,12 @@ function create_if_block(ctx) {
 			append(button, t);
 
 			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler_1*/ ctx[9]);
+				dispose = listen(button, "click", /*click_handler_1*/ ctx[10]);
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*showAll*/ 16 && t_value !== (t_value = (/*showAll*/ ctx[4] ? "Shortest" : "All") + "")) set_data(t, t_value);
+			if (dirty & /*showAll*/ 4 && t_value !== (t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
@@ -34800,7 +34735,7 @@ function create_fragment(ctx) {
 	let span;
 	let div;
 	let t;
-	let each_value = /*trailsToShow*/ ctx[5];
+	let each_value = /*trailsToShow*/ ctx[3];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -34835,8 +34770,8 @@ function create_fragment(ctx) {
 			if (if_block) if_block.m(span, null);
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, currFile, hoverPreview, activeLeafView*/ 110) {
-				each_value = /*trailsToShow*/ ctx[5];
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, currFile, hoverPreview, view*/ 122) {
+				each_value = /*trailsToShow*/ ctx[3];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -34887,35 +34822,36 @@ function instance($$self, $$props, $$invalidate) {
 	
 	let { sortedTrails } = $$props;
 	let { app } = $$props;
-	let { settings } = $$props;
-	let { currFile } = $$props;
-	const activeLeafView = app.workspace.activeLeaf.view;
+	let { plugin } = $$props;
+	const { settings } = plugin;
+	const currFile = app.workspace.getActiveFile();
+	const { view } = app.workspace.activeLeaf;
 	let showAll = settings.showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, currFile, e);
-	const mouseover_handler = (crumb, e) => hoverPreview$1(e, activeLeafView, crumb);
-	const click_handler_1 = () => $$invalidate(4, showAll = !showAll);
+	const mouseover_handler = (crumb, e) => hoverPreview$1(e, view, crumb);
+	const click_handler_1 = () => $$invalidate(2, showAll = !showAll);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
 		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
-		if ("currFile" in $$props) $$invalidate(3, currFile = $$props.currFile);
+		if ("plugin" in $$props) $$invalidate(7, plugin = $$props.plugin);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 17) {
-			$$invalidate(5, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
+		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 5) {
+			$$invalidate(3, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
 		}
 	};
 
 	return [
 		sortedTrails,
 		app,
-		settings,
-		currFile,
 		showAll,
 		trailsToShow,
-		activeLeafView,
+		settings,
+		currFile,
+		view,
+		plugin,
 		click_handler,
 		mouseover_handler,
 		click_handler_1
@@ -34926,13 +34862,7 @@ class TrailPath extends SvelteComponent {
 	constructor(options) {
 		super();
 		if (!document.getElementById("svelte-3c1frp-style")) add_css();
-
-		init$1(this, options, instance, create_fragment, safe_not_equal, {
-			sortedTrails: 0,
-			app: 1,
-			settings: 2,
-			currFile: 3
-		});
+		init$1(this, options, instance, create_fragment, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 7 });
 	}
 }
 
@@ -35064,19 +34994,24 @@ class BCPlugin extends obsidian.Plugin {
     async onload() {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
+        ["prev", "next"].forEach((dir) => {
+            this.settings.userHierarchies.forEach(async (hier, i) => {
+                if (hier[dir] === undefined)
+                    this.settings.userHierarchies[i][dir] = [];
+                await this.saveSettings();
+            });
+        });
         this.registerView(STATS_VIEW, (leaf) => new StatsView(leaf, this));
         this.registerView(MATRIX_VIEW, (leaf) => new MatrixView(leaf, this));
         this.app.workspace.onLayoutReady(async () => {
             var _a;
             if (this.app.plugins.enabledPlugins.has("dataview")) {
-                console.log("has dv");
                 const api = (_a = this.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
                 if (api) {
                     await this.initEverything();
                 }
                 else {
                     this.registerEvent(this.app.metadataCache.on("dataview:api-ready", async () => {
-                        console.log("dv ready");
                         await this.initEverything();
                     }));
                 }
@@ -35207,14 +35142,13 @@ class BCPlugin extends obsidian.Plugin {
         let fileFrontmatterArr = dvQ
             ? getDVMetadataCache(this.app, settings, files)
             : getObsMetadataCache(this.app, settings, files);
-        console.log({ fileFrontmatterArr });
         if (fileFrontmatterArr[0] === undefined) {
             await wait(1000);
             fileFrontmatterArr = dvQ
                 ? getDVMetadataCache(this.app, settings, files)
                 : getObsMetadataCache(this.app, settings, files);
         }
-        const relObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
+        const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
         let hierarchyNotesArr = [];
         if (settings.hierarchyNotes[0] !== "") {
@@ -35238,32 +35172,14 @@ class BCPlugin extends obsidian.Plugin {
         const graphs = {
             main: new graphology_umd_min.MultiGraph(),
             hierGs: [],
-            mergedGs: {
-                up: undefined,
-                same: undefined,
-                down: undefined,
-                next: undefined,
-                prev: undefined,
-            },
-            closedGs: {
-                up: undefined,
-                same: undefined,
-                down: undefined,
-                next: undefined,
-                prev: undefined,
-            },
+            mergedGs: blankDirUndef(),
+            closedGs: blankDirUndef(),
             limitTrailG: undefined,
         };
         userHierarchies.forEach((hier) => {
-            const newGraphs = {
-                up: {},
-                same: {},
-                down: {},
-                next: {},
-                prev: {},
-            };
+            const newGraphs = blankDirObjs();
             DIRECTIONS.forEach((dir) => {
-                if (!hier[dir]) {
+                if (hier[dir] === undefined) {
                     hier[dir] = [];
                 }
                 hier[dir].forEach((dirField) => {
@@ -35274,17 +35190,18 @@ class BCPlugin extends obsidian.Plugin {
         });
         const useCSV = settings.CSVPaths !== "";
         const CSVRows = useCSV ? await this.getCSVRows() : [];
-        relObjArr.forEach((relObj) => {
-            const currFileName = relObj.current.basename || relObj.current.name;
-            relObj.hierarchies.forEach((hier, i) => {
+        neighbourObjArr.forEach((neighbours) => {
+            const currFileName = neighbours.current.basename || neighbours.current.name;
+            addNodeIfNot(graphs.main, currFileName);
+            neighbours.hierarchies.forEach((hier, i) => {
                 DIRECTIONS.forEach((dir) => {
                     for (const fieldName in hier[dir]) {
                         const g = graphs.hierGs[i][dir][fieldName];
-                        const fieldValues = hier[dir][fieldName];
-                        this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
-                        fieldValues.forEach((fieldValue) => {
-                            graphs.main.mergeNode(currFileName);
-                            graphs.main.mergeEdge(currFileName, fieldValue, {
+                        const targets = hier[dir][fieldName];
+                        this.populateGraph(g, currFileName, targets, dir, fieldName);
+                        targets.forEach((target) => {
+                            addNodeIfNot(graphs.main, target);
+                            addEdgeIfNot(graphs.main, currFileName, target, {
                                 dir,
                                 fieldName,
                             });
@@ -35462,18 +35379,17 @@ class BCPlugin extends obsidian.Plugin {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const pathProps = { sortedTrails, app: this.app, settings, currFile };
-        const gridProps = { sortedTrails, app: this.app, plugin: this };
+        const props = { sortedTrails, app: this.app, plugin: this };
         if (settings.showTrail && sortedTrails.length) {
             new TrailPath({
                 target: trailDiv,
-                props: pathProps,
+                props,
             });
         }
         if (settings.showGrid && sortedTrails.length) {
             new TrailGrid({
                 target: trailDiv,
-                props: gridProps,
+                props,
             });
         }
         if (settings.showPrevNext && (next.length || prev.length)) {

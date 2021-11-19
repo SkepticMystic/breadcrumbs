@@ -473,18 +473,19 @@ export default class BCPlugin extends Plugin {
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
 
-    relObjArr.forEach((relObj) => {
-      const currFileName = relObj.current.basename || relObj.current.name;
-      relObj.hierarchies.forEach((hier, i) => {
+    neighbourObjArr.forEach((neighbours) => {
+      const currFileName =
+        neighbours.current.basename || neighbours.current.name;
+      addNodeIfNot(graphs.main, currFileName);
+      neighbours.hierarchies.forEach((hier, i) => {
         DIRECTIONS.forEach((dir) => {
           for (const fieldName in hier[dir]) {
             const g = graphs.hierGs[i][dir][fieldName];
-            const fieldValues = hier[dir][fieldName];
-
-            this.populateGraph(g, currFileName, fieldValues, dir, fieldName);
-            fieldValues.forEach((fieldValue) => {
-              graphs.main.mergeNode(currFileName);
-              graphs.main.mergeEdge(currFileName, fieldValue, {
+            const targets = hier[dir][fieldName];
+            this.populateGraph(g, currFileName, targets, dir, fieldName);
+            targets.forEach((target) => {
+              addNodeIfNot(graphs.main, target);
+              addEdgeIfNot(graphs.main, currFileName, target, {
                 dir,
                 fieldName,
               });
