@@ -20257,6 +20257,14 @@ function runs(arr) {
 async function copy$1(content) {
     await navigator.clipboard.writeText(content).then(() => new obsidian.Notice("Copied to clipboard"), () => new obsidian.Notice("Could not copy to clipboard"));
 }
+function makeWiki(wikiQ, str) {
+    let copy = str.slice();
+    if (wikiQ) {
+        copy = "[[" + copy;
+        copy += "]]";
+    }
+    return copy;
+}
 function mergeGs(...graphs) {
     const outG = new graphology_umd_min();
     graphs.forEach((g) => {
@@ -22190,21 +22198,10 @@ class MatrixView extends obsidian.ItemView {
             : getInNeighbours(g, currFile.basename);
         const internalLinkObjArr = [];
         items.forEach((to) => {
-            let alt = null;
-            if (settings.altLinkFields.length) {
-                const toFile = this.app.metadataCache.getFirstLinkpathDest(to, "");
-                if (toFile) {
-                    const metadata = this.app.metadataCache.getFileCache(toFile);
-                    settings.altLinkFields.forEach((altLinkField) => {
-                        var _a;
-                        alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
-                    });
-                }
-            }
             internalLinkObjArr.push({
                 to,
                 cls: linkClass(this.app, to, realQ),
-                alt,
+                alt: this.getAlt(to, settings),
             });
         });
         return internalLinkObjArr;
@@ -22249,7 +22246,7 @@ class MatrixView extends obsidian.ItemView {
                     continue;
                 }
                 else {
-                    index += `${indent.repeat(depth)}- ${wikilinkIndex ? "[[" : ""}${currNode}${wikilinkIndex ? "]]" : ""}`;
+                    index += `${indent.repeat(depth)}- ${makeWiki(wikilinkIndex, currNode)}`;
                     if (settings.aliasesInIndex) {
                         const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, "");
                         if (currFile !== null) {
@@ -22304,21 +22301,10 @@ class MatrixView extends obsidian.ItemView {
                 }
                 // Create the implied sibling SquareProps
                 impliedSiblings.forEach((impliedSibling) => {
-                    let alt = null;
-                    if (settings.altLinkFields.length) {
-                        const toFile = this.app.metadataCache.getFirstLinkpathDest(impliedSibling, "");
-                        if (toFile) {
-                            const metadata = this.app.metadataCache.getFileCache(toFile);
-                            settings.altLinkFields.forEach((altLinkField) => {
-                                var _a;
-                                alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
-                            });
-                        }
-                    }
                     iSameArr.push({
                         to: impliedSibling,
                         cls: linkClass(this.app, impliedSibling, false),
-                        alt,
+                        alt: this.getAlt(impliedSibling, settings),
                     });
                 });
             });
@@ -22392,37 +22378,30 @@ class MatrixView extends obsidian.ItemView {
         });
     }
     async draw() {
-        this.contentEl.empty();
+        const { contentEl } = this;
+        contentEl.empty();
         const { settings, currGraphs } = this.plugin;
         debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
         const { userHierarchies } = settings;
         const currFile = this.app.workspace.getActiveFile();
-        const viewToggleButton = this.contentEl.createEl("button", {
+        contentEl.createEl("button", {
             text: this.matrixQ ? "List" : "Matrix",
+        }, (el) => {
+            el.onclick = async () => {
+                this.matrixQ = !this.matrixQ;
+                el.innerText = this.matrixQ ? "List" : "Matrix";
+                await this.draw();
+            };
         });
-        viewToggleButton.addEventListener("click", async () => {
-            this.matrixQ = !this.matrixQ;
-            viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
-            await this.draw();
-        });
-        const refreshIndexButton = this.contentEl.createEl("button", {
-            text: "🔁",
-        });
-        refreshIndexButton.addEventListener("click", async () => {
-            await this.plugin.refreshIndex();
+        contentEl.createEl("button", { text: "↻" }, (el) => {
+            el.onclick = async () => await this.plugin.refreshIndex();
         });
         const data = currGraphs.hierGs.map((hier) => {
-            const hierData = {
-                up: undefined,
-                same: undefined,
-                down: undefined,
-                next: undefined,
-                prev: undefined,
-            };
-            DIRECTIONS.forEach((dir) => {
+            const hierData = blankDirUndef();
+            for (const dir of DIRECTIONS) {
                 // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
                 hierData[dir] = mergeGs(...Object.values(hier[dir]));
-            });
+            }
             return hierData;
         });
         debug(settings, { data });
@@ -22430,7 +22409,7 @@ class MatrixView extends obsidian.ItemView {
         debug(settings, { hierSquares });
         const filteredSquaresArr = hierSquares.filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
         const compInput = {
-            target: this.contentEl,
+            target: contentEl,
             props: {
                 filteredSquaresArr,
                 currFile,
@@ -35287,7 +35266,8 @@ class BCPlugin extends obsidian.Plugin {
                         const targets = hier[dir][fieldName];
                         this.populateGraph(g, currFileName, targets, dir, fieldName);
                         targets.forEach((target) => {
-                            addNodeIfNot(graphs.main, target);
+                            // addEdgeIfNot also addsNodeIfNot
+                            // addNodeIfNot(graphs.main, target);
                             addEdgeIfNot(graphs.main, currFileName, target, {
                                 dir,
                                 fieldName,

@@ -1,13 +1,17 @@
-import type { MultiGraph } from "graphology";
 import type Graph from "graphology";
+import type { MultiGraph } from "graphology";
 import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import { DIRECTIONS, MATRIX_VIEW, TRAIL_ICON } from "src/constants";
+import {
+  blankDirUndef,
+  DIRECTIONS,
+  MATRIX_VIEW,
+  TRAIL_ICON,
+} from "src/constants";
 import type {
   BCSettings,
   Directions,
   internalLinkObj,
-  SquareProps,
   userHierarchy,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
@@ -22,6 +26,7 @@ import {
   getPrevNext,
   getSinks,
   linkClass,
+  makeWiki,
   mergeGs,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
@@ -160,20 +165,10 @@ export default class MatrixView extends ItemView {
     const internalLinkObjArr: internalLinkObj[] = [];
 
     items.forEach((to: string) => {
-      let alt = null;
-      if (settings.altLinkFields.length) {
-        const toFile = this.app.metadataCache.getFirstLinkpathDest(to, "");
-        if (toFile) {
-          const metadata = this.app.metadataCache.getFileCache(toFile);
-          settings.altLinkFields.forEach((altLinkField) => {
-            alt = metadata?.frontmatter?.[altLinkField];
-          });
-        }
-      }
       internalLinkObjArr.push({
         to,
         cls: linkClass(this.app, to, realQ),
-        alt,
+        alt: this.getAlt(to, settings),
       });
     });
 
@@ -240,9 +235,10 @@ export default class MatrixView extends ItemView {
         ) {
           continue;
         } else {
-          index += `${indent.repeat(depth)}- ${
-            wikilinkIndex ? "[[" : ""
-          }${currNode}${wikilinkIndex ? "]]" : ""}`;
+          index += `${indent.repeat(depth)}- ${makeWiki(
+            wikilinkIndex,
+            currNode
+          )}`;
 
           if (settings.aliasesInIndex) {
             const currFile = this.app.metadataCache.getFirstLinkpathDest(
@@ -329,24 +325,10 @@ export default class MatrixView extends ItemView {
 
         // Create the implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
-          let alt = null;
-          if (settings.altLinkFields.length) {
-            const toFile = this.app.metadataCache.getFirstLinkpathDest(
-              impliedSibling,
-              ""
-            );
-            if (toFile) {
-              const metadata = this.app.metadataCache.getFileCache(toFile);
-              settings.altLinkFields.forEach((altLinkField) => {
-                alt = metadata?.frontmatter?.[altLinkField];
-              });
-            }
-          }
-
           iSameArr.push({
             to: impliedSibling,
             cls: linkClass(this.app, impliedSibling, false),
-            alt,
+            alt: this.getAlt(impliedSibling, settings),
           });
         });
       });
@@ -432,8 +414,8 @@ export default class MatrixView extends ItemView {
   }
 
   async draw(): Promise<void> {
-    this.contentEl.empty();
-
+    const { contentEl } = this;
+    contentEl.empty();
     const { settings, currGraphs } = this.plugin;
 
     debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
@@ -441,34 +423,30 @@ export default class MatrixView extends ItemView {
     const { userHierarchies } = settings;
     const currFile = this.app.workspace.getActiveFile();
 
-    const viewToggleButton = this.contentEl.createEl("button", {
-      text: this.matrixQ ? "List" : "Matrix",
-    });
-    viewToggleButton.addEventListener("click", async () => {
-      this.matrixQ = !this.matrixQ;
-      viewToggleButton.innerText = this.matrixQ ? "List" : "Matrix";
-      await this.draw();
-    });
+    contentEl.createEl(
+      "button",
+      {
+        text: this.matrixQ ? "List" : "Matrix",
+      },
+      (el) => {
+        el.onclick = async () => {
+          this.matrixQ = !this.matrixQ;
+          el.innerText = this.matrixQ ? "List" : "Matrix";
+          await this.draw();
+        };
+      }
+    );
 
-    const refreshIndexButton = this.contentEl.createEl("button", {
-      text: "🔁",
-    });
-    refreshIndexButton.addEventListener("click", async () => {
-      await this.plugin.refreshIndex();
+    contentEl.createEl("button", { text: "↻" }, (el) => {
+      el.onclick = async () => await this.plugin.refreshIndex();
     });
 
     const data = currGraphs.hierGs.map((hier) => {
-      const hierData: { [dir in Directions]: Graph } = {
-        up: undefined,
-        same: undefined,
-        down: undefined,
-        next: undefined,
-        prev: undefined,
-      };
-      DIRECTIONS.forEach((dir) => {
+      const hierData: { [dir in Directions]: Graph } = blankDirUndef();
+      for (const dir of DIRECTIONS) {
         // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
         hierData[dir] = mergeGs(...Object.values(hier[dir]));
-      });
+      }
       return hierData;
     });
     debug(settings, { data });
@@ -488,7 +466,7 @@ export default class MatrixView extends ItemView {
     );
 
     const compInput = {
-      target: this.contentEl,
+      target: contentEl,
       props: {
         filteredSquaresArr,
         currFile,

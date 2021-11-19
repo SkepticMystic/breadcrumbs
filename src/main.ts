@@ -484,7 +484,8 @@ export default class BCPlugin extends Plugin {
             const targets = hier[dir][fieldName];
             this.populateGraph(g, currFileName, targets, dir, fieldName);
             targets.forEach((target) => {
-              addNodeIfNot(graphs.main, target);
+              // addEdgeIfNot also addsNodeIfNot
+              // addNodeIfNot(graphs.main, target);
               addEdgeIfNot(graphs.main, currFileName, target, {
                 dir,
                 fieldName,
