@@ -499,12 +499,12 @@ export default class BCPlugin extends Plugin {
             const targets = hier[dir][fieldName];
 
             this.populateGraph(g, currFileName, targets, dir, fieldName);
+            addNodeIfNot(graphs.main, currFileName, {
+              dir,
+              fieldName,
+              order: neighbours.order,
+            });
             targets.forEach((target) => {
-              addNodeIfNot(graphs.main, currFileName, {
-                dir,
-                fieldName,
-                order: neighbours.order,
-              });
               addNodeIfNot(graphs.main, target, {
                 dir,
                 fieldName,

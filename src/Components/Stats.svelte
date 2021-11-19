@@ -145,6 +145,7 @@
       </td>
       <td>Nodes</td>
       {#each DIRECTIONS as dir}
+        <!-- svelte-ignore a11y-unknown-aria-attribute -->
         <td
           aria-label-position="left"
           aria-label={data[i][dir].Merged.nodesStr}
@@ -153,6 +154,7 @@
           {data[i][dir].Merged.nodes.length}
         </td>
       {/each}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={cellStr(i, "Merged", "nodesStr")}
@@ -164,6 +166,7 @@
     <tr>
       <td>Real Edges</td>
       {#each DIRECTIONS as dir}
+        <!-- svelte-ignore a11y-unknown-aria-attribute -->
         <td
           aria-label-position="left"
           aria-label={data[i][dir].Merged.edgesStr}
@@ -172,6 +175,7 @@
           {data[i][dir].Merged.edges.length}
         </td>
       {/each}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={cellStr(i, "Merged", "edgesStr")}
@@ -183,6 +187,7 @@
     <tr>
       <td>Implied Edges</td>
       {#each DIRECTIONS as dir}
+        <!-- svelte-ignore a11y-unknown-aria-attribute -->
         <td
           aria-label-position="left"
           aria-label={data[i][dir].Implied.edgesStr}
@@ -191,6 +196,7 @@
           {data[i][dir].Implied.edges.length}
         </td>
       {/each}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={cellStr(i, "Implied", "edgesStr")}
@@ -204,6 +210,7 @@
     <td rowspan="3"> Totals </td>
     <td>Nodes</td>
     {#each DIRECTIONS as dir}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={data.map((datum) => datum[dir].Merged.nodesStr).join("\n")}
@@ -245,6 +252,7 @@
   <tr>
     <td>Real Edges</td>
     {#each DIRECTIONS as dir}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={data.map((datum) => datum[dir].Merged.edgesStr).join("\n")}
@@ -282,6 +290,7 @@
   <tr>
     <td>Implied Edges</td>
     {#each DIRECTIONS as dir}
+      <!-- svelte-ignore a11y-unknown-aria-attribute -->
       <td
         aria-label-position="left"
         aria-label={data.map((datum) => datum[dir].Implied.edgesStr).join("\n")}
