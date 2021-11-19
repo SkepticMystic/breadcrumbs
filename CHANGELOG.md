@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.3.1...1.4.0) (2021-11-19)
+
+
+### Features
+
+* **DucksView:** :sparkles: Add Duck view to show notes which don't have any breadcrumbs ([2d0b2b2](https://github.com/SkepticMystic/breadcrumbs/commit/2d0b2b2dea721f05a537bac4fa512aa35f9caab0))
+
+
+### Bug Fixes
+
+* :bug: Add all nodes to `main` ([fa24115](https://github.com/SkepticMystic/breadcrumbs/commit/fa241157343a31e9d519cb88877325e8df263beb))
+
 ### [1.3.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.3.0...1.3.1) (2021-11-19)
 
 
