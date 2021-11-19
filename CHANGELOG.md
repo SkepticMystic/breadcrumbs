@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.1...1.1.2) (2021-11-19)
+
+
+### Bug Fixes
+
+* :bug: Check if nodes exist before setting edges ([0111eec](https://github.com/SkepticMystic/breadcrumbs/commit/0111eecd347208cb8e59462757a41a6a619f2f66))
+* :bug: Don't index an array using Object.keys :yum: ([79dd8b1](https://github.com/SkepticMystic/breadcrumbs/commit/79dd8b1c6a800051a95692cb17c90ed45bf0160b))
+* :bug: I don't think it has to be a breaking change... ([5524c29](https://github.com/SkepticMystic/breadcrumbs/commit/5524c2981ee10d925f7b8f5630aa6e7195b2df2f))
+
 ### [1.1.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.0...1.1.1) (2021-11-18)
 
 
