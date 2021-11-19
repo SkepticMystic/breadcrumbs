@@ -12,6 +12,7 @@
         "WriteBCToFile",
         "LimitTrailFields",
         "CSV Crumbs",
-        "nextPrev"
+        "nextPrev",
+        "DucksView"
     ]
 }

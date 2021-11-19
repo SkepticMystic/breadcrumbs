@@ -1,3 +1,5 @@
+import type { Constructor } from "obsidian";
+import DucksView from "src/DucksView";
 import type {
   BCSettings,
   Directions,
@@ -5,9 +7,35 @@ import type {
   userHierarchy,
   visTypes,
 } from "src/interfaces";
+import MatrixView from "src/MatrixView";
+import StatsView from "src/StatsView";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
+export const DUCK_VIEW = "BC-ducks";
+
+export type MyView = MatrixView | StatsView | DucksView;
+
+export const VIEWS: {
+  plain: string;
+  type: string;
+  constructor: Constructor<MyView>;
+  openOnLoad: boolean;
+}[] = [
+  {
+    plain: "Matrix",
+    type: MATRIX_VIEW,
+    constructor: MatrixView,
+    openOnLoad: true,
+  },
+  {
+    plain: "Stats",
+    type: STATS_VIEW,
+    constructor: StatsView,
+    openOnLoad: true,
+  },
+  { plain: "Duck", type: DUCK_VIEW, constructor: DucksView, openOnLoad: false },
+];
 
 export const TRAIL_ICON = "BC-trail-icon";
 export const TRAIL_ICON_SVG =

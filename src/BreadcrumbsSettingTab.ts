@@ -266,8 +266,9 @@ export class BCSettingTab extends PluginSettingTab {
                 if (settings.showTrail) {
                   await plugin.drawTrail();
                 }
-                if (plugin.getActiveMatrixView()) {
-                  await plugin.getActiveMatrixView().draw();
+                const activeMatrix = plugin.getActiveTYPEView(MATRIX_VIEW);
+                if (activeMatrix) {
+                  await activeMatrix.draw();
                 }
               }, num * 1000);
               plugin.registerInterval(plugin.refreshIntervalID);
@@ -306,7 +307,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.showNameOrType).onChange(async (value) => {
           settings.showNameOrType = value;
           await plugin.saveSettings();
-          await plugin.getActiveMatrixView().draw();
+          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
       );
 
@@ -319,7 +320,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.showRelationType).onChange(async (value) => {
           settings.showRelationType = value;
           await plugin.saveSettings();
-          await plugin.getActiveMatrixView().draw();
+          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
       );
 
@@ -332,7 +333,7 @@ export class BCSettingTab extends PluginSettingTab {
         text.setValue(settings.orderField).onChange(async (value) => {
           settings.orderField = value;
           await plugin.saveSettings();
-          await plugin.getActiveMatrixView().draw();
+          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
       );
 
@@ -347,7 +348,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.filterImpliedSiblingsOfDifferentTypes = value;
             await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
           })
       );
 
@@ -360,7 +361,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.rlLeaf).onChange(async (value) => {
           settings.rlLeaf = value;
           await plugin.saveSettings();
-          await plugin.getActiveMatrixView()?.onClose();
+          await plugin.getActiveTYPEView(MATRIX_VIEW)?.onClose();
           await openView(
             this.app,
             MATRIX_VIEW,

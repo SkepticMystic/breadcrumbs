@@ -19,7 +19,7 @@ var graphology_umd_min = createCommonjsModule(function (module, exports) {
 
 });
 
-createCommonjsModule(function (module, exports) {
+var feather = createCommonjsModule(function (module, exports) {
 (function webpackUniversalModuleDefinition(root, factory) {
 	module.exports = factory();
 })(typeof self !== 'undefined' ? self : commonjsGlobal, function() {
@@ -2416,6 +2416,23 @@ async function wait(delay) {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
 /**
+ * Adds a specific Feather Icon to Obsidian.
+ *
+ * @param name official Name of the Icon (https://feathericons.com/)
+ * @param attr SVG Attributes for the Icon. The default should work for most usecases.
+ * @returns {string} Icon name
+ */
+function addFeatherIcon(name, attr = { viewBox: "0 0 24 24", width: "100", height: "100" }) {
+    if (feather.icons[name]) {
+        const iconName = `feather-${name}`;
+        obsidian.addIcon(iconName, feather.icons[name].toSvg(attr));
+        return iconName;
+    }
+    else {
+        throw Error(`This Icon (${name}) doesn't exist in the Feather Library.`);
+    }
+}
+/**
  * When hovering a link going to `to`, show the Obsidian hover-preview of that note.
  *
  * You probably have to hold down `Ctrl` when hovering the link for the preview to appear!
@@ -2543,100 +2560,586 @@ async function openView(app, viewType, viewClass, side = "right") {
     return leaf.view;
 }
 
-const MATRIX_VIEW = "BC-matrix";
-const STATS_VIEW = "BC-stats";
-const TRAIL_ICON = "BC-trail-icon";
-const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
-const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
-const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-const VISTYPES = [
-    "Force Directed Graph",
-    "Tidy Tree",
-    "Circle Packing",
-    "Edge Bundling",
-    "Arc Diagram",
-    "Sunburst",
-    "Tree Map",
-    "Icicle",
-    "Radial Tree",
-];
-const DIRECTIONS = ["up", "same", "down", "next", "prev"];
-const ARROW_DIRECTIONS = {
-    up: "↑",
-    same: "↔",
-    down: "↓",
-    next: "→",
-    prev: "←",
-};
-const RELATIONS = ["Parent", "Sibling", "Child"];
-const REAlCLOSED = ["Real", "Closed"];
-const ALLUNLINKED = ["All", "No Unlinked"];
-const blankUserHier = () => {
-    return { up: [], same: [], down: [], next: [], prev: [] };
-};
-const blankDirObjs = () => {
-    return {
-        up: {},
-        same: {},
-        down: {},
-        next: {},
-        prev: {},
+function noop$1() { }
+function assign(tar, src) {
+    // @ts-ignore
+    for (const k in src)
+        tar[k] = src[k];
+    return tar;
+}
+function run(fn) {
+    return fn();
+}
+function blank_object() {
+    return Object.create(null);
+}
+function run_all(fns) {
+    fns.forEach(run);
+}
+function is_function(thing) {
+    return typeof thing === 'function';
+}
+function safe_not_equal(a, b) {
+    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
+function is_empty(obj) {
+    return Object.keys(obj).length === 0;
+}
+function create_slot(definition, ctx, $$scope, fn) {
+    if (definition) {
+        const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
+        return definition[0](slot_ctx);
+    }
+}
+function get_slot_context(definition, ctx, $$scope, fn) {
+    return definition[1] && fn
+        ? assign($$scope.ctx.slice(), definition[1](fn(ctx)))
+        : $$scope.ctx;
+}
+function get_slot_changes(definition, $$scope, dirty, fn) {
+    if (definition[2] && fn) {
+        const lets = definition[2](fn(dirty));
+        if ($$scope.dirty === undefined) {
+            return lets;
+        }
+        if (typeof lets === 'object') {
+            const merged = [];
+            const len = Math.max($$scope.dirty.length, lets.length);
+            for (let i = 0; i < len; i += 1) {
+                merged[i] = $$scope.dirty[i] | lets[i];
+            }
+            return merged;
+        }
+        return $$scope.dirty | lets;
+    }
+    return $$scope.dirty;
+}
+function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_changes_fn, get_slot_context_fn) {
+    const slot_changes = get_slot_changes(slot_definition, $$scope, dirty, get_slot_changes_fn);
+    if (slot_changes) {
+        const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
+        slot.p(slot_context, slot_changes);
+    }
+}
+function exclude_internal_props(props) {
+    const result = {};
+    for (const k in props)
+        if (k[0] !== '$')
+            result[k] = props[k];
+    return result;
+}
+function null_to_empty(value) {
+    return value == null ? '' : value;
+}
+
+function append(target, node) {
+    target.appendChild(node);
+}
+function insert(target, node, anchor) {
+    target.insertBefore(node, anchor || null);
+}
+function detach(node) {
+    node.parentNode.removeChild(node);
+}
+function destroy_each(iterations, detaching) {
+    for (let i = 0; i < iterations.length; i += 1) {
+        if (iterations[i])
+            iterations[i].d(detaching);
+    }
+}
+function element(name) {
+    return document.createElement(name);
+}
+function svg_element(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+}
+function text(data) {
+    return document.createTextNode(data);
+}
+function space() {
+    return text(' ');
+}
+function empty$1() {
+    return text('');
+}
+function listen(node, event, handler, options) {
+    node.addEventListener(event, handler, options);
+    return () => node.removeEventListener(event, handler, options);
+}
+function attr(node, attribute, value) {
+    if (value == null)
+        node.removeAttribute(attribute);
+    else if (node.getAttribute(attribute) !== value)
+        node.setAttribute(attribute, value);
+}
+function children$1(element) {
+    return Array.from(element.childNodes);
+}
+function set_data(text, data) {
+    data = '' + data;
+    if (text.wholeText !== data)
+        text.data = data;
+}
+function set_style(node, key, value, important) {
+    node.style.setProperty(key, value, important ? 'important' : '');
+}
+function select_option(select, value) {
+    for (let i = 0; i < select.options.length; i += 1) {
+        const option = select.options[i];
+        if (option.__value === value) {
+            option.selected = true;
+            return;
+        }
+    }
+}
+
+let current_component;
+function set_current_component(component) {
+    current_component = component;
+}
+
+const dirty_components = [];
+const binding_callbacks = [];
+const render_callbacks = [];
+const flush_callbacks = [];
+const resolved_promise = Promise.resolve();
+let update_scheduled = false;
+function schedule_update() {
+    if (!update_scheduled) {
+        update_scheduled = true;
+        resolved_promise.then(flush);
+    }
+}
+function add_render_callback(fn) {
+    render_callbacks.push(fn);
+}
+let flushing = false;
+const seen_callbacks = new Set();
+function flush() {
+    if (flushing)
+        return;
+    flushing = true;
+    do {
+        // first, call beforeUpdate functions
+        // and update components
+        for (let i = 0; i < dirty_components.length; i += 1) {
+            const component = dirty_components[i];
+            set_current_component(component);
+            update(component.$$);
+        }
+        set_current_component(null);
+        dirty_components.length = 0;
+        while (binding_callbacks.length)
+            binding_callbacks.pop()();
+        // then, once components are updated, call
+        // afterUpdate functions. This may cause
+        // subsequent updates...
+        for (let i = 0; i < render_callbacks.length; i += 1) {
+            const callback = render_callbacks[i];
+            if (!seen_callbacks.has(callback)) {
+                // ...so guard against infinite loops
+                seen_callbacks.add(callback);
+                callback();
+            }
+        }
+        render_callbacks.length = 0;
+    } while (dirty_components.length);
+    while (flush_callbacks.length) {
+        flush_callbacks.pop()();
+    }
+    update_scheduled = false;
+    flushing = false;
+    seen_callbacks.clear();
+}
+function update($$) {
+    if ($$.fragment !== null) {
+        $$.update();
+        run_all($$.before_update);
+        const dirty = $$.dirty;
+        $$.dirty = [-1];
+        $$.fragment && $$.fragment.p($$.ctx, dirty);
+        $$.after_update.forEach(add_render_callback);
+    }
+}
+const outroing = new Set();
+let outros;
+function transition_in(block, local) {
+    if (block && block.i) {
+        outroing.delete(block);
+        block.i(local);
+    }
+}
+function transition_out(block, local, detach, callback) {
+    if (block && block.o) {
+        if (outroing.has(block))
+            return;
+        outroing.add(block);
+        outros.c.push(() => {
+            outroing.delete(block);
+            if (callback) {
+                if (detach)
+                    block.d(1);
+                callback();
+            }
+        });
+        block.o(local);
+    }
+}
+
+function get_spread_update(levels, updates) {
+    const update = {};
+    const to_null_out = {};
+    const accounted_for = { $$scope: 1 };
+    let i = levels.length;
+    while (i--) {
+        const o = levels[i];
+        const n = updates[i];
+        if (n) {
+            for (const key in o) {
+                if (!(key in n))
+                    to_null_out[key] = 1;
+            }
+            for (const key in n) {
+                if (!accounted_for[key]) {
+                    update[key] = n[key];
+                    accounted_for[key] = 1;
+                }
+            }
+            levels[i] = n;
+        }
+        else {
+            for (const key in o) {
+                accounted_for[key] = 1;
+            }
+        }
+    }
+    for (const key in to_null_out) {
+        if (!(key in update))
+            update[key] = undefined;
+    }
+    return update;
+}
+function get_spread_object(spread_props) {
+    return typeof spread_props === 'object' && spread_props !== null ? spread_props : {};
+}
+function create_component(block) {
+    block && block.c();
+}
+function mount_component(component, target, anchor, customElement) {
+    const { fragment, on_mount, on_destroy, after_update } = component.$$;
+    fragment && fragment.m(target, anchor);
+    if (!customElement) {
+        // onMount happens before the initial afterUpdate
+        add_render_callback(() => {
+            const new_on_destroy = on_mount.map(run).filter(is_function);
+            if (on_destroy) {
+                on_destroy.push(...new_on_destroy);
+            }
+            else {
+                // Edge case - component was destroyed immediately,
+                // most likely as a result of a binding initialising
+                run_all(new_on_destroy);
+            }
+            component.$$.on_mount = [];
+        });
+    }
+    after_update.forEach(add_render_callback);
+}
+function destroy_component(component, detaching) {
+    const $$ = component.$$;
+    if ($$.fragment !== null) {
+        run_all($$.on_destroy);
+        $$.fragment && $$.fragment.d(detaching);
+        // TODO null out other refs, including component.$$ (but need to
+        // preserve final state?)
+        $$.on_destroy = $$.fragment = null;
+        $$.ctx = [];
+    }
+}
+function make_dirty(component, i) {
+    if (component.$$.dirty[0] === -1) {
+        dirty_components.push(component);
+        schedule_update();
+        component.$$.dirty.fill(0);
+    }
+    component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
+}
+function init$1(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
+    const parent_component = current_component;
+    set_current_component(component);
+    const $$ = component.$$ = {
+        fragment: null,
+        ctx: null,
+        // state
+        props,
+        update: noop$1,
+        not_equal,
+        bound: blank_object(),
+        // lifecycle
+        on_mount: [],
+        on_destroy: [],
+        on_disconnect: [],
+        before_update: [],
+        after_update: [],
+        context: new Map(parent_component ? parent_component.$$.context : []),
+        // everything else
+        callbacks: blank_object(),
+        dirty,
+        skip_bound: false
     };
-};
-const blankDirUndef = () => {
-    return {
-        up: undefined,
-        same: undefined,
-        down: undefined,
-        next: undefined,
-        prev: undefined,
-    };
-};
-const DEFAULT_SETTINGS = {
-    userHierarchies: [],
-    indexNote: [""],
-    CSVPaths: "",
-    hierarchyNotes: [""],
-    hierarchyNoteDownFieldName: "",
-    hierarchyNoteUpFieldName: "",
-    refreshIndexOnActiveLeafChange: false,
-    altLinkFields: [],
-    useAllMetadata: true,
-    parseJugglLinksWithoutJuggl: false,
-    dvWaitTime: 5000,
-    refreshIntervalTime: 0,
-    defaultView: true,
-    orderField: "order",
-    showNameOrType: true,
-    showRelationType: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
-    rlLeaf: true,
-    showBCs: true,
-    showTrail: true,
-    showGrid: true,
-    showPrevNext: true,
-    limitTrailCheckboxStates: {},
-    hideTrailFieldName: "hide-trail",
-    gridDots: false,
-    dotsColour: "#000000",
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
-    showAll: false,
-    noPathMessage: `This note has no real or implied parents`,
-    trailSeperator: "→",
-    respectReadableLineLength: true,
-    limitWriteBCCheckboxStates: {},
-    writeBCsInline: false,
-    showWriteAllBCsCmd: false,
-    visGraph: "Force Directed Graph",
-    visRelation: "Parent",
-    visClosed: "Real",
-    visAll: "All",
-    wikilinkIndex: true,
-    aliasesInIndex: false,
-    debugMode: false,
-    superDebugMode: false,
-};
+    let ready = false;
+    $$.ctx = instance
+        ? instance(component, options.props || {}, (i, ret, ...rest) => {
+            const value = rest.length ? rest[0] : ret;
+            if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
+                if (!$$.skip_bound && $$.bound[i])
+                    $$.bound[i](value);
+                if (ready)
+                    make_dirty(component, i);
+            }
+            return ret;
+        })
+        : [];
+    $$.update();
+    ready = true;
+    run_all($$.before_update);
+    // `false` as a special case of no DOM component
+    $$.fragment = create_fragment ? create_fragment($$.ctx) : false;
+    if (options.target) {
+        if (options.hydrate) {
+            const nodes = children$1(options.target);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            $$.fragment && $$.fragment.l(nodes);
+            nodes.forEach(detach);
+        }
+        else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            $$.fragment && $$.fragment.c();
+        }
+        if (options.intro)
+            transition_in(component.$$.fragment);
+        mount_component(component, options.target, options.anchor, options.customElement);
+        flush();
+    }
+    set_current_component(parent_component);
+}
+/**
+ * Base class for Svelte components. Used when dev=false.
+ */
+class SvelteComponent {
+    $destroy() {
+        destroy_component(this, 1);
+        this.$destroy = noop$1;
+    }
+    $on(type, callback) {
+        const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
+        callbacks.push(callback);
+        return () => {
+            const index = callbacks.indexOf(callback);
+            if (index !== -1)
+                callbacks.splice(index, 1);
+        };
+    }
+    $set($$props) {
+        if (this.$$set && !is_empty($$props)) {
+            this.$$.skip_bound = true;
+            this.$$set($$props);
+            this.$$.skip_bound = false;
+        }
+    }
+}
+
+/* src\Components\Ducks.svelte generated by Svelte v3.35.0 */
+
+function get_each_context$8(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[9] = list[i];
+	return child_ctx;
+}
+
+// (16:2) {#each ducks as duck}
+function create_each_block$8(ctx) {
+	let div;
+	let a;
+	let t0_value = /*duck*/ ctx[9] + "";
+	let t0;
+	let t1;
+	let mounted;
+	let dispose;
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[4](/*duck*/ ctx[9], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[5](/*duck*/ ctx[9], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			a = element("a");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(a, "class", "internal-link");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, a);
+			append(a, t0);
+			append(div, t1);
+
+			if (!mounted) {
+				dispose = [
+					listen(div, "click", click_handler),
+					listen(div, "mouseover", mouseover_handler)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+function create_fragment$d(ctx) {
+	let div;
+	let h6;
+	let t1;
+	let each_value = /*ducks*/ ctx[2];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$8(get_each_context$8(ctx, each_value, i));
+	}
+
+	return {
+		c() {
+			div = element("div");
+			h6 = element("h6");
+			h6.textContent = "Notes without Breadcrumbs";
+			t1 = space();
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(div, "class", "BC-Ducks markdown-preview-view");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, h6);
+			append(div, t1);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+		},
+		p(ctx, [dirty]) {
+			if (dirty & /*openOrSwitch, app, ducks, hoverPreview, ducksView*/ 7) {
+				each_value = /*ducks*/ ctx[2];
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$8(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block$8(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(div, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value.length;
+			}
+		},
+		i: noop$1,
+		o: noop$1,
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+function instance$d($$self, $$props, $$invalidate) {
+	
+	
+	
+	let { plugin } = $$props;
+	let { app } = $$props;
+	let { ducksView } = $$props;
+	const { main } = plugin.currGraphs;
+	const files = app.vault.getMarkdownFiles();
+	const fileNames = files.map(file => file.basename);
+	const ducks = fileNames.filter(name => !main.neighbors(name).length);
+	const click_handler = async (duck, e) => await openOrSwitch$1(app, duck, e);
+	const mouseover_handler = (duck, e) => hoverPreview$1(e, ducksView, duck);
+
+	$$self.$$set = $$props => {
+		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
+		if ("app" in $$props) $$invalidate(0, app = $$props.app);
+		if ("ducksView" in $$props) $$invalidate(1, ducksView = $$props.ducksView);
+	};
+
+	return [app, ducksView, ducks, plugin, click_handler, mouseover_handler];
+}
+
+class Ducks extends SvelteComponent {
+	constructor(options) {
+		super();
+		init$1(this, options, instance$d, create_fragment$d, safe_not_equal, { plugin: 3, app: 0, ducksView: 1 });
+	}
+}
+
+class DucksView extends obsidian.ItemView {
+    constructor(leaf, plugin) {
+        super(leaf);
+        // TODO Duck icon
+        this.icon = "info";
+        this.plugin = plugin;
+    }
+    async onload() {
+        super.onload();
+        await this.plugin.saveSettings();
+        this.app.workspace.onLayoutReady(async () => {
+            await this.draw();
+        });
+    }
+    getViewType() {
+        return STATS_VIEW;
+    }
+    getDisplayText() {
+        return "Breadcrumbs Ducks";
+    }
+    async onOpen() { }
+    onClose() {
+        if (this.view) {
+            this.view.$destroy();
+        }
+        return Promise.resolve();
+    }
+    async draw() {
+        this.contentEl.empty();
+        this.view = new Ducks({
+            target: this.contentEl,
+            props: { plugin: this.plugin, app: this.app, ducksView: this },
+        });
+    }
+}
 
 /**
  * @license
@@ -20474,395 +20977,6 @@ function getPrevNext(plugin, currNode) {
     }
 }
 
-function noop$1() { }
-function assign(tar, src) {
-    // @ts-ignore
-    for (const k in src)
-        tar[k] = src[k];
-    return tar;
-}
-function run(fn) {
-    return fn();
-}
-function blank_object() {
-    return Object.create(null);
-}
-function run_all(fns) {
-    fns.forEach(run);
-}
-function is_function(thing) {
-    return typeof thing === 'function';
-}
-function safe_not_equal(a, b) {
-    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-function is_empty(obj) {
-    return Object.keys(obj).length === 0;
-}
-function create_slot(definition, ctx, $$scope, fn) {
-    if (definition) {
-        const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
-        return definition[0](slot_ctx);
-    }
-}
-function get_slot_context(definition, ctx, $$scope, fn) {
-    return definition[1] && fn
-        ? assign($$scope.ctx.slice(), definition[1](fn(ctx)))
-        : $$scope.ctx;
-}
-function get_slot_changes(definition, $$scope, dirty, fn) {
-    if (definition[2] && fn) {
-        const lets = definition[2](fn(dirty));
-        if ($$scope.dirty === undefined) {
-            return lets;
-        }
-        if (typeof lets === 'object') {
-            const merged = [];
-            const len = Math.max($$scope.dirty.length, lets.length);
-            for (let i = 0; i < len; i += 1) {
-                merged[i] = $$scope.dirty[i] | lets[i];
-            }
-            return merged;
-        }
-        return $$scope.dirty | lets;
-    }
-    return $$scope.dirty;
-}
-function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_changes_fn, get_slot_context_fn) {
-    const slot_changes = get_slot_changes(slot_definition, $$scope, dirty, get_slot_changes_fn);
-    if (slot_changes) {
-        const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
-        slot.p(slot_context, slot_changes);
-    }
-}
-function exclude_internal_props(props) {
-    const result = {};
-    for (const k in props)
-        if (k[0] !== '$')
-            result[k] = props[k];
-    return result;
-}
-function null_to_empty(value) {
-    return value == null ? '' : value;
-}
-
-function append(target, node) {
-    target.appendChild(node);
-}
-function insert(target, node, anchor) {
-    target.insertBefore(node, anchor || null);
-}
-function detach(node) {
-    node.parentNode.removeChild(node);
-}
-function destroy_each(iterations, detaching) {
-    for (let i = 0; i < iterations.length; i += 1) {
-        if (iterations[i])
-            iterations[i].d(detaching);
-    }
-}
-function element(name) {
-    return document.createElement(name);
-}
-function svg_element(name) {
-    return document.createElementNS('http://www.w3.org/2000/svg', name);
-}
-function text(data) {
-    return document.createTextNode(data);
-}
-function space() {
-    return text(' ');
-}
-function empty$1() {
-    return text('');
-}
-function listen(node, event, handler, options) {
-    node.addEventListener(event, handler, options);
-    return () => node.removeEventListener(event, handler, options);
-}
-function attr(node, attribute, value) {
-    if (value == null)
-        node.removeAttribute(attribute);
-    else if (node.getAttribute(attribute) !== value)
-        node.setAttribute(attribute, value);
-}
-function children$1(element) {
-    return Array.from(element.childNodes);
-}
-function set_data(text, data) {
-    data = '' + data;
-    if (text.wholeText !== data)
-        text.data = data;
-}
-function set_style(node, key, value, important) {
-    node.style.setProperty(key, value, important ? 'important' : '');
-}
-function select_option(select, value) {
-    for (let i = 0; i < select.options.length; i += 1) {
-        const option = select.options[i];
-        if (option.__value === value) {
-            option.selected = true;
-            return;
-        }
-    }
-}
-
-let current_component;
-function set_current_component(component) {
-    current_component = component;
-}
-
-const dirty_components = [];
-const binding_callbacks = [];
-const render_callbacks = [];
-const flush_callbacks = [];
-const resolved_promise = Promise.resolve();
-let update_scheduled = false;
-function schedule_update() {
-    if (!update_scheduled) {
-        update_scheduled = true;
-        resolved_promise.then(flush);
-    }
-}
-function add_render_callback(fn) {
-    render_callbacks.push(fn);
-}
-let flushing = false;
-const seen_callbacks = new Set();
-function flush() {
-    if (flushing)
-        return;
-    flushing = true;
-    do {
-        // first, call beforeUpdate functions
-        // and update components
-        for (let i = 0; i < dirty_components.length; i += 1) {
-            const component = dirty_components[i];
-            set_current_component(component);
-            update(component.$$);
-        }
-        set_current_component(null);
-        dirty_components.length = 0;
-        while (binding_callbacks.length)
-            binding_callbacks.pop()();
-        // then, once components are updated, call
-        // afterUpdate functions. This may cause
-        // subsequent updates...
-        for (let i = 0; i < render_callbacks.length; i += 1) {
-            const callback = render_callbacks[i];
-            if (!seen_callbacks.has(callback)) {
-                // ...so guard against infinite loops
-                seen_callbacks.add(callback);
-                callback();
-            }
-        }
-        render_callbacks.length = 0;
-    } while (dirty_components.length);
-    while (flush_callbacks.length) {
-        flush_callbacks.pop()();
-    }
-    update_scheduled = false;
-    flushing = false;
-    seen_callbacks.clear();
-}
-function update($$) {
-    if ($$.fragment !== null) {
-        $$.update();
-        run_all($$.before_update);
-        const dirty = $$.dirty;
-        $$.dirty = [-1];
-        $$.fragment && $$.fragment.p($$.ctx, dirty);
-        $$.after_update.forEach(add_render_callback);
-    }
-}
-const outroing = new Set();
-let outros;
-function transition_in(block, local) {
-    if (block && block.i) {
-        outroing.delete(block);
-        block.i(local);
-    }
-}
-function transition_out(block, local, detach, callback) {
-    if (block && block.o) {
-        if (outroing.has(block))
-            return;
-        outroing.add(block);
-        outros.c.push(() => {
-            outroing.delete(block);
-            if (callback) {
-                if (detach)
-                    block.d(1);
-                callback();
-            }
-        });
-        block.o(local);
-    }
-}
-
-function get_spread_update(levels, updates) {
-    const update = {};
-    const to_null_out = {};
-    const accounted_for = { $$scope: 1 };
-    let i = levels.length;
-    while (i--) {
-        const o = levels[i];
-        const n = updates[i];
-        if (n) {
-            for (const key in o) {
-                if (!(key in n))
-                    to_null_out[key] = 1;
-            }
-            for (const key in n) {
-                if (!accounted_for[key]) {
-                    update[key] = n[key];
-                    accounted_for[key] = 1;
-                }
-            }
-            levels[i] = n;
-        }
-        else {
-            for (const key in o) {
-                accounted_for[key] = 1;
-            }
-        }
-    }
-    for (const key in to_null_out) {
-        if (!(key in update))
-            update[key] = undefined;
-    }
-    return update;
-}
-function get_spread_object(spread_props) {
-    return typeof spread_props === 'object' && spread_props !== null ? spread_props : {};
-}
-function create_component(block) {
-    block && block.c();
-}
-function mount_component(component, target, anchor, customElement) {
-    const { fragment, on_mount, on_destroy, after_update } = component.$$;
-    fragment && fragment.m(target, anchor);
-    if (!customElement) {
-        // onMount happens before the initial afterUpdate
-        add_render_callback(() => {
-            const new_on_destroy = on_mount.map(run).filter(is_function);
-            if (on_destroy) {
-                on_destroy.push(...new_on_destroy);
-            }
-            else {
-                // Edge case - component was destroyed immediately,
-                // most likely as a result of a binding initialising
-                run_all(new_on_destroy);
-            }
-            component.$$.on_mount = [];
-        });
-    }
-    after_update.forEach(add_render_callback);
-}
-function destroy_component(component, detaching) {
-    const $$ = component.$$;
-    if ($$.fragment !== null) {
-        run_all($$.on_destroy);
-        $$.fragment && $$.fragment.d(detaching);
-        // TODO null out other refs, including component.$$ (but need to
-        // preserve final state?)
-        $$.on_destroy = $$.fragment = null;
-        $$.ctx = [];
-    }
-}
-function make_dirty(component, i) {
-    if (component.$$.dirty[0] === -1) {
-        dirty_components.push(component);
-        schedule_update();
-        component.$$.dirty.fill(0);
-    }
-    component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
-}
-function init$1(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
-    const parent_component = current_component;
-    set_current_component(component);
-    const $$ = component.$$ = {
-        fragment: null,
-        ctx: null,
-        // state
-        props,
-        update: noop$1,
-        not_equal,
-        bound: blank_object(),
-        // lifecycle
-        on_mount: [],
-        on_destroy: [],
-        on_disconnect: [],
-        before_update: [],
-        after_update: [],
-        context: new Map(parent_component ? parent_component.$$.context : []),
-        // everything else
-        callbacks: blank_object(),
-        dirty,
-        skip_bound: false
-    };
-    let ready = false;
-    $$.ctx = instance
-        ? instance(component, options.props || {}, (i, ret, ...rest) => {
-            const value = rest.length ? rest[0] : ret;
-            if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                if (!$$.skip_bound && $$.bound[i])
-                    $$.bound[i](value);
-                if (ready)
-                    make_dirty(component, i);
-            }
-            return ret;
-        })
-        : [];
-    $$.update();
-    ready = true;
-    run_all($$.before_update);
-    // `false` as a special case of no DOM component
-    $$.fragment = create_fragment ? create_fragment($$.ctx) : false;
-    if (options.target) {
-        if (options.hydrate) {
-            const nodes = children$1(options.target);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            $$.fragment && $$.fragment.l(nodes);
-            nodes.forEach(detach);
-        }
-        else {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            $$.fragment && $$.fragment.c();
-        }
-        if (options.intro)
-            transition_in(component.$$.fragment);
-        mount_component(component, options.target, options.anchor, options.customElement);
-        flush();
-    }
-    set_current_component(parent_component);
-}
-/**
- * Base class for Svelte components. Used when dev=false.
- */
-class SvelteComponent {
-    $destroy() {
-        destroy_component(this, 1);
-        this.$destroy = noop$1;
-    }
-    $on(type, callback) {
-        const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
-        callbacks.push(callback);
-        return () => {
-            const index = callbacks.indexOf(callback);
-            if (index !== -1)
-                callbacks.splice(index, 1);
-        };
-    }
-    $set($$props) {
-        if (this.$$set && !is_empty($$props)) {
-            this.$$.skip_bound = true;
-            this.$$set($$props);
-            this.$$.skip_bound = false;
-        }
-    }
-}
-
 /* src\Components\Lists.svelte generated by Svelte v3.35.0 */
 
 function add_css$7() {
@@ -22455,9 +22569,1284 @@ class MatrixView extends obsidian.ItemView {
     }
 }
 
-/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
+/* src\Components\Stats.svelte generated by Svelte v3.35.0 */
+
+function add_css$5() {
+	var style = element("style");
+	style.id = "svelte-rb5mhu-style";
+	style.textContent = "table.svelte-rb5mhu{border-collapse:collapse}td.svelte-rb5mhu:first-child{text-align:right}td.svelte-rb5mhu,th.svelte-rb5mhu{padding:3px;border:1px solid var(--background-modifier-border);white-space:pre-line}";
+	append(document.head, style);
+}
+
+function get_each_context$5(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_1$5(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_2$1(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_3(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[34] = list[i];
+	child_ctx[36] = i;
+	return child_ctx;
+}
+
+function get_each_context_4(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_5(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_6(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_7(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[27] = list[i];
+	return child_ctx;
+}
+
+// (89:4) {#each DIRECTIONS as dir}
+function create_each_block_7(ctx) {
+	let td;
+	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[27]] + "";
+	let t;
+
+	return {
+		c() {
+			td = element("td");
+			t = text(t_value);
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t);
+		},
+		p: noop$1,
+		d(detaching) {
+			if (detaching) detach(td);
+		}
+	};
+}
+
+// (101:6) {#each DIRECTIONS as dir}
+function create_each_block_6(ctx) {
+	let td;
+	let t0_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodes.length + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function click_handler() {
+		return /*click_handler*/ ctx[5](/*i*/ ctx[36], /*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodesStr);
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (122:6) {#each DIRECTIONS as dir}
+function create_each_block_5(ctx) {
+	let td;
+	let t0_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edges.length + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function click_handler_2() {
+		return /*click_handler_2*/ ctx[8](/*i*/ ctx[36], /*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edgesStr);
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler_2);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (143:6) {#each DIRECTIONS as dir}
+function create_each_block_4(ctx) {
+	let td;
+	let t0_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edges.length + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function click_handler_4() {
+		return /*click_handler_4*/ ctx[11](/*i*/ ctx[36], /*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edgesStr);
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler_4);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (95:2) {#each userHierarchies as hier, i}
+function create_each_block_3(ctx) {
+	let tr0;
+	let td0;
+	let t0_value = /*hierStrs*/ ctx[3][/*i*/ ctx[36]] + "";
+	let t0;
+	let t1;
+	let td1;
+	let t3;
+	let t4;
+	let td2;
+	let t5_value = lodash.sum(DIRECTIONS.map(func)) + "";
+	let t5;
+	let td2_aria_label_value;
+	let t6;
+	let tr1;
+	let td3;
+	let t8;
+	let t9;
+	let td4;
+	let t10_value = lodash.sum(DIRECTIONS.map(func_1)) + "";
+	let t10;
+	let td4_aria_label_value;
+	let t11;
+	let tr2;
+	let td5;
+	let t13;
+	let t14;
+	let td6;
+	let t15_value = lodash.sum(DIRECTIONS.map(func_2)) + "";
+	let t15;
+	let td6_aria_label_value;
+	let mounted;
+	let dispose;
+	let each_value_6 = DIRECTIONS;
+	let each_blocks_2 = [];
+
+	for (let i = 0; i < each_value_6.length; i += 1) {
+		each_blocks_2[i] = create_each_block_6(get_each_context_6(ctx, each_value_6, i));
+	}
+
+	function func(...args) {
+		return /*func*/ ctx[6](/*i*/ ctx[36], ...args);
+	}
+
+	function click_handler_1() {
+		return /*click_handler_1*/ ctx[7](/*i*/ ctx[36]);
+	}
+
+	let each_value_5 = DIRECTIONS;
+	let each_blocks_1 = [];
+
+	for (let i = 0; i < each_value_5.length; i += 1) {
+		each_blocks_1[i] = create_each_block_5(get_each_context_5(ctx, each_value_5, i));
+	}
+
+	function func_1(...args) {
+		return /*func_1*/ ctx[9](/*i*/ ctx[36], ...args);
+	}
+
+	function click_handler_3() {
+		return /*click_handler_3*/ ctx[10](/*i*/ ctx[36]);
+	}
+
+	let each_value_4 = DIRECTIONS;
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value_4.length; i += 1) {
+		each_blocks[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
+	}
+
+	function func_2(...args) {
+		return /*func_2*/ ctx[12](/*i*/ ctx[36], ...args);
+	}
+
+	function click_handler_5() {
+		return /*click_handler_5*/ ctx[13](/*i*/ ctx[36]);
+	}
+
+	return {
+		c() {
+			tr0 = element("tr");
+			td0 = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			td1 = element("td");
+			td1.textContent = "Nodes";
+			t3 = space();
+
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
+				each_blocks_2[i].c();
+			}
+
+			t4 = space();
+			td2 = element("td");
+			t5 = text(t5_value);
+			t6 = space();
+			tr1 = element("tr");
+			td3 = element("td");
+			td3.textContent = "Real Edges";
+			t8 = space();
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].c();
+			}
+
+			t9 = space();
+			td4 = element("td");
+			t10 = text(t10_value);
+			t11 = space();
+			tr2 = element("tr");
+			td5 = element("td");
+			td5.textContent = "Implied Edges";
+			t13 = space();
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			t14 = space();
+			td6 = element("td");
+			t15 = text(t15_value);
+			attr(td0, "rowspan", "3");
+			attr(td0, "class", "svelte-rb5mhu");
+			attr(td1, "class", "svelte-rb5mhu");
+			attr(td2, "aria-label-position", "left");
+			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "nodesStr"));
+			attr(td2, "class", "svelte-rb5mhu");
+			attr(td3, "class", "svelte-rb5mhu");
+			attr(td4, "aria-label-position", "left");
+			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "edgesStr"));
+			attr(td4, "class", "svelte-rb5mhu");
+			attr(td5, "class", "svelte-rb5mhu");
+			attr(td6, "aria-label-position", "left");
+			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Implied", "edgesStr"));
+			attr(td6, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, tr0, anchor);
+			append(tr0, td0);
+			append(td0, t0);
+			append(tr0, t1);
+			append(tr0, td1);
+			append(tr0, t3);
+
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
+				each_blocks_2[i].m(tr0, null);
+			}
+
+			append(tr0, t4);
+			append(tr0, td2);
+			append(td2, t5);
+			insert(target, t6, anchor);
+			insert(target, tr1, anchor);
+			append(tr1, td3);
+			append(tr1, t8);
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].m(tr1, null);
+			}
+
+			append(tr1, t9);
+			append(tr1, td4);
+			append(td4, t10);
+			insert(target, t11, anchor);
+			insert(target, tr2, anchor);
+			append(tr2, td5);
+			append(tr2, t13);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(tr2, null);
+			}
+
+			append(tr2, t14);
+			append(tr2, td6);
+			append(td6, t15);
+
+			if (!mounted) {
+				dispose = [
+					listen(td2, "click", click_handler_1),
+					listen(td4, "click", click_handler_3),
+					listen(td6, "click", click_handler_5)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value_6 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_6.length; i += 1) {
+					const child_ctx = get_each_context_6(ctx, each_value_6, i);
+
+					if (each_blocks_2[i]) {
+						each_blocks_2[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_2[i] = create_each_block_6(child_ctx);
+						each_blocks_2[i].c();
+						each_blocks_2[i].m(tr0, t4);
+					}
+				}
+
+				for (; i < each_blocks_2.length; i += 1) {
+					each_blocks_2[i].d(1);
+				}
+
+				each_blocks_2.length = each_value_6.length;
+			}
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value_5 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_5.length; i += 1) {
+					const child_ctx = get_each_context_5(ctx, each_value_5, i);
+
+					if (each_blocks_1[i]) {
+						each_blocks_1[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_1[i] = create_each_block_5(child_ctx);
+						each_blocks_1[i].c();
+						each_blocks_1[i].m(tr1, t9);
+					}
+				}
+
+				for (; i < each_blocks_1.length; i += 1) {
+					each_blocks_1[i].d(1);
+				}
+
+				each_blocks_1.length = each_value_5.length;
+			}
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value_4 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_4.length; i += 1) {
+					const child_ctx = get_each_context_4(ctx, each_value_4, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block_4(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(tr2, t14);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value_4.length;
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(tr0);
+			destroy_each(each_blocks_2, detaching);
+			if (detaching) detach(t6);
+			if (detaching) detach(tr1);
+			destroy_each(each_blocks_1, detaching);
+			if (detaching) detach(t11);
+			if (detaching) detach(tr2);
+			destroy_each(each_blocks, detaching);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (166:4) {#each DIRECTIONS as dir}
+function create_each_block_2$1(ctx) {
+	let td;
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_3)) + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function func_3(...args) {
+		return /*func_3*/ ctx[14](/*dir*/ ctx[27], ...args);
+	}
+
+	function func_4(...args) {
+		return /*func_4*/ ctx[15](/*dir*/ ctx[27], ...args);
+	}
+
+	function click_handler_6() {
+		return /*click_handler_6*/ ctx[16](/*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_4).join("\n"));
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler_6);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (208:4) {#each DIRECTIONS as dir}
+function create_each_block_1$5(ctx) {
+	let td;
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_5)) + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function func_5(...args) {
+		return /*func_5*/ ctx[17](/*dir*/ ctx[27], ...args);
+	}
+
+	function func_6(...args) {
+		return /*func_6*/ ctx[18](/*dir*/ ctx[27], ...args);
+	}
+
+	function click_handler_7() {
+		return /*click_handler_7*/ ctx[19](/*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_6).join("\n"));
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler_7);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (246:4) {#each DIRECTIONS as dir}
+function create_each_block$5(ctx) {
+	let td;
+	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_7)) + "";
+	let t0;
+	let t1;
+	let td_aria_label_value;
+	let mounted;
+	let dispose;
+
+	function func_7(...args) {
+		return /*func_7*/ ctx[20](/*dir*/ ctx[27], ...args);
+	}
+
+	function func_8(...args) {
+		return /*func_8*/ ctx[21](/*dir*/ ctx[27], ...args);
+	}
+
+	function click_handler_8() {
+		return /*click_handler_8*/ ctx[22](/*dir*/ ctx[27]);
+	}
+
+	return {
+		c() {
+			td = element("td");
+			t0 = text(t0_value);
+			t1 = space();
+			attr(td, "aria-label-position", "left");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_8).join("\n"));
+			attr(td, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, td, anchor);
+			append(td, t0);
+			append(td, t1);
+
+			if (!mounted) {
+				dispose = listen(td, "click", click_handler_8);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+		},
+		d(detaching) {
+			if (detaching) detach(td);
+			mounted = false;
+			dispose();
+		}
+	};
+}
 
 function create_fragment$a(ctx) {
+	let table;
+	let thead;
+	let tr0;
+	let th0;
+	let t1;
+	let th1;
+	let t2;
+	let t3;
+	let tr1;
+	let td0;
+	let t4;
+	let td1;
+	let t6;
+	let t7;
+	let td2;
+	let t9;
+	let t10;
+	let tr2;
+	let td3;
+	let t12;
+	let td4;
+	let t14;
+	let t15;
+	let tr3;
+	let td5;
+	let t17;
+	let t18;
+	let tr4;
+	let td6;
+	let t20;
+	let each_value_7 = DIRECTIONS;
+	let each_blocks_4 = [];
+
+	for (let i = 0; i < each_value_7.length; i += 1) {
+		each_blocks_4[i] = create_each_block_7(get_each_context_7(ctx, each_value_7, i));
+	}
+
+	let each_value_3 = /*userHierarchies*/ ctx[0];
+	let each_blocks_3 = [];
+
+	for (let i = 0; i < each_value_3.length; i += 1) {
+		each_blocks_3[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
+	}
+
+	let each_value_2 = DIRECTIONS;
+	let each_blocks_2 = [];
+
+	for (let i = 0; i < each_value_2.length; i += 1) {
+		each_blocks_2[i] = create_each_block_2$1(get_each_context_2$1(ctx, each_value_2, i));
+	}
+
+	let each_value_1 = DIRECTIONS;
+	let each_blocks_1 = [];
+
+	for (let i = 0; i < each_value_1.length; i += 1) {
+		each_blocks_1[i] = create_each_block_1$5(get_each_context_1$5(ctx, each_value_1, i));
+	}
+
+	let each_value = DIRECTIONS;
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$5(get_each_context$5(ctx, each_value, i));
+	}
+
+	return {
+		c() {
+			table = element("table");
+			thead = element("thead");
+			tr0 = element("tr");
+			th0 = element("th");
+			th0.textContent = "Hierarchy";
+			t1 = space();
+			th1 = element("th");
+			t2 = text("Count");
+			t3 = space();
+			tr1 = element("tr");
+			td0 = element("td");
+			t4 = space();
+			td1 = element("td");
+			td1.textContent = "Measure";
+			t6 = space();
+
+			for (let i = 0; i < each_blocks_4.length; i += 1) {
+				each_blocks_4[i].c();
+			}
+
+			t7 = space();
+			td2 = element("td");
+			td2.textContent = "Total";
+			t9 = space();
+
+			for (let i = 0; i < each_blocks_3.length; i += 1) {
+				each_blocks_3[i].c();
+			}
+
+			t10 = space();
+			tr2 = element("tr");
+			td3 = element("td");
+			td3.textContent = "Totals";
+			t12 = space();
+			td4 = element("td");
+			td4.textContent = "Nodes";
+			t14 = space();
+
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
+				each_blocks_2[i].c();
+			}
+
+			t15 = space();
+			tr3 = element("tr");
+			td5 = element("td");
+			td5.textContent = "Real Edges";
+			t17 = space();
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].c();
+			}
+
+			t18 = space();
+			tr4 = element("tr");
+			td6 = element("td");
+			td6.textContent = "Implied Edges";
+			t20 = space();
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(th0, "scope", "col");
+			attr(th0, "class", "svelte-rb5mhu");
+			attr(th1, "scope", "col");
+			attr(th1, "colspan", DIRECTIONS.length + 2);
+			attr(th1, "class", "svelte-rb5mhu");
+			attr(td0, "class", "svelte-rb5mhu");
+			attr(td1, "class", "svelte-rb5mhu");
+			attr(td2, "class", "svelte-rb5mhu");
+			attr(td3, "rowspan", "3");
+			attr(td3, "class", "svelte-rb5mhu");
+			attr(td4, "class", "svelte-rb5mhu");
+			attr(td5, "class", "svelte-rb5mhu");
+			attr(td6, "class", "svelte-rb5mhu");
+			attr(table, "class", "svelte-rb5mhu");
+		},
+		m(target, anchor) {
+			insert(target, table, anchor);
+			append(table, thead);
+			append(thead, tr0);
+			append(tr0, th0);
+			append(tr0, t1);
+			append(tr0, th1);
+			append(th1, t2);
+			append(table, t3);
+			append(table, tr1);
+			append(tr1, td0);
+			append(tr1, t4);
+			append(tr1, td1);
+			append(tr1, t6);
+
+			for (let i = 0; i < each_blocks_4.length; i += 1) {
+				each_blocks_4[i].m(tr1, null);
+			}
+
+			append(tr1, t7);
+			append(tr1, td2);
+			append(table, t9);
+
+			for (let i = 0; i < each_blocks_3.length; i += 1) {
+				each_blocks_3[i].m(table, null);
+			}
+
+			append(table, t10);
+			append(table, tr2);
+			append(tr2, td3);
+			append(tr2, t12);
+			append(tr2, td4);
+			append(tr2, t14);
+
+			for (let i = 0; i < each_blocks_2.length; i += 1) {
+				each_blocks_2[i].m(tr2, null);
+			}
+
+			append(table, t15);
+			append(table, tr3);
+			append(tr3, td5);
+			append(tr3, t17);
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].m(tr3, null);
+			}
+
+			append(table, t18);
+			append(table, tr4);
+			append(tr4, td6);
+			append(tr4, t20);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(tr4, null);
+			}
+		},
+		p(ctx, dirty) {
+			if (dirty & /*ARROW_DIRECTIONS, DIRECTIONS*/ 0) {
+				each_value_7 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_7.length; i += 1) {
+					const child_ctx = get_each_context_7(ctx, each_value_7, i);
+
+					if (each_blocks_4[i]) {
+						each_blocks_4[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_4[i] = create_each_block_7(child_ctx);
+						each_blocks_4[i].c();
+						each_blocks_4[i].m(tr1, t7);
+					}
+				}
+
+				for (; i < each_blocks_4.length; i += 1) {
+					each_blocks_4[i].d(1);
+				}
+
+				each_blocks_4.length = each_value_7.length;
+			}
+
+			if (dirty[0] & /*cellStr, data, hierStrs*/ 14) {
+				each_value_3 = /*userHierarchies*/ ctx[0];
+				let i;
+
+				for (i = 0; i < each_value_3.length; i += 1) {
+					const child_ctx = get_each_context_3(ctx, each_value_3, i);
+
+					if (each_blocks_3[i]) {
+						each_blocks_3[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_3[i] = create_each_block_3(child_ctx);
+						each_blocks_3[i].c();
+						each_blocks_3[i].m(table, t10);
+					}
+				}
+
+				for (; i < each_blocks_3.length; i += 1) {
+					each_blocks_3[i].d(1);
+				}
+
+				each_blocks_3.length = each_value_3.length;
+			}
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value_2 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_2.length; i += 1) {
+					const child_ctx = get_each_context_2$1(ctx, each_value_2, i);
+
+					if (each_blocks_2[i]) {
+						each_blocks_2[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_2[i] = create_each_block_2$1(child_ctx);
+						each_blocks_2[i].c();
+						each_blocks_2[i].m(tr2, null);
+					}
+				}
+
+				for (; i < each_blocks_2.length; i += 1) {
+					each_blocks_2[i].d(1);
+				}
+
+				each_blocks_2.length = each_value_2.length;
+			}
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value_1 = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value_1.length; i += 1) {
+					const child_ctx = get_each_context_1$5(ctx, each_value_1, i);
+
+					if (each_blocks_1[i]) {
+						each_blocks_1[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_1[i] = create_each_block_1$5(child_ctx);
+						each_blocks_1[i].c();
+						each_blocks_1[i].m(tr3, null);
+					}
+				}
+
+				for (; i < each_blocks_1.length; i += 1) {
+					each_blocks_1[i].d(1);
+				}
+
+				each_blocks_1.length = each_value_1.length;
+			}
+
+			if (dirty[0] & /*data*/ 2) {
+				each_value = DIRECTIONS;
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$5(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block$5(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(tr4, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value.length;
+			}
+		},
+		i: noop$1,
+		o: noop$1,
+		d(detaching) {
+			if (detaching) detach(table);
+			destroy_each(each_blocks_4, detaching);
+			destroy_each(each_blocks_3, detaching);
+			destroy_each(each_blocks_2, detaching);
+			destroy_each(each_blocks_1, detaching);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+function instance$a($$self, $$props, $$invalidate) {
+	
+	
+	let { plugin } = $$props;
+	const { settings } = plugin;
+	const { userHierarchies, trailSeperator } = settings;
+	const hierGs = plugin.currGraphs;
+
+	function fillInInfo(dir, gType, hierData, nodesToo = true) {
+		const gInfo = hierData[dir][gType];
+
+		if (nodesToo) {
+			gInfo.nodes = gInfo.graph.nodes();
+			gInfo.nodesStr = gInfo.nodes.map(n => makeWiki(settings.wikilinkIndex, n)).join("\n");
+		}
+
+		gInfo.edges = gInfo.graph.edges();
+		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
+		gInfo.edgesStr = edgeStrArr.join("\n");
+	}
+
+	const data = hierGs.hierGs.map(hier => {
+		const hierData = {
+			//@ts-ignore
+			up: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			same: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			down: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			next: { Merged: {}, Closed: {}, Implied: {} },
+			//@ts-ignore
+			prev: { Merged: {}, Closed: {}, Implied: {} }
+		};
+
+		DIRECTIONS.forEach(dir => {
+			// Merged Graphs
+			/// Smoosh all fieldGs from one dir into a merged graph for that direction as a whole
+			const mergedInDir = mergeGs(...Object.values(hier[dir]));
+
+			hierData[dir].Merged.graph = mergedInDir;
+			fillInInfo(dir, "Merged", hierData);
+
+			// Closed graphs
+			if (dir !== "same") {
+				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergeGs(...Object.values(hier[getOppDir(dir)])));
+			} else {
+				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergedInDir);
+			}
+
+			fillInInfo(dir, "Closed", hierData);
+
+			if (dir !== "same") {
+				hierData[dir].Implied.graph = mergeGs(...Object.values(hier[getOppDir(dir)]));
+			} else {
+				hierData[dir].Implied.graph = closeImpliedLinks(mergedInDir, mergedInDir);
+			}
+
+			fillInInfo(dir, "Implied", hierData, false);
+		});
+
+		return hierData;
+	});
+
+	debug(settings, { data });
+	const cellStr = (i, type, info) => DIRECTIONS.map(dir => data[i][dir][type][info]).join("\n");
+	let hierStrs = userHierarchies.map(hierToStr);
+	const click_handler = async (i, dir) => await copy$1(data[i][dir].Merged.nodesStr);
+	const func = (i, dir) => data[i][dir].Merged.nodes.length;
+	const click_handler_1 = async i => await copy$1(cellStr(i, "Merged", "nodesStr"));
+	const click_handler_2 = async (i, dir) => await copy$1(data[i][dir].Merged.edgesStr);
+	const func_1 = (i, dir) => data[i][dir].Merged.edges.length;
+	const click_handler_3 = async i => await copy$1(cellStr(i, "Merged", "edgesStr"));
+	const click_handler_4 = async (i, dir) => await copy$1(data[i][dir].Implied.edgesStr);
+	const func_2 = (i, dir) => data[i][dir].Implied.edges.length;
+	const click_handler_5 = async i => await copy$1(cellStr(i, "Implied", "edgesStr"));
+	const func_3 = (dir, datum) => datum[dir].Merged.nodes.length;
+	const func_4 = (dir, datum) => datum[dir].Merged.nodesStr;
+	const click_handler_6 = async dir => await copy$1(data.map(datum => datum[dir].Merged.nodesStr).join("\n"));
+	const func_5 = (dir, datum) => datum[dir].Merged.edges.length;
+	const func_6 = (dir, datum) => datum[dir].Merged.edgesStr;
+	const click_handler_7 = async dir => await copy$1(data.map(datum => datum[dir].Merged.edgesStr).join("\n"));
+	const func_7 = (dir, datum) => datum[dir].Implied.edges.length;
+	const func_8 = (dir, datum) => datum[dir].Implied.edgesStr;
+	const click_handler_8 = async dir => await copy$1(data.map(datum => datum[dir].Implied.edgesStr).join("\n"));
+
+	$$self.$$set = $$props => {
+		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
+	};
+
+	return [
+		userHierarchies,
+		data,
+		cellStr,
+		hierStrs,
+		plugin,
+		click_handler,
+		func,
+		click_handler_1,
+		click_handler_2,
+		func_1,
+		click_handler_3,
+		click_handler_4,
+		func_2,
+		click_handler_5,
+		func_3,
+		func_4,
+		click_handler_6,
+		func_5,
+		func_6,
+		click_handler_7,
+		func_7,
+		func_8,
+		click_handler_8
+	];
+}
+
+class Stats extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-rb5mhu-style")) add_css$5();
+		init$1(this, options, instance$a, create_fragment$a, safe_not_equal, { plugin: 4 }, [-1, -1]);
+	}
+}
+
+class StatsView extends obsidian.ItemView {
+    constructor(leaf, plugin) {
+        super(leaf);
+        this.icon = "info";
+        this.plugin = plugin;
+    }
+    async onload() {
+        super.onload();
+        await this.plugin.saveSettings();
+        this.app.workspace.onLayoutReady(async () => {
+            setTimeout(async () => await this.draw(), this.plugin.settings.dvWaitTime);
+        });
+    }
+    getViewType() {
+        return STATS_VIEW;
+    }
+    getDisplayText() {
+        return "Breadcrumbs Stats";
+    }
+    async onOpen() {
+        await this.plugin.saveSettings();
+    }
+    onClose() {
+        if (this.view) {
+            this.view.$destroy();
+        }
+        return Promise.resolve();
+    }
+    // ANCHOR Remove duplicate implied links
+    dfsAllPaths(g, startNode) {
+        const queue = [
+            { node: startNode, path: [] },
+        ];
+        const pathsArr = [];
+        let i = 0;
+        while (queue.length > 0 && i < 1000) {
+            i++;
+            const currPath = queue.shift();
+            const newNodes = getOutNeighbours(g, currPath.node);
+            const extPath = [currPath.node, ...currPath.path];
+            queue.unshift(...newNodes.map((n) => {
+                return { node: n, path: extPath };
+            }));
+            if (newNodes.length === 0) {
+                pathsArr.push(extPath);
+            }
+        }
+        return pathsArr;
+    }
+    async draw() {
+        this.contentEl.empty();
+        this.view = new Stats({
+            target: this.contentEl,
+            props: { plugin: this.plugin },
+        });
+    }
+}
+
+const MATRIX_VIEW = "BC-matrix";
+const STATS_VIEW = "BC-stats";
+const DUCK_VIEW = "BC-ducks";
+const VIEWS = [
+    {
+        plain: "Matrix",
+        type: MATRIX_VIEW,
+        constructor: MatrixView,
+        openOnLoad: true,
+    },
+    {
+        plain: "Stats",
+        type: STATS_VIEW,
+        constructor: StatsView,
+        openOnLoad: true,
+    },
+    { plain: "Duck", type: DUCK_VIEW, constructor: DucksView, openOnLoad: false },
+];
+const TRAIL_ICON = "BC-trail-icon";
+const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
+const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+const VISTYPES = [
+    "Force Directed Graph",
+    "Tidy Tree",
+    "Circle Packing",
+    "Edge Bundling",
+    "Arc Diagram",
+    "Sunburst",
+    "Tree Map",
+    "Icicle",
+    "Radial Tree",
+];
+const DIRECTIONS = ["up", "same", "down", "next", "prev"];
+const ARROW_DIRECTIONS = {
+    up: "↑",
+    same: "↔",
+    down: "↓",
+    next: "→",
+    prev: "←",
+};
+const RELATIONS = ["Parent", "Sibling", "Child"];
+const REAlCLOSED = ["Real", "Closed"];
+const ALLUNLINKED = ["All", "No Unlinked"];
+const blankUserHier = () => {
+    return { up: [], same: [], down: [], next: [], prev: [] };
+};
+const blankDirObjs = () => {
+    return {
+        up: {},
+        same: {},
+        down: {},
+        next: {},
+        prev: {},
+    };
+};
+const blankDirUndef = () => {
+    return {
+        up: undefined,
+        same: undefined,
+        down: undefined,
+        next: undefined,
+        prev: undefined,
+    };
+};
+const DEFAULT_SETTINGS = {
+    userHierarchies: [
+        {
+            up: ["up"],
+            same: ["same"],
+            down: ["down"],
+            next: ["next"],
+            prev: ["prev"],
+        },
+    ],
+    indexNote: [""],
+    CSVPaths: "",
+    hierarchyNotes: [""],
+    hierarchyNoteDownFieldName: "",
+    hierarchyNoteUpFieldName: "",
+    refreshIndexOnActiveLeafChange: false,
+    altLinkFields: [],
+    useAllMetadata: true,
+    parseJugglLinksWithoutJuggl: false,
+    dvWaitTime: 5000,
+    refreshIntervalTime: 0,
+    defaultView: true,
+    orderField: "order",
+    showNameOrType: true,
+    showRelationType: true,
+    filterImpliedSiblingsOfDifferentTypes: false,
+    rlLeaf: true,
+    showBCs: true,
+    showTrail: true,
+    showGrid: true,
+    showPrevNext: true,
+    limitTrailCheckboxStates: {},
+    hideTrailFieldName: "hide-trail",
+    gridDots: false,
+    dotsColour: "#000000",
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+    showAll: false,
+    noPathMessage: `This note has no real or implied parents`,
+    trailSeperator: "→",
+    respectReadableLineLength: true,
+    limitWriteBCCheckboxStates: {},
+    writeBCsInline: false,
+    showWriteAllBCsCmd: false,
+    visGraph: "Force Directed Graph",
+    visRelation: "Parent",
+    visClosed: "Real",
+    visAll: "All",
+    wikilinkIndex: true,
+    aliasesInIndex: false,
+    debugMode: false,
+    superDebugMode: false,
+};
+
+/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
+
+function create_fragment$9(ctx) {
 	let script;
 	let script_src_value;
 	let t;
@@ -22498,7 +23887,7 @@ function create_fragment$a(ctx) {
 	};
 }
 
-function instance$a($$self, $$props, $$invalidate) {
+function instance$9($$self, $$props, $$invalidate) {
 	let button;
 
 	var initializeKofi = () => {
@@ -22519,13 +23908,13 @@ function instance$a($$self, $$props, $$invalidate) {
 class KoFi extends SvelteComponent {
 	constructor(options) {
 		super();
-		init$1(this, options, instance$a, create_fragment$a, safe_not_equal, {});
+		init$1(this, options, instance$9, create_fragment$9, safe_not_equal, {});
 	}
 }
 
 /* node_modules\svelte-icons\components\IconBase.svelte generated by Svelte v3.35.0 */
 
-function add_css$5() {
+function add_css$4() {
 	var style = element("style");
 	style.id = "svelte-c8tyih-style";
 	style.textContent = "svg.svelte-c8tyih{stroke:currentColor;fill:currentColor;stroke-width:0;width:100%;height:auto;max-height:100%}";
@@ -22555,7 +23944,7 @@ function create_if_block$2(ctx) {
 	};
 }
 
-function create_fragment$9(ctx) {
+function create_fragment$8(ctx) {
 	let svg;
 	let if_block_anchor;
 	let current;
@@ -22625,7 +24014,7 @@ function create_fragment$9(ctx) {
 	};
 }
 
-function instance$9($$self, $$props, $$invalidate) {
+function instance$8($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
 	let { title = null } = $$props;
 	let { viewBox } = $$props;
@@ -22642,8 +24031,8 @@ function instance$9($$self, $$props, $$invalidate) {
 class IconBase extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-c8tyih-style")) add_css$5();
-		init$1(this, options, instance$9, create_fragment$9, safe_not_equal, { title: 0, viewBox: 1 });
+		if (!document.getElementById("svelte-c8tyih-style")) add_css$4();
+		init$1(this, options, instance$8, create_fragment$8, safe_not_equal, { title: 0, viewBox: 1 });
 	}
 }
 
@@ -22666,98 +24055,13 @@ function create_default_slot$2(ctx) {
 	};
 }
 
-function create_fragment$8(ctx) {
+function create_fragment$7(ctx) {
 	let iconbase;
 	let current;
 	const iconbase_spread_levels = [{ viewBox: "0 0 512 512" }, /*$$props*/ ctx[0]];
 
 	let iconbase_props = {
 		$$slots: { default: [create_default_slot$2] },
-		$$scope: { ctx }
-	};
-
-	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
-		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
-	}
-
-	iconbase = new IconBase({ props: iconbase_props });
-
-	return {
-		c() {
-			create_component(iconbase.$$.fragment);
-		},
-		m(target, anchor) {
-			mount_component(iconbase, target, anchor);
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			const iconbase_changes = (dirty & /*$$props*/ 1)
-			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
-			: {};
-
-			if (dirty & /*$$scope*/ 2) {
-				iconbase_changes.$$scope = { dirty, ctx };
-			}
-
-			iconbase.$set(iconbase_changes);
-		},
-		i(local) {
-			if (current) return;
-			transition_in(iconbase.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(iconbase.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			destroy_component(iconbase, detaching);
-		}
-	};
-}
-
-function instance$8($$self, $$props, $$invalidate) {
-	$$self.$$set = $$new_props => {
-		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-	};
-
-	$$props = exclude_internal_props($$props);
-	return [$$props];
-}
-
-class FaListUl extends SvelteComponent {
-	constructor(options) {
-		super();
-		init$1(this, options, instance$8, create_fragment$8, safe_not_equal, {});
-	}
-}
-
-/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
-
-function create_default_slot$1(ctx) {
-	let path;
-
-	return {
-		c() {
-			path = svg_element("path");
-			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
-		},
-		m(target, anchor) {
-			insert(target, path, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(path);
-		}
-	};
-}
-
-function create_fragment$7(ctx) {
-	let iconbase;
-	let current;
-	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
-
-	let iconbase_props = {
-		$$slots: { default: [create_default_slot$1] },
 		$$scope: { ctx }
 	};
 
@@ -22810,22 +24114,22 @@ function instance$7($$self, $$props, $$invalidate) {
 	return [$$props];
 }
 
-class FaPlus extends SvelteComponent {
+class FaListUl extends SvelteComponent {
 	constructor(options) {
 		super();
 		init$1(this, options, instance$7, create_fragment$7, safe_not_equal, {});
 	}
 }
 
-/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
+/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
 
-function create_default_slot(ctx) {
+function create_default_slot$1(ctx) {
 	let path;
 
 	return {
 		c() {
 			path = svg_element("path");
-			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
+			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
 		},
 		m(target, anchor) {
 			insert(target, path, anchor);
@@ -22842,7 +24146,7 @@ function create_fragment$6(ctx) {
 	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
 
 	let iconbase_props = {
-		$$slots: { default: [create_default_slot] },
+		$$slots: { default: [create_default_slot$1] },
 		$$scope: { ctx }
 	};
 
@@ -22895,37 +24199,122 @@ function instance$6($$self, $$props, $$invalidate) {
 	return [$$props];
 }
 
-class FaRegTrashAlt extends SvelteComponent {
+class FaPlus extends SvelteComponent {
 	constructor(options) {
 		super();
 		init$1(this, options, instance$6, create_fragment$6, safe_not_equal, {});
 	}
 }
 
+/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
+
+function create_default_slot(ctx) {
+	let path;
+
+	return {
+		c() {
+			path = svg_element("path");
+			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
+		},
+		m(target, anchor) {
+			insert(target, path, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(path);
+		}
+	};
+}
+
+function create_fragment$5(ctx) {
+	let iconbase;
+	let current;
+	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
+
+	let iconbase_props = {
+		$$slots: { default: [create_default_slot] },
+		$$scope: { ctx }
+	};
+
+	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
+		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
+	}
+
+	iconbase = new IconBase({ props: iconbase_props });
+
+	return {
+		c() {
+			create_component(iconbase.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(iconbase, target, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const iconbase_changes = (dirty & /*$$props*/ 1)
+			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
+			: {};
+
+			if (dirty & /*$$scope*/ 2) {
+				iconbase_changes.$$scope = { dirty, ctx };
+			}
+
+			iconbase.$set(iconbase_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(iconbase.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(iconbase.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(iconbase, detaching);
+		}
+	};
+}
+
+function instance$5($$self, $$props, $$invalidate) {
+	$$self.$$set = $$new_props => {
+		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+	};
+
+	$$props = exclude_internal_props($$props);
+	return [$$props];
+}
+
+class FaRegTrashAlt extends SvelteComponent {
+	constructor(options) {
+		super();
+		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, {});
+	}
+}
+
 /* src\Components\UserHierarchies.svelte generated by Svelte v3.35.0 */
 
-function add_css$4() {
+function add_css$3() {
 	var style = element("style");
 	style.id = "svelte-5y4abu-style";
 	style.textContent = "label.BC-Arrow-Label.svelte-5y4abu.svelte-5y4abu{display:inline-block;width:20px !important}div.GA-Buttons.svelte-5y4abu.svelte-5y4abu{padding-bottom:5px}details.BC-Hier-Details.svelte-5y4abu.svelte-5y4abu{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-5y4abu summary.svelte-5y4abu::marker{font-size:10px}.BC-Hier-Details.svelte-5y4abu summary button.svelte-5y4abu{float:right}.icon.svelte-5y4abu.svelte-5y4abu{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
-function get_each_context$5(ctx, list, i) {
+function get_each_context$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[12] = list[i];
 	child_ctx[14] = i;
 	return child_ctx;
 }
 
-function get_each_context_1$5(ctx, list, i) {
+function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
 // (92:6) {#each DIRECTIONS as dir}
-function create_each_block_1$5(ctx) {
+function create_each_block_1$4(ctx) {
 	let div;
 	let label;
 	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[15]] + "";
@@ -22984,7 +24373,7 @@ function create_each_block_1$5(ctx) {
 }
 
 // (60:2) {#each currHiers as hier, i}
-function create_each_block$5(ctx) {
+function create_each_block$4(ctx) {
 	let details;
 	let summary;
 	let t0_value = DIRECTIONS.map(func).map(func_1).join(" ") + "";
@@ -23021,7 +24410,7 @@ function create_each_block$5(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$5(get_each_context_1$5(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$4(get_each_context_1$4(ctx, each_value_1, i));
 	}
 
 	return {
@@ -23094,12 +24483,12 @@ function create_each_block$5(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$5(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$4(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$5(child_ctx);
+						each_blocks[i] = create_each_block_1$4(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(details, t8);
 					}
@@ -23121,7 +24510,7 @@ function create_each_block$5(ctx) {
 	};
 }
 
-function create_fragment$5(ctx) {
+function create_fragment$4(ctx) {
 	let div4;
 	let div3;
 	let button0;
@@ -23146,7 +24535,7 @@ function create_fragment$5(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$5(get_each_context$5(ctx, each_value, i));
+		each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
 	}
 
 	return {
@@ -23216,12 +24605,12 @@ function create_fragment$5(ctx) {
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$5(ctx, each_value, i);
+					const child_ctx = get_each_context$4(ctx, each_value, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block$5(child_ctx);
+						each_blocks[i] = create_each_block$4(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div4, null);
 					}
@@ -23261,7 +24650,7 @@ function create_fragment$5(ctx) {
 
 const func_1 = dirFields => `(${dirFields})`;
 
-function instance$5($$self, $$props, $$invalidate) {
+function instance$4($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -23364,8 +24753,8 @@ function instance$5($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-5y4abu-style")) add_css$4();
-		init$1(this, options, instance$5, create_fragment$5, safe_not_equal, { plugin: 2 });
+		if (!document.getElementById("svelte-5y4abu-style")) add_css$3();
+		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 2 });
 	}
 }
 
@@ -23562,8 +24951,9 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                     if (settings.showTrail) {
                         await plugin.drawTrail();
                     }
-                    if (plugin.getActiveMatrixView()) {
-                        await plugin.getActiveMatrixView().draw();
+                    const activeMatrix = plugin.getActiveTYPEView(MATRIX_VIEW);
+                    if (activeMatrix) {
+                        await activeMatrix.draw();
                     }
                 }, num * 1000);
                 plugin.registerInterval(plugin.refreshIntervalID);
@@ -23593,7 +24983,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .addToggle((toggle) => toggle.setValue(settings.showNameOrType).onChange(async (value) => {
             settings.showNameOrType = value;
             await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new obsidian.Setting(MLViewDetails)
             .setName("Show Relationship Type")
@@ -23601,7 +24991,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .addToggle((toggle) => toggle.setValue(settings.showRelationType).onChange(async (value) => {
             settings.showRelationType = value;
             await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new obsidian.Setting(MLViewDetails)
             .setName("Sorting Field Name")
@@ -23609,7 +24999,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .addText((text) => text.setValue(settings.orderField).onChange(async (value) => {
             settings.orderField = value;
             await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new obsidian.Setting(MLViewDetails)
             .setName("Filter Implied Siblings")
@@ -23619,7 +25009,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .onChange(async (value) => {
             settings.filterImpliedSiblingsOfDifferentTypes = value;
             await plugin.saveSettings();
-            await plugin.getActiveMatrixView().draw();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new obsidian.Setting(MLViewDetails)
             .setName("Open View in Right or Left side")
@@ -23628,7 +25018,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             var _a;
             settings.rlLeaf = value;
             await plugin.saveSettings();
-            await ((_a = plugin.getActiveMatrixView()) === null || _a === void 0 ? void 0 : _a.onClose());
+            await ((_a = plugin.getActiveTYPEView(MATRIX_VIEW)) === null || _a === void 0 ? void 0 : _a.onClose());
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
         const trailDetails = containerEl.createEl("details");
@@ -23645,7 +25035,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             cls: "limit-ML-fields",
         });
         limitTrailFieldsDiv.createEl("strong", {
-            text: "Limit M/L View to only show certain fields",
+            text: "Limit Trail View to only show certain fields",
         });
         const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: "checkboxes" });
         function drawLimitTrailCheckboxes(div) {
@@ -23981,1153 +25371,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             el.addEventListener("click", () => console.log(settings));
         });
         new KoFi({ target: this.containerEl });
-    }
-}
-
-/* src\Components\Stats.svelte generated by Svelte v3.35.0 */
-
-function add_css$3() {
-	var style = element("style");
-	style.id = "svelte-rb5mhu-style";
-	style.textContent = "table.svelte-rb5mhu{border-collapse:collapse}td.svelte-rb5mhu:first-child{text-align:right}td.svelte-rb5mhu,th.svelte-rb5mhu{padding:3px;border:1px solid var(--background-modifier-border);white-space:pre-line}";
-	append(document.head, style);
-}
-
-function get_each_context$4(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_1$4(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_2$1(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_3(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[34] = list[i];
-	child_ctx[36] = i;
-	return child_ctx;
-}
-
-function get_each_context_4(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_5(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_6(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_7(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i];
-	return child_ctx;
-}
-
-// (89:4) {#each DIRECTIONS as dir}
-function create_each_block_7(ctx) {
-	let td;
-	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[27]] + "";
-	let t;
-
-	return {
-		c() {
-			td = element("td");
-			t = text(t_value);
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t);
-		},
-		p: noop$1,
-		d(detaching) {
-			if (detaching) detach(td);
-		}
-	};
-}
-
-// (101:6) {#each DIRECTIONS as dir}
-function create_each_block_6(ctx) {
-	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodes.length + "";
-	let t;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function click_handler() {
-		return /*click_handler*/ ctx[5](/*i*/ ctx[36], /*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t = text(t_value);
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodesStr);
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (120:6) {#each DIRECTIONS as dir}
-function create_each_block_5(ctx) {
-	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edges.length + "";
-	let t;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function click_handler_2() {
-		return /*click_handler_2*/ ctx[8](/*i*/ ctx[36], /*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t = text(t_value);
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edgesStr);
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler_2);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (139:6) {#each DIRECTIONS as dir}
-function create_each_block_4(ctx) {
-	let td;
-	let t_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edges.length + "";
-	let t;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function click_handler_4() {
-		return /*click_handler_4*/ ctx[11](/*i*/ ctx[36], /*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t = text(t_value);
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edgesStr);
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler_4);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (95:2) {#each userHierarchies as hier, i}
-function create_each_block_3(ctx) {
-	let tr0;
-	let td0;
-	let t0_value = /*hierStrs*/ ctx[3][/*i*/ ctx[36]] + "";
-	let t0;
-	let t1;
-	let td1;
-	let t3;
-	let t4;
-	let td2;
-	let t5_value = lodash.sum(DIRECTIONS.map(func)) + "";
-	let t5;
-	let td2_aria_label_value;
-	let t6;
-	let tr1;
-	let td3;
-	let t8;
-	let t9;
-	let td4;
-	let t10_value = lodash.sum(DIRECTIONS.map(func_1)) + "";
-	let t10;
-	let td4_aria_label_value;
-	let t11;
-	let tr2;
-	let td5;
-	let t13;
-	let t14;
-	let td6;
-	let t15_value = lodash.sum(DIRECTIONS.map(func_2)) + "";
-	let t15;
-	let td6_aria_label_value;
-	let mounted;
-	let dispose;
-	let each_value_6 = DIRECTIONS;
-	let each_blocks_2 = [];
-
-	for (let i = 0; i < each_value_6.length; i += 1) {
-		each_blocks_2[i] = create_each_block_6(get_each_context_6(ctx, each_value_6, i));
-	}
-
-	function func(...args) {
-		return /*func*/ ctx[6](/*i*/ ctx[36], ...args);
-	}
-
-	function click_handler_1() {
-		return /*click_handler_1*/ ctx[7](/*i*/ ctx[36]);
-	}
-
-	let each_value_5 = DIRECTIONS;
-	let each_blocks_1 = [];
-
-	for (let i = 0; i < each_value_5.length; i += 1) {
-		each_blocks_1[i] = create_each_block_5(get_each_context_5(ctx, each_value_5, i));
-	}
-
-	function func_1(...args) {
-		return /*func_1*/ ctx[9](/*i*/ ctx[36], ...args);
-	}
-
-	function click_handler_3() {
-		return /*click_handler_3*/ ctx[10](/*i*/ ctx[36]);
-	}
-
-	let each_value_4 = DIRECTIONS;
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value_4.length; i += 1) {
-		each_blocks[i] = create_each_block_4(get_each_context_4(ctx, each_value_4, i));
-	}
-
-	function func_2(...args) {
-		return /*func_2*/ ctx[12](/*i*/ ctx[36], ...args);
-	}
-
-	function click_handler_5() {
-		return /*click_handler_5*/ ctx[13](/*i*/ ctx[36]);
-	}
-
-	return {
-		c() {
-			tr0 = element("tr");
-			td0 = element("td");
-			t0 = text(t0_value);
-			t1 = space();
-			td1 = element("td");
-			td1.textContent = "Nodes";
-			t3 = space();
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].c();
-			}
-
-			t4 = space();
-			td2 = element("td");
-			t5 = text(t5_value);
-			t6 = space();
-			tr1 = element("tr");
-			td3 = element("td");
-			td3.textContent = "Real Edges";
-			t8 = space();
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].c();
-			}
-
-			t9 = space();
-			td4 = element("td");
-			t10 = text(t10_value);
-			t11 = space();
-			tr2 = element("tr");
-			td5 = element("td");
-			td5.textContent = "Implied Edges";
-			t13 = space();
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			t14 = space();
-			td6 = element("td");
-			t15 = text(t15_value);
-			attr(td0, "rowspan", "3");
-			attr(td0, "class", "svelte-rb5mhu");
-			attr(td1, "class", "svelte-rb5mhu");
-			attr(td2, "aria-label-position", "left");
-			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "nodesStr"));
-			attr(td2, "class", "svelte-rb5mhu");
-			attr(td3, "class", "svelte-rb5mhu");
-			attr(td4, "aria-label-position", "left");
-			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Merged", "edgesStr"));
-			attr(td4, "class", "svelte-rb5mhu");
-			attr(td5, "class", "svelte-rb5mhu");
-			attr(td6, "aria-label-position", "left");
-			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[2](/*i*/ ctx[36], "Implied", "edgesStr"));
-			attr(td6, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, tr0, anchor);
-			append(tr0, td0);
-			append(td0, t0);
-			append(tr0, t1);
-			append(tr0, td1);
-			append(tr0, t3);
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].m(tr0, null);
-			}
-
-			append(tr0, t4);
-			append(tr0, td2);
-			append(td2, t5);
-			insert(target, t6, anchor);
-			insert(target, tr1, anchor);
-			append(tr1, td3);
-			append(tr1, t8);
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(tr1, null);
-			}
-
-			append(tr1, t9);
-			append(tr1, td4);
-			append(td4, t10);
-			insert(target, t11, anchor);
-			insert(target, tr2, anchor);
-			append(tr2, td5);
-			append(tr2, t13);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(tr2, null);
-			}
-
-			append(tr2, t14);
-			append(tr2, td6);
-			append(td6, t15);
-
-			if (!mounted) {
-				dispose = [
-					listen(td2, "click", click_handler_1),
-					listen(td4, "click", click_handler_3),
-					listen(td6, "click", click_handler_5)
-				];
-
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value_6 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_6.length; i += 1) {
-					const child_ctx = get_each_context_6(ctx, each_value_6, i);
-
-					if (each_blocks_2[i]) {
-						each_blocks_2[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_2[i] = create_each_block_6(child_ctx);
-						each_blocks_2[i].c();
-						each_blocks_2[i].m(tr0, t4);
-					}
-				}
-
-				for (; i < each_blocks_2.length; i += 1) {
-					each_blocks_2[i].d(1);
-				}
-
-				each_blocks_2.length = each_value_6.length;
-			}
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value_5 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_5.length; i += 1) {
-					const child_ctx = get_each_context_5(ctx, each_value_5, i);
-
-					if (each_blocks_1[i]) {
-						each_blocks_1[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_1[i] = create_each_block_5(child_ctx);
-						each_blocks_1[i].c();
-						each_blocks_1[i].m(tr1, t9);
-					}
-				}
-
-				for (; i < each_blocks_1.length; i += 1) {
-					each_blocks_1[i].d(1);
-				}
-
-				each_blocks_1.length = each_value_5.length;
-			}
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value_4 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_4.length; i += 1) {
-					const child_ctx = get_each_context_4(ctx, each_value_4, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block_4(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(tr2, t14);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value_4.length;
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(tr0);
-			destroy_each(each_blocks_2, detaching);
-			if (detaching) detach(t6);
-			if (detaching) detach(tr1);
-			destroy_each(each_blocks_1, detaching);
-			if (detaching) detach(t11);
-			if (detaching) detach(tr2);
-			destroy_each(each_blocks, detaching);
-			mounted = false;
-			run_all(dispose);
-		}
-	};
-}
-
-// (160:4) {#each DIRECTIONS as dir}
-function create_each_block_2$1(ctx) {
-	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_3)) + "";
-	let t0;
-	let t1;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function func_3(...args) {
-		return /*func_3*/ ctx[14](/*dir*/ ctx[27], ...args);
-	}
-
-	function func_4(...args) {
-		return /*func_4*/ ctx[15](/*dir*/ ctx[27], ...args);
-	}
-
-	function click_handler_6() {
-		return /*click_handler_6*/ ctx[16](/*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t0 = text(t0_value);
-			t1 = space();
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_4).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t0);
-			append(td, t1);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler_6);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (201:4) {#each DIRECTIONS as dir}
-function create_each_block_1$4(ctx) {
-	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_5)) + "";
-	let t0;
-	let t1;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function func_5(...args) {
-		return /*func_5*/ ctx[17](/*dir*/ ctx[27], ...args);
-	}
-
-	function func_6(...args) {
-		return /*func_6*/ ctx[18](/*dir*/ ctx[27], ...args);
-	}
-
-	function click_handler_7() {
-		return /*click_handler_7*/ ctx[19](/*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t0 = text(t0_value);
-			t1 = space();
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_6).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t0);
-			append(td, t1);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler_7);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (238:4) {#each DIRECTIONS as dir}
-function create_each_block$4(ctx) {
-	let td;
-	let t0_value = lodash.sum(/*data*/ ctx[1].map(func_7)) + "";
-	let t0;
-	let t1;
-	let td_aria_label_value;
-	let mounted;
-	let dispose;
-
-	function func_7(...args) {
-		return /*func_7*/ ctx[20](/*dir*/ ctx[27], ...args);
-	}
-
-	function func_8(...args) {
-		return /*func_8*/ ctx[21](/*dir*/ ctx[27], ...args);
-	}
-
-	function click_handler_8() {
-		return /*click_handler_8*/ ctx[22](/*dir*/ ctx[27]);
-	}
-
-	return {
-		c() {
-			td = element("td");
-			t0 = text(t0_value);
-			t1 = space();
-			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[1].map(func_8).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, td, anchor);
-			append(td, t0);
-			append(td, t1);
-
-			if (!mounted) {
-				dispose = listen(td, "click", click_handler_8);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-		},
-		d(detaching) {
-			if (detaching) detach(td);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-function create_fragment$4(ctx) {
-	let table;
-	let thead;
-	let tr0;
-	let th0;
-	let t1;
-	let th1;
-	let t2;
-	let t3;
-	let tr1;
-	let td0;
-	let t4;
-	let td1;
-	let t6;
-	let t7;
-	let td2;
-	let t9;
-	let t10;
-	let tr2;
-	let td3;
-	let t12;
-	let td4;
-	let t14;
-	let t15;
-	let tr3;
-	let td5;
-	let t17;
-	let t18;
-	let tr4;
-	let td6;
-	let t20;
-	let each_value_7 = DIRECTIONS;
-	let each_blocks_4 = [];
-
-	for (let i = 0; i < each_value_7.length; i += 1) {
-		each_blocks_4[i] = create_each_block_7(get_each_context_7(ctx, each_value_7, i));
-	}
-
-	let each_value_3 = /*userHierarchies*/ ctx[0];
-	let each_blocks_3 = [];
-
-	for (let i = 0; i < each_value_3.length; i += 1) {
-		each_blocks_3[i] = create_each_block_3(get_each_context_3(ctx, each_value_3, i));
-	}
-
-	let each_value_2 = DIRECTIONS;
-	let each_blocks_2 = [];
-
-	for (let i = 0; i < each_value_2.length; i += 1) {
-		each_blocks_2[i] = create_each_block_2$1(get_each_context_2$1(ctx, each_value_2, i));
-	}
-
-	let each_value_1 = DIRECTIONS;
-	let each_blocks_1 = [];
-
-	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks_1[i] = create_each_block_1$4(get_each_context_1$4(ctx, each_value_1, i));
-	}
-
-	let each_value = DIRECTIONS;
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
-	}
-
-	return {
-		c() {
-			table = element("table");
-			thead = element("thead");
-			tr0 = element("tr");
-			th0 = element("th");
-			th0.textContent = "Hierarchy";
-			t1 = space();
-			th1 = element("th");
-			t2 = text("Count");
-			t3 = space();
-			tr1 = element("tr");
-			td0 = element("td");
-			t4 = space();
-			td1 = element("td");
-			td1.textContent = "Measure";
-			t6 = space();
-
-			for (let i = 0; i < each_blocks_4.length; i += 1) {
-				each_blocks_4[i].c();
-			}
-
-			t7 = space();
-			td2 = element("td");
-			td2.textContent = "Total";
-			t9 = space();
-
-			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].c();
-			}
-
-			t10 = space();
-			tr2 = element("tr");
-			td3 = element("td");
-			td3.textContent = "Totals";
-			t12 = space();
-			td4 = element("td");
-			td4.textContent = "Nodes";
-			t14 = space();
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].c();
-			}
-
-			t15 = space();
-			tr3 = element("tr");
-			td5 = element("td");
-			td5.textContent = "Real Edges";
-			t17 = space();
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].c();
-			}
-
-			t18 = space();
-			tr4 = element("tr");
-			td6 = element("td");
-			td6.textContent = "Implied Edges";
-			t20 = space();
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(th0, "scope", "col");
-			attr(th0, "class", "svelte-rb5mhu");
-			attr(th1, "scope", "col");
-			attr(th1, "colspan", DIRECTIONS.length + 2);
-			attr(th1, "class", "svelte-rb5mhu");
-			attr(td0, "class", "svelte-rb5mhu");
-			attr(td1, "class", "svelte-rb5mhu");
-			attr(td2, "class", "svelte-rb5mhu");
-			attr(td3, "rowspan", "3");
-			attr(td3, "class", "svelte-rb5mhu");
-			attr(td4, "class", "svelte-rb5mhu");
-			attr(td5, "class", "svelte-rb5mhu");
-			attr(td6, "class", "svelte-rb5mhu");
-			attr(table, "class", "svelte-rb5mhu");
-		},
-		m(target, anchor) {
-			insert(target, table, anchor);
-			append(table, thead);
-			append(thead, tr0);
-			append(tr0, th0);
-			append(tr0, t1);
-			append(tr0, th1);
-			append(th1, t2);
-			append(table, t3);
-			append(table, tr1);
-			append(tr1, td0);
-			append(tr1, t4);
-			append(tr1, td1);
-			append(tr1, t6);
-
-			for (let i = 0; i < each_blocks_4.length; i += 1) {
-				each_blocks_4[i].m(tr1, null);
-			}
-
-			append(tr1, t7);
-			append(tr1, td2);
-			append(table, t9);
-
-			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].m(table, null);
-			}
-
-			append(table, t10);
-			append(table, tr2);
-			append(tr2, td3);
-			append(tr2, t12);
-			append(tr2, td4);
-			append(tr2, t14);
-
-			for (let i = 0; i < each_blocks_2.length; i += 1) {
-				each_blocks_2[i].m(tr2, null);
-			}
-
-			append(table, t15);
-			append(table, tr3);
-			append(tr3, td5);
-			append(tr3, t17);
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(tr3, null);
-			}
-
-			append(table, t18);
-			append(table, tr4);
-			append(tr4, td6);
-			append(tr4, t20);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(tr4, null);
-			}
-		},
-		p(ctx, dirty) {
-			if (dirty & /*ARROW_DIRECTIONS, DIRECTIONS*/ 0) {
-				each_value_7 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_7.length; i += 1) {
-					const child_ctx = get_each_context_7(ctx, each_value_7, i);
-
-					if (each_blocks_4[i]) {
-						each_blocks_4[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_4[i] = create_each_block_7(child_ctx);
-						each_blocks_4[i].c();
-						each_blocks_4[i].m(tr1, t7);
-					}
-				}
-
-				for (; i < each_blocks_4.length; i += 1) {
-					each_blocks_4[i].d(1);
-				}
-
-				each_blocks_4.length = each_value_7.length;
-			}
-
-			if (dirty[0] & /*cellStr, data, hierStrs*/ 14) {
-				each_value_3 = /*userHierarchies*/ ctx[0];
-				let i;
-
-				for (i = 0; i < each_value_3.length; i += 1) {
-					const child_ctx = get_each_context_3(ctx, each_value_3, i);
-
-					if (each_blocks_3[i]) {
-						each_blocks_3[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_3[i] = create_each_block_3(child_ctx);
-						each_blocks_3[i].c();
-						each_blocks_3[i].m(table, t10);
-					}
-				}
-
-				for (; i < each_blocks_3.length; i += 1) {
-					each_blocks_3[i].d(1);
-				}
-
-				each_blocks_3.length = each_value_3.length;
-			}
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value_2 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_2.length; i += 1) {
-					const child_ctx = get_each_context_2$1(ctx, each_value_2, i);
-
-					if (each_blocks_2[i]) {
-						each_blocks_2[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_2[i] = create_each_block_2$1(child_ctx);
-						each_blocks_2[i].c();
-						each_blocks_2[i].m(tr2, null);
-					}
-				}
-
-				for (; i < each_blocks_2.length; i += 1) {
-					each_blocks_2[i].d(1);
-				}
-
-				each_blocks_2.length = each_value_2.length;
-			}
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value_1 = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$4(ctx, each_value_1, i);
-
-					if (each_blocks_1[i]) {
-						each_blocks_1[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_1[i] = create_each_block_1$4(child_ctx);
-						each_blocks_1[i].c();
-						each_blocks_1[i].m(tr3, null);
-					}
-				}
-
-				for (; i < each_blocks_1.length; i += 1) {
-					each_blocks_1[i].d(1);
-				}
-
-				each_blocks_1.length = each_value_1.length;
-			}
-
-			if (dirty[0] & /*data*/ 2) {
-				each_value = DIRECTIONS;
-				let i;
-
-				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$4(ctx, each_value, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block$4(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(tr4, null);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value.length;
-			}
-		},
-		i: noop$1,
-		o: noop$1,
-		d(detaching) {
-			if (detaching) detach(table);
-			destroy_each(each_blocks_4, detaching);
-			destroy_each(each_blocks_3, detaching);
-			destroy_each(each_blocks_2, detaching);
-			destroy_each(each_blocks_1, detaching);
-			destroy_each(each_blocks, detaching);
-		}
-	};
-}
-
-function instance$4($$self, $$props, $$invalidate) {
-	
-	
-	let { plugin } = $$props;
-	const { settings } = plugin;
-	const { userHierarchies, trailSeperator } = settings;
-	const hierGs = plugin.currGraphs;
-
-	function fillInInfo(dir, gType, hierData, nodesToo = true) {
-		const gInfo = hierData[dir][gType];
-
-		if (nodesToo) {
-			gInfo.nodes = gInfo.graph.nodes();
-			gInfo.nodesStr = gInfo.nodes.map(n => makeWiki(settings.wikilinkIndex, n)).join("\n");
-		}
-
-		gInfo.edges = gInfo.graph.edges();
-		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
-		gInfo.edgesStr = edgeStrArr.join("\n");
-	}
-
-	const data = hierGs.hierGs.map(hier => {
-		const hierData = {
-			//@ts-ignore
-			up: { Merged: {}, Closed: {}, Implied: {} },
-			//@ts-ignore
-			same: { Merged: {}, Closed: {}, Implied: {} },
-			//@ts-ignore
-			down: { Merged: {}, Closed: {}, Implied: {} },
-			//@ts-ignore
-			next: { Merged: {}, Closed: {}, Implied: {} },
-			//@ts-ignore
-			prev: { Merged: {}, Closed: {}, Implied: {} }
-		};
-
-		DIRECTIONS.forEach(dir => {
-			// Merged Graphs
-			/// Smoosh all fieldGs from one dir into a merged graph for that direction as a whole
-			const mergedInDir = mergeGs(...Object.values(hier[dir]));
-
-			hierData[dir].Merged.graph = mergedInDir;
-			fillInInfo(dir, "Merged", hierData);
-
-			// Closed graphs
-			if (dir !== "same") {
-				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergeGs(...Object.values(hier[getOppDir(dir)])));
-			} else {
-				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergedInDir);
-			}
-
-			fillInInfo(dir, "Closed", hierData);
-
-			if (dir !== "same") {
-				hierData[dir].Implied.graph = mergeGs(...Object.values(hier[getOppDir(dir)]));
-			} else {
-				hierData[dir].Implied.graph = closeImpliedLinks(mergedInDir, mergedInDir);
-			}
-
-			fillInInfo(dir, "Implied", hierData, false);
-		});
-
-		return hierData;
-	});
-
-	debug(settings, { data });
-	const cellStr = (i, type, info) => DIRECTIONS.map(dir => data[i][dir][type][info]).join("\n");
-	let hierStrs = userHierarchies.map(hierToStr);
-	const click_handler = async (i, dir) => await copy$1(data[i][dir].Merged.nodesStr);
-	const func = (i, dir) => data[i][dir].Merged.nodes.length;
-	const click_handler_1 = async i => await copy$1(cellStr(i, "Merged", "nodesStr"));
-	const click_handler_2 = async (i, dir) => await copy$1(data[i][dir].Merged.edgesStr);
-	const func_1 = (i, dir) => data[i][dir].Merged.edges.length;
-	const click_handler_3 = async i => await copy$1(cellStr(i, "Merged", "edgesStr"));
-	const click_handler_4 = async (i, dir) => await copy$1(data[i][dir].Implied.edgesStr);
-	const func_2 = (i, dir) => data[i][dir].Implied.edges.length;
-	const click_handler_5 = async i => await copy$1(cellStr(i, "Implied", "edgesStr"));
-	const func_3 = (dir, datum) => datum[dir].Merged.nodes.length;
-	const func_4 = (dir, datum) => datum[dir].Merged.nodesStr;
-	const click_handler_6 = async dir => await copy$1(data.map(datum => datum[dir].Merged.nodesStr).join("\n"));
-	const func_5 = (dir, datum) => datum[dir].Merged.edges.length;
-	const func_6 = (dir, datum) => datum[dir].Merged.edgesStr;
-	const click_handler_7 = async dir => await copy$1(data.map(datum => datum[dir].Merged.edgesStr).join("\n"));
-	const func_7 = (dir, datum) => datum[dir].Implied.edges.length;
-	const func_8 = (dir, datum) => datum[dir].Implied.edgesStr;
-	const click_handler_8 = async dir => await copy$1(data.map(datum => datum[dir].Implied.edgesStr).join("\n"));
-
-	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
-	};
-
-	return [
-		userHierarchies,
-		data,
-		cellStr,
-		hierStrs,
-		plugin,
-		click_handler,
-		func,
-		click_handler_1,
-		click_handler_2,
-		func_1,
-		click_handler_3,
-		click_handler_4,
-		func_2,
-		click_handler_5,
-		func_3,
-		func_4,
-		click_handler_6,
-		func_5,
-		func_6,
-		click_handler_7,
-		func_7,
-		func_8,
-		click_handler_8
-	];
-}
-
-class Stats extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-rb5mhu-style")) add_css$3();
-		init$1(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 4 }, [-1, -1]);
-	}
-}
-
-class StatsView extends obsidian.ItemView {
-    constructor(leaf, plugin) {
-        super(leaf);
-        this.icon = "info";
-        this.plugin = plugin;
-    }
-    async onload() {
-        super.onload();
-        await this.plugin.saveSettings();
-        this.app.workspace.onLayoutReady(async () => {
-            setTimeout(async () => await this.draw(), this.plugin.settings.dvWaitTime);
-        });
-    }
-    getViewType() {
-        return STATS_VIEW;
-    }
-    getDisplayText() {
-        return "Breadcrumbs Stats";
-    }
-    async onOpen() {
-        await this.plugin.saveSettings();
-    }
-    onClose() {
-        if (this.view) {
-            this.view.$destroy();
-        }
-        return Promise.resolve();
-    }
-    // ANCHOR Remove duplicate implied links
-    dfsAllPaths(g, startNode) {
-        const queue = [
-            { node: startNode, path: [] },
-        ];
-        const pathsArr = [];
-        let i = 0;
-        while (queue.length > 0 && i < 1000) {
-            i++;
-            const currPath = queue.shift();
-            const newNodes = getOutNeighbours(g, currPath.node);
-            const extPath = [currPath.node, ...currPath.path];
-            queue.unshift(...newNodes.map((n) => {
-                return { node: n, path: extPath };
-            }));
-            if (newNodes.length === 0) {
-                pathsArr.push(extPath);
-            }
-        }
-        return pathsArr;
-    }
-    async draw() {
-        this.contentEl.empty();
-        this.view = new Stats({
-            target: this.contentEl,
-            props: { plugin: this.plugin },
-        });
     }
 }
 
@@ -34986,8 +35229,10 @@ class BCPlugin extends obsidian.Plugin {
         this.initEverything = async () => {
             const { settings } = this;
             this.currGraphs = await this.initGraphs();
-            await openView(this.app, MATRIX_VIEW, MatrixView);
-            await openView(this.app, STATS_VIEW, StatsView);
+            for (const view of VIEWS) {
+                if (view.openOnLoad)
+                    await openView(this.app, view.type, view.constructor);
+            }
             if (settings.showBCs)
                 await this.drawTrail();
             this.registerActiveLeafEvent();
@@ -34997,7 +35242,7 @@ class BCPlugin extends obsidian.Plugin {
                     this.currGraphs = await this.initGraphs();
                     if (settings.showBCs)
                         await this.drawTrail();
-                    const activeView = this.getActiveMatrixView();
+                    const activeView = this.getActiveTYPEView(MATRIX_VIEW);
                     if (activeView)
                         await activeView.draw();
                 }, settings.refreshIntervalTime * 1000);
@@ -35081,9 +35326,12 @@ class BCPlugin extends obsidian.Plugin {
         if (!this.activeLeafChange)
             this.registerActiveLeafEvent();
         this.currGraphs = await this.initGraphs();
-        const activeView = this.getActiveMatrixView();
-        if (activeView)
-            await activeView.draw();
+        const activeMatrix = this.getActiveTYPEView(MATRIX_VIEW);
+        const activeDucks = this.getActiveTYPEView(DUCK_VIEW);
+        if (activeMatrix)
+            await activeMatrix.draw();
+        if (activeDucks)
+            await activeDucks.draw();
         if (this.settings.showTrail)
             await this.drawTrail();
         new obsidian.Notice("Index refreshed");
@@ -35094,7 +35342,7 @@ class BCPlugin extends obsidian.Plugin {
                 await this.refreshIndex();
             }
             else {
-                const activeView = this.getActiveMatrixView();
+                const activeView = this.getActiveTYPEView(MATRIX_VIEW);
                 if (activeView)
                     await activeView.draw();
                 if (this.settings.showBCs)
@@ -35113,8 +35361,9 @@ class BCPlugin extends obsidian.Plugin {
                 await this.saveSettings();
             });
         });
-        this.registerView(STATS_VIEW, (leaf) => new StatsView(leaf, this));
-        this.registerView(MATRIX_VIEW, (leaf) => new MatrixView(leaf, this));
+        for (const view of VIEWS) {
+            this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
+        }
         this.app.workspace.onLayoutReady(async () => {
             var _a;
             if (this.app.plugins.enabledPlugins.has("dataview")) {
@@ -35130,28 +35379,19 @@ class BCPlugin extends obsidian.Plugin {
             }
         });
         obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
-        this.addCommand({
-            id: "show-breadcrumbs-matrix-view",
-            name: "Open Matrix View",
-            //@ts-ignore
-            checkCallback: async (checking) => {
-                if (checking) {
-                    return this.app.workspace.getLeavesOfType(MATRIX_VIEW).length === 0;
-                }
-                await openView(this.app, MATRIX_VIEW, MatrixView);
-            },
-        });
-        this.addCommand({
-            id: "show-breadcrumbs-stats-view",
-            name: "Open Stats View",
-            //@ts-ignore
-            checkCallback: async (checking) => {
-                if (checking) {
-                    return this.app.workspace.getLeavesOfType(STATS_VIEW).length === 0;
-                }
-                await openView(this.app, STATS_VIEW, StatsView);
-            },
-        });
+        for (const view of VIEWS) {
+            this.addCommand({
+                id: `show-${view.type}-view`,
+                name: `Open ${view.plain} View`,
+                //@ts-ignore
+                checkCallback: async (checking) => {
+                    if (checking) {
+                        return this.app.workspace.getLeavesOfType(view.type).length === 0;
+                    }
+                    await openView(this.app, view.type, view.constructor);
+                },
+            });
+        }
         this.addCommand({
             id: "Refresh-Breadcrumbs-Index",
             name: "Refresh Breadcrumbs Index",
@@ -35191,16 +35431,16 @@ class BCPlugin extends obsidian.Plugin {
             },
             checkCallback: () => this.settings.showWriteAllBCsCmd,
         });
-        // TODO get a better icon for this
-        this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
+        this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.statusBatItemEl = this.addStatusBarItem();
         this.addSettingTab(new BCSettingTab(this.app, this));
     }
-    getActiveMatrixView() {
-        const leaves = this.app.workspace.getLeavesOfType(MATRIX_VIEW);
+    getActiveTYPEView(type) {
+        const { constructor } = VIEWS.find((view) => view.type === type);
+        const leaves = this.app.workspace.getLeavesOfType(type);
         if (leaves && leaves.length >= 1) {
             const view = leaves[0].view;
-            if (view instanceof MatrixView) {
+            if (view instanceof constructor) {
                 return view;
             }
         }
@@ -35208,11 +35448,14 @@ class BCPlugin extends obsidian.Plugin {
     }
     // SECTION OneSource
     populateGraph(g, currFileName, fieldValues, dir, fieldName) {
+        //@ts-ignore
         addNodeIfNot(g, currFileName, { dir, fieldName });
         if (fieldName === "")
             return;
         fieldValues.forEach((value) => {
+            //@ts-ignore
             addNodeIfNot(g, value, { dir, fieldName });
+            //@ts-ignore
             addEdgeIfNot(g, currFileName, value, { dir, fieldName });
         });
     }
@@ -35244,6 +35487,7 @@ class BCPlugin extends obsidian.Plugin {
             if (fieldName === "" || !row[fieldName])
                 return;
             addNodeIfNot(g, row[fieldName]);
+            //@ts-ignore
             addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
         });
     }
@@ -35311,13 +35555,13 @@ class BCPlugin extends obsidian.Plugin {
                         const g = graphs.hierGs[i][dir][fieldName];
                         const targets = hier[dir][fieldName];
                         this.populateGraph(g, currFileName, targets, dir, fieldName);
+                        addNodeIfNot(graphs.main, currFileName, {
+                            dir,
+                            fieldName,
+                            order: neighbours.order,
+                        });
                         targets.forEach((target) => {
                             var _a, _b;
-                            addNodeIfNot(graphs.main, currFileName, {
-                                dir,
-                                fieldName,
-                                order: neighbours.order,
-                            });
                             addNodeIfNot(graphs.main, target, {
                                 dir,
                                 fieldName,
@@ -35343,6 +35587,7 @@ class BCPlugin extends obsidian.Plugin {
                 const gUp = graphs.hierGs.find((hierG) => hierG.up[hierarchyNoteUpFieldName]).up[hierarchyNoteUpFieldName];
                 hierarchyNotesArr.forEach((adjListItem) => {
                     adjListItem.children.forEach((child) => {
+                        //@ts-ignore
                         addNodeIfNot(gUp, adjListItem.note, { dir: "up" });
                         gUp.addEdge(child, adjListItem.note, {
                             dir: "up",
@@ -35355,6 +35600,7 @@ class BCPlugin extends obsidian.Plugin {
                 const gDown = graphs.hierGs.find((hierG) => hierG.down[hierarchyNoteDownFieldName]).down[hierarchyNoteDownFieldName];
                 hierarchyNotesArr.forEach((adjListItem) => {
                     adjListItem.children.forEach((child) => {
+                        //@ts-ignore
                         addNodeIfNot(gDown, adjListItem.note, { dir: "down" });
                         gDown.addEdge(adjListItem.note, child, {
                             dir: "down",
@@ -35530,7 +35776,7 @@ class BCPlugin extends obsidian.Plugin {
     }
     onunload() {
         console.log("unloading");
-        [MATRIX_VIEW, STATS_VIEW].forEach((type) => this.app.workspace.detachLeavesOfType(type));
+        VIEWS.forEach((view) => this.app.workspace.detachLeavesOfType(view.type));
         // Empty trailDiv
         this.visited.forEach((visit) => visit[1].remove());
     }
