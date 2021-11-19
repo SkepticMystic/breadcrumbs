@@ -35393,6 +35393,13 @@ class BCPlugin extends obsidian.Plugin {
             });
         }
         this.addCommand({
+            id: "open-vis-modal",
+            name: "Open Visualisation Modal",
+            callback: async () => {
+                new VisModal(this.app, this).open();
+            },
+        });
+        this.addCommand({
             id: "Refresh-Breadcrumbs-Index",
             name: "Refresh Breadcrumbs Index",
             callback: async () => await this.refreshIndex(),
