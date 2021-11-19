@@ -365,13 +365,6 @@ export async function getNeighbourObjArr(
     };
 
     userHierarchies.forEach((hier) => {
-      const fieldsArr = Object.values(hier) as [
-        string[],
-        string[],
-        string[],
-        string[],
-        string[]
-      ];
       const newHier: HierarchyFields = {
         up: {},
         same: {},
@@ -382,15 +375,15 @@ export async function getNeighbourObjArr(
 
       // Add regular metadata links
       if (settings.useAllMetadata) {
-        DIRECTIONS.forEach((dir, i) => {
-          fieldsArr[i]?.forEach((field) => {
+        for (const dir of DIRECTIONS) {
+          hier[dir].forEach((field) => {
             newHier[dir][field] = getFieldValues(
               fileFrontmatter,
               field,
               settings
             );
           });
-        });
+        }
       }
 
       // Add Juggl Links
@@ -787,6 +780,8 @@ export function addEdgeIfNot(
   target: string,
   attr?: NodeAttributes
 ) {
+  addNodeIfNot(g, source);
+  addNodeIfNot(g, target);
   if (!g.hasEdge(source, target)) g.addEdge(source, target, attr);
 }
 
