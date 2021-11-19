@@ -33,6 +33,8 @@ import type {
   Directions,
   dvFrontmatterCache,
   HierarchyGraphs,
+  HierarchyNoteItem,
+  neighbourObj,
 } from "src/interfaces";
 import {
   addEdgeIfNot,
@@ -44,14 +46,15 @@ import {
   getAllFieldGs,
   getAllGsInDir,
   getDVMetadataCache,
+  getFields,
   getNeighbourObjArr,
   getObsMetadataCache,
   getOppDir,
+  getOppFields,
   getOutNeighbours,
   getPrevNext,
   mergeGs,
   oppFields,
-  removeDuplicates,
   writeBCToFile,
 } from "src/sharedFunctions";
 import { VisModal } from "src/VisModal";
@@ -175,7 +178,7 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "open-vis-modal",
       name: "Open Visualisation Modal",
-      callback: async () => {
+      callback: () => {
         new VisModal(this.app, this).open();
       },
     });
@@ -265,100 +268,65 @@ export default class BCPlugin extends Plugin {
     return null;
   }
 
-  hierarchyNoteAdjList = (str: string) => {
-    let noteContent = str;
-    const { settings } = this;
+  async getHierarchyNoteItems(file: TFile) {
+    const { listItems } = this.app.metadataCache.getFileCache(file);
+    if (!listItems) return [];
 
-    const yamlRegex = new RegExp(/^---.*/);
-    const hasYaml = yamlRegex.test(noteContent);
-    if (hasYaml) {
-      noteContent = noteContent.split("---").slice(2).join("---");
-    }
+    const content = await this.app.vault.cachedRead(file);
+    const lines = content.split("\n");
 
-    const layers = noteContent.split("\n").filter((line) => line);
+    const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
-    const getDepth = (line: string) => line.split(/[-*+]/)[0].length;
+    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
+    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
+    const fieldNameReg = new RegExp(/(.*?)\[\[.*?\]\]/);
 
-    const depths = layers.map(getDepth);
-    const differences = [];
+    const problemFields: string[] = [];
 
-    depths.forEach((dep, i) => {
-      if (i >= 1) {
-        differences.push(dep - depths[i - 1]);
+    const upFields = getFields(this.settings.userHierarchies, "up");
+    for (const item of listItems) {
+      const currItem = lines[item.position.start.line];
+
+      const afterBulletCurr = afterBulletReg.exec(currItem)[1];
+      const dropWikiCurr = dropWikiLinksReg.exec(afterBulletCurr)[1];
+      let fieldNameCurr = fieldNameReg.exec(afterBulletCurr)[1].trim() || null;
+
+      // Ensure fieldName is one of the existing up fields. `null` if not
+      if (fieldNameCurr !== null && !upFields.includes(fieldNameCurr)) {
+        problemFields.push(fieldNameCurr);
+        fieldNameCurr = null;
       }
-    });
 
-    debug(settings, { differences });
+      const { parent } = item;
+      if (parent >= 0) {
+        const parentNote = lines[parent];
+        const afterBulletParent = afterBulletReg.exec(parentNote)[1];
+        const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
 
-    const posDifferences = differences
-      .filter((diff) => diff !== 0)
-      .map(Math.abs);
-
-    const lcm = Math.min(...posDifferences);
-
-    if (!posDifferences.every((diff) => diff % lcm === 0)) {
-      new Notice(
-        "Please make sure the indentation is consistent in your hierarchy note."
-      );
-      return [];
-    }
-    const difference = lcm;
-
-    type adjItem = { note: string; depth: number; children: string[] };
-    const adjItems: adjItem[] = [];
-
-    // TODO Allow user to pick the field name they want
-    const lineRegex = new RegExp(/\s*[-*+] \[\[(.*)\]\]/);
-
-    const pushNoteUp = (
-      hier: adjItem[],
-      currNote: string,
-      currDepth: number
-    ) => {
-      const copy = [...hier];
-      const noteUp = copy
-        .reverse()
-        .findIndex((adjItem) => adjItem.depth === currDepth - difference);
-      if (noteUp > -1) hier[noteUp].children.push(currNote);
-    };
-
-    let lineNo = 0;
-    while (lineNo < layers.length) {
-      const currLine = layers[lineNo];
-
-      const currNote = currLine.match(lineRegex)[1];
-      const currDepth = getDepth(currLine);
-
-      adjItems[lineNo] = { note: currNote, depth: currDepth, children: [] };
-
-      if (lineNo !== layers.length - 1) {
-        const nextLine = layers[lineNo + 1];
-        const nextNote = nextLine.match(lineRegex)[1];
-        const nextDepth = getDepth(nextLine);
-
-        if (nextDepth > currDepth) {
-          adjItems[lineNo].children.push(nextNote);
-          pushNoteUp(adjItems, currNote, currDepth);
-        } else if (currDepth === 0) return;
-        else {
-          pushNoteUp(adjItems, currNote, currDepth);
-        }
+        hierarchyNoteItems.push({
+          currNote: dropWikiCurr,
+          parentNote: dropWikiParent,
+          fieldName: fieldNameCurr,
+        });
       } else {
-        const prevLine = layers[lineNo - 1];
-        const prevDepth = getDepth(prevLine);
-
-        if (prevDepth >= currDepth) {
-          pushNoteUp(adjItems, currNote, currDepth);
-        }
+        hierarchyNoteItems.push({
+          currNote: dropWikiCurr,
+          parentNote: null,
+          fieldName: fieldNameCurr,
+        });
       }
-
-      lineNo++;
     }
-    adjItems.forEach((item) => {
-      item.children = removeDuplicates(item.children);
-    });
-    return adjItems;
-  };
+    if (problemFields.length > 0) {
+      const msg = `'${problemFields.join(
+        ", "
+      )}' is/are not in any of your hierarchies, but are being used in: '${
+        file.basename
+      }'`;
+      new Notice(msg);
+      console.log(msg, { problemFields });
+    }
+    return hierarchyNoteItems;
+  }
 
   // SECTION OneSource
 
@@ -378,6 +346,37 @@ export default class BCPlugin extends Plugin {
       addNodeIfNot(g, value, { dir, fieldName });
       //@ts-ignore
       addEdgeIfNot(g, currFileName, value, { dir, fieldName });
+    });
+  }
+
+  populateMain(
+    main: MultiGraph,
+    currFileName: string,
+    dir: Directions,
+    fieldName: string,
+    targets: string[],
+    neighbours: neighbourObj,
+    neighbourObjArr: neighbourObj[]
+  ): void {
+    addNodeIfNot(main, currFileName, {
+      dir,
+      fieldName,
+      order: neighbours.order,
+    });
+    targets.forEach((target) => {
+      addNodeIfNot(main, target, {
+        dir,
+        fieldName,
+        order:
+          neighbourObjArr.find(
+            (neighbour) =>
+              (neighbour.current.basename || neighbour.current.name) === target
+          )?.order ?? 9999,
+      });
+      addEdgeIfNot(main, currFileName, target, {
+        dir,
+        fieldName,
+      });
     });
   }
 
@@ -444,29 +443,19 @@ export default class BCPlugin extends Plugin {
     const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
 
     debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
-    let hierarchyNotesArr: {
-      note: string;
-      depth: number;
-      children: string[];
-    }[] = [];
+    const hierarchyNotesArr: HierarchyNoteItem[] = [];
     if (settings.hierarchyNotes[0] !== "") {
-      const contentArr: string[] = [];
-
-      settings.hierarchyNotes.forEach(async (note) => {
+      for (const note of settings.hierarchyNotes) {
         const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
         if (file) {
-          const content = await this.app.vault.cachedRead(file);
-          contentArr.push(content);
+          hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
         } else {
           new Notice(
-            `${note} is no longer in your vault. The Hierarchy note should still work, but it is best to remove ${note} from your list of hierarchy notes in Breadcrumbs settings.`
+            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
           );
         }
-      });
+      }
 
-      await Promise.all(contentArr);
-
-      hierarchyNotesArr = contentArr.map(this.hierarchyNoteAdjList).flat();
       debug(settings, { hierarchyNotesArr });
     }
     debugGroupEnd(settings, "debugMode");
@@ -508,27 +497,15 @@ export default class BCPlugin extends Plugin {
             const targets = hier[dir][fieldName];
 
             this.populateGraph(g, currFileName, targets, dir, fieldName);
-            addNodeIfNot(graphs.main, currFileName, {
+            this.populateMain(
+              graphs.main,
+              currFileName,
               dir,
               fieldName,
-              order: neighbours.order,
-            });
-            targets.forEach((target) => {
-              addNodeIfNot(graphs.main, target, {
-                dir,
-                fieldName,
-                order:
-                  neighbourObjArr.find(
-                    (neighbour) =>
-                      (neighbour.current.basename || neighbour.current.name) ===
-                      target
-                  )?.order ?? 9999,
-              });
-              addEdgeIfNot(graphs.main, currFileName, target, {
-                dir,
-                fieldName,
-              });
-            });
+              targets,
+              neighbours,
+              neighbourObjArr
+            );
 
             if (useCSV) {
               this.addCSVCrumbs(g, CSVRows, dir, fieldName);
@@ -540,40 +517,43 @@ export default class BCPlugin extends Plugin {
     });
 
     if (hierarchyNotesArr.length) {
-      const { hierarchyNoteUpFieldName, hierarchyNoteDownFieldName } = settings;
+      const { hierarchyNoteUpFieldName } = settings;
+      const { main } = graphs;
+      const upFields = getFields(userHierarchies, "up");
 
-      if (hierarchyNoteUpFieldName !== "") {
-        const gUp = graphs.hierGs.find(
-          (hierG) => hierG.up[hierarchyNoteUpFieldName]
-        ).up[hierarchyNoteUpFieldName];
+      hierarchyNotesArr.forEach((hnItem) => {
+        if (hnItem.parentNote === null) return;
 
-        hierarchyNotesArr.forEach((adjListItem) => {
-          adjListItem.children.forEach((child) => {
-            //@ts-ignore
-            addNodeIfNot(gUp, adjListItem.note, { dir: "up" });
-            gUp.addEdge(child, adjListItem.note, {
-              dir: "up",
-              fieldName: hierarchyNoteUpFieldName,
-            });
+        const upField =
+          hnItem.fieldName ?? (hierarchyNoteUpFieldName || upFields[0]);
+        const downField =
+          getOppFields(userHierarchies, upField)[0] ?? `${upField}<up>`;
+
+        const gUp = graphs.hierGs.find((hierG) => hierG.up[upField]).up[
+          upField
+        ];
+        const gDown = graphs.hierGs.find((hierG) => hierG.down[downField]).down[
+          downField
+        ];
+
+        [gUp, main].forEach((g) => {
+          addNodeIfNot(g, hnItem.currNote);
+          addNodeIfNot(g, hnItem.parentNote);
+          addEdgeIfNot(g, hnItem.currNote, hnItem.parentNote, {
+            dir: "up",
+            fieldName: upField,
           });
         });
-      }
-      if (hierarchyNoteDownFieldName !== "") {
-        const gDown = graphs.hierGs.find(
-          (hierG) => hierG.down[hierarchyNoteDownFieldName]
-        ).down[hierarchyNoteDownFieldName];
 
-        hierarchyNotesArr.forEach((adjListItem) => {
-          adjListItem.children.forEach((child) => {
-            //@ts-ignore
-            addNodeIfNot(gDown, adjListItem.note, { dir: "down" });
-            gDown.addEdge(adjListItem.note, child, {
-              dir: "down",
-              fieldName: hierarchyNoteDownFieldName,
-            });
+        [gDown, main].forEach((g) => {
+          addNodeIfNot(g, hnItem.parentNote);
+          addNodeIfNot(g, hnItem.currNote);
+          addEdgeIfNot(g, hnItem.parentNote, hnItem.currNote, {
+            dir: "down",
+            fieldName: downField,
           });
         });
-      }
+      });
     }
 
     DIRECTIONS.forEach((dir) => {

@@ -626,6 +626,28 @@ export function iterateAllGs(
     }
   }
 }
+/**
+ * Get all the fields in `dir`.
+ * Returns all fields if `dir === 'all'`
+ * @param  {userHierarchy[]} userHierarchies
+ * @param  {Directions|"all"} dir
+ */
+export function getFields(
+  userHierarchies: userHierarchy[],
+  dir: Directions | "all" = "all"
+) {
+  const fields: string[] = [];
+  userHierarchies.forEach((hier) => {
+    if (dir === "all") {
+      DIRECTIONS.forEach((eachDir) => {
+        fields.push(...hier[eachDir]);
+      });
+    } else {
+      fields.push(...hier[dir]);
+    }
+  });
+  return fields;
+}
 
 export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
   const fieldGs: Graph[] = [];

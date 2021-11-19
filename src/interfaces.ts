@@ -94,6 +94,11 @@ export interface ParentObj {
   current: TFile;
   parents: string[];
 }
+export interface HierarchyNoteItem {
+  parentNote: string;
+  fieldName: string;
+  currNote: string;
+}
 
 export interface fileFrontmatter {
   file: TFile;
