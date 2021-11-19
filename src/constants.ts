@@ -98,6 +98,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   trailSeperator: "→",
   respectReadableLineLength: true,
   limitWriteBCCheckboxStates: {},
+  writeBCsInline: false,
   showWriteAllBCsCmd: false,
   visGraph: "Force Directed Graph",
   visRelation: "Parent",

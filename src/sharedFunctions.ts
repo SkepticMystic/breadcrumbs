@@ -25,6 +25,7 @@ import type {
   HierarchyFields,
   HierarchyGraphs,
   JugglLink,
+  MetaeditApi,
   neighbourObj,
   PrevNext,
   userHierarchy,
@@ -643,37 +644,6 @@ export function removeDuplicates<T>(arr: T[]) {
   return [...new Set(arr)];
 }
 
-/**
- * Adds or updates the given yaml `key` to `value` in the given TFile
- * @param  {string} key
- * @param  {string} value
- * @param  {TFile} file
- * @param  {FrontMatterCache|undefined} frontmatter
- * @param  {{[fun:string]:(...args:any} api
- */
-export const createOrUpdateYaml = async (
-  key: string,
-  value: string,
-  file: TFile,
-  frontmatter: FrontMatterCache | undefined,
-  api: { [fun: string]: (...args: any) => any }
-) => {
-  const valueStr = value.toString();
-
-  if (!frontmatter || frontmatter[key] === undefined) {
-    console.log(`Creating: ${key}: ${valueStr}`);
-    await api.createYamlProperty(key, `['${valueStr}']`, file);
-  } else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-    console.log("Already Exists!");
-    return;
-  } else {
-    const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
-    const newValue = [...oldValueFlat, valueStr].map((val) => `'${val}'`);
-    console.log(`Updating: ${key}: ${newValue}`);
-    await api.update(key, `[${newValue.join(", ")}]`, file);
-  }
-};
-
 export const getOppDir = (dir: Directions): Directions => {
   switch (dir) {
     case "up":
@@ -689,12 +659,45 @@ export const getOppDir = (dir: Directions): Directions => {
   }
 };
 
-export const writeBCToFile = (
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {MetaeditApi} api
+ */
+export const createOrUpdateYaml = async (
+  key: string,
+  value: string,
+  file: TFile,
+  frontmatter: FrontMatterCache | undefined,
+  api: MetaeditApi
+) => {
+  const valueStr = value.toString();
+
+  if (!frontmatter || frontmatter[key] === undefined) {
+    console.log(`Creating: ${key}: ${valueStr}`);
+    await api.createYamlProperty(key, `['${valueStr}']`, file);
+  } else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+    console.log("Already Exists!");
+    return;
+  } else {
+    const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
+    const newValue = [...oldValueFlat, `'${valueStr}'`];
+    console.log(`Updating: ${key}: ${newValue}`);
+    await api.update(key, `[${newValue.join(", ")}]`, file);
+  }
+};
+
+export const writeBCToFile = async (
   app: App,
   plugin: BCPlugin,
   currGraphs: BCIndex,
-  file: TFile
+  file: TFile,
+  inline: boolean
 ) => {
+  const { limitWriteBCCheckboxStates, userHierarchies } = plugin.settings;
   const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
   const api = app.plugins.plugins.metaedit?.api;
 
@@ -703,24 +706,37 @@ export const writeBCToFile = (
     return;
   }
 
-  iterateAllGs(currGraphs.hierGs, (fieldG, dir, fieldName) => {
-    const oppDir = getOppDir(dir);
-    const succs = getInNeighbours(fieldG, file.basename);
+  const { main } = currGraphs;
+  const succs = getInNeighbours(main, file.basename);
 
-    succs.forEach(async (succ) => {
-      const { fieldName } = fieldG.getNodeAttributes(succ);
-      if (!plugin.settings.limitWriteBCCheckboxStates[fieldName]) return;
+  for (const succ of succs) {
+    const { fieldName } = main.getNodeAttributes(succ);
+    if (!limitWriteBCCheckboxStates[fieldName]) return;
 
-      const currHier = plugin.settings.userHierarchies.find((hier) =>
-        hier[dir].includes(fieldName)
-      );
-      let oppField: string = currHier[oppDir][0];
-      if (!oppField) oppField = `<Reverse>${fieldName}`;
+    if (!inline) {
+      await createOrUpdateYaml(fieldName, succ, file, frontmatter, api);
+    } else {
+      // TODO Check if this note already has this field
+      let content = await app.vault.read(file);
+      const splits = splitAtYaml(content);
+      content = splits[0] + `\n${fieldName}:: [[${succ}]]` + splits[1];
 
-      await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
-    });
-  });
+      await app.vault.modify(file, content);
+    }
+  }
 };
+
+function splitAtYaml(content: string): [string, string] {
+  const startsWithYaml = content.startsWith("---");
+  if (!startsWithYaml) return ["", content];
+  else {
+    const splits = content.split("---");
+    return [
+      splits.slice(0, 2).join("---") + "---",
+      splits.slice(2).join("---"),
+    ];
+  }
+}
 
 export function oppFields(
   field: string,

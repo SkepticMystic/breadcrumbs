@@ -186,9 +186,15 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "Write-Breadcrumbs-to-Current-File",
       name: "Write Breadcrumbs to Current File",
-      callback: () => {
+      callback: async () => {
         const currFile = this.app.workspace.getActiveFile();
-        writeBCToFile(this.app, this, this.currGraphs, currFile);
+        await writeBCToFile(
+          this.app,
+          this,
+          this.currGraphs,
+          currFile,
+          this.settings.writeBCsInline
+        );
       },
     });
 
@@ -211,8 +217,15 @@ export default class BCPlugin extends Plugin {
               try {
                 this.app.vault
                   .getMarkdownFiles()
-                  .forEach((file) =>
-                    writeBCToFile(this.app, this, this.currGraphs, file)
+                  .forEach(
+                    async (file) =>
+                      await writeBCToFile(
+                        this.app,
+                        this,
+                        this.currGraphs,
+                        file,
+                        this.settings.writeBCsInline
+                      )
                   );
                 new Notice("Operation Complete");
               } catch (error) {

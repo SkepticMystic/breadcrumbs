@@ -36,6 +36,7 @@ export interface BCSettings {
   trailSeperator: string;
   respectReadableLineLength: boolean;
   limitWriteBCCheckboxStates: { [field: string]: boolean };
+  writeBCsInline: boolean;
   showWriteAllBCsCmd: boolean;
   visGraph: visTypes;
   visRelation: Relations;
@@ -208,3 +209,27 @@ export type ClosedGraphs = {
 };
 
 export type PrevNext = { to: string; real: boolean; fieldName: string };
+
+export interface MetaeditApi {
+  /** Adds the key and value */
+  createYamlProperty: (
+    key: string,
+    value: string,
+    file: TFile
+  ) => Promise<void>;
+  /** Changes `key`'s value to `value` (overwrites) */
+  update: (key: string, value: string, file: TFile) => Promise<void>;
+}
+
+declare module "obsidian" {
+  interface App {
+    plugins: {
+      plugins: {
+        dataview: { api: { page: (page: string) => dvFrontmatterCache } };
+        metaedit: {
+          api: MetaeditApi;
+        };
+      };
+    };
+  }
+}

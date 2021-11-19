@@ -2626,6 +2626,7 @@ const DEFAULT_SETTINGS = {
     trailSeperator: "→",
     respectReadableLineLength: true,
     limitWriteBCCheckboxStates: {},
+    writeBCsInline: false,
     showWriteAllBCsCmd: false,
     visGraph: "Force Directed Graph",
     visRelation: "Parent",
@@ -20309,31 +20310,6 @@ const hierToStr = (hier) => DIRECTIONS.map((dir) => `${ARROW_DIRECTIONS[dir]}: $
 function removeDuplicates(arr) {
     return [...new Set(arr)];
 }
-/**
- * Adds or updates the given yaml `key` to `value` in the given TFile
- * @param  {string} key
- * @param  {string} value
- * @param  {TFile} file
- * @param  {FrontMatterCache|undefined} frontmatter
- * @param  {{[fun:string]:(...args:any} api
- */
-const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    const valueStr = value.toString();
-    if (!frontmatter || frontmatter[key] === undefined) {
-        console.log(`Creating: ${key}: ${valueStr}`);
-        await api.createYamlProperty(key, `['${valueStr}']`, file);
-    }
-    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-        console.log("Already Exists!");
-        return;
-    }
-    else {
-        const oldValueFlat = [...[frontmatter[key]]].flat(4);
-        const newValue = [...oldValueFlat, valueStr].map((val) => `'${val}'`);
-        console.log(`Updating: ${key}: ${newValue}`);
-        await api.update(key, `[${newValue.join(", ")}]`, file);
-    }
-};
 const getOppDir = (dir) => {
     switch (dir) {
         case "up":
@@ -20348,29 +20324,70 @@ const getOppDir = (dir) => {
             return "next";
     }
 };
-const writeBCToFile = (app, plugin, currGraphs, file) => {
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {MetaeditApi} api
+ */
+const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
+    const valueStr = value.toString();
+    if (!frontmatter || frontmatter[key] === undefined) {
+        console.log(`Creating: ${key}: ${valueStr}`);
+        await api.createYamlProperty(key, `['${valueStr}']`, file);
+    }
+    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+        console.log("Already Exists!");
+        return;
+    }
+    else {
+        const oldValueFlat = [...[frontmatter[key]]].flat(4);
+        const newValue = [...oldValueFlat, `'${valueStr}'`];
+        console.log(`Updating: ${key}: ${newValue}`);
+        await api.update(key, `[${newValue.join(", ")}]`, file);
+    }
+};
+const writeBCToFile = async (app, plugin, currGraphs, file, inline) => {
     var _a, _b;
+    const { limitWriteBCCheckboxStates, userHierarchies } = plugin.settings;
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
     const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
     if (!api) {
         new obsidian.Notice("Metaedit must be enabled for this function to work");
         return;
     }
-    iterateAllGs(currGraphs.hierGs, (fieldG, dir, fieldName) => {
-        const oppDir = getOppDir(dir);
-        const succs = getInNeighbours(fieldG, file.basename);
-        succs.forEach(async (succ) => {
-            const { fieldName } = fieldG.getNodeAttributes(succ);
-            if (!plugin.settings.limitWriteBCCheckboxStates[fieldName])
-                return;
-            const currHier = plugin.settings.userHierarchies.find((hier) => hier[dir].includes(fieldName));
-            let oppField = currHier[oppDir][0];
-            if (!oppField)
-                oppField = `<Reverse>${fieldName}`;
-            await createOrUpdateYaml(oppField, succ, file, frontmatter, api);
-        });
-    });
+    const { main } = currGraphs;
+    const succs = getInNeighbours(main, file.basename);
+    for (const succ of succs) {
+        const { fieldName } = main.getNodeAttributes(succ);
+        if (!limitWriteBCCheckboxStates[fieldName])
+            return;
+        if (!inline) {
+            await createOrUpdateYaml(fieldName, succ, file, frontmatter, api);
+        }
+        else {
+            // TODO Check if this note already has this field
+            let content = await app.vault.read(file);
+            const splits = splitAtYaml(content);
+            content = splits[0] + `\n${fieldName}:: [[${succ}]]` + splits[1];
+            await app.vault.modify(file, content);
+        }
+    }
 };
+function splitAtYaml(content) {
+    const startsWithYaml = content.startsWith("---");
+    if (!startsWithYaml)
+        return ["", content];
+    else {
+        const splits = content.split("---");
+        return [
+            splits.slice(0, 2).join("---") + "---",
+            splits.slice(2).join("---"),
+        ];
+    }
+}
 function oppFields(field, dir, userHierarchies) {
     var _a, _b;
     const oppDir = getOppDir(dir);
@@ -23860,6 +23877,13 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             });
         }
         drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
+        new obsidian.Setting(writeBCsToFileDetails)
+            .setName("Write BCs to file Inline")
+            .setDesc("When writing BCs to file, should they be written inline (using Dataview syntax), or into the YAML of the note?")
+            .addToggle((toggle) => toggle.setValue(settings.writeBCsInline).onChange(async (value) => {
+            settings.writeBCsInline = value;
+            await plugin.saveSettings();
+        }));
         new obsidian.Setting(writeBCsToFileDetails)
             .setName("Show the `Write Breadcrumbs to ALL Files` command")
             .setDesc("This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it")
@@ -35136,9 +35160,9 @@ class BCPlugin extends obsidian.Plugin {
         this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
             name: "Write Breadcrumbs to Current File",
-            callback: () => {
+            callback: async () => {
                 const currFile = this.app.workspace.getActiveFile();
-                writeBCToFile(this.app, this, this.currGraphs, currFile);
+                await writeBCToFile(this.app, this, this.currGraphs, currFile, this.settings.writeBCsInline);
             },
         });
         this.addCommand({
@@ -35154,7 +35178,7 @@ class BCPlugin extends obsidian.Plugin {
                             try {
                                 this.app.vault
                                     .getMarkdownFiles()
-                                    .forEach((file) => writeBCToFile(this.app, this, this.currGraphs, file));
+                                    .forEach(async (file) => await writeBCToFile(this.app, this, this.currGraphs, file, this.settings.writeBCsInline));
                                 new obsidian.Notice("Operation Complete");
                             }
                             catch (error) {

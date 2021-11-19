@@ -676,6 +676,18 @@ export class BCSettingTab extends PluginSettingTab {
     drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
 
     new Setting(writeBCsToFileDetails)
+      .setName("Write BCs to file Inline")
+      .setDesc(
+        "When writing BCs to file, should they be written inline (using Dataview syntax), or into the YAML of the note?"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.writeBCsInline).onChange(async (value) => {
+          settings.writeBCsInline = value;
+          await plugin.saveSettings();
+        })
+      );
+
+    new Setting(writeBCsToFileDetails)
       .setName("Show the `Write Breadcrumbs to ALL Files` command")
       .setDesc(
         "This command attempts to update ALL files with implied breadcrumbs pointing to them. So, it is not shown by default (even though it has 3 confirmation boxes to ensure you want to run it"
