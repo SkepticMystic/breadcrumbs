@@ -9,17 +9,23 @@ import {
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
-import { openView, wait } from "obsidian-community-lib/dist/utils";
+import {
+  addFeatherIcon,
+  openView,
+  wait,
+} from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   blankDirObjs,
   blankDirUndef,
   DEFAULT_SETTINGS,
   DIRECTIONS,
+  DUCK_VIEW,
   MATRIX_VIEW,
-  STATS_VIEW,
+  MyView,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
+  VIEWS,
 } from "src/constants";
 import type {
   BCIndex,
@@ -28,7 +34,6 @@ import type {
   dvFrontmatterCache,
   HierarchyGraphs,
 } from "src/interfaces";
-import MatrixView from "src/MatrixView";
 import {
   addEdgeIfNot,
   addNodeIfNot,
@@ -44,13 +49,11 @@ import {
   getOppDir,
   getOutNeighbours,
   getPrevNext,
-  iterateAllGs,
   mergeGs,
   oppFields,
   removeDuplicates,
   writeBCToFile,
 } from "src/sharedFunctions";
-import StatsView from "src/StatsView";
 import { VisModal } from "src/VisModal";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
@@ -68,9 +71,11 @@ export default class BCPlugin extends Plugin {
     if (!this.activeLeafChange) this.registerActiveLeafEvent();
 
     this.currGraphs = await this.initGraphs();
-    const activeView = this.getActiveMatrixView();
+    const activeMatrix = this.getActiveTYPEView(MATRIX_VIEW);
+    const activeDucks = this.getActiveTYPEView(DUCK_VIEW);
 
-    if (activeView) await activeView.draw();
+    if (activeMatrix) await activeMatrix.draw();
+    if (activeDucks) await activeDucks.draw();
     if (this.settings.showTrail) await this.drawTrail();
 
     new Notice("Index refreshed");
@@ -83,7 +88,7 @@ export default class BCPlugin extends Plugin {
         if (this.settings.refreshIndexOnActiveLeafChange) {
           await this.refreshIndex();
         } else {
-          const activeView = this.getActiveMatrixView();
+          const activeView = this.getActiveTYPEView(MATRIX_VIEW);
           if (activeView) await activeView.draw();
           if (this.settings.showBCs) await this.drawTrail();
         }
@@ -96,8 +101,10 @@ export default class BCPlugin extends Plugin {
     const { settings } = this;
     this.currGraphs = await this.initGraphs();
 
-    await openView(this.app, MATRIX_VIEW, MatrixView);
-    await openView(this.app, STATS_VIEW, StatsView);
+    for (const view of VIEWS) {
+      if (view.openOnLoad)
+        await openView(this.app, view.type, view.constructor);
+    }
 
     if (settings.showBCs) await this.drawTrail();
 
@@ -109,7 +116,7 @@ export default class BCPlugin extends Plugin {
         this.currGraphs = await this.initGraphs();
         if (settings.showBCs) await this.drawTrail();
 
-        const activeView = this.getActiveMatrixView();
+        const activeView = this.getActiveTYPEView(MATRIX_VIEW);
         if (activeView) await activeView.draw();
       }, settings.refreshIntervalTime * 1000);
       this.registerInterval(this.refreshIntervalID);
@@ -127,14 +134,12 @@ export default class BCPlugin extends Plugin {
       });
     });
 
-    this.registerView(
-      STATS_VIEW,
-      (leaf: WorkspaceLeaf) => new StatsView(leaf, this)
-    );
-    this.registerView(
-      MATRIX_VIEW,
-      (leaf: WorkspaceLeaf) => new MatrixView(leaf, this)
-    );
+    for (const view of VIEWS) {
+      this.registerView(
+        view.type,
+        (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
+      );
+    }
 
     this.app.workspace.onLayoutReady(async () => {
       if (this.app.plugins.enabledPlugins.has("dataview")) {
@@ -153,29 +158,19 @@ export default class BCPlugin extends Plugin {
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
 
-    this.addCommand({
-      id: "show-breadcrumbs-matrix-view",
-      name: "Open Matrix View",
-      //@ts-ignore
-      checkCallback: async (checking: boolean) => {
-        if (checking) {
-          return this.app.workspace.getLeavesOfType(MATRIX_VIEW).length === 0;
-        }
-        await openView(this.app, MATRIX_VIEW, MatrixView);
-      },
-    });
-
-    this.addCommand({
-      id: "show-breadcrumbs-stats-view",
-      name: "Open Stats View",
-      //@ts-ignore
-      checkCallback: async (checking: boolean) => {
-        if (checking) {
-          return this.app.workspace.getLeavesOfType(STATS_VIEW).length === 0;
-        }
-        await openView(this.app, STATS_VIEW, StatsView);
-      },
-    });
+    for (const view of VIEWS) {
+      this.addCommand({
+        id: `show-${view.type}-view`,
+        name: `Open ${view.plain} View`,
+        //@ts-ignore
+        checkCallback: async (checking: boolean) => {
+          if (checking) {
+            return this.app.workspace.getLeavesOfType(view.type).length === 0;
+          }
+          await openView(this.app, view.type, view.constructor);
+        },
+      });
+    }
 
     this.addCommand({
       id: "Refresh-Breadcrumbs-Index",
@@ -250,11 +245,12 @@ export default class BCPlugin extends Plugin {
     this.addSettingTab(new BCSettingTab(this.app, this));
   }
 
-  getActiveMatrixView(): MatrixView | null {
-    const leaves = this.app.workspace.getLeavesOfType(MATRIX_VIEW);
+  getActiveTYPEView(type: string): MyView | null {
+    const { constructor } = VIEWS.find((view) => view.type === type);
+    const leaves = this.app.workspace.getLeavesOfType(type);
     if (leaves && leaves.length >= 1) {
       const view = leaves[0].view;
-      if (view instanceof MatrixView) {
+      if (view instanceof constructor) {
         return view;
       }
     }
@@ -365,11 +361,14 @@ export default class BCPlugin extends Plugin {
     dir: Directions,
     fieldName: string
   ): void {
+    //@ts-ignore
     addNodeIfNot(g, currFileName, { dir, fieldName });
 
     if (fieldName === "") return;
     fieldValues.forEach((value) => {
+      //@ts-ignore
       addNodeIfNot(g, value, { dir, fieldName });
+      //@ts-ignore
       addEdgeIfNot(g, currFileName, value, { dir, fieldName });
     });
   }
@@ -411,6 +410,7 @@ export default class BCPlugin extends Plugin {
       if (fieldName === "" || !row[fieldName]) return;
 
       addNodeIfNot(g, row[fieldName]);
+      //@ts-ignore
       addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
     });
   }
@@ -541,6 +541,7 @@ export default class BCPlugin extends Plugin {
 
         hierarchyNotesArr.forEach((adjListItem) => {
           adjListItem.children.forEach((child) => {
+            //@ts-ignore
             addNodeIfNot(gUp, adjListItem.note, { dir: "up" });
             gUp.addEdge(child, adjListItem.note, {
               dir: "up",
@@ -556,6 +557,7 @@ export default class BCPlugin extends Plugin {
 
         hierarchyNotesArr.forEach((adjListItem) => {
           adjListItem.children.forEach((child) => {
+            //@ts-ignore
             addNodeIfNot(gDown, adjListItem.note, { dir: "down" });
             gDown.addEdge(adjListItem.note, child, {
               dir: "down",
@@ -782,9 +784,7 @@ export default class BCPlugin extends Plugin {
 
   onunload(): void {
     console.log("unloading");
-    [MATRIX_VIEW, STATS_VIEW].forEach((type) =>
-      this.app.workspace.detachLeavesOfType(type)
-    );
+    VIEWS.forEach((view) => this.app.workspace.detachLeavesOfType(view.type));
 
     // Empty trailDiv
     this.visited.forEach((visit) => visit[1].remove());
