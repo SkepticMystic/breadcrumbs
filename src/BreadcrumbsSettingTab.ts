@@ -388,7 +388,7 @@ export class BCSettingTab extends PluginSettingTab {
       cls: "limit-ML-fields",
     });
     limitTrailFieldsDiv.createEl("strong", {
-      text: "Limit M/L View to only show certain fields",
+      text: "Limit Trail View to only show certain fields",
     });
 
     const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: "checkboxes" });

@@ -63,7 +63,15 @@ export const blankDirUndef = (): { [dir in Directions]: undefined } => {
 };
 
 export const DEFAULT_SETTINGS: BCSettings = {
-  userHierarchies: [],
+  userHierarchies: [
+    {
+      up: ["up"],
+      same: ["same"],
+      down: ["down"],
+      next: ["next"],
+      prev: ["prev"],
+    },
+  ],
   indexNote: [""],
   CSVPaths: "",
   hierarchyNotes: [""],
