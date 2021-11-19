@@ -11,6 +11,7 @@ import {
 } from "obsidian";
 import {
   ARROW_DIRECTIONS,
+  blankDirObjs,
   DIRECTIONS,
   dropHeaderOrAlias,
   splitLinksRegex,
@@ -24,6 +25,7 @@ import type {
   HierarchyFields,
   HierarchyGraphs,
   JugglLink,
+  neighbourObj,
   PrevNext,
   userHierarchy,
 } from "src/interfaces";
@@ -299,14 +301,10 @@ export function getFieldValues(
                 link.match(dropHeaderOrAlias)[1].split("/").last()
               );
               values.push(...strs);
-            } else {
-              values.push(rawItemAsString.split("/").last());
-            }
+            } else values.push(rawItemAsString.split("/").last());
           } else if (value.path !== undefined) {
             const lastSplit = value.path.split("/").last();
-            if (lastSplit !== undefined) {
-              values.push(lastSplit);
-            }
+            if (lastSplit !== undefined) values.push(lastSplit);
           }
         });
       });
@@ -330,12 +328,7 @@ export const splitAndTrim = (fields: string): string[] =>
 export async function getNeighbourObjArr(
   plugin: BCPlugin,
   fileFrontmatterArr: dvFrontmatterCache[]
-): Promise<
-  {
-    current: TFile;
-    hierarchies: HierarchyFields[];
-  }[]
-> {
+): Promise<neighbourObj[]> {
   const { settings } = plugin;
   const { userHierarchies } = settings;
 
@@ -346,71 +339,65 @@ export async function getNeighbourObjArr(
   let jugglLinks: JugglLink[] = [];
   if (
     plugin.app.plugins.plugins.juggl !== undefined ||
-    plugin.settings.parseJugglLinksWithoutJuggl
+    settings.parseJugglLinksWithoutJuggl
   ) {
-    jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
+    jugglLinks = await getJugglLinks(plugin.app, settings);
   }
 
-  const neighbourObjArr: {
-    current: TFile;
-    hierarchies: HierarchyFields[];
-  }[] = fileFrontmatterArr.map((fileFrontmatter) => {
-    const currNode = fileFrontmatter.file.basename || fileFrontmatter.file.name;
-    const hierFields: {
-      current: TFile;
-      hierarchies: HierarchyFields[];
-    } = {
-      current: fileFrontmatter.file,
-      hierarchies: [],
-    };
-
-    userHierarchies.forEach((hier) => {
-      const newHier: HierarchyFields = {
-        up: {},
-        same: {},
-        down: {},
-        next: {},
-        prev: {},
+  const neighbourObjArr: neighbourObj[] = fileFrontmatterArr.map(
+    (fileFrontmatter) => {
+      const { file } = fileFrontmatter;
+      const order = fileFrontmatter[settings.orderField] ?? 9999;
+      const currNode =
+        fileFrontmatter.file.basename || fileFrontmatter.file.name;
+      const hierFields: neighbourObj = {
+        current: file,
+        order,
+        hierarchies: [],
       };
 
-      // Add regular metadata links
-      if (settings.useAllMetadata) {
-        for (const dir of DIRECTIONS) {
-          hier[dir].forEach((field) => {
-            newHier[dir][field] = getFieldValues(
-              fileFrontmatter,
-              field,
-              settings
-            );
-          });
+      userHierarchies.forEach((hier) => {
+        const newHier: HierarchyFields = blankDirObjs();
+
+        // Add regular metadata links
+        if (settings.useAllMetadata) {
+          for (const dir of DIRECTIONS) {
+            hier[dir].forEach((field) => {
+              newHier[dir][field] = getFieldValues(
+                fileFrontmatter,
+                field,
+                settings
+              );
+            });
+          }
         }
-      }
 
-      // Add Juggl Links
-      if (jugglLinks.length) {
-        const jugglLinksInFile = jugglLinks.find((jugglLink) => {
-          return jugglLink.note === currNode;
-        });
-
-        if (jugglLinksInFile) {
-          jugglLinksInFile.links.forEach((line) => {
-            if ((hier[line.dir] as string[])?.includes(line.type)) {
-              newHier[line.dir][line.type] = [
-                ...new Set([
-                  ...(newHier[line.dir][line.type] ?? []),
-                  ...line.linksInLine,
-                ]),
-              ];
-            }
+        // Add Juggl Links
+        if (jugglLinks.length) {
+          const jugglLinksInFile = jugglLinks.find((jugglLink) => {
+            return jugglLink.note === currNode;
           });
+
+          if (jugglLinksInFile) {
+            jugglLinksInFile.links.forEach((line) => {
+              if ((hier[line.dir] as string[])?.includes(line.type)) {
+                newHier[line.dir][line.type] = [
+                  ...new Set([
+                    ...(newHier[line.dir][line.type] ?? []),
+                    ...line.linksInLine,
+                  ]),
+                ];
+              }
+            });
+          }
         }
-      }
 
-      hierFields.hierarchies.push(newHier);
-    });
+        hierFields.hierarchies.push(newHier);
+      });
 
-    return hierFields;
-  });
+      return hierFields;
+    }
+  );
 
   debug(settings, { neighbourObjArr });
   if (settings.debugMode || settings.superDebugMode) {
@@ -780,8 +767,8 @@ export function addEdgeIfNot(
   target: string,
   attr?: NodeAttributes
 ) {
-  addNodeIfNot(g, source);
-  addNodeIfNot(g, target);
+  // addNodeIfNot(g, source, attr);
+  // addNodeIfNot(g, target, attr);
   if (!g.hasEdge(source, target)) g.addEdge(source, target, attr);
 }
 

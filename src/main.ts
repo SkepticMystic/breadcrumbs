@@ -62,6 +62,7 @@ export default class BCPlugin extends Plugin {
   refreshIntervalID: number;
   currGraphs: BCIndex;
   activeLeafChange: EventRef = undefined;
+  statusBatItemEl: HTMLElement = undefined;
 
   async refreshIndex() {
     if (!this.activeLeafChange) this.registerActiveLeafEvent();
@@ -229,6 +230,8 @@ export default class BCPlugin extends Plugin {
     this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () =>
       new VisModal(this.app, this).open()
     );
+
+    this.statusBatItemEl = this.addStatusBarItem();
 
     this.addSettingTab(new BCSettingTab(this.app, this));
   }
@@ -476,16 +479,29 @@ export default class BCPlugin extends Plugin {
     neighbourObjArr.forEach((neighbours) => {
       const currFileName =
         neighbours.current.basename || neighbours.current.name;
-      addNodeIfNot(graphs.main, currFileName);
       neighbours.hierarchies.forEach((hier, i) => {
         DIRECTIONS.forEach((dir) => {
           for (const fieldName in hier[dir]) {
             const g = graphs.hierGs[i][dir][fieldName];
             const targets = hier[dir][fieldName];
+
             this.populateGraph(g, currFileName, targets, dir, fieldName);
             targets.forEach((target) => {
-              // addEdgeIfNot also addsNodeIfNot
-              // addNodeIfNot(graphs.main, target);
+              addNodeIfNot(graphs.main, currFileName, {
+                dir,
+                fieldName,
+                order: neighbours.order,
+              });
+              addNodeIfNot(graphs.main, target, {
+                dir,
+                fieldName,
+                order:
+                  neighbourObjArr.find(
+                    (neighbour) =>
+                      (neighbour.current.basename || neighbour.current.name) ===
+                      target
+                  )?.order ?? 9999,
+              });
               addEdgeIfNot(graphs.main, currFileName, target, {
                 dir,
                 fieldName,

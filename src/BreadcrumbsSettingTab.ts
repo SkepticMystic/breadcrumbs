@@ -324,6 +324,19 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
+      .setName("Sorting Field Name")
+      .setDesc(
+        "The metadata field name used to indicate the order in which items should be sorted in the L/M view."
+      )
+      .addText((text) =>
+        text.setValue(settings.orderField).onChange(async (value) => {
+          settings.orderField = value;
+          await plugin.saveSettings();
+          await plugin.getActiveMatrixView().draw();
+        })
+      );
+
+    new Setting(MLViewDetails)
       .setName("Filter Implied Siblings")
       .setDesc(
         "Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up)."
@@ -348,7 +361,12 @@ export class BCSettingTab extends PluginSettingTab {
           settings.rlLeaf = value;
           await plugin.saveSettings();
           await plugin.getActiveMatrixView()?.onClose();
-          await openView(this.app, MATRIX_VIEW, MatrixView);
+          await openView(
+            this.app,
+            MATRIX_VIEW,
+            MatrixView,
+            value ? "right" : "left"
+          );
         })
       );
 

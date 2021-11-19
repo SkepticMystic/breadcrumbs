@@ -16,6 +16,7 @@ export interface BCSettings {
   dvWaitTime: number;
   refreshIntervalTime: number;
   defaultView: boolean;
+  orderField: string;
   showNameOrType: boolean;
   showRelationType: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
@@ -81,9 +82,9 @@ export interface JugglLink {
 
 export interface neighbourObj {
   current: TFile;
-  parents: string[];
-  siblings: string[];
-  children: string[];
+  /** DV only recognises it if it's a string? */
+  order: string;
+  hierarchies: HierarchyFields[];
 }
 
 export type relObj = { [key: string]: string[] } | { current: TFile };
@@ -102,6 +103,7 @@ export interface internalLinkObj {
   to: string;
   cls: string;
   alt: string | null;
+  order: number;
 }
 
 export interface SquareProps {

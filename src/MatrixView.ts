@@ -169,6 +169,7 @@ export default class MatrixView extends ItemView {
         to,
         cls: linkClass(this.app, to, realQ),
         alt: this.getAlt(to, settings),
+        order: this.getOrder(to),
       });
     });
 
@@ -272,6 +273,11 @@ export default class MatrixView extends ItemView {
     return index;
   }
 
+  getOrder = (node: string) =>
+    Number.parseInt(
+      this.plugin.currGraphs.main.getNodeAttribute(node, "order")
+    );
+
   getHierSquares(
     userHierarchies: userHierarchy[],
     data: { [dir in Directions]: Graph }[],
@@ -329,6 +335,7 @@ export default class MatrixView extends ItemView {
             to: impliedSibling,
             cls: linkClass(this.app, impliedSibling, false),
             alt: this.getAlt(impliedSibling, settings),
+            order: this.getOrder(impliedSibling),
           });
         });
       });
@@ -356,6 +363,7 @@ export default class MatrixView extends ItemView {
               to,
               cls: linkClass(this.app, to, item.real),
               alt: this.getAlt(to, settings),
+              order: this.getOrder(to),
             };
           });
       });
@@ -380,6 +388,19 @@ export default class MatrixView extends ItemView {
           ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
           : hier[dir].join(", ");
       };
+
+      [
+        rUp,
+        rSame,
+        rDown,
+        rNext,
+        rPrev,
+        iUp,
+        iSameArr,
+        iDown,
+        iNext,
+        iPrev,
+      ].forEach((a) => a.sort((a, b) => a.order - b.order));
 
       return [
         {

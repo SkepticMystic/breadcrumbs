@@ -2606,6 +2606,7 @@ const DEFAULT_SETTINGS = {
     dvWaitTime: 5000,
     refreshIntervalTime: 0,
     defaultView: true,
+    orderField: "order",
     showNameOrType: true,
     showRelationType: true,
     filterImpliedSiblingsOfDifferentTypes: false,
@@ -20072,15 +20073,13 @@ function getFieldValues(frontmatterCache, field, settings) {
                             const strs = splits.map((link) => link.match(dropHeaderOrAlias)[1].split("/").last());
                             values.push(...strs);
                         }
-                        else {
+                        else
                             values.push(rawItemAsString.split("/").last());
-                        }
                     }
                     else if (value.path !== undefined) {
                         const lastSplit = value.path.split("/").last();
-                        if (lastSplit !== undefined) {
+                        if (lastSplit !== undefined)
                             values.push(lastSplit);
-                        }
                     }
                 });
             });
@@ -20107,23 +20106,21 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
     }
     let jugglLinks = [];
     if (plugin.app.plugins.plugins.juggl !== undefined ||
-        plugin.settings.parseJugglLinksWithoutJuggl) {
-        jugglLinks = await getJugglLinks(plugin.app, plugin.settings);
+        settings.parseJugglLinksWithoutJuggl) {
+        jugglLinks = await getJugglLinks(plugin.app, settings);
     }
     const neighbourObjArr = fileFrontmatterArr.map((fileFrontmatter) => {
+        var _a;
+        const { file } = fileFrontmatter;
+        const order = (_a = fileFrontmatter[settings.orderField]) !== null && _a !== void 0 ? _a : 9999;
         const currNode = fileFrontmatter.file.basename || fileFrontmatter.file.name;
         const hierFields = {
-            current: fileFrontmatter.file,
+            current: file,
+            order,
             hierarchies: [],
         };
         userHierarchies.forEach((hier) => {
-            const newHier = {
-                up: {},
-                same: {},
-                down: {},
-                next: {},
-                prev: {},
-            };
+            const newHier = blankDirObjs();
             // Add regular metadata links
             if (settings.useAllMetadata) {
                 for (const dir of DIRECTIONS) {
@@ -20406,8 +20403,8 @@ function addNodeIfNot(g, node, attr) {
         g.addNode(node, attr);
 }
 function addEdgeIfNot(g, source, target, attr) {
-    addNodeIfNot(g, source);
-    addNodeIfNot(g, target);
+    // addNodeIfNot(g, source, attr);
+    // addNodeIfNot(g, target, attr);
     if (!g.hasEdge(source, target))
         g.addEdge(source, target, attr);
 }
@@ -22110,6 +22107,7 @@ class MatrixView extends obsidian.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.icon = TRAIL_ICON;
+        this.getOrder = (node) => Number.parseInt(this.plugin.currGraphs.main.getNodeAttribute(node, "order"));
         this.plugin = plugin;
     }
     async onload() {
@@ -22202,6 +22200,7 @@ class MatrixView extends obsidian.ItemView {
                 to,
                 cls: linkClass(this.app, to, realQ),
                 alt: this.getAlt(to, settings),
+                order: this.getOrder(to),
             });
         });
         return internalLinkObjArr;
@@ -22305,6 +22304,7 @@ class MatrixView extends obsidian.ItemView {
                         to: impliedSibling,
                         cls: linkClass(this.app, impliedSibling, false),
                         alt: this.getAlt(impliedSibling, settings),
+                        order: this.getOrder(impliedSibling),
                     });
                 });
             });
@@ -22326,6 +22326,7 @@ class MatrixView extends obsidian.ItemView {
                         to,
                         cls: linkClass(this.app, to, item.real),
                         alt: this.getAlt(to, settings),
+                        order: this.getOrder(to),
                     };
                 });
             });
@@ -22348,6 +22349,18 @@ class MatrixView extends obsidian.ItemView {
                     ? `${hier[getOppDir(dir)].join(",")}<${dir}]>`
                     : hier[dir].join(", ");
             };
+            [
+                rUp,
+                rSame,
+                rDown,
+                rNext,
+                rPrev,
+                iUp,
+                iSameArr,
+                iDown,
+                iNext,
+                iPrev,
+            ].forEach((a) => a.sort((a, b) => a.order - b.order));
             return [
                 {
                     realItems: rUp,
@@ -23574,6 +23587,14 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             await plugin.getActiveMatrixView().draw();
         }));
         new obsidian.Setting(MLViewDetails)
+            .setName("Sorting Field Name")
+            .setDesc("The metadata field name used to indicate the order in which items should be sorted in the L/M view.")
+            .addText((text) => text.setValue(settings.orderField).onChange(async (value) => {
+            settings.orderField = value;
+            await plugin.saveSettings();
+            await plugin.getActiveMatrixView().draw();
+        }));
+        new obsidian.Setting(MLViewDetails)
             .setName("Filter Implied Siblings")
             .setDesc("Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).")
             .addToggle((toggle) => toggle
@@ -23591,7 +23612,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.rlLeaf = value;
             await plugin.saveSettings();
             await ((_a = plugin.getActiveMatrixView()) === null || _a === void 0 ? void 0 : _a.onClose());
-            await openView(this.app, MATRIX_VIEW, MatrixView);
+            await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
         const trailDetails = containerEl.createEl("details");
         trailDetails.createEl("summary", { text: "Trail/Grid" });
@@ -34937,6 +34958,7 @@ class BCPlugin extends obsidian.Plugin {
         super(...arguments);
         this.visited = [];
         this.activeLeafChange = undefined;
+        this.statusBatItemEl = undefined;
         this.initEverything = async () => {
             const { settings } = this;
             this.currGraphs = await this.initGraphs();
@@ -35147,6 +35169,7 @@ class BCPlugin extends obsidian.Plugin {
         });
         // TODO get a better icon for this
         this.addRibbonIcon("dice", "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
+        this.statusBatItemEl = this.addStatusBarItem();
         this.addSettingTab(new BCSettingTab(this.app, this));
     }
     getActiveMatrixView() {
@@ -35258,7 +35281,6 @@ class BCPlugin extends obsidian.Plugin {
         const CSVRows = useCSV ? await this.getCSVRows() : [];
         neighbourObjArr.forEach((neighbours) => {
             const currFileName = neighbours.current.basename || neighbours.current.name;
-            addNodeIfNot(graphs.main, currFileName);
             neighbours.hierarchies.forEach((hier, i) => {
                 DIRECTIONS.forEach((dir) => {
                     for (const fieldName in hier[dir]) {
@@ -35266,8 +35288,18 @@ class BCPlugin extends obsidian.Plugin {
                         const targets = hier[dir][fieldName];
                         this.populateGraph(g, currFileName, targets, dir, fieldName);
                         targets.forEach((target) => {
-                            // addEdgeIfNot also addsNodeIfNot
-                            // addNodeIfNot(graphs.main, target);
+                            var _a, _b;
+                            addNodeIfNot(graphs.main, currFileName, {
+                                dir,
+                                fieldName,
+                                order: neighbours.order,
+                            });
+                            addNodeIfNot(graphs.main, target, {
+                                dir,
+                                fieldName,
+                                order: (_b = (_a = neighbourObjArr.find((neighbour) => (neighbour.current.basename || neighbour.current.name) ===
+                                    target)) === null || _a === void 0 ? void 0 : _a.order) !== null && _b !== void 0 ? _b : 9999,
+                            });
                             addEdgeIfNot(graphs.main, currFileName, target, {
                                 dir,
                                 fieldName,

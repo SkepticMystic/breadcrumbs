@@ -76,6 +76,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   dvWaitTime: 5000,
   refreshIntervalTime: 0,
   defaultView: true,
+  orderField: "order",
   showNameOrType: true,
   showRelationType: true,
   filterImpliedSiblingsOfDifferentTypes: false,
