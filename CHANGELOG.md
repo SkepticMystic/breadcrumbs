@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.2...1.2.0) (2021-11-19)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Metadata field to sort items in L/M view! ([#92](https://github.com/SkepticMystic/breadcrumbs/issues/92)) ([d6452c3](https://github.com/SkepticMystic/breadcrumbs/commit/d6452c3cdc1f3a0a00bbee06936f8b65cf71006f))
+* **Stats View:** :sparkles: Simplifications + add next/prev directions ([1d55d6a](https://github.com/SkepticMystic/breadcrumbs/commit/1d55d6a6e626d93d211ff3892b223dd7ec183678))
+
 ### [1.1.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.1...1.1.2) (2021-11-19)
 
 
