@@ -12,7 +12,6 @@
 
 <div class="BC-NextPrev-Container">
   <div class="BC-prevs">
-    {#if prev.length}<span class="BC-left-arrow">←</span>{/if}
     <span>
       {#each prev as p}
         <div
@@ -27,7 +26,6 @@
   </div>
   <div class="BC-nexts">
     <span>
-      {#if next.length}<span class="BC-right-arrow">→</span>{/if}
       {#each next as n}
         <div
           on:click={async (e) => openOrSwitch(app, n.to, e)}
