@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.2.0...1.3.0) (2021-11-19)
+
+
+### Features
+
+* **Stats View:** :sparkles: Option to wrap copied cell content in wikiLinks (fix [#101](https://github.com/SkepticMystic/breadcrumbs/issues/101)) ([a6cdeab](https://github.com/SkepticMystic/breadcrumbs/commit/a6cdeabf7e5f3ea6a3ca22ba5f270fd511487306))
+* **WriteBCToFile:** :sparkles: Option to write as inline fields (fix [#140](https://github.com/SkepticMystic/breadcrumbs/issues/140)) ([dded0df](https://github.com/SkepticMystic/breadcrumbs/commit/dded0df48db1d86fd31520f48b4e9659cf03cbdf))
+
 ## [1.2.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.1.2...1.2.0) (2021-11-19)
 
 
