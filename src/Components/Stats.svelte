@@ -102,21 +102,6 @@
   ) => DIRECTIONS.map((dir) => data[i][dir][type][info]).join("\n");
 
   let hierStrs: string[] = userHierarchies.map(hierToStr);
-
-  //   const [pIEdgesStr, sIEdgesStr, cIEdgesStr] = [
-  //     complement(
-  //       pAEdges.map((e) => `${e.v} ${separator} ${e.w}`),
-  //       pREdges.map((e) => `${e.v} ${separator} ${e.w}`)
-  //     ).join("\n"),
-  //     complement(
-  //       sAEdges.map((e) => `${e.v} ${separator} ${e.w}`),
-  //       sREdges.map((e) => `${e.v} ${separator} ${e.w}`)
-  //     ).join("\n"),
-  //     complement(
-  //       cAEdges.map((e) => `${e.v} ${separator} ${e.w}`),
-  //       cREdges.map((e) => `${e.v} ${separator} ${e.w}`)
-  //     ).join("\n"),
-  //   ];
 </script>
 
 <table>
@@ -128,7 +113,18 @@
   </thead>
 
   <tr>
-    <td />
+    <td>
+      <button
+        class="icon"
+        aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
+        on:click={async () => {
+          await plugin.refreshIndex();
+          await plugin.getActiveTYPEView(STATS_VIEW)?.draw();
+        }}
+      >
+        ↻
+      </button>
+    </td>
     <td>Measure</td>
     {#each DIRECTIONS as dir}
       <td>{ARROW_DIRECTIONS[dir]}</td>
