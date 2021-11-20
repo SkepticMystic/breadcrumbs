@@ -530,10 +530,9 @@ export default class BCPlugin extends Plugin {
       const { node, path } = queue.shift();
       const extPath = [node, ...path];
 
-      const succsNotVisited = g.filterOutNeighbors(
-        node,
-        (succ) => !visited.includes(succ)
-      );
+      const succsNotVisited = g.hasNode(node)
+        ? g.filterOutNeighbors(node, (succ) => !visited.includes(succ))
+        : [];
       for (const node of succsNotVisited) {
         visited.push(node);
         queue.push({ node, path: extPath });
@@ -577,7 +576,7 @@ export default class BCPlugin extends Plugin {
     const upFields = getFields(userHierarchies, "up");
     const downFields = getFields(userHierarchies, "down");
     let subGraph: MultiGraph;
-    
+
     if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
       subGraph = getSubForFields(this.mainG, [...upFields, ...downFields]);
     } else {
