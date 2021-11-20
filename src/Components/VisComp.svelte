@@ -1,11 +1,11 @@
 <script lang="ts">
   import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
-  import type {
-    BCSettings,
-    VisGraphs,
-    visTypes,
-  } from "src/interfaces";
-  import { closeImpliedLinks, removeUnlinkedNodes } from "src/sharedFunctions";
+  import type { BCSettings, VisGraphs, visTypes } from "src/interfaces";
+  import {
+    closeImpliedLinks,
+    getSubInDir,
+    removeUnlinkedNodes,
+  } from "src/sharedFunctions";
   import type { VisModal } from "src/VisModal";
   import { arcDiagram } from "src/Visualisations/ArcDiagram";
   import { circlePacking } from "src/Visualisations/CirclePacking";
@@ -53,7 +53,12 @@
     Math.round(window.innerHeight / 1.3),
   ];
 
-  const { up, same, down } = plugin.currGraphs.mergedGs;
+  const { mainG } = plugin;
+  const [up, same, down] = [
+    getSubInDir(mainG, "up"),
+    getSubInDir(mainG, "same"),
+    getSubInDir(mainG, "down"),
+  ];
 
   const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
     closeImpliedLinks(up, down),

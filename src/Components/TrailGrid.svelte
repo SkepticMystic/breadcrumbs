@@ -6,6 +6,7 @@
   import {
     closeImpliedLinks,
     getOutNeighbours,
+    getSubInDir,
     linkClass,
     normalise,
     openOrSwitch,
@@ -42,7 +43,8 @@
   // const data: {[cell: string]: number} = {}
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 
-  const { up, down } = plugin.currGraphs.mergedGs;
+  const { mainG } = plugin;
+  const [up, down] = [getSubInDir(mainG, "up"), getSubInDir(mainG, "down")];
 
   const closedParents = closeImpliedLinks(up, down);
 
@@ -143,6 +145,7 @@
     justify-content: center;
     padding: 2px;
     font-size: smaller;
+    /* height: fit-content; */
     /* height: auto; */
   }
 

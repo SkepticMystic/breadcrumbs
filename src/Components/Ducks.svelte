@@ -2,18 +2,18 @@
   import type { App } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import type DucksView from "src/DucksView";
-
   import type BCPlugin from "src/main";
 
   export let plugin: BCPlugin;
   export let app: App;
   export let ducksView: DucksView;
 
-  const { main } = plugin.currGraphs;
+  const { mainG } = plugin;
   const files = app.vault.getMarkdownFiles();
-  const fileNames = files.map((file) => file.basename);
 
-  const ducks = fileNames.filter((name) => !main.neighbors(name).length);
+  const ducks = files
+    .map((file) => file.basename)
+    .filter((name) => !mainG.neighbors(name).length);
 </script>
 
 <div class="BC-Ducks markdown-preview-view">

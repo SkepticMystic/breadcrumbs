@@ -15,13 +15,13 @@
   {#each filteredSquaresArr as squares}
     <details open>
       <summary class="hier-summary"
-        >{squares.map((square) => square.fieldName).join(", ")}</summary
+        >{squares.map((square) => square.field).join(", ")}</summary
       >
 
       {#each squares as square}
         {#if square.realItems.length > 0 || square.impliedItems.length > 0}
           <details open class="BC-details">
-            <summary>{square.fieldName}</summary>
+            <summary>{square.field}</summary>
             {#if square.realItems.length}
               {#if settings.showRelationType}
                 <h5 class="BC-header">Real</h5>

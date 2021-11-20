@@ -16,45 +16,36 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
-  blankDirObjs,
-  blankDirUndef,
   DEFAULT_SETTINGS,
   DIRECTIONS,
-  DUCK_VIEW,
   MATRIX_VIEW,
-  MyView,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEWS,
 } from "src/constants";
 import type {
-  BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
-  HierarchyGraphs,
   HierarchyNoteItem,
+  MyView,
   neighbourObj,
 } from "src/interfaces";
 import {
   addEdgeIfNot,
-  addNodeIfNot,
-  closeImpliedLinks,
+  addNodesIfNot,
   debug,
   debugGroupEnd,
   debugGroupStart,
-  getAllFieldGs,
-  getAllGsInDir,
   getDVMetadataCache,
   getFields,
   getNeighbourObjArr,
   getObsMetadataCache,
-  getOppDir,
   getOppFields,
   getOutNeighbours,
-  getPrevNext,
-  mergeGs,
-  oppFields,
+  getRealnImplied,
+  getReflexiveClosure,
+  getSubForFields,
   writeBCToFile,
 } from "src/sharedFunctions";
 import { VisModal } from "src/VisModal";
@@ -66,19 +57,19 @@ export default class BCPlugin extends Plugin {
   settings: BCSettings;
   visited: [string, HTMLDivElement][] = [];
   refreshIntervalID: number;
-  currGraphs: BCIndex;
+  mainG: MultiGraph;
   activeLeafChange: EventRef = undefined;
   statusBatItemEl: HTMLElement = undefined;
 
   async refreshIndex() {
     if (!this.activeLeafChange) this.registerActiveLeafEvent();
 
-    this.currGraphs = await this.initGraphs();
-    const activeMatrix = this.getActiveTYPEView(MATRIX_VIEW);
-    const activeDucks = this.getActiveTYPEView(DUCK_VIEW);
+    this.mainG = await this.initGraphs();
 
-    if (activeMatrix) await activeMatrix.draw();
-    if (activeDucks) await activeDucks.draw();
+    for (const view of VIEWS) {
+      await this.getActiveTYPEView(view.type)?.draw();
+    }
+
     if (this.settings.showTrail) await this.drawTrail();
 
     new Notice("Index refreshed");
@@ -102,7 +93,7 @@ export default class BCPlugin extends Plugin {
 
   initEverything = async () => {
     const { settings } = this;
-    this.currGraphs = await this.initGraphs();
+    this.mainG = await this.initGraphs();
 
     for (const view of VIEWS) {
       if (view.openOnLoad)
@@ -116,7 +107,7 @@ export default class BCPlugin extends Plugin {
     // ANCHOR autorefresh interval
     if (settings.refreshIntervalTime > 0) {
       this.refreshIntervalID = window.setInterval(async () => {
-        this.currGraphs = await this.initGraphs();
+        this.mainG = await this.initGraphs();
         if (settings.showBCs) await this.drawTrail();
 
         const activeView = this.getActiveTYPEView(MATRIX_VIEW);
@@ -130,12 +121,20 @@ export default class BCPlugin extends Plugin {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
+
+    // Prevent breaking change
     ["prev", "next"].forEach((dir) => {
       this.settings.userHierarchies.forEach(async (hier, i) => {
         if (hier[dir] === undefined) this.settings.userHierarchies[i][dir] = [];
         await this.saveSettings();
       });
     });
+    const upFields = getFields(this.settings.userHierarchies, "up");
+    for (const field in this.settings.limitTrailCheckboxStates) {
+      if (!upFields.includes(field)) {
+        delete this.settings.limitTrailCheckboxStates[field];
+      }
+    }
 
     for (const view of VIEWS) {
       this.registerView(
@@ -197,7 +196,6 @@ export default class BCPlugin extends Plugin {
         await writeBCToFile(
           this.app,
           this,
-          this.currGraphs,
           currFile,
           this.settings.writeBCsInline
         );
@@ -228,7 +226,6 @@ export default class BCPlugin extends Plugin {
                       await writeBCToFile(
                         this.app,
                         this,
-                        this.currGraphs,
                         file,
                         this.settings.writeBCsInline
                       )
@@ -279,7 +276,7 @@ export default class BCPlugin extends Plugin {
 
     const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
     const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-    const fieldNameReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
 
     const problemFields: string[] = [];
 
@@ -289,12 +286,12 @@ export default class BCPlugin extends Plugin {
 
       const afterBulletCurr = afterBulletReg.exec(currItem)[1];
       const dropWikiCurr = dropWikiLinksReg.exec(afterBulletCurr)[1];
-      let fieldNameCurr = fieldNameReg.exec(afterBulletCurr)[1].trim() || null;
+      let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
       // Ensure fieldName is one of the existing up fields. `null` if not
-      if (fieldNameCurr !== null && !upFields.includes(fieldNameCurr)) {
-        problemFields.push(fieldNameCurr);
-        fieldNameCurr = null;
+      if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
+        problemFields.push(fieldCurr);
+        fieldCurr = null;
       }
 
       const { parent } = item;
@@ -306,20 +303,20 @@ export default class BCPlugin extends Plugin {
         hierarchyNoteItems.push({
           currNote: dropWikiCurr,
           parentNote: dropWikiParent,
-          fieldName: fieldNameCurr,
+          field: fieldCurr,
         });
       } else {
         hierarchyNoteItems.push({
           currNote: dropWikiCurr,
           parentNote: null,
-          fieldName: fieldNameCurr,
+          field: fieldCurr,
         });
       }
     }
     if (problemFields.length > 0) {
       const msg = `'${problemFields.join(
         ", "
-      )}' is/are not in any of your hierarchies, but are being used in: '${
+      )}' is/are not a field in any of your hierarchies, but is/are being used in: '${
         file.basename
       }'`;
       new Notice(msg);
@@ -330,52 +327,36 @@ export default class BCPlugin extends Plugin {
 
   // SECTION OneSource
 
-  populateGraph(
-    g: Graph,
-    currFileName: string,
-    targets: string[],
-    dir: Directions,
-    fieldName: string
-  ): void {
-    //@ts-ignore
-    addNodeIfNot(g, currFileName, { dir, fieldName });
-
-    if (fieldName === "") return;
-    targets.forEach((target) => {
-      //@ts-ignore
-      addNodeIfNot(g, target, { dir, fieldName });
-      //@ts-ignore
-      addEdgeIfNot(g, currFileName, target, { dir, fieldName });
-    });
-  }
-
   populateMain(
     main: MultiGraph,
-    currFileName: string,
+    basename: string,
     dir: Directions,
-    fieldName: string,
+    field: string,
     targets: string[],
     neighbours: neighbourObj,
     neighbourObjArr: neighbourObj[]
   ): void {
-    addNodeIfNot(main, currFileName, {
+    addNodesIfNot(main, [basename], {
       dir,
-      fieldName,
+      field,
+      //@ts-ignore
       order: neighbours.order,
     });
     targets.forEach((target) => {
-      addNodeIfNot(main, target, {
+      addNodesIfNot(main, [target], {
         dir,
-        fieldName,
+        field,
+        //@ts-ignore
         order:
           neighbourObjArr.find(
             (neighbour) =>
               (neighbour.current.basename || neighbour.current.name) === target
           )?.order ?? 9999,
       });
-      addEdgeIfNot(main, currFileName, target, {
+      addEdgeIfNot(main, basename, target, {
+        //@ts-ignore
         dir,
-        fieldName,
+        field,
       });
     });
   }
@@ -410,34 +391,34 @@ export default class BCPlugin extends Plugin {
     g: Graph,
     CSVRows: { [key: string]: string }[],
     dir: Directions,
-    fieldName: string
+    field: string
   ) {
     CSVRows.forEach((row) => {
-      addNodeIfNot(g, row.file);
-      if (fieldName === "" || !row[fieldName]) return;
-
-      addNodeIfNot(g, row[fieldName]);
       //@ts-ignore
-      addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
+      addNodesIfNot(g, [row.file], { dir, field });
+      if (field === "" || !row[field]) return;
+
+      addNodesIfNot(g, [row[field]]);
+      //@ts-ignore
+      addEdgeIfNot(g, row.file, row[field], { dir, field });
     });
   }
 
-  async initGraphs(): Promise<BCIndex> {
-    const { settings } = this;
+  async initGraphs(): Promise<MultiGraph> {
+    const { settings, app } = this;
     debugGroupStart(settings, "debugMode", "Initialise Graphs");
-    const files = this.app.vault.getMarkdownFiles();
-
-    const dvQ = !!this.app.plugins.enabledPlugins.has("dataview");
+    const files = app.vault.getMarkdownFiles();
+    const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
     let fileFrontmatterArr: dvFrontmatterCache[] = dvQ
-      ? getDVMetadataCache(this.app, settings, files)
-      : getObsMetadataCache(this.app, settings, files);
+      ? getDVMetadataCache(app, settings, files)
+      : getObsMetadataCache(app, settings, files);
 
     if (fileFrontmatterArr[0] === undefined) {
       await wait(1000);
       fileFrontmatterArr = dvQ
-        ? getDVMetadataCache(this.app, settings, files)
-        : getObsMetadataCache(this.app, settings, files);
+        ? getDVMetadataCache(app, settings, files)
+        : getObsMetadataCache(app, settings, files);
     }
 
     const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
@@ -446,7 +427,7 @@ export default class BCPlugin extends Plugin {
     const hierarchyNotesArr: HierarchyNoteItem[] = [];
     if (settings.hierarchyNotes[0] !== "") {
       for (const note of settings.hierarchyNotes) {
-        const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
+        const file = app.metadataCache.getFirstLinkpathDest(note, "");
         if (file) {
           hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
         } else {
@@ -460,27 +441,7 @@ export default class BCPlugin extends Plugin {
 
     const { userHierarchies } = settings;
 
-    const graphs: BCIndex = {
-      main: new MultiGraph(),
-      hierGs: [],
-      mergedGs: blankDirUndef(),
-      closedGs: blankDirUndef(),
-      limitTrailG: undefined,
-    };
-
-    userHierarchies.forEach((hier) => {
-      const newGraphs: HierarchyGraphs = blankDirObjs();
-
-      DIRECTIONS.forEach((dir: Directions) => {
-        if (hier[dir] === undefined) {
-          hier[dir] = [];
-        }
-        hier[dir].forEach((dirField) => {
-          newGraphs[dir][dirField] = new Graph();
-        });
-      });
-      graphs.hierGs.push(newGraphs);
-    });
+    const mainG = new MultiGraph();
 
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
@@ -488,126 +449,68 @@ export default class BCPlugin extends Plugin {
     neighbourObjArr.forEach((neighbours) => {
       const currFileName =
         neighbours.current.basename || neighbours.current.name;
-      neighbours.hierarchies.forEach((hier, i) => {
-        DIRECTIONS.forEach((dir) => {
-          for (const fieldName in hier[dir]) {
-            const g = graphs.hierGs[i][dir][fieldName];
-            const targets = hier[dir][fieldName];
 
-            this.populateGraph(g, currFileName, targets, dir, fieldName);
+      for (const hier of neighbours.hierarchies) {
+        for (const dir of DIRECTIONS) {
+          for (const field in hier[dir]) {
+            const targets = hier[dir][field];
+
             this.populateMain(
-              graphs.main,
+              mainG,
               currFileName,
               dir,
-              fieldName,
+              field,
               targets,
               neighbours,
               neighbourObjArr
             );
 
-            if (useCSV) {
-              this.addCSVCrumbs(g, CSVRows, dir, fieldName);
-              this.addCSVCrumbs(graphs.main, CSVRows, dir, fieldName);
-            }
+            if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
           }
-        });
-      });
+        }
+      }
     });
 
     if (hierarchyNotesArr.length) {
-      const { hierarchyNoteUpFieldName } = settings;
-      const { main } = graphs;
+      const { HNUpField } = settings;
       const upFields = getFields(userHierarchies, "up");
 
       hierarchyNotesArr.forEach((hnItem) => {
         if (hnItem.parentNote === null) return;
 
-        const upField =
-          hnItem.fieldName ?? (hierarchyNoteUpFieldName || upFields[0]);
+        const upField = hnItem.field ?? (HNUpField || upFields[0]);
         const downField =
-          getOppFields(userHierarchies, upField)[0] ?? `${upField}<up>`;
+          getOppFields(userHierarchies, upField)[0] ?? `${upField}<down>`;
 
-        const gUp = graphs.hierGs.find((hierG) => hierG.up[upField]).up[
-          upField
-        ];
-        const gDown = graphs.hierGs.find((hierG) => hierG.down[downField]).down[
-          downField
-        ];
+        const aUp = {
+          dir: "up",
+          field: upField,
+        };
+        //@ts-ignore
+        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+        //@ts-ignore
+        addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
 
-        [gUp, main].forEach((g) => {
-          addNodeIfNot(g, hnItem.currNote);
-          addNodeIfNot(g, hnItem.parentNote);
-          addEdgeIfNot(g, hnItem.currNote, hnItem.parentNote, {
-            dir: "up",
-            fieldName: upField,
-          });
-        });
-
-        [gDown, main].forEach((g) => {
-          addNodeIfNot(g, hnItem.parentNote);
-          addNodeIfNot(g, hnItem.currNote);
-          addEdgeIfNot(g, hnItem.parentNote, hnItem.currNote, {
-            dir: "down",
-            fieldName: downField,
-          });
-        });
+        const aDown = {
+          dir: "down",
+          field: downField,
+        };
+        //@ts-ignore
+        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+        //@ts-ignore
+        addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
       });
-    }
-
-    DIRECTIONS.forEach((dir) => {
-      const allXGs = getAllGsInDir(graphs.hierGs, dir);
-      const dirMerged = mergeGs(...Object.values(allXGs));
-      graphs.mergedGs[dir] = dirMerged;
-    });
-
-    DIRECTIONS.forEach((dir) => {
-      graphs.closedGs[dir] = closeImpliedLinks(
-        graphs.mergedGs[dir],
-        graphs.mergedGs[getOppDir(dir)]
-      );
-    });
-
-    // LimitTrailG
-    if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
-      graphs.limitTrailG = graphs.closedGs.up;
-    } else {
-      const allUps = getAllGsInDir(graphs.hierGs, "up");
-      const allLimitedTrailsGsKeys: string[] = Object.keys(allUps).filter(
-        (field) => settings.limitTrailCheckboxStates[field]
-      );
-      const allLimitedTrailsGs: Graph[] = [];
-      allLimitedTrailsGsKeys.forEach((key) =>
-        allLimitedTrailsGs.push(allUps[key])
-      );
-
-      const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
-
-      const allLimitedDownGs: Graph[] = [];
-
-      Object.keys(settings.limitTrailCheckboxStates).forEach((limitedField) => {
-        const oppFieldsArr = oppFields(limitedField, "up", userHierarchies);
-        const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs);
-        allLimitedDownGs.push(...oppGs);
-      });
-
-      const mergedLimitedDownGs = mergeGs(...allLimitedDownGs);
-      graphs.limitTrailG = closeImpliedLinks(
-        mergedLimitedUpGs,
-        mergedLimitedDownGs
-      );
     }
 
     debug(settings, "graphs inited");
-    debug(settings, { graphs });
+    debug(settings, { mainG });
 
     debugGroupEnd(settings, "debugMode");
     files.forEach((file) => {
-      if (!graphs.main.hasNode(file.basename)) {
-        console.log(`${file.basename} was not in main`);
-        graphs.main.addNode(file.basename);
-      }
+      const { basename } = file;
+      addNodesIfNot(mainG, [basename]);
     });
-    return graphs;
+    return mainG;
   }
 
   // !SECTION OneSource
@@ -619,19 +522,25 @@ export default class BCPlugin extends Plugin {
     const queue: { node: string; path: string[] }[] = [
       { node: startNode, path: [] },
     ];
+    const visited = [startNode];
 
     let i = 0;
     while (queue.length !== 0 && i < 1000) {
       i++;
       const { node, path } = queue.shift();
       const extPath = [node, ...path];
-      queue.push(
-        ...getOutNeighbours(g, node).map((n) => {
-          return { node: n, path: extPath };
-        })
+
+      const succsNotVisited = g.filterOutNeighbors(
+        node,
+        (succ) => !visited.includes(succ)
       );
+      for (const node of succsNotVisited) {
+        visited.push(node);
+        queue.push({ node, path: extPath });
+      }
+
       // terminal node
-      if (!g.hasNode(node) || !g.outDegree(node)) {
+      if (!g.hasNode(node) || succsNotVisited.length === 0) {
         pathsArr.push(extPath);
       }
     }
@@ -644,12 +553,12 @@ export default class BCPlugin extends Plugin {
   }
 
   getBreadcrumbs(g: Graph, currFile: TFile): string[][] | null {
-    if (currFile.extension !== "md") return null;
+    const { basename, extension } = currFile;
+    if (extension !== "md") return null;
 
-    const from = currFile.basename;
-    const indexNotes: string[] = [this.settings.indexNote].flat();
+    const { indexNotes } = this.settings;
 
-    let allTrails: string[][] = this.bfsAllPaths(g, from);
+    let allTrails: string[][] = this.bfsAllPaths(g, basename);
 
     // No index note chosen
     if (indexNotes[0] !== "" && allTrails[0].length > 0) {
@@ -663,18 +572,37 @@ export default class BCPlugin extends Plugin {
     return sortedTrails;
   }
 
+  getLimitedTrailSub() {
+    const { limitTrailCheckboxStates, userHierarchies } = this.settings;
+    const upFields = getFields(userHierarchies, "up");
+    const downFields = getFields(userHierarchies, "down");
+    let subGraph: MultiGraph;
+    
+    if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
+      subGraph = getSubForFields(this.mainG, [...upFields, ...downFields]);
+    } else {
+      const positiveFields = Object.keys(limitTrailCheckboxStates).filter(
+        (field) => limitTrailCheckboxStates[field]
+      );
+      const oppFields = positiveFields.map(
+        (field) => getOppFields(userHierarchies, field)[0]
+      );
+      subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
+    }
+    const closed = getReflexiveClosure(subGraph, userHierarchies);
+    return getSubForFields(closed, upFields);
+  }
+
   async drawTrail(): Promise<void> {
     const { settings } = this;
     debugGroupStart(settings, "debugMode", "Draw Trail");
-    if (!settings.showBCs) {
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
+
     const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeMDView) {
+    if (!settings.showBCs || !activeMDView) {
       debugGroupEnd(settings, "debugMode");
       return;
     }
+
     const currFile = activeMDView.file;
     const currMetadata = this.app.metadataCache.getFileCache(currFile);
 
@@ -682,7 +610,7 @@ export default class BCPlugin extends Plugin {
       ".markdown-preview-view"
     );
     previewView.querySelector("div.BC-trail")?.remove();
-    if (currMetadata.frontmatter?.hasOwnProperty(settings.hideTrailFieldName)) {
+    if (currMetadata.frontmatter?.hasOwnProperty(settings.hideTrailField)) {
       debugGroupEnd(settings, "debugMode");
       return;
     }
@@ -694,13 +622,19 @@ export default class BCPlugin extends Plugin {
       return;
     }
 
-    const closedUp = this.currGraphs.limitTrailG;
+    const closedUp = this.getLimitedTrailSub();
+    console.log({ closedUp });
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
+    console.log({ sortedTrails });
     debug(settings, { sortedTrails });
 
     const { basename } = currFile;
 
-    const { rPrev, rNext, iPrev, iNext } = getPrevNext(this, basename);
+    const {
+      next: { reals: rNext, implieds: iNext },
+      prev: { reals: rPrev, implieds: iPrev },
+    } = getRealnImplied(this, basename, "next");
+
     // Remove duplicate implied
     const next = [...rNext];
     iNext.forEach((i) => {

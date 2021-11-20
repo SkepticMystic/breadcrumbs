@@ -1,10 +1,10 @@
-import type { Constructor } from "obsidian";
 import DucksView from "src/DucksView";
 import type {
   BCSettings,
   Directions,
   Relations,
   userHierarchy,
+  ViewInfo,
   visTypes,
 } from "src/interfaces";
 import MatrixView from "src/MatrixView";
@@ -14,14 +14,7 @@ export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
 
-export type MyView = MatrixView | StatsView | DucksView;
-
-export const VIEWS: {
-  plain: string;
-  type: string;
-  constructor: Constructor<MyView>;
-  openOnLoad: boolean;
-}[] = [
+export const VIEWS: ViewInfo[] = [
   {
     plain: "Matrix",
     type: MATRIX_VIEW,
@@ -80,13 +73,14 @@ export const blankDirObjs = (): { [dir in Directions]: {} } => {
     prev: {},
   };
 };
-export const blankDirUndef = (): { [dir in Directions]: undefined } => {
+
+export const blankRealNImplied = () => {
   return {
-    up: undefined,
-    same: undefined,
-    down: undefined,
-    next: undefined,
-    prev: undefined,
+    up: { reals: [], implieds: [] },
+    down: { reals: [], implieds: [] },
+    same: { reals: [], implieds: [] },
+    next: { reals: [], implieds: [] },
+    prev: { reals: [], implieds: [] },
   };
 };
 
@@ -100,11 +94,10 @@ export const DEFAULT_SETTINGS: BCSettings = {
       prev: ["prev"],
     },
   ],
-  indexNote: [""],
+  indexNotes: [""],
   CSVPaths: "",
   hierarchyNotes: [""],
-  hierarchyNoteDownFieldName: "",
-  hierarchyNoteUpFieldName: "",
+  HNUpField: "",
   refreshIndexOnActiveLeafChange: false,
   altLinkFields: [],
   useAllMetadata: true,
@@ -122,7 +115,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showGrid: true,
   showPrevNext: true,
   limitTrailCheckboxStates: {},
-  hideTrailFieldName: "hide-trail",
+  hideTrailField: "hide-trail",
   gridDots: false,
   dotsColour: "#000000",
   gridHeatmap: false,

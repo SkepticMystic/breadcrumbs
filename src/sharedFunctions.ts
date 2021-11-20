@@ -1,5 +1,5 @@
-import type NodeAttributes from "graphology";
-import Graph from "graphology";
+import type Attributes from "graphology";
+import Graph, { MultiGraph } from "graphology";
 import { parseTypedLink } from "juggl-api";
 import {
   App,
@@ -12,12 +12,12 @@ import {
 import {
   ARROW_DIRECTIONS,
   blankDirObjs,
+  blankRealNImplied,
   DIRECTIONS,
   dropHeaderOrAlias,
   splitLinksRegex,
 } from "src/constants";
 import type {
-  BCIndex,
   BCSettings,
   Directions,
   dvFrontmatterCache,
@@ -27,7 +27,7 @@ import type {
   JugglLink,
   MetaeditApi,
   neighbourObj,
-  PrevNext,
+  RealNImplied,
   userHierarchy,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
@@ -580,28 +580,71 @@ export function removeUnlinkedNodes(g: Graph) {
   return copy;
 }
 
-export function getAllGsInDir(currGraphs: HierarchyGraphs[], dir: Directions) {
+export function getAllGsInDir(hierGs: HierarchyGraphs[], dir: Directions) {
   const target = {};
   const allGsInDir: { [field: string]: Graph } = Object.assign(
     target,
-    ...currGraphs.map((hierGs) => hierGs[dir])
+    ...hierGs.map((hierGs) => hierGs[dir])
   );
   return allGsInDir;
 }
-
-export function iterateAllGs(
-  currGraphs: HierarchyGraphs[],
-  cb: (g: Graph, dir: Directions, fieldName: string) => any
-) {
-  for (const hierGs of currGraphs) {
-    for (const dir of DIRECTIONS) {
-      for (const fieldName in hierGs[dir]) {
-        const g = hierGs[dir][fieldName];
-        cb(g, dir, fieldName);
-      }
+/**
+ * Return a subgraph of all nodes & edges with `a.dir`
+ * @param  {MultiGraph} main
+ * @param  {Directions} dir
+ */
+export function getSubInDir(main: MultiGraph, dir: Directions) {
+  const sub = new MultiGraph();
+  main.forEachEdge((k, a, s, t) => {
+    if (a.dir === dir) {
+      //@ts-ignore
+      addNodesIfNot(sub, [s, t], a);
+      sub.addEdge(s, t, a);
     }
-  }
+  });
+  return sub;
 }
+
+/**
+ * Return a subgraph of all nodes & edges with `files.includes(a.field)`
+ * @param  {MultiGraph} main
+ * @param  {string[]} fields
+ */
+export function getSubForFields(main: MultiGraph, fields: string[]) {
+  const sub = new MultiGraph();
+  main.forEachEdge((k, a, s, t) => {
+    if (fields.includes(a.field)) {
+      //@ts-ignore
+      addNodesIfNot(sub, [s, t], a);
+      sub.addEdge(s, t, a);
+    }
+  });
+  return sub;
+}
+/**
+ * For every edge in `g`, add the reverse of the edge to a copy of `g`.
+ *
+ * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
+ * @param  {MultiGraph} g
+ */
+export function getReflexiveClosure(
+  g: MultiGraph,
+  userHierarchies: userHierarchy[]
+): MultiGraph {
+  const copy = g.copy();
+  copy.forEachEdge((k, a, s, t) => {
+    const { dir, field } = a;
+    const oppDir = getOppDir(dir);
+    const oppField = getOppFields(userHierarchies, field)[0];
+
+    //@ts-ignore
+    addNodesIfNot(copy, [s, t], { dir: oppDir, field: oppField });
+    //@ts-ignore
+    addEdgeIfNot(copy, t, s, { dir: oppDir, field: oppField });
+  });
+  return copy;
+}
+
 /**
  * Get all the fields in `dir`.
  * Returns all fields if `dir === 'all'`
@@ -623,14 +666,6 @@ export function getFields(
     }
   });
   return fields;
-}
-
-export function getAllFieldGs(fields: string[], currGraphs: HierarchyGraphs[]) {
-  const fieldGs: Graph[] = [];
-  iterateAllGs(currGraphs, (g, dir, fieldName) => {
-    if (fields.includes(fieldName)) fieldGs.push(g);
-  });
-  return fieldGs;
 }
 
 export const hierToStr = (hier: userHierarchy) =>
@@ -691,11 +726,11 @@ export const createOrUpdateYaml = async (
 export const writeBCToFile = async (
   app: App,
   plugin: BCPlugin,
-  currGraphs: BCIndex,
   file: TFile,
   inline: boolean
 ) => {
-  const { limitWriteBCCheckboxStates, userHierarchies } = plugin.settings;
+  const { limitWriteBCCheckboxStates } = plugin.settings;
+  const { mainG } = plugin;
   const frontmatter = app.metadataCache.getFileCache(file)?.frontmatter;
   const api = app.plugins.plugins.metaedit?.api;
 
@@ -704,20 +739,19 @@ export const writeBCToFile = async (
     return;
   }
 
-  const { main } = currGraphs;
-  const succs = getInNeighbours(main, file.basename);
+  const succs = getInNeighbours(mainG, file.basename);
 
   for (const succ of succs) {
-    const { fieldName } = main.getNodeAttributes(succ);
-    if (!limitWriteBCCheckboxStates[fieldName]) return;
+    const { field } = mainG.getNodeAttributes(succ);
+    if (!limitWriteBCCheckboxStates[field]) return;
 
     if (!inline) {
-      await createOrUpdateYaml(fieldName, succ, file, frontmatter, api);
+      await createOrUpdateYaml(field, succ, file, frontmatter, api);
     } else {
       // TODO Check if this note already has this field
       let content = await app.vault.read(file);
       const splits = splitAtYaml(content);
-      content = splits[0] + `\n${fieldName}:: [[${succ}]]` + splits[1];
+      content = splits[0] + `\n${field}:: [[${succ}]]` + splits[1];
 
       await app.vault.modify(file, content);
     }
@@ -734,17 +768,6 @@ function splitAtYaml(content: string): [string, string] {
       splits.slice(2).join("---"),
     ];
   }
-}
-
-export function oppFields(
-  field: string,
-  dir: Directions,
-  userHierarchies: userHierarchy[]
-): string[] {
-  const oppDir = getOppDir(dir);
-  return (
-    userHierarchies.find((hier) => hier[oppDir].includes(field))?.[oppDir] ?? []
-  );
 }
 
 /**
@@ -771,26 +794,26 @@ export function getOppFields(userHierarchies: userHierarchy[], field: string) {
   return fieldHier[oppDir];
 }
 
-export function addNodeIfNot(g: Graph, node: string, attr?: NodeAttributes) {
-  if (!g.hasNode(node)) g.addNode(node, attr);
+export function addNodesIfNot(g: Graph, nodes: string[], attr?: Attributes) {
+  nodes.forEach((node) => {
+    if (!g.hasNode(node)) g.addNode(node, attr);
+  });
 }
 
 export function addEdgeIfNot(
   g: Graph,
   source: string,
   target: string,
-  attr?: NodeAttributes
+  attr?: Attributes
 ) {
-  // addNodeIfNot(g, source, attr);
-  // addNodeIfNot(g, target, attr);
   if (!g.hasEdge(source, target)) g.addEdge(source, target, attr);
 }
 
 export const getSinks = (g: Graph) =>
-  g.filterNodes((node) => !getOutNeighbours(g, node).length);
+  g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
 
 export const getSources = (g: Graph) =>
-  g.filterNodes((node) => !getInNeighbours(g, node).length);
+  g.filterNodes((node) => g.hasNode(node) && !g.inDegree(node));
 
 export function swapItems<T>(i: number, j: number, arr: T[]) {
   const max = arr.length - 1;
@@ -811,34 +834,40 @@ export const getOutNeighbours = (g: Graph, node: string): string[] =>
 export const getInNeighbours = (g: Graph, node: string): string[] =>
   g.hasNode(node) ? g.inNeighbors(node) : [];
 
-export function getPrevNext(plugin: BCPlugin, currNode: string) {
-  const [rPrev, rNext, iPrev, iNext]: PrevNext[][] = [[], [], [], []];
+/** Remember to filter by hierarchy in MatrixView! */
+export function getRealnImplied(
+  plugin: BCPlugin,
+  currNode: string,
+  dir: Directions = null
+): RealNImplied {
+  const realsnImplieds: RealNImplied = blankRealNImplied();
   const { userHierarchies } = plugin.settings;
-  const { main } = plugin.currGraphs;
-  try {
-    main.forEachEdge(currNode, (k, a, s, t) => {
-      const { fieldName } = a;
-      if (a.dir === "next" && s === currNode) {
-        rNext.push({ to: t, real: true, fieldName });
-      } else if (a.dir === "prev" && t === currNode) {
-        iNext.push({
-          to: s,
-          real: false,
-          fieldName: getOppFields(userHierarchies, fieldName)[0],
-        });
-      } else if (a.dir === "prev" && s === currNode) {
-        rPrev.push({ to: t, real: true, fieldName });
-      } else if (a.dir === "next" && t === currNode) {
-        iPrev.push({
-          to: s,
-          real: false,
-          fieldName: getOppFields(userHierarchies, fieldName)[0],
-        });
+
+  plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
+    const { field, dir: edgeDir } = a;
+    const oppField = getOppFields(userHierarchies, field)[0];
+
+    (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
+      const oppDir = getOppDir(currDir);
+      // Reals
+      if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+        const arr = realsnImplieds[edgeDir].reals;
+        if (arr.findIndex((item) => item.to === t) === -1) {
+          arr.push({ to: t, real: true, field });
+        }
+      }
+      // Implieds
+      else if (t === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+        const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
+        if (arr.findIndex((item) => item.to === s) === -1) {
+          arr.push({
+            to: s,
+            real: false,
+            field: oppField,
+          });
+        }
       }
     });
-    return { rPrev, rNext, iPrev, iNext };
-  } catch (e) {
-    console.log(e);
-    return { rPrev, rNext, iPrev, iNext };
-  }
+  });
+  return realsnImplieds;
 }

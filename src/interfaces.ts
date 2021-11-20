@@ -1,14 +1,15 @@
-import type { MultiGraph } from "graphology";
 import type Graph from "graphology";
-import type { FrontMatterCache, Pos, TFile } from "obsidian";
+import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
+import type DucksView from "src/DucksView";
+import type StatsView from "src/StatsView";
+import type MatrixView from "src/MatrixView";
 
 export interface BCSettings {
   userHierarchies: userHierarchy[];
-  indexNote: string[];
+  indexNotes: string[];
   CSVPaths: string;
   hierarchyNotes: string[];
-  hierarchyNoteDownFieldName: string;
-  hierarchyNoteUpFieldName: string;
+  HNUpField: string;
   refreshIndexOnActiveLeafChange: boolean;
   altLinkFields: string[];
   useAllMetadata: boolean;
@@ -26,7 +27,7 @@ export interface BCSettings {
   showGrid: boolean;
   showPrevNext: boolean;
   limitTrailCheckboxStates: { [field: string]: boolean };
-  hideTrailFieldName: string;
+  hideTrailField: string;
   gridDots: boolean;
   dotsColour: string;
   gridHeatmap: boolean;
@@ -65,6 +66,14 @@ export type userHierarchy = {
   [dir in Directions]: string[];
 };
 
+export type MyView = MatrixView | StatsView | DucksView;
+export type ViewInfo = {
+  plain: string;
+  type: string;
+  constructor: Constructor<MyView>;
+  openOnLoad: boolean;
+};
+
 export interface dvLink {
   display: any;
   embded: boolean;
@@ -88,15 +97,14 @@ export interface neighbourObj {
   hierarchies: HierarchyFields[];
 }
 
+export type RealNImplied = {
+  [dir: string]: { reals: SquareItem[]; implieds: SquareItem[] };
+};
 export type relObj = { [key: string]: string[] } | { current: TFile };
 
-export interface ParentObj {
-  current: TFile;
-  parents: string[];
-}
 export interface HierarchyNoteItem {
   parentNote: string;
-  fieldName: string;
+  field: string;
   currNote: string;
 }
 
@@ -115,7 +123,7 @@ export interface internalLinkObj {
 export interface SquareProps {
   realItems: internalLinkObj[];
   impliedItems: internalLinkObj[];
-  fieldName: string;
+  field: string;
 }
 
 export interface allGraphs {
@@ -193,27 +201,11 @@ export type HierarchyFields = {
   [dir in Directions]: { [field: string]: string[] };
 };
 
-export interface BCIndex {
-  main: MultiGraph;
-  hierGs: HierarchyGraphs[];
-  mergedGs: MergedGraphs;
-  closedGs: ClosedGraphs;
-  limitTrailG: Graph;
-}
-
 export type HierarchyGraphs = {
   [dir in Directions]: { [field: string]: Graph };
 };
 
-export type MergedGraphs = {
-  [dir in Directions]: Graph;
-};
-
-export type ClosedGraphs = {
-  [dir in Directions]: Graph;
-};
-
-export type PrevNext = { to: string; real: boolean; fieldName: string };
+export type SquareItem = { to: string; real: boolean; field: string };
 
 export interface MetaeditApi {
   /** Adds the key and value */
@@ -236,6 +228,7 @@ declare module "obsidian" {
         };
         juggl: { settings: { typedLinkPrefix: string } };
       };
+      enabledPlugins: { has: (plugin: string) => boolean };
     };
   }
 }

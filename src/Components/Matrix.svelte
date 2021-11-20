@@ -18,7 +18,7 @@
       {#each squares as square}
         {#if square.realItems.length > 0 || square.impliedItems.length > 0}
           <div class="BC-Matrix-square">
-            <h3 class="BC-Matrix-header">{square.fieldName}</h3>
+            <h3 class="BC-Matrix-header">{square.field}</h3>
 
             {#if square.realItems.length}
               {#if settings.showRelationType}

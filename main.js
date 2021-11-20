@@ -2953,26 +2953,26 @@ class SvelteComponent {
 
 function get_each_context$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[9] = list[i];
+	child_ctx[8] = list[i];
 	return child_ctx;
 }
 
-// (16:2) {#each ducks as duck}
+// (17:2) {#each ducks as duck}
 function create_each_block$8(ctx) {
 	let div;
 	let a;
-	let t0_value = /*duck*/ ctx[9] + "";
+	let t0_value = /*duck*/ ctx[8] + "";
 	let t0;
 	let t1;
 	let mounted;
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[4](/*duck*/ ctx[9], ...args);
+		return /*click_handler*/ ctx[4](/*duck*/ ctx[8], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[5](/*duck*/ ctx[9], ...args);
+		return /*mouseover_handler*/ ctx[5](/*duck*/ ctx[8], ...args);
 	}
 
 	return {
@@ -3082,10 +3082,9 @@ function instance$d($$self, $$props, $$invalidate) {
 	let { plugin } = $$props;
 	let { app } = $$props;
 	let { ducksView } = $$props;
-	const { main } = plugin.currGraphs;
+	const { mainG } = plugin;
 	const files = app.vault.getMarkdownFiles();
-	const fileNames = files.map(file => file.basename);
-	const ducks = fileNames.filter(name => !main.neighbors(name).length);
+	const ducks = files.map(file => file.basename).filter(name => !mainG.neighbors(name).length);
 	const click_handler = async (duck, e) => await openOrSwitch$1(app, duck, e);
 	const mouseover_handler = (duck, e) => hoverPreview$1(e, ducksView, duck);
 
@@ -20766,20 +20765,56 @@ function removeUnlinkedNodes(g) {
     });
     return copy;
 }
-function getAllGsInDir(currGraphs, dir) {
-    const target = {};
-    const allGsInDir = Object.assign(target, ...currGraphs.map((hierGs) => hierGs[dir]));
-    return allGsInDir;
-}
-function iterateAllGs(currGraphs, cb) {
-    for (const hierGs of currGraphs) {
-        for (const dir of DIRECTIONS) {
-            for (const fieldName in hierGs[dir]) {
-                const g = hierGs[dir][fieldName];
-                cb(g, dir, fieldName);
-            }
+/**
+ * Return a subgraph of all nodes & edges with `a.dir`
+ * @param  {MultiGraph} main
+ * @param  {Directions} dir
+ */
+function getSubInDir(main, dir) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main.forEachEdge((k, a, s, t) => {
+        if (a.dir === dir) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
         }
-    }
+    });
+    return sub;
+}
+/**
+ * Return a subgraph of all nodes & edges with `files.includes(a.field)`
+ * @param  {MultiGraph} main
+ * @param  {string[]} fields
+ */
+function getSubForFields(main, fields) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main.forEachEdge((k, a, s, t) => {
+        if (fields.includes(a.field)) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
+        }
+    });
+    return sub;
+}
+/**
+ * For every edge in `g`, add the reverse of the edge to a copy of `g`.
+ *
+ * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
+ * @param  {MultiGraph} g
+ */
+function getReflexiveClosure(g, userHierarchies) {
+    const copy = g.copy();
+    copy.forEachEdge((k, a, s, t) => {
+        const { dir, field } = a;
+        const oppDir = getOppDir(dir);
+        const oppField = getOppFields(userHierarchies, field)[0];
+        //@ts-ignore
+        addNodesIfNot(copy, [s, t], { dir: oppDir, field: oppField });
+        //@ts-ignore
+        addEdgeIfNot(copy, t, s, { dir: oppDir, field: oppField });
+    });
+    return copy;
 }
 /**
  * Get all the fields in `dir`.
@@ -20800,14 +20835,6 @@ function getFields(userHierarchies, dir = "all") {
         }
     });
     return fields;
-}
-function getAllFieldGs(fields, currGraphs) {
-    const fieldGs = [];
-    iterateAllGs(currGraphs, (g, dir, fieldName) => {
-        if (fields.includes(fieldName))
-            fieldGs.push(g);
-    });
-    return fieldGs;
 }
 const hierToStr = (hier) => DIRECTIONS.map((dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`).join("\n");
 const getOppDir = (dir) => {
@@ -20849,29 +20876,29 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
 };
-const writeBCToFile = async (app, plugin, currGraphs, file, inline) => {
+const writeBCToFile = async (app, plugin, file, inline) => {
     var _a, _b;
-    const { limitWriteBCCheckboxStates, userHierarchies } = plugin.settings;
+    const { limitWriteBCCheckboxStates } = plugin.settings;
+    const { mainG } = plugin;
     const frontmatter = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
     const api = (_b = app.plugins.plugins.metaedit) === null || _b === void 0 ? void 0 : _b.api;
     if (!api) {
         new obsidian.Notice("Metaedit must be enabled for this function to work");
         return;
     }
-    const { main } = currGraphs;
-    const succs = getInNeighbours(main, file.basename);
+    const succs = getInNeighbours(mainG, file.basename);
     for (const succ of succs) {
-        const { fieldName } = main.getNodeAttributes(succ);
-        if (!limitWriteBCCheckboxStates[fieldName])
+        const { field } = mainG.getNodeAttributes(succ);
+        if (!limitWriteBCCheckboxStates[field])
             return;
         if (!inline) {
-            await createOrUpdateYaml(fieldName, succ, file, frontmatter, api);
+            await createOrUpdateYaml(field, succ, file, frontmatter, api);
         }
         else {
             // TODO Check if this note already has this field
             let content = await app.vault.read(file);
             const splits = splitAtYaml(content);
-            content = splits[0] + `\n${fieldName}:: [[${succ}]]` + splits[1];
+            content = splits[0] + `\n${field}:: [[${succ}]]` + splits[1];
             await app.vault.modify(file, content);
         }
     }
@@ -20887,11 +20914,6 @@ function splitAtYaml(content) {
             splits.slice(2).join("---"),
         ];
     }
-}
-function oppFields(field, dir, userHierarchies) {
-    var _a, _b;
-    const oppDir = getOppDir(dir);
-    return ((_b = (_a = userHierarchies.find((hier) => hier[oppDir].includes(field))) === null || _a === void 0 ? void 0 : _a[oppDir]) !== null && _b !== void 0 ? _b : []);
 }
 /**
  *  Get the hierarchy and direction that `field` is in
@@ -20915,17 +20937,17 @@ function getOppFields(userHierarchies, field) {
     const oppDir = getOppDir(fieldDir);
     return fieldHier[oppDir];
 }
-function addNodeIfNot(g, node, attr) {
-    if (!g.hasNode(node))
-        g.addNode(node, attr);
+function addNodesIfNot(g, nodes, attr) {
+    nodes.forEach((node) => {
+        if (!g.hasNode(node))
+            g.addNode(node, attr);
+    });
 }
 function addEdgeIfNot(g, source, target, attr) {
-    // addNodeIfNot(g, source, attr);
-    // addNodeIfNot(g, target, attr);
     if (!g.hasEdge(source, target))
         g.addEdge(source, target, attr);
 }
-const getSinks = (g) => g.filterNodes((node) => !getOutNeighbours(g, node).length);
+const getSinks = (g) => g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
 function swapItems(i, j, arr) {
     const max = arr.length - 1;
     if (i < 0 || i > max || j < 0 || j > max)
@@ -20938,40 +20960,36 @@ function swapItems(i, j, arr) {
 const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
 const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
-function getPrevNext(plugin, currNode) {
-    const [rPrev, rNext, iPrev, iNext] = [[], [], [], []];
+/** Remember to filter by hierarchy in MatrixView! */
+function getRealnImplied(plugin, currNode, dir = null) {
+    const realsnImplieds = blankRealNImplied();
     const { userHierarchies } = plugin.settings;
-    const { main } = plugin.currGraphs;
-    try {
-        main.forEachEdge(currNode, (k, a, s, t) => {
-            const { fieldName } = a;
-            if (a.dir === "next" && s === currNode) {
-                rNext.push({ to: t, real: true, fieldName });
+    plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
+        const { field, dir: edgeDir } = a;
+        const oppField = getOppFields(userHierarchies, field)[0];
+        (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
+            const oppDir = getOppDir(currDir);
+            // Reals
+            if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+                const arr = realsnImplieds[edgeDir].reals;
+                if (arr.findIndex((item) => item.to === t) === -1) {
+                    arr.push({ to: t, real: true, field });
+                }
             }
-            else if (a.dir === "prev" && t === currNode) {
-                iNext.push({
-                    to: s,
-                    real: false,
-                    fieldName: getOppFields(userHierarchies, fieldName)[0],
-                });
-            }
-            else if (a.dir === "prev" && s === currNode) {
-                rPrev.push({ to: t, real: true, fieldName });
-            }
-            else if (a.dir === "next" && t === currNode) {
-                iPrev.push({
-                    to: s,
-                    real: false,
-                    fieldName: getOppFields(userHierarchies, fieldName)[0],
-                });
+            // Implieds
+            else if (t === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+                const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
+                if (arr.findIndex((item) => item.to === s) === -1) {
+                    arr.push({
+                        to: s,
+                        real: false,
+                        field: oppField,
+                    });
+                }
             }
         });
-        return { rPrev, rNext, iPrev, iNext };
-    }
-    catch (e) {
-        console.log(e);
-        return { rPrev, rNext, iPrev, iNext };
-    }
+    });
+    return realsnImplieds;
 }
 
 /* src\Components\Lists.svelte generated by Svelte v3.35.0 */
@@ -21011,7 +21029,7 @@ function get_each_context_3$2(ctx, list, i) {
 function create_if_block$4(ctx) {
 	let details;
 	let summary;
-	let t0_value = /*square*/ ctx[12].fieldName + "";
+	let t0_value = /*square*/ ctx[12].field + "";
 	let t0;
 	let t1;
 	let t2;
@@ -21041,7 +21059,7 @@ function create_if_block$4(ctx) {
 			if (if_block1) if_block1.m(details, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].fieldName + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
 
 			if (/*square*/ ctx[12].realItems.length) {
 				if (if_block0) {
@@ -21558,7 +21576,7 @@ function create_fragment$c(ctx) {
 	};
 }
 
-const func = square => square.fieldName;
+const func = square => square.field;
 
 function instance$c($$self, $$props, $$invalidate) {
 	
@@ -21647,7 +21665,7 @@ function get_each_context_3$1(ctx, list, i) {
 function create_if_block$3(ctx) {
 	let div;
 	let h3;
-	let t0_value = /*square*/ ctx[12].fieldName + "";
+	let t0_value = /*square*/ ctx[12].field + "";
 	let t0;
 	let t1;
 	let t2;
@@ -21676,7 +21694,7 @@ function create_if_block$3(ctx) {
 			if (if_block1) if_block1.m(div, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].fieldName + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
 
 			if (/*square*/ ctx[12].realItems.length) {
 				if (if_block0) {
@@ -22235,7 +22253,15 @@ class MatrixView extends obsidian.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.icon = TRAIL_ICON;
-        this.getOrder = (node) => Number.parseInt(this.plugin.currGraphs.main.getNodeAttribute(node, "order"));
+        this.toInternalLinkObj = (to, realQ = true) => {
+            return {
+                to,
+                cls: linkClass(this.app, to, realQ),
+                alt: this.getAlt(to, this.plugin.settings),
+                order: this.getOrder(to),
+            };
+        };
+        this.getOrder = (node) => Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
         this.plugin = plugin;
     }
     async onload() {
@@ -22252,11 +22278,11 @@ class MatrixView extends obsidian.ItemView {
             id: "local-index",
             name: "Copy a Local Index to the clipboard",
             callback: async () => {
-                const { settings } = this.plugin;
-                const currFile = this.app.workspace.getActiveFile().basename;
-                const closedParents = this.plugin.currGraphs.closedGs.down;
-                const allPaths = this.dfsAllPaths(closedParents, currFile);
-                const index = this.createIndex(currFile + "\n", allPaths, settings);
+                const { settings, mainG } = this.plugin;
+                const { basename } = this.app.workspace.getActiveFile();
+                const closedDown = getReflexiveClosure(getSubInDir(mainG, "down"), settings.userHierarchies);
+                const allPaths = this.dfsAllPaths(closedDown, basename);
+                const index = this.createIndex(basename + "\n", allPaths, settings);
                 debug(settings, { index });
                 await copy$1(index);
             },
@@ -22265,14 +22291,14 @@ class MatrixView extends obsidian.ItemView {
             id: "global-index",
             name: "Copy a Global Index to the clipboard",
             callback: async () => {
-                const { up } = this.plugin.currGraphs.mergedGs;
-                const closedParents = this.plugin.currGraphs.closedGs.down;
-                const sinks = getSinks(up);
-                const { settings } = this.plugin;
+                const { mainG, settings } = this.plugin;
+                const upSub = getSubInDir(mainG, "up");
+                const closedDown = getReflexiveClosure(getSubInDir(mainG, "down"), settings.userHierarchies);
+                const sinks = getSinks(upSub);
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
                     globalIndex += terminal + "\n";
-                    const allPaths = this.dfsAllPaths(closedParents, terminal);
+                    const allPaths = this.dfsAllPaths(closedDown, terminal);
                     globalIndex = this.createIndex(globalIndex, allPaths, settings);
                 });
                 debug(settings, { globalIndex });
@@ -22292,24 +22318,12 @@ class MatrixView extends obsidian.ItemView {
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
-    getSquares(g, currNode, fieldName, settings, realQ = true) {
-        const items = realQ
-            ? g.filterOutNeighbors(currNode, (n) => g.getNodeAttribute(n, "fieldName") === fieldName)
-            : g.filterInNeighbors(currNode, (n) => g.getNodeAttribute(n, "fieldName") === fieldName);
-        return items.map((to) => {
-            return {
-                to,
-                cls: linkClass(this.app, to, realQ),
-                alt: this.getAlt(to, settings),
-            };
-        });
-    }
     getAlt(node, settings) {
         let alt = null;
         if (settings.altLinkFields.length) {
-            const toFile = this.app.metadataCache.getFirstLinkpathDest(node, "");
-            if (toFile) {
-                const metadata = this.app.metadataCache.getFileCache(toFile);
+            const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
+            if (file) {
+                const metadata = this.app.metadataCache.getFileCache(file);
                 settings.altLinkFields.forEach((altLinkField) => {
                     var _a;
                     alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
@@ -22317,21 +22331,6 @@ class MatrixView extends obsidian.ItemView {
             }
         }
         return alt;
-    }
-    squareItems(g, currFile, settings, realQ = true) {
-        const items = realQ
-            ? getOutNeighbours(g, currFile.basename)
-            : getInNeighbours(g, currFile.basename);
-        const internalLinkObjArr = [];
-        items.forEach((to) => {
-            internalLinkObjArr.push({
-                to,
-                cls: linkClass(this.app, to, realQ),
-                alt: this.getAlt(to, settings),
-                order: this.getOrder(to),
-            });
-        });
-        return internalLinkObjArr;
     }
     // ANCHOR Remove duplicate implied links
     removeDuplicateImplied(reals, implieds) {
@@ -22398,18 +22397,24 @@ class MatrixView extends obsidian.ItemView {
         });
         return index;
     }
-    getHierSquares(userHierarchies, data, currFile, settings) {
+    getHierSquares(userHierarchies, currFile, settings) {
+        const { plugin } = this;
+        const { mainG } = plugin;
         const { basename } = currFile;
-        const { iNext: iNextInfo, iPrev: iPrevInfo, rNext: rNextInfo, rPrev: rPrevInfo, } = getPrevNext(this.plugin, basename);
-        return userHierarchies.map((hier, i) => {
-            const { up, same, down } = data[i];
-            let [rUp, rSame, rDown, iUp, iDown] = [
-                this.squareItems(up, currFile, settings),
-                this.squareItems(same, currFile, settings),
-                this.squareItems(down, currFile, settings),
-                this.squareItems(down, currFile, settings, false),
-                this.squareItems(up, currFile, settings, false),
-            ];
+        const up = getSubInDir(mainG, "up");
+        const realsnImplieds = getRealnImplied(plugin, basename);
+        return userHierarchies.map((hier) => {
+            const filteredRealNImplied = blankRealNImplied();
+            for (const dir in realsnImplieds) {
+                const { reals, implieds } = realsnImplieds[dir];
+                filteredRealNImplied[dir].reals = reals
+                    .filter((real) => hier[dir].includes(real.field))
+                    .map((item) => this.toInternalLinkObj(item.to, true));
+                filteredRealNImplied[dir].implieds = implieds
+                    .filter((implied) => hier[dir].includes(implied.field))
+                    .map((item) => this.toInternalLinkObj(item.to, false));
+            }
+            let { up: { reals: ru, implieds: iu }, same: { reals: rs, implieds: is }, down: { reals: rd, implieds: id }, next: { reals: rn, implieds: iN }, prev: { reals: rp, implieds: ip }, } = filteredRealNImplied;
             // SECTION Implied Siblings
             /// Notes with the same parents
             let iSameArr = [];
@@ -22420,9 +22425,9 @@ class MatrixView extends obsidian.ItemView {
                 const indexCurrNote = impliedSiblings.indexOf(basename);
                 impliedSiblings.splice(indexCurrNote, 1);
                 if (settings.filterImpliedSiblingsOfDifferentTypes) {
-                    const currNodeType = up.getNodeAttribute(basename, "fieldName");
+                    const currNodeType = up.getNodeAttribute(basename, "field");
                     impliedSiblings = impliedSiblings.filter((iSibling) => {
-                        const iSiblingType = up.getNodeAttribute(iSibling, "fieldName");
+                        const iSiblingType = up.getNodeAttribute(iSibling, "field");
                         return iSiblingType === currNodeType;
                     });
                 }
@@ -22437,32 +22442,13 @@ class MatrixView extends obsidian.ItemView {
                 });
             });
             /// A real sibling implies the reverse sibling
-            iSameArr.push(...this.squareItems(same, currFile, settings, false));
+            iSameArr.push(...is);
             // !SECTION
-            let [iNext, iPrev, rNext, rPrev] = [
-                iNextInfo,
-                iPrevInfo,
-                rNextInfo,
-                rPrevInfo,
-            ].map((info) => {
-                return info
-                    .filter((item) => hier.next.includes(item.fieldName) ||
-                    hier.prev.includes(item.fieldName))
-                    .map((item) => {
-                    const { to } = item;
-                    return {
-                        to,
-                        cls: linkClass(this.app, to, item.real),
-                        alt: this.getAlt(to, settings),
-                        order: this.getOrder(to),
-                    };
-                });
-            });
-            iUp = this.removeDuplicateImplied(rUp, iUp);
-            iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
-            iDown = this.removeDuplicateImplied(rDown, iDown);
-            iNext = this.removeDuplicateImplied(rNext, iNext);
-            iPrev = this.removeDuplicateImplied(rPrev, iPrev);
+            iu = this.removeDuplicateImplied(ru, iu);
+            iSameArr = this.removeDuplicateImplied(rs, iSameArr);
+            id = this.removeDuplicateImplied(rd, id);
+            iN = this.removeDuplicateImplied(rn, iN);
+            ip = this.removeDuplicateImplied(rp, ip);
             const iSameNoDup = [];
             iSameArr.forEach((impSib) => {
                 if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
@@ -22470,50 +22456,35 @@ class MatrixView extends obsidian.ItemView {
                 }
             });
             iSameArr = iSameNoDup;
-            const getFieldName = (dir) => {
-                if (hier[dir] === undefined)
-                    return "";
-                return hier[dir][0] === ""
-                    ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
-                    : hier[dir].join(", ");
-            };
-            [
-                rUp,
-                rSame,
-                rDown,
-                rNext,
-                rPrev,
-                iUp,
-                iSameArr,
-                iDown,
-                iNext,
-                iPrev,
-            ].forEach((a) => a.sort((a, b) => a.order - b.order));
+            const getFieldInHier = (dir) => hier[dir][0] === ""
+                ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
+                : hier[dir].join(", ");
+            [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) => a.sort((a, b) => a.order - b.order));
             return [
                 {
-                    realItems: rUp,
-                    impliedItems: iUp,
-                    fieldName: getFieldName("up"),
+                    realItems: ru,
+                    impliedItems: iu,
+                    field: getFieldInHier("up"),
                 },
                 {
-                    realItems: rSame,
+                    realItems: rs,
                     impliedItems: iSameArr,
-                    fieldName: getFieldName("same"),
+                    field: getFieldInHier("same"),
                 },
                 {
-                    realItems: rDown,
-                    impliedItems: iDown,
-                    fieldName: getFieldName("down"),
+                    realItems: rd,
+                    impliedItems: id,
+                    field: getFieldInHier("down"),
                 },
                 {
-                    realItems: rNext,
-                    impliedItems: iNext,
-                    fieldName: getFieldName("next"),
+                    realItems: rn,
+                    impliedItems: iN,
+                    field: getFieldInHier("next"),
                 },
                 {
-                    realItems: rPrev,
-                    impliedItems: iPrev,
-                    fieldName: getFieldName("prev"),
+                    realItems: rp,
+                    impliedItems: ip,
+                    field: getFieldInHier("prev"),
                 },
             ];
         });
@@ -22521,7 +22492,7 @@ class MatrixView extends obsidian.ItemView {
     async draw() {
         const { contentEl } = this;
         contentEl.empty();
-        const { settings, currGraphs } = this.plugin;
+        const { settings } = this.plugin;
         debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
         const { userHierarchies } = settings;
         const currFile = this.app.workspace.getActiveFile();
@@ -22537,16 +22508,15 @@ class MatrixView extends obsidian.ItemView {
         contentEl.createEl("button", { text: "↻" }, (el) => {
             el.onclick = async () => await this.plugin.refreshIndex();
         });
-        const data = currGraphs.hierGs.map((hier) => {
-            const hierData = blankDirUndef();
-            for (const dir of DIRECTIONS) {
-                // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-                hierData[dir] = mergeGs(...Object.values(hier[dir]));
-            }
-            return hierData;
-        });
-        debug(settings, { data });
-        const hierSquares = this.getHierSquares(userHierarchies, data, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
+        // const data = currGraphs.hierGs.map((hierG) => {
+        //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
+        //   for (const dir of DIRECTIONS) {
+        //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
+        //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
+        //   }
+        //   return hierData;
+        // });
+        const hierSquares = this.getHierSquares(userHierarchies, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
         const compInput = {
             target: contentEl,
             props: {
@@ -23541,9 +23511,8 @@ function instance$a($$self, $$props, $$invalidate) {
 	
 	
 	let { plugin } = $$props;
-	const { settings } = plugin;
+	const { settings, mainG } = plugin;
 	const { userHierarchies, trailSeperator } = settings;
-	const hierGs = plugin.currGraphs;
 
 	function fillInInfo(dir, gType, hierData, nodesToo = true) {
 		const gInfo = hierData[dir][gType];
@@ -23558,7 +23527,9 @@ function instance$a($$self, $$props, $$invalidate) {
 		gInfo.edgesStr = edgeStrArr.join("\n");
 	}
 
-	const data = hierGs.hierGs.map(hier => {
+	const data = settings.userHierarchies.map(hier => {
+		DIRECTIONS.map(dir => getSubInDir(mainG, dir));
+
 		const hierData = {
 			//@ts-ignore
 			up: { Merged: {}, Closed: {}, Implied: {} },
@@ -23670,8 +23641,7 @@ class StatsView extends obsidian.ItemView {
     }
     async onload() {
         super.onload();
-        await this.plugin.saveSettings();
-        this.app.workspace.onLayoutReady(async () => {
+        this.app.workspace.onLayoutReady(() => {
             setTimeout(async () => await this.draw(), this.plugin.settings.dvWaitTime);
         });
     }
@@ -23690,32 +23660,12 @@ class StatsView extends obsidian.ItemView {
         }
         return Promise.resolve();
     }
-    // ANCHOR Remove duplicate implied links
-    dfsAllPaths(g, startNode) {
-        const queue = [
-            { node: startNode, path: [] },
-        ];
-        const pathsArr = [];
-        let i = 0;
-        while (queue.length > 0 && i < 1000) {
-            i++;
-            const currPath = queue.shift();
-            const newNodes = getOutNeighbours(g, currPath.node);
-            const extPath = [currPath.node, ...currPath.path];
-            queue.unshift(...newNodes.map((n) => {
-                return { node: n, path: extPath };
-            }));
-            if (newNodes.length === 0) {
-                pathsArr.push(extPath);
-            }
-        }
-        return pathsArr;
-    }
     async draw() {
-        this.contentEl.empty();
+        const { contentEl, plugin } = this;
+        contentEl.empty();
         this.view = new Stats({
-            target: this.contentEl,
-            props: { plugin: this.plugin },
+            target: contentEl,
+            props: { plugin },
         });
     }
 }
@@ -23776,13 +23726,13 @@ const blankDirObjs = () => {
         prev: {},
     };
 };
-const blankDirUndef = () => {
+const blankRealNImplied = () => {
     return {
-        up: undefined,
-        same: undefined,
-        down: undefined,
-        next: undefined,
-        prev: undefined,
+        up: { reals: [], implieds: [] },
+        down: { reals: [], implieds: [] },
+        same: { reals: [], implieds: [] },
+        next: { reals: [], implieds: [] },
+        prev: { reals: [], implieds: [] },
     };
 };
 const DEFAULT_SETTINGS = {
@@ -23795,11 +23745,10 @@ const DEFAULT_SETTINGS = {
             prev: ["prev"],
         },
     ],
-    indexNote: [""],
+    indexNotes: [""],
     CSVPaths: "",
     hierarchyNotes: [""],
-    hierarchyNoteDownFieldName: "",
-    hierarchyNoteUpFieldName: "",
+    HNUpField: "",
     refreshIndexOnActiveLeafChange: false,
     altLinkFields: [],
     useAllMetadata: true,
@@ -23817,7 +23766,7 @@ const DEFAULT_SETTINGS = {
     showGrid: true,
     showPrevNext: true,
     limitTrailCheckboxStates: {},
-    hideTrailFieldName: "hide-trail",
+    hideTrailField: "hide-trail",
     gridDots: false,
     dotsColour: "#000000",
     gridHeatmap: false,
@@ -24762,7 +24711,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         const plugin = this.plugin;
         const { settings } = plugin;
         const { containerEl } = this;
-        const { userHierarchies } = settings;
         containerEl.empty();
         containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
         const fieldDetails = containerEl.createEl("details", {
@@ -24810,48 +24758,19 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setName("Hierarchy Note Up Field Name")
             .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↑ type should they count as? This has to be one of the ↑ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
             .addText((text) => {
-            let finalValue = settings.hierarchyNoteUpFieldName;
-            text.setPlaceholder("").setValue(settings.hierarchyNoteUpFieldName);
+            let finalValue = settings.HNUpField;
+            text.setPlaceholder("").setValue(settings.HNUpField);
             text.inputEl.onblur = async () => {
                 finalValue = text.getValue();
                 if (finalValue === "") {
-                    settings.hierarchyNoteUpFieldName = finalValue;
+                    settings.HNUpField = finalValue;
                     await plugin.saveSettings();
                 }
                 else {
-                    const downFieldNames = userHierarchies
-                        .map((hier) => hier.up)
-                        .flat(3);
-                    debug(settings, { downFieldNames, finalValue });
-                    if (downFieldNames.includes(finalValue)) {
-                        settings.hierarchyNoteUpFieldName = finalValue;
-                        await plugin.saveSettings();
-                    }
-                    else {
-                        new obsidian.Notice("The field name must be one of the exisitng ↓ fields in your hierarchies.");
-                    }
-                }
-            };
-        });
-        new obsidian.Setting(hierarchyNoteDetails)
-            .setName("Hierarchy Note Down Field Name")
-            .setDesc("Using the breadcrumbs generated by the hierarchy note, which ↓ type should they count as? This has to be one of the ↓ types of one of your existing hierarchies. If you want it to be something else, you can make a new hierarchy just for it.")
-            .addText((text) => {
-            let finalValue = settings.hierarchyNoteDownFieldName;
-            text.setPlaceholder("").setValue(settings.hierarchyNoteDownFieldName);
-            text.inputEl.onblur = async () => {
-                finalValue = text.getValue();
-                if (finalValue === "") {
-                    settings.hierarchyNoteDownFieldName = finalValue;
-                    await plugin.saveSettings();
-                }
-                else {
-                    const downFieldNames = userHierarchies
-                        .map((hier) => hier.down)
-                        .flat(3);
-                    debug(settings, { downFieldNames, finalValue });
-                    if (downFieldNames.includes(finalValue)) {
-                        settings.hierarchyNoteDownFieldName = finalValue;
+                    const upFields = getFields(settings.userHierarchies, "up");
+                    debug(settings, { downFields: upFields, finalValue });
+                    if (upFields.includes(finalValue)) {
+                        settings.HNUpField = finalValue;
                         await plugin.saveSettings();
                     }
                     else {
@@ -24942,7 +24861,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 settings.refreshIntervalTime = num;
                 await plugin.saveSettings();
                 plugin.refreshIntervalID = window.setInterval(async () => {
-                    plugin.currGraphs = await plugin.initGraphs();
+                    plugin.mainG = await plugin.initGraphs();
                     if (settings.showTrail) {
                         await plugin.drawTrail();
                     }
@@ -25069,9 +24988,9 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setName("Field name to hide trail")
             .setDesc("A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`.")
             .addText((text) => {
-            text.setValue(settings.hideTrailFieldName);
+            text.setValue(settings.hideTrailField);
             text.inputEl.onblur = async () => {
-                settings.hideTrailFieldName = text.getValue();
+                settings.hideTrailField = text.getValue();
                 await plugin.saveSettings();
             };
         });
@@ -25155,18 +25074,18 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             let finalValue;
             text
                 .setPlaceholder("Index Note")
-                .setValue([settings.indexNote].flat().join(", "))
+                .setValue([settings.indexNotes].flat().join(", "))
                 .onChange(async (value) => {
                 finalValue = splitAndTrim(value);
             });
             text.inputEl.onblur = async () => {
                 // TODO Refactor this to general purpose isInVault function
                 if (finalValue[0] === "") {
-                    settings.indexNote = finalValue;
+                    settings.indexNotes = finalValue;
                     await plugin.saveSettings();
                 }
                 else if (finalValue.every((index) => isInVault(this.app, index))) {
-                    settings.indexNote = finalValue;
+                    settings.indexNotes = finalValue;
                     await plugin.saveSettings();
                 }
                 else {
@@ -33634,22 +33553,22 @@ const treeMap = (graph, app, currFile, modal, width, height) => {
 
 function get_each_context$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[19] = list[i];
-	child_ctx[20] = list;
-	child_ctx[21] = i;
+	child_ctx[20] = list[i];
+	child_ctx[21] = list;
+	child_ctx[22] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[23] = list[i];
 	return child_ctx;
 }
 
-// (158:8) {#each selector.options as op}
+// (163:8) {#each selector.options as op}
 function create_each_block_1$3(ctx) {
 	let option;
-	let t_value = /*op*/ ctx[22] + "";
+	let t_value = /*op*/ ctx[23] + "";
 	let t;
 	let option_value_value;
 
@@ -33657,7 +33576,7 @@ function create_each_block_1$3(ctx) {
 		c() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*op*/ ctx[22];
+			option.__value = option_value_value = /*op*/ ctx[23];
 			option.value = option.__value;
 		},
 		m(target, anchor) {
@@ -33665,9 +33584,9 @@ function create_each_block_1$3(ctx) {
 			append(option, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*selectors*/ 1 && t_value !== (t_value = /*op*/ ctx[22] + "")) set_data(t, t_value);
+			if (dirty & /*selectors*/ 1 && t_value !== (t_value = /*op*/ ctx[23] + "")) set_data(t, t_value);
 
-			if (dirty & /*selectors*/ 1 && option_value_value !== (option_value_value = /*op*/ ctx[22])) {
+			if (dirty & /*selectors*/ 1 && option_value_value !== (option_value_value = /*op*/ ctx[23])) {
 				option.__value = option_value_value;
 				option.value = option.__value;
 			}
@@ -33678,10 +33597,10 @@ function create_each_block_1$3(ctx) {
 	};
 }
 
-// (148:2) {#each selectors as selector}
+// (153:2) {#each selectors as selector}
 function create_each_block$3(ctx) {
 	let span;
-	let t0_value = /*selector*/ ctx[19].text + "";
+	let t0_value = /*selector*/ ctx[20].text + "";
 	let t0;
 	let t1;
 	let select;
@@ -33689,7 +33608,7 @@ function create_each_block$3(ctx) {
 	let t2;
 	let mounted;
 	let dispose;
-	let each_value_1 = /*selector*/ ctx[19].options;
+	let each_value_1 = /*selector*/ ctx[20].options;
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -33697,7 +33616,7 @@ function create_each_block$3(ctx) {
 	}
 
 	function change_handler(...args) {
-		return /*change_handler*/ ctx[3](/*selector*/ ctx[19], /*each_value*/ ctx[20], /*selector_index*/ ctx[21], ...args);
+		return /*change_handler*/ ctx[3](/*selector*/ ctx[20], /*each_value*/ ctx[21], /*selector_index*/ ctx[22], ...args);
 	}
 
 	return {
@@ -33723,7 +33642,7 @@ function create_each_block$3(ctx) {
 				each_blocks[i].m(select, null);
 			}
 
-			select_option(select, /*selector*/ ctx[19].val);
+			select_option(select, /*selector*/ ctx[20].val);
 			append(span, t2);
 
 			if (!mounted) {
@@ -33733,10 +33652,10 @@ function create_each_block$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*selectors*/ 1 && t0_value !== (t0_value = /*selector*/ ctx[19].text + "")) set_data(t0, t0_value);
+			if (dirty & /*selectors*/ 1 && t0_value !== (t0_value = /*selector*/ ctx[20].text + "")) set_data(t0, t0_value);
 
 			if (dirty & /*selectors*/ 1) {
-				each_value_1 = /*selector*/ ctx[19].options;
+				each_value_1 = /*selector*/ ctx[20].options;
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -33758,8 +33677,8 @@ function create_each_block$3(ctx) {
 				each_blocks.length = each_value_1.length;
 			}
 
-			if (dirty & /*selectors*/ 1 && select_value_value !== (select_value_value = /*selector*/ ctx[19].val)) {
-				select_option(select, /*selector*/ ctx[19].val);
+			if (dirty & /*selectors*/ 1 && select_value_value !== (select_value_value = /*selector*/ ctx[20].val)) {
+				select_option(select, /*selector*/ ctx[20].val);
 			}
 		},
 		d(detaching) {
@@ -33873,7 +33792,13 @@ function instance$3($$self, $$props, $$invalidate) {
 	];
 
 	const [width, height] = [Math.round(window.innerWidth / 1.3), Math.round(window.innerHeight / 1.3)];
-	const { up, same, down } = plugin.currGraphs.mergedGs;
+	const { mainG } = plugin;
+
+	const [up, same, down] = [
+		getSubInDir(mainG, "up"),
+		getSubInDir(mainG, "same"),
+		getSubInDir(mainG, "down")
+	];
 
 	const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
 		closeImpliedLinks(up, down),
@@ -34151,7 +34076,7 @@ function get_each_context_1$2(ctx, list, i) {
 function create_each_block_1$2(ctx) {
 	let div;
 	let strong;
-	let t0_value = /*p*/ ctx[9].fieldName + "";
+	let t0_value = /*p*/ ctx[9].field + "";
 	let t0;
 	let t1;
 	let t2_value = /*p*/ ctx[9].to + "";
@@ -34190,7 +34115,7 @@ function create_each_block_1$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].fieldName + "")) set_data(t0, t0_value);
+			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].field + "")) set_data(t0, t0_value);
 			if (dirty & /*prev*/ 4 && t2_value !== (t2_value = /*p*/ ctx[9].to + "")) set_data(t2, t2_value);
 
 			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
@@ -34212,7 +34137,7 @@ function create_each_block$2(ctx) {
 	let t0;
 	let t1;
 	let strong;
-	let t2_value = /*n*/ ctx[6].fieldName + "";
+	let t2_value = /*n*/ ctx[6].field + "";
 	let t2;
 	let t3;
 	let div_class_value;
@@ -34249,7 +34174,7 @@ function create_each_block$2(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
-			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].fieldName + "")) set_data(t2, t2_value);
+			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].field + "")) set_data(t2, t2_value);
 
 			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
 				attr(div, "class", div_class_value);
@@ -34413,34 +34338,34 @@ class NextPrev extends SvelteComponent {
 
 function add_css$1() {
 	var style = element("style");
-	style.id = "svelte-gk73kp-style";
-	style.textContent = "div.BC-trail-grid.svelte-gk73kp{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-gk73kp{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-gk73kp{opacity:0.7}.dot.svelte-gk73kp{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	style.id = "svelte-ybyqyo-style";
+	style.textContent = "div.BC-trail-grid.svelte-ybyqyo{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-ybyqyo{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-ybyqyo{opacity:0.7}.dot.svelte-ybyqyo{height:5px;width:5px;border-radius:50%;display:inline-block}";
 	append(document.head, style);
 }
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
-	child_ctx[22] = i;
+	child_ctx[21] = list[i];
+	child_ctx[23] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[24] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[23] = list[i];
 	return child_ctx;
 }
 
-// (80:8) {#if step.value && settings.gridDots}
+// (81:8) {#if step.value && settings.gridDots}
 function create_if_block$1(ctx) {
 	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[23].value] / 1000));
+	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -34466,7 +34391,7 @@ function create_if_block$1(ctx) {
 		},
 		p(ctx, dirty) {
 			if (dirty & /*settings, wordCounts*/ 20) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[23].value] / 1000));
+				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -34495,14 +34420,14 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (82:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (83:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			attr(span, "class", "dot svelte-gk73kp");
+			attr(span, "class", "dot svelte-ybyqyo");
 			set_style(span, "background-color", /*settings*/ ctx[4].dotsColour);
 		},
 		m(target, anchor) {
@@ -34515,11 +34440,11 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (63:4) {#each allRuns[i] as step}
+// (64:4) {#each allRuns[i] as step}
 function create_each_block_1$1(ctx) {
 	let div1;
 	let div0;
-	let t0_value = /*step*/ ctx[23].value + "";
+	let t0_value = /*step*/ ctx[24].value + "";
 	let t0;
 	let div0_class_value;
 	let t1;
@@ -34528,14 +34453,14 @@ function create_each_block_1$1(ctx) {
 	let div1_style_value;
 	let mounted;
 	let dispose;
-	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[4].gridDots && create_if_block$1(ctx);
+	let if_block = /*step*/ ctx[24].value && /*settings*/ ctx[4].gridDots && create_if_block$1(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[10](/*step*/ ctx[23], ...args);
+		return /*click_handler*/ ctx[10](/*step*/ ctx[24], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[11](/*step*/ ctx[23], ...args);
+		return /*mouseover_handler*/ ctx[11](/*step*/ ctx[24], ...args);
 	}
 
 	return {
@@ -34546,11 +34471,11 @@ function create_each_block_1$1(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-gk73kp"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-gk73kp");
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[24].value)) + " svelte-ybyqyo"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[24].value === "" ? "BC-filler" : "") + " svelte-ybyqyo");
 
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[24].first + 1) + " / " + (/*i*/ ctx[23] + 1) + " / \r\n                " + (/*step*/ ctx[24].last + 2) + " / " + (/*i*/ ctx[23] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[24].value] * 200 + 55).toString(16)}`
 			: ""));
 		},
 		m(target, anchor) {
@@ -34573,14 +34498,14 @@ function create_each_block_1$1(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-gk73kp"))) {
+			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[24].value)) + " svelte-ybyqyo"))) {
 				attr(div0, "class", div0_class_value);
 			}
 
-			if (/*step*/ ctx[23].value && /*settings*/ ctx[4].gridDots) if_block.p(ctx, dirty);
+			if (/*step*/ ctx[24].value && /*settings*/ ctx[4].gridDots) if_block.p(ctx, dirty);
 
-			if (dirty & /*children*/ 8 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			if (dirty & /*children*/ 8 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[24].first + 1) + " / " + (/*i*/ ctx[23] + 1) + " / \r\n                " + (/*step*/ ctx[24].last + 2) + " / " + (/*i*/ ctx[23] + 2) + ";\r\n            " + (/*settings*/ ctx[4].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[4].heatmapColour}${Math.round(/*children*/ ctx[3][/*step*/ ctx[24].value] * 200 + 55).toString(16)}`
 			: ""))) {
 				attr(div1, "style", div1_style_value);
 			}
@@ -34594,10 +34519,10 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (62:2) {#each transposedTrails as col, i}
+// (63:2) {#each transposedTrails as col, i}
 function create_each_block$1(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[23]];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -34621,7 +34546,7 @@ function create_each_block$1(ctx) {
 		},
 		p(ctx, dirty) {
 			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, currFile, hoverPreview, activeLeafView, range, wordCounts, linkClass*/ 382) {
-				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[23]];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -34667,7 +34592,7 @@ function create_fragment$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-trail-grid svelte-gk73kp");
+			attr(div, "class", "BC-trail-grid svelte-ybyqyo");
 			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
 			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 		},
@@ -34747,8 +34672,9 @@ function instance$1($$self, $$props, $$invalidate) {
 
 	// const data: {[cell: string]: number} = {}
 	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
-	const { up, down } = plugin.currGraphs.mergedGs;
+	const { mainG } = plugin;
 
+	const [up, down] = [getSubInDir(mainG, "up"), getSubInDir(mainG, "down")];
 	const closedParents = closeImpliedLinks(up, down);
 	const children = {};
 	allCells.forEach(cell => $$invalidate(3, children[cell] = getOutNeighbours(closedParents, cell).length, children));
@@ -34805,7 +34731,7 @@ function instance$1($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-gk73kp-style")) add_css$1();
+		if (!document.getElementById("svelte-ybyqyo-style")) add_css$1();
 		init$1(this, options, instance$1, create_fragment$1, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 9 });
 	}
 }
@@ -35223,7 +35149,7 @@ class BCPlugin extends obsidian.Plugin {
         this.statusBatItemEl = undefined;
         this.initEverything = async () => {
             const { settings } = this;
-            this.currGraphs = await this.initGraphs();
+            this.mainG = await this.initGraphs();
             for (const view of VIEWS) {
                 if (view.openOnLoad)
                     await openView(this.app, view.type, view.constructor);
@@ -35234,7 +35160,7 @@ class BCPlugin extends obsidian.Plugin {
             // ANCHOR autorefresh interval
             if (settings.refreshIntervalTime > 0) {
                 this.refreshIntervalID = window.setInterval(async () => {
-                    this.currGraphs = await this.initGraphs();
+                    this.mainG = await this.initGraphs();
                     if (settings.showBCs)
                         await this.drawTrail();
                     const activeView = this.getActiveTYPEView(MATRIX_VIEW);
@@ -35246,15 +35172,13 @@ class BCPlugin extends obsidian.Plugin {
         };
     }
     async refreshIndex() {
+        var _a;
         if (!this.activeLeafChange)
             this.registerActiveLeafEvent();
-        this.currGraphs = await this.initGraphs();
-        const activeMatrix = this.getActiveTYPEView(MATRIX_VIEW);
-        const activeDucks = this.getActiveTYPEView(DUCK_VIEW);
-        if (activeMatrix)
-            await activeMatrix.draw();
-        if (activeDucks)
-            await activeDucks.draw();
+        this.mainG = await this.initGraphs();
+        for (const view of VIEWS) {
+            await ((_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.draw());
+        }
         if (this.settings.showTrail)
             await this.drawTrail();
         new obsidian.Notice("Index refreshed");
@@ -35277,6 +35201,7 @@ class BCPlugin extends obsidian.Plugin {
     async onload() {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
+        // Prevent breaking change
         ["prev", "next"].forEach((dir) => {
             this.settings.userHierarchies.forEach(async (hier, i) => {
                 if (hier[dir] === undefined)
@@ -35284,6 +35209,12 @@ class BCPlugin extends obsidian.Plugin {
                 await this.saveSettings();
             });
         });
+        const upFields = getFields(this.settings.userHierarchies, "up");
+        for (const field in this.settings.limitTrailCheckboxStates) {
+            if (!upFields.includes(field)) {
+                delete this.settings.limitTrailCheckboxStates[field];
+            }
+        }
         for (const view of VIEWS) {
             this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
         }
@@ -35332,7 +35263,7 @@ class BCPlugin extends obsidian.Plugin {
             name: "Write Breadcrumbs to Current File",
             callback: async () => {
                 const currFile = this.app.workspace.getActiveFile();
-                await writeBCToFile(this.app, this, this.currGraphs, currFile, this.settings.writeBCsInline);
+                await writeBCToFile(this.app, this, currFile, this.settings.writeBCsInline);
             },
         });
         this.addCommand({
@@ -35348,7 +35279,7 @@ class BCPlugin extends obsidian.Plugin {
                             try {
                                 this.app.vault
                                     .getMarkdownFiles()
-                                    .forEach(async (file) => await writeBCToFile(this.app, this, this.currGraphs, file, this.settings.writeBCsInline));
+                                    .forEach(async (file) => await writeBCToFile(this.app, this, file, this.settings.writeBCsInline));
                                 new obsidian.Notice("Operation Complete");
                             }
                             catch (error) {
@@ -35385,18 +35316,18 @@ class BCPlugin extends obsidian.Plugin {
         const hierarchyNoteItems = [];
         const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
         const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-        const fieldNameReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+        const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
         const problemFields = [];
         const upFields = getFields(this.settings.userHierarchies, "up");
         for (const item of listItems) {
             const currItem = lines[item.position.start.line];
             const afterBulletCurr = afterBulletReg.exec(currItem)[1];
             const dropWikiCurr = dropWikiLinksReg.exec(afterBulletCurr)[1];
-            let fieldNameCurr = fieldNameReg.exec(afterBulletCurr)[1].trim() || null;
+            let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
             // Ensure fieldName is one of the existing up fields. `null` if not
-            if (fieldNameCurr !== null && !upFields.includes(fieldNameCurr)) {
-                problemFields.push(fieldNameCurr);
-                fieldNameCurr = null;
+            if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
+                problemFields.push(fieldCurr);
+                fieldCurr = null;
             }
             const { parent } = item;
             if (parent >= 0) {
@@ -35406,53 +35337,44 @@ class BCPlugin extends obsidian.Plugin {
                 hierarchyNoteItems.push({
                     currNote: dropWikiCurr,
                     parentNote: dropWikiParent,
-                    fieldName: fieldNameCurr,
+                    field: fieldCurr,
                 });
             }
             else {
                 hierarchyNoteItems.push({
                     currNote: dropWikiCurr,
                     parentNote: null,
-                    fieldName: fieldNameCurr,
+                    field: fieldCurr,
                 });
             }
         }
         if (problemFields.length > 0) {
-            const msg = `'${problemFields.join(", ")}' is/are not in any of your hierarchies, but are being used in: '${file.basename}'`;
+            const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
             new obsidian.Notice(msg);
             console.log(msg, { problemFields });
         }
         return hierarchyNoteItems;
     }
     // SECTION OneSource
-    populateGraph(g, currFileName, targets, dir, fieldName) {
-        //@ts-ignore
-        addNodeIfNot(g, currFileName, { dir, fieldName });
-        if (fieldName === "")
-            return;
-        targets.forEach((target) => {
-            //@ts-ignore
-            addNodeIfNot(g, target, { dir, fieldName });
-            //@ts-ignore
-            addEdgeIfNot(g, currFileName, target, { dir, fieldName });
-        });
-    }
-    populateMain(main, currFileName, dir, fieldName, targets, neighbours, neighbourObjArr) {
-        addNodeIfNot(main, currFileName, {
+    populateMain(main, basename, dir, field, targets, neighbours, neighbourObjArr) {
+        addNodesIfNot(main, [basename], {
             dir,
-            fieldName,
+            field,
+            //@ts-ignore
             order: neighbours.order,
         });
         targets.forEach((target) => {
             var _a, _b;
-            addNodeIfNot(main, target, {
+            addNodesIfNot(main, [target], {
                 dir,
-                fieldName,
+                field,
+                //@ts-ignore
                 order: (_b = (_a = neighbourObjArr.find((neighbour) => (neighbour.current.basename || neighbour.current.name) === target)) === null || _a === void 0 ? void 0 : _a.order) !== null && _b !== void 0 ? _b : 9999,
             });
-            addEdgeIfNot(main, currFileName, target, {
+            addEdgeIfNot(main, basename, target, {
+                //@ts-ignore
                 dir,
-                fieldName,
+                field,
             });
         });
     }
@@ -35478,36 +35400,37 @@ class BCPlugin extends obsidian.Plugin {
         console.log({ CSVRows });
         return CSVRows;
     }
-    addCSVCrumbs(g, CSVRows, dir, fieldName) {
+    addCSVCrumbs(g, CSVRows, dir, field) {
         CSVRows.forEach((row) => {
-            addNodeIfNot(g, row.file);
-            if (fieldName === "" || !row[fieldName])
-                return;
-            addNodeIfNot(g, row[fieldName]);
             //@ts-ignore
-            addEdgeIfNot(g, row.file, row[fieldName], { dir, fieldName });
+            addNodesIfNot(g, [row.file], { dir, field });
+            if (field === "" || !row[field])
+                return;
+            addNodesIfNot(g, [row[field]]);
+            //@ts-ignore
+            addEdgeIfNot(g, row.file, row[field], { dir, field });
         });
     }
     async initGraphs() {
-        const { settings } = this;
+        const { settings, app } = this;
         debugGroupStart(settings, "debugMode", "Initialise Graphs");
-        const files = this.app.vault.getMarkdownFiles();
-        const dvQ = !!this.app.plugins.enabledPlugins.has("dataview");
+        const files = app.vault.getMarkdownFiles();
+        const dvQ = !!app.plugins.enabledPlugins.has("dataview");
         let fileFrontmatterArr = dvQ
-            ? getDVMetadataCache(this.app, settings, files)
-            : getObsMetadataCache(this.app, settings, files);
+            ? getDVMetadataCache(app, settings, files)
+            : getObsMetadataCache(app, settings, files);
         if (fileFrontmatterArr[0] === undefined) {
             await wait(1000);
             fileFrontmatterArr = dvQ
-                ? getDVMetadataCache(this.app, settings, files)
-                : getObsMetadataCache(this.app, settings, files);
+                ? getDVMetadataCache(app, settings, files)
+                : getObsMetadataCache(app, settings, files);
         }
         const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
         const hierarchyNotesArr = [];
         if (settings.hierarchyNotes[0] !== "") {
             for (const note of settings.hierarchyNotes) {
-                const file = this.app.metadataCache.getFirstLinkpathDest(note, "");
+                const file = app.metadataCache.getFirstLinkpathDest(note, "");
                 if (file) {
                     hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
                 }
@@ -35518,111 +35441,57 @@ class BCPlugin extends obsidian.Plugin {
         }
         debugGroupEnd(settings, "debugMode");
         const { userHierarchies } = settings;
-        const graphs = {
-            main: new graphology_umd_min.MultiGraph(),
-            hierGs: [],
-            mergedGs: blankDirUndef(),
-            closedGs: blankDirUndef(),
-            limitTrailG: undefined,
-        };
-        userHierarchies.forEach((hier) => {
-            const newGraphs = blankDirObjs();
-            DIRECTIONS.forEach((dir) => {
-                if (hier[dir] === undefined) {
-                    hier[dir] = [];
-                }
-                hier[dir].forEach((dirField) => {
-                    newGraphs[dir][dirField] = new graphology_umd_min();
-                });
-            });
-            graphs.hierGs.push(newGraphs);
-        });
+        const mainG = new graphology_umd_min.MultiGraph();
         const useCSV = settings.CSVPaths !== "";
         const CSVRows = useCSV ? await this.getCSVRows() : [];
         neighbourObjArr.forEach((neighbours) => {
             const currFileName = neighbours.current.basename || neighbours.current.name;
-            neighbours.hierarchies.forEach((hier, i) => {
-                DIRECTIONS.forEach((dir) => {
-                    for (const fieldName in hier[dir]) {
-                        const g = graphs.hierGs[i][dir][fieldName];
-                        const targets = hier[dir][fieldName];
-                        this.populateGraph(g, currFileName, targets, dir, fieldName);
-                        this.populateMain(graphs.main, currFileName, dir, fieldName, targets, neighbours, neighbourObjArr);
-                        if (useCSV) {
-                            this.addCSVCrumbs(g, CSVRows, dir, fieldName);
-                            this.addCSVCrumbs(graphs.main, CSVRows, dir, fieldName);
-                        }
+            for (const hier of neighbours.hierarchies) {
+                for (const dir of DIRECTIONS) {
+                    for (const field in hier[dir]) {
+                        const targets = hier[dir][field];
+                        this.populateMain(mainG, currFileName, dir, field, targets, neighbours, neighbourObjArr);
+                        if (useCSV)
+                            this.addCSVCrumbs(mainG, CSVRows, dir, field);
                     }
-                });
-            });
+                }
+            }
         });
         if (hierarchyNotesArr.length) {
-            const { hierarchyNoteUpFieldName } = settings;
-            const { main } = graphs;
+            const { HNUpField } = settings;
             const upFields = getFields(userHierarchies, "up");
             hierarchyNotesArr.forEach((hnItem) => {
                 var _a, _b;
                 if (hnItem.parentNote === null)
                     return;
-                const upField = (_a = hnItem.fieldName) !== null && _a !== void 0 ? _a : (hierarchyNoteUpFieldName || upFields[0]);
-                const downField = (_b = getOppFields(userHierarchies, upField)[0]) !== null && _b !== void 0 ? _b : `${upField}<up>`;
-                const gUp = graphs.hierGs.find((hierG) => hierG.up[upField]).up[upField];
-                const gDown = graphs.hierGs.find((hierG) => hierG.down[downField]).down[downField];
-                [gUp, main].forEach((g) => {
-                    addNodeIfNot(g, hnItem.currNote);
-                    addNodeIfNot(g, hnItem.parentNote);
-                    addEdgeIfNot(g, hnItem.currNote, hnItem.parentNote, {
-                        dir: "up",
-                        fieldName: upField,
-                    });
-                });
-                [gDown, main].forEach((g) => {
-                    addNodeIfNot(g, hnItem.parentNote);
-                    addNodeIfNot(g, hnItem.currNote);
-                    addEdgeIfNot(g, hnItem.parentNote, hnItem.currNote, {
-                        dir: "down",
-                        fieldName: downField,
-                    });
-                });
+                const upField = (_a = hnItem.field) !== null && _a !== void 0 ? _a : (HNUpField || upFields[0]);
+                const downField = (_b = getOppFields(userHierarchies, upField)[0]) !== null && _b !== void 0 ? _b : `${upField}<down>`;
+                const aUp = {
+                    dir: "up",
+                    field: upField,
+                };
+                //@ts-ignore
+                addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+                //@ts-ignore
+                addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
+                const aDown = {
+                    dir: "down",
+                    field: downField,
+                };
+                //@ts-ignore
+                addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+                //@ts-ignore
+                addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
             });
-        }
-        DIRECTIONS.forEach((dir) => {
-            const allXGs = getAllGsInDir(graphs.hierGs, dir);
-            const dirMerged = mergeGs(...Object.values(allXGs));
-            graphs.mergedGs[dir] = dirMerged;
-        });
-        DIRECTIONS.forEach((dir) => {
-            graphs.closedGs[dir] = closeImpliedLinks(graphs.mergedGs[dir], graphs.mergedGs[getOppDir(dir)]);
-        });
-        // LimitTrailG
-        if (Object.values(settings.limitTrailCheckboxStates).every((val) => val)) {
-            graphs.limitTrailG = graphs.closedGs.up;
-        }
-        else {
-            const allUps = getAllGsInDir(graphs.hierGs, "up");
-            const allLimitedTrailsGsKeys = Object.keys(allUps).filter((field) => settings.limitTrailCheckboxStates[field]);
-            const allLimitedTrailsGs = [];
-            allLimitedTrailsGsKeys.forEach((key) => allLimitedTrailsGs.push(allUps[key]));
-            const mergedLimitedUpGs = mergeGs(...allLimitedTrailsGs);
-            const allLimitedDownGs = [];
-            Object.keys(settings.limitTrailCheckboxStates).forEach((limitedField) => {
-                const oppFieldsArr = oppFields(limitedField, "up", userHierarchies);
-                const oppGs = getAllFieldGs(oppFieldsArr, graphs.hierGs);
-                allLimitedDownGs.push(...oppGs);
-            });
-            const mergedLimitedDownGs = mergeGs(...allLimitedDownGs);
-            graphs.limitTrailG = closeImpliedLinks(mergedLimitedUpGs, mergedLimitedDownGs);
         }
         debug(settings, "graphs inited");
-        debug(settings, { graphs });
+        debug(settings, { mainG });
         debugGroupEnd(settings, "debugMode");
         files.forEach((file) => {
-            if (!graphs.main.hasNode(file.basename)) {
-                console.log(`${file.basename} was not in main`);
-                graphs.main.addNode(file.basename);
-            }
+            const { basename } = file;
+            addNodesIfNot(mainG, [basename]);
         });
-        return graphs;
+        return mainG;
     }
     // !SECTION OneSource
     // SECTION Breadcrumbs
@@ -35631,16 +35500,19 @@ class BCPlugin extends obsidian.Plugin {
         const queue = [
             { node: startNode, path: [] },
         ];
+        const visited = [startNode];
         let i = 0;
         while (queue.length !== 0 && i < 1000) {
             i++;
             const { node, path } = queue.shift();
             const extPath = [node, ...path];
-            queue.push(...getOutNeighbours(g, node).map((n) => {
-                return { node: n, path: extPath };
-            }));
+            const succsNotVisited = g.filterOutNeighbors(node, (succ) => !visited.includes(succ));
+            for (const node of succsNotVisited) {
+                visited.push(node);
+                queue.push({ node, path: extPath });
+            }
             // terminal node
-            if (!g.hasNode(node) || !g.outDegree(node)) {
+            if (!g.hasNode(node) || succsNotVisited.length === 0) {
                 pathsArr.push(extPath);
             }
         }
@@ -35653,11 +35525,11 @@ class BCPlugin extends obsidian.Plugin {
         return pathsArr;
     }
     getBreadcrumbs(g, currFile) {
-        if (currFile.extension !== "md")
+        const { basename, extension } = currFile;
+        if (extension !== "md")
             return null;
-        const from = currFile.basename;
-        const indexNotes = [this.settings.indexNote].flat();
-        let allTrails = this.bfsAllPaths(g, from);
+        const { indexNotes } = this.settings;
+        let allTrails = this.bfsAllPaths(g, basename);
         // No index note chosen
         if (indexNotes[0] !== "" && allTrails[0].length > 0) {
             allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
@@ -35668,16 +35540,28 @@ class BCPlugin extends obsidian.Plugin {
         debug(this.settings, { sortedTrails });
         return sortedTrails;
     }
+    getLimitedTrailSub() {
+        const { limitTrailCheckboxStates, userHierarchies } = this.settings;
+        const upFields = getFields(userHierarchies, "up");
+        const downFields = getFields(userHierarchies, "down");
+        let subGraph;
+        if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
+            subGraph = getSubForFields(this.mainG, [...upFields, ...downFields]);
+        }
+        else {
+            const positiveFields = Object.keys(limitTrailCheckboxStates).filter((field) => limitTrailCheckboxStates[field]);
+            const oppFields = positiveFields.map((field) => getOppFields(userHierarchies, field)[0]);
+            subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
+        }
+        const closed = getReflexiveClosure(subGraph, userHierarchies);
+        return getSubForFields(closed, upFields);
+    }
     async drawTrail() {
         var _a, _b, _c, _d;
         const { settings } = this;
         debugGroupStart(settings, "debugMode", "Draw Trail");
-        if (!settings.showBCs) {
-            debugGroupEnd(settings, "debugMode");
-            return;
-        }
         const activeMDView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
-        if (!activeMDView) {
+        if (!settings.showBCs || !activeMDView) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
@@ -35685,7 +35569,7 @@ class BCPlugin extends obsidian.Plugin {
         const currMetadata = this.app.metadataCache.getFileCache(currFile);
         const previewView = activeMDView.contentEl.querySelector(".markdown-preview-view");
         (_a = previewView.querySelector("div.BC-trail")) === null || _a === void 0 ? void 0 : _a.remove();
-        if ((_b = currMetadata.frontmatter) === null || _b === void 0 ? void 0 : _b.hasOwnProperty(settings.hideTrailFieldName)) {
+        if ((_b = currMetadata.frontmatter) === null || _b === void 0 ? void 0 : _b.hasOwnProperty(settings.hideTrailField)) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
@@ -35694,11 +35578,13 @@ class BCPlugin extends obsidian.Plugin {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const closedUp = this.currGraphs.limitTrailG;
+        const closedUp = this.getLimitedTrailSub();
+        console.log({ closedUp });
         const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
+        console.log({ sortedTrails });
         debug(settings, { sortedTrails });
         const { basename } = currFile;
-        const { rPrev, rNext, iPrev, iNext } = getPrevNext(this, basename);
+        const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getRealnImplied(this, basename, "next");
         // Remove duplicate implied
         const next = [...rNext];
         iNext.forEach((i) => {

@@ -8,6 +8,7 @@
     copy,
     debug,
     getOppDir,
+    getSubInDir,
     hierToStr,
     makeWiki,
     mergeGs,
@@ -15,10 +16,8 @@
 
   export let plugin: BCPlugin;
 
-  const { settings } = plugin;
+  const { settings, mainG } = plugin;
   const { userHierarchies, trailSeperator } = settings;
-
-  const hierGs = plugin.currGraphs;
 
   function fillInInfo(
     dir: Directions,
@@ -45,7 +44,10 @@
     gInfo.edgesStr = edgeStrArr.join("\n");
   }
 
-  const data = hierGs.hierGs.map((hier) => {
+  const data = settings.userHierarchies.map((hier) => {
+    const [up, same, down, next, prev] = DIRECTIONS.map((dir) =>
+      getSubInDir(mainG, dir)
+    );
     const hierData: HierData = {
       //@ts-ignore
       up: { Merged: {}, Closed: {}, Implied: {} },

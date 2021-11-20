@@ -1,13 +1,7 @@
-import type Graph from "graphology";
-import type { MultiGraph } from "graphology";
+import type { default as Graph } from "graphology";
 import { cloneDeep } from "lodash";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import {
-  blankDirUndef,
-  DIRECTIONS,
-  MATRIX_VIEW,
-  TRAIL_ICON,
-} from "src/constants";
+import { blankRealNImplied, MATRIX_VIEW, TRAIL_ICON } from "src/constants";
 import type {
   BCSettings,
   Directions,
@@ -23,11 +17,12 @@ import {
   getInNeighbours,
   getOppDir,
   getOutNeighbours,
-  getPrevNext,
+  getRealnImplied,
+  getReflexiveClosure,
   getSinks,
+  getSubInDir,
   linkClass,
   makeWiki,
-  mergeGs,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -61,13 +56,16 @@ export default class MatrixView extends ItemView {
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
       callback: async () => {
-        const { settings } = this.plugin;
-        const currFile = this.app.workspace.getActiveFile().basename;
+        const { settings, mainG } = this.plugin;
+        const { basename } = this.app.workspace.getActiveFile();
 
-        const closedParents = this.plugin.currGraphs.closedGs.down;
+        const closedDown = getReflexiveClosure(
+          getSubInDir(mainG, "down"),
+          settings.userHierarchies
+        );
 
-        const allPaths = this.dfsAllPaths(closedParents, currFile);
-        const index = this.createIndex(currFile + "\n", allPaths, settings);
+        const allPaths = this.dfsAllPaths(closedDown, basename);
+        const index = this.createIndex(basename + "\n", allPaths, settings);
         debug(settings, { index });
         await copy(index);
       },
@@ -77,16 +75,19 @@ export default class MatrixView extends ItemView {
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
-        const { up } = this.plugin.currGraphs.mergedGs;
-        const closedParents = this.plugin.currGraphs.closedGs.down;
+        const { mainG, settings } = this.plugin;
+        const upSub = getSubInDir(mainG, "up");
+        const closedDown = getReflexiveClosure(
+          getSubInDir(mainG, "down"),
+          settings.userHierarchies
+        );
 
-        const sinks = getSinks(up);
-        const { settings } = this.plugin;
+        const sinks = getSinks(upSub);
 
         let globalIndex = "";
         sinks.forEach((terminal) => {
           globalIndex += terminal + "\n";
-          const allPaths = this.dfsAllPaths(closedParents, terminal);
+          const allPaths = this.dfsAllPaths(closedDown, terminal);
           globalIndex = this.createIndex(globalIndex, allPaths, settings);
         });
 
@@ -112,38 +113,12 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  getSquares(
-    g: MultiGraph,
-    currNode: string,
-    fieldName: string,
-    settings: BCSettings,
-    realQ = true
-  ) {
-    const items = realQ
-      ? g.filterOutNeighbors(
-          currNode,
-          (n) => g.getNodeAttribute(n, "fieldName") === fieldName
-        )
-      : g.filterInNeighbors(
-          currNode,
-          (n) => g.getNodeAttribute(n, "fieldName") === fieldName
-        );
-
-    return items.map((to: string) => {
-      return {
-        to,
-        cls: linkClass(this.app, to, realQ),
-        alt: this.getAlt(to, settings),
-      };
-    });
-  }
-
   getAlt(node: string, settings: BCSettings) {
     let alt = null;
     if (settings.altLinkFields.length) {
-      const toFile = this.app.metadataCache.getFirstLinkpathDest(node, "");
-      if (toFile) {
-        const metadata = this.app.metadataCache.getFileCache(toFile);
+      const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
+      if (file) {
+        const metadata = this.app.metadataCache.getFileCache(file);
         settings.altLinkFields.forEach((altLinkField) => {
           alt = metadata?.frontmatter?.[altLinkField];
         });
@@ -152,29 +127,14 @@ export default class MatrixView extends ItemView {
     return alt;
   }
 
-  squareItems(
-    g: Graph,
-    currFile: TFile,
-    settings: BCSettings,
-    realQ = true
-  ): internalLinkObj[] {
-    const items = realQ
-      ? getOutNeighbours(g, currFile.basename)
-      : getInNeighbours(g, currFile.basename);
-
-    const internalLinkObjArr: internalLinkObj[] = [];
-
-    items.forEach((to: string) => {
-      internalLinkObjArr.push({
-        to,
-        cls: linkClass(this.app, to, realQ),
-        alt: this.getAlt(to, settings),
-        order: this.getOrder(to),
-      });
-    });
-
-    return internalLinkObjArr;
-  }
+  toInternalLinkObj = (to: string, realQ = true) => {
+    return {
+      to,
+      cls: linkClass(this.app, to, realQ),
+      alt: this.getAlt(to, this.plugin.settings),
+      order: this.getOrder(to),
+    };
+  };
 
   // ANCHOR Remove duplicate implied links
 
@@ -274,33 +234,49 @@ export default class MatrixView extends ItemView {
   }
 
   getOrder = (node: string) =>
-    Number.parseInt(
-      this.plugin.currGraphs.main.getNodeAttribute(node, "order")
-    );
+    Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
   getHierSquares(
     userHierarchies: userHierarchy[],
-    data: { [dir in Directions]: Graph }[],
     currFile: TFile,
     settings: BCSettings
   ) {
+    const { plugin } = this;
+    const { mainG } = plugin;
     const { basename } = currFile;
-    const {
-      iNext: iNextInfo,
-      iPrev: iPrevInfo,
-      rNext: rNextInfo,
-      rPrev: rPrevInfo,
-    } = getPrevNext(this.plugin, basename);
-    return userHierarchies.map((hier, i) => {
-      const { up, same, down } = data[i];
+    const up = getSubInDir(mainG, "up");
 
-      let [rUp, rSame, rDown, iUp, iDown] = [
-        this.squareItems(up, currFile, settings),
-        this.squareItems(same, currFile, settings),
-        this.squareItems(down, currFile, settings),
-        this.squareItems(down, currFile, settings, false),
-        this.squareItems(up, currFile, settings, false),
-      ];
+    const realsnImplieds = getRealnImplied(plugin, basename);
+
+    return userHierarchies.map((hier) => {
+      const filteredRealNImplied: {
+        [dir in Directions]: {
+          reals: internalLinkObj[];
+          implieds: internalLinkObj[];
+        };
+      } = blankRealNImplied();
+
+      for (const dir in realsnImplieds) {
+        const { reals, implieds } = realsnImplieds[dir];
+        filteredRealNImplied[dir].reals = reals
+          .filter((real) => hier[dir].includes(real.field))
+          .map((item) =>
+            this.toInternalLinkObj(item.to, true)
+          ) as internalLinkObj[];
+        filteredRealNImplied[dir].implieds = implieds
+          .filter((implied) => hier[dir].includes(implied.field))
+          .map((item) =>
+            this.toInternalLinkObj(item.to, false)
+          ) as internalLinkObj[];
+      }
+
+      let {
+        up: { reals: ru, implieds: iu },
+        same: { reals: rs, implieds: is },
+        down: { reals: rd, implieds: id },
+        next: { reals: rn, implieds: iN },
+        prev: { reals: rp, implieds: ip },
+      } = filteredRealNImplied;
 
       // SECTION Implied Siblings
       /// Notes with the same parents
@@ -316,15 +292,9 @@ export default class MatrixView extends ItemView {
         impliedSiblings.splice(indexCurrNote, 1);
 
         if (settings.filterImpliedSiblingsOfDifferentTypes) {
-          const currNodeType: string = up.getNodeAttribute(
-            basename,
-            "fieldName"
-          );
+          const currNodeType: string = up.getNodeAttribute(basename, "field");
           impliedSiblings = impliedSiblings.filter((iSibling) => {
-            const iSiblingType: string = up.getNodeAttribute(
-              iSibling,
-              "fieldName"
-            );
+            const iSiblingType: string = up.getNodeAttribute(iSibling, "field");
             return iSiblingType === currNodeType;
           });
         }
@@ -341,38 +311,15 @@ export default class MatrixView extends ItemView {
       });
 
       /// A real sibling implies the reverse sibling
-      iSameArr.push(...this.squareItems(same, currFile, settings, false));
+      iSameArr.push(...is);
 
       // !SECTION
 
-      let [iNext, iPrev, rNext, rPrev]: internalLinkObj[][] = [
-        iNextInfo,
-        iPrevInfo,
-        rNextInfo,
-        rPrevInfo,
-      ].map((info) => {
-        return info
-          .filter(
-            (item) =>
-              hier.next.includes(item.fieldName) ||
-              hier.prev.includes(item.fieldName)
-          )
-          .map((item) => {
-            const { to } = item;
-            return {
-              to,
-              cls: linkClass(this.app, to, item.real),
-              alt: this.getAlt(to, settings),
-              order: this.getOrder(to),
-            };
-          });
-      });
-
-      iUp = this.removeDuplicateImplied(rUp, iUp);
-      iSameArr = this.removeDuplicateImplied(rSame, iSameArr);
-      iDown = this.removeDuplicateImplied(rDown, iDown);
-      iNext = this.removeDuplicateImplied(rNext, iNext);
-      iPrev = this.removeDuplicateImplied(rPrev, iPrev);
+      iu = this.removeDuplicateImplied(ru, iu);
+      iSameArr = this.removeDuplicateImplied(rs, iSameArr);
+      id = this.removeDuplicateImplied(rd, id);
+      iN = this.removeDuplicateImplied(rn, iN);
+      ip = this.removeDuplicateImplied(rp, ip);
 
       const iSameNoDup: internalLinkObj[] = [];
       iSameArr.forEach((impSib) => {
@@ -382,53 +329,42 @@ export default class MatrixView extends ItemView {
       });
       iSameArr = iSameNoDup;
 
-      const getFieldName = (dir: Directions) => {
-        if (hier[dir] === undefined) return "";
-        return hier[dir][0] === ""
+      const getFieldInHier = (dir: Directions) =>
+        hier[dir][0] === ""
           ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
           : hier[dir].join(", ");
-      };
 
-      [
-        rUp,
-        rSame,
-        rDown,
-        rNext,
-        rPrev,
-        iUp,
-        iSameArr,
-        iDown,
-        iNext,
-        iPrev,
-      ].forEach((a) => a.sort((a, b) => a.order - b.order));
+      [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) =>
+        a.sort((a, b) => a.order - b.order)
+      );
 
       return [
         {
-          realItems: rUp,
-          impliedItems: iUp,
-          fieldName: getFieldName("up"),
+          realItems: ru,
+          impliedItems: iu,
+          field: getFieldInHier("up"),
         },
 
         {
-          realItems: rSame,
+          realItems: rs,
           impliedItems: iSameArr,
-          fieldName: getFieldName("same"),
+          field: getFieldInHier("same"),
         },
 
         {
-          realItems: rDown,
-          impliedItems: iDown,
-          fieldName: getFieldName("down"),
+          realItems: rd,
+          impliedItems: id,
+          field: getFieldInHier("down"),
         },
         {
-          realItems: rNext,
-          impliedItems: iNext,
-          fieldName: getFieldName("next"),
+          realItems: rn,
+          impliedItems: iN,
+          field: getFieldInHier("next"),
         },
         {
-          realItems: rPrev,
-          impliedItems: iPrev,
-          fieldName: getFieldName("prev"),
+          realItems: rp,
+          impliedItems: ip,
+          field: getFieldInHier("prev"),
         },
       ];
     });
@@ -437,7 +373,7 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     const { contentEl } = this;
     contentEl.empty();
-    const { settings, currGraphs } = this.plugin;
+    const { settings } = this.plugin;
 
     debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
 
@@ -462,19 +398,17 @@ export default class MatrixView extends ItemView {
       el.onclick = async () => await this.plugin.refreshIndex();
     });
 
-    const data = currGraphs.hierGs.map((hier) => {
-      const hierData: { [dir in Directions]: Graph } = blankDirUndef();
-      for (const dir of DIRECTIONS) {
-        // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-        hierData[dir] = mergeGs(...Object.values(hier[dir]));
-      }
-      return hierData;
-    });
-    debug(settings, { data });
+    // const data = currGraphs.hierGs.map((hierG) => {
+    //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
+    //   for (const dir of DIRECTIONS) {
+    //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
+    //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
+    //   }
+    //   return hierData;
+    // });
 
     const hierSquares = this.getHierSquares(
       userHierarchies,
-      data,
       currFile,
       settings
     ).filter((squareArr) =>
