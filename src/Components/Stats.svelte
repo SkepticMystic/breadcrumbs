@@ -1,6 +1,6 @@
 <script lang="ts">
   import { sum } from "lodash";
-  import { ARROW_DIRECTIONS, DIRECTIONS } from "src/constants";
+  import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "src/constants";
   import type { Directions, HierData } from "src/interfaces";
   import type BCPlugin from "src/main";
   import {
@@ -8,10 +8,9 @@
     copy,
     debug,
     getOppDir,
-    getSubInDir,
+    getSubForFields,
     hierToStr,
     makeWiki,
-    mergeGs,
   } from "src/sharedFunctions";
 
   export let plugin: BCPlugin;
@@ -45,9 +44,6 @@
   }
 
   const data = settings.userHierarchies.map((hier) => {
-    const [up, same, down, next, prev] = DIRECTIONS.map((dir) =>
-      getSubInDir(mainG, dir)
-    );
     const hierData: HierData = {
       //@ts-ignore
       up: { Merged: {}, Closed: {}, Implied: {} },
@@ -63,7 +59,9 @@
     DIRECTIONS.forEach((dir) => {
       // Merged Graphs
       /// Smoosh all fieldGs from one dir into a merged graph for that direction as a whole
-      const mergedInDir = mergeGs(...Object.values(hier[dir]));
+
+      const mergedInDir = getSubForFields(mainG, hier[dir]);
+      const mergedInOppDir = getSubForFields(mainG, hier[getOppDir(dir)]);
       hierData[dir].Merged.graph = mergedInDir;
       fillInInfo(dir, "Merged", hierData);
 
@@ -71,7 +69,7 @@
       if (dir !== "same") {
         hierData[dir].Closed.graph = closeImpliedLinks(
           mergedInDir,
-          mergeGs(...Object.values(hier[getOppDir(dir)]))
+          mergedInOppDir
         );
       } else {
         hierData[dir].Closed.graph = closeImpliedLinks(
@@ -82,9 +80,7 @@
       fillInInfo(dir, "Closed", hierData);
 
       if (dir !== "same") {
-        hierData[dir].Implied.graph = mergeGs(
-          ...Object.values(hier[getOppDir(dir)])
-        );
+        hierData[dir].Implied.graph = mergedInOppDir;
       } else {
         hierData[dir].Implied.graph = closeImpliedLinks(
           mergedInDir,
