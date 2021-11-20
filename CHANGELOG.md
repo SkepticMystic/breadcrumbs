@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.3...1.6.0) (2021-11-20)
+
+
+### Features
+
+* **DucksView:** :sparkles: Filter nodes with regex ([ec65f68](https://github.com/SkepticMystic/breadcrumbs/commit/ec65f689e46d1ed3305fea5a892236dd9c45fedd))
+* **Stats View:** :sparkles: Button to refresh stats view ([5eb8830](https://github.com/SkepticMystic/breadcrumbs/commit/5eb8830ad8f5d007d6d07c1cd15d765d6e4c03b6))
+
+
+### Bug Fixes
+
+* **Stats View:** :bug: Fix stats view for mainG ([56736d5](https://github.com/SkepticMystic/breadcrumbs/commit/56736d53cc5aa7ee2e2e2268663d138dcc85bdef))
+
 ### [1.5.3](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.2...1.5.3) (2021-11-20)
 
 ### [1.5.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.1...1.5.2) (2021-11-19)
