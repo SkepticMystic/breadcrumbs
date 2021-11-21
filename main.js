@@ -23684,9 +23684,11 @@ class MatrixView extends obsidian.ItemView {
             callback: async () => {
                 const { settings, mainG } = this.plugin;
                 const { basename } = this.app.workspace.getActiveFile();
-                const closedDown = getReflexiveClosure(getSubInDirs(mainG, "down"), settings.userHiers);
-                const allPaths = this.dfsAllPaths(closedDown, basename);
-                const index = this.createIndex(basename + "\n", allPaths, settings);
+                const g = getSubInDirs(mainG, "up", "down");
+                const closed = getReflexiveClosure(g, settings.userHiers);
+                const onlyDowns = getSubInDirs(closed, "down");
+                const allPaths = this.dfsAllPaths(onlyDowns, basename);
+                const index = this.createIndex(allPaths, settings);
                 debug(settings, { index });
                 await copy$1(index);
             },
@@ -23696,14 +23698,15 @@ class MatrixView extends obsidian.ItemView {
             name: "Copy a Global Index to the clipboard",
             callback: async () => {
                 const { mainG, settings } = this.plugin;
-                const upSub = getSubInDirs(mainG, "up");
-                const closedDown = getReflexiveClosure(getSubInDirs(mainG, "down"), settings.userHiers);
-                const sinks = getSinks(upSub);
+                const g = getSubInDirs(mainG, "up", "down");
+                const closed = getReflexiveClosure(g, settings.userHiers);
+                const onlyDowns = getSubInDirs(closed, "down");
+                const sinks = getSinks(mainG);
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
                     globalIndex += terminal + "\n";
-                    const allPaths = this.dfsAllPaths(closedDown, terminal);
-                    globalIndex = this.createIndex(globalIndex, allPaths, settings);
+                    const allPaths = this.dfsAllPaths(onlyDowns, terminal);
+                    globalIndex += this.createIndex(allPaths, settings);
                 });
                 debug(settings, { globalIndex });
                 await copy$1(globalIndex);
@@ -23765,7 +23768,8 @@ class MatrixView extends obsidian.ItemView {
         }
         return allPaths;
     }
-    createIndex(index, allPaths, settings) {
+    createIndex(allPaths, settings) {
+        let index = "";
         const { wikilinkIndex } = settings;
         const copy = lodash.cloneDeep(allPaths);
         const reversed = copy.map((path) => path.reverse());
@@ -36577,18 +36581,18 @@ class BCPlugin extends obsidian.Plugin {
             name: "Refresh Breadcrumbs Index",
             callback: async () => await this.refreshIndex(),
         });
-        this.addCommand({
-            id: "test-traversal",
-            name: "Traverse",
-            hotkeys: [{ key: "a", modifiers: ["Alt"] }],
-            callback: () => {
-                const { basename } = this.app.workspace.getActiveFile();
-                const g = getSubInDirs(this.mainG, "up", "down");
-                const closed = getReflexiveClosure(g, this.settings.userHiers);
-                const onlyUps = getSubInDirs(closed, "up");
-                this.getdfsFromNode(onlyUps, basename);
-            },
-        });
+        // this.addCommand({
+        //   id: "test-traversal",
+        //   name: "Traverse",
+        //   hotkeys: [{ key: "a", modifiers: ["Alt"] }],
+        //   callback: () => {
+        //     const { basename } = this.app.workspace.getActiveFile();
+        //     const g = getSubInDirs(this.mainG, "up", "down");
+        //     const closed = getReflexiveClosure(g, this.settings.userHiers);
+        //     const onlyUps = getSubInDirs(closed, "up");
+        //     this.getdfsFromNode(onlyUps, basename);
+        //   },
+        // });
         this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
             name: "Write Breadcrumbs to Current File",

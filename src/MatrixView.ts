@@ -59,13 +59,12 @@ export default class MatrixView extends ItemView {
         const { settings, mainG } = this.plugin;
         const { basename } = this.app.workspace.getActiveFile();
 
-        const closedDown = getReflexiveClosure(
-          getSubInDirs(mainG, "down"),
-          settings.userHiers
-        );
+        const g = getSubInDirs(mainG, "up", "down");
+        const closed = getReflexiveClosure(g, settings.userHiers);
+        const onlyDowns = getSubInDirs(closed, "down");
 
-        const allPaths = this.dfsAllPaths(closedDown, basename);
-        const index = this.createIndex(basename + "\n", allPaths, settings);
+        const allPaths = this.dfsAllPaths(onlyDowns, basename);
+        const index = this.createIndex(allPaths, settings);
         debug(settings, { index });
         await copy(index);
       },
@@ -76,19 +75,18 @@ export default class MatrixView extends ItemView {
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
         const { mainG, settings } = this.plugin;
-        const upSub = getSubInDirs(mainG, "up");
-        const closedDown = getReflexiveClosure(
-          getSubInDirs(mainG, "down"),
-          settings.userHiers
-        );
 
-        const sinks = getSinks(upSub);
+        const g = getSubInDirs(mainG, "up", "down");
+        const closed = getReflexiveClosure(g, settings.userHiers);
+        const onlyDowns = getSubInDirs(closed, "down");
+
+        const sinks = getSinks(mainG);
 
         let globalIndex = "";
         sinks.forEach((terminal) => {
           globalIndex += terminal + "\n";
-          const allPaths = this.dfsAllPaths(closedDown, terminal);
-          globalIndex = this.createIndex(globalIndex, allPaths, settings);
+          const allPaths = this.dfsAllPaths(onlyDowns, terminal);
+          globalIndex += this.createIndex(allPaths, settings);
         });
 
         debug(settings, { globalIndex });
@@ -175,11 +173,8 @@ export default class MatrixView extends ItemView {
     return allPaths;
   }
 
-  createIndex(
-    index: string,
-    allPaths: string[][],
-    settings: BCSettings
-  ): string {
+  createIndex(allPaths: string[][], settings: BCSettings): string {
+    let index = "";
     const { wikilinkIndex } = settings;
     const copy = cloneDeep(allPaths);
     const reversed = copy.map((path) => path.reverse());

@@ -188,18 +188,19 @@ export default class BCPlugin extends Plugin {
       name: "Refresh Breadcrumbs Index",
       callback: async () => await this.refreshIndex(),
     });
-    this.addCommand({
-      id: "test-traversal",
-      name: "Traverse",
-      hotkeys: [{ key: "a", modifiers: ["Alt"] }],
-      callback: () => {
-        const { basename } = this.app.workspace.getActiveFile();
-        const g = getSubInDirs(this.mainG, "up", "down");
-        const closed = getReflexiveClosure(g, this.settings.userHiers);
-        const onlyUps = getSubInDirs(closed, "up");
-        this.getdfsFromNode(onlyUps, basename);
-      },
-    });
+    // this.addCommand({
+    //   id: "test-traversal",
+    //   name: "Traverse",
+    //   hotkeys: [{ key: "a", modifiers: ["Alt"] }],
+    //   callback: () => {
+    //     const { basename } = this.app.workspace.getActiveFile();
+    //     const g = getSubInDirs(this.mainG, "up", "down");
+    //     const closed = getReflexiveClosure(g, this.settings.userHiers);
+    //     const onlyUps = getSubInDirs(closed, "up");
+
+    //     this.getdfsFromNode(onlyUps, basename);
+    //   },
+    // });
 
     this.addCommand({
       id: "Write-Breadcrumbs-to-Current-File",
@@ -607,6 +608,7 @@ export default class BCPlugin extends Plugin {
       );
       subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
     }
+
     const closed = getReflexiveClosure(subGraph, userHiers);
     return getSubForFields(closed, upFields);
   }
