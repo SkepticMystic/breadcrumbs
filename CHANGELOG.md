@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.6.0...1.7.0) (2021-11-21)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Option to sort items alphabetically asc/desc order ([081bbdf](https://github.com/SkepticMystic/breadcrumbs/commit/081bbdfdc29928644b3c417b8666a3bd19001d70))
+
 ## [1.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.5.3...1.6.0) (2021-11-20)
 
 
