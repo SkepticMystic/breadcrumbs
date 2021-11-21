@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.0...1.7.1) (2021-11-21)
+
+
+### Bug Fixes
+
+* **CreateIndex:** :bug: Adjust for mainG ([833c6a1](https://github.com/SkepticMystic/breadcrumbs/commit/833c6a1f2ba5fbfbbdda1ca23df8bf1157352375))
+
 ## [1.7.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.6.0...1.7.0) (2021-11-21)
 
 
