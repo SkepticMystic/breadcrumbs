@@ -19,6 +19,1092 @@ var graphology_umd_min = createCommonjsModule(function (module, exports) {
 
 });
 
+/**
+ * Graphology isGraph
+ * ===================
+ *
+ * Very simple function aiming at ensuring the given variable is a
+ * graphology instance.
+ */
+/**
+ * Checking the value is a graphology instance.
+ *
+ * @param  {any}     value - Target value.
+ * @return {boolean}
+ */
+var isGraph = function isGraph(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.addUndirectedEdgeWithKey === 'function' &&
+    typeof value.dropNode === 'function' &&
+    typeof value.multi === 'boolean'
+  );
+};
+
+var ARRAY_BUFFER_SUPPORT$1 = typeof ArrayBuffer !== 'undefined';
+var SYMBOL_SUPPORT$1 = typeof Symbol !== 'undefined';
+
+var support = {
+	ARRAY_BUFFER_SUPPORT: ARRAY_BUFFER_SUPPORT$1,
+	SYMBOL_SUPPORT: SYMBOL_SUPPORT$1
+};
+
+/**
+ * Obliterator ForEach Function
+ * =============================
+ *
+ * Helper function used to easily iterate over mixed values.
+ */
+
+var ARRAY_BUFFER_SUPPORT = support.ARRAY_BUFFER_SUPPORT;
+var SYMBOL_SUPPORT = support.SYMBOL_SUPPORT;
+
+/**
+ * Function able to iterate over almost any iterable JS value.
+ *
+ * @param  {any}      iterable - Iterable value.
+ * @param  {function} callback - Callback function.
+ */
+var foreach = function forEach(iterable, callback) {
+  var iterator, k, i, l, s;
+
+  if (!iterable) throw new Error('obliterator/forEach: invalid iterable.');
+
+  if (typeof callback !== 'function')
+    throw new Error('obliterator/forEach: expecting a callback.');
+
+  // The target is an array or a string or function arguments
+  if (
+    Array.isArray(iterable) ||
+    (ARRAY_BUFFER_SUPPORT && ArrayBuffer.isView(iterable)) ||
+    typeof iterable === 'string' ||
+    iterable.toString() === '[object Arguments]'
+  ) {
+    for (i = 0, l = iterable.length; i < l; i++) callback(iterable[i], i);
+    return;
+  }
+
+  // The target has a #.forEach method
+  if (typeof iterable.forEach === 'function') {
+    iterable.forEach(callback);
+    return;
+  }
+
+  // The target is iterable
+  if (
+    SYMBOL_SUPPORT &&
+    Symbol.iterator in iterable &&
+    typeof iterable.next !== 'function'
+  ) {
+    iterable = iterable[Symbol.iterator]();
+  }
+
+  // The target is an iterator
+  if (typeof iterable.next === 'function') {
+    iterator = iterable;
+    i = 0;
+
+    while (((s = iterator.next()), s.done !== true)) {
+      callback(s.value, i);
+      i++;
+    }
+
+    return;
+  }
+
+  // The target is a plain object
+  for (k in iterable) {
+    if (iterable.hasOwnProperty(k)) {
+      callback(iterable[k], k);
+    }
+  }
+
+  return;
+};
+
+/**
+ * Mnemonist Typed Array Helpers
+ * ==============================
+ *
+ * Miscellaneous helpers related to typed arrays.
+ */
+
+var typedArrays = createCommonjsModule(function (module, exports) {
+/**
+ * When using an unsigned integer array to store pointers, one might want to
+ * choose the optimal word size in regards to the actual numbers of pointers
+ * to store.
+ *
+ * This helpers does just that.
+ *
+ * @param  {number} size - Expected size of the array to map.
+ * @return {TypedArray}
+ */
+var MAX_8BIT_INTEGER = Math.pow(2, 8) - 1,
+    MAX_16BIT_INTEGER = Math.pow(2, 16) - 1,
+    MAX_32BIT_INTEGER = Math.pow(2, 32) - 1;
+
+var MAX_SIGNED_8BIT_INTEGER = Math.pow(2, 7) - 1,
+    MAX_SIGNED_16BIT_INTEGER = Math.pow(2, 15) - 1,
+    MAX_SIGNED_32BIT_INTEGER = Math.pow(2, 31) - 1;
+
+exports.getPointerArray = function(size) {
+  var maxIndex = size - 1;
+
+  if (maxIndex <= MAX_8BIT_INTEGER)
+    return Uint8Array;
+
+  if (maxIndex <= MAX_16BIT_INTEGER)
+    return Uint16Array;
+
+  if (maxIndex <= MAX_32BIT_INTEGER)
+    return Uint32Array;
+
+  throw new Error('mnemonist: Pointer Array of size > 4294967295 is not supported.');
+};
+
+exports.getSignedPointerArray = function(size) {
+  var maxIndex = size - 1;
+
+  if (maxIndex <= MAX_SIGNED_8BIT_INTEGER)
+    return Int8Array;
+
+  if (maxIndex <= MAX_SIGNED_16BIT_INTEGER)
+    return Int16Array;
+
+  if (maxIndex <= MAX_SIGNED_32BIT_INTEGER)
+    return Int32Array;
+
+  return Float64Array;
+};
+
+/**
+ * Function returning the minimal type able to represent the given number.
+ *
+ * @param  {number} value - Value to test.
+ * @return {TypedArrayClass}
+ */
+exports.getNumberType = function(value) {
+
+  // <= 32 bits itnteger?
+  if (value === (value | 0)) {
+
+    // Negative
+    if (Math.sign(value) === -1) {
+      if (value <= 127 && value >= -128)
+        return Int8Array;
+
+      if (value <= 32767 && value >= -32768)
+        return Int16Array;
+
+      return Int32Array;
+    }
+    else {
+
+      if (value <= 255)
+        return Uint8Array;
+
+      if (value <= 65535)
+        return Uint16Array;
+
+      return Uint32Array;
+    }
+  }
+
+  // 53 bits integer & floats
+  // NOTE: it's kinda hard to tell whether we could use 32bits or not...
+  return Float64Array;
+};
+
+/**
+ * Function returning the minimal type able to represent the given array
+ * of JavaScript numbers.
+ *
+ * @param  {array}    array  - Array to represent.
+ * @param  {function} getter - Optional getter.
+ * @return {TypedArrayClass}
+ */
+var TYPE_PRIORITY = {
+  Uint8Array: 1,
+  Int8Array: 2,
+  Uint16Array: 3,
+  Int16Array: 4,
+  Uint32Array: 5,
+  Int32Array: 6,
+  Float32Array: 7,
+  Float64Array: 8
+};
+
+// TODO: make this a one-shot for one value
+exports.getMinimalRepresentation = function(array, getter) {
+  var maxType = null,
+      maxPriority = 0,
+      p,
+      t,
+      v,
+      i,
+      l;
+
+  for (i = 0, l = array.length; i < l; i++) {
+    v = getter ? getter(array[i]) : array[i];
+    t = exports.getNumberType(v);
+    p = TYPE_PRIORITY[t.name];
+
+    if (p > maxPriority) {
+      maxPriority = p;
+      maxType = t;
+    }
+  }
+
+  return maxType;
+};
+
+/**
+ * Function returning whether the given value is a typed array.
+ *
+ * @param  {any} value - Value to test.
+ * @return {boolean}
+ */
+exports.isTypedArray = function(value) {
+  return typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(value);
+};
+
+/**
+ * Function used to concat byte arrays.
+ *
+ * @param  {...ByteArray}
+ * @return {ByteArray}
+ */
+exports.concat = function() {
+  var length = 0,
+      i,
+      o,
+      l;
+
+  for (i = 0, l = arguments.length; i < l; i++)
+    length += arguments[i].length;
+
+  var array = new (arguments[0].constructor)(length);
+
+  for (i = 0, o = 0; i < l; i++) {
+    array.set(arguments[i], o);
+    o += arguments[i].length;
+  }
+
+  return array;
+};
+
+/**
+ * Function used to initialize a byte array of indices.
+ *
+ * @param  {number}    length - Length of target.
+ * @return {ByteArray}
+ */
+exports.indices = function(length) {
+  var PointerArray = exports.getPointerArray(length);
+
+  var array = new PointerArray(length);
+
+  for (var i = 0; i < length; i++)
+    array[i] = i;
+
+  return array;
+};
+});
+
+/**
+ * Mnemonist Iterable Function
+ * ============================
+ *
+ * Harmonized iteration helpers over mixed iterable targets.
+ */
+
+/**
+ * Function used to determine whether the given object supports array-like
+ * random access.
+ *
+ * @param  {any} target - Target object.
+ * @return {boolean}
+ */
+function isArrayLike(target) {
+  return Array.isArray(target) || typedArrays.isTypedArray(target);
+}
+
+/**
+ * Function used to guess the length of the structure over which we are going
+ * to iterate.
+ *
+ * @param  {any} target - Target object.
+ * @return {number|undefined}
+ */
+function guessLength(target) {
+  if (typeof target.length === 'number')
+    return target.length;
+
+  if (typeof target.size === 'number')
+    return target.size;
+
+  return;
+}
+
+/**
+ * Function used to convert an iterable to an array.
+ *
+ * @param  {any}   target - Iteration target.
+ * @return {array}
+ */
+function toArray(target) {
+  var l = guessLength(target);
+
+  var array = typeof l === 'number' ? new Array(l) : [];
+
+  var i = 0;
+
+  // TODO: we could optimize when given target is array like
+  foreach(target, function(value) {
+    array[i++] = value;
+  });
+
+  return array;
+}
+
+/**
+ * Same as above but returns a supplementary indices array.
+ *
+ * @param  {any}   target - Iteration target.
+ * @return {array}
+ */
+function toArrayWithIndices(target) {
+  var l = guessLength(target);
+
+  var IndexArray = typeof l === 'number' ?
+    typedArrays.getPointerArray(l) :
+    Array;
+
+  var array = typeof l === 'number' ? new Array(l) : [];
+  var indices = typeof l === 'number' ? new IndexArray(l) : [];
+
+  var i = 0;
+
+  // TODO: we could optimize when given target is array like
+  foreach(target, function(value) {
+    array[i] = value;
+    indices[i] = i++;
+  });
+
+  return [array, indices];
+}
+
+/**
+ * Exporting.
+ */
+var isArrayLike_1 = isArrayLike;
+var guessLength_1 = guessLength;
+var toArray_1 = toArray;
+var toArrayWithIndices_1 = toArrayWithIndices;
+
+var iterables = {
+	isArrayLike: isArrayLike_1,
+	guessLength: guessLength_1,
+	toArray: toArray_1,
+	toArrayWithIndices: toArrayWithIndices_1
+};
+
+/**
+ * Obliterator Iterator Class
+ * ===========================
+ *
+ * Simple class representing the library's iterators.
+ */
+/**
+ * Iterator class.
+ *
+ * @constructor
+ * @param {function} next - Next function.
+ */
+function Iterator(next) {
+  if (typeof next !== 'function')
+    throw new Error('obliterator/iterator: expecting a function!');
+
+  this.next = next;
+}
+
+/**
+ * If symbols are supported, we add `next` to `Symbol.iterator`.
+ */
+if (typeof Symbol !== 'undefined')
+  Iterator.prototype[Symbol.iterator] = function () {
+    return this;
+  };
+
+/**
+ * Returning an iterator of the given values.
+ *
+ * @param  {any...} values - Values.
+ * @return {Iterator}
+ */
+Iterator.of = function () {
+  var args = arguments,
+    l = args.length,
+    i = 0;
+
+  return new Iterator(function () {
+    if (i >= l) return {done: true};
+
+    return {done: false, value: args[i++]};
+  });
+};
+
+/**
+ * Returning an empty iterator.
+ *
+ * @return {Iterator}
+ */
+Iterator.empty = function () {
+  var iterator = new Iterator(function () {
+    return {done: true};
+  });
+
+  return iterator;
+};
+
+/**
+ * Returning an iterator over the given indexed sequence.
+ *
+ * @param  {string|Array} sequence - Target sequence.
+ * @return {Iterator}
+ */
+Iterator.fromSequence = function (sequence) {
+  var i = 0,
+    l = sequence.length;
+
+  return new Iterator(function () {
+    if (i >= l) return {done: true};
+
+    return {done: false, value: sequence[i++]};
+  });
+};
+
+/**
+ * Returning whether the given value is an iterator.
+ *
+ * @param  {any} value - Value.
+ * @return {boolean}
+ */
+Iterator.is = function (value) {
+  if (value instanceof Iterator) return true;
+
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.next === 'function'
+  );
+};
+
+/**
+ * Exporting.
+ */
+var iterator = Iterator;
+
+/**
+ * Mnemonist FixedDeque
+ * =====================
+ *
+ * Fixed capacity double-ended queue implemented as ring deque.
+ */
+
+/**
+ * FixedDeque.
+ *
+ * @constructor
+ */
+function FixedDeque(ArrayClass, capacity) {
+
+  if (arguments.length < 2)
+    throw new Error('mnemonist/fixed-deque: expecting an Array class and a capacity.');
+
+  if (typeof capacity !== 'number' || capacity <= 0)
+    throw new Error('mnemonist/fixed-deque: `capacity` should be a positive number.');
+
+  this.ArrayClass = ArrayClass;
+  this.capacity = capacity;
+  this.items = new ArrayClass(this.capacity);
+  this.clear();
+}
+
+/**
+ * Method used to clear the structure.
+ *
+ * @return {undefined}
+ */
+FixedDeque.prototype.clear = function() {
+
+  // Properties
+  this.start = 0;
+  this.size = 0;
+};
+
+/**
+ * Method used to append a value to the deque.
+ *
+ * @param  {any}    item - Item to append.
+ * @return {number}      - Returns the new size of the deque.
+ */
+FixedDeque.prototype.push = function(item) {
+  if (this.size === this.capacity)
+    throw new Error('mnemonist/fixed-deque.push: deque capacity (' + this.capacity + ') exceeded!');
+
+  var index = (this.start + this.size) % this.capacity;
+
+  this.items[index] = item;
+
+  return ++this.size;
+};
+
+/**
+ * Method used to prepend a value to the deque.
+ *
+ * @param  {any}    item - Item to prepend.
+ * @return {number}      - Returns the new size of the deque.
+ */
+FixedDeque.prototype.unshift = function(item) {
+  if (this.size === this.capacity)
+    throw new Error('mnemonist/fixed-deque.unshift: deque capacity (' + this.capacity + ') exceeded!');
+
+  var index = this.start - 1;
+
+  if (this.start === 0)
+    index = this.capacity - 1;
+
+  this.items[index] = item;
+  this.start = index;
+
+  return ++this.size;
+};
+
+/**
+ * Method used to pop the deque.
+ *
+ * @return {any} - Returns the popped item.
+ */
+FixedDeque.prototype.pop = function() {
+  if (this.size === 0)
+    return;
+
+  const index = (this.start + this.size - 1) % this.capacity;
+
+  this.size--;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to shift the deque.
+ *
+ * @return {any} - Returns the shifted item.
+ */
+FixedDeque.prototype.shift = function() {
+  if (this.size === 0)
+    return;
+
+  var index = this.start;
+
+  this.size--;
+  this.start++;
+
+  if (this.start === this.capacity)
+    this.start = 0;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to peek the first value of the deque.
+ *
+ * @return {any}
+ */
+FixedDeque.prototype.peekFirst = function() {
+  if (this.size === 0)
+    return;
+
+  return this.items[this.start];
+};
+
+/**
+ * Method used to peek the last value of the deque.
+ *
+ * @return {any}
+ */
+FixedDeque.prototype.peekLast = function() {
+  if (this.size === 0)
+    return;
+
+  var index = this.start + this.size - 1;
+
+  if (index > this.capacity)
+    index -= this.capacity;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to get the desired value of the deque.
+ *
+ * @param  {number} index
+ * @return {any}
+ */
+FixedDeque.prototype.get = function(index) {
+  if (this.size === 0)
+    return;
+
+  index = this.start + index;
+
+  if (index > this.capacity)
+    index -= this.capacity;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to iterate over the deque.
+ *
+ * @param  {function}  callback - Function to call for each item.
+ * @param  {object}    scope    - Optional scope.
+ * @return {undefined}
+ */
+FixedDeque.prototype.forEach = function(callback, scope) {
+  scope = arguments.length > 1 ? scope : this;
+
+  var c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  while (j < l) {
+    callback.call(scope, this.items[i], j, this);
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+  }
+};
+
+/**
+ * Method used to convert the deque to a JavaScript array.
+ *
+ * @return {array}
+ */
+// TODO: optional array class as argument?
+FixedDeque.prototype.toArray = function() {
+
+  // Optimization
+  var offset = this.start + this.size;
+
+  if (offset < this.capacity)
+    return this.items.slice(this.start, offset);
+
+  var array = new this.ArrayClass(this.size),
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  while (j < l) {
+    array[j] = this.items[i];
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+  }
+
+  return array;
+};
+
+/**
+ * Method used to create an iterator over the deque's values.
+ *
+ * @return {Iterator}
+ */
+FixedDeque.prototype.values = function() {
+  var items = this.items,
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  return new iterator(function() {
+    if (j >= l)
+      return {
+        done: true
+      };
+
+    var value = items[i];
+
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+
+    return {
+      value: value,
+      done: false
+    };
+  });
+};
+
+/**
+ * Method used to create an iterator over the deque's entries.
+ *
+ * @return {Iterator}
+ */
+FixedDeque.prototype.entries = function() {
+  var items = this.items,
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  return new iterator(function() {
+    if (j >= l)
+      return {
+        done: true
+      };
+
+    var value = items[i];
+
+    i++;
+
+    if (i === c)
+      i = 0;
+
+    return {
+      value: [j++, value],
+      done: false
+    };
+  });
+};
+
+/**
+ * Attaching the #.values method to Symbol.iterator if possible.
+ */
+if (typeof Symbol !== 'undefined')
+  FixedDeque.prototype[Symbol.iterator] = FixedDeque.prototype.values;
+
+/**
+ * Convenience known methods.
+ */
+FixedDeque.prototype.inspect = function() {
+  var array = this.toArray();
+
+  array.type = this.ArrayClass.name;
+  array.capacity = this.capacity;
+
+  // Trick so that node displays the name of the constructor
+  Object.defineProperty(array, 'constructor', {
+    value: FixedDeque,
+    enumerable: false
+  });
+
+  return array;
+};
+
+if (typeof Symbol !== 'undefined')
+  FixedDeque.prototype[Symbol.for('nodejs.util.inspect.custom')] = FixedDeque.prototype.inspect;
+
+/**
+ * Static @.from function taking an arbitrary iterable & converting it into
+ * a deque.
+ *
+ * @param  {Iterable} iterable   - Target iterable.
+ * @param  {function} ArrayClass - Array class to use.
+ * @param  {number}   capacity   - Desired capacity.
+ * @return {FiniteStack}
+ */
+FixedDeque.from = function(iterable, ArrayClass, capacity) {
+  if (arguments.length < 3) {
+    capacity = iterables.guessLength(iterable);
+
+    if (typeof capacity !== 'number')
+      throw new Error('mnemonist/fixed-deque.from: could not guess iterable length. Please provide desired capacity as last argument.');
+  }
+
+  var deque = new FixedDeque(ArrayClass, capacity);
+
+  if (iterables.isArrayLike(iterable)) {
+    var i, l;
+
+    for (i = 0, l = iterable.length; i < l; i++)
+      deque.items[i] = iterable[i];
+
+    deque.size = l;
+
+    return deque;
+  }
+
+  iterables.forEach(iterable, function(value) {
+    deque.push(value);
+  });
+
+  return deque;
+};
+
+/**
+ * Exporting.
+ */
+var fixedDeque = FixedDeque;
+
+/**
+ * Graphology Traversal Utils
+ * ===========================
+ *
+ * Miscellaneous utils used throughout the library.
+ */
+function TraversalRecord$2(node, attr, depth) {
+  this.node = node;
+  this.attributes = attr;
+  this.depth = depth;
+}
+
+var TraversalRecord_1 = TraversalRecord$2;
+
+var utils = {
+	TraversalRecord: TraversalRecord_1
+};
+
+/**
+ * Graphology Traversal BFS
+ * =========================
+ *
+ * Breadth-First Search traversal function.
+ */
+
+var TraversalRecord$1 = utils.TraversalRecord;
+
+/**
+ * BFS traversal in the given graph using a callback function
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {function} callback - Iteration callback.
+ */
+function bfs(graph, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/bfs: expecting a graphology instance.');
+
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/bfs: given callback is not a function.');
+
+  // Early termination
+  if (graph.order === 0)
+    return;
+
+  var seen = new Set();
+  var queue = new fixedDeque(Array, graph.order);
+  var record, depth;
+
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
+  }
+
+  graph.forEachNode(function(node, attr) {
+    if (seen.has(node))
+      return;
+
+    seen.add(node);
+    queue.push(new TraversalRecord$1(node, attr, 0));
+
+    while (queue.size !== 0) {
+      record = queue.shift();
+      depth = record.depth;
+
+      callback(record.node, record.attributes, depth);
+
+      graph.forEachOutboundNeighbor(record.node, neighborCallback);
+    }
+  });
+}
+
+/**
+ * BFS traversal in the given graph, starting from the given node, using a
+ * callback function.
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {string}   node     - Starting node.
+ * @param {function} callback - Iteration callback.
+ */
+function bfsFromNode(graph, node, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
+
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
+
+  // Early termination
+  if (graph.order === 0)
+    return;
+
+  node = '' + node;
+
+  var seen = new Set();
+  var queue = new fixedDeque(Array, graph.order);
+  var depth, record;
+
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
+  }
+
+  seen.add(node);
+  queue.push(new TraversalRecord$1(node, graph.getNodeAttributes(node), 0));
+
+  while (queue.size !== 0) {
+    record = queue.shift();
+    depth = record.depth;
+
+    callback(record.node, record.attributes, depth);
+
+    graph.forEachOutboundNeighbor(record.node, neighborCallback);
+  }
+}
+
+var bfs_2 = bfs;
+var bfsFromNode_1 = bfsFromNode;
+
+var bfs_1 = {
+	bfs: bfs_2,
+	bfsFromNode: bfsFromNode_1
+};
+
+/**
+ * Graphology Traversal DFS
+ * =========================
+ *
+ * Depth-First Search traversal function.
+ */
+
+var TraversalRecord = utils.TraversalRecord;
+
+/**
+ * DFS traversal in the given graph using a callback function
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {function} callback - Iteration callback.
+ */
+function dfs(graph, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
+
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
+
+  // Early termination
+  if (graph.order === 0)
+    return;
+
+  var seen = new Set();
+  var stack = [];
+  var depth, record;
+
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
+  }
+
+  graph.forEachNode(function(node, attr) {
+    if (seen.has(node))
+      return;
+
+    seen.add(node);
+    stack.push(new TraversalRecord(node, attr, 0));
+
+    while (stack.length !== 0) {
+      record = stack.pop();
+      depth = record.depth;
+
+      callback(record.node, record.attributes, depth);
+
+      graph.forEachOutboundNeighbor(record.node, neighborCallback);
+    }
+  });
+}
+
+/**
+ * DFS traversal in the given graph, starting from the given node, using a
+ * callback function.
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {string}   node     - Starting node.
+ * @param {function} callback - Iteration callback.
+ */
+function dfsFromNode(graph, node, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
+
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
+
+  // Early termination
+  if (graph.order === 0)
+    return;
+
+  node = '' + node;
+
+  var seen = new Set();
+  var stack = [];
+  var depth, record;
+
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
+  }
+
+  seen.add(node);
+  stack.push(new TraversalRecord(node, graph.getNodeAttributes(node), 0));
+
+  while (stack.length !== 0) {
+    record = stack.pop();
+    depth = record.depth;
+
+    callback(record.node, record.attributes, depth);
+
+    graph.forEachOutboundNeighbor(record.node, neighborCallback);
+  }
+}
+
+var dfs_2 = dfs;
+var dfsFromNode_1 = dfsFromNode;
+
+var dfs_1 = {
+	dfs: dfs_2,
+	dfsFromNode: dfsFromNode_1
+};
+
+var graphologyTraversal = createCommonjsModule(function (module, exports) {
+var k;
+
+for (k in bfs_1)
+  exports[k] = bfs_1[k];
+
+for (k in dfs_1)
+  exports[k] = dfs_1[k];
+});
+
 var feather = createCommonjsModule(function (module, exports) {
 (function webpackUniversalModuleDefinition(root, factory) {
 	module.exports = factory();
@@ -20768,7 +21854,7 @@ async function getJugglLinks(app, settings) {
     debugGroupStart(settings, "debugMode", "getJugglLinks");
     debug(settings, "Using Juggl");
     const files = app.vault.getMarkdownFiles();
-    const { userHierarchies } = settings;
+    const { userHiers } = settings;
     // Add Juggl links
     const typedLinksArr = await Promise.all(files.map(async (file) => {
         var _a, _b;
@@ -20789,7 +21875,7 @@ async function getJugglLinks(app, settings) {
             const type = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
             let typeDir = "";
             DIRECTIONS.forEach((dir) => {
-                userHierarchies.forEach((hier) => {
+                userHiers.forEach((hier) => {
                     var _a;
                     if ((_a = hier[dir]) === null || _a === void 0 ? void 0 : _a.includes(type)) {
                         typeDir = dir;
@@ -20806,7 +21892,7 @@ async function getJugglLinks(app, settings) {
         return jugglLink;
     }));
     debug(settings, { typedLinksArr });
-    const allFields = getFields(userHierarchies);
+    const allFields = getFields(userHiers);
     const filteredLinks = typedLinksArr.map((jugglLink) => {
         // Filter out links whose type is not in allFields
         jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.type));
@@ -20907,7 +21993,7 @@ const splitAndTrim = (fields) => fields.split(",").map((str) => str.trim());
  */
 async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
     const { settings } = plugin;
-    const { userHierarchies } = settings;
+    const { userHiers } = settings;
     if (settings.debugMode || settings.superDebugMode) {
         console.groupCollapsed("getNeighbourObjArr");
     }
@@ -20926,7 +22012,7 @@ async function getNeighbourObjArr(plugin, fileFrontmatterArr) {
             order,
             hierarchies: [],
         };
-        userHierarchies.forEach((hier) => {
+        userHiers.forEach((hier) => {
             const newHier = blankDirObjs();
             // Add regular metadata links
             if (settings.useAllMetadata) {
@@ -21076,14 +22162,14 @@ function removeUnlinkedNodes(g) {
     return copy;
 }
 /**
- * Return a subgraph of all nodes & edges with `a.dir`
+ * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
  * @param  {MultiGraph} main
  * @param  {Directions} dir
  */
-function getSubInDir(main, dir) {
+function getSubInDirs(main, ...dirs) {
     const sub = new graphology_umd_min.MultiGraph();
     main.forEachEdge((k, a, s, t) => {
-        if (a.dir === dir) {
+        if (dirs.includes(a.dir)) {
             //@ts-ignore
             addNodesIfNot(sub, [s, t], a);
             sub.addEdge(s, t, a);
@@ -21112,29 +22198,37 @@ function getSubForFields(main, fields) {
  *
  * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
  * @param  {MultiGraph} g
+ * @param  {UserHier[]} userHiers
+ * @param  {boolean} closeAsOpposite
  */
-function getReflexiveClosure(g, userHierarchies) {
+function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
     const copy = g.copy();
     copy.forEachEdge((k, a, s, t) => {
         const { dir, field } = a;
         const oppDir = getOppDir(dir);
-        const oppField = getOppFields(userHierarchies, field)[0];
-        //@ts-ignore
-        addNodesIfNot(copy, [s, t], { dir: oppDir, field: oppField });
-        //@ts-ignore
-        addEdgeIfNot(copy, t, s, { dir: oppDir, field: oppField });
+        const oppField = getOppFields(userHiers, field)[0];
+        addNodesIfNot(copy, [s, t], {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+        });
+        addEdgeIfNot(copy, t, s, {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+        });
     });
     return copy;
 }
 /**
  * Get all the fields in `dir`.
  * Returns all fields if `dir === 'all'`
- * @param  {userHierarchy[]} userHierarchies
+ * @param  {UserHier[]} userHiers
  * @param  {Directions|"all"} dir
  */
-function getFields(userHierarchies, dir = "all") {
+function getFields(userHiers, dir = "all") {
     const fields = [];
-    userHierarchies.forEach((hier) => {
+    userHiers.forEach((hier) => {
         if (dir === "all") {
             DIRECTIONS.forEach((eachDir) => {
                 fields.push(...hier[eachDir]);
@@ -21228,11 +22322,11 @@ function splitAtYaml(content) {
 /**
  *  Get the hierarchy and direction that `field` is in
  * */
-function getFieldInfo(userHierarchies, field) {
+function getFieldInfo(userHiers, field) {
     let fieldDir;
     let fieldHier;
     DIRECTIONS.forEach((dir) => {
-        userHierarchies.forEach((hier) => {
+        userHiers.forEach((hier) => {
             if (hier[dir].includes(field)) {
                 fieldDir = dir;
                 fieldHier = hier;
@@ -21242,8 +22336,8 @@ function getFieldInfo(userHierarchies, field) {
     });
     return { fieldHier, fieldDir };
 }
-function getOppFields(userHierarchies, field) {
-    const { fieldHier, fieldDir } = getFieldInfo(userHierarchies, field);
+function getOppFields(userHiers, field) {
+    const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
     const oppDir = getOppDir(fieldDir);
     return fieldHier[oppDir];
 }
@@ -21273,10 +22367,10 @@ const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
 /** Remember to filter by hierarchy in MatrixView! */
 function getRealnImplied(plugin, currNode, dir = null) {
     const realsnImplieds = blankRealNImplied();
-    const { userHierarchies } = plugin.settings;
+    const { userHiers } = plugin.settings;
     plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
         const { field, dir: edgeDir } = a;
-        const oppField = getOppFields(userHierarchies, field)[0];
+        const oppField = getOppFields(userHiers, field)[0];
         (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
             const oppDir = getOppDir(currDir);
             // Reals
@@ -22590,7 +23684,7 @@ class MatrixView extends obsidian.ItemView {
             callback: async () => {
                 const { settings, mainG } = this.plugin;
                 const { basename } = this.app.workspace.getActiveFile();
-                const closedDown = getReflexiveClosure(getSubInDir(mainG, "down"), settings.userHierarchies);
+                const closedDown = getReflexiveClosure(getSubInDirs(mainG, "down"), settings.userHiers);
                 const allPaths = this.dfsAllPaths(closedDown, basename);
                 const index = this.createIndex(basename + "\n", allPaths, settings);
                 debug(settings, { index });
@@ -22602,8 +23696,8 @@ class MatrixView extends obsidian.ItemView {
             name: "Copy a Global Index to the clipboard",
             callback: async () => {
                 const { mainG, settings } = this.plugin;
-                const upSub = getSubInDir(mainG, "up");
-                const closedDown = getReflexiveClosure(getSubInDir(mainG, "down"), settings.userHierarchies);
+                const upSub = getSubInDirs(mainG, "up");
+                const closedDown = getReflexiveClosure(getSubInDirs(mainG, "down"), settings.userHiers);
                 const sinks = getSinks(upSub);
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
@@ -22651,19 +23745,25 @@ class MatrixView extends obsidian.ItemView {
         const queue = [
             { node: startNode, path: [] },
         ];
-        const pathsArr = [];
+        const visited = [];
+        const allPaths = [];
         let i = 0;
         while (queue.length > 0 && i < 1000) {
             i++;
             const { node, path } = queue.shift();
             const extPath = [node, ...path];
-            queue.unshift(...g.mapOutNeighbors(node, (n) => {
+            const succsNotVisited = g.hasNode(node)
+                ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+                : [];
+            const newItems = succsNotVisited.map((n) => {
                 return { node: n, path: extPath };
-            }));
-            if (!g.outDegree(node))
-                pathsArr.push(extPath);
+            });
+            visited.push(...succsNotVisited);
+            queue.unshift(...newItems);
+            // if (!g.hasNode(node) || !g.outDegree(node))
+            allPaths.push(extPath);
         }
-        return pathsArr;
+        return allPaths;
     }
     createIndex(index, allPaths, settings) {
         const { wikilinkIndex } = settings;
@@ -22707,13 +23807,13 @@ class MatrixView extends obsidian.ItemView {
         });
         return index;
     }
-    getHierSquares(userHierarchies, currFile, settings) {
+    getHierSquares(userHiers, currFile, settings) {
         const { plugin } = this;
         const { mainG } = plugin;
         const { basename } = currFile;
-        const up = getSubInDir(mainG, "up");
+        const up = getSubInDirs(mainG, "up");
         const realsnImplieds = getRealnImplied(plugin, basename);
-        return userHierarchies.map((hier) => {
+        return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
             for (const dir in realsnImplieds) {
                 const { reals, implieds } = realsnImplieds[dir];
@@ -22769,7 +23869,10 @@ class MatrixView extends obsidian.ItemView {
             const getFieldInHier = (dir) => hier[dir][0] === ""
                 ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
                 : hier[dir].join(", ");
-            [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) => a.sort((a, b) => a.order - b.order));
+            const { alphaSortAsc } = settings;
+            [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) => a
+                .sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1)
+                .sort((a, b) => a.order - b.order));
             return [
                 {
                     realItems: ru,
@@ -22804,7 +23907,7 @@ class MatrixView extends obsidian.ItemView {
         contentEl.empty();
         const { settings } = this.plugin;
         debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
-        const { userHierarchies } = settings;
+        const { userHiers } = settings;
         const currFile = this.app.workspace.getActiveFile();
         contentEl.createEl("button", {
             text: this.matrixQ ? "List" : "Matrix",
@@ -22826,7 +23929,7 @@ class MatrixView extends obsidian.ItemView {
         //   }
         //   return hierData;
         // });
-        const hierSquares = this.getHierSquares(userHierarchies, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
+        const hierSquares = this.getHierSquares(userHiers, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
         const compInput = {
             target: contentEl,
             props: {
@@ -22855,57 +23958,57 @@ function add_css$4() {
 
 function get_each_context$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[35] = list[i];
-	child_ctx[37] = i;
+	child_ctx[34] = list[i];
+	child_ctx[36] = i;
 	return child_ctx;
 }
 
 function get_each_context_4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[27] = list[i];
 	return child_ctx;
 }
 
 // (86:4) {#each DIRECTIONS as dir}
 function create_each_block_7(ctx) {
 	let td;
-	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[28]] + "";
+	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[27]] + "";
 	let t;
 
 	return {
@@ -22928,7 +24031,7 @@ function create_each_block_7(ctx) {
 // (98:6) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodes.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodes.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -22936,7 +24039,7 @@ function create_each_block_6(ctx) {
 	let dispose;
 
 	function click_handler_1() {
-		return /*click_handler_1*/ ctx[6](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_1*/ ctx[6](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
@@ -22945,7 +24048,7 @@ function create_each_block_6(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodesStr);
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.nodesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -22972,7 +24075,7 @@ function create_each_block_6(ctx) {
 // (119:6) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edges.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edges.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -22980,7 +24083,7 @@ function create_each_block_5(ctx) {
 	let dispose;
 
 	function click_handler_3() {
-		return /*click_handler_3*/ ctx[9](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_3*/ ctx[9](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
@@ -22989,7 +24092,7 @@ function create_each_block_5(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edgesStr);
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Merged.edgesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -23016,7 +24119,7 @@ function create_each_block_5(ctx) {
 // (140:6) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edges.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edges.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -23024,7 +24127,7 @@ function create_each_block_4(ctx) {
 	let dispose;
 
 	function click_handler_5() {
-		return /*click_handler_5*/ ctx[12](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_5*/ ctx[12](/*i*/ ctx[36], /*dir*/ ctx[27]);
 	}
 
 	return {
@@ -23033,7 +24136,7 @@ function create_each_block_4(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edgesStr);
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[36]][/*dir*/ ctx[27]].Implied.edgesStr);
 			attr(td, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -23057,11 +24160,11 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (92:2) {#each userHierarchies as hier, i}
+// (92:2) {#each userHiers as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
-	let t0_value = /*hierStrs*/ ctx[4][/*i*/ ctx[37]] + "";
+	let t0_value = /*hierStrs*/ ctx[4][/*i*/ ctx[36]] + "";
 	let t0;
 	let t1;
 	let td1;
@@ -23099,11 +24202,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func(...args) {
-		return /*func*/ ctx[7](/*i*/ ctx[37], ...args);
+		return /*func*/ ctx[7](/*i*/ ctx[36], ...args);
 	}
 
 	function click_handler_2() {
-		return /*click_handler_2*/ ctx[8](/*i*/ ctx[37]);
+		return /*click_handler_2*/ ctx[8](/*i*/ ctx[36]);
 	}
 
 	let each_value_5 = DIRECTIONS;
@@ -23114,11 +24217,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func_1(...args) {
-		return /*func_1*/ ctx[10](/*i*/ ctx[37], ...args);
+		return /*func_1*/ ctx[10](/*i*/ ctx[36], ...args);
 	}
 
 	function click_handler_4() {
-		return /*click_handler_4*/ ctx[11](/*i*/ ctx[37]);
+		return /*click_handler_4*/ ctx[11](/*i*/ ctx[36]);
 	}
 
 	let each_value_4 = DIRECTIONS;
@@ -23129,11 +24232,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func_2(...args) {
-		return /*func_2*/ ctx[13](/*i*/ ctx[37], ...args);
+		return /*func_2*/ ctx[13](/*i*/ ctx[36], ...args);
 	}
 
 	function click_handler_6() {
-		return /*click_handler_6*/ ctx[14](/*i*/ ctx[37]);
+		return /*click_handler_6*/ ctx[14](/*i*/ ctx[36]);
 	}
 
 	return {
@@ -23183,15 +24286,15 @@ function create_each_block_3(ctx) {
 			attr(td0, "class", "svelte-rb5mhu");
 			attr(td1, "class", "svelte-rb5mhu");
 			attr(td2, "aria-label-position", "left");
-			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Merged", "nodesStr"));
+			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[36], "Merged", "nodesStr"));
 			attr(td2, "class", "svelte-rb5mhu");
 			attr(td3, "class", "svelte-rb5mhu");
 			attr(td4, "aria-label-position", "left");
-			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Merged", "edgesStr"));
+			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[36], "Merged", "edgesStr"));
 			attr(td4, "class", "svelte-rb5mhu");
 			attr(td5, "class", "svelte-rb5mhu");
 			attr(td6, "aria-label-position", "left");
-			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Implied", "edgesStr"));
+			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[36], "Implied", "edgesStr"));
 			attr(td6, "class", "svelte-rb5mhu");
 		},
 		m(target, anchor) {
@@ -23342,15 +24445,15 @@ function create_each_block_2$1(ctx) {
 	let dispose;
 
 	function func_3(...args) {
-		return /*func_3*/ ctx[15](/*dir*/ ctx[28], ...args);
+		return /*func_3*/ ctx[15](/*dir*/ ctx[27], ...args);
 	}
 
 	function func_4(...args) {
-		return /*func_4*/ ctx[16](/*dir*/ ctx[28], ...args);
+		return /*func_4*/ ctx[16](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_7() {
-		return /*click_handler_7*/ ctx[17](/*dir*/ ctx[28]);
+		return /*click_handler_7*/ ctx[17](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -23394,15 +24497,15 @@ function create_each_block_1$5(ctx) {
 	let dispose;
 
 	function func_5(...args) {
-		return /*func_5*/ ctx[18](/*dir*/ ctx[28], ...args);
+		return /*func_5*/ ctx[18](/*dir*/ ctx[27], ...args);
 	}
 
 	function func_6(...args) {
-		return /*func_6*/ ctx[19](/*dir*/ ctx[28], ...args);
+		return /*func_6*/ ctx[19](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_8() {
-		return /*click_handler_8*/ ctx[20](/*dir*/ ctx[28]);
+		return /*click_handler_8*/ ctx[20](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -23446,15 +24549,15 @@ function create_each_block$5(ctx) {
 	let dispose;
 
 	function func_7(...args) {
-		return /*func_7*/ ctx[21](/*dir*/ ctx[28], ...args);
+		return /*func_7*/ ctx[21](/*dir*/ ctx[27], ...args);
 	}
 
 	function func_8(...args) {
-		return /*func_8*/ ctx[22](/*dir*/ ctx[28], ...args);
+		return /*func_8*/ ctx[22](/*dir*/ ctx[27], ...args);
 	}
 
 	function click_handler_9() {
-		return /*click_handler_9*/ ctx[23](/*dir*/ ctx[28]);
+		return /*click_handler_9*/ ctx[23](/*dir*/ ctx[27]);
 	}
 
 	return {
@@ -23528,7 +24631,7 @@ function create_fragment$9(ctx) {
 		each_blocks_4[i] = create_each_block_7(get_each_context_7(ctx, each_value_7, i));
 	}
 
-	let each_value_3 = /*userHierarchies*/ ctx[1];
+	let each_value_3 = /*userHiers*/ ctx[1];
 	let each_blocks_3 = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -23726,7 +24829,7 @@ function create_fragment$9(ctx) {
 			}
 
 			if (dirty[0] & /*cellStr, data, hierStrs*/ 28) {
-				each_value_3 = /*userHierarchies*/ ctx[1];
+				each_value_3 = /*userHiers*/ ctx[1];
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -23837,7 +24940,7 @@ function instance$9($$self, $$props, $$invalidate) {
 	
 	let { plugin } = $$props;
 	const { settings, mainG } = plugin;
-	const { userHierarchies, trailSeperator } = settings;
+	const { userHiers } = settings;
 
 	function fillInInfo(dir, gType, hierData, nodesToo = true) {
 		const gInfo = hierData[dir][gType];
@@ -23848,11 +24951,11 @@ function instance$9($$self, $$props, $$invalidate) {
 		}
 
 		gInfo.edges = gInfo.graph.edges();
-		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${nodesToo || dir !== "same" ? trailSeperator : "⟷"} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
+		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${ARROW_DIRECTIONS[dir]} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
 		gInfo.edgesStr = edgeStrArr.join("\n");
 	}
 
-	const data = settings.userHierarchies.map(hier => {
+	const data = settings.userHiers.map(hier => {
 		const hierData = {
 			//@ts-ignore
 			up: { Merged: {}, Closed: {}, Implied: {} },
@@ -23898,7 +25001,7 @@ function instance$9($$self, $$props, $$invalidate) {
 
 	debug(settings, { data });
 	const cellStr = (i, type, info) => DIRECTIONS.map(dir => data[i][dir][type][info]).join("\n");
-	let hierStrs = userHierarchies.map(hierToStr);
+	let hierStrs = userHiers.map(hierToStr);
 
 	const click_handler = async () => {
 		await plugin.refreshIndex();
@@ -23930,7 +25033,7 @@ function instance$9($$self, $$props, $$invalidate) {
 
 	return [
 		plugin,
-		userHierarchies,
+		userHiers,
 		data,
 		cellStr,
 		hierStrs,
@@ -24067,30 +25170,26 @@ const blankRealNImplied = () => {
     };
 };
 const DEFAULT_SETTINGS = {
-    userHierarchies: [
-        {
-            up: ["up"],
-            same: ["same"],
-            down: ["down"],
-            next: ["next"],
-            prev: ["prev"],
-        },
-    ],
-    indexNotes: [""],
+    aliasesInIndex: false,
+    alphaSortAsc: true,
+    altLinkFields: [],
     CSVPaths: "",
+    debugMode: false,
+    defaultView: true,
+    dvWaitTime: 5000,
+    dotsColour: "#000000",
+    filterImpliedSiblingsOfDifferentTypes: false,
+    limitWriteBCCheckboxStates: {},
+    indexNotes: [""],
     hierarchyNotes: [""],
     HNUpField: "",
     refreshIndexOnActiveLeafChange: false,
-    altLinkFields: [],
     useAllMetadata: true,
     parseJugglLinksWithoutJuggl: false,
-    dvWaitTime: 5000,
     refreshIntervalTime: 0,
-    defaultView: true,
     orderField: "order",
     showNameOrType: true,
     showRelationType: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
     rlLeaf: true,
     showBCs: true,
     showTrail: true,
@@ -24099,14 +25198,21 @@ const DEFAULT_SETTINGS = {
     limitTrailCheckboxStates: {},
     hideTrailField: "hide-trail",
     gridDots: false,
-    dotsColour: "#000000",
     gridHeatmap: false,
     heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     showAll: false,
     noPathMessage: `This note has no real or implied parents`,
     trailSeperator: "→",
     respectReadableLineLength: true,
-    limitWriteBCCheckboxStates: {},
+    userHiers: [
+        {
+            up: ["up"],
+            same: ["same"],
+            down: ["down"],
+            next: ["next"],
+            prev: ["prev"],
+        },
+    ],
     writeBCsInline: false,
     showWriteAllBCsCmd: false,
     visGraph: "Force Directed Graph",
@@ -24114,8 +25220,6 @@ const DEFAULT_SETTINGS = {
     visClosed: "Real",
     visAll: "All",
     wikilinkIndex: true,
-    aliasesInIndex: false,
-    debugMode: false,
     superDebugMode: false,
 };
 
@@ -24464,7 +25568,7 @@ function get_each_context_1$4(ctx, list, i) {
 	return child_ctx;
 }
 
-// (92:6) {#each DIRECTIONS as dir}
+// (93:6) {#each DIRECTIONS as dir}
 function create_each_block_1$4(ctx) {
 	let div;
 	let label;
@@ -24523,7 +25627,7 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (60:2) {#each currHiers as hier, i}
+// (61:2) {#each currHiers as hier, i}
 function create_each_block$4(ctx) {
 	let details;
 	let summary;
@@ -24839,12 +25943,13 @@ function instance$4($$self, $$props, $$invalidate) {
 	};
 
 	
+	
 	let { plugin } = $$props;
-	let currHiers = [...plugin.settings.userHierarchies];
+	let currHiers = [...plugin.settings.userHiers];
 
 	function update(currHiers) {
 		return __awaiter(this, void 0, void 0, function* () {
-			$$invalidate(2, plugin.settings.userHierarchies = currHiers, plugin);
+			$$invalidate(2, plugin.settings.userHiers = currHiers, plugin);
 			yield plugin.saveSettings();
 		});
 	}
@@ -24915,9 +26020,8 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         this.plugin = plugin;
     }
     display() {
-        const plugin = this.plugin;
+        const { plugin, containerEl } = this;
         const { settings } = plugin;
-        const { containerEl } = this;
         containerEl.empty();
         containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
         const fieldDetails = containerEl.createEl("details", {
@@ -24974,7 +26078,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                     await plugin.saveSettings();
                 }
                 else {
-                    const upFields = getFields(settings.userHierarchies, "up");
+                    const upFields = getFields(settings.userHiers, "up");
                     debug(settings, { downFields: upFields, finalValue });
                     if (upFields.includes(finalValue)) {
                         settings.HNUpField = finalValue;
@@ -25115,6 +26219,14 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new obsidian.Setting(MLViewDetails)
+            .setName("Sort Alphabetically Ascending/Descending")
+            .setDesc("Sort square items alphabetically in Ascending (on) or Descending (off) order.")
+            .addToggle((toggle) => toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {
+            settings.alphaSortAsc = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
+        new obsidian.Setting(MLViewDetails)
             .setName("Sorting Field Name")
             .setDesc("The metadata field name used to indicate the order in which items should be sorted in the L/M view.")
             .addText((text) => text.setValue(settings.orderField).onChange(async (value) => {
@@ -25162,7 +26274,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         function drawLimitTrailCheckboxes(div) {
             checkboxDiv.empty();
             const checkboxStates = settings.limitTrailCheckboxStates;
-            settings.userHierarchies.forEach((userHier) => {
+            settings.userHiers.forEach((userHier) => {
                 userHier.up.forEach(async (field) => {
                     if (field === "")
                         return;
@@ -25356,7 +26468,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         function drawLimitWriteBCCheckboxes(div) {
             limitWriteBCCheckboxDiv.empty();
             const checkboxStates = settings.limitWriteBCCheckboxStates;
-            settings.userHierarchies.forEach((userHier) => {
+            settings.userHiers.forEach((userHier) => {
                 DIRECTIONS.forEach((dir) => {
                     var _a;
                     (_a = userHier[dir]) === null || _a === void 0 ? void 0 : _a.forEach(async (field) => {
@@ -34002,9 +35114,9 @@ function instance$3($$self, $$props, $$invalidate) {
 	const { mainG } = plugin;
 
 	const [up, same, down] = [
-		getSubInDir(mainG, "up"),
-		getSubInDir(mainG, "same"),
-		getSubInDir(mainG, "down")
+		getSubInDirs(mainG, "up"),
+		getSubInDirs(mainG, "same"),
+		getSubInDirs(mainG, "down")
 	];
 
 	const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [
@@ -34881,7 +35993,7 @@ function instance$1($$self, $$props, $$invalidate) {
 	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 	const { mainG } = plugin;
 
-	const [up, down] = [getSubInDir(mainG, "up"), getSubInDir(mainG, "down")];
+	const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
 	const closedParents = closeImpliedLinks(up, down);
 	const children = {};
 	allCells.forEach(cell => $$invalidate(3, children[cell] = getOutNeighbours(closedParents, cell).length, children));
@@ -35410,13 +36522,13 @@ class BCPlugin extends obsidian.Plugin {
         await this.loadSettings();
         // Prevent breaking change
         ["prev", "next"].forEach((dir) => {
-            this.settings.userHierarchies.forEach(async (hier, i) => {
+            this.settings.userHiers.forEach(async (hier, i) => {
                 if (hier[dir] === undefined)
-                    this.settings.userHierarchies[i][dir] = [];
+                    this.settings.userHiers[i][dir] = [];
                 await this.saveSettings();
             });
         });
-        const upFields = getFields(this.settings.userHierarchies, "up");
+        const upFields = getFields(this.settings.userHiers, "up");
         for (const field in this.settings.limitTrailCheckboxStates) {
             if (!upFields.includes(field)) {
                 delete this.settings.limitTrailCheckboxStates[field];
@@ -35464,6 +36576,18 @@ class BCPlugin extends obsidian.Plugin {
             id: "Refresh-Breadcrumbs-Index",
             name: "Refresh Breadcrumbs Index",
             callback: async () => await this.refreshIndex(),
+        });
+        this.addCommand({
+            id: "test-traversal",
+            name: "Traverse",
+            hotkeys: [{ key: "a", modifiers: ["Alt"] }],
+            callback: () => {
+                const { basename } = this.app.workspace.getActiveFile();
+                const g = getSubInDirs(this.mainG, "up", "down");
+                const closed = getReflexiveClosure(g, this.settings.userHiers);
+                const onlyUps = getSubInDirs(closed, "up");
+                this.getdfsFromNode(onlyUps, basename);
+            },
         });
         this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
@@ -35515,6 +36639,7 @@ class BCPlugin extends obsidian.Plugin {
         return null;
     }
     async getHierarchyNoteItems(file) {
+        const { settings } = this;
         const { listItems } = this.app.metadataCache.getFileCache(file);
         if (!listItems)
             return [];
@@ -35525,7 +36650,7 @@ class BCPlugin extends obsidian.Plugin {
         const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
         const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
         const problemFields = [];
-        const upFields = getFields(this.settings.userHierarchies, "up");
+        const upFields = getFields(settings.userHiers, "up");
         for (const item of listItems) {
             const currItem = lines[item.position.start.line];
             const afterBulletCurr = afterBulletReg.exec(currItem)[1];
@@ -35563,12 +36688,12 @@ class BCPlugin extends obsidian.Plugin {
         return hierarchyNoteItems;
     }
     // SECTION OneSource
-    populateMain(main, basename, dir, field, targets, neighbours, neighbourObjArr) {
+    populateMain(main, basename, dir, field, targets, neighbour, neighbourObjArr) {
         addNodesIfNot(main, [basename], {
             dir,
             field,
             //@ts-ignore
-            order: neighbours.order,
+            order: neighbour.order,
         });
         targets.forEach((target) => {
             var _a, _b;
@@ -35647,7 +36772,7 @@ class BCPlugin extends obsidian.Plugin {
             }
         }
         debugGroupEnd(settings, "debugMode");
-        const { userHierarchies } = settings;
+        const { userHiers } = settings;
         const mainG = new graphology_umd_min.MultiGraph();
         const useCSV = settings.CSVPaths !== "";
         const CSVRows = useCSV ? await this.getCSVRows() : [];
@@ -35666,13 +36791,13 @@ class BCPlugin extends obsidian.Plugin {
         });
         if (hierarchyNotesArr.length) {
             const { HNUpField } = settings;
-            const upFields = getFields(userHierarchies, "up");
+            const upFields = getFields(userHiers, "up");
             hierarchyNotesArr.forEach((hnItem) => {
                 var _a, _b;
                 if (hnItem.parentNote === null)
                     return;
                 const upField = (_a = hnItem.field) !== null && _a !== void 0 ? _a : (HNUpField || upFields[0]);
-                const downField = (_b = getOppFields(userHierarchies, upField)[0]) !== null && _b !== void 0 ? _b : `${upField}<down>`;
+                const downField = (_b = getOppFields(userHiers, upField)[0]) !== null && _b !== void 0 ? _b : `${upField}<down>`;
                 const aUp = {
                     dir: "up",
                     field: upField,
@@ -35733,6 +36858,11 @@ class BCPlugin extends obsidian.Plugin {
         debug(this.settings, { pathsArr });
         return pathsArr;
     }
+    getdfsFromNode(g, node) {
+        graphologyTraversal.dfsFromNode(g, node, (node, a, depth) => {
+            console.log({ node, a, depth });
+        });
+    }
     getBreadcrumbs(g, currFile) {
         const { basename, extension } = currFile;
         if (extension !== "md")
@@ -35750,19 +36880,19 @@ class BCPlugin extends obsidian.Plugin {
         return sortedTrails;
     }
     getLimitedTrailSub() {
-        const { limitTrailCheckboxStates, userHierarchies } = this.settings;
-        const upFields = getFields(userHierarchies, "up");
-        const downFields = getFields(userHierarchies, "down");
+        const { limitTrailCheckboxStates, userHiers } = this.settings;
+        const upFields = getFields(userHiers, "up");
+        const downFields = getFields(userHiers, "down");
         let subGraph;
         if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
             subGraph = getSubForFields(this.mainG, [...upFields, ...downFields]);
         }
         else {
             const positiveFields = Object.keys(limitTrailCheckboxStates).filter((field) => limitTrailCheckboxStates[field]);
-            const oppFields = positiveFields.map((field) => getOppFields(userHierarchies, field)[0]);
+            const oppFields = positiveFields.map((field) => getOppFields(userHiers, field)[0]);
             subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
         }
-        const closed = getReflexiveClosure(subGraph, userHierarchies);
+        const closed = getReflexiveClosure(subGraph, userHiers);
         return getSubForFields(closed, upFields);
     }
     async drawTrail() {
@@ -35788,9 +36918,7 @@ class BCPlugin extends obsidian.Plugin {
             return;
         }
         const closedUp = this.getLimitedTrailSub();
-        console.log({ closedUp });
         const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
-        console.log({ sortedTrails });
         debug(settings, { sortedTrails });
         const { basename } = currFile;
         const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getRealnImplied(this, basename, "next");
@@ -35854,7 +36982,6 @@ class BCPlugin extends obsidian.Plugin {
     onunload() {
         console.log("unloading");
         VIEWS.forEach((view) => this.app.workspace.detachLeavesOfType(view.type));
-        // Empty trailDiv
         this.visited.forEach((visit) => visit[1].remove());
     }
 }

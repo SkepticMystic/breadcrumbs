@@ -30,10 +30,8 @@ export class BCSettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    const plugin = this.plugin;
+    const { plugin, containerEl } = this;
     const { settings } = plugin;
-    const { containerEl } = this;
-    const { userHierarchies } = settings;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
@@ -98,7 +96,7 @@ export class BCSettingTab extends PluginSettingTab {
             settings.HNUpField = finalValue;
             await plugin.saveSettings();
           } else {
-            const upFields = getFields(settings.userHierarchies, "up");
+            const upFields = getFields(settings.userHiers, "up");
 
             debug(settings, { downFields: upFields, finalValue });
 
@@ -290,6 +288,19 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
+      .setName("Sort Alphabetically Ascending/Descending")
+      .setDesc(
+        "Sort square items alphabetically in Ascending (on) or Descending (off) order."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {
+          settings.alphaSortAsc = value;
+          await plugin.saveSettings();
+          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        })
+      );
+
+    new Setting(MLViewDetails)
       .setName("Sorting Field Name")
       .setDesc(
         "The metadata field name used to indicate the order in which items should be sorted in the L/M view."
@@ -363,7 +374,7 @@ export class BCSettingTab extends PluginSettingTab {
       checkboxDiv.empty();
       const checkboxStates = settings.limitTrailCheckboxStates;
 
-      settings.userHierarchies.forEach((userHier) => {
+      settings.userHiers.forEach((userHier) => {
         userHier.up.forEach(async (field) => {
           if (field === "") return;
           // First sort out limitTrailCheckboxStates
@@ -608,7 +619,7 @@ export class BCSettingTab extends PluginSettingTab {
       limitWriteBCCheckboxDiv.empty();
       const checkboxStates = settings.limitWriteBCCheckboxStates;
 
-      settings.userHierarchies.forEach((userHier) => {
+      settings.userHiers.forEach((userHier) => {
         DIRECTIONS.forEach((dir) => {
           userHier[dir]?.forEach(async (field) => {
             if (field === "") return;

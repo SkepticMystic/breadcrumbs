@@ -336,8 +336,13 @@ export default class MatrixView extends ItemView {
           ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
           : hier[dir].join(", ");
 
+      const { alphaSortAsc } = settings;
       [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) =>
-        a.sort((a, b) => a.order - b.order)
+        a
+          .sort((a, b) =>
+            a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1
+          )
+          .sort((a, b) => a.order - b.order)
       );
 
       return [
