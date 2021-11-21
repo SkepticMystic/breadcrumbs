@@ -5,48 +5,49 @@ import type StatsView from "src/StatsView";
 import type MatrixView from "src/MatrixView";
 
 export interface BCSettings {
-  userHierarchies: userHierarchy[];
-  indexNotes: string[];
-  CSVPaths: string;
-  hierarchyNotes: string[];
-  HNUpField: string;
-  refreshIndexOnActiveLeafChange: boolean;
+  aliasesInIndex: boolean;
+  alphaSortAsc: boolean;
   altLinkFields: string[];
-  useAllMetadata: boolean;
-  parseJugglLinksWithoutJuggl: boolean;
+  CSVPaths: string;
   dvWaitTime: number;
-  refreshIntervalTime: number;
+  debugMode: boolean;
   defaultView: boolean;
-  orderField: string;
-  showNameOrType: boolean;
-  showRelationType: boolean;
-  filterImpliedSiblingsOfDifferentTypes: boolean;
-  rlLeaf: boolean;
-  showBCs: boolean;
-  showTrail: boolean;
-  showGrid: boolean;
-  showPrevNext: boolean;
-  limitTrailCheckboxStates: { [field: string]: boolean };
-  hideTrailField: string;
-  gridDots: boolean;
   dotsColour: string;
+  filterImpliedSiblingsOfDifferentTypes: boolean;
+  gridDots: boolean;
   gridHeatmap: boolean;
   heatmapColour: string;
-  showAll: boolean;
-  noPathMessage: string;
-  trailSeperator: string;
-  respectReadableLineLength: boolean;
+  hideTrailField: string;
+  hierarchyNotes: string[];
+  HNUpField: string;
+  indexNotes: string[];
+  limitTrailCheckboxStates: { [field: string]: boolean };
   limitWriteBCCheckboxStates: { [field: string]: boolean };
-  writeBCsInline: boolean;
+  noPathMessage: string;
+  orderField: string;
+  parseJugglLinksWithoutJuggl: boolean;
+  refreshIndexOnActiveLeafChange: boolean;
+  refreshIntervalTime: number;
+  respectReadableLineLength: boolean;
+  showNameOrType: boolean;
+  showRelationType: boolean;
   showWriteAllBCsCmd: boolean;
+  superDebugMode: boolean;
+  rlLeaf: boolean;
+  showBCs: boolean;
+  showAll: boolean;
+  showGrid: boolean;
+  showPrevNext: boolean;
+  showTrail: boolean;
+  trailSeperator: string;
+  useAllMetadata: boolean;
+  userHiers: UserHier[];
   visGraph: visTypes;
   visRelation: Relations;
   visClosed: string;
   visAll: string;
+  writeBCsInline: boolean;
   wikilinkIndex: boolean;
-  aliasesInIndex: boolean;
-  debugMode: boolean;
-  superDebugMode: boolean;
 }
 
 export interface dvFrontmatterCache {
@@ -62,7 +63,7 @@ export interface dvFrontmatterCache {
 }
 
 export type Directions = "up" | "same" | "down" | "next" | "prev";
-export type userHierarchy = {
+export type UserHier = {
   [dir in Directions]: string[];
 };
 

@@ -16,7 +16,7 @@
   export let plugin: BCPlugin;
 
   const { settings, mainG } = plugin;
-  const { userHierarchies, trailSeperator } = settings;
+  const { userHiers } = settings;
 
   function fillInInfo(
     dir: Directions,
@@ -37,13 +37,13 @@
     const edgeStrArr = gInfo.graph.mapEdges(
       (k, a, s, t) =>
         `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${
-          nodesToo || dir !== "same" ? trailSeperator : "⟷"
+          ARROW_DIRECTIONS[dir]
         } ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`
     );
     gInfo.edgesStr = edgeStrArr.join("\n");
   }
 
-  const data = settings.userHierarchies.map((hier) => {
+  const data = settings.userHiers.map((hier) => {
     const hierData: HierData = {
       //@ts-ignore
       up: { Merged: {}, Closed: {}, Implied: {} },
@@ -101,7 +101,7 @@
     info: "nodesStr" | "edgesStr"
   ) => DIRECTIONS.map((dir) => data[i][dir][type][info]).join("\n");
 
-  let hierStrs: string[] = userHierarchies.map(hierToStr);
+  let hierStrs: string[] = userHiers.map(hierToStr);
 </script>
 
 <table>
@@ -132,7 +132,7 @@
     <td>Total</td>
   </tr>
 
-  {#each userHierarchies as hier, i}
+  {#each userHiers as hier, i}
     <tr>
       <td rowspan="3">
         {hierStrs[i]}
@@ -321,60 +321,6 @@
   </tr>
 </table>
 
-<!-- 
-<table>
-  <thead>
-    <tr>
-      <th scope="col">Measure</th>
-      <th scope="col">Parent</th>
-      <th scope="col">Sibling</th>
-      <th scope="col">Child</th>
-      <th scope="col">Total</th>
-    </tr>
-  </thead>
-
-  <tr>
-    <td><strong>Nodes</strong></td>
-    <td data-tooltip={pRNodesStr} on:click={async () => await copy(pRNodesStr)}
-      >{pRNodes.length}</td
-    >
-    <td data-tooltip={sRNodesStr} on:click={async () => await copy(sRNodesStr)}
-      >{sRNodes.length}</td
-    >
-    <td data-tooltip={cRNodesStr} on:click={async () => await copy(cRNodesStr)}
-      >{cRNodes.length}</td
-    >
-    <td>{pRNodes.length + sRNodes.length + cRNodes.length}</td>
-  </tr>
-
-  <tr>
-    <td><strong>Real Edges</strong></td>
-    <td data-tooltip={pREdgesStr} on:click={async () => await copy(pREdgesStr)}
-      >{pREdges.length}</td
-    >
-    <td data-tooltip={sREdgesStr} on:click={async () => await copy(sREdgesStr)}
-      >{sREdges.length}</td
-    >
-    <td data-tooltip={cREdgesStr} on:click={async () => await copy(cREdgesStr)}
-      >{cREdges.length}</td
-    >
-    <td>{pREdges.length + sREdges.length + cREdges.length}</td>
-  </tr>
-
-  <tr>
-    <td><strong>Implied Edges</strong></td>
-    <td data-tooltip={pIEdgesStr} on:click={async () => await copy(pIEdgesStr)}
-      >{pAEdges.length - pREdges.length}</td
-    >
-    <td data-tooltip={sIEdgesStr} on:click={async () => await copy(sIEdgesStr)}
-      >{sAEdges.length - sREdges.length}</td
-    >
-    <td data-tooltip={cIEdgesStr} on:click={async () => await copy(cIEdgesStr)}
-      >{cAEdges.length - cREdges.length}</td
-    >
-    <td>{pREdges.length + sREdges.length + cREdges.length}</td>
-  </tr>
-</table> -->
 <style>
   table {
     border-collapse: collapse;

@@ -3,7 +3,7 @@
   import type { BCSettings, VisGraphs, visTypes } from "src/interfaces";
   import {
     closeImpliedLinks,
-    getSubInDir,
+    getSubInDirs,
     removeUnlinkedNodes,
   } from "src/sharedFunctions";
   import type { VisModal } from "src/VisModal";
@@ -55,9 +55,9 @@
 
   const { mainG } = plugin;
   const [up, same, down] = [
-    getSubInDir(mainG, "up"),
-    getSubInDir(mainG, "same"),
-    getSubInDir(mainG, "down"),
+    getSubInDirs(mainG, "up"),
+    getSubInDirs(mainG, "same"),
+    getSubInDirs(mainG, "down"),
   ];
 
   const [closedParentNoSingle, closedSiblingNoSingle, closedChildNoSingle] = [

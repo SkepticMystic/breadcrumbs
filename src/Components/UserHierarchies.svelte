@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Notice } from "obsidian";
+  import type { UserHier } from "src";
   import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "src/constants";
   import type BCPlugin from "src/main";
   import { hierToStr, splitAndTrim, swapItems } from "src/sharedFunctions";
@@ -9,9 +10,9 @@
 
   export let plugin: BCPlugin;
 
-  let currHiers = [...plugin.settings.userHierarchies];
-  async function update(currHiers) {
-    plugin.settings.userHierarchies = currHiers;
+  let currHiers = [...plugin.settings.userHiers];
+  async function update(currHiers: UserHier[]) {
+    plugin.settings.userHiers = currHiers;
     await plugin.saveSettings();
   }
 </script>

@@ -1,4 +1,5 @@
 import Graph, { MultiGraph } from "graphology";
+import { dfsFromNode } from "graphology-traversal";
 import {
   addIcon,
   EventRef,
@@ -42,10 +43,10 @@ import {
   getNeighbourObjArr,
   getObsMetadataCache,
   getOppFields,
-  getOutNeighbours,
   getRealnImplied,
   getReflexiveClosure,
   getSubForFields,
+  getSubInDirs,
   writeBCToFile,
 } from "src/sharedFunctions";
 import { VisModal } from "src/VisModal";
@@ -124,12 +125,12 @@ export default class BCPlugin extends Plugin {
 
     // Prevent breaking change
     ["prev", "next"].forEach((dir) => {
-      this.settings.userHierarchies.forEach(async (hier, i) => {
-        if (hier[dir] === undefined) this.settings.userHierarchies[i][dir] = [];
+      this.settings.userHiers.forEach(async (hier, i) => {
+        if (hier[dir] === undefined) this.settings.userHiers[i][dir] = [];
         await this.saveSettings();
       });
     });
-    const upFields = getFields(this.settings.userHierarchies, "up");
+    const upFields = getFields(this.settings.userHiers, "up");
     for (const field in this.settings.limitTrailCheckboxStates) {
       if (!upFields.includes(field)) {
         delete this.settings.limitTrailCheckboxStates[field];
@@ -186,6 +187,18 @@ export default class BCPlugin extends Plugin {
       id: "Refresh-Breadcrumbs-Index",
       name: "Refresh Breadcrumbs Index",
       callback: async () => await this.refreshIndex(),
+    });
+    this.addCommand({
+      id: "test-traversal",
+      name: "Traverse",
+      hotkeys: [{ key: "a", modifiers: ["Alt"] }],
+      callback: () => {
+        const { basename } = this.app.workspace.getActiveFile();
+        const g = getSubInDirs(this.mainG, "up", "down");
+        const closed = getReflexiveClosure(g, this.settings.userHiers);
+        const onlyUps = getSubInDirs(closed, "up");
+        this.getdfsFromNode(onlyUps, basename);
+      },
     });
 
     this.addCommand({
@@ -266,6 +279,7 @@ export default class BCPlugin extends Plugin {
   }
 
   async getHierarchyNoteItems(file: TFile) {
+    const { settings } = this;
     const { listItems } = this.app.metadataCache.getFileCache(file);
     if (!listItems) return [];
 
@@ -280,7 +294,7 @@ export default class BCPlugin extends Plugin {
 
     const problemFields: string[] = [];
 
-    const upFields = getFields(this.settings.userHierarchies, "up");
+    const upFields = getFields(settings.userHiers, "up");
     for (const item of listItems) {
       const currItem = lines[item.position.start.line];
 
@@ -333,14 +347,14 @@ export default class BCPlugin extends Plugin {
     dir: Directions,
     field: string,
     targets: string[],
-    neighbours: neighbourObj,
+    neighbour: neighbourObj,
     neighbourObjArr: neighbourObj[]
   ): void {
     addNodesIfNot(main, [basename], {
       dir,
       field,
       //@ts-ignore
-      order: neighbours.order,
+      order: neighbour.order,
     });
     targets.forEach((target) => {
       addNodesIfNot(main, [target], {
@@ -439,8 +453,7 @@ export default class BCPlugin extends Plugin {
     }
     debugGroupEnd(settings, "debugMode");
 
-    const { userHierarchies } = settings;
-
+    const { userHiers } = settings;
     const mainG = new MultiGraph();
 
     const useCSV = settings.CSVPaths !== "";
@@ -473,14 +486,14 @@ export default class BCPlugin extends Plugin {
 
     if (hierarchyNotesArr.length) {
       const { HNUpField } = settings;
-      const upFields = getFields(userHierarchies, "up");
+      const upFields = getFields(userHiers, "up");
 
       hierarchyNotesArr.forEach((hnItem) => {
         if (hnItem.parentNote === null) return;
 
         const upField = hnItem.field ?? (HNUpField || upFields[0]);
         const downField =
-          getOppFields(userHierarchies, upField)[0] ?? `${upField}<down>`;
+          getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
 
         const aUp = {
           dir: "up",
@@ -551,6 +564,12 @@ export default class BCPlugin extends Plugin {
     return pathsArr;
   }
 
+  getdfsFromNode(g: MultiGraph, node: string) {
+    dfsFromNode(g, node, (node, a, depth) => {
+      console.log({ node, a, depth });
+    });
+  }
+
   getBreadcrumbs(g: Graph, currFile: TFile): string[][] | null {
     const { basename, extension } = currFile;
     if (extension !== "md") return null;
@@ -572,9 +591,9 @@ export default class BCPlugin extends Plugin {
   }
 
   getLimitedTrailSub() {
-    const { limitTrailCheckboxStates, userHierarchies } = this.settings;
-    const upFields = getFields(userHierarchies, "up");
-    const downFields = getFields(userHierarchies, "down");
+    const { limitTrailCheckboxStates, userHiers } = this.settings;
+    const upFields = getFields(userHiers, "up");
+    const downFields = getFields(userHiers, "down");
     let subGraph: MultiGraph;
 
     if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
@@ -584,11 +603,11 @@ export default class BCPlugin extends Plugin {
         (field) => limitTrailCheckboxStates[field]
       );
       const oppFields = positiveFields.map(
-        (field) => getOppFields(userHierarchies, field)[0]
+        (field) => getOppFields(userHiers, field)[0]
       );
       subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
     }
-    const closed = getReflexiveClosure(subGraph, userHierarchies);
+    const closed = getReflexiveClosure(subGraph, userHiers);
     return getSubForFields(closed, upFields);
   }
 
@@ -622,9 +641,7 @@ export default class BCPlugin extends Plugin {
     }
 
     const closedUp = this.getLimitedTrailSub();
-    console.log({ closedUp });
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
-    console.log({ sortedTrails });
     debug(settings, { sortedTrails });
 
     const { basename } = currFile;
@@ -710,7 +727,6 @@ export default class BCPlugin extends Plugin {
     console.log("unloading");
     VIEWS.forEach((view) => this.app.workspace.detachLeavesOfType(view.type));
 
-    // Empty trailDiv
     this.visited.forEach((visit) => visit[1].remove());
   }
 }

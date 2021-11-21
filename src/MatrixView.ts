@@ -6,7 +6,7 @@ import type {
   BCSettings,
   Directions,
   internalLinkObj,
-  userHierarchy,
+  UserHier,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
 import {
@@ -20,7 +20,7 @@ import {
   getRealnImplied,
   getReflexiveClosure,
   getSinks,
-  getSubInDir,
+  getSubInDirs,
   linkClass,
   makeWiki,
 } from "src/sharedFunctions";
@@ -60,8 +60,8 @@ export default class MatrixView extends ItemView {
         const { basename } = this.app.workspace.getActiveFile();
 
         const closedDown = getReflexiveClosure(
-          getSubInDir(mainG, "down"),
-          settings.userHierarchies
+          getSubInDirs(mainG, "down"),
+          settings.userHiers
         );
 
         const allPaths = this.dfsAllPaths(closedDown, basename);
@@ -76,10 +76,10 @@ export default class MatrixView extends ItemView {
       name: "Copy a Global Index to the clipboard",
       callback: async () => {
         const { mainG, settings } = this.plugin;
-        const upSub = getSubInDir(mainG, "up");
+        const upSub = getSubInDirs(mainG, "up");
         const closedDown = getReflexiveClosure(
-          getSubInDir(mainG, "down"),
-          settings.userHierarchies
+          getSubInDirs(mainG, "down"),
+          settings.userHiers
         );
 
         const sinks = getSinks(upSub);
@@ -150,7 +150,8 @@ export default class MatrixView extends ItemView {
     const queue: { node: string; path: string[] }[] = [
       { node: startNode, path: [] },
     ];
-    const pathsArr: string[][] = [];
+    const visited = [];
+    const allPaths: string[][] = [];
 
     let i = 0;
     while (queue.length > 0 && i < 1000) {
@@ -158,15 +159,20 @@ export default class MatrixView extends ItemView {
       const { node, path } = queue.shift();
 
       const extPath = [node, ...path];
-      queue.unshift(
-        ...g.mapOutNeighbors(node, (n: string) => {
-          return { node: n, path: extPath };
-        })
-      );
+      const succsNotVisited = g.hasNode(node)
+        ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+        : [];
+      const newItems = succsNotVisited.map((n) => {
+        return { node: n, path: extPath };
+      });
 
-      if (!g.outDegree(node)) pathsArr.push(extPath);
+      visited.push(...succsNotVisited);
+      queue.unshift(...newItems);
+
+      // if (!g.hasNode(node) || !g.outDegree(node))
+      allPaths.push(extPath);
     }
-    return pathsArr;
+    return allPaths;
   }
 
   createIndex(
@@ -236,19 +242,15 @@ export default class MatrixView extends ItemView {
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
-  getHierSquares(
-    userHierarchies: userHierarchy[],
-    currFile: TFile,
-    settings: BCSettings
-  ) {
+  getHierSquares(userHiers: UserHier[], currFile: TFile, settings: BCSettings) {
     const { plugin } = this;
     const { mainG } = plugin;
     const { basename } = currFile;
-    const up = getSubInDir(mainG, "up");
+    const up = getSubInDirs(mainG, "up");
 
     const realsnImplieds = getRealnImplied(plugin, basename);
 
-    return userHierarchies.map((hier) => {
+    return userHiers.map((hier) => {
       const filteredRealNImplied: {
         [dir in Directions]: {
           reals: internalLinkObj[];
@@ -377,7 +379,7 @@ export default class MatrixView extends ItemView {
 
     debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
 
-    const { userHierarchies } = settings;
+    const { userHiers } = settings;
     const currFile = this.app.workspace.getActiveFile();
 
     contentEl.createEl(
@@ -408,7 +410,7 @@ export default class MatrixView extends ItemView {
     // });
 
     const hierSquares = this.getHierSquares(
-      userHierarchies,
+      userHiers,
       currFile,
       settings
     ).filter((squareArr) =>

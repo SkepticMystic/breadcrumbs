@@ -3,7 +3,7 @@ import type {
   BCSettings,
   Directions,
   Relations,
-  userHierarchy,
+  UserHier,
   ViewInfo,
   visTypes,
 } from "src/interfaces";
@@ -61,7 +61,7 @@ export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
 
-export const blankUserHier = (): userHierarchy => {
+export const blankUserHier = (): UserHier => {
   return { up: [], same: [], down: [], next: [], prev: [] };
 };
 export const blankDirObjs = (): { [dir in Directions]: {} } => {
@@ -85,30 +85,26 @@ export const blankRealNImplied = () => {
 };
 
 export const DEFAULT_SETTINGS: BCSettings = {
-  userHierarchies: [
-    {
-      up: ["up"],
-      same: ["same"],
-      down: ["down"],
-      next: ["next"],
-      prev: ["prev"],
-    },
-  ],
-  indexNotes: [""],
+  aliasesInIndex: false,
+  alphaSortAsc: true,
+  altLinkFields: [],
   CSVPaths: "",
+  debugMode: false,
+  defaultView: true,
+  dvWaitTime: 5000,
+  dotsColour: "#000000",
+  filterImpliedSiblingsOfDifferentTypes: false,
+  limitWriteBCCheckboxStates: {},
+  indexNotes: [""],
   hierarchyNotes: [""],
   HNUpField: "",
   refreshIndexOnActiveLeafChange: false,
-  altLinkFields: [],
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
-  dvWaitTime: 5000,
   refreshIntervalTime: 0,
-  defaultView: true,
   orderField: "order",
   showNameOrType: true,
   showRelationType: true,
-  filterImpliedSiblingsOfDifferentTypes: false,
   rlLeaf: true,
   showBCs: true,
   showTrail: true,
@@ -117,7 +113,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   limitTrailCheckboxStates: {},
   hideTrailField: "hide-trail",
   gridDots: false,
-  dotsColour: "#000000",
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
@@ -126,7 +121,15 @@ export const DEFAULT_SETTINGS: BCSettings = {
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   respectReadableLineLength: true,
-  limitWriteBCCheckboxStates: {},
+  userHiers: [
+    {
+      up: ["up"],
+      same: ["same"],
+      down: ["down"],
+      next: ["next"],
+      prev: ["prev"],
+    },
+  ],
   writeBCsInline: false,
   showWriteAllBCsCmd: false,
   visGraph: "Force Directed Graph",
@@ -134,7 +137,5 @@ export const DEFAULT_SETTINGS: BCSettings = {
   visClosed: "Real",
   visAll: "All",
   wikilinkIndex: true,
-  aliasesInIndex: false,
-  debugMode: false,
   superDebugMode: false,
 };

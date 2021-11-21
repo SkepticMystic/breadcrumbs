@@ -6,7 +6,7 @@
   import {
     closeImpliedLinks,
     getOutNeighbours,
-    getSubInDir,
+    getSubInDirs,
     linkClass,
     normalise,
     openOrSwitch,
@@ -44,7 +44,7 @@
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 
   const { mainG } = plugin;
-  const [up, down] = [getSubInDir(mainG, "up"), getSubInDir(mainG, "down")];
+  const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
 
   const closedParents = closeImpliedLinks(up, down);
 

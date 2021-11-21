@@ -28,7 +28,7 @@ import type {
   MetaeditApi,
   neighbourObj,
   RealNImplied,
-  userHierarchy,
+  UserHier,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
 import type MatrixView from "src/MatrixView";
@@ -144,7 +144,7 @@ export async function getJugglLinks(
   debug(settings, "Using Juggl");
 
   const files = app.vault.getMarkdownFiles();
-  const { userHierarchies } = settings;
+  const { userHiers } = settings;
 
   // Add Juggl links
   const typedLinksArr: JugglLink[] = await Promise.all(
@@ -176,7 +176,7 @@ export async function getJugglLinks(
         const type = parsedLinks?.properties?.type ?? "";
         let typeDir: Directions | "" = "";
         DIRECTIONS.forEach((dir) => {
-          userHierarchies.forEach((hier) => {
+          userHiers.forEach((hier) => {
             if (hier[dir]?.includes(type)) {
               typeDir = dir;
               return;
@@ -196,7 +196,7 @@ export async function getJugglLinks(
 
   debug(settings, { typedLinksArr });
 
-  const allFields = getFields(userHierarchies);
+  const allFields = getFields(userHiers);
 
   const filteredLinks = typedLinksArr.map((jugglLink) => {
     // Filter out links whose type is not in allFields
@@ -308,7 +308,7 @@ export async function getNeighbourObjArr(
   fileFrontmatterArr: dvFrontmatterCache[]
 ): Promise<neighbourObj[]> {
   const { settings } = plugin;
-  const { userHierarchies } = settings;
+  const { userHiers } = settings;
 
   if (settings.debugMode || settings.superDebugMode) {
     console.groupCollapsed("getNeighbourObjArr");
@@ -334,7 +334,7 @@ export async function getNeighbourObjArr(
         hierarchies: [],
       };
 
-      userHierarchies.forEach((hier) => {
+      userHiers.forEach((hier) => {
         const newHier: HierarchyFields = blankDirObjs();
 
         // Add regular metadata links
@@ -589,14 +589,14 @@ export function getAllGsInDir(hierGs: HierarchyGraphs[], dir: Directions) {
   return allGsInDir;
 }
 /**
- * Return a subgraph of all nodes & edges with `a.dir`
+ * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
  * @param  {MultiGraph} main
  * @param  {Directions} dir
  */
-export function getSubInDir(main: MultiGraph, dir: Directions) {
+export function getSubInDirs(main: MultiGraph, ...dirs: Directions[]) {
   const sub = new MultiGraph();
   main.forEachEdge((k, a, s, t) => {
-    if (a.dir === dir) {
+    if (dirs.includes(a.dir)) {
       //@ts-ignore
       addNodesIfNot(sub, [s, t], a);
       sub.addEdge(s, t, a);
@@ -626,21 +626,30 @@ export function getSubForFields(main: MultiGraph, fields: string[]) {
  *
  * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
  * @param  {MultiGraph} g
+ * @param  {UserHier[]} userHiers
+ * @param  {boolean} closeAsOpposite
  */
 export function getReflexiveClosure(
   g: MultiGraph,
-  userHierarchies: userHierarchy[]
+  userHiers: UserHier[],
+  closeAsOpposite = true
 ): MultiGraph {
   const copy = g.copy();
   copy.forEachEdge((k, a, s, t) => {
     const { dir, field } = a;
     const oppDir = getOppDir(dir);
-    const oppField = getOppFields(userHierarchies, field)[0];
+    const oppField = getOppFields(userHiers, field)[0];
 
-    //@ts-ignore
-    addNodesIfNot(copy, [s, t], { dir: oppDir, field: oppField });
-    //@ts-ignore
-    addEdgeIfNot(copy, t, s, { dir: oppDir, field: oppField });
+    addNodesIfNot(copy, [s, t], {
+      //@ts-ignore
+      dir: closeAsOpposite ? oppDir : dir,
+      field: closeAsOpposite ? oppField : field,
+    });
+    addEdgeIfNot(copy, t, s, {
+      //@ts-ignore
+      dir: closeAsOpposite ? oppDir : dir,
+      field: closeAsOpposite ? oppField : field,
+    });
   });
   return copy;
 }
@@ -648,15 +657,15 @@ export function getReflexiveClosure(
 /**
  * Get all the fields in `dir`.
  * Returns all fields if `dir === 'all'`
- * @param  {userHierarchy[]} userHierarchies
+ * @param  {UserHier[]} userHiers
  * @param  {Directions|"all"} dir
  */
 export function getFields(
-  userHierarchies: userHierarchy[],
+  userHiers: UserHier[],
   dir: Directions | "all" = "all"
 ) {
   const fields: string[] = [];
-  userHierarchies.forEach((hier) => {
+  userHiers.forEach((hier) => {
     if (dir === "all") {
       DIRECTIONS.forEach((eachDir) => {
         fields.push(...hier[eachDir]);
@@ -668,7 +677,7 @@ export function getFields(
   return fields;
 }
 
-export const hierToStr = (hier: userHierarchy) =>
+export const hierToStr = (hier: UserHier) =>
   DIRECTIONS.map(
     (dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`
   ).join("\n");
@@ -773,11 +782,11 @@ function splitAtYaml(content: string): [string, string] {
 /**
  *  Get the hierarchy and direction that `field` is in
  * */
-export function getFieldInfo(userHierarchies: userHierarchy[], field: string) {
+export function getFieldInfo(userHiers: UserHier[], field: string) {
   let fieldDir: Directions;
-  let fieldHier: userHierarchy;
+  let fieldHier: UserHier;
   DIRECTIONS.forEach((dir) => {
-    userHierarchies.forEach((hier) => {
+    userHiers.forEach((hier) => {
       if (hier[dir].includes(field)) {
         fieldDir = dir;
         fieldHier = hier;
@@ -788,8 +797,8 @@ export function getFieldInfo(userHierarchies: userHierarchy[], field: string) {
   return { fieldHier, fieldDir };
 }
 
-export function getOppFields(userHierarchies: userHierarchy[], field: string) {
-  const { fieldHier, fieldDir } = getFieldInfo(userHierarchies, field);
+export function getOppFields(userHiers: UserHier[], field: string) {
+  const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
   const oppDir = getOppDir(fieldDir);
   return fieldHier[oppDir];
 }
@@ -841,11 +850,11 @@ export function getRealnImplied(
   dir: Directions = null
 ): RealNImplied {
   const realsnImplieds: RealNImplied = blankRealNImplied();
-  const { userHierarchies } = plugin.settings;
+  const { userHiers } = plugin.settings;
 
   plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
     const { field, dir: edgeDir } = a;
-    const oppField = getOppFields(userHierarchies, field)[0];
+    const oppField = getOppFields(userHiers, field)[0];
 
     (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
       const oppDir = getOppDir(currDir);
