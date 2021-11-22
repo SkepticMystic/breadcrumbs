@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.1...1.7.2) (2021-11-22)
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Handle top item ([9e738c4](https://github.com/SkepticMystic/breadcrumbs/commit/9e738c43666c90b489f669dca2ca2d834a16f41b))
+
 ### [1.7.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.0...1.7.1) (2021-11-21)
 
 
