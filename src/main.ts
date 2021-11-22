@@ -487,30 +487,37 @@ export default class BCPlugin extends Plugin {
       const { HNUpField } = settings;
       const upFields = getFields(userHiers, "up");
 
-      hierarchyNotesArr.forEach((hnItem) => {
-        if (hnItem.parentNote === null) return;
-
+      hierarchyNotesArr.forEach((hnItem, i) => {
         const upField = hnItem.field ?? (HNUpField || upFields[0]);
         const downField =
           getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
 
-        const aUp = {
-          dir: "up",
-          field: upField,
-        };
-        //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
-        //@ts-ignore
-        addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
+        if (hnItem.parentNote === null) {
+          const s = hnItem.currNote;
+          const t = hierarchyNotesArr[i + 1].currNote;
+          //@ts-ignore
+          addNodesIfNot(mainG, [s, t], { dir: "down", field: downField });
+          //@ts-ignore
+          addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+        } else {
+          const aUp = {
+            dir: "up",
+            field: upField,
+          };
+          //@ts-ignore
+          addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+          //@ts-ignore
+          addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
 
-        const aDown = {
-          dir: "down",
-          field: downField,
-        };
-        //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
-        //@ts-ignore
-        addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+          const aDown = {
+            dir: "down",
+            field: downField,
+          };
+          //@ts-ignore
+          addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+          //@ts-ignore
+          addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+        }
       });
     }
 
