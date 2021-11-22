@@ -1,7 +1,10 @@
 <script lang="ts">
   import { range } from "lodash";
   import type { App } from "obsidian";
-  import { hoverPreview } from "obsidian-community-lib/dist/utils";
+  import {
+    hoverPreview,
+    openOrSwitch,
+  } from "obsidian-community-lib/dist/utils";
   import type BCPlugin from "src/main";
   import {
     closeImpliedLinks,
@@ -9,7 +12,6 @@
     getSubInDirs,
     linkClass,
     normalise,
-    openOrSwitch,
     padArray,
     runs,
     transpose,
@@ -107,7 +109,7 @@
               children[step.value] * 200 + 55
             ).toString(16)}`
           : ''}"
-        on:click={(e) => openOrSwitch(app, step.value, currFile, e)}
+        on:click={(e) => openOrSwitch(app, step.value, e)}
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
         <div class={linkClass(app, step.value)}>

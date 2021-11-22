@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import { openOrSwitch } from "src/sharedFunctions";
+import { openOrSwitch } from "obsidian-community-lib";
 import type { d3Node } from "src/interfaces";
 import { graphlibToD3, VisModal } from "src/VisModal";
 import type { App, TFile } from "obsidian";
@@ -174,8 +174,7 @@ export const forceDirectedG = (
   node.attr("aria-label", (d: d3Node) => d.name);
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    const currFile = app.workspace.getActiveFile();
-    openOrSwitch(app, dest, currFile, event);
+    openOrSwitch(app, dest, event);
     modal.close();
   };
   node.on("click", (event: MouseEvent, d: d3Node) => {

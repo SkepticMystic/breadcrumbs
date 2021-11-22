@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { App, TFile } from "obsidian";
+  import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import type { BCSettings, SquareProps } from "src/interfaces";
   import type MatrixView from "src/MatrixView";
-  import { hoverPreview, openOrSwitch } from "src/sharedFunctions";
 
   export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;
@@ -32,8 +32,7 @@
                   <li>
                     <div
                       class={realItem.cls}
-                      on:click={async (e) =>
-                        openOrSwitch(app, realItem.to, currFile, e)}
+                      on:click={async (e) => openOrSwitch(app, realItem.to, e)}
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, realItem.to)}
                     >
@@ -58,7 +57,7 @@
                     <div
                       class={impliedItem.cls}
                       on:click={async (e) =>
-                        openOrSwitch(app, impliedItem.to, currFile, e)}
+                        openOrSwitch(app, impliedItem.to, e)}
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, impliedItem.to)}
                     >

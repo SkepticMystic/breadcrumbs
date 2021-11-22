@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
 import type { App, TFile } from "obsidian";
-import { openOrSwitch } from "src/sharedFunctions";
+import { openOrSwitch } from "obsidian-community-lib";
 import type { VisModal } from "src/VisModal";
 import { dfsFlatAdjList } from "src/VisModal";
 
@@ -93,7 +93,7 @@ export const treeMap = (
   //   // .text((d) => d);
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    openOrSwitch(app, dest, currFile, event);
+    openOrSwitch(app, dest, event);
     modal.close();
   };
   leaf.on("click", (event: MouseEvent, d) => {

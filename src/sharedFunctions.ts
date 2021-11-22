@@ -1,17 +1,9 @@
 import type Attributes from "graphology";
 import Graph, { MultiGraph } from "graphology";
-import { parseTypedLink } from "juggl-api";
-import {
-  App,
-  FrontMatterCache,
-  Notice,
-  Pos,
-  TFile,
-  WorkspaceLeaf,
-} from "obsidian";
+import type { App, FrontMatterCache, TFile } from "obsidian";
+import { isInVault } from "obsidian-community-lib";
 import {
   ARROW_DIRECTIONS,
-  blankDirObjs,
   blankRealNImplied,
   DIRECTIONS,
   dropHeaderOrAlias,
@@ -20,19 +12,11 @@ import {
 import type {
   BCSettings,
   Directions,
-  dvFrontmatterCache,
-  dvLink,
-  HierarchyFields,
-  HierarchyGraphs,
-  JugglLink,
   MetaeditApi,
-  neighbourObj,
   RealNImplied,
   UserHier,
 } from "src/interfaces";
 import type BCPlugin from "src/main";
-import type MatrixView from "src/MatrixView";
-import util from "util";
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);
@@ -532,21 +516,10 @@ export function permute(permutation: any[]): any[][] {
   return result;
 }
 
-export function dropMD(path: string) {
-  return path.split(".md", 1)[0];
-}
-
-export const range = (n: number) => [...Array(5).keys()];
+export const range = (n: number) => [...Array(n).keys()];
 
 export function complement<T>(A: T[], B: T[]) {
   return A.filter((a) => !B.includes(a));
-}
-
-export async function copy(content: string) {
-  await navigator.clipboard.writeText(content).then(
-    () => new Notice("Copied to clipboard"),
-    () => new Notice("Could not copy to clipboard")
-  );
 }
 
 export function makeWiki(wikiQ: boolean, str: string) {
@@ -558,20 +531,6 @@ export function makeWiki(wikiQ: boolean, str: string) {
   return copy;
 }
 
-export function mergeGs(...graphs: Graph[]) {
-  const outG = new Graph();
-
-  graphs.forEach((g) => {
-    g.forEachNode((node, a) => {
-      outG.mergeNode(node, a);
-    });
-    g.forEachEdge((key, a, s, t) => {
-      outG.mergeEdge(s, t, a);
-    });
-  });
-  return outG;
-}
-
 export function removeUnlinkedNodes(g: Graph) {
   const copy = g.copy();
   copy.forEachNode((node) => {
@@ -580,14 +539,6 @@ export function removeUnlinkedNodes(g: Graph) {
   return copy;
 }
 
-export function getAllGsInDir(hierGs: HierarchyGraphs[], dir: Directions) {
-  const target = {};
-  const allGsInDir: { [field: string]: Graph } = Object.assign(
-    target,
-    ...hierGs.map((hierGs) => hierGs[dir])
-  );
-  return allGsInDir;
-}
 /**
  * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
  * @param  {MultiGraph} main
@@ -632,7 +583,7 @@ export function getSubForFields(main: MultiGraph, fields: string[]) {
 export function getReflexiveClosure(
   g: MultiGraph,
   userHiers: UserHier[],
-  closeAsOpposite = true
+  closeAsOpposite: boolean = true
 ): MultiGraph {
   const copy = g.copy();
   copy.forEachEdge((k, a, s, t) => {

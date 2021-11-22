@@ -1,15 +1,16 @@
 <script lang="ts">
   import type { App } from "obsidian";
-  import { hoverPreview } from "obsidian-community-lib/dist/utils";
+  import {
+    hoverPreview,
+    openOrSwitch,
+  } from "obsidian-community-lib/dist/utils";
   import type BCPlugin from "src/main";
-  import { openOrSwitch } from "src/sharedFunctions";
 
   export let sortedTrails: string[][];
   export let app: App;
   export let plugin: BCPlugin;
 
   const { settings } = plugin;
-  const currFile = app.workspace.getActiveFile();
   const { view } = app.workspace.activeLeaf;
 
   let showAll = settings.showAll;
@@ -27,8 +28,7 @@
           {#each trail as crumb, i}
             <span
               class="internal-link BC-Link"
-              on:click={async (e) =>
-                await openOrSwitch(app, crumb, currFile, e)}
+              on:click={async (e) => await openOrSwitch(app, crumb, e)}
               on:mouseover={(e) => hoverPreview(e, view, crumb)}
             >
               {crumb}
