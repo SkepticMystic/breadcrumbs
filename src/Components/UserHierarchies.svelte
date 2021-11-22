@@ -93,7 +93,12 @@
             name={dir}
             value={hier[dir]?.join(", ") ?? ""}
             on:change={async (e) => {
-              currHiers[i][dir] = splitAndTrim(e.target.value);
+              const { value } = e.target;
+              if (value === "") {
+                currHiers[i][dir] = [];
+              } else {
+                currHiers[i][dir] = splitAndTrim(value);
+              }
               await update(currHiers);
             }}
           />

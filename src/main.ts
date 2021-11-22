@@ -970,6 +970,7 @@ export default class BCPlugin extends Plugin {
     const { limitTrailCheckboxStates, userHiers } = this.settings;
     const upFields = getFields(userHiers, "up");
     const downFields = getFields(userHiers, "down");
+
     let subGraph: MultiGraph;
 
     if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
@@ -978,9 +979,9 @@ export default class BCPlugin extends Plugin {
       const positiveFields = Object.keys(limitTrailCheckboxStates).filter(
         (field) => limitTrailCheckboxStates[field]
       );
-      const oppFields = positiveFields.map(
-        (field) => getOppFields(userHiers, field)[0]
-      );
+      const oppFields = positiveFields
+        .map((field) => getOppFields(userHiers, field)[0])
+        .filter((field) => field !== undefined);
       subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
     }
 

@@ -231,6 +231,7 @@ export function getReflexiveClosure(
   const copy = g.copy();
   copy.forEachEdge((k, a, s, t) => {
     const { dir, field } = a;
+    if (field === undefined) return;
     const oppDir = getOppDir(dir);
     const oppField = getOppFields(userHiers, field)[0];
 
