@@ -36566,18 +36566,20 @@ class BCPlugin extends obsidian.Plugin {
                 const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
                 const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
                 const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
-                let typeDir = "";
-                DIRECTIONS.forEach((dir) => {
-                    userHiers.forEach((hier) => {
-                        var _a;
-                        if ((_a = hier[dir]) === null || _a === void 0 ? void 0 : _a.includes(field)) {
-                            typeDir = dir;
-                            return;
-                        }
-                    });
-                });
+                const { fieldDir } = getFieldInfo(userHiers, field);
+                if (!fieldDir)
+                    return;
+                // const fields = getFields(userHiers);
+                // DIRECTIONS.forEach((dir) => {
+                //   userHiers.forEach((hier) => {
+                //     if (hier[dir]?.includes(field)) {
+                //       typeDir = dir;
+                //       return;
+                //     }
+                //   });
+                // });
                 jugglLink.links.push({
-                    dir: typeDir,
+                    dir: fieldDir,
                     field,
                     linksInLine,
                 });

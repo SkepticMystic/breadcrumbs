@@ -48,6 +48,7 @@ import {
   debugGroupEnd,
   debugGroupStart,
   getBasename,
+  getFieldInfo,
   getFields,
   getInNeighbours,
   getOppFields,
@@ -642,18 +643,21 @@ export default class BCPlugin extends Plugin {
           const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
 
           const field = parsedLinks?.properties?.type ?? "";
-          let typeDir: Directions | "" = "";
-          DIRECTIONS.forEach((dir) => {
-            userHiers.forEach((hier) => {
-              if (hier[dir]?.includes(field)) {
-                typeDir = dir;
-                return;
-              }
-            });
-          });
+          const { fieldDir } = getFieldInfo(userHiers, field);
+          if (!fieldDir) return;
+
+          // const fields = getFields(userHiers);
+          // DIRECTIONS.forEach((dir) => {
+          //   userHiers.forEach((hier) => {
+          //     if (hier[dir]?.includes(field)) {
+          //       typeDir = dir;
+          //       return;
+          //     }
+          //   });
+          // });
 
           jugglLink.links.push({
-            dir: typeDir,
+            dir: fieldDir,
             field,
             linksInLine,
           });
