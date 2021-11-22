@@ -1,17 +1,22 @@
 import Graph, { MultiGraph } from "graphology";
 import { dfsFromNode } from "graphology-traversal";
+import { parseTypedLink } from "juggl-api";
+import { cloneDeep } from "lodash";
 import {
   addIcon,
   EventRef,
+  FrontMatterCache,
   MarkdownView,
   normalizePath,
   Notice,
   Plugin,
+  Pos,
   TFile,
   WorkspaceLeaf,
 } from "obsidian";
 import {
   addFeatherIcon,
+  copy,
   openView,
   wait,
 } from "obsidian-community-lib/dist/utils";
@@ -19,7 +24,9 @@ import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
   DIRECTIONS,
+  dropHeaderOrAlias,
   MATRIX_VIEW,
+  splitLinksRegex,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEWS,
@@ -28,28 +35,33 @@ import type {
   BCSettings,
   Directions,
   dvFrontmatterCache,
+  dvLink,
   HierarchyNoteItem,
+  JugglLink,
   MyView,
-  neighbourObj,
+  RawValue,
 } from "src/interfaces";
 import {
   addEdgeIfNot,
   addNodesIfNot,
-  debug,
+  createOrUpdateYaml,
   debugGroupEnd,
   debugGroupStart,
-  getDVMetadataCache,
+  getBasename,
   getFields,
-  getNeighbourObjArr,
-  getObsMetadataCache,
+  getInNeighbours,
   getOppFields,
   getRealnImplied,
   getReflexiveClosure,
+  getSinks,
   getSubForFields,
   getSubInDirs,
-  writeBCToFile,
+  iterateHiers,
+  makeWiki,
+  splitAtYaml,
 } from "src/sharedFunctions";
 import { VisModal } from "src/VisModal";
+import util from "util";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
@@ -64,15 +76,9 @@ export default class BCPlugin extends Plugin {
 
   async refreshIndex() {
     if (!this.activeLeafChange) this.registerActiveLeafEvent();
-
     this.mainG = await this.initGraphs();
-
-    for (const view of VIEWS) {
-      await this.getActiveTYPEView(view.type)?.draw();
-    }
-
+    for (const view of VIEWS) await this.getActiveTYPEView(view.type)?.draw();
     if (this.settings.showTrail) await this.drawTrail();
-
     new Notice("Index refreshed");
   }
 
@@ -104,17 +110,6 @@ export default class BCPlugin extends Plugin {
     if (settings.showBCs) await this.drawTrail();
 
     this.registerActiveLeafEvent();
-
-    // if (settings.refreshIntervalTime > 0) {
-    //   this.refreshIntervalID = window.setInterval(async () => {
-    //     this.mainG = await this.initGraphs();
-    //     if (settings.showBCs) await this.drawTrail();
-
-    //     const activeView = this.getActiveTYPEView(MATRIX_VIEW);
-    //     if (activeView) await activeView.draw();
-    //   }, settings.refreshIntervalTime * 1000);
-    //   this.registerInterval(this.refreshIntervalID);
-    // }
   };
 
   async onload(): Promise<void> {
@@ -206,19 +201,14 @@ export default class BCPlugin extends Plugin {
       name: "Write Breadcrumbs to Current File",
       callback: async () => {
         const currFile = this.app.workspace.getActiveFile();
-        await writeBCToFile(
-          this.app,
-          this,
-          currFile,
-          this.settings.writeBCsInline
-        );
+        await this.writeBCToFile(currFile);
       },
     });
 
     this.addCommand({
       id: "Write-Breadcrumbs-to-All-Files",
       name: "Write Breadcrumbs to **ALL** Files",
-      callback: () => {
+      callback: async () => {
         const first = window.confirm(
           "This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**."
         );
@@ -232,17 +222,8 @@ export default class BCPlugin extends Plugin {
             );
             if (third) {
               try {
-                this.app.vault
-                  .getMarkdownFiles()
-                  .forEach(
-                    async (file) =>
-                      await writeBCToFile(
-                        this.app,
-                        this,
-                        file,
-                        this.settings.writeBCsInline
-                      )
-                  );
+                const files = this.app.vault.getMarkdownFiles();
+                for (const file of files) await this.writeBCToFile(file);
                 new Notice("Operation Complete");
               } catch (error) {
                 new Notice(error);
@@ -255,6 +236,48 @@ export default class BCPlugin extends Plugin {
       checkCallback: () => this.settings.showWriteAllBCsCmd,
     });
 
+    this.addCommand({
+      id: "local-index",
+      name: "Copy a Local Index to the clipboard",
+      callback: async () => {
+        const { settings, mainG } = this;
+        const { basename } = this.app.workspace.getActiveFile();
+
+        const g = getSubInDirs(mainG, "up", "down");
+        const closed = getReflexiveClosure(g, settings.userHiers);
+        const onlyDowns = getSubInDirs(closed, "down");
+
+        const allPaths = this.dfsAllPaths(onlyDowns, basename);
+        const index = this.createIndex(allPaths);
+        this.debug({ index });
+        await copy(index);
+      },
+    });
+
+    this.addCommand({
+      id: "global-index",
+      name: "Copy a Global Index to the clipboard",
+      callback: async () => {
+        const { mainG, settings } = this;
+
+        const g = getSubInDirs(mainG, "up", "down");
+        const closed = getReflexiveClosure(g, settings.userHiers);
+        const onlyDowns = getSubInDirs(closed, "down");
+
+        const sinks = getSinks(mainG);
+
+        let globalIndex = "";
+        sinks.forEach((terminal) => {
+          globalIndex += terminal + "\n";
+          const allPaths = this.dfsAllPaths(onlyDowns, terminal);
+          globalIndex += this.createIndex(allPaths) + "\n";
+        });
+
+        this.debug({ globalIndex });
+        await copy(globalIndex);
+      },
+    });
+
     this.addRibbonIcon(
       addFeatherIcon("tv") as string,
       "Breadcrumbs Visualisation",
@@ -265,6 +288,45 @@ export default class BCPlugin extends Plugin {
 
     this.addSettingTab(new BCSettingTab(this.app, this));
   }
+
+  debug(log: any): void {
+    if (this.settings.debugMode) console.log(log);
+  }
+
+  superDebug(log: any): void {
+    if (this.settings.superDebugMode) console.log(log);
+  }
+
+  writeBCToFile = async (file: TFile) => {
+    const { app, settings, mainG } = this;
+    const { limitWriteBCCheckboxStates, writeBCsInline } = settings;
+
+    const { frontmatter } = app.metadataCache.getFileCache(file);
+    const api = app.plugins.plugins.metaedit?.api;
+
+    if (!api) {
+      new Notice("Metaedit must be enabled for this function to work");
+      return;
+    }
+
+    const succs = getInNeighbours(mainG, file.basename);
+
+    for (const succ of succs) {
+      const { field } = mainG.getNodeAttributes(succ);
+      if (!limitWriteBCCheckboxStates[field]) return;
+
+      if (!writeBCsInline) {
+        await createOrUpdateYaml(field, succ, file, frontmatter, api);
+      } else {
+        // TODO Check if this note already has this field
+        let content = await app.vault.read(file);
+        const splits = splitAtYaml(content);
+        content = splits[0] + `\n${field}:: [[${succ}]]` + splits[1];
+
+        await app.vault.modify(file, content);
+      }
+    }
+  };
 
   getActiveTYPEView(type: string): MyView | null {
     const { constructor } = VIEWS.find((view) => view.type === type);
@@ -302,7 +364,7 @@ export default class BCPlugin extends Plugin {
       let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
       // Ensure fieldName is one of the existing up fields. `null` if not
-      if (!upFields.includes(fieldCurr)) {
+      if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
         problemFields.push(fieldCurr);
         fieldCurr = null;
       }
@@ -338,6 +400,50 @@ export default class BCPlugin extends Plugin {
     return hierarchyNoteItems;
   }
 
+  getDVMetadataCache(files: TFile[]) {
+    const { settings, app } = this;
+    debugGroupStart(settings, "debugMode", "getDVMetadataCache");
+    this.debug("Using Dataview");
+    debugGroupStart(settings, "superDebugMode", "dvCaches");
+
+    const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
+      this.superDebug(`GetDVMetadataCache: ${file.basename}`);
+
+      const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
+        file.path
+      );
+
+      this.superDebug({ dvCache });
+      return dvCache;
+    });
+
+    debugGroupEnd(settings, "superDebugMode");
+    this.debug({ fileFrontmatterArr });
+    debugGroupEnd(settings, "debugMode");
+    return fileFrontmatterArr;
+  }
+
+  getObsMetadataCache(files: TFile[]) {
+    const { settings, app } = this;
+    debugGroupStart(settings, "debugMode", "getObsMetadataCache");
+    this.debug("Using Obsidian");
+    debugGroupStart(settings, "superDebugMode", "obsCaches");
+
+    const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
+      this.superDebug(`GetObsMetadataCache: ${file.basename}`);
+      const obs: FrontMatterCache =
+        app.metadataCache.getFileCache(file)?.frontmatter;
+      this.superDebug({ obs });
+      if (obs) return { file, ...obs };
+      else return { file };
+    });
+
+    debugGroupEnd(settings, "superDebugMode");
+    this.debug({ fileFrontmatterArr });
+    debugGroupEnd(settings, "debugMode");
+    return fileFrontmatterArr;
+  }
+
   // SECTION OneSource
 
   populateMain(
@@ -346,25 +452,25 @@ export default class BCPlugin extends Plugin {
     dir: Directions,
     field: string,
     targets: string[],
-    neighbour: neighbourObj,
-    neighbourObjArr: neighbourObj[]
+    sourceOrder: number,
+    fileFrontmatterArr: dvFrontmatterCache[]
   ): void {
     addNodesIfNot(main, [basename], {
+      //@ts-ignore
       dir,
       field,
-      //@ts-ignore
-      order: neighbour.order,
+      order: sourceOrder,
     });
     targets.forEach((target) => {
+      const targetOrder =
+        parseInt(
+          fileFrontmatterArr.find((arr) => arr.file.basename === target)?.order
+        ) ?? 9999;
       addNodesIfNot(main, [target], {
+        //@ts-ignore
         dir,
         field,
-        //@ts-ignore
-        order:
-          neighbourObjArr.find(
-            (neighbour) =>
-              (neighbour.current.basename || neighbour.current.name) === target
-          )?.order ?? 9999,
+        order: targetOrder,
       });
       addEdgeIfNot(main, basename, target, {
         //@ts-ignore
@@ -411,10 +517,159 @@ export default class BCPlugin extends Plugin {
       addNodesIfNot(g, [row.file], { dir, field });
       if (field === "" || !row[field]) return;
 
+      //@ts-ignore
       addNodesIfNot(g, [row[field]], { dir, field });
       //@ts-ignore
       addEdgeIfNot(g, row.file, row[field], { dir, field });
     });
+  }
+
+  /**
+   * Keep unwrapping a proxied item until it isn't one anymore
+   * @param  {RawValue} item
+   */
+  unproxy(item: RawValue) {
+    const unproxied = [];
+
+    const queue = [item];
+    while (queue.length) {
+      const currItem = queue.shift();
+      if (util.types.isProxy(currItem)) {
+        const possibleUnproxied = Object.assign({}, currItem);
+        const { values } = possibleUnproxied;
+        if (values) queue.push(...values);
+        else unproxied.push(possibleUnproxied);
+      } else {
+        unproxied.push(currItem);
+      }
+    }
+    return unproxied;
+  }
+
+  /**
+   * Given a `dvCache[field]` value, parse the link(s) out of it
+   * @param  {string|string[]|string[][]|dvLink|dvLink[]|Pos|TFile} value
+   * @param  {BCSettings} settings
+   */
+  parseFieldValue(
+    value: string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile
+  ) {
+    if (value === undefined) return [];
+    const parsed: string[] = [];
+    try {
+      const rawValuesPreFlat = value;
+      if (!rawValuesPreFlat) return [];
+      if (typeof rawValuesPreFlat === "string") {
+        const splits = rawValuesPreFlat.match(splitLinksRegex);
+        if (splits !== null) {
+          const linkNames = splits.map((link) =>
+            getBasename(link.match(dropHeaderOrAlias)[1])
+          );
+          parsed.push(...linkNames);
+        }
+      } else {
+        const rawValues: RawValue[] = [value].flat(4);
+
+        this.superDebug(rawValues);
+
+        rawValues.forEach((rawItem) => {
+          if (!rawItem) return;
+          const unProxied = this.unproxy(rawItem);
+          unProxied.forEach((value) => {
+            if (typeof value === "string" || typeof value === "number") {
+              const rawAsString = value.toString();
+              const splits = rawAsString.match(splitLinksRegex);
+              if (splits !== null) {
+                const strs = splits.map((link) =>
+                  getBasename(link.match(dropHeaderOrAlias)[1])
+                );
+                parsed.push(...strs);
+              } else parsed.push(getBasename(rawAsString));
+            } else if (value.path !== undefined) {
+              const basename = getBasename(value.path);
+              if (basename !== undefined) parsed.push(basename);
+            }
+          });
+        });
+      }
+      return parsed;
+    } catch (error) {
+      console.log(error);
+      return parsed;
+    }
+  }
+
+  // TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
+  // => {[note: string]: {type: string, linksInLine: string[]}[]}
+  async getJugglLinks(files: TFile[]): Promise<JugglLink[]> {
+    const { settings, app } = this;
+    debugGroupStart(settings, "debugMode", "getJugglLinks");
+    this.debug("Using Juggl");
+
+    const { userHiers } = settings;
+
+    // Add Juggl links
+    const typedLinksArr: JugglLink[] = await Promise.all(
+      files.map(async (file) => {
+        const jugglLink: JugglLink = { file, links: [] };
+
+        // Use Obs metadatacache to get the links in the current file
+        const links = app.metadataCache.getFileCache(file)?.links ?? [];
+
+        const content = links.length ? await app.vault.cachedRead(file) : "";
+        const lines = content.split("\n");
+
+        links.forEach((link) => {
+          const lineNo = link.position.start.line;
+          const line = lines[lineNo];
+
+          // Check the line for wikilinks, and return an array of link.innerText
+          const linksInLine =
+            line
+              .match(splitLinksRegex)
+              ?.map((link) => link.slice(2, link.length - 2))
+              ?.map((innerText) => innerText.split("|")[0]) ?? [];
+
+          const typedLinkPrefix =
+            app.plugins.plugins.juggl?.settings.typedLinkPrefix ?? "-";
+
+          const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
+
+          const field = parsedLinks?.properties?.type ?? "";
+          let typeDir: Directions | "" = "";
+          DIRECTIONS.forEach((dir) => {
+            userHiers.forEach((hier) => {
+              if (hier[dir]?.includes(field)) {
+                typeDir = dir;
+                return;
+              }
+            });
+          });
+
+          jugglLink.links.push({
+            dir: typeDir,
+            field,
+            linksInLine,
+          });
+        });
+        return jugglLink;
+      })
+    );
+
+    this.debug({ typedLinksArr });
+
+    const allFields = getFields(userHiers);
+
+    const filteredLinks = typedLinksArr.map((jugglLink) => {
+      // Filter out links whose type is not in allFields
+      jugglLink.links = jugglLink.links.filter((link) =>
+        allFields.includes(link.field)
+      );
+      return jugglLink;
+    });
+    this.debug({ filteredLinks });
+    debugGroupEnd(settings, "debugMode");
+    return filteredLinks;
   }
 
   async initGraphs(): Promise<MultiGraph> {
@@ -424,19 +679,18 @@ export default class BCPlugin extends Plugin {
     const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
     let fileFrontmatterArr: dvFrontmatterCache[] = dvQ
-      ? getDVMetadataCache(app, settings, files)
-      : getObsMetadataCache(app, settings, files);
+      ? this.getDVMetadataCache(files)
+      : this.getObsMetadataCache(files);
 
     if (fileFrontmatterArr[0] === undefined) {
       await wait(1000);
       fileFrontmatterArr = dvQ
-        ? getDVMetadataCache(app, settings, files)
-        : getObsMetadataCache(app, settings, files);
+        ? this.getDVMetadataCache(files)
+        : this.getObsMetadataCache(files);
     }
 
-    const neighbourObjArr = await getNeighbourObjArr(this, fileFrontmatterArr);
-
     debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
+
     const hierarchyNotesArr: HierarchyNoteItem[] = [];
     if (settings.hierarchyNotes[0] !== "") {
       for (const note of settings.hierarchyNotes) {
@@ -458,30 +712,56 @@ export default class BCPlugin extends Plugin {
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
 
-    neighbourObjArr.forEach((neighbours) => {
-      const currFileName =
-        neighbours.current.basename || neighbours.current.name;
+    let jugglLinks: JugglLink[] = [];
+    if (
+      app.plugins.plugins.juggl !== undefined ||
+      settings.parseJugglLinksWithoutJuggl
+    ) {
+      jugglLinks = await this.getJugglLinks(files);
+    }
 
-      for (const hier of neighbours.hierarchies) {
-        for (const dir of DIRECTIONS) {
-          for (const field in hier[dir]) {
-            const targets = hier[dir][field];
-
-            this.populateMain(
-              mainG,
-              currFileName,
-              dir,
-              field,
-              targets,
-              neighbours,
-              neighbourObjArr
-            );
-
-            if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
-          }
-        }
-      }
+    fileFrontmatterArr.forEach((fileFrontmatter) => {
+      const basename =
+        fileFrontmatter.file.basename || fileFrontmatter.file.name;
+      iterateHiers(userHiers, (hier, dir, field) => {
+        const values = this.parseFieldValue(fileFrontmatter[field]);
+        const sourceOrder = parseInt(fileFrontmatter.order) ?? 9999;
+        this.populateMain(
+          mainG,
+          basename,
+          dir,
+          field,
+          values,
+          sourceOrder,
+          fileFrontmatterArr
+        );
+        if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
+      });
     });
+
+    if (jugglLinks.length) {
+      jugglLinks.forEach((jugglLink) => {
+        const { basename } = jugglLink.file;
+        jugglLink.links.forEach((link) => {
+          const { dir, field, linksInLine } = link;
+          if (dir === "") return;
+          const sourceOrder =
+            parseInt(
+              fileFrontmatterArr.find((arr) => arr.file.basename === basename)
+                ?.order
+            ) ?? 9999;
+          this.populateMain(
+            mainG,
+            basename,
+            dir,
+            field,
+            linksInLine,
+            sourceOrder,
+            fileFrontmatterArr
+          );
+        });
+      });
+    }
 
     if (hierarchyNotesArr.length) {
       const { HNUpField } = settings;
@@ -521,8 +801,8 @@ export default class BCPlugin extends Plugin {
       });
     }
 
-    debug(settings, "graphs inited");
-    debug(settings, { mainG });
+    this.debug("graphs inited");
+    this.debug({ mainG });
 
     debugGroupEnd(settings, "debugMode");
     files.forEach((file) => {
@@ -533,6 +813,96 @@ export default class BCPlugin extends Plugin {
   }
 
   // !SECTION OneSource
+
+  dfsAllPaths(g: Graph, startNode: string): string[][] {
+    const queue: { node: string; path: string[] }[] = [
+      { node: startNode, path: [] },
+    ];
+    const visited = [];
+    const allPaths: string[][] = [];
+
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+      i++;
+      const { node, path } = queue.shift();
+
+      const extPath = [node, ...path];
+      const succsNotVisited = g.hasNode(node)
+        ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+        : [];
+      const newItems = succsNotVisited.map((n) => {
+        return { node: n, path: extPath };
+      });
+
+      visited.push(...succsNotVisited);
+      queue.unshift(...newItems);
+
+      // if (!g.hasNode(node) || !g.outDegree(node))
+      allPaths.push(extPath);
+    }
+    return allPaths;
+  }
+
+  createIndex(allPaths: string[][]): string {
+    let index = "";
+    const { wikilinkIndex, aliasesInIndex } = this.settings;
+    const copy = cloneDeep(allPaths);
+    const reversed = copy.map((path) => path.reverse());
+    reversed.forEach((path) => path.shift());
+
+    const indent = "  ";
+
+    const visited: {
+      [node: string]: /** The depths at which `node` was visited */ number[];
+    } = {};
+
+    reversed.forEach((path) => {
+      for (let depth = 0; depth < path.length; depth++) {
+        const currNode = path[depth];
+
+        // If that node has been visited before at the current depth
+        if (
+          visited.hasOwnProperty(currNode) &&
+          visited[currNode].includes(depth)
+        ) {
+          continue;
+        } else {
+          index += `${indent.repeat(depth)}- ${makeWiki(
+            wikilinkIndex,
+            currNode
+          )}`;
+
+          if (aliasesInIndex) {
+            const currFile = this.app.metadataCache.getFirstLinkpathDest(
+              currNode,
+              ""
+            );
+
+            if (currFile !== null) {
+              const cache = this.app.metadataCache.getFileCache(currFile);
+
+              const alias = cache?.frontmatter?.alias ?? [];
+              const aliases = cache?.frontmatter?.aliases ?? [];
+
+              const allAliases: string[] = [
+                ...[alias].flat(3),
+                ...[aliases].flat(3),
+              ];
+              if (allAliases.length) {
+                index += ` (${allAliases.join(", ")})`;
+              }
+            }
+          }
+
+          index += "\n";
+
+          if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
+          visited[currNode].push(depth);
+        }
+      }
+    });
+    return index;
+  }
 
   // SECTION Breadcrumbs
 
@@ -566,7 +936,7 @@ export default class BCPlugin extends Plugin {
     pathsArr.forEach((path) => {
       if (path.length) path.splice(path.length - 1, 1);
     });
-    debug(this.settings, { pathsArr });
+    this.debug({ pathsArr });
     return pathsArr;
   }
 
@@ -592,7 +962,7 @@ export default class BCPlugin extends Plugin {
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 
-    debug(this.settings, { sortedTrails });
+    this.debug({ sortedTrails });
     return sortedTrails;
   }
 
@@ -649,7 +1019,7 @@ export default class BCPlugin extends Plugin {
 
     const closedUp = this.getLimitedTrailSub();
     const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
-    debug(settings, { sortedTrails });
+    this.debug({ sortedTrails });
 
     const { basename } = currFile;
 

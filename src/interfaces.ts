@@ -50,6 +50,15 @@ export interface BCSettings {
   wikilinkIndex: boolean;
 }
 
+export type RawValue =
+  | string
+  | number
+  | dvLink
+  | Pos
+  | TFile
+  | undefined
+  | typeof Proxy;
+
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
@@ -86,7 +95,7 @@ export interface JugglLink {
   file: TFile;
   links: {
     dir: Directions | "";
-    type: string;
+    field: string;
     linksInLine: string[];
   }[];
 }

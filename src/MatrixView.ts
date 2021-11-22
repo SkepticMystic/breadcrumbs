@@ -1,6 +1,4 @@
-import type { default as Graph } from "graphology";
-import { cloneDeep } from "lodash";
-import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { blankRealNImplied, MATRIX_VIEW, TRAIL_ICON } from "src/constants";
 import type {
   BCSettings,
@@ -10,19 +8,14 @@ import type {
 } from "src/interfaces";
 import type BCPlugin from "src/main";
 import {
-  copy,
-  debug,
   debugGroupEnd,
   debugGroupStart,
   getInNeighbours,
   getOppDir,
   getOutNeighbours,
   getRealnImplied,
-  getReflexiveClosure,
-  getSinks,
   getSubInDirs,
   linkClass,
-  makeWiki,
 } from "src/sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -50,48 +43,6 @@ export default class MatrixView extends ItemView {
             : this.plugin.settings.dvWaitTime
           : 3000
       );
-    });
-
-    this.plugin.addCommand({
-      id: "local-index",
-      name: "Copy a Local Index to the clipboard",
-      callback: async () => {
-        const { settings, mainG } = this.plugin;
-        const { basename } = this.app.workspace.getActiveFile();
-
-        const g = getSubInDirs(mainG, "up", "down");
-        const closed = getReflexiveClosure(g, settings.userHiers);
-        const onlyDowns = getSubInDirs(closed, "down");
-
-        const allPaths = this.dfsAllPaths(onlyDowns, basename);
-        const index = this.createIndex(allPaths, settings);
-        debug(settings, { index });
-        await copy(index);
-      },
-    });
-
-    this.plugin.addCommand({
-      id: "global-index",
-      name: "Copy a Global Index to the clipboard",
-      callback: async () => {
-        const { mainG, settings } = this.plugin;
-
-        const g = getSubInDirs(mainG, "up", "down");
-        const closed = getReflexiveClosure(g, settings.userHiers);
-        const onlyDowns = getSubInDirs(closed, "down");
-
-        const sinks = getSinks(mainG);
-
-        let globalIndex = "";
-        sinks.forEach((terminal) => {
-          globalIndex += terminal + "\n";
-          const allPaths = this.dfsAllPaths(onlyDowns, terminal);
-          globalIndex += this.createIndex(allPaths, settings);
-        });
-
-        debug(settings, { globalIndex });
-        await copy(globalIndex);
-      },
     });
   }
 
@@ -144,102 +95,18 @@ export default class MatrixView extends ItemView {
     return implieds.filter((implied) => !realTos.includes(implied.to));
   }
 
-  dfsAllPaths(g: Graph, startNode: string): string[][] {
-    const queue: { node: string; path: string[] }[] = [
-      { node: startNode, path: [] },
-    ];
-    const visited = [];
-    const allPaths: string[][] = [];
-
-    let i = 0;
-    while (queue.length > 0 && i < 1000) {
-      i++;
-      const { node, path } = queue.shift();
-
-      const extPath = [node, ...path];
-      const succsNotVisited = g.hasNode(node)
-        ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
-        : [];
-      const newItems = succsNotVisited.map((n) => {
-        return { node: n, path: extPath };
-      });
-
-      visited.push(...succsNotVisited);
-      queue.unshift(...newItems);
-
-      // if (!g.hasNode(node) || !g.outDegree(node))
-      allPaths.push(extPath);
-    }
-    return allPaths;
-  }
-
-  createIndex(allPaths: string[][], settings: BCSettings): string {
-    let index = "";
-    const { wikilinkIndex } = settings;
-    const copy = cloneDeep(allPaths);
-    const reversed = copy.map((path) => path.reverse());
-    reversed.forEach((path) => path.shift());
-
-    const indent = "  ";
-
-    const visited: {
-      [node: string]: /** The depths at which `node` was visited */ number[];
-    } = {};
-
-    reversed.forEach((path) => {
-      for (let depth = 0; depth < path.length; depth++) {
-        const currNode = path[depth];
-
-        // If that node has been visited before at the current depth
-        if (
-          visited.hasOwnProperty(currNode) &&
-          visited[currNode].includes(depth)
-        ) {
-          continue;
-        } else {
-          index += `${indent.repeat(depth)}- ${makeWiki(
-            wikilinkIndex,
-            currNode
-          )}`;
-
-          if (settings.aliasesInIndex) {
-            const currFile = this.app.metadataCache.getFirstLinkpathDest(
-              currNode,
-              ""
-            );
-
-            if (currFile !== null) {
-              const cache = this.app.metadataCache.getFileCache(currFile);
-
-              const alias = cache?.frontmatter?.alias ?? [];
-              const aliases = cache?.frontmatter?.aliases ?? [];
-
-              const allAliases: string[] = [
-                ...[alias].flat(3),
-                ...[aliases].flat(3),
-              ];
-              if (allAliases.length) {
-                index += ` (${allAliases.join(", ")})`;
-              }
-            }
-          }
-
-          index += "\n";
-
-          if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
-          visited[currNode].push(depth);
-        }
-      }
-    });
-    return index;
-  }
-
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
   getHierSquares(userHiers: UserHier[], currFile: TFile, settings: BCSettings) {
     const { plugin } = this;
     const { mainG } = plugin;
+    if (!mainG) {
+      new Notice(
+        "Breadcrumbs graph was not initialised yet. Please Refresh Index"
+      );
+      return [];
+    }
     const { basename } = currFile;
     const up = getSubInDirs(mainG, "up");
 
