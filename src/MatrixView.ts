@@ -108,7 +108,10 @@ export default class MatrixView extends ItemView {
       return [];
     }
     const { basename } = currFile;
-    const up = getSubInDirs(mainG, "up");
+
+    const g = getSubInDirs(mainG, "up", "down");
+    const closed = getReflexiveClosure(g, userHiers);
+    const up = getSubInDirs(closed, "up");
 
     const realsnImplieds = getRealnImplied(plugin, basename);
 
@@ -146,7 +149,11 @@ export default class MatrixView extends ItemView {
       /// Notes with the same parents
 
       let iSameArr: internalLinkObj[] = [];
-      const currParents = getOutNeighbours(up, basename);
+      const currParents = up.hasNode(basename)
+        ? up.filterOutNeighbors(basename, (n, a) =>
+            Object.values(hier).flat().includes(a.field)
+          )
+        : [];
 
       currParents.forEach((parent) => {
         let impliedSiblings = getInNeighbours(up, parent);
