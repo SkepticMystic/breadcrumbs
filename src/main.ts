@@ -118,6 +118,12 @@ export default class BCPlugin extends Plugin {
     await this.loadSettings();
 
     // Prevent breaking change
+
+    if (this.settings.userHierarchies) {
+      this.settings.userHiers = this.settings.userHierarchies;
+      delete this.settings.userHierarchies;
+    }
+
     ["prev", "next"].forEach((dir) => {
       this.settings.userHiers.forEach(async (hier, i) => {
         if (hier[dir] === undefined) this.settings.userHiers[i][dir] = [];
