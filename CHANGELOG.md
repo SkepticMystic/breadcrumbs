@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.8](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.7...1.7.8) (2021-11-22)
+
+
+### Bug Fixes
+
+* **Juggl:** :bug: Don't include all links, only those in fields ([015cd2b](https://github.com/SkepticMystic/breadcrumbs/commit/015cd2b4e9a2b7bb7f78eb4519d621de5fd97605))
+
 ### [1.7.7](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.6...1.7.7) (2021-11-22)
 
 
