@@ -866,7 +866,8 @@ export function getRealnImplied(
         }
       }
       // Implieds
-      else if (t === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+      // If `s !== currNode` then `t` must be
+      else if (edgeDir === currDir || edgeDir === oppDir) {
         const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
         if (arr.findIndex((item) => item.to === s) === -1) {
           arr.push({

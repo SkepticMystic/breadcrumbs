@@ -280,12 +280,11 @@ export default class BCPlugin extends Plugin {
   }
 
   async getHierarchyNoteItems(file: TFile) {
-    const { settings } = this;
+    const { userHiers } = this.settings;
     const { listItems } = this.app.metadataCache.getFileCache(file);
     if (!listItems) return [];
 
-    const content = await this.app.vault.cachedRead(file);
-    const lines = content.split("\n");
+    const lines = (await this.app.vault.cachedRead(file)).split("\n");
 
     const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
@@ -295,7 +294,7 @@ export default class BCPlugin extends Plugin {
 
     const problemFields: string[] = [];
 
-    const upFields = getFields(settings.userHiers, "up");
+    const upFields = getFields(userHiers, "up");
     for (const item of listItems) {
       const currItem = lines[item.position.start.line];
 
@@ -304,7 +303,7 @@ export default class BCPlugin extends Plugin {
       let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
       // Ensure fieldName is one of the existing up fields. `null` if not
-      if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
+      if (!upFields.includes(fieldCurr)) {
         problemFields.push(fieldCurr);
         fieldCurr = null;
       }
@@ -413,7 +412,7 @@ export default class BCPlugin extends Plugin {
       addNodesIfNot(g, [row.file], { dir, field });
       if (field === "" || !row[field]) return;
 
-      addNodesIfNot(g, [row[field]]);
+      addNodesIfNot(g, [row[field]], { dir, field });
       //@ts-ignore
       addEdgeIfNot(g, row.file, row[field], { dir, field });
     });
