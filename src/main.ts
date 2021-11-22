@@ -118,10 +118,10 @@ export default class BCPlugin extends Plugin {
     await this.loadSettings();
 
     // Prevent breaking change
-
-    if (this.settings.userHierarchies) {
+    if (this.settings.hasOwnProperty("userHierarchies")) {
       this.settings.userHiers = this.settings.userHierarchies;
       delete this.settings.userHierarchies;
+      await this.saveSettings();
     }
 
     ["prev", "next"].forEach((dir) => {
@@ -689,10 +689,7 @@ export default class BCPlugin extends Plugin {
       : this.getObsMetadataCache(files);
 
     if (fileFrontmatterArr[0] === undefined) {
-      await wait(1000);
-      fileFrontmatterArr = dvQ
-        ? this.getDVMetadataCache(files)
-        : this.getObsMetadataCache(files);
+      return new MultiGraph();
     }
 
     debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");

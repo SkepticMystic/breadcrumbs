@@ -20736,14 +20736,6 @@ module.exports = __webpack_require__(/*! /home/travis/build/feathericons/feather
  * @module obsidian-community-lib
  */
 /**
- * You can await this Function to delay execution
- *
- * @param delay The delay in ms
- */
-async function wait(delay) {
-    return new Promise((resolve) => setTimeout(resolve, delay));
-}
-/**
  * Adds a specific Feather Icon to Obsidian.
  *
  * @param name official Name of the Icon (https://feathericons.com/)
@@ -36167,9 +36159,10 @@ class BCPlugin extends obsidian.Plugin {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
         // Prevent breaking change
-        if (this.settings.userHierarchies) {
+        if (this.settings.hasOwnProperty("userHierarchies")) {
             this.settings.userHiers = this.settings.userHierarchies;
             delete this.settings.userHierarchies;
+            await this.saveSettings();
         }
         ["prev", "next"].forEach((dir) => {
             this.settings.userHiers.forEach(async (hier, i) => {
@@ -36611,10 +36604,7 @@ class BCPlugin extends obsidian.Plugin {
             ? this.getDVMetadataCache(files)
             : this.getObsMetadataCache(files);
         if (fileFrontmatterArr[0] === undefined) {
-            await wait(1000);
-            fileFrontmatterArr = dvQ
-                ? this.getDVMetadataCache(files)
-                : this.getObsMetadataCache(files);
+            return new graphology_umd_min.MultiGraph();
         }
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
         const hierarchyNotesArr = [];
