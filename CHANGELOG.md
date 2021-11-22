@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.7](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.6...1.7.7) (2021-11-22)
+
+
+### Bug Fixes
+
+* :bug: Convert setting name: Safer check + save changes ([7765005](https://github.com/SkepticMystic/breadcrumbs/commit/77650057b865d1859de2d24f8f97ea45a2921a0e))
+
 ### [1.7.6](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.5...1.7.6) (2021-11-22)
 
 
