@@ -133,9 +133,9 @@ export class BCSettingTab extends PluginSettingTab {
       )
       .addToggle((toggle) =>
         toggle
-          .setValue(settings.refreshIndexOnActiveLeafChange)
+          .setValue(settings.refreshOnNoteChange)
           .onChange(async (value) => {
-            settings.refreshIndexOnActiveLeafChange = value;
+            settings.refreshOnNoteChange = value;
             await plugin.saveSettings();
           })
       );
@@ -207,43 +207,43 @@ export class BCSettingTab extends PluginSettingTab {
         );
     }
 
-    new Setting(generalDetails)
-      .setName("Refresh Interval")
-      .setDesc(
-        "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
-      )
-      .addText((text) =>
-        text
-          .setPlaceholder("Seconds")
-          .setValue(settings.refreshIntervalTime.toString())
-          .onChange(async (value) => {
-            clearInterval(plugin.refreshIntervalID);
-            const num = Number(value);
+    // new Setting(generalDetails)
+    //   .setName("Refresh Interval")
+    //   .setDesc(
+    //     "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
+    //   )
+    //   .addText((text) =>
+    //     text
+    //       .setPlaceholder("Seconds")
+    //       .setValue(settings.refreshIntervalTime.toString())
+    //       .onChange(async (value) => {
+    //         clearInterval(plugin.refreshIntervalID);
+    //         const num = Number(value);
 
-            if (num > 0) {
-              settings.refreshIntervalTime = num;
-              await plugin.saveSettings();
+    //         if (num > 0) {
+    //           settings.refreshIntervalTime = num;
+    //           await plugin.saveSettings();
 
-              plugin.refreshIntervalID = window.setInterval(async () => {
-                plugin.mainG = await plugin.initGraphs();
-                if (settings.showTrail) {
-                  await plugin.drawTrail();
-                }
-                const activeMatrix = plugin.getActiveTYPEView(MATRIX_VIEW);
-                if (activeMatrix) {
-                  await activeMatrix.draw();
-                }
-              }, num * 1000);
-              plugin.registerInterval(plugin.refreshIntervalID);
-            } else if (num === 0) {
-              settings.refreshIntervalTime = num;
-              await plugin.saveSettings();
-              clearInterval(plugin.refreshIntervalID);
-            } else {
-              new Notice("The interval must be a non-negative number");
-            }
-          })
-      );
+    //           plugin.refreshIntervalID = window.setInterval(async () => {
+    //             plugin.mainG = await plugin.initGraphs();
+    //             if (settings.showTrail) {
+    //               await plugin.drawTrail();
+    //             }
+    //             const activeMatrix = plugin.getActiveTYPEView(MATRIX_VIEW);
+    //             if (activeMatrix) {
+    //               await activeMatrix.draw();
+    //             }
+    //           }, num * 1000);
+    //           plugin.registerInterval(plugin.refreshIntervalID);
+    //         } else if (num === 0) {
+    //           settings.refreshIntervalTime = num;
+    //           await plugin.saveSettings();
+    //           clearInterval(plugin.refreshIntervalID);
+    //         } else {
+    //           new Notice("The interval must be a non-negative number");
+    //         }
+    //       })
+    //   );
 
     const MLViewDetails: HTMLDetailsElement = containerEl.createEl("details");
     MLViewDetails.createEl("summary", { text: "Matrix/List View" });

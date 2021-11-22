@@ -80,7 +80,7 @@ export default class BCPlugin extends Plugin {
     this.activeLeafChange = this.app.workspace.on(
       "active-leaf-change",
       async () => {
-        if (this.settings.refreshIndexOnActiveLeafChange) {
+        if (this.settings.refreshOnNoteChange) {
           await this.refreshIndex();
         } else {
           const activeView = this.getActiveTYPEView(MATRIX_VIEW);
@@ -105,17 +105,16 @@ export default class BCPlugin extends Plugin {
 
     this.registerActiveLeafEvent();
 
-    // ANCHOR autorefresh interval
-    if (settings.refreshIntervalTime > 0) {
-      this.refreshIntervalID = window.setInterval(async () => {
-        this.mainG = await this.initGraphs();
-        if (settings.showBCs) await this.drawTrail();
+    // if (settings.refreshIntervalTime > 0) {
+    //   this.refreshIntervalID = window.setInterval(async () => {
+    //     this.mainG = await this.initGraphs();
+    //     if (settings.showBCs) await this.drawTrail();
 
-        const activeView = this.getActiveTYPEView(MATRIX_VIEW);
-        if (activeView) await activeView.draw();
-      }, settings.refreshIntervalTime * 1000);
-      this.registerInterval(this.refreshIntervalID);
-    }
+    //     const activeView = this.getActiveTYPEView(MATRIX_VIEW);
+    //     if (activeView) await activeView.draw();
+    //   }, settings.refreshIntervalTime * 1000);
+    //   this.registerInterval(this.refreshIntervalID);
+    // }
   };
 
   async onload(): Promise<void> {

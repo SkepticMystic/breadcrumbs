@@ -26,8 +26,8 @@ export interface BCSettings {
   noPathMessage: string;
   orderField: string;
   parseJugglLinksWithoutJuggl: boolean;
-  refreshIndexOnActiveLeafChange: boolean;
-  refreshIntervalTime: number;
+  refreshOnNoteChange: boolean;
+  // refreshIntervalTime: number;
   respectReadableLineLength: boolean;
   showNameOrType: boolean;
   showRelationType: boolean;
