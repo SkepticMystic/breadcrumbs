@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.6](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.5...1.7.6) (2021-11-22)
+
+
+### Bug Fixes
+
+* :bug: Rename userHierarchies to userHiers ([a0cbebb](https://github.com/SkepticMystic/breadcrumbs/commit/a0cbebbfe6d2d0660c65c238d76f18fa40a3d454))
+
 ### [1.7.5](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.4...1.7.5) (2021-11-22)
 
 ### [1.7.4](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.3...1.7.4) (2021-11-22)
