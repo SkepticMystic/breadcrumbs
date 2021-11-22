@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.4](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.3...1.7.4) (2021-11-22)
+
+
+### Bug Fixes
+
+* :bug: Don't allow blank hierarchy fields ([2a17ef9](https://github.com/SkepticMystic/breadcrumbs/commit/2a17ef9e3141be8971ba5b992f7c2536374b19ac))
+* **List/Matrix View:** :bug: Fallback field name ([523585c](https://github.com/SkepticMystic/breadcrumbs/commit/523585c1652ea5a4d744af71d5993232731b42f3))
+* **List/Matrix View:** :bug: Implied siblings should be filtered by hierarchy ([5403d87](https://github.com/SkepticMystic/breadcrumbs/commit/5403d87147c86a45df23e374b3b50e4ddf7b5e36))
+
 ### [1.7.3](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.2...1.7.3) (2021-11-22)
 
 ### [1.7.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.1...1.7.2) (2021-11-22)
