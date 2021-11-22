@@ -1,5 +1,10 @@
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
-import { blankRealNImplied, MATRIX_VIEW, TRAIL_ICON } from "src/constants";
+import {
+  ARROW_DIRECTIONS,
+  blankRealNImplied,
+  MATRIX_VIEW,
+  TRAIL_ICON,
+} from "src/constants";
 import type {
   BCSettings,
   Directions,
@@ -12,8 +17,8 @@ import {
   debugGroupStart,
   getInNeighbours,
   getOppDir,
-  getOutNeighbours,
   getRealnImplied,
+  getReflexiveClosure,
   getSubInDirs,
   linkClass,
 } from "src/sharedFunctions";
@@ -201,9 +206,9 @@ export default class MatrixView extends ItemView {
       iSameArr = iSameNoDup;
 
       const getFieldInHier = (dir: Directions) =>
-        hier[dir][0] === ""
-          ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
-          : hier[dir].join(", ");
+        hier[dir][0]
+          ? hier[dir].join(", ")
+          : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
 
       const { alphaSortAsc } = settings;
       [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) =>

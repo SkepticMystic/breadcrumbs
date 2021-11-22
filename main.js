@@ -21947,6 +21947,8 @@ function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
     const copy = g.copy();
     copy.forEachEdge((k, a, s, t) => {
         const { dir, field } = a;
+        if (field === undefined)
+            return;
         const oppDir = getOppDir(dir);
         const oppField = getOppFields(userHiers, field)[0];
         addNodesIfNot(copy, [s, t], {
@@ -23442,7 +23444,9 @@ class MatrixView extends obsidian.ItemView {
             return [];
         }
         const { basename } = currFile;
-        const up = getSubInDirs(mainG, "up");
+        const g = getSubInDirs(mainG, "up", "down");
+        const closed = getReflexiveClosure(g, userHiers);
+        const up = getSubInDirs(closed, "up");
         const realsnImplieds = getRealnImplied(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
@@ -23459,7 +23463,9 @@ class MatrixView extends obsidian.ItemView {
             // SECTION Implied Siblings
             /// Notes with the same parents
             let iSameArr = [];
-            const currParents = getOutNeighbours(up, basename);
+            const currParents = up.hasNode(basename)
+                ? up.filterOutNeighbors(basename, (n, a) => Object.values(hier).flat().includes(a.field))
+                : [];
             currParents.forEach((parent) => {
                 let impliedSiblings = getInNeighbours(up, parent);
                 // The current note is always it's own implied sibling, so remove it from the list
@@ -23497,9 +23503,9 @@ class MatrixView extends obsidian.ItemView {
                 }
             });
             iSameArr = iSameNoDup;
-            const getFieldInHier = (dir) => hier[dir][0] === ""
-                ? `${hier[getOppDir(dir)].join(",")}<${dir}>`
-                : hier[dir].join(", ");
+            const getFieldInHier = (dir) => hier[dir][0]
+                ? hier[dir].join(", ")
+                : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
             const { alphaSortAsc } = settings;
             [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) => a
                 .sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1)
@@ -25605,7 +25611,14 @@ function instance$4($$self, $$props, $$invalidate) {
 	};
 
 	const change_handler = async (i, dir, e) => {
-		$$invalidate(0, currHiers[i][dir] = splitAndTrim(e.target.value), currHiers);
+		const { value } = e.target;
+
+		if (value === "") {
+			$$invalidate(0, currHiers[i][dir] = [], currHiers);
+		} else {
+			$$invalidate(0, currHiers[i][dir] = splitAndTrim(value), currHiers);
+		}
+
 		await update(currHiers);
 	};
 
@@ -36821,7 +36834,9 @@ class BCPlugin extends obsidian.Plugin {
         }
         else {
             const positiveFields = Object.keys(limitTrailCheckboxStates).filter((field) => limitTrailCheckboxStates[field]);
-            const oppFields = positiveFields.map((field) => getOppFields(userHiers, field)[0]);
+            const oppFields = positiveFields
+                .map((field) => getOppFields(userHiers, field)[0])
+                .filter((field) => field !== undefined);
             subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
         }
         const closed = getReflexiveClosure(subGraph, userHiers);
