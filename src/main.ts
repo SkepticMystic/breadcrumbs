@@ -1037,21 +1037,19 @@ export default class BCPlugin extends Plugin {
     }
 
     let view: HTMLElement;
-    switch (mode) {
-      case "source":
-        view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-        break;
-      case "preview":
-        view = activeMDView.contentEl.querySelector(
-          "div.markdown-preview-view[tabindex='-1']"
-        );
-        break;
-      case "live":
-        view = activeMDView.contentEl.querySelector(
-          "div.markdown-source-view.is-live-preview"
-        );
-        break;
+    let livePreview: boolean = false;
+    if (mode === "preview") {
+      view = activeMDView.previewMode.containerEl.querySelector(
+        "div.markdown-preview-view"
+      );
+    } else {
+      view = activeMDView.contentEl.querySelector("div.markdown-source-view");
+      if (view.hasClass("is-live-preview")) {
+        livePreview = true;
+      }
     }
+
+    console.log({ view, livePreview });
 
     activeMDView.containerEl
       .querySelectorAll(".BC-trail")
@@ -1113,12 +1111,12 @@ export default class BCPlugin extends Plugin {
 
     if (mode === "preview") {
       view.querySelector("div.markdown-preview-sizer").before(trailDiv);
-    } else if (mode === "live") {
-      const editorDiv = view.querySelector("div.cm-editor");
-      editorDiv.before(trailDiv);
     } else {
-      const editorDiv = view.querySelector("div.CodeMirror-sizer");
-      editorDiv.before(trailDiv);
+      const cmEditor = view.querySelector("div.cm-editor");
+      const cmSizer = view.querySelector("div.CodeMirror-sizer");
+      if (cmEditor) cmEditor.firstChild?.before(trailDiv);
+      if (cmSizer) cmSizer.before(trailDiv);
+      // view.querySelector("div.cm-editor")?.firstChild?.before(trailDiv);
     }
 
     trailDiv.empty();

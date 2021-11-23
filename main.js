@@ -50084,7 +50084,7 @@ class BCPlugin extends obsidian.Plugin {
         return getSubInDirs(closed, "up");
     }
     async drawTrail() {
-        var _a, _b;
+        var _a, _b, _c;
         const { settings } = this;
         const { showBCs, hideTrailField, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, } = settings;
         debugGroupStart(settings, "debugMode", "Draw Trail");
@@ -50106,17 +50106,17 @@ class BCPlugin extends obsidian.Plugin {
             return;
         }
         let view;
-        switch (mode) {
-            case "source":
-                view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-                break;
-            case "preview":
-                view = activeMDView.contentEl.querySelector("div.markdown-preview-view[tabindex='-1']");
-                break;
-            case "live":
-                view = activeMDView.contentEl.querySelector("div.markdown-source-view.is-live-preview");
-                break;
+        let livePreview = false;
+        if (mode === "preview") {
+            view = activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view");
         }
+        else {
+            view = activeMDView.contentEl.querySelector("div.markdown-source-view");
+            if (view.hasClass("is-live-preview")) {
+                livePreview = true;
+            }
+        }
+        console.log({ view, livePreview });
         (_b = activeMDView.containerEl
             .querySelectorAll(".BC-trail")) === null || _b === void 0 ? void 0 : _b.forEach((trail) => trail.remove());
         const closedUp = this.getLimitedTrailSub();
@@ -50156,13 +50156,14 @@ class BCPlugin extends obsidian.Plugin {
         if (mode === "preview") {
             view.querySelector("div.markdown-preview-sizer").before(trailDiv);
         }
-        else if (mode === "live") {
-            const editorDiv = view.querySelector("div.cm-editor");
-            editorDiv.before(trailDiv);
-        }
         else {
-            const editorDiv = view.querySelector("div.CodeMirror-sizer");
-            editorDiv.before(trailDiv);
+            const cmEditor = view.querySelector("div.cm-editor");
+            const cmSizer = view.querySelector("div.CodeMirror-sizer");
+            if (cmEditor)
+                (_c = cmEditor.firstChild) === null || _c === void 0 ? void 0 : _c.before(trailDiv);
+            if (cmSizer)
+                cmSizer.before(trailDiv);
+            // view.querySelector("div.cm-editor")?.firstChild?.before(trailDiv);
         }
         trailDiv.empty();
         if (noItems) {
