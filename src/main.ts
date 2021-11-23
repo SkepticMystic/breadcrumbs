@@ -965,15 +965,23 @@ export default class BCPlugin extends Plugin {
     const { basename, extension } = currFile;
     if (extension !== "md") return null;
 
+    const allTrails: string[][] = this.bfsAllPaths(g, basename);
+    let filteredTrails = [...allTrails];
+
     const { indexNotes } = this.settings;
-
-    let allTrails: string[][] = this.bfsAllPaths(g, basename);
-
-    // No index note chosen
-    if (indexNotes[0] !== "" && allTrails[0].length > 0) {
-      allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
+    // Filter for index notes
+    if (indexNotes[0] !== "" && filteredTrails[0].length > 0) {
+      filteredTrails = filteredTrails.filter((trail) =>
+        indexNotes.includes(trail[0])
+      );
+      if (
+        filteredTrails.length === 0 &&
+        this.settings.showAllPathsIfNoneToIndexNote
+      )
+        filteredTrails = [...allTrails];
     }
-    const sortedTrails = allTrails
+
+    const sortedTrails = filteredTrails
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 
@@ -1049,8 +1057,6 @@ export default class BCPlugin extends Plugin {
       }
     }
 
-    console.log({ view, livePreview });
-
     activeMDView.containerEl
       .querySelectorAll(".BC-trail")
       ?.forEach((trail) => trail.remove());
@@ -1116,7 +1122,6 @@ export default class BCPlugin extends Plugin {
       const cmSizer = view.querySelector("div.CodeMirror-sizer");
       if (cmEditor) cmEditor.firstChild?.before(trailDiv);
       if (cmSizer) cmSizer.before(trailDiv);
-      // view.querySelector("div.cm-editor")?.firstChild?.before(trailDiv);
     }
 
     trailDiv.empty();

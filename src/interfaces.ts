@@ -29,6 +29,7 @@ export interface BCSettings {
   refreshOnNoteChange: boolean;
   // refreshIntervalTime: number;
   respectReadableLineLength: boolean;
+  showAllPathsIfNoneToIndexNote: boolean;
   showNameOrType: boolean;
   showRelationType: boolean;
   showWriteAllBCsCmd: boolean;

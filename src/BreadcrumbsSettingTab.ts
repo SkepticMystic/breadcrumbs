@@ -541,6 +541,22 @@ export class BCSettingTab extends PluginSettingTab {
       });
 
     new Setting(trailDetails)
+      .setName("Shows all paths if none to index note are found")
+      .setDesc(
+        "If you have an index notes chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?"
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.showAllPathsIfNoneToIndexNote)
+          .onChange(async (value) => {
+            settings.showAllPathsIfNoneToIndexNote = value;
+
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          })
+      );
+
+    new Setting(trailDetails)
       .setName("Default: All or Shortest")
       .setDesc(
         "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest"

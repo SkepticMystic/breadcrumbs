@@ -21827,7 +21827,12 @@ function debugGroupEnd(settings, type) {
  * @param  {string} path
  */
 const getBasename = (path) => path.split("/").last();
-const splitAndTrim = (fields) => fields.split(",").map((str) => str.trim());
+const splitAndTrim = (fields) => {
+    if (fields === "")
+        return [];
+    else
+        return fields.split(",").map((str) => str.trim());
+};
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -24811,6 +24816,7 @@ const DEFAULT_SETTINGS = {
     showNameOrType: true,
     showRelationType: true,
     rlLeaf: true,
+    showAllPathsIfNoneToIndexNote: false,
     showBCs: true,
     showBCsInEditLPMode: false,
     showTrail: true,
@@ -25605,13 +25611,7 @@ function instance$4($$self, $$props, $$invalidate) {
 
 	const change_handler = async (i, dir, e) => {
 		const { value } = e.target;
-
-		if (value === "") {
-			$$invalidate(0, currHiers[i][dir] = [], currHiers);
-		} else {
-			$$invalidate(0, currHiers[i][dir] = splitAndTrim(value), currHiers);
-		}
-
+		$$invalidate(0, currHiers[i][dir] = splitAndTrim(value), currHiers);
 		await update(currHiers);
 	};
 
@@ -25672,20 +25672,17 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setName("Hierarchy Note(s)")
             .setDesc("A list of notes used to create external Breadcrumb structures.")
             .addText((text) => {
-            let finalValue;
             text
                 .setPlaceholder("Hierarchy Note(s)")
-                .setValue([settings.hierarchyNotes].flat().join(", "))
-                .onChange(async (value) => {
-                finalValue = splitAndTrim(value);
-            });
+                .setValue(settings.hierarchyNotes.join(", "));
             text.inputEl.onblur = async () => {
-                if (finalValue[0] === "") {
-                    settings.hierarchyNotes = finalValue;
+                const splits = splitAndTrim(text.getValue());
+                if (splits[0] === undefined) {
+                    settings.hierarchyNotes = splits;
                     await plugin.saveSettings();
                 }
-                else if (finalValue.every((note) => isInVault(this.app, note))) {
-                    settings.hierarchyNotes = finalValue;
+                else if (splits.every((note) => isInVault(this.app, note))) {
+                    settings.hierarchyNotes = splits;
                     await plugin.saveSettings();
                 }
                 else {
@@ -25743,12 +25740,9 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setName("Fields used for Alternative note names (Aliases)")
             .setDesc("A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example.")
             .addText((text) => {
-            let finalValue;
-            text.setValue(settings.altLinkFields.join(", ")).onChange((str) => {
-                finalValue = str;
-            });
+            text.setValue(settings.altLinkFields.join(", "));
             text.inputEl.onblur = async () => {
-                settings.altLinkFields = splitAndTrim(finalValue);
+                settings.altLinkFields = splitAndTrim(text.getValue());
                 await plugin.saveSettings();
             };
         });
@@ -26030,21 +26024,17 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setName("Index/Home Note(s)")
             .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
             .addText((text) => {
-            let finalValue;
             text
                 .setPlaceholder("Index Note")
-                .setValue([settings.indexNotes].flat().join(", "))
-                .onChange(async (value) => {
-                finalValue = splitAndTrim(value);
-            });
+                .setValue(settings.indexNotes.join(", "));
             text.inputEl.onblur = async () => {
-                // TODO Refactor this to general purpose isInVault function
-                if (finalValue[0] === "") {
-                    settings.indexNotes = finalValue;
+                const splits = splitAndTrim(text.getValue());
+                if (splits[0] === undefined) {
+                    settings.indexNotes = splits;
                     await plugin.saveSettings();
                 }
-                else if (finalValue.every((index) => isInVault(this.app, index))) {
-                    settings.indexNotes = finalValue;
+                else if (splits.every((index) => isInVault(this.app, index))) {
+                    settings.indexNotes = splits;
                     await plugin.saveSettings();
                 }
                 else {
@@ -26052,6 +26042,16 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 }
             };
         });
+        new obsidian.Setting(trailDetails)
+            .setName("Shows all paths if none to index note are found")
+            .setDesc("If you have an index notes chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?")
+            .addToggle((toggle) => toggle
+            .setValue(settings.showAllPathsIfNoneToIndexNote)
+            .onChange(async (value) => {
+            settings.showAllPathsIfNoneToIndexNote = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
         new obsidian.Setting(trailDetails)
             .setName("Default: All or Shortest")
             .setDesc("If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? On = all, off = shortest")
@@ -50055,13 +50055,17 @@ class BCPlugin extends obsidian.Plugin {
         const { basename, extension } = currFile;
         if (extension !== "md")
             return null;
+        const allTrails = this.bfsAllPaths(g, basename);
+        let filteredTrails = [...allTrails];
         const { indexNotes } = this.settings;
-        let allTrails = this.bfsAllPaths(g, basename);
-        // No index note chosen
-        if (indexNotes[0] !== "" && allTrails[0].length > 0) {
-            allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
+        // Filter for index notes
+        if (indexNotes[0] !== "" && filteredTrails[0].length > 0) {
+            filteredTrails = filteredTrails.filter((trail) => indexNotes.includes(trail[0]));
+            if (filteredTrails.length === 0 &&
+                this.settings.showAllPathsIfNoneToIndexNote)
+                filteredTrails = [...allTrails];
         }
-        const sortedTrails = allTrails
+        const sortedTrails = filteredTrails
             .filter((trail) => trail.length > 0)
             .sort((a, b) => a.length - b.length);
         this.debug({ sortedTrails });
@@ -50106,17 +50110,13 @@ class BCPlugin extends obsidian.Plugin {
             return;
         }
         let view;
-        let livePreview = false;
         if (mode === "preview") {
             view = activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view");
         }
         else {
             view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-            if (view.hasClass("is-live-preview")) {
-                livePreview = true;
-            }
+            if (view.hasClass("is-live-preview")) ;
         }
-        console.log({ view, livePreview });
         (_b = activeMDView.containerEl
             .querySelectorAll(".BC-trail")) === null || _b === void 0 ? void 0 : _b.forEach((trail) => trail.remove());
         const closedUp = this.getLimitedTrailSub();
@@ -50163,7 +50163,6 @@ class BCPlugin extends obsidian.Plugin {
                 (_c = cmEditor.firstChild) === null || _c === void 0 ? void 0 : _c.before(trailDiv);
             if (cmSizer)
                 cmSizer.before(trailDiv);
-            // view.querySelector("div.cm-editor")?.firstChild?.before(trailDiv);
         }
         trailDiv.empty();
         if (noItems) {

@@ -106,6 +106,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showNameOrType: true,
   showRelationType: true,
   rlLeaf: true,
+  showAllPathsIfNoneToIndexNote: false,
   showBCs: true,
   showBCsInEditLPMode: false,
   showTrail: true,
