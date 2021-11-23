@@ -42,7 +42,6 @@ export interface BCSettings {
   trailSeperator: string;
   useAllMetadata: boolean;
   userHiers: UserHier[];
-  userHierarchies: UserHier[];
   visGraph: visTypes;
   visRelation: Relations;
   visClosed: string;

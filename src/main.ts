@@ -119,8 +119,9 @@ export default class BCPlugin extends Plugin {
     await this.loadSettings();
 
     // Prevent breaking change
-    if (this.settings.hasOwnProperty("userHierarchies")) {
-      this.settings.userHiers = this.settings.userHierarchies;
+    const { userHierarchies } = this.settings;
+    if (userHierarchies !== undefined && userHierarchies.length > 0) {
+      this.settings.userHiers = userHierarchies;
       delete this.settings.userHierarchies;
       await this.saveSettings();
     }
