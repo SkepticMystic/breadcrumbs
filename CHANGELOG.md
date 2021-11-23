@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.9...1.8.0) (2021-11-23)
+
+
+### Features
+
+* **Path View:** :sparkles: Option to show Trail View in Edit and Live Preview mode! ([05f8e54](https://github.com/SkepticMystic/breadcrumbs/commit/05f8e549e68d5aa98341c75a3996015a15e82ca9)), closes [#157](https://github.com/SkepticMystic/breadcrumbs/issues/157) [#19](https://github.com/SkepticMystic/breadcrumbs/issues/19)
+
 ### [1.7.9](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.8...1.7.9) (2021-11-23)
 
 
