@@ -45,9 +45,11 @@ import {
   createOrUpdateYaml,
   debugGroupEnd,
   debugGroupStart,
-  getBasename,
+  getBaseFromPath,
+  getDVBasename,
   getFieldInfo,
   getFields,
+  getFolder,
   getInNeighbours,
   getOppFields,
   getRealnImplied,
@@ -517,8 +519,6 @@ export default class BCPlugin extends Plugin {
         });
       CSVRows.push(rowObj);
     });
-
-    console.log({ CSVRows });
     return CSVRows;
   }
 
@@ -579,7 +579,7 @@ export default class BCPlugin extends Plugin {
         const splits = rawValuesPreFlat.match(splitLinksRegex);
         if (splits !== null) {
           const linkNames = splits.map((link) =>
-            getBasename(link.match(dropHeaderOrAlias)[1])
+            getBaseFromPath(link.match(dropHeaderOrAlias)[1])
           );
           parsed.push(...linkNames);
         }
@@ -597,12 +597,12 @@ export default class BCPlugin extends Plugin {
               const splits = rawAsString.match(splitLinksRegex);
               if (splits !== null) {
                 const strs = splits.map((link) =>
-                  getBasename(link.match(dropHeaderOrAlias)[1])
+                  getBaseFromPath(link.match(dropHeaderOrAlias)[1])
                 );
                 parsed.push(...strs);
-              } else parsed.push(getBasename(rawAsString));
+              } else parsed.push(getBaseFromPath(rawAsString));
             } else if (value.path !== undefined) {
-              const basename = getBasename(value.path);
+              const basename = getBaseFromPath(value.path);
               if (basename !== undefined) parsed.push(basename);
             }
           });
@@ -655,16 +655,6 @@ export default class BCPlugin extends Plugin {
           const { fieldDir } = getFieldInfo(userHiers, field);
           if (!fieldDir) return;
 
-          // const fields = getFields(userHiers);
-          // DIRECTIONS.forEach((dir) => {
-          //   userHiers.forEach((hier) => {
-          //     if (hier[dir]?.includes(field)) {
-          //       typeDir = dir;
-          //       return;
-          //     }
-          //   });
-          // });
-
           jugglLink.links.push({
             dir: fieldDir,
             field,
@@ -691,6 +681,128 @@ export default class BCPlugin extends Plugin {
     return filteredLinks;
   }
 
+  addHNsToGraph(hierarchyNotesArr: HierarchyNoteItem[], mainG: MultiGraph) {
+    const { HNUpField, userHiers } = this.settings;
+    const upFields = getFields(userHiers, "up");
+
+    hierarchyNotesArr.forEach((hnItem, i) => {
+      const upField = hnItem.field ?? (HNUpField || upFields[0]);
+      const downField =
+        getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
+
+      if (hnItem.parentNote === null) {
+        const s = hnItem.currNote;
+        const t = hierarchyNotesArr[i + 1]?.currNote;
+
+        //@ts-ignore
+        addNodesIfNot(mainG, [s, t], { dir: "down", field: downField });
+        //@ts-ignore
+        addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+      } else {
+        const aUp = {
+          dir: "up",
+          field: upField,
+        };
+        //@ts-ignore
+        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+        //@ts-ignore
+        addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
+
+        const aDown = {
+          dir: "down",
+          field: downField,
+        };
+        //@ts-ignore
+        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+        //@ts-ignore
+        addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+      }
+    });
+  }
+
+  addJugglLinksToGraph(
+    jugglLinks: JugglLink[],
+    fileFrontmatterArr: dvFrontmatterCache[],
+    mainG: MultiGraph
+  ) {
+    jugglLinks.forEach((jugglLink) => {
+      const { basename } = jugglLink.file;
+      jugglLink.links.forEach((link) => {
+        const { dir, field, linksInLine } = link;
+        if (dir === "") return;
+        const sourceOrder =
+          parseInt(
+            fileFrontmatterArr.find((arr) => arr.file.basename === basename)
+              ?.order
+          ) ?? 9999;
+        this.populateMain(
+          mainG,
+          basename,
+          dir,
+          field,
+          linksInLine,
+          sourceOrder,
+          fileFrontmatterArr
+        );
+      });
+    });
+  }
+
+  addFolderNoteLinksToGraph(
+    fileFrontmatterArr: dvFrontmatterCache[],
+    mainG: MultiGraph
+  ) {
+    const { userHiers } = this.settings;
+    fileFrontmatterArr.forEach((fileFront) => {
+      const folderNoteFile = fileFront.file;
+      if (fileFront["BC-folder-note"]) {
+        const folderNoteBasename = getDVBasename(folderNoteFile);
+        const folder = getFolder(folderNoteFile);
+
+        const sources = fileFrontmatterArr
+          .map((ff) => ff.file)
+          .filter(
+            (file) =>
+              getFolder(file) === folder && file.path !== folderNoteFile.path
+          )
+          .map(getDVBasename);
+
+        let field = fileFront["BC-folder-note-up"];
+        const upFields = getFields(userHiers, "up");
+        if (typeof field !== "string" || !upFields.includes(field)) {
+          field = upFields[0];
+        }
+
+        const oppField =
+          getOppFields(userHiers, field as string)[0] ??
+          getFields(userHiers, "down")[0];
+
+        sources.forEach((source) => {
+          // This is getting the order of the folder note, not the source pointing up to it
+          const sourceOrder = parseInt(fileFront.order) ?? 9999;
+          this.populateMain(
+            mainG,
+            source,
+            "up",
+            field as string,
+            [folderNoteBasename],
+            sourceOrder,
+            fileFrontmatterArr
+          );
+          this.populateMain(
+            mainG,
+            folderNoteBasename,
+            "down",
+            oppField,
+            [source],
+            sourceOrder,
+            fileFrontmatterArr
+          );
+        });
+      }
+    });
+  }
+
   async initGraphs(): Promise<MultiGraph> {
     const { settings, app } = this;
     debugGroupStart(settings, "debugMode", "Initialise Graphs");
@@ -705,23 +817,6 @@ export default class BCPlugin extends Plugin {
       return new MultiGraph();
     }
 
-    debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
-
-    const hierarchyNotesArr: HierarchyNoteItem[] = [];
-    if (settings.hierarchyNotes[0] !== "") {
-      for (const note of settings.hierarchyNotes) {
-        const file = app.metadataCache.getFirstLinkpathDest(note, "");
-        if (file) {
-          hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
-        } else {
-          new Notice(
-            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
-          );
-        }
-      }
-    }
-    debugGroupEnd(settings, "debugMode");
-
     const { userHiers } = settings;
     const mainG = new MultiGraph();
     if (userHiers.length === 0) return mainG;
@@ -729,17 +824,8 @@ export default class BCPlugin extends Plugin {
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
 
-    let jugglLinks: JugglLink[] = [];
-    if (
-      app.plugins.plugins.juggl !== undefined ||
-      settings.parseJugglLinksWithoutJuggl
-    ) {
-      jugglLinks = await this.getJugglLinks(files);
-    }
-
     fileFrontmatterArr.forEach((fileFrontmatter) => {
-      const basename =
-        fileFrontmatter.file.basename || fileFrontmatter.file.name;
+      const basename = getDVBasename(fileFrontmatter.file);
       iterateHiers(userHiers, (hier, dir, field) => {
         const values = this.parseFieldValue(fileFrontmatter[field]);
         const sourceOrder = parseInt(fileFrontmatter.order) ?? 9999;
@@ -756,76 +842,47 @@ export default class BCPlugin extends Plugin {
       });
     });
 
-    if (jugglLinks.length) {
-      jugglLinks.forEach((jugglLink) => {
-        const { basename } = jugglLink.file;
-        jugglLink.links.forEach((link) => {
-          const { dir, field, linksInLine } = link;
-          if (dir === "") return;
-          const sourceOrder =
-            parseInt(
-              fileFrontmatterArr.find((arr) => arr.file.basename === basename)
-                ?.order
-            ) ?? 9999;
-          this.populateMain(
-            mainG,
-            basename,
-            dir,
-            field,
-            linksInLine,
-            sourceOrder,
-            fileFrontmatterArr
-          );
-        });
-      });
-    }
+    // SECTION  Juggl Links
+    const jugglLinks =
+      app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
+        ? await this.getJugglLinks(files)
+        : [];
 
-    if (hierarchyNotesArr.length) {
-      const { HNUpField } = settings;
-      const upFields = getFields(userHiers, "up");
+    if (jugglLinks.length)
+      this.addJugglLinksToGraph(jugglLinks, fileFrontmatterArr, mainG);
 
-      hierarchyNotesArr.forEach((hnItem, i) => {
-        const upField = hnItem.field ?? (HNUpField || upFields[0]);
-        const downField =
-          getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
+    // !SECTION  Juggl Links
+    // SECTION  Hierarchy Notes
+    debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
 
-        if (hnItem.parentNote === null) {
-          const s = hnItem.currNote;
-          const t = hierarchyNotesArr[i + 1].currNote;
-          //@ts-ignore
-          addNodesIfNot(mainG, [s, t], { dir: "down", field: downField });
-          //@ts-ignore
-          addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+    const hierarchyNotesArr: HierarchyNoteItem[] = [];
+    if (settings.hierarchyNotes[0] !== "") {
+      for (const note of settings.hierarchyNotes) {
+        const file = app.metadataCache.getFirstLinkpathDest(note, "");
+        if (file) {
+          hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
         } else {
-          const aUp = {
-            dir: "up",
-            field: upField,
-          };
-          //@ts-ignore
-          addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
-          //@ts-ignore
-          addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
-
-          const aDown = {
-            dir: "down",
-            field: downField,
-          };
-          //@ts-ignore
-          addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
-          //@ts-ignore
-          addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+          new Notice(
+            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
+          );
         }
-      });
+      }
     }
 
-    this.debug("graphs inited");
-    this.debug({ mainG });
+    if (hierarchyNotesArr.length) this.addHNsToGraph(hierarchyNotesArr, mainG);
+
+    // !SECTION  Hierarchy Notes
 
     debugGroupEnd(settings, "debugMode");
+
+    this.addFolderNoteLinksToGraph(fileFrontmatterArr, mainG);
+
     files.forEach((file) => {
       const { basename } = file;
       addNodesIfNot(mainG, [basename]);
     });
+    this.debug("graphs inited");
+    this.debug({ mainG });
     return mainG;
   }
 

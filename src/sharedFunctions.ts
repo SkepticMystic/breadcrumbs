@@ -72,7 +72,12 @@ export function splitAndDrop(str: string): string[] {
  * Get basename from `path`
  * @param  {string} path
  */
-export const getBasename = (path: string) => path.split("/").last();
+export const getBaseFromPath = (path: string) => path.split("/").last();
+
+export const getDVBasename = (file: TFile) => file.basename || file.name;
+export const getFolder = (file: TFile): string =>
+  //@ts-ignore
+  file?.parent?.name || file.folder;
 
 export const splitAndTrim = (fields: string): string[] => {
   if (fields === "") return [];
