@@ -1,10 +1,17 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
 
-  "include": ["src/**/*", "src/*", "**/*.ts"],
+  "include": [
+    "src/**/*",
+    "src/*",
+    "**/*.ts",
+    "test/test.js",
+    "test/**/*.ts",
+    "typings/**/*.ts"
+  ],
   "exclude": ["node_modules/*"],
   "compilerOptions": {
-    "types": ["node", "svelte"],
+    "types": ["node", "svelte", "mocha"],
     "baseUrl": ".",
     "paths": {
       "src": ["src/*"]

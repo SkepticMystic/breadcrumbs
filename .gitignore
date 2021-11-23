@@ -11,3 +11,7 @@ package-lock.json
 
 # obsidian
 data.json
+
+# Tests
+
+*.received.*
