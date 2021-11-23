@@ -49904,12 +49904,51 @@ class BCPlugin extends obsidian.Plugin {
                     field = upFields[0];
                 }
                 const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+                if (!oppField)
+                    return;
                 sources.forEach((source) => {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
                     const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
                     this.populateMain(mainG, source, "up", field, [folderNoteBasename], sourceOrder, fileFrontmatterArr);
                     this.populateMain(mainG, folderNoteBasename, "down", oppField, [source], sourceOrder, fileFrontmatterArr);
+                });
+            }
+        });
+    }
+    addTagLinksToGraph(fileFrontmatterArr, mainG) {
+        const { userHiers } = this.settings;
+        fileFrontmatterArr.forEach((fileFront) => {
+            var _a;
+            const tagNoteFile = fileFront.file;
+            if (fileFront["BC-tag-note"]) {
+                const tagNoteBasename = getDVBasename(tagNoteFile);
+                const tag = fileFront["BC-tag-note"].trim();
+                if (!tag.startsWith("#"))
+                    return;
+                const sources = fileFrontmatterArr
+                    .map((ff) => ff.file)
+                    .filter((file) => {
+                    var _a, _b;
+                    return file.path !== tagNoteFile.path &&
+                        ((_b = (_a = this.app.metadataCache
+                            .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
+                })
+                    .map(getDVBasename);
+                let field = fileFront["BC-tag-note-up"];
+                const upFields = getFields(userHiers, "up");
+                if (typeof field !== "string" || !upFields.includes(field)) {
+                    field = upFields[0];
+                }
+                const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+                if (!oppField)
+                    return;
+                sources.forEach((source) => {
+                    var _a;
+                    // This is getting the order of the folder note, not the source pointing up to it
+                    const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
+                    this.populateMain(mainG, source, "up", field, [tagNoteBasename], sourceOrder, fileFrontmatterArr);
+                    this.populateMain(mainG, tagNoteBasename, "down", oppField, [source], sourceOrder, fileFrontmatterArr);
                 });
             }
         });
@@ -49967,7 +50006,12 @@ class BCPlugin extends obsidian.Plugin {
             this.addHNsToGraph(hierarchyNotesArr, mainG);
         // !SECTION  Hierarchy Notes
         debugGroupEnd(settings, "debugMode");
+        console.time("Folder-Notes");
         this.addFolderNoteLinksToGraph(fileFrontmatterArr, mainG);
+        console.timeEnd("Folder-Notes");
+        console.time("Tag-Notes");
+        this.addTagLinksToGraph(fileFrontmatterArr, mainG);
+        console.timeEnd("Tag-Notes");
         files.forEach((file) => {
             const { basename } = file;
             addNodesIfNot(mainG, [basename]);

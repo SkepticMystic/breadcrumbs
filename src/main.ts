@@ -776,6 +776,7 @@ export default class BCPlugin extends Plugin {
         const oppField =
           getOppFields(userHiers, field as string)[0] ??
           getFields(userHiers, "down")[0];
+        if (!oppField) return;
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
@@ -792,6 +793,67 @@ export default class BCPlugin extends Plugin {
           this.populateMain(
             mainG,
             folderNoteBasename,
+            "down",
+            oppField,
+            [source],
+            sourceOrder,
+            fileFrontmatterArr
+          );
+        });
+      }
+    });
+  }
+
+  addTagLinksToGraph(
+    fileFrontmatterArr: dvFrontmatterCache[],
+    mainG: MultiGraph
+  ) {
+    const { userHiers } = this.settings;
+    fileFrontmatterArr.forEach((fileFront) => {
+      const tagNoteFile = fileFront.file;
+      if (fileFront["BC-tag-note"]) {
+        const tagNoteBasename = getDVBasename(tagNoteFile);
+        const tag = (fileFront["BC-tag-note"] as string).trim();
+        if (!tag.startsWith("#")) return;
+
+        const sources = fileFrontmatterArr
+          .map((ff) => ff.file)
+          .filter(
+            (file) =>
+              file.path !== tagNoteFile.path &&
+              this.app.metadataCache
+                .getFileCache(file)
+                ?.tags?.map((t) => t.tag)
+                .some((t) => t.includes(tag))
+          )
+          .map(getDVBasename);
+
+        let field = fileFront["BC-tag-note-up"];
+        const upFields = getFields(userHiers, "up");
+        if (typeof field !== "string" || !upFields.includes(field)) {
+          field = upFields[0];
+        }
+
+        const oppField =
+          getOppFields(userHiers, field as string)[0] ??
+          getFields(userHiers, "down")[0];
+        if (!oppField) return;
+
+        sources.forEach((source) => {
+          // This is getting the order of the folder note, not the source pointing up to it
+          const sourceOrder = parseInt(fileFront.order) ?? 9999;
+          this.populateMain(
+            mainG,
+            source,
+            "up",
+            field as string,
+            [tagNoteBasename],
+            sourceOrder,
+            fileFrontmatterArr
+          );
+          this.populateMain(
+            mainG,
+            tagNoteBasename,
             "down",
             oppField,
             [source],
@@ -828,7 +890,7 @@ export default class BCPlugin extends Plugin {
       const basename = getDVBasename(fileFrontmatter.file);
       iterateHiers(userHiers, (hier, dir, field) => {
         const values = this.parseFieldValue(fileFrontmatter[field]);
-        const sourceOrder = parseInt(fileFrontmatter.order) ?? 9999;
+        const sourceOrder = parseInt(fileFrontmatter.order as string) ?? 9999;
         this.populateMain(
           mainG,
           basename,
@@ -875,7 +937,12 @@ export default class BCPlugin extends Plugin {
 
     debugGroupEnd(settings, "debugMode");
 
+    console.time("Folder-Notes");
     this.addFolderNoteLinksToGraph(fileFrontmatterArr, mainG);
+    console.timeEnd("Folder-Notes");
+    console.time("Tag-Notes");
+    this.addTagLinksToGraph(fileFrontmatterArr, mainG);
+    console.timeEnd("Tag-Notes");
 
     files.forEach((file) => {
       const { basename } = file;
