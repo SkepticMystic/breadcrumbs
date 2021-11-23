@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.8.0...1.8.1) (2021-11-23)
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Work for CM6 ([bc4c2c2](https://github.com/SkepticMystic/breadcrumbs/commit/bc4c2c2a0d6decd6ec035693be807b502e9cc8f7))
+
 ## [1.8.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.9...1.8.0) (2021-11-23)
 
 
