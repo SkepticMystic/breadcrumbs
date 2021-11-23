@@ -18,12 +18,10 @@ import {
   addFeatherIcon,
   copy,
   openView,
-  wait,
 } from "obsidian-community-lib/dist/utils";
 import { BCSettingTab } from "src/BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
-  DIRECTIONS,
   dropHeaderOrAlias,
   MATRIX_VIEW,
   splitLinksRegex,
@@ -716,6 +714,7 @@ export default class BCPlugin extends Plugin {
 
     const { userHiers } = settings;
     const mainG = new MultiGraph();
+    if (userHiers.length === 0) return mainG;
 
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
@@ -919,7 +918,6 @@ export default class BCPlugin extends Plugin {
     const queue: { node: string; path: string[] }[] = [
       { node: startNode, path: [] },
     ];
-    const visited = [startNode];
 
     let i = 0;
     while (queue.length !== 0 && i < 1000) {
@@ -927,16 +925,15 @@ export default class BCPlugin extends Plugin {
       const { node, path } = queue.shift();
       const extPath = [node, ...path];
 
-      const succsNotVisited = g.hasNode(node)
-        ? g.filterOutNeighbors(node, (succ) => !visited.includes(succ))
+      const succs = g.hasNode(node)
+        ? g.filterOutNeighbors(node, (n) => !path.includes(n))
         : [];
-      for (const node of succsNotVisited) {
-        visited.push(node);
+      for (const node of succs) {
         queue.push({ node, path: extPath });
       }
 
       // terminal node
-      if (!g.hasNode(node) || succsNotVisited.length === 0) {
+      if (!g.hasNode(node) || succs.length === 0) {
         pathsArr.push(extPath);
       }
     }
@@ -976,13 +973,10 @@ export default class BCPlugin extends Plugin {
 
   getLimitedTrailSub() {
     const { limitTrailCheckboxStates, userHiers } = this.settings;
-    const upFields = getFields(userHiers, "up");
-    const downFields = getFields(userHiers, "down");
-
     let subGraph: MultiGraph;
 
     if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
-      subGraph = getSubForFields(this.mainG, [...upFields, ...downFields]);
+      subGraph = getSubInDirs(this.mainG, "up", "down");
     } else {
       const positiveFields = Object.keys(limitTrailCheckboxStates).filter(
         (field) => limitTrailCheckboxStates[field]
@@ -994,7 +988,7 @@ export default class BCPlugin extends Plugin {
     }
 
     const closed = getReflexiveClosure(subGraph, userHiers);
-    return getSubForFields(closed, upFields);
+    return getSubInDirs(closed, "up");
   }
 
   async drawTrail(): Promise<void> {
