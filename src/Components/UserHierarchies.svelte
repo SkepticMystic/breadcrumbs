@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Notice } from "obsidian";
-  import type { UserHier } from "src";
+  import type { UserHier } from "src/interfaces";
   import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "src/constants";
   import type BCPlugin from "src/main";
   import { hierToStr, splitAndTrim, swapItems } from "src/sharedFunctions";
@@ -94,11 +94,7 @@
             value={hier[dir]?.join(", ") ?? ""}
             on:change={async (e) => {
               const { value } = e.target;
-              if (value === "") {
-                currHiers[i][dir] = [];
-              } else {
-                currHiers[i][dir] = splitAndTrim(value);
-              }
+              currHiers[i][dir] = splitAndTrim(value);
               await update(currHiers);
             }}
           />

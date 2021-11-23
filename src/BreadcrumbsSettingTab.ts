@@ -60,20 +60,17 @@ export class BCSettingTab extends PluginSettingTab {
       .setName("Hierarchy Note(s)")
       .setDesc("A list of notes used to create external Breadcrumb structures.")
       .addText((text) => {
-        let finalValue: string[];
         text
           .setPlaceholder("Hierarchy Note(s)")
-          .setValue([settings.hierarchyNotes].flat().join(", "))
-          .onChange(async (value) => {
-            finalValue = splitAndTrim(value);
-          });
+          .setValue(settings.hierarchyNotes.join(", "));
 
         text.inputEl.onblur = async () => {
-          if (finalValue[0] === "") {
-            settings.hierarchyNotes = finalValue;
+          const splits = splitAndTrim(text.getValue());
+          if (splits[0] === undefined) {
+            settings.hierarchyNotes = splits;
             await plugin.saveSettings();
-          } else if (finalValue.every((note) => isInVault(this.app, note))) {
-            settings.hierarchyNotes = finalValue;
+          } else if (splits.every((note) => isInVault(this.app, note))) {
+            settings.hierarchyNotes = splits;
             await plugin.saveSettings();
           } else {
             new Notice("Atleast one of the notes is not in your vault");
@@ -146,13 +143,9 @@ export class BCSettingTab extends PluginSettingTab {
         "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view. This field will probably be `alias` or `aliases`, but it can be anything, like `title`, for example."
       )
       .addText((text) => {
-        let finalValue: string;
-
-        text.setValue(settings.altLinkFields.join(", ")).onChange((str) => {
-          finalValue = str;
-        });
+        text.setValue(settings.altLinkFields.join(", "));
         text.inputEl.onblur = async () => {
-          settings.altLinkFields = splitAndTrim(finalValue);
+          settings.altLinkFields = splitAndTrim(text.getValue());
           await plugin.saveSettings();
         };
       });
@@ -529,22 +522,17 @@ export class BCSettingTab extends PluginSettingTab {
         "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."
       )
       .addText((text) => {
-        let finalValue: string[];
         text
           .setPlaceholder("Index Note")
-          .setValue([settings.indexNotes].flat().join(", "))
-          .onChange(async (value) => {
-            finalValue = splitAndTrim(value);
-          });
+          .setValue(settings.indexNotes.join(", "));
 
         text.inputEl.onblur = async () => {
-          // TODO Refactor this to general purpose isInVault function
-
-          if (finalValue[0] === "") {
-            settings.indexNotes = finalValue;
+          const splits = splitAndTrim(text.getValue());
+          if (splits[0] === undefined) {
+            settings.indexNotes = splits;
             await plugin.saveSettings();
-          } else if (finalValue.every((index) => isInVault(this.app, index))) {
-            settings.indexNotes = finalValue;
+          } else if (splits.every((index) => isInVault(this.app, index))) {
+            settings.indexNotes = splits;
             await plugin.saveSettings();
           } else {
             new Notice(`Atleast one of the notes is not in your vault`);

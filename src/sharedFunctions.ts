@@ -60,7 +60,7 @@ export function debugGroupEnd(
   }
 }
 
-export function splitAndDrop(str: string): string[] | [] {
+export function splitAndDrop(str: string): string[] {
   return (
     str
       ?.match(splitLinksRegex)
@@ -74,8 +74,10 @@ export function splitAndDrop(str: string): string[] | [] {
  */
 export const getBasename = (path: string) => path.split("/").last();
 
-export const splitAndTrim = (fields: string): string[] =>
-  fields.split(",").map((str: string) => str.trim());
+export const splitAndTrim = (fields: string): string[] => {
+  if (fields === "") return [];
+  else return fields.split(",").map((str) => str.trim());
+};
 
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
