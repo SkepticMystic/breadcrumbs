@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.9](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.8...1.7.9) (2021-11-23)
+
+
+### Bug Fixes
+
+* :bug: Don't overwrite userHiers everytime ([231a042](https://github.com/SkepticMystic/breadcrumbs/commit/231a042a41e1c12b3275d37e692ca826db2baf48))
+* **Path View:** :bug: Traversal was too strict on previously visited nodes ([90000b7](https://github.com/SkepticMystic/breadcrumbs/commit/90000b75f1e63c10b6b69165c48d32259f0c9ff5))
+
 ### [1.7.8](https://github.com/SkepticMystic/breadcrumbs/compare/1.7.7...1.7.8) (2021-11-22)
 
 
