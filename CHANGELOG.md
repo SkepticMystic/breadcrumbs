@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.10.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.9.0...1.10.0) (2021-11-23)
+
+
+### Features
+
+* **TagNote:** :sparkles: Tag Notes! Similar to Folder Notes, all notes with the tag you specify link to the chosen note ([c630b6f](https://github.com/SkepticMystic/breadcrumbs/commit/c630b6f7c7502a607bb8e07017ceb31f3e2ab752))
+
 ## [1.9.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.8.1...1.9.0) (2021-11-23)
 
 
