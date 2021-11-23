@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.8.1...1.9.0) (2021-11-23)
+
+
+### Features
+
+* **FolderNote:** :sparkles: Folder Notes! Make all files in a folder point upwards to a chosen note (fix [#112](https://github.com/SkepticMystic/breadcrumbs/issues/112)) ([0704a6b](https://github.com/SkepticMystic/breadcrumbs/commit/0704a6be27d02722e664aaf03fda923c23ecac8a))
+* **Path View:** :sparkles: Option to show all trails if none are found going up to an index note (fix [#69](https://github.com/SkepticMystic/breadcrumbs/issues/69)) ([c97cfd9](https://github.com/SkepticMystic/breadcrumbs/commit/c97cfd97b3028bb2f867b25e8759404dbb2796cd))
+
 ### [1.8.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.8.0...1.8.1) (2021-11-23)
 
 
