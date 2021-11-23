@@ -107,6 +107,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showRelationType: true,
   rlLeaf: true,
   showBCs: true,
+  showBCsInEditLPMode: false,
   showTrail: true,
   showGrid: true,
   showPrevNext: true,

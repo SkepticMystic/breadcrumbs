@@ -361,6 +361,21 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
+    new Setting(trailDetails)
+      .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
+      .setDesc(
+        "It always shows in preview mode, but should it also show in the other two?\n\nKeep in mind that there is currently a limitation where the Breadcrumbs view will be stuck to the top of the note in edit/LP mode, even if you scroll down."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.showBCsInEditLPMode)
+          .onChange(async (value) => {
+            settings.showBCsInEditLPMode = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+          })
+      );
+
     const limitTrailFieldsDiv = trailDetails.createDiv({
       cls: "limit-ML-fields",
     });

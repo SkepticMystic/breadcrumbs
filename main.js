@@ -24812,6 +24812,7 @@ const DEFAULT_SETTINGS = {
     showRelationType: true,
     rlLeaf: true,
     showBCs: true,
+    showBCsInEditLPMode: false,
     showTrail: true,
     showGrid: true,
     showPrevNext: true,
@@ -25890,6 +25891,16 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setDesc("Show a set of different views at the top of the current note.")
             .addToggle((toggle) => toggle.setValue(settings.showBCs).onChange(async (value) => {
             settings.showBCs = value;
+            await plugin.saveSettings();
+            await plugin.drawTrail();
+        }));
+        new obsidian.Setting(trailDetails)
+            .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
+            .setDesc("It always shows in preview mode, but should it also show in the other two?\n\nKeep in mind that there is currently a limitation where the Breadcrumbs view will be stuck to the top of the note in edit/LP mode, even if you scroll down.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.showBCsInEditLPMode)
+            .onChange(async (value) => {
+            settings.showBCsInEditLPMode = value;
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
@@ -49313,6 +49324,7 @@ class BCPlugin extends obsidian.Plugin {
         super(...arguments);
         this.visited = [];
         this.activeLeafChange = undefined;
+        this.layoutChange = undefined;
         this.statusBatItemEl = undefined;
         this.initEverything = async () => {
             const { settings } = this;
@@ -49323,7 +49335,8 @@ class BCPlugin extends obsidian.Plugin {
             }
             if (settings.showBCs)
                 await this.drawTrail();
-            this.registerActiveLeafEvent();
+            this.registerActiveLeafChangeEvent();
+            this.registerLayoutChangeEvent();
         };
         this.writeBCToFile = async (file) => {
             var _a;
@@ -49356,7 +49369,9 @@ class BCPlugin extends obsidian.Plugin {
     async refreshIndex() {
         var _a;
         if (!this.activeLeafChange)
-            this.registerActiveLeafEvent();
+            this.registerActiveLeafChangeEvent();
+        if (!this.layoutChange)
+            this.registerLayoutChangeEvent();
         this.mainG = await this.initGraphs();
         for (const view of VIEWS)
             await ((_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.draw());
@@ -49364,7 +49379,7 @@ class BCPlugin extends obsidian.Plugin {
             await this.drawTrail();
         new obsidian.Notice("Index refreshed");
     }
-    registerActiveLeafEvent() {
+    registerActiveLeafChangeEvent() {
         this.activeLeafChange = this.app.workspace.on("active-leaf-change", async () => {
             if (this.settings.refreshOnNoteChange) {
                 await this.refreshIndex();
@@ -49378,6 +49393,13 @@ class BCPlugin extends obsidian.Plugin {
             }
         });
         this.registerEvent(this.activeLeafChange);
+    }
+    registerLayoutChangeEvent() {
+        this.layoutChange = this.app.workspace.on("layout-change", async () => {
+            if (this.settings.showBCs)
+                await this.drawTrail();
+        });
+        this.registerEvent(this.layoutChange);
     }
     async onload() {
         console.log("loading breadcrumbs plugin");
@@ -50006,7 +50028,7 @@ class BCPlugin extends obsidian.Plugin {
             const { node, path } = queue.shift();
             const extPath = [node, ...path];
             const succs = g.hasNode(node)
-                ? g.filterOutNeighbors(node, (n, a) => !path.includes(n))
+                ? g.filterOutNeighbors(node, (n) => !path.includes(n))
                 : [];
             for (const node of succs) {
                 queue.push({ node, path: extPath });
@@ -50035,7 +50057,6 @@ class BCPlugin extends obsidian.Plugin {
             return null;
         const { indexNotes } = this.settings;
         let allTrails = this.bfsAllPaths(g, basename);
-        console.log({ allTrails });
         // No index note chosen
         if (indexNotes[0] !== "" && allTrails[0].length > 0) {
             allTrails = allTrails.filter((trail) => indexNotes.includes(trail[0]));
@@ -50063,31 +50084,45 @@ class BCPlugin extends obsidian.Plugin {
         return getSubInDirs(closed, "up");
     }
     async drawTrail() {
-        var _a, _b, _c, _d;
+        var _a, _b;
         const { settings } = this;
+        const { showBCs, hideTrailField, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, } = settings;
         debugGroupStart(settings, "debugMode", "Draw Trail");
         const activeMDView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
-        if (!settings.showBCs || !activeMDView) {
+        if (!showBCs || !activeMDView) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const currFile = activeMDView.file;
-        const currMetadata = this.app.metadataCache.getFileCache(currFile);
-        const previewView = activeMDView.contentEl.querySelector(".markdown-preview-view");
-        (_a = previewView.querySelector("div.BC-trail")) === null || _a === void 0 ? void 0 : _a.remove();
-        if ((_b = currMetadata.frontmatter) === null || _b === void 0 ? void 0 : _b.hasOwnProperty(settings.hideTrailField)) {
+        const mode = activeMDView.getMode();
+        if ((mode === "source" || mode === "live") &&
+            !settings.showBCsInEditLPMode) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
-        const frontm = (_d = (_c = this.app.metadataCache.getFileCache(currFile)) === null || _c === void 0 ? void 0 : _c.frontmatter) !== null && _d !== void 0 ? _d : {};
-        if (frontm["kanban-plugin"]) {
+        const { file } = activeMDView;
+        const { frontmatter } = (_a = this.app.metadataCache.getFileCache(file)) !== null && _a !== void 0 ? _a : {};
+        if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
             debugGroupEnd(settings, "debugMode");
             return;
         }
+        let view;
+        switch (mode) {
+            case "source":
+                view = activeMDView.contentEl.querySelector("div.markdown-source-view");
+                break;
+            case "preview":
+                view = activeMDView.contentEl.querySelector("div.markdown-preview-view[tabindex='-1']");
+                break;
+            case "live":
+                view = activeMDView.contentEl.querySelector("div.markdown-source-view.is-live-preview");
+                break;
+        }
+        (_b = activeMDView.containerEl
+            .querySelectorAll(".BC-trail")) === null || _b === void 0 ? void 0 : _b.forEach((trail) => trail.remove());
         const closedUp = this.getLimitedTrailSub();
-        const sortedTrails = this.getBreadcrumbs(closedUp, currFile);
+        const sortedTrails = this.getBreadcrumbs(closedUp, file);
         this.debug({ sortedTrails });
-        const { basename } = currFile;
+        const { basename } = file;
         const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getRealnImplied(this, basename, "next");
         // Remove duplicate implied
         const next = [...rNext];
@@ -50103,37 +50138,52 @@ class BCPlugin extends obsidian.Plugin {
             }
         });
         const noItems = sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
-        if (noItems && settings.noPathMessage === "") {
+        if (noItems && noPathMessage === "") {
             debugGroupEnd(settings, "debugMode");
             return;
         }
+        const max_width = getComputedStyle(document.querySelector(".markdown-preview-view.is-readable-line-width .markdown-preview-sizer")).getPropertyValue("max-width");
         const trailDiv = createDiv({
-            cls: `BC-trail ${settings.respectReadableLineLength
+            cls: `BC-trail ${respectReadableLineLength
                 ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
                 : ""}`,
+            attr: {
+                style: (mode !== "preview" ? `max-width: ${max_width};` : "") +
+                    "margin: 0 auto",
+            },
         });
-        this.visited.push([currFile.path, trailDiv]);
-        previewView.querySelector(".markdown-preview-sizer").before(trailDiv);
+        this.visited.push([file.path, trailDiv]);
+        if (mode === "preview") {
+            view.querySelector("div.markdown-preview-sizer").before(trailDiv);
+        }
+        else if (mode === "live") {
+            const editorDiv = view.querySelector("div.cm-editor");
+            editorDiv.before(trailDiv);
+        }
+        else {
+            const editorDiv = view.querySelector("div.CodeMirror-sizer");
+            editorDiv.before(trailDiv);
+        }
         trailDiv.empty();
         if (noItems) {
-            trailDiv.innerText = settings.noPathMessage;
+            trailDiv.innerText = noPathMessage;
             debugGroupEnd(settings, "debugMode");
             return;
         }
         const props = { sortedTrails, app: this.app, plugin: this };
-        if (settings.showTrail && sortedTrails.length) {
+        if (showTrail && sortedTrails.length) {
             new TrailPath({
                 target: trailDiv,
                 props,
             });
         }
-        if (settings.showGrid && sortedTrails.length) {
+        if (showGrid && sortedTrails.length) {
             new TrailGrid({
                 target: trailDiv,
                 props,
             });
         }
-        if (settings.showPrevNext && (next.length || prev.length)) {
+        if (showPrevNext && (next.length || prev.length)) {
             new NextPrev({
                 target: trailDiv,
                 props: { app: this.app, plugin: this, next, prev },

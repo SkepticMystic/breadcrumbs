@@ -35,6 +35,7 @@ export interface BCSettings {
   superDebugMode: boolean;
   rlLeaf: boolean;
   showBCs: boolean;
+  showBCsInEditLPMode: boolean;
   showAll: boolean;
   showGrid: boolean;
   showPrevNext: boolean;
