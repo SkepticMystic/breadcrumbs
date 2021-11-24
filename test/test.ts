@@ -5,7 +5,7 @@ require("approvals").mocha();
 
 describe("When running some tests", function () {
   it("should be able to use Approvals", function () {
-    const data = "test";
+    const data = "Hello World!";
     // const userHiers = [
     //   {
     //     down: ["down"],
