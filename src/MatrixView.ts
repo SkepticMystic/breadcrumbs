@@ -15,15 +15,17 @@ import type BCPlugin from "./main";
 import {
   debugGroupEnd,
   debugGroupStart,
-  getInNeighbours,
-  getOppDir,
   getRealnImplied,
-  getReflexiveClosure,
-  getSubInDirs,
   linkClass,
 } from "./sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
+import {
+  getSubInDirs,
+  getReflexiveClosure,
+  getInNeighbours,
+  getOppDir,
+} from "./graphUtils";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;

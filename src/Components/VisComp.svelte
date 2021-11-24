@@ -5,7 +5,7 @@
     closeImpliedLinks,
     getSubInDirs,
     removeUnlinkedNodes,
-  } from "../sharedFunctions";
+  } from "../graphUtils";
   import type { VisModal } from "../VisModal";
   import { arcDiagram } from "../Visualisations/ArcDiagram";
   import { circlePacking } from "../Visualisations/CirclePacking";

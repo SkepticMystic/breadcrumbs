@@ -1,4 +1,4 @@
-import type Graph from "graphology";
+import type { MultiGraph } from "graphology";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
 import type { DIRECTIONS } from "./constants";
 import type DucksView from "./DucksView";
@@ -139,12 +139,6 @@ export interface SquareProps {
   field: string;
 }
 
-export interface allGraphs {
-  gParents: Graph;
-  gSiblings: Graph;
-  gChildren: Graph;
-}
-
 export interface d3Tree {
   name: string;
   children?: d3Tree[];
@@ -182,7 +176,7 @@ export type Relations = "Parent" | "Sibling" | "Child";
 export type VisGraphs = {
   [relation in Relations]: {
     [direction in "Real" | "Closed"]: {
-      [unlikedQ in "All" | "No Unlinked"]: Graph;
+      [unlikedQ in "All" | "No Unlinked"]: MultiGraph;
     };
   };
 };
@@ -201,7 +195,7 @@ export type visTypes =
 export type HierData = {
   [dir in Directions]: {
     [graphs: string]: {
-      graph?: Graph;
+      graph?: MultiGraph;
       nodes: string[];
       nodesStr: string;
       edges: string[];
@@ -215,7 +209,7 @@ export type HierarchyFields = {
 };
 
 export type HierarchyGraphs = {
-  [dir in Directions]: { [field: string]: Graph };
+  [dir in Directions]: { [field: string]: MultiGraph };
 };
 
 export type SquareItem = { to: string; real: boolean; field: string };

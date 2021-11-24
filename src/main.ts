@@ -41,23 +41,14 @@ import type {
   RawValue,
 } from "./interfaces";
 import {
-  addEdgeIfNot,
-  addNodesIfNot,
   createOrUpdateYaml,
   debugGroupEnd,
   debugGroupStart,
   getBaseFromPath,
   getDVBasename,
-  getFieldInfo,
   getFields,
   getFolder,
-  getInNeighbours,
-  getOppFields,
   getRealnImplied,
-  getReflexiveClosure,
-  getSinks,
-  getSubForFields,
-  getSubInDirs,
   iterateHiers,
   makeWiki,
   splitAtYaml,
@@ -67,6 +58,17 @@ import util from "util";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
+import {
+  getSubInDirs,
+  getReflexiveClosure,
+  getSinks,
+  getInNeighbours,
+  addNodesIfNot,
+  addEdgeIfNot,
+  getFieldInfo,
+  getOppFields,
+  getSubForFields,
+} from "./graphUtils";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -130,9 +132,11 @@ export default class BCPlugin extends Plugin {
     await this.loadSettings();
 
     // Prevent breaking change
+    //@ts-ignore
     const { userHierarchies } = this.settings;
     if (userHierarchies !== undefined && userHierarchies.length > 0) {
       this.settings.userHiers = userHierarchies;
+      //@ts-ignore
       delete this.settings.userHierarchies;
       await this.saveSettings();
     }
@@ -477,17 +481,17 @@ export default class BCPlugin extends Plugin {
     targetOrder: number
   ): void {
     addNodesIfNot(mainG, [source], {
-      //@ts-ignore
       dir,
       field,
+      //@ts-ignore
       order: sourceOrder,
     });
     // targets.forEach((target) => {
 
     addNodesIfNot(mainG, [target], {
-      //@ts-ignore
       dir,
       field,
+      //@ts-ignore
       order: targetOrder,
     });
     addEdgeIfNot(mainG, source, target, {
@@ -1183,6 +1187,7 @@ export default class BCPlugin extends Plugin {
     const { file } = activeMDView;
     const { frontmatter } = this.app.metadataCache.getFileCache(file) ?? {};
 
+    // @ts-ignore
     const { hideTrailField } = settings;
     if (hideTrailField && frontmatter?.[hideTrailField]) {
       new Notice(

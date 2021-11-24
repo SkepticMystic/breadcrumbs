@@ -7,9 +7,6 @@
   } from "obsidian-community-lib/dist/utils";
   import type BCPlugin from "../main";
   import {
-    closeImpliedLinks,
-    getOutNeighbours,
-    getSubInDirs,
     linkClass,
     normalise,
     padArray,
@@ -17,6 +14,11 @@
     transpose,
   } from "../sharedFunctions";
 
+  import {
+    closeImpliedLinks,
+    getOutNeighbours,
+    getSubInDirs,
+  } from "../graphUtils";
   export let sortedTrails: string[][];
   export let app: App;
   export let plugin: BCPlugin;

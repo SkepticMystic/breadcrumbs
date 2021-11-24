@@ -6,6 +6,8 @@ import {
   Setting,
 } from "obsidian";
 import { isInVault, openView } from "obsidian-community-lib";
+import KoFi from "./Components/KoFi.svelte";
+import UserHierarchies from "./Components/UserHierarchies.svelte";
 import {
   ALLUNLINKED,
   DIRECTIONS,
@@ -18,8 +20,6 @@ import type { Relations, visTypes } from "./interfaces";
 import type BCPlugin from "./main";
 import MatrixView from "./MatrixView";
 import { debug, getFields, splitAndTrim } from "./sharedFunctions";
-import KoFi from "./Components/KoFi.svelte";
-import UserHierarchies from "./Components/UserHierarchies.svelte";
 
 export class BCSettingTab extends PluginSettingTab {
   plugin: BCPlugin;

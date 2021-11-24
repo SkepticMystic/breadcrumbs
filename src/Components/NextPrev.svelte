@@ -4,6 +4,7 @@
   import type { SquareItem } from "../interfaces";
   import type BCPlugin from "../main";
   import { linkClass } from "../sharedFunctions";
+
   export let app: App;
   export let plugin: BCPlugin;
   export let next: SquareItem[];

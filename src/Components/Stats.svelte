@@ -4,14 +4,8 @@
   import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "../constants";
   import type { Directions, HierData } from "../interfaces";
   import type BCPlugin from "../main";
-  import {
-    closeImpliedLinks,
-    debug,
-    getOppDir,
-    getSubForFields,
-    hierToStr,
-    makeWiki,
-  } from "../sharedFunctions";
+  import { debug, hierToStr, makeWiki } from "../sharedFunctions";
+  import { closeImpliedLinks, getOppDir, getSubForFields } from "../graphUtils";
 
   export let plugin: BCPlugin;
 

@@ -16,6 +16,7 @@
     "paths": {
       "src": ["src/*"]
     },
+    "esModuleInterop": true,
     "lib": ["ES2019", "DOM"]
   }
 }
