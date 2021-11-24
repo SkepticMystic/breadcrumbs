@@ -875,61 +875,57 @@ export default class BCPlugin extends Plugin {
     });
   }
 
-  addLinkNotesToGraph(frontms, mainG: MultiGraph) {
+  addLinkNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
     frontms.forEach((frontm) => {
-      const tagNoteFile = frontm.file;
-      if (frontm["BC-tag-note"]) {
-        const tagNoteBasename = getDVBasename(tagNoteFile);
-        const tag = (frontm["BC-tag-note"] as string).trim();
-        if (!tag.startsWith("#")) return;
+      const linkNoteFile = frontm.file;
+      if (frontm["BC-link-note"]) {
+        const linkNoteBasename = getDVBasename(linkNoteFile);
 
-        const sources = frontms
-          .map((ff) => ff.file)
-          .filter(
-            (file) =>
-              file.path !== tagNoteFile.path &&
-              this.app.metadataCache
-                .getFileCache(file)
-                ?.tags?.map((t) => t.tag)
-                .some((t) => t.includes(tag))
-          )
-          .map(getDVBasename);
-
-        let field = frontm["BC-tag-note-up"];
-        const upFields = getFields(userHiers, "up");
-        if (typeof field !== "string" || !upFields.includes(field)) {
-          field = upFields[0];
+        let field = frontm["BC-link-note"] as string;
+        const { fieldDir } = getFieldInfo(userHiers, field as string);
+        if (
+          typeof field !== "string" ||
+          (fieldDir !== undefined &&
+            !getFields(userHiers, fieldDir).includes(field))
+        ) {
+          field = getFields(userHiers, fieldDir)[0];
         }
-
+        const dir = getFieldInfo(userHiers, field as string).fieldDir;
         const oppField =
           getOppFields(userHiers, field as string)[0] ??
           getFields(userHiers, "down")[0];
         if (!oppField) return;
 
-        sources.forEach((source) => {
-          // This is getting the order of the folder note, not the source pointing up to it
+        const targets = this.app.metadataCache
+          .getFileCache(linkNoteFile)
+          ?.links.map((l) => l.link.match(/[^#|]+/)[0]);
+        console.log({ targets });
+
+        // This is getting the order of the folder note, not the source pointing up to it
+        for (const target of targets) {
           const sourceOrder = parseInt(frontm.order as string) ?? 9999;
-          const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
+          const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
           this.populateMain(
             mainG,
-            source,
-            "up",
+            linkNoteBasename,
+            dir,
             field as string,
-            tagNoteBasename,
+            target,
             sourceOrder,
-            targetOrder
-          );
-          this.populateMain(
-            mainG,
-            tagNoteBasename,
-            "down",
-            oppField,
-            source,
             targetOrder,
-            sourceOrder
+            { oppDir: getOppDir(dir), oppField }
           );
-        });
+        }
+        // this.populateMain(
+        //   mainG,
+        //   tagNoteBasename,
+        //   "down",
+        //   oppField,
+        //   source,
+        //   targetOrder,
+        //   sourceOrder
+        // );
       }
     });
   }
