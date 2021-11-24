@@ -49369,6 +49369,10 @@ class BCPlugin extends obsidian.Plugin {
                 }
             }
         };
+        this.getTargetOrder = (fileFrontmatterArr, target) => {
+            var _a, _b;
+            return (_b = parseInt((_a = fileFrontmatterArr.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
+        };
     }
     async refreshIndex() {
         var _a;
@@ -49659,28 +49663,26 @@ class BCPlugin extends obsidian.Plugin {
         return fileFrontmatterArr;
     }
     // SECTION OneSource
-    populateMain(main, basename, dir, field, targets, sourceOrder, fileFrontmatterArr) {
-        addNodesIfNot(main, [basename], {
+    populateMain(mainG, source, dir, field, target, sourceOrder, targetOrder) {
+        addNodesIfNot(mainG, [source], {
             //@ts-ignore
             dir,
             field,
             order: sourceOrder,
         });
-        targets.forEach((target) => {
-            var _a, _b;
-            const targetOrder = (_b = parseInt((_a = fileFrontmatterArr.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
-            addNodesIfNot(main, [target], {
-                //@ts-ignore
-                dir,
-                field,
-                order: targetOrder,
-            });
-            addEdgeIfNot(main, basename, target, {
-                //@ts-ignore
-                dir,
-                field,
-            });
+        // targets.forEach((target) => {
+        addNodesIfNot(mainG, [target], {
+            //@ts-ignore
+            dir,
+            field,
+            order: targetOrder,
         });
+        addEdgeIfNot(mainG, source, target, {
+            //@ts-ignore
+            dir,
+            field,
+        });
+        // });
     }
     async getCSVRows() {
         const { CSVPaths } = this.settings;
@@ -49877,12 +49879,14 @@ class BCPlugin extends obsidian.Plugin {
         jugglLinks.forEach((jugglLink) => {
             const { basename } = jugglLink.file;
             jugglLink.links.forEach((link) => {
-                var _a, _b;
                 const { dir, field, linksInLine } = link;
                 if (dir === "")
                     return;
-                const sourceOrder = (_b = parseInt((_a = fileFrontmatterArr.find((arr) => arr.file.basename === basename)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
-                this.populateMain(mainG, basename, dir, field, linksInLine, sourceOrder, fileFrontmatterArr);
+                const sourceOrder = this.getTargetOrder(fileFrontmatterArr, basename);
+                linksInLine.forEach((linkInLine) => {
+                    const targetsOrder = this.getTargetOrder(fileFrontmatterArr, linkInLine);
+                    this.populateMain(mainG, basename, dir, field, linkInLine, sourceOrder, targetsOrder);
+                });
             });
         });
     }
@@ -49910,8 +49914,9 @@ class BCPlugin extends obsidian.Plugin {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
                     const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
-                    this.populateMain(mainG, source, "up", field, [folderNoteBasename], sourceOrder, fileFrontmatterArr);
-                    this.populateMain(mainG, folderNoteBasename, "down", oppField, [source], sourceOrder, fileFrontmatterArr);
+                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, folderNoteBasename);
+                    this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder);
+                    this.populateMain(mainG, folderNoteBasename, "down", oppField, source, targetOrder, sourceOrder);
                 });
             }
         });
@@ -49947,8 +49952,9 @@ class BCPlugin extends obsidian.Plugin {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
                     const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
-                    this.populateMain(mainG, source, "up", field, [tagNoteBasename], sourceOrder, fileFrontmatterArr);
-                    this.populateMain(mainG, tagNoteBasename, "down", oppField, [source], sourceOrder, fileFrontmatterArr);
+                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, tagNoteBasename);
+                    this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder);
+                    this.populateMain(mainG, tagNoteBasename, "down", oppField, source, targetOrder, sourceOrder);
                 });
             }
         });
@@ -49976,7 +49982,10 @@ class BCPlugin extends obsidian.Plugin {
                 var _a;
                 const values = this.parseFieldValue(fileFrontmatter[field]);
                 const sourceOrder = (_a = parseInt(fileFrontmatter.order)) !== null && _a !== void 0 ? _a : 9999;
-                this.populateMain(mainG, basename, dir, field, values, sourceOrder, fileFrontmatterArr);
+                values.forEach((target) => {
+                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, target);
+                    this.populateMain(mainG, basename, dir, field, target, sourceOrder, targetOrder);
+                });
                 if (useCSV)
                     this.addCSVCrumbs(mainG, CSVRows, dir, field);
             });

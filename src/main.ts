@@ -465,37 +465,34 @@ export default class BCPlugin extends Plugin {
   // SECTION OneSource
 
   populateMain(
-    main: MultiGraph,
-    basename: string,
+    mainG: MultiGraph,
+    source: string,
     dir: Directions,
     field: string,
-    targets: string[],
+    target: string,
     sourceOrder: number,
-    fileFrontmatterArr: dvFrontmatterCache[]
+    targetOrder: number
   ): void {
-    addNodesIfNot(main, [basename], {
+    addNodesIfNot(mainG, [source], {
       //@ts-ignore
       dir,
       field,
       order: sourceOrder,
     });
-    targets.forEach((target) => {
-      const targetOrder =
-        parseInt(
-          fileFrontmatterArr.find((arr) => arr.file.basename === target)?.order
-        ) ?? 9999;
-      addNodesIfNot(main, [target], {
-        //@ts-ignore
-        dir,
-        field,
-        order: targetOrder,
-      });
-      addEdgeIfNot(main, basename, target, {
-        //@ts-ignore
-        dir,
-        field,
-      });
+    // targets.forEach((target) => {
+
+    addNodesIfNot(mainG, [target], {
+      //@ts-ignore
+      dir,
+      field,
+      order: targetOrder,
     });
+    addEdgeIfNot(mainG, source, target, {
+      //@ts-ignore
+      dir,
+      field,
+    });
+    // });
   }
 
   async getCSVRows() {
@@ -730,20 +727,23 @@ export default class BCPlugin extends Plugin {
       jugglLink.links.forEach((link) => {
         const { dir, field, linksInLine } = link;
         if (dir === "") return;
-        const sourceOrder =
-          parseInt(
-            fileFrontmatterArr.find((arr) => arr.file.basename === basename)
-              ?.order
-          ) ?? 9999;
-        this.populateMain(
-          mainG,
-          basename,
-          dir,
-          field,
-          linksInLine,
-          sourceOrder,
-          fileFrontmatterArr
-        );
+        const sourceOrder = this.getTargetOrder(fileFrontmatterArr, basename);
+        linksInLine.forEach((linkInLine) => {
+          const targetsOrder = this.getTargetOrder(
+            fileFrontmatterArr,
+            linkInLine
+          );
+
+          this.populateMain(
+            mainG,
+            basename,
+            dir,
+            field,
+            linkInLine,
+            sourceOrder,
+            targetsOrder
+          );
+        });
       });
     });
   }
@@ -780,24 +780,28 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(fileFront.order) ?? 9999;
+          const sourceOrder = parseInt(fileFront.order as string) ?? 9999;
+          const targetOrder = this.getTargetOrder(
+            fileFrontmatterArr,
+            folderNoteBasename
+          );
           this.populateMain(
             mainG,
             source,
             "up",
             field as string,
-            [folderNoteBasename],
+            folderNoteBasename,
             sourceOrder,
-            fileFrontmatterArr
+            targetOrder
           );
           this.populateMain(
             mainG,
             folderNoteBasename,
             "down",
             oppField,
-            [source],
-            sourceOrder,
-            fileFrontmatterArr
+            source,
+            targetOrder,
+            sourceOrder
           );
         });
       }
@@ -841,29 +845,39 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(fileFront.order) ?? 9999;
+          const sourceOrder = parseInt(fileFront.order as string) ?? 9999;
+          const targetOrder = this.getTargetOrder(
+            fileFrontmatterArr,
+            tagNoteBasename
+          );
           this.populateMain(
             mainG,
             source,
             "up",
             field as string,
-            [tagNoteBasename],
+            tagNoteBasename,
             sourceOrder,
-            fileFrontmatterArr
+            targetOrder
           );
           this.populateMain(
             mainG,
             tagNoteBasename,
             "down",
             oppField,
-            [source],
-            sourceOrder,
-            fileFrontmatterArr
+            source,
+            targetOrder,
+            sourceOrder
           );
         });
       }
     });
   }
+
+  getTargetOrder = (fileFrontmatterArr: dvFrontmatterCache[], target: string) =>
+    parseInt(
+      fileFrontmatterArr.find((arr) => arr.file.basename === target)
+        ?.order as string
+    ) ?? 9999;
 
   async initGraphs(): Promise<MultiGraph> {
     const { settings, app } = this;
@@ -891,15 +905,19 @@ export default class BCPlugin extends Plugin {
       iterateHiers(userHiers, (hier, dir, field) => {
         const values = this.parseFieldValue(fileFrontmatter[field]);
         const sourceOrder = parseInt(fileFrontmatter.order as string) ?? 9999;
-        this.populateMain(
-          mainG,
-          basename,
-          dir,
-          field,
-          values,
-          sourceOrder,
-          fileFrontmatterArr
-        );
+
+        values.forEach((target) => {
+          const targetOrder = this.getTargetOrder(fileFrontmatterArr, target);
+          this.populateMain(
+            mainG,
+            basename,
+            dir,
+            field,
+            target,
+            sourceOrder,
+            targetOrder
+          );
+        });
         if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
       });
     });
