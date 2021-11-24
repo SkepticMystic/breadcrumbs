@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.3...1.11.0) (2021-11-24)
+
+
+### Features
+
+* :sparkles: Field Suggestor! Type "BC-" at the start of a line to trigger ([652da4f](https://github.com/SkepticMystic/breadcrumbs/commit/652da4ff89050d35bbbd5b6a306a31ef4d3e0a24))
+
 ### [1.10.3](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.2...1.10.3) (2021-11-24)
 
 
