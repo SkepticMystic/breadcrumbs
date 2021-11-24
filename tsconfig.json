@@ -17,6 +17,7 @@
       "src": ["src/*"]
     },
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "lib": ["ES2019", "DOM"]
   }
 }

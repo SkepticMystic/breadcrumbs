@@ -2,7 +2,7 @@ import { MultiGraph } from "graphology";
 import type { Attributes } from "graphology-types";
 import { DIRECTIONS } from "./constants";
 import type { Directions, UserHier } from "./interfaces";
-
+// const DIRECTIONS = ["up", "same", "down", "next", "prev"];
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -20,7 +20,7 @@ export function closeImpliedLinks(
 export function removeUnlinkedNodes(g: MultiGraph) {
   const copy = g.copy();
   copy.forEachNode((node) => {
-    if (!copy.neighbors(node).length) copy.dropNode(node);
+    if (!copy.degree(node)) copy.dropNode(node);
   });
   return copy;
 }

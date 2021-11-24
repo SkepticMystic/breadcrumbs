@@ -3,11 +3,14 @@ import { MultiGraph } from "graphology";
 import { myFunc } from "../src/utils";
 // import { DIRECTIONS } from "../src/constants";
 
+import { getOppDir } from "../src/graphUtils";
+
 require("approvals").mocha();
 
 describe("When running some tests", function () {
   it("should be able to use Approvals", function () {
     const g = new MultiGraph();
+    console.log(getOppDir("up"));
     // const data = myFunc("Hello World!" + DIRECTIONS[0]);
     const data = myFunc("Hello World!");
     // const userHiers = [
