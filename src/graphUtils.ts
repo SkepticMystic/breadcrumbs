@@ -2,7 +2,7 @@ import { MultiGraph } from "graphology";
 import type { Attributes } from "graphology-types";
 // import { DIRECTIONS } from "./constants";
 import type { Directions, UserHier } from "./interfaces";
-import type { App } from "obsidian";
+import type { App, ItemView, WorkspaceLeaf } from "obsidian";
 
 // TODO - this is a hack to get the graph to work with the approvals
 // I shouldn't need
