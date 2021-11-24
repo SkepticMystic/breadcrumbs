@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.11.1...1.12.0) (2021-11-24)
+
+
+### Features
+
+* **LinkNote:** :sparkles: Link Notes! Add 'BC-link-note: fieldName' to a note, and all links leaving that note will be added to the graph with that fieldname ([db0114d](https://github.com/SkepticMystic/breadcrumbs/commit/db0114d1264c839bdc14a7342bd9c518efe25eae))
+
 ### [1.11.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.11.0...1.11.1) (2021-11-24)
 
 ## [1.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.3...1.11.0) (2021-11-24)
