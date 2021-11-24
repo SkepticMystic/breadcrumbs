@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.3](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.2...1.10.3) (2021-11-24)
+
+
+### Bug Fixes
+
+* :bug: More granular graph building + fix order issues ([72b0243](https://github.com/SkepticMystic/breadcrumbs/commit/72b024351fe19d89c4fe85ac2da9793a575353f2))
+* **Path View:** :bug: For real, don't try querySelect a non-existent selector ([6853d4c](https://github.com/SkepticMystic/breadcrumbs/commit/6853d4c9e93a1464c84f7aa1dd97de3c5a3b77ac))
+
 ### [1.10.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.1...1.10.2) (2021-11-24)
 
 
