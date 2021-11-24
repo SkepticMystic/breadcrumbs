@@ -19,7 +19,11 @@ import {
   copy,
   openView,
 } from "obsidian-community-lib/dist/utils";
+import util from "util";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
+import NextPrev from "./Components/NextPrev.svelte";
+import TrailGrid from "./Components/TrailGrid.svelte";
+import TrailPath from "./Components/TrailPath.svelte";
 import {
   DEFAULT_SETTINGS,
   dropHeaderOrAlias,
@@ -30,6 +34,18 @@ import {
   VIEWS,
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
+import {
+  addEdgeIfNot,
+  addNodesIfNot,
+  getFieldInfo,
+  getInNeighbours,
+  getOppDir,
+  getOppFields,
+  getReflexiveClosure,
+  getSinks,
+  getSubForFields,
+  getSubInDirs,
+} from "./graphUtils";
 import type {
   BCSettings,
   Directions,
@@ -54,21 +70,6 @@ import {
   splitAtYaml,
 } from "./sharedFunctions";
 import { VisModal } from "./VisModal";
-import util from "util";
-import NextPrev from "./Components/NextPrev.svelte";
-import TrailGrid from "./Components/TrailGrid.svelte";
-import TrailPath from "./Components/TrailPath.svelte";
-import {
-  getSubInDirs,
-  getReflexiveClosure,
-  getSinks,
-  getInNeighbours,
-  addNodesIfNot,
-  addEdgeIfNot,
-  getFieldInfo,
-  getOppFields,
-  getSubForFields,
-} from "./graphUtils";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -478,7 +479,8 @@ export default class BCPlugin extends Plugin {
     field: string,
     target: string,
     sourceOrder: number,
-    targetOrder: number
+    targetOrder: number,
+    opps?: { oppField: string; oppDir: Directions }
   ): void {
     addNodesIfNot(mainG, [source], {
       dir,
@@ -494,11 +496,17 @@ export default class BCPlugin extends Plugin {
       //@ts-ignore
       order: targetOrder,
     });
+
     addEdgeIfNot(mainG, source, target, {
-      //@ts-ignore
       dir,
       field,
     });
+    if (opps) {
+      addEdgeIfNot(mainG, target, source, {
+        dir: opps.oppDir,
+        field: opps.oppField,
+      });
+    }
     // });
   }
 
@@ -754,6 +762,7 @@ export default class BCPlugin extends Plugin {
 
   addFolderNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
+    const upFields = getFields(userHiers, "up");
     frontms.forEach((frontm) => {
       const folderNoteFile = frontm.file;
       if (frontm["BC-folder-note"]) {
@@ -769,7 +778,6 @@ export default class BCPlugin extends Plugin {
           .map(getDVBasename);
 
         let field = frontm["BC-folder-note-up"];
-        const upFields = getFields(userHiers, "up");
         if (typeof field !== "string" || !upFields.includes(field)) {
           field = upFields[0];
         }
@@ -790,17 +798,18 @@ export default class BCPlugin extends Plugin {
             field as string,
             folderNoteBasename,
             sourceOrder,
-            targetOrder
-          );
-          this.populateMain(
-            mainG,
-            folderNoteBasename,
-            "down",
-            oppField,
-            source,
             targetOrder,
-            sourceOrder
+            { oppDir: "down", oppField }
           );
+          // this.populateMain(
+          //   mainG,
+          //   folderNoteBasename,
+          //   "down",
+          //   oppField,
+          //   source,
+          //   targetOrder,
+          //   sourceOrder
+          // );
         });
       }
     });
@@ -808,6 +817,7 @@ export default class BCPlugin extends Plugin {
 
   addTagNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
+    const upFields = getFields(userHiers, "up");
     frontms.forEach((frontm) => {
       const tagNoteFile = frontm.file;
       if (frontm["BC-tag-note"]) {
@@ -828,7 +838,6 @@ export default class BCPlugin extends Plugin {
           .map(getDVBasename);
 
         let field = frontm["BC-tag-note-up"];
-        const upFields = getFields(userHiers, "up");
         if (typeof field !== "string" || !upFields.includes(field)) {
           field = upFields[0];
         }
@@ -849,17 +858,18 @@ export default class BCPlugin extends Plugin {
             field as string,
             tagNoteBasename,
             sourceOrder,
-            targetOrder
-          );
-          this.populateMain(
-            mainG,
-            tagNoteBasename,
-            "down",
-            oppField,
-            source,
             targetOrder,
-            sourceOrder
+            { oppDir: "down", oppField }
           );
+          // this.populateMain(
+          //   mainG,
+          //   tagNoteBasename,
+          //   "down",
+          //   oppField,
+          //   source,
+          //   targetOrder,
+          //   sourceOrder
+          // );
         });
       }
     });
