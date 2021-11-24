@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { App, TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
-  import type { BCSettings, SquareProps } from "src/interfaces";
-  import type MatrixView from "src/MatrixView";
+  import type { BCSettings, SquareProps } from "../interfaces";
+  import type MatrixView from "../MatrixView";
 
   export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;

@@ -4,7 +4,7 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import type BCPlugin from "src/main";
+  import type BCPlugin from "../main";
 
   export let sortedTrails: string[][];
   export let app: App;

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Notice } from "obsidian";
-  import type { UserHier } from "src/interfaces";
-  import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "src/constants";
-  import type BCPlugin from "src/main";
-  import { hierToStr, splitAndTrim, swapItems } from "src/sharedFunctions";
+  import type { UserHier } from "../interfaces";
+  import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "../constants";
+  import type BCPlugin from "../main";
+  import { hierToStr, splitAndTrim, swapItems } from "../sharedFunctions";
   import FaListUl from "svelte-icons/fa/FaListUl.svelte";
   import FaPlus from "svelte-icons/fa/FaPlus.svelte";
   import FaRegTrashAlt from "svelte-icons/fa/FaRegTrashAlt.svelte";

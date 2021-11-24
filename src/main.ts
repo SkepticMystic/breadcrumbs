@@ -19,7 +19,7 @@ import {
   copy,
   openView,
 } from "obsidian-community-lib/dist/utils";
-import { BCSettingTab } from "src/BreadcrumbsSettingTab";
+import { BCSettingTab } from "./BreadcrumbsSettingTab";
 import {
   DEFAULT_SETTINGS,
   dropHeaderOrAlias,
@@ -28,8 +28,8 @@ import {
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   VIEWS,
-} from "src/constants";
-import { FieldSuggestor } from "src/FieldSuggestor";
+} from "./constants";
+import { FieldSuggestor } from "./FieldSuggestor";
 import type {
   BCSettings,
   Directions,
@@ -39,7 +39,7 @@ import type {
   JugglLink,
   MyView,
   RawValue,
-} from "src/interfaces";
+} from "./interfaces";
 import {
   addEdgeIfNot,
   addNodesIfNot,
@@ -61,8 +61,8 @@ import {
   iterateHiers,
   makeWiki,
   splitAtYaml,
-} from "src/sharedFunctions";
-import { VisModal } from "src/VisModal";
+} from "./sharedFunctions";
+import { VisModal } from "./VisModal";
 import util from "util";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";

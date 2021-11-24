@@ -13,11 +13,11 @@ import {
   REAlCLOSED,
   RELATIONS,
   VISTYPES,
-} from "src/constants";
-import type { Relations, visTypes } from "src/interfaces";
-import type BCPlugin from "src/main";
-import MatrixView from "src/MatrixView";
-import { debug, getFields, splitAndTrim } from "src/sharedFunctions";
+} from "./constants";
+import type { Relations, visTypes } from "./interfaces";
+import type BCPlugin from "./main";
+import MatrixView from "./MatrixView";
+import { debug, getFields, splitAndTrim } from "./sharedFunctions";
 import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
 

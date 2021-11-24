@@ -1,4 +1,4 @@
-import DucksView from "src/DucksView";
+import DucksView from "./DucksView";
 import type {
   BCSettings,
   Directions,
@@ -6,9 +6,9 @@ import type {
   UserHier,
   ViewInfo,
   visTypes,
-} from "src/interfaces";
-import MatrixView from "src/MatrixView";
-import StatsView from "src/StatsView";
+} from "./interfaces";
+import MatrixView from "./MatrixView";
+import StatsView from "./StatsView";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";

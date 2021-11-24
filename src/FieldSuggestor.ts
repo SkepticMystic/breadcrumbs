@@ -6,8 +6,8 @@ import {
   EditorSuggestTriggerInfo,
   TFile,
 } from "obsidian";
-import { BC_FIELDS } from "src/constants";
-import type BCPlugin from "src/main";
+import { BC_FIELDS } from "./constants";
+import type BCPlugin from "./main";
 
 export class FieldSuggestor extends EditorSuggest<string> {
   plugin: BCPlugin;

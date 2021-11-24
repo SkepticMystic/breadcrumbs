@@ -1,9 +1,9 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
 import { App, Modal, Notice } from "obsidian";
-import type { AdjListItem, d3Graph } from "src/interfaces";
-import type BCPlugin from "src/main";
-import { getInNeighbours, getOutNeighbours, getSinks } from "src/sharedFunctions";
+import type { AdjListItem, d3Graph } from "./interfaces";
+import type BCPlugin from "./main";
+import { getInNeighbours, getOutNeighbours, getSinks } from "./sharedFunctions";
 import VisComp from "./Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {

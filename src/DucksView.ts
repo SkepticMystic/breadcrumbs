@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import { STATS_VIEW } from "src/constants";
-import type BCPlugin from "src/main";
+import { STATS_VIEW } from "./constants";
+import type BCPlugin from "./main";
 import Ducks from "./Components/Ducks.svelte";
 
 export default class DucksView extends ItemView {

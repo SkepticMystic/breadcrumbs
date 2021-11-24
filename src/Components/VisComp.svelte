@@ -1,21 +1,21 @@
 <script lang="ts">
-  import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "src/constants";
-  import type { BCSettings, VisGraphs, visTypes } from "src/interfaces";
+  import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
+  import type { BCSettings, VisGraphs, visTypes } from "../interfaces";
   import {
     closeImpliedLinks,
     getSubInDirs,
     removeUnlinkedNodes,
-  } from "src/sharedFunctions";
-  import type { VisModal } from "src/VisModal";
-  import { arcDiagram } from "src/Visualisations/ArcDiagram";
-  import { circlePacking } from "src/Visualisations/CirclePacking";
-  import { edgeBundling } from "src/Visualisations/EdgeBundling";
-  import { forceDirectedG } from "src/Visualisations/ForceDirectedG";
-  import { icicle } from "src/Visualisations/Icicle";
-  import { radialTree } from "src/Visualisations/RadialTree";
-  import { sunburst } from "src/Visualisations/Sunburst";
-  import { tidyTree } from "src/Visualisations/TidyTree";
-  import { treeMap } from "src/Visualisations/TreeMap";
+  } from "../sharedFunctions";
+  import type { VisModal } from "../VisModal";
+  import { arcDiagram } from "../Visualisations/ArcDiagram";
+  import { circlePacking } from "../Visualisations/CirclePacking";
+  import { edgeBundling } from "../Visualisations/EdgeBundling";
+  import { forceDirectedG } from "../Visualisations/ForceDirectedG";
+  import { icicle } from "../Visualisations/Icicle";
+  import { radialTree } from "../Visualisations/RadialTree";
+  import { sunburst } from "../Visualisations/Sunburst";
+  import { tidyTree } from "../Visualisations/TidyTree";
+  import { treeMap } from "../Visualisations/TreeMap";
 
   export let modal: VisModal;
   export let settings: BCSettings;

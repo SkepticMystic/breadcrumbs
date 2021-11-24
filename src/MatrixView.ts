@@ -4,14 +4,14 @@ import {
   blankRealNImplied,
   MATRIX_VIEW,
   TRAIL_ICON,
-} from "src/constants";
+} from "./constants";
 import type {
   BCSettings,
   Directions,
   internalLinkObj,
   UserHier,
-} from "src/interfaces";
-import type BCPlugin from "src/main";
+} from "./interfaces";
+import type BCPlugin from "./main";
 import {
   debugGroupEnd,
   debugGroupStart,
@@ -21,7 +21,7 @@ import {
   getReflexiveClosure,
   getSubInDirs,
   linkClass,
-} from "src/sharedFunctions";
+} from "./sharedFunctions";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
 

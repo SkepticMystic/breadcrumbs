@@ -1,9 +1,9 @@
 import type Graph from "graphology";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
-import type { DIRECTIONS } from "src/constants";
-import type DucksView from "src/DucksView";
-import type MatrixView from "src/MatrixView";
-import type StatsView from "src/StatsView";
+import type { DIRECTIONS } from "./constants";
+import type DucksView from "./DucksView";
+import type MatrixView from "./MatrixView";
+import type StatsView from "./StatsView";
 
 export interface BCSettings {
   aliasesInIndex: boolean;

@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { App } from "obsidian";
   import { openOrSwitch } from "obsidian-community-lib";
-  import type { SquareItem } from "src/interfaces";
-  import type BCPlugin from "src/main";
-  import { linkClass } from "src/sharedFunctions";
+  import type { SquareItem } from "../interfaces";
+  import type BCPlugin from "../main";
+  import { linkClass } from "../sharedFunctions";
   export let app: App;
   export let plugin: BCPlugin;
   export let next: SquareItem[];

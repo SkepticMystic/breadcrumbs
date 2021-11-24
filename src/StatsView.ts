@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import { STATS_VIEW } from "src/constants";
-import type BCPlugin from "src/main";
+import { STATS_VIEW } from "./constants";
+import type BCPlugin from "./main";
 import Stats from "./Components/Stats.svelte";
 
 export default class StatsView extends ItemView {

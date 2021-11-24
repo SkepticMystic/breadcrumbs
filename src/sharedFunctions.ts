@@ -8,15 +8,15 @@ import {
   DIRECTIONS,
   dropHeaderOrAlias,
   splitLinksRegex,
-} from "src/constants";
+} from "./constants";
 import type {
   BCSettings,
   Directions,
   MetaeditApi,
   RealNImplied,
   UserHier,
-} from "src/interfaces";
-import type BCPlugin from "src/main";
+} from "./interfaces";
+import type BCPlugin from "./main";
 
 export function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b);

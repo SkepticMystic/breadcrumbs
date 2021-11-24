@@ -1,8 +1,8 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
 import type { App, TFile } from "obsidian";
-import type { d3Node } from "src/interfaces";
-import { graphlibToD3, VisModal } from "src/VisModal";
+import type { d3Node } from "../interfaces";
+import { graphlibToD3, VisModal } from "../VisModal";
 import { openOrSwitch } from "obsidian-community-lib";
 
 export const arcDiagram = (

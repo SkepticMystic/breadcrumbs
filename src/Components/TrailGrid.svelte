@@ -5,7 +5,7 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import type BCPlugin from "src/main";
+  import type BCPlugin from "../main";
   import {
     closeImpliedLinks,
     getOutNeighbours,
@@ -15,7 +15,7 @@
     padArray,
     runs,
     transpose,
-  } from "src/sharedFunctions";
+  } from "../sharedFunctions";
 
   export let sortedTrails: string[][];
   export let app: App;

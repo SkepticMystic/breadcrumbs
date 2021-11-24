@@ -1,9 +1,9 @@
 <script lang="ts">
   import { sum } from "lodash";
   import { copy } from "obsidian-community-lib";
-  import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "src/constants";
-  import type { Directions, HierData } from "src/interfaces";
-  import type BCPlugin from "src/main";
+  import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "../constants";
+  import type { Directions, HierData } from "../interfaces";
+  import type BCPlugin from "../main";
   import {
     closeImpliedLinks,
     debug,
@@ -11,7 +11,7 @@
     getSubForFields,
     hierToStr,
     makeWiki,
-  } from "src/sharedFunctions";
+  } from "../sharedFunctions";
 
   export let plugin: BCPlugin;
 
