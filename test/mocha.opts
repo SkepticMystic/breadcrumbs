@@ -4,3 +4,4 @@
 --full-trace
 --bail
 test/**/*.spec.ts
+test/*.spec.ts

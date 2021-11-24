@@ -5,8 +5,8 @@
     "src/**/*",
     "src/*",
     "**/*.ts",
-    "test/test.js",
     "test/**/*.ts",
+    "test/*.ts",
     "typings/**/*.ts"
   ],
   "exclude": ["node_modules/*"],
