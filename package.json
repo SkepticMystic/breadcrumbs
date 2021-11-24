@@ -7,7 +7,7 @@
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup -c --environment BUILD:production",
     "release": "standard-version",
-    "test": "ts-mocha"
+    "test": "tsc test/test && ts-mocha"
   },
   "standard-version": {
     "t": ""
