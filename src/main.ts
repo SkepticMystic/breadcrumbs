@@ -1218,11 +1218,17 @@ export default class BCPlugin extends Plugin {
       return;
     }
 
-    const max_width = getComputedStyle(
-      document.querySelector(
-        ".markdown-preview-view.is-readable-line-width .markdown-preview-sizer"
-      )
-    ).getPropertyValue("max-width");
+    const elForMaxWidth =
+      mode === "preview"
+        ? ".markdown-preview-view.is-readable-line-width .markdown-preview-sizer"
+        : "";
+
+    const max_width =
+      elForMaxWidth !== ""
+        ? getComputedStyle(
+            document.querySelector(elForMaxWidth)
+          ).getPropertyValue("max-width")
+        : null;
 
     const trailDiv = createDiv({
       cls: `BC-trail ${
