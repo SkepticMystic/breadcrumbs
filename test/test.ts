@@ -1,10 +1,11 @@
-// import { MultiGraph } from "graphology";
+import { MultiGraph } from "graphology";
 // import { getReflexiveClosure } from "src/sharedFunctions";
 
 require("approvals").mocha();
 
 describe("When running some tests", function () {
   it("should be able to use Approvals", function () {
+    const g = new MultiGraph();
     const data = "Hello World!";
     // const userHiers = [
     //   {
