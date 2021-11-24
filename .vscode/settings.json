@@ -15,6 +15,7 @@
         "nextPrev",
         "DucksView",
         "FolderNote",
-        "TagNote"
+        "TagNote",
+        "LinkNote"
     ]
 }

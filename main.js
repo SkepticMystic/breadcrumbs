@@ -21871,6 +21871,7 @@ class DucksView extends obsidian.ItemView {
     }
 }
 
+// const DIRECTIONS = ["up", "same", "down", "next", "prev"];
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -21884,7 +21885,7 @@ function closeImpliedLinks(real, implied) {
 function removeUnlinkedNodes(g) {
     const copy = g.copy();
     copy.forEachNode((node) => {
-        if (!copy.neighbors(node).length)
+        if (!copy.degree(node))
             copy.dropNode(node);
     });
     return copy;
@@ -24889,6 +24890,11 @@ const BC_FIELDS = [
         after: ": ",
     },
     {
+        field: "BC-link-note",
+        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value. ",
+        after: ": ",
+    },
+    {
         field: "BC-hide-trail",
         desc: "Don't show the trail in this note",
         after: ": true",
@@ -26070,11 +26076,8 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 .setValue(settings.indexNotes.join(", "));
             text.inputEl.onblur = async () => {
                 const splits = splitAndTrim(text.getValue());
-                if (splits[0] === undefined) {
-                    settings.indexNotes = splits;
-                    await plugin.saveSettings();
-                }
-                else if (splits.every((index) => isInVault(this.app, index))) {
+                if (splits[0] === undefined ||
+                    splits.every((index) => isInVault(this.app, index))) {
                     settings.indexNotes = splits;
                     await plugin.saveSettings();
                 }
@@ -49454,9 +49457,9 @@ class BCPlugin extends obsidian.Plugin {
                 }
             }
         };
-        this.getTargetOrder = (fileFrontmatterArr, target) => {
+        this.getTargetOrder = (frontms, target) => {
             var _a, _b;
-            return (_b = parseInt((_a = fileFrontmatterArr.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
+            return (_b = parseInt((_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
         };
     }
     async refreshIndex() {
@@ -49719,23 +49722,23 @@ class BCPlugin extends obsidian.Plugin {
         debugGroupStart(settings, "debugMode", "getDVMetadataCache");
         this.debug("Using Dataview");
         debugGroupStart(settings, "superDebugMode", "dvCaches");
-        const fileFrontmatterArr = files.map((file) => {
+        const frontms = files.map((file) => {
             this.superDebug(`GetDVMetadataCache: ${file.basename}`);
             const dvCache = app.plugins.plugins.dataview.api.page(file.path);
             this.superDebug({ dvCache });
             return dvCache;
         });
         debugGroupEnd(settings, "superDebugMode");
-        this.debug({ fileFrontmatterArr });
+        this.debug({ frontms });
         debugGroupEnd(settings, "debugMode");
-        return fileFrontmatterArr;
+        return frontms;
     }
     getObsMetadataCache(files) {
         const { settings, app } = this;
         debugGroupStart(settings, "debugMode", "getObsMetadataCache");
         this.debug("Using Obsidian");
         debugGroupStart(settings, "superDebugMode", "obsCaches");
-        const fileFrontmatterArr = files.map((file) => {
+        const frontms = files.map((file) => {
             var _a;
             this.superDebug(`GetObsMetadataCache: ${file.basename}`);
             const obs = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter;
@@ -49746,9 +49749,9 @@ class BCPlugin extends obsidian.Plugin {
                 return { file };
         });
         debugGroupEnd(settings, "superDebugMode");
-        this.debug({ fileFrontmatterArr });
+        this.debug({ frontms });
         debugGroupEnd(settings, "debugMode");
-        return fileFrontmatterArr;
+        return frontms;
     }
     // SECTION OneSource
     populateMain(mainG, source, dir, field, target, sourceOrder, targetOrder) {
@@ -49963,34 +49966,34 @@ class BCPlugin extends obsidian.Plugin {
             }
         });
     }
-    addJugglLinksToGraph(jugglLinks, fileFrontmatterArr, mainG) {
+    addJugglLinksToGraph(jugglLinks, frontms, mainG) {
         jugglLinks.forEach((jugglLink) => {
             const { basename } = jugglLink.file;
             jugglLink.links.forEach((link) => {
                 const { dir, field, linksInLine } = link;
                 if (dir === "")
                     return;
-                const sourceOrder = this.getTargetOrder(fileFrontmatterArr, basename);
+                const sourceOrder = this.getTargetOrder(frontms, basename);
                 linksInLine.forEach((linkInLine) => {
-                    const targetsOrder = this.getTargetOrder(fileFrontmatterArr, linkInLine);
+                    const targetsOrder = this.getTargetOrder(frontms, linkInLine);
                     this.populateMain(mainG, basename, dir, field, linkInLine, sourceOrder, targetsOrder);
                 });
             });
         });
     }
-    addFolderNoteLinksToGraph(fileFrontmatterArr, mainG) {
+    addFolderNotesToGraph(frontms, mainG) {
         const { userHiers } = this.settings;
-        fileFrontmatterArr.forEach((fileFront) => {
+        frontms.forEach((frontm) => {
             var _a;
-            const folderNoteFile = fileFront.file;
-            if (fileFront["BC-folder-note"]) {
+            const folderNoteFile = frontm.file;
+            if (frontm["BC-folder-note"]) {
                 const folderNoteBasename = getDVBasename(folderNoteFile);
                 const folder = getFolder(folderNoteFile);
-                const sources = fileFrontmatterArr
+                const sources = frontms
                     .map((ff) => ff.file)
                     .filter((file) => getFolder(file) === folder && file.path !== folderNoteFile.path)
                     .map(getDVBasename);
-                let field = fileFront["BC-folder-note-up"];
+                let field = frontm["BC-folder-note-up"];
                 const upFields = getFields(userHiers, "up");
                 if (typeof field !== "string" || !upFields.includes(field)) {
                     field = upFields[0];
@@ -50001,25 +50004,25 @@ class BCPlugin extends obsidian.Plugin {
                 sources.forEach((source) => {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
-                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, folderNoteBasename);
+                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
+                    const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
                     this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder);
                     this.populateMain(mainG, folderNoteBasename, "down", oppField, source, targetOrder, sourceOrder);
                 });
             }
         });
     }
-    addTagLinksToGraph(fileFrontmatterArr, mainG) {
+    addTagNotesToGraph(frontms, mainG) {
         const { userHiers } = this.settings;
-        fileFrontmatterArr.forEach((fileFront) => {
+        frontms.forEach((frontm) => {
             var _a;
-            const tagNoteFile = fileFront.file;
-            if (fileFront["BC-tag-note"]) {
+            const tagNoteFile = frontm.file;
+            if (frontm["BC-tag-note"]) {
                 const tagNoteBasename = getDVBasename(tagNoteFile);
-                const tag = fileFront["BC-tag-note"].trim();
+                const tag = frontm["BC-tag-note"].trim();
                 if (!tag.startsWith("#"))
                     return;
-                const sources = fileFrontmatterArr
+                const sources = frontms
                     .map((ff) => ff.file)
                     .filter((file) => {
                     var _a, _b;
@@ -50028,7 +50031,7 @@ class BCPlugin extends obsidian.Plugin {
                             .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
                 })
                     .map(getDVBasename);
-                let field = fileFront["BC-tag-note-up"];
+                let field = frontm["BC-tag-note-up"];
                 const upFields = getFields(userHiers, "up");
                 if (typeof field !== "string" || !upFields.includes(field)) {
                     field = upFields[0];
@@ -50039,8 +50042,46 @@ class BCPlugin extends obsidian.Plugin {
                 sources.forEach((source) => {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = (_a = parseInt(fileFront.order)) !== null && _a !== void 0 ? _a : 9999;
-                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, tagNoteBasename);
+                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
+                    const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
+                    this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder);
+                    this.populateMain(mainG, tagNoteBasename, "down", oppField, source, targetOrder, sourceOrder);
+                });
+            }
+        });
+    }
+    addLinkNotesToGraph(frontms, mainG) {
+        const { userHiers } = this.settings;
+        frontms.forEach((frontm) => {
+            var _a;
+            const tagNoteFile = frontm.file;
+            if (frontm["BC-tag-note"]) {
+                const tagNoteBasename = getDVBasename(tagNoteFile);
+                const tag = frontm["BC-tag-note"].trim();
+                if (!tag.startsWith("#"))
+                    return;
+                const sources = frontms
+                    .map((ff) => ff.file)
+                    .filter((file) => {
+                    var _a, _b;
+                    return file.path !== tagNoteFile.path &&
+                        ((_b = (_a = this.app.metadataCache
+                            .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
+                })
+                    .map(getDVBasename);
+                let field = frontm["BC-tag-note-up"];
+                const upFields = getFields(userHiers, "up");
+                if (typeof field !== "string" || !upFields.includes(field)) {
+                    field = upFields[0];
+                }
+                const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+                if (!oppField)
+                    return;
+                sources.forEach((source) => {
+                    var _a;
+                    // This is getting the order of the folder note, not the source pointing up to it
+                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
+                    const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
                     this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder);
                     this.populateMain(mainG, tagNoteBasename, "down", oppField, source, targetOrder, sourceOrder);
                 });
@@ -50052,26 +50093,25 @@ class BCPlugin extends obsidian.Plugin {
         debugGroupStart(settings, "debugMode", "Initialise Graphs");
         const files = app.vault.getMarkdownFiles();
         const dvQ = !!app.plugins.enabledPlugins.has("dataview");
-        let fileFrontmatterArr = dvQ
+        let frontms = dvQ
             ? this.getDVMetadataCache(files)
             : this.getObsMetadataCache(files);
-        if (fileFrontmatterArr[0] === undefined) {
+        if (frontms[0] === undefined)
             return new graphology_umd_min.MultiGraph();
-        }
         const { userHiers } = settings;
         const mainG = new graphology_umd_min.MultiGraph();
         if (userHiers.length === 0)
             return mainG;
         const useCSV = settings.CSVPaths !== "";
         const CSVRows = useCSV ? await this.getCSVRows() : [];
-        fileFrontmatterArr.forEach((fileFrontmatter) => {
-            const basename = getDVBasename(fileFrontmatter.file);
+        frontms.forEach((frontm) => {
+            const basename = getDVBasename(frontm.file);
             iterateHiers(userHiers, (hier, dir, field) => {
                 var _a;
-                const values = this.parseFieldValue(fileFrontmatter[field]);
-                const sourceOrder = (_a = parseInt(fileFrontmatter.order)) !== null && _a !== void 0 ? _a : 9999;
+                const values = this.parseFieldValue(frontm[field]);
+                const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
                 values.forEach((target) => {
-                    const targetOrder = this.getTargetOrder(fileFrontmatterArr, target);
+                    const targetOrder = this.getTargetOrder(frontms, target);
                     this.populateMain(mainG, basename, dir, field, target, sourceOrder, targetOrder);
                 });
                 if (useCSV)
@@ -50083,7 +50123,7 @@ class BCPlugin extends obsidian.Plugin {
             ? await this.getJugglLinks(files)
             : [];
         if (jugglLinks.length)
-            this.addJugglLinksToGraph(jugglLinks, fileFrontmatterArr, mainG);
+            this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
         // !SECTION  Juggl Links
         // SECTION  Hierarchy Notes
         debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
@@ -50104,11 +50144,14 @@ class BCPlugin extends obsidian.Plugin {
         // !SECTION  Hierarchy Notes
         debugGroupEnd(settings, "debugMode");
         console.time("Folder-Notes");
-        this.addFolderNoteLinksToGraph(fileFrontmatterArr, mainG);
+        this.addFolderNotesToGraph(frontms, mainG);
         console.timeEnd("Folder-Notes");
         console.time("Tag-Notes");
-        this.addTagLinksToGraph(fileFrontmatterArr, mainG);
+        this.addTagNotesToGraph(frontms, mainG);
         console.timeEnd("Tag-Notes");
+        console.time("Link-Notes");
+        this.addLinkNotesToGraph(frontms, mainG);
+        console.timeEnd("Link-Notes");
         files.forEach((file) => {
             const { basename } = file;
             addNodesIfNot(mainG, [basename]);

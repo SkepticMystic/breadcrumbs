@@ -540,10 +540,10 @@ export class BCSettingTab extends PluginSettingTab {
 
         text.inputEl.onblur = async () => {
           const splits = splitAndTrim(text.getValue());
-          if (splits[0] === undefined) {
-            settings.indexNotes = splits;
-            await plugin.saveSettings();
-          } else if (splits.every((index) => isInVault(this.app, index))) {
+          if (
+            splits[0] === undefined ||
+            splits.every((index) => isInVault(this.app, index))
+          ) {
             settings.indexNotes = splits;
             await plugin.saveSettings();
           } else {

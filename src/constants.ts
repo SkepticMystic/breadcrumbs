@@ -106,6 +106,11 @@ export const BC_FIELDS = [
     after: ": ",
   },
   {
+    field: "BC-link-note",
+    desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value. ",
+    after: ": ",
+  },
+  {
     field: "BC-hide-trail",
     desc: "Don't show the trail in this note",
     after: ": true",

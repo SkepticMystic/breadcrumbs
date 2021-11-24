@@ -431,7 +431,7 @@ export default class BCPlugin extends Plugin {
     this.debug("Using Dataview");
     debugGroupStart(settings, "superDebugMode", "dvCaches");
 
-    const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
+    const frontms: dvFrontmatterCache[] = files.map((file) => {
       this.superDebug(`GetDVMetadataCache: ${file.basename}`);
 
       const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
@@ -443,9 +443,9 @@ export default class BCPlugin extends Plugin {
     });
 
     debugGroupEnd(settings, "superDebugMode");
-    this.debug({ fileFrontmatterArr });
+    this.debug({ frontms });
     debugGroupEnd(settings, "debugMode");
-    return fileFrontmatterArr;
+    return frontms;
   }
 
   getObsMetadataCache(files: TFile[]) {
@@ -454,7 +454,7 @@ export default class BCPlugin extends Plugin {
     this.debug("Using Obsidian");
     debugGroupStart(settings, "superDebugMode", "obsCaches");
 
-    const fileFrontmatterArr: dvFrontmatterCache[] = files.map((file) => {
+    const frontms: dvFrontmatterCache[] = files.map((file) => {
       this.superDebug(`GetObsMetadataCache: ${file.basename}`);
       const obs: FrontMatterCache =
         app.metadataCache.getFileCache(file)?.frontmatter;
@@ -464,9 +464,9 @@ export default class BCPlugin extends Plugin {
     });
 
     debugGroupEnd(settings, "superDebugMode");
-    this.debug({ fileFrontmatterArr });
+    this.debug({ frontms });
     debugGroupEnd(settings, "debugMode");
-    return fileFrontmatterArr;
+    return frontms;
   }
 
   // SECTION OneSource
@@ -726,7 +726,7 @@ export default class BCPlugin extends Plugin {
 
   addJugglLinksToGraph(
     jugglLinks: JugglLink[],
-    fileFrontmatterArr: dvFrontmatterCache[],
+    frontms: dvFrontmatterCache[],
     mainG: MultiGraph
   ) {
     jugglLinks.forEach((jugglLink) => {
@@ -734,12 +734,9 @@ export default class BCPlugin extends Plugin {
       jugglLink.links.forEach((link) => {
         const { dir, field, linksInLine } = link;
         if (dir === "") return;
-        const sourceOrder = this.getTargetOrder(fileFrontmatterArr, basename);
+        const sourceOrder = this.getTargetOrder(frontms, basename);
         linksInLine.forEach((linkInLine) => {
-          const targetsOrder = this.getTargetOrder(
-            fileFrontmatterArr,
-            linkInLine
-          );
+          const targetsOrder = this.getTargetOrder(frontms, linkInLine);
 
           this.populateMain(
             mainG,
@@ -755,18 +752,15 @@ export default class BCPlugin extends Plugin {
     });
   }
 
-  addFolderNoteLinksToGraph(
-    fileFrontmatterArr: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
+  addFolderNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
-    fileFrontmatterArr.forEach((fileFront) => {
-      const folderNoteFile = fileFront.file;
-      if (fileFront["BC-folder-note"]) {
+    frontms.forEach((frontm) => {
+      const folderNoteFile = frontm.file;
+      if (frontm["BC-folder-note"]) {
         const folderNoteBasename = getDVBasename(folderNoteFile);
         const folder = getFolder(folderNoteFile);
 
-        const sources = fileFrontmatterArr
+        const sources = frontms
           .map((ff) => ff.file)
           .filter(
             (file) =>
@@ -774,7 +768,7 @@ export default class BCPlugin extends Plugin {
           )
           .map(getDVBasename);
 
-        let field = fileFront["BC-folder-note-up"];
+        let field = frontm["BC-folder-note-up"];
         const upFields = getFields(userHiers, "up");
         if (typeof field !== "string" || !upFields.includes(field)) {
           field = upFields[0];
@@ -787,11 +781,8 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(fileFront.order as string) ?? 9999;
-          const targetOrder = this.getTargetOrder(
-            fileFrontmatterArr,
-            folderNoteBasename
-          );
+          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
           this.populateMain(
             mainG,
             source,
@@ -815,19 +806,16 @@ export default class BCPlugin extends Plugin {
     });
   }
 
-  addTagLinksToGraph(
-    fileFrontmatterArr: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
+  addTagNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
-    fileFrontmatterArr.forEach((fileFront) => {
-      const tagNoteFile = fileFront.file;
-      if (fileFront["BC-tag-note"]) {
+    frontms.forEach((frontm) => {
+      const tagNoteFile = frontm.file;
+      if (frontm["BC-tag-note"]) {
         const tagNoteBasename = getDVBasename(tagNoteFile);
-        const tag = (fileFront["BC-tag-note"] as string).trim();
+        const tag = (frontm["BC-tag-note"] as string).trim();
         if (!tag.startsWith("#")) return;
 
-        const sources = fileFrontmatterArr
+        const sources = frontms
           .map((ff) => ff.file)
           .filter(
             (file) =>
@@ -839,7 +827,7 @@ export default class BCPlugin extends Plugin {
           )
           .map(getDVBasename);
 
-        let field = fileFront["BC-tag-note-up"];
+        let field = frontm["BC-tag-note-up"];
         const upFields = getFields(userHiers, "up");
         if (typeof field !== "string" || !upFields.includes(field)) {
           field = upFields[0];
@@ -852,11 +840,8 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(fileFront.order as string) ?? 9999;
-          const targetOrder = this.getTargetOrder(
-            fileFrontmatterArr,
-            tagNoteBasename
-          );
+          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
           this.populateMain(
             mainG,
             source,
@@ -880,10 +865,68 @@ export default class BCPlugin extends Plugin {
     });
   }
 
-  getTargetOrder = (fileFrontmatterArr: dvFrontmatterCache[], target: string) =>
+  addLinkNotesToGraph(frontms, mainG: MultiGraph) {
+    const { userHiers } = this.settings;
+    frontms.forEach((frontm) => {
+      const tagNoteFile = frontm.file;
+      if (frontm["BC-tag-note"]) {
+        const tagNoteBasename = getDVBasename(tagNoteFile);
+        const tag = (frontm["BC-tag-note"] as string).trim();
+        if (!tag.startsWith("#")) return;
+
+        const sources = frontms
+          .map((ff) => ff.file)
+          .filter(
+            (file) =>
+              file.path !== tagNoteFile.path &&
+              this.app.metadataCache
+                .getFileCache(file)
+                ?.tags?.map((t) => t.tag)
+                .some((t) => t.includes(tag))
+          )
+          .map(getDVBasename);
+
+        let field = frontm["BC-tag-note-up"];
+        const upFields = getFields(userHiers, "up");
+        if (typeof field !== "string" || !upFields.includes(field)) {
+          field = upFields[0];
+        }
+
+        const oppField =
+          getOppFields(userHiers, field as string)[0] ??
+          getFields(userHiers, "down")[0];
+        if (!oppField) return;
+
+        sources.forEach((source) => {
+          // This is getting the order of the folder note, not the source pointing up to it
+          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
+          this.populateMain(
+            mainG,
+            source,
+            "up",
+            field as string,
+            tagNoteBasename,
+            sourceOrder,
+            targetOrder
+          );
+          this.populateMain(
+            mainG,
+            tagNoteBasename,
+            "down",
+            oppField,
+            source,
+            targetOrder,
+            sourceOrder
+          );
+        });
+      }
+    });
+  }
+
+  getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
     parseInt(
-      fileFrontmatterArr.find((arr) => arr.file.basename === target)
-        ?.order as string
+      frontms.find((arr) => arr.file.basename === target)?.order as string
     ) ?? 9999;
 
   async initGraphs(): Promise<MultiGraph> {
@@ -892,13 +935,11 @@ export default class BCPlugin extends Plugin {
     const files = app.vault.getMarkdownFiles();
     const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
-    let fileFrontmatterArr: dvFrontmatterCache[] = dvQ
+    let frontms: dvFrontmatterCache[] = dvQ
       ? this.getDVMetadataCache(files)
       : this.getObsMetadataCache(files);
 
-    if (fileFrontmatterArr[0] === undefined) {
-      return new MultiGraph();
-    }
+    if (frontms[0] === undefined) return new MultiGraph();
 
     const { userHiers } = settings;
     const mainG = new MultiGraph();
@@ -907,14 +948,14 @@ export default class BCPlugin extends Plugin {
     const useCSV = settings.CSVPaths !== "";
     const CSVRows = useCSV ? await this.getCSVRows() : [];
 
-    fileFrontmatterArr.forEach((fileFrontmatter) => {
-      const basename = getDVBasename(fileFrontmatter.file);
+    frontms.forEach((frontm) => {
+      const basename = getDVBasename(frontm.file);
       iterateHiers(userHiers, (hier, dir, field) => {
-        const values = this.parseFieldValue(fileFrontmatter[field]);
-        const sourceOrder = parseInt(fileFrontmatter.order as string) ?? 9999;
+        const values = this.parseFieldValue(frontm[field]);
+        const sourceOrder = parseInt(frontm.order as string) ?? 9999;
 
         values.forEach((target) => {
-          const targetOrder = this.getTargetOrder(fileFrontmatterArr, target);
+          const targetOrder = this.getTargetOrder(frontms, target);
           this.populateMain(
             mainG,
             basename,
@@ -936,7 +977,7 @@ export default class BCPlugin extends Plugin {
         : [];
 
     if (jugglLinks.length)
-      this.addJugglLinksToGraph(jugglLinks, fileFrontmatterArr, mainG);
+      this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
 
     // !SECTION  Juggl Links
     // SECTION  Hierarchy Notes
@@ -963,11 +1004,14 @@ export default class BCPlugin extends Plugin {
     debugGroupEnd(settings, "debugMode");
 
     console.time("Folder-Notes");
-    this.addFolderNoteLinksToGraph(fileFrontmatterArr, mainG);
+    this.addFolderNotesToGraph(frontms, mainG);
     console.timeEnd("Folder-Notes");
     console.time("Tag-Notes");
-    this.addTagLinksToGraph(fileFrontmatterArr, mainG);
+    this.addTagNotesToGraph(frontms, mainG);
     console.timeEnd("Tag-Notes");
+    console.time("Link-Notes");
+    this.addLinkNotesToGraph(frontms, mainG);
+    console.timeEnd("Link-Notes");
 
     files.forEach((file) => {
       const { basename } = file;
