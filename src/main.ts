@@ -1183,6 +1183,12 @@ export default class BCPlugin extends Plugin {
     const { file } = activeMDView;
     const { frontmatter } = this.app.metadataCache.getFileCache(file) ?? {};
 
+    const { hideTrailField } = settings;
+    if (hideTrailField && frontmatter?.[hideTrailField]) {
+      new Notice(
+        `${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`
+      );
+    }
     if (frontmatter?.["BC-hide-trail"] || frontmatter?.["kanban-plugin"]) {
       debugGroupEnd(settings, "debugMode");
       return;

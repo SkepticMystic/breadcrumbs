@@ -50271,6 +50271,10 @@ class BCPlugin extends obsidian.Plugin {
         }
         const { file } = activeMDView;
         const { frontmatter } = (_a = this.app.metadataCache.getFileCache(file)) !== null && _a !== void 0 ? _a : {};
+        const { hideTrailField } = settings;
+        if (hideTrailField && (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField])) {
+            new obsidian.Notice(`${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`);
+        }
         if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["BC-hide-trail"]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
             debugGroupEnd(settings, "debugMode");
             return;
