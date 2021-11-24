@@ -1,6 +1,6 @@
 import { MultiGraph } from "graphology";
 // import { getReflexiveClosure } from "src/sharedFunctions";
-import { myFunc } from "../src/test";
+import { myFunc } from "../src/utils";
 
 require("approvals").mocha();
 
