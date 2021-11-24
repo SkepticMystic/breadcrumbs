@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.1...1.10.2) (2021-11-24)
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Can't get max-width in source mode (fix [#163](https://github.com/SkepticMystic/breadcrumbs/issues/163)) ([efa2652](https://github.com/SkepticMystic/breadcrumbs/commit/efa26525f0aff4bb1eb735f5dcd6dc1d07f795b1))
+
 ### [1.10.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.10.0...1.10.1) (2021-11-23)
 
 ## [1.10.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.9.0...1.10.0) (2021-11-23)
