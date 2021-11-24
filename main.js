@@ -24798,6 +24798,33 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
+const BC_FIELDS = [
+    {
+        field: "BC-folder-note",
+        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
+        after: ": true",
+    },
+    {
+        field: "BC-folder-note-up",
+        desc: "Manually choose the up field for this folder-note to use",
+        after: ": ",
+    },
+    {
+        field: "BC-tag-note",
+        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
+        after: ": true",
+    },
+    {
+        field: "BC-tag-note-up",
+        desc: "Manually choose the up field for this tag-note to use",
+        after: ": ",
+    },
+    {
+        field: "BC-hide-trail",
+        desc: "Don't show the trail in this note",
+        after: ": true",
+    },
+];
 const DEFAULT_SETTINGS = {
     aliasesInIndex: false,
     alphaSortAsc: true,
@@ -24807,6 +24834,7 @@ const DEFAULT_SETTINGS = {
     defaultView: true,
     dvWaitTime: 5000,
     dotsColour: "#000000",
+    fieldSuggestor: true,
     filterImpliedSiblingsOfDifferentTypes: false,
     limitWriteBCCheckboxStates: {},
     indexNotes: [""],
@@ -24827,7 +24855,6 @@ const DEFAULT_SETTINGS = {
     showGrid: true,
     showPrevNext: true,
     limitTrailCheckboxStates: {},
-    hideTrailField: "hide-trail",
     gridDots: false,
     gridHeatmap: false,
     heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
@@ -25732,6 +25759,13 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             };
         });
         new obsidian.Setting(generalDetails)
+            .setName("Enable Field Suggestor")
+            .setDesc('Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`. The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex /^BC-.*$/. Basically, just type "BC-" at the start of a line to trigger it.')
+            .addToggle((toggle) => toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+            settings.fieldSuggestor = value;
+            await plugin.saveSettings();
+        }));
+        new obsidian.Setting(generalDetails)
             .setName("Refresh Index on Note Change")
             .setDesc("Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default.")
             .addToggle((toggle) => toggle
@@ -25941,16 +25975,18 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             });
         }
         drawLimitTrailCheckboxes(checkboxDiv);
-        new obsidian.Setting(trailDetails)
-            .setName("Field name to hide trail")
-            .setDesc("A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`.")
-            .addText((text) => {
-            text.setValue(settings.hideTrailField);
-            text.inputEl.onblur = async () => {
-                settings.hideTrailField = text.getValue();
-                await plugin.saveSettings();
-            };
-        });
+        // new Setting(trailDetails)
+        //   .setName("Field name to hide trail")
+        //   .setDesc(
+        //     "A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`."
+        //   )
+        //   .addText((text) => {
+        //     text.setValue(settings.hideTrailField);
+        //     text.inputEl.onblur = async () => {
+        //       settings.hideTrailField = text.getValue();
+        //       await plugin.saveSettings();
+        //     };
+        //   });
         new obsidian.Setting(trailDetails)
             .setName("Views to show")
             .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view.")
@@ -26248,6 +26284,54 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             el.addEventListener("click", () => console.log(settings));
         });
         new KoFi({ target: this.containerEl });
+    }
+}
+
+class FieldSuggestor extends obsidian.EditorSuggest {
+    constructor(plugin) {
+        super(plugin.app);
+        this.getSuggestions = (context) => {
+            const { query } = context;
+            return BC_FIELDS.map((sug) => sug.field).filter((sug) => sug.includes(query));
+        };
+        this.plugin = plugin;
+    }
+    onTrigger(cursor, editor, _) {
+        var _a;
+        if (this.plugin.settings.fieldSuggestor) {
+            const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
+            const match = (_a = sub.match(/^BC-(.*)$/)) === null || _a === void 0 ? void 0 : _a[1];
+            if (match !== undefined) {
+                return {
+                    end: cursor,
+                    start: {
+                        ch: sub.lastIndexOf(match),
+                        line: cursor.line,
+                    },
+                    query: match,
+                };
+            }
+        }
+        return null;
+    }
+    renderSuggestion(suggestion, el) {
+        var _a;
+        el.createDiv({
+            text: suggestion.replace("BC-", ""),
+            cls: "BC-suggester-container",
+            attr: {
+                "aria-label": (_a = BC_FIELDS.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.desc,
+                "aria-label-position": "right",
+            },
+        });
+    }
+    selectSuggestion(suggestion) {
+        var _a;
+        const { context } = this;
+        if (context) {
+            const replacement = `${suggestion}${(_a = BC_FIELDS.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
+            context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
+        }
     }
 }
 
@@ -49435,6 +49519,7 @@ class BCPlugin extends obsidian.Plugin {
         for (const view of VIEWS) {
             this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
         }
+        this.registerEditorSuggest(new FieldSuggestor(this));
         this.app.workspace.onLayoutReady(async () => {
             var _a;
             if (this.app.plugins.enabledPlugins.has("dataview")) {
@@ -50171,7 +50256,7 @@ class BCPlugin extends obsidian.Plugin {
     async drawTrail() {
         var _a, _b, _c;
         const { settings } = this;
-        const { showBCs, hideTrailField, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, } = settings;
+        const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, } = settings;
         debugGroupStart(settings, "debugMode", "Draw Trail");
         const activeMDView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
         if (!showBCs || !activeMDView) {
@@ -50186,7 +50271,7 @@ class BCPlugin extends obsidian.Plugin {
         }
         const { file } = activeMDView;
         const { frontmatter } = (_a = this.app.metadataCache.getFileCache(file)) !== null && _a !== void 0 ? _a : {};
-        if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
+        if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["BC-hide-trail"]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
             debugGroupEnd(settings, "debugMode");
             return;
         }

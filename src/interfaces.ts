@@ -1,8 +1,9 @@
 import type Graph from "graphology";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
+import type { DIRECTIONS } from "src/constants";
 import type DucksView from "src/DucksView";
-import type StatsView from "src/StatsView";
 import type MatrixView from "src/MatrixView";
+import type StatsView from "src/StatsView";
 
 export interface BCSettings {
   aliasesInIndex: boolean;
@@ -13,11 +14,11 @@ export interface BCSettings {
   debugMode: boolean;
   defaultView: boolean;
   dotsColour: string;
+  fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
   gridDots: boolean;
   gridHeatmap: boolean;
   heatmapColour: string;
-  hideTrailField: string;
   hierarchyNotes: string[];
   HNUpField: string;
   indexNotes: string[];
@@ -73,12 +74,12 @@ export interface dvFrontmatterCache {
     | TFile;
 }
 
-export type Directions = "up" | "same" | "down" | "next" | "prev";
+export type Directions = typeof DIRECTIONS[number];
 export type UserHier = {
   [dir in Directions]: string[];
 };
 
-export type MyView = MatrixView | StatsView | DucksView;
+export type MyView = MatrixView | DucksView | StatsView;
 export type ViewInfo = {
   plain: string;
   type: string;

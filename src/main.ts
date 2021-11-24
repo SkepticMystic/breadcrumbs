@@ -29,6 +29,7 @@ import {
   TRAIL_ICON_SVG,
   VIEWS,
 } from "src/constants";
+import { FieldSuggestor } from "src/FieldSuggestor";
 import type {
   BCSettings,
   Directions,
@@ -155,6 +156,8 @@ export default class BCPlugin extends Plugin {
         (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
       );
     }
+
+    this.registerEditorSuggest(new FieldSuggestor(this));
 
     this.app.workspace.onLayoutReady(async () => {
       if (this.app.plugins.enabledPlugins.has("dataview")) {
@@ -1155,7 +1158,6 @@ export default class BCPlugin extends Plugin {
     const { settings } = this;
     const {
       showBCs,
-      hideTrailField,
       noPathMessage,
       respectReadableLineLength,
       showTrail,
@@ -1181,7 +1183,7 @@ export default class BCPlugin extends Plugin {
     const { file } = activeMDView;
     const { frontmatter } = this.app.metadataCache.getFileCache(file) ?? {};
 
-    if (frontmatter?.[hideTrailField] || frontmatter?.["kanban-plugin"]) {
+    if (frontmatter?.["BC-hide-trail"] || frontmatter?.["kanban-plugin"]) {
       debugGroupEnd(settings, "debugMode");
       return;
     }

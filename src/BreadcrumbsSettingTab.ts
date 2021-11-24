@@ -124,6 +124,18 @@ export class BCSettingTab extends PluginSettingTab {
       });
 
     new Setting(generalDetails)
+      .setName("Enable Field Suggestor")
+      .setDesc(
+        'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`. The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex /^BC-.*$/. Basically, just type "BC-" at the start of a line to trigger it.'
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+          settings.fieldSuggestor = value;
+          await plugin.saveSettings();
+        })
+      );
+
+    new Setting(generalDetails)
       .setName("Refresh Index on Note Change")
       .setDesc(
         "Refresh the Breadcrumbs index data everytime you change notes. This is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default."
@@ -413,18 +425,18 @@ export class BCSettingTab extends PluginSettingTab {
 
     drawLimitTrailCheckboxes(checkboxDiv);
 
-    new Setting(trailDetails)
-      .setName("Field name to hide trail")
-      .setDesc(
-        "A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`."
-      )
-      .addText((text) => {
-        text.setValue(settings.hideTrailField);
-        text.inputEl.onblur = async () => {
-          settings.hideTrailField = text.getValue();
-          await plugin.saveSettings();
-        };
-      });
+    // new Setting(trailDetails)
+    //   .setName("Field name to hide trail")
+    //   .setDesc(
+    //     "A note-specific toggle to hide the Trail View. By default, it is `hide-trail`. So, to hide the trail on a specific note, add the field to that note's yaml, like so: `hide-trail: {{anything}}`."
+    //   )
+    //   .addText((text) => {
+    //     text.setValue(settings.hideTrailField);
+    //     text.inputEl.onblur = async () => {
+    //       settings.hideTrailField = text.getValue();
+    //       await plugin.saveSettings();
+    //     };
+    //   });
 
     new Setting(trailDetails)
       .setName("Views to show")

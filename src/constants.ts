@@ -49,7 +49,7 @@ export const VISTYPES: visTypes[] = [
   "Radial Tree",
 ];
 
-export const DIRECTIONS: Directions[] = ["up", "same", "down", "next", "prev"];
+export const DIRECTIONS = ["up", "same", "down", "next", "prev"] as const;
 export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
   up: "↑",
   same: "↔",
@@ -84,6 +84,34 @@ export const blankRealNImplied = () => {
   };
 };
 
+export const BC_FIELDS = [
+  {
+    field: "BC-folder-note",
+    desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
+    after: ": true",
+  },
+  {
+    field: "BC-folder-note-up",
+    desc: "Manually choose the up field for this folder-note to use",
+    after: ": ",
+  },
+  {
+    field: "BC-tag-note",
+    desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
+    after: ": true",
+  },
+  {
+    field: "BC-tag-note-up",
+    desc: "Manually choose the up field for this tag-note to use",
+    after: ": ",
+  },
+  {
+    field: "BC-hide-trail",
+    desc: "Don't show the trail in this note",
+    after: ": true",
+  },
+];
+
 export const DEFAULT_SETTINGS: BCSettings = {
   aliasesInIndex: false,
   alphaSortAsc: true,
@@ -93,6 +121,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   defaultView: true,
   dvWaitTime: 5000,
   dotsColour: "#000000",
+  fieldSuggestor: true,
   filterImpliedSiblingsOfDifferentTypes: false,
   limitWriteBCCheckboxStates: {},
   indexNotes: [""],
@@ -113,7 +142,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showGrid: true,
   showPrevNext: true,
   limitTrailCheckboxStates: {},
-  hideTrailField: "hide-trail",
   gridDots: false,
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
