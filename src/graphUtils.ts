@@ -1,8 +1,12 @@
 import { MultiGraph } from "graphology";
 import type { Attributes } from "graphology-types";
-import { DIRECTIONS } from "./constants";
+// import { DIRECTIONS } from "./constants";
 import type { Directions, UserHier } from "./interfaces";
-// const DIRECTIONS = ["up", "same", "down", "next", "prev"];
+import type { App } from "obsidian";
+
+// TODO - this is a hack to get the graph to work with the approvals
+// I shouldn't need
+const DIRECTIONS = ["up", "same", "down", "next", "prev"];
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -15,6 +19,10 @@ export function closeImpliedLinks(
     closedG.mergeEdge(t, s, a);
   });
   return closedG;
+}
+
+export function currFile(app: App) {
+  return app.vault.getMarkdownFiles();
 }
 
 export function removeUnlinkedNodes(g: MultiGraph) {
