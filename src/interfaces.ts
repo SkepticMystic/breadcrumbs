@@ -27,10 +27,8 @@ export interface BCSettings {
   limitTrailCheckboxStates: { [field: string]: boolean };
   limitWriteBCCheckboxStates: { [field: string]: boolean };
   noPathMessage: string;
-  orderField: string;
   parseJugglLinksWithoutJuggl: boolean;
   refreshOnNoteChange: boolean;
-  // refreshIntervalTime: number;
   respectReadableLineLength: boolean;
   showAllPathsIfNoneToIndexNote: boolean;
   showNameOrType: boolean;

@@ -761,7 +761,9 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const sourceOrder = parseInt(
+            (frontm["BC-order"] as string) ?? "9999"
+          );
           const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
           this.populateMain(
             mainG,
@@ -812,7 +814,9 @@ export default class BCPlugin extends Plugin {
 
         sources.forEach((source) => {
           // This is getting the order of the folder note, not the source pointing up to it
-          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const sourceOrder = parseInt(
+            (frontm["BC-order"] as string) ?? "9999"
+          );
           const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
           this.populateMain(
             mainG,
@@ -857,7 +861,9 @@ export default class BCPlugin extends Plugin {
 
         // This is getting the order of the folder note, not the source pointing up to it
         for (const target of targets) {
-          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+          const sourceOrder = parseInt(
+            (frontm["BC-order"] as string) ?? "9999"
+          );
           const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
           this.populateMain(
             mainG,
@@ -876,8 +882,10 @@ export default class BCPlugin extends Plugin {
 
   getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
     parseInt(
-      frontms.find((arr) => arr.file.basename === target)?.order as string
-    ) ?? 9999;
+      (frontms.find((arr) => arr.file.basename === target)?.[
+        "BC-order"
+      ] as string) ?? "9999"
+    );
 
   async initGraphs(): Promise<MultiGraph> {
     try {
@@ -910,9 +918,10 @@ export default class BCPlugin extends Plugin {
       db.start2G("addFrontmatterToGraph");
       frontms.forEach((frontm) => {
         const basename = getDVBasename(frontm.file);
+        const sourceOrder = parseInt((frontm["BC-order"] as string) ?? "9999");
+
         iterateHiers(userHiers, (hier, dir, field) => {
           const values = this.parseFieldValue(frontm[field]);
-          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
 
           values.forEach((target) => {
             const targetOrder = this.getTargetOrder(frontms, target);

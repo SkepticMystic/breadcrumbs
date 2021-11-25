@@ -23857,9 +23857,6 @@ class MatrixView extends require$$0.ItemView {
             return [];
         }
         const { basename } = currFile;
-        const g = getSubInDirs(mainG, "up", "down");
-        const closed = getReflexiveClosure(g, userHiers);
-        const up = getSubInDirs(closed, "up");
         const realsnImplieds = getRealnImplied(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
@@ -23875,30 +23872,27 @@ class MatrixView extends require$$0.ItemView {
             let { up: { reals: ru, implieds: iu }, same: { reals: rs, implieds: is }, down: { reals: rd, implieds: id }, next: { reals: rn, implieds: iN }, prev: { reals: rp, implieds: ip }, } = filteredRealNImplied;
             // SECTION Implied Siblings
             /// Notes with the same parents
+            const g = getSubInDirs(mainG, "up", "down");
+            const closed = getReflexiveClosure(g, userHiers);
+            const closedUp = getSubInDirs(closed, "up");
             let iSameArr = [];
-            const currParents = up.hasNode(basename)
-                ? up.filterOutNeighbors(basename, (n, a) => Object.values(hier).flat().includes(a.field))
+            const currParents = closedUp.hasNode(basename)
+                ? closedUp.filterOutNeighbors(basename, (n, a) => hier.up.includes(a.field))
                 : [];
             currParents.forEach((parent) => {
-                let impliedSiblings = getInNeighbours(up, parent);
-                // The current note is always it's own implied sibling, so remove it from the list
-                const indexCurrNote = impliedSiblings.indexOf(basename);
-                impliedSiblings.splice(indexCurrNote, 1);
-                if (settings.filterImpliedSiblingsOfDifferentTypes) {
-                    const currNodeType = up.getNodeAttribute(basename, "field");
-                    impliedSiblings = impliedSiblings.filter((iSibling) => {
-                        const iSiblingType = up.getNodeAttribute(iSibling, "field");
-                        return iSiblingType === currNodeType;
-                    });
-                }
-                // Create the implied sibling SquareProps
+                let impliedSiblings = [];
+                // const { field } = up.getEdgeAttributes(basename, parent);
+                closedUp.forEachInEdge(parent, (k, a, s, t) => {
+                    if (s === basename)
+                        return;
+                    // if (!settings.filterImpliedSiblingsOfDifferentTypes)
+                    impliedSiblings.push(s);
+                    // else if (a.field === field) {
+                    //   impliedSiblings.push(s);
+                    // }
+                });
                 impliedSiblings.forEach((impliedSibling) => {
-                    iSameArr.push({
-                        to: impliedSibling,
-                        cls: linkClass(this.app, impliedSibling, false),
-                        alt: this.getAlt(impliedSibling, settings),
-                        order: this.getOrder(impliedSibling),
-                    });
+                    iSameArr.push(this.toInternalLinkObj(impliedSibling, false));
                 });
             });
             /// A real sibling implies the reverse sibling
@@ -23973,14 +23967,6 @@ class MatrixView extends require$$0.ItemView {
             contentEl.createEl("button", { text: "↻" }, (el) => {
                 el.onclick = async () => await this.plugin.refreshIndex();
             });
-            // const data = currGraphs.hierGs.map((hierG) => {
-            //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
-            //   for (const dir of DIRECTIONS) {
-            //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-            //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
-            //   }
-            //   return hierData;
-            // });
             const hierSquares = this.getHierSquares(userHiers, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
             const compInput = {
                 target: contentEl,
@@ -25251,6 +25237,11 @@ const BC_FIELDS = [
         desc: "Don't show the trail in this note",
         after: ": true",
     },
+    {
+        field: "BC-order",
+        desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+        after: ": ",
+    },
 ];
 const DEFAULT_SETTINGS = {
     aliasesInIndex: false,
@@ -25270,7 +25261,6 @@ const DEFAULT_SETTINGS = {
     refreshOnNoteChange: false,
     useAllMetadata: true,
     parseJugglLinksWithoutJuggl: false,
-    orderField: "order",
     showNameOrType: true,
     showRelationType: true,
     rlLeaf: true,
@@ -26245,16 +26235,8 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new require$$0.Setting(MLViewDetails)
-            .setName("Sorting Field Name")
-            .setDesc("The metadata field name used to indicate the order in which items should be sorted in the L/M view.")
-            .addText((text) => text.setValue(settings.orderField).onChange(async (value) => {
-            settings.orderField = value;
-            await plugin.saveSettings();
-            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-        }));
-        new require$$0.Setting(MLViewDetails)
             .setName("Filter Implied Siblings")
-            .setDesc("Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and A --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and A --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).")
+            .setDesc("Implied siblings are: 1) notes with the same parent, or 2) notes that are real siblings. This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations B --parent-> A, and C --parent-> A create an implied sibling between B and C (they have the same parent, A). The two real relations B --parent-> A, and C --up-> A create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).")
             .addToggle((toggle) => toggle
             .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
             .onChange(async (value) => {
@@ -49779,16 +49761,18 @@ class BCPlugin extends require$$0.Plugin {
         this.writeBCToFile = async (file) => {
             var _a;
             const { app, settings, mainG } = this;
-            const { limitWriteBCCheckboxStates, writeBCsInline } = settings;
+            const { limitWriteBCCheckboxStates, writeBCsInline, userHiers } = settings;
             const { frontmatter } = app.metadataCache.getFileCache(file);
             const api = (_a = app.plugins.plugins.metaedit) === null || _a === void 0 ? void 0 : _a.api;
             if (!api) {
                 new require$$0.Notice("Metaedit must be enabled for this function to work");
                 return;
             }
-            const succs = getInNeighbours(mainG, file.basename);
-            for (const succ of succs) {
-                const { field } = mainG.getNodeAttributes(succ);
+            const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
+                const oppField = getOppFields(userHiers, a.field)[0];
+                return { succ: s, field: oppField };
+            });
+            for (const { succ, field } of succInfo) {
                 if (!limitWriteBCCheckboxStates[field])
                     return;
                 if (!writeBCsInline) {
@@ -49805,7 +49789,7 @@ class BCPlugin extends require$$0.Plugin {
         };
         this.getTargetOrder = (frontms, target) => {
             var _a, _b;
-            return (_b = parseInt((_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a.order)) !== null && _b !== void 0 ? _b : 9999;
+            return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a["BC-order"]) !== null && _b !== void 0 ? _b : "9999");
         };
     }
     async refreshIndex() {
@@ -50077,16 +50061,9 @@ class BCPlugin extends require$$0.Plugin {
     // SECTION OneSource
     populateMain(mainG, source, dir, field, target, sourceOrder, targetOrder, opps) {
         addNodesIfNot(mainG, [source], {
-            dir,
-            field,
-            //@ts-ignore
             order: sourceOrder,
         });
-        // targets.forEach((target) => {
         addNodesIfNot(mainG, [target], {
-            dir,
-            field,
-            //@ts-ignore
             order: targetOrder,
         });
         addEdgeIfNot(mainG, source, target, {
@@ -50099,7 +50076,6 @@ class BCPlugin extends require$$0.Plugin {
                 field: opps.oppField,
             });
         }
-        // });
     }
     async getCSVRows() {
         const { CSVPaths } = this.settings;
@@ -50125,11 +50101,11 @@ class BCPlugin extends require$$0.Plugin {
     addCSVCrumbs(g, CSVRows, dir, field) {
         CSVRows.forEach((row) => {
             //@ts-ignore
-            addNodesIfNot(g, [row.file], { dir, field });
+            addNodesIfNot(g, [row.file]);
             if (field === "" || !row[field])
                 return;
             //@ts-ignore
-            addNodesIfNot(g, [row[field]], { dir, field });
+            addNodesIfNot(g, [row[field]]);
             //@ts-ignore
             addEdgeIfNot(g, row.file, row[field], { dir, field });
         });
@@ -50265,7 +50241,7 @@ class BCPlugin extends require$$0.Plugin {
                 const s = hnItem.currNote;
                 const t = (_c = hierarchyNotesArr[i + 1]) === null || _c === void 0 ? void 0 : _c.currNote;
                 //@ts-ignore
-                addNodesIfNot(mainG, [s, t], { dir: "down", field: downField });
+                addNodesIfNot(mainG, [s, t]);
                 //@ts-ignore
                 addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
             }
@@ -50275,7 +50251,7 @@ class BCPlugin extends require$$0.Plugin {
                     field: upField,
                 };
                 //@ts-ignore
-                addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+                addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote]);
                 //@ts-ignore
                 addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
                 const aDown = {
@@ -50283,7 +50259,7 @@ class BCPlugin extends require$$0.Plugin {
                     field: downField,
                 };
                 //@ts-ignore
-                addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+                addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote]);
                 //@ts-ignore
                 addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
             }
@@ -50332,7 +50308,7 @@ class BCPlugin extends require$$0.Plugin {
                 sources.forEach((source) => {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
+                    const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                     const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
                     this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
                 });
@@ -50369,7 +50345,7 @@ class BCPlugin extends require$$0.Plugin {
                 sources.forEach((source) => {
                     var _a;
                     // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
+                    const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                     const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
                     this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
                 });
@@ -50398,7 +50374,7 @@ class BCPlugin extends require$$0.Plugin {
                     .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.links.map((l) => l.link.match(/[^#|]+/)[0]);
                 // This is getting the order of the folder note, not the source pointing up to it
                 for (const target of targets) {
-                    const sourceOrder = (_c = parseInt(frontm.order)) !== null && _c !== void 0 ? _c : 9999;
+                    const sourceOrder = parseInt((_c = frontm["BC-order"]) !== null && _c !== void 0 ? _c : "9999");
                     const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
                     this.populateMain(mainG, linkNoteBasename, dir, field, target, sourceOrder, targetOrder, { oppDir: getOppDir(dir), oppField });
                 }
@@ -50430,11 +50406,11 @@ class BCPlugin extends require$$0.Plugin {
             const CSVRows = useCSV ? await this.getCSVRows() : [];
             db.start2G("addFrontmatterToGraph");
             frontms.forEach((frontm) => {
+                var _a;
                 const basename = getDVBasename(frontm.file);
+                const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                 iterateHiers(userHiers, (hier, dir, field) => {
-                    var _a;
                     const values = this.parseFieldValue(frontm[field]);
-                    const sourceOrder = (_a = parseInt(frontm.order)) !== null && _a !== void 0 ? _a : 9999;
                     values.forEach((target) => {
                         const targetOrder = this.getTargetOrder(frontms, target);
                         this.populateMain(mainG, basename, dir, field, target, sourceOrder, targetOrder);

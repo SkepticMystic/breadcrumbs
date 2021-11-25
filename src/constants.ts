@@ -115,6 +115,11 @@ export const BC_FIELDS = [
     desc: "Don't show the trail in this note",
     after: ": true",
   },
+  {
+    field: "BC-order",
+    desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+    after: ": ",
+  },
 ];
 
 export const DEFAULT_SETTINGS: BCSettings = {
@@ -135,7 +140,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   refreshOnNoteChange: false,
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
-  orderField: "order",
   showNameOrType: true,
   showRelationType: true,
   rlLeaf: true,
