@@ -1,10 +1,20 @@
+import { debug, error } from "loglevel";
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
+import { Debugger } from "src/Debugger";
+import Lists from "./Components/Lists.svelte";
+import Matrix from "./Components/Matrix.svelte";
 import {
   ARROW_DIRECTIONS,
   blankRealNImplied,
   MATRIX_VIEW,
   TRAIL_ICON,
 } from "./constants";
+import {
+  getInNeighbours,
+  getOppDir,
+  getReflexiveClosure,
+  getSubInDirs,
+} from "./graphUtils";
 import type {
   BCSettings,
   Directions,
@@ -12,29 +22,18 @@ import type {
   UserHier,
 } from "./interfaces";
 import type BCPlugin from "./main";
-import {
-  debugGroupEnd,
-  debugGroupStart,
-  getRealnImplied,
-  linkClass,
-} from "./sharedFunctions";
-import Lists from "./Components/Lists.svelte";
-import Matrix from "./Components/Matrix.svelte";
-import {
-  getSubInDirs,
-  getReflexiveClosure,
-  getInNeighbours,
-  getOppDir,
-} from "./graphUtils";
+import { getRealnImplied, linkClass } from "./sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
   private view: Matrix | Lists;
   matrixQ: boolean;
+  db: Debugger;
 
   constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
     super(leaf);
     this.plugin = plugin;
+    this.db = new Debugger(plugin);
   }
 
   async onload(): Promise<void> {
@@ -221,6 +220,19 @@ export default class MatrixView extends ItemView {
           .sort((a, b) => a.order - b.order)
       );
 
+      debug(
+        { ru },
+        { rs },
+        { rd },
+        { rn },
+        { rp },
+        { iu },
+        { iSameArr },
+        { id },
+        { iN },
+        { ip }
+      );
+
       return [
         {
           realItems: ru,
@@ -254,67 +266,71 @@ export default class MatrixView extends ItemView {
   }
 
   async draw(): Promise<void> {
-    const { contentEl } = this;
-    contentEl.empty();
-    const { settings } = this.plugin;
+    try {
+      const { contentEl, db } = this;
+      db.start2G("Draw Matrix/List View");
+      contentEl.empty();
+      const { settings } = this.plugin;
 
-    debugGroupStart(settings, "debugMode", "Draw Matrix/List View");
+      const { userHiers } = settings;
+      const currFile = this.app.workspace.getActiveFile();
 
-    const { userHiers } = settings;
-    const currFile = this.app.workspace.getActiveFile();
+      contentEl.createEl(
+        "button",
+        {
+          text: this.matrixQ ? "List" : "Matrix",
+        },
+        (el) => {
+          el.onclick = async () => {
+            this.matrixQ = !this.matrixQ;
+            el.innerText = this.matrixQ ? "List" : "Matrix";
+            await this.draw();
+          };
+        }
+      );
 
-    contentEl.createEl(
-      "button",
-      {
-        text: this.matrixQ ? "List" : "Matrix",
-      },
-      (el) => {
-        el.onclick = async () => {
-          this.matrixQ = !this.matrixQ;
-          el.innerText = this.matrixQ ? "List" : "Matrix";
-          await this.draw();
-        };
-      }
-    );
+      contentEl.createEl("button", { text: "↻" }, (el) => {
+        el.onclick = async () => await this.plugin.refreshIndex();
+      });
 
-    contentEl.createEl("button", { text: "↻" }, (el) => {
-      el.onclick = async () => await this.plugin.refreshIndex();
-    });
+      // const data = currGraphs.hierGs.map((hierG) => {
+      //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
+      //   for (const dir of DIRECTIONS) {
+      //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
+      //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
+      //   }
+      //   return hierData;
+      // });
 
-    // const data = currGraphs.hierGs.map((hierG) => {
-    //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
-    //   for (const dir of DIRECTIONS) {
-    //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-    //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
-    //   }
-    //   return hierData;
-    // });
-
-    const hierSquares = this.getHierSquares(
-      userHiers,
-      currFile,
-      settings
-    ).filter((squareArr) =>
-      squareArr.some(
-        (square) => square.realItems.length + square.impliedItems.length > 0
-      )
-    );
-
-    const compInput = {
-      target: contentEl,
-      props: {
-        filteredSquaresArr: hierSquares,
+      const hierSquares = this.getHierSquares(
+        userHiers,
         currFile,
-        settings,
-        matrixView: this,
-        app: this.app,
-      },
-    };
+        settings
+      ).filter((squareArr) =>
+        squareArr.some(
+          (square) => square.realItems.length + square.impliedItems.length > 0
+        )
+      );
 
-    this.matrixQ
-      ? (this.view = new Matrix(compInput))
-      : (this.view = new Lists(compInput));
+      const compInput = {
+        target: contentEl,
+        props: {
+          filteredSquaresArr: hierSquares,
+          currFile,
+          settings,
+          matrixView: this,
+          app: this.app,
+        },
+      };
 
-    debugGroupEnd(settings, "debugMode");
+      this.matrixQ
+        ? (this.view = new Matrix(compInput))
+        : (this.view = new Lists(compInput));
+
+      db.end2G();
+    } catch (err) {
+      error(err);
+      this.db.end2G();
+    }
   }
 }

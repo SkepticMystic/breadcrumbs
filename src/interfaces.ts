@@ -1,17 +1,19 @@
 import type { MultiGraph } from "graphology";
+import type { LogLevel } from "loglevel";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
 import type { DIRECTIONS } from "./constants";
 import type DucksView from "./DucksView";
 import type MatrixView from "./MatrixView";
 import type StatsView from "./StatsView";
 
+export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
   aliasesInIndex: boolean;
   alphaSortAsc: boolean;
   altLinkFields: string[];
   CSVPaths: string;
   dvWaitTime: number;
-  debugMode: boolean;
+  debugMode: DebugLevel;
   defaultView: boolean;
   dotsColour: string;
   fieldSuggestor: boolean;
@@ -34,7 +36,6 @@ export interface BCSettings {
   showNameOrType: boolean;
   showRelationType: boolean;
   showWriteAllBCsCmd: boolean;
-  superDebugMode: boolean;
   rlLeaf: boolean;
   showBCs: boolean;
   showBCsInEditLPMode: boolean;

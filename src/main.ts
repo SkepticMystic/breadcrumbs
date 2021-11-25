@@ -1,11 +1,12 @@
+import { getApi } from "@aidenlx/folder-note-core";
 import Graph, { MultiGraph } from "graphology";
 import { dfsFromNode } from "graphology-traversal";
 import { parseTypedLink } from "juggl-api";
 import { cloneDeep } from "lodash";
+import { debug, error, info } from "loglevel";
 import {
   addIcon,
   EventRef,
-  FrontMatterCache,
   MarkdownView,
   normalizePath,
   Notice,
@@ -19,6 +20,7 @@ import {
   copy,
   openView,
 } from "obsidian-community-lib/dist/utils";
+import { Debugger } from "src/Debugger";
 import util from "util";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
 import NextPrev from "./Components/NextPrev.svelte";
@@ -58,8 +60,8 @@ import type {
 } from "./interfaces";
 import {
   createOrUpdateYaml,
-  debugGroupEnd,
-  debugGroupStart,
+  // debugGroupEnd,
+  // debugGroupStart,
   getBaseFromPath,
   getDVBasename,
   getFields,
@@ -79,6 +81,7 @@ export default class BCPlugin extends Plugin {
   activeLeafChange: EventRef = undefined;
   layoutChange: EventRef = undefined;
   statusBatItemEl: HTMLElement = undefined;
+  db: Debugger;
 
   async refreshIndex() {
     if (!this.activeLeafChange) this.registerActiveLeafChangeEvent();
@@ -132,6 +135,11 @@ export default class BCPlugin extends Plugin {
 
     await this.loadSettings();
 
+    if (typeof this.settings.debugMode === "boolean") {
+      this.settings.debugMode = this.settings.debugMode ? "DEBUG" : "WARN";
+      await this.saveSettings();
+    }
+
     // Prevent breaking change
     //@ts-ignore
     const { userHierarchies } = this.settings;
@@ -162,6 +170,7 @@ export default class BCPlugin extends Plugin {
       );
     }
 
+    this.db = new Debugger(this);
     this.registerEditorSuggest(new FieldSuggestor(this));
 
     this.app.workspace.onLayoutReady(async () => {
@@ -208,19 +217,6 @@ export default class BCPlugin extends Plugin {
       name: "Refresh Breadcrumbs Index",
       callback: async () => await this.refreshIndex(),
     });
-    // this.addCommand({
-    //   id: "test-traversal",
-    //   name: "Traverse",
-    //   hotkeys: [{ key: "a", modifiers: ["Alt"] }],
-    //   callback: () => {
-    //     const { basename } = this.app.workspace.getActiveFile();
-    //     const g = getSubInDirs(this.mainG, "up", "down");
-    //     const closed = getReflexiveClosure(g, this.settings.userHiers);
-    //     const onlyUps = getSubInDirs(closed, "up");
-
-    //     this.getdfsFromNode(onlyUps, basename);
-    //   },
-    // });
 
     this.addCommand({
       id: "Write-Breadcrumbs-to-Current-File",
@@ -251,9 +247,9 @@ export default class BCPlugin extends Plugin {
                 const files = this.app.vault.getMarkdownFiles();
                 for (const file of files) await this.writeBCToFile(file);
                 new Notice("Operation Complete");
-              } catch (error) {
-                new Notice(error);
-                console.log(error);
+              } catch (err) {
+                new Notice(err);
+                error(err);
               }
             }
           }
@@ -275,7 +271,7 @@ export default class BCPlugin extends Plugin {
 
         const allPaths = this.dfsAllPaths(onlyDowns, basename);
         const index = this.createIndex(allPaths);
-        this.debug({ index });
+        info({ index });
         await copy(index);
       },
     });
@@ -299,7 +295,7 @@ export default class BCPlugin extends Plugin {
           globalIndex += this.createIndex(allPaths) + "\n";
         });
 
-        this.debug({ globalIndex });
+        info({ globalIndex });
         await copy(globalIndex);
       },
     });
@@ -313,14 +309,6 @@ export default class BCPlugin extends Plugin {
     this.statusBatItemEl = this.addStatusBarItem();
 
     this.addSettingTab(new BCSettingTab(this.app, this));
-  }
-
-  debug(log: any): void {
-    if (this.settings.debugMode) console.log(log);
-  }
-
-  superDebug(log: any): void {
-    if (this.settings.superDebugMode) console.log(log);
   }
 
   writeBCToFile = async (file: TFile) => {
@@ -427,46 +415,34 @@ export default class BCPlugin extends Plugin {
   }
 
   getDVMetadataCache(files: TFile[]) {
-    const { settings, app } = this;
-    debugGroupStart(settings, "debugMode", "getDVMetadataCache");
-    this.debug("Using Dataview");
-    debugGroupStart(settings, "superDebugMode", "dvCaches");
+    const { app, db } = this;
+    db.startGs("getDVMetadataCache", "dvCaches");
 
     const frontms: dvFrontmatterCache[] = files.map((file) => {
-      this.superDebug(`GetDVMetadataCache: ${file.basename}`);
-
       const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
         file.path
       );
-
-      this.superDebug({ dvCache });
+      debug(`${file.basename}:`, { dvCache });
       return dvCache;
     });
 
-    debugGroupEnd(settings, "superDebugMode");
-    this.debug({ frontms });
-    debugGroupEnd(settings, "debugMode");
+    db.endGs(2, { frontms });
     return frontms;
   }
 
   getObsMetadataCache(files: TFile[]) {
-    const { settings, app } = this;
-    debugGroupStart(settings, "debugMode", "getObsMetadataCache");
-    this.debug("Using Obsidian");
-    debugGroupStart(settings, "superDebugMode", "obsCaches");
+    const { app, db } = this;
+    db.startGs("getObsMetadataCache", "obsCaches");
 
     const frontms: dvFrontmatterCache[] = files.map((file) => {
-      this.superDebug(`GetObsMetadataCache: ${file.basename}`);
-      const obs: FrontMatterCache =
-        app.metadataCache.getFileCache(file)?.frontmatter;
-      this.superDebug({ obs });
-      if (obs) return { file, ...obs };
+      debug(`GetObsMetadataCache: ${file.basename}`);
+      const { frontmatter } = app.metadataCache.getFileCache(file);
+      debug({ frontmatter });
+      if (frontmatter) return { file, ...frontmatter };
       else return { file };
     });
 
-    debugGroupEnd(settings, "superDebugMode");
-    this.debug({ frontms });
-    debugGroupEnd(settings, "debugMode");
+    db.endGs(2, { frontms });
     return frontms;
   }
 
@@ -598,7 +574,7 @@ export default class BCPlugin extends Plugin {
       } else {
         const rawValues: RawValue[] = [value].flat(4);
 
-        this.superDebug(rawValues);
+        debug(...rawValues);
 
         rawValues.forEach((rawItem) => {
           if (!rawItem) return;
@@ -621,8 +597,8 @@ export default class BCPlugin extends Plugin {
         });
       }
       return parsed;
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      error(err);
       return parsed;
     }
   }
@@ -630,9 +606,8 @@ export default class BCPlugin extends Plugin {
   // TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
   // => {[note: string]: {type: string, linksInLine: string[]}[]}
   async getJugglLinks(files: TFile[]): Promise<JugglLink[]> {
-    const { settings, app } = this;
-    debugGroupStart(settings, "debugMode", "getJugglLinks");
-    this.debug("Using Juggl");
+    const { settings, app, db } = this;
+    db.start2G("getJugglLinks");
 
     const { userHiers } = settings;
 
@@ -677,8 +652,6 @@ export default class BCPlugin extends Plugin {
       })
     );
 
-    this.debug({ typedLinksArr });
-
     const allFields = getFields(userHiers);
 
     const filteredLinks = typedLinksArr.map((jugglLink) => {
@@ -688,8 +661,7 @@ export default class BCPlugin extends Plugin {
       );
       return jugglLink;
     });
-    this.debug({ filteredLinks });
-    debugGroupEnd(settings, "debugMode");
+    db.end2G({ filteredLinks });
     return filteredLinks;
   }
 
@@ -760,6 +732,12 @@ export default class BCPlugin extends Plugin {
     });
   }
 
+  /** Use Folder Notes Plugin's FNs as BC-folder-notes */
+  addFolderNotePluginToGraph() {
+    const api = getApi(this);
+    api.getFolderNote;
+  }
+
   addFolderNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
     const { userHiers } = this.settings;
     const upFields = getFields(userHiers, "up");
@@ -801,15 +779,6 @@ export default class BCPlugin extends Plugin {
             targetOrder,
             { oppDir: "down", oppField }
           );
-          // this.populateMain(
-          //   mainG,
-          //   folderNoteBasename,
-          //   "down",
-          //   oppField,
-          //   source,
-          //   targetOrder,
-          //   sourceOrder
-          // );
         });
       }
     });
@@ -861,15 +830,6 @@ export default class BCPlugin extends Plugin {
             targetOrder,
             { oppDir: "down", oppField }
           );
-          // this.populateMain(
-          //   mainG,
-          //   tagNoteBasename,
-          //   "down",
-          //   oppField,
-          //   source,
-          //   targetOrder,
-          //   sourceOrder
-          // );
         });
       }
     });
@@ -900,7 +860,6 @@ export default class BCPlugin extends Plugin {
         const targets = this.app.metadataCache
           .getFileCache(linkNoteFile)
           ?.links.map((l) => l.link.match(/[^#|]+/)[0]);
-        console.log({ targets });
 
         // This is getting the order of the folder note, not the source pointing up to it
         for (const target of targets) {
@@ -917,15 +876,6 @@ export default class BCPlugin extends Plugin {
             { oppDir: getOppDir(dir), oppField }
           );
         }
-        // this.populateMain(
-        //   mainG,
-        //   tagNoteBasename,
-        //   "down",
-        //   oppField,
-        //   source,
-        //   targetOrder,
-        //   sourceOrder
-        // );
       }
     });
   }
@@ -936,96 +886,110 @@ export default class BCPlugin extends Plugin {
     ) ?? 9999;
 
   async initGraphs(): Promise<MultiGraph> {
-    const { settings, app } = this;
-    debugGroupStart(settings, "debugMode", "Initialise Graphs");
-    const files = app.vault.getMarkdownFiles();
-    const dvQ = !!app.plugins.enabledPlugins.has("dataview");
+    try {
+      const { settings, app, db } = this;
+      db.start2G("initGraphs");
+      const files = app.vault.getMarkdownFiles();
+      const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
-    let frontms: dvFrontmatterCache[] = dvQ
-      ? this.getDVMetadataCache(files)
-      : this.getObsMetadataCache(files);
+      let frontms: dvFrontmatterCache[] = dvQ
+        ? this.getDVMetadataCache(files)
+        : this.getObsMetadataCache(files);
 
-    if (frontms[0] === undefined) return new MultiGraph();
+      const mainG = new MultiGraph();
+      if (frontms[0] === undefined) {
+        db.end2G();
+        new Notice("Breadcrumbs cache not initialised yet - Refresh Index.");
+        return mainG;
+      }
 
-    const { userHiers } = settings;
-    const mainG = new MultiGraph();
-    if (userHiers.length === 0) return mainG;
+      const { userHiers } = settings;
+      if (userHiers.length === 0) {
+        db.end2G();
+        new Notice("You do not have any Breadcrumbs hierarchies set up.");
+        return mainG;
+      }
 
-    const useCSV = settings.CSVPaths !== "";
-    const CSVRows = useCSV ? await this.getCSVRows() : [];
+      const useCSV = settings.CSVPaths !== "";
+      const CSVRows = useCSV ? await this.getCSVRows() : [];
 
-    frontms.forEach((frontm) => {
-      const basename = getDVBasename(frontm.file);
-      iterateHiers(userHiers, (hier, dir, field) => {
-        const values = this.parseFieldValue(frontm[field]);
-        const sourceOrder = parseInt(frontm.order as string) ?? 9999;
+      db.start2G("addFrontmatterToGraph");
+      frontms.forEach((frontm) => {
+        const basename = getDVBasename(frontm.file);
+        iterateHiers(userHiers, (hier, dir, field) => {
+          const values = this.parseFieldValue(frontm[field]);
+          const sourceOrder = parseInt(frontm.order as string) ?? 9999;
 
-        values.forEach((target) => {
-          const targetOrder = this.getTargetOrder(frontms, target);
-          this.populateMain(
-            mainG,
-            basename,
-            dir,
-            field,
-            target,
-            sourceOrder,
-            targetOrder
-          );
+          values.forEach((target) => {
+            const targetOrder = this.getTargetOrder(frontms, target);
+            this.populateMain(
+              mainG,
+              basename,
+              dir,
+              field,
+              target,
+              sourceOrder,
+              targetOrder
+            );
+          });
+          if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
         });
-        if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
       });
-    });
+      db.end2G();
 
-    // SECTION  Juggl Links
-    const jugglLinks =
-      app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
-        ? await this.getJugglLinks(files)
-        : [];
+      // SECTION  Juggl Links
+      const jugglLinks =
+        app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
+          ? await this.getJugglLinks(files)
+          : [];
 
-    if (jugglLinks.length)
-      this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
+      if (jugglLinks.length)
+        this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
 
-    // !SECTION  Juggl Links
-    // SECTION  Hierarchy Notes
-    debugGroupStart(settings, "debugMode", "Hierarchy Note Adjacency List");
+      // !SECTION  Juggl Links
+      // SECTION  Hierarchy Notes
+      db.start2G("Hierarchy Notes");
 
-    const hierarchyNotesArr: HierarchyNoteItem[] = [];
-    if (settings.hierarchyNotes[0] !== "") {
-      for (const note of settings.hierarchyNotes) {
-        const file = app.metadataCache.getFirstLinkpathDest(note, "");
-        if (file) {
-          hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
-        } else {
-          new Notice(
-            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
-          );
+      const hierarchyNotesArr: HierarchyNoteItem[] = [];
+      if (settings.hierarchyNotes[0] !== "") {
+        for (const note of settings.hierarchyNotes) {
+          const file = app.metadataCache.getFirstLinkpathDest(note, "");
+          if (file) {
+            hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
+          } else {
+            new Notice(
+              `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
+            );
+          }
         }
       }
+
+      if (hierarchyNotesArr.length)
+        this.addHNsToGraph(hierarchyNotesArr, mainG);
+
+      db.end2G({ hierarchyNotesArr });
+      // !SECTION  Hierarchy Notes
+
+      console.time("Folder-Notes");
+      this.addFolderNotesToGraph(frontms, mainG);
+      console.timeEnd("Folder-Notes");
+      console.time("Tag-Notes");
+      this.addTagNotesToGraph(frontms, mainG);
+      console.timeEnd("Tag-Notes");
+      console.time("Link-Notes");
+      this.addLinkNotesToGraph(frontms, mainG);
+      console.timeEnd("Link-Notes");
+
+      files.forEach((file) => {
+        const { basename } = file;
+        addNodesIfNot(mainG, [basename]);
+      });
+      db.end2G("graphs inited", { mainG });
+      return mainG;
+    } catch (err) {
+      error(err);
+      this.db.end2G();
     }
-
-    if (hierarchyNotesArr.length) this.addHNsToGraph(hierarchyNotesArr, mainG);
-
-    // !SECTION  Hierarchy Notes
-
-    debugGroupEnd(settings, "debugMode");
-
-    console.time("Folder-Notes");
-    this.addFolderNotesToGraph(frontms, mainG);
-    console.timeEnd("Folder-Notes");
-    console.time("Tag-Notes");
-    this.addTagNotesToGraph(frontms, mainG);
-    console.timeEnd("Tag-Notes");
-    console.time("Link-Notes");
-    this.addLinkNotesToGraph(frontms, mainG);
-    console.timeEnd("Link-Notes");
-
-    files.forEach((file) => {
-      const { basename } = file;
-      addNodesIfNot(mainG, [basename]);
-    });
-    this.debug("graphs inited");
-    this.debug({ mainG });
-    return mainG;
   }
 
   // !SECTION OneSource
@@ -1150,7 +1114,7 @@ export default class BCPlugin extends Plugin {
     pathsArr.forEach((path) => {
       if (path.length) path.splice(path.length - 1, 1);
     });
-    this.debug({ pathsArr });
+    info({ pathsArr });
     return pathsArr;
   }
 
@@ -1184,7 +1148,7 @@ export default class BCPlugin extends Plugin {
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 
-    this.debug({ sortedTrails });
+    info({ sortedTrails });
     return sortedTrails;
   }
 
@@ -1209,160 +1173,163 @@ export default class BCPlugin extends Plugin {
   }
 
   async drawTrail(): Promise<void> {
-    const { settings } = this;
-    const {
-      showBCs,
-      noPathMessage,
-      respectReadableLineLength,
-      showTrail,
-      showGrid,
-      showPrevNext,
-    } = settings;
-    debugGroupStart(settings, "debugMode", "Draw Trail");
-
-    const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!showBCs || !activeMDView) {
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
-    const mode = activeMDView.getMode();
-    if (
-      (mode === "source" || mode === "live") &&
-      !settings.showBCsInEditLPMode
-    ) {
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
-
-    const { file } = activeMDView;
-    const { frontmatter } = this.app.metadataCache.getFileCache(file) ?? {};
-
-    // @ts-ignore
-    const { hideTrailField } = settings;
-    if (hideTrailField && frontmatter?.[hideTrailField]) {
-      new Notice(
-        `${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`
-      );
-    }
-    if (frontmatter?.["BC-hide-trail"] || frontmatter?.["kanban-plugin"]) {
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
-
-    let view: HTMLElement;
-    let livePreview: boolean = false;
-    if (mode === "preview") {
-      view = activeMDView.previewMode.containerEl.querySelector(
-        "div.markdown-preview-view"
-      );
-    } else {
-      view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-      if (view.hasClass("is-live-preview")) {
-        livePreview = true;
+    try {
+      const { settings, db } = this;
+      const {
+        showBCs,
+        noPathMessage,
+        respectReadableLineLength,
+        showTrail,
+        showGrid,
+        showPrevNext,
+        showBCsInEditLPMode,
+      } = settings;
+      db.start2G("drawTrail");
+      const activeMDView = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const mode = activeMDView?.getMode();
+      if (
+        !showBCs ||
+        !activeMDView ||
+        (mode !== "preview" && !showBCsInEditLPMode)
+      ) {
+        db.end2G();
+        return;
       }
-    }
 
-    activeMDView.containerEl
-      .querySelectorAll(".BC-trail")
-      ?.forEach((trail) => trail.remove());
+      const { file } = activeMDView;
+      const { frontmatter } = this.app.metadataCache.getFileCache(file) ?? {};
 
-    const closedUp = this.getLimitedTrailSub();
-    const sortedTrails = this.getBreadcrumbs(closedUp, file);
-    this.debug({ sortedTrails });
-
-    const { basename } = file;
-
-    const {
-      next: { reals: rNext, implieds: iNext },
-      prev: { reals: rPrev, implieds: iPrev },
-    } = getRealnImplied(this, basename, "next");
-
-    // Remove duplicate implied
-    const next = [...rNext];
-    iNext.forEach((i) => {
-      if (next.findIndex((n) => n.to === i.to) === -1) {
-        next.push(i);
+      // @ts-ignore
+      const { hideTrailField } = settings;
+      if (hideTrailField && frontmatter?.[hideTrailField]) {
+        new Notice(
+          `${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`
+        );
       }
-    });
-    const prev = [...rPrev];
-    iPrev.forEach((i) => {
-      if (prev.findIndex((n) => n.to === i.to) === -1) {
-        prev.push(i);
+      if (frontmatter?.["BC-hide-trail"] || frontmatter?.["kanban-plugin"]) {
+        db.end2G();
+        return;
       }
-    });
 
-    const noItems =
-      sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+      let view: HTMLElement;
+      let livePreview: boolean = false;
+      if (mode === "preview") {
+        view = activeMDView.previewMode.containerEl.querySelector(
+          "div.markdown-preview-view"
+        );
+      } else {
+        view = activeMDView.contentEl.querySelector("div.markdown-source-view");
+        if (view.hasClass("is-live-preview")) {
+          livePreview = true;
+        }
+      }
 
-    if (noItems && noPathMessage === "") {
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
+      activeMDView.containerEl
+        .querySelectorAll(".BC-trail")
+        ?.forEach((trail) => trail.remove());
 
-    const selectorForMaxWidth =
-      mode === "preview"
-        ? ".markdown-preview-view.is-readable-line-width .markdown-preview-sizer"
-        : "";
+      const closedUp = this.getLimitedTrailSub();
+      const sortedTrails = this.getBreadcrumbs(closedUp, file);
+      info({ sortedTrails });
 
-    const elForMaxWidth =
-      selectorForMaxWidth !== ""
-        ? document.querySelector(selectorForMaxWidth)
-        : null;
-    const max_width = elForMaxWidth
-      ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
-      : "100%";
+      const { basename } = file;
 
-    const trailDiv = createDiv({
-      cls: `BC-trail ${
-        respectReadableLineLength
-          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-          : ""
-      }`,
-      attr: {
-        style:
-          (mode !== "preview" ? `max-width: ${max_width};` : "") +
-          "margin: 0 auto",
-      },
-    });
+      const {
+        next: { reals: rNext, implieds: iNext },
+        prev: { reals: rPrev, implieds: iPrev },
+      } = getRealnImplied(this, basename, "next");
 
-    this.visited.push([file.path, trailDiv]);
-
-    if (mode === "preview") {
-      view.querySelector("div.markdown-preview-sizer").before(trailDiv);
-    } else {
-      const cmEditor = view.querySelector("div.cm-editor");
-      const cmSizer = view.querySelector("div.CodeMirror-sizer");
-      if (cmEditor) cmEditor.firstChild?.before(trailDiv);
-      if (cmSizer) cmSizer.before(trailDiv);
-    }
-
-    trailDiv.empty();
-
-    if (noItems) {
-      trailDiv.innerText = noPathMessage;
-      debugGroupEnd(settings, "debugMode");
-      return;
-    }
-
-    const props = { sortedTrails, app: this.app, plugin: this };
-
-    if (showTrail && sortedTrails.length) {
-      new TrailPath({
-        target: trailDiv,
-        props,
+      // Remove duplicate implied
+      const next = [...rNext];
+      iNext.forEach((i) => {
+        if (next.findIndex((n) => n.to === i.to) === -1) {
+          next.push(i);
+        }
       });
-    }
-    if (showGrid && sortedTrails.length) {
-      new TrailGrid({
-        target: trailDiv,
-        props,
+      const prev = [...rPrev];
+      iPrev.forEach((i) => {
+        if (prev.findIndex((n) => n.to === i.to) === -1) {
+          prev.push(i);
+        }
       });
-    }
-    if (showPrevNext && (next.length || prev.length)) {
-      new NextPrev({
-        target: trailDiv,
-        props: { app: this.app, plugin: this, next, prev },
+
+      const noItems =
+        sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+
+      if (noItems && noPathMessage === "") {
+        db.end2G();
+        return;
+      }
+
+      const selectorForMaxWidth =
+        mode === "preview"
+          ? ".markdown-preview-view.is-readable-line-width .markdown-preview-sizer"
+          : "";
+
+      const elForMaxWidth =
+        selectorForMaxWidth !== ""
+          ? document.querySelector(selectorForMaxWidth)
+          : null;
+      const max_width = elForMaxWidth
+        ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
+        : "100%";
+
+      const trailDiv = createDiv({
+        cls: `BC-trail ${
+          respectReadableLineLength
+            ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+            : ""
+        }`,
+        attr: {
+          style:
+            (mode !== "preview" ? `max-width: ${max_width};` : "") +
+            "margin: 0 auto",
+        },
       });
+
+      this.visited.push([file.path, trailDiv]);
+
+      if (mode === "preview") {
+        view.querySelector("div.markdown-preview-sizer").before(trailDiv);
+      } else {
+        const cmEditor = view.querySelector("div.cm-editor");
+        const cmSizer = view.querySelector("div.CodeMirror-sizer");
+        if (cmEditor) cmEditor.firstChild?.before(trailDiv);
+        if (cmSizer) cmSizer.before(trailDiv);
+      }
+
+      trailDiv.empty();
+
+      if (noItems) {
+        trailDiv.innerText = noPathMessage;
+        db.end2G();
+        return;
+      }
+
+      const props = { sortedTrails, app: this.app, plugin: this };
+
+      if (showTrail && sortedTrails.length) {
+        new TrailPath({
+          target: trailDiv,
+          props,
+        });
+      }
+      if (showGrid && sortedTrails.length) {
+        new TrailGrid({
+          target: trailDiv,
+          props,
+        });
+      }
+      if (showPrevNext && (next.length || prev.length)) {
+        new NextPrev({
+          target: trailDiv,
+          props: { app: this.app, plugin: this, next, prev },
+        });
+      }
+      db.end2G();
+    } catch (err) {
+      error(err);
+      this.db.end2G();
     }
   }
 

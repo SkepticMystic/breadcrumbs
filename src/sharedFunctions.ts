@@ -1,6 +1,5 @@
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import { isInVault } from "obsidian-community-lib";
-import { getOppFields, getOppDir } from "./graphUtils";
 import {
   ARROW_DIRECTIONS,
   blankRealNImplied,
@@ -8,8 +7,8 @@ import {
   dropHeaderOrAlias,
   splitLinksRegex,
 } from "./constants";
+import { getOppDir, getOppFields } from "./graphUtils";
 import type {
-  BCSettings,
   Directions,
   MetaeditApi,
   RealNImplied,
@@ -28,36 +27,6 @@ export function normalise(arr: number[]): number[] {
 
 export const isSubset = <T>(arr1: T[], arr2: T[]): boolean =>
   arr1.every((value) => arr2.includes(value));
-
-export function debug(settings: BCSettings, log: any): void {
-  if (settings.debugMode) {
-    console.log(log);
-  }
-}
-
-export function superDebug(settings: BCSettings, log: any): void {
-  if (settings.superDebugMode) {
-    console.log(log);
-  }
-}
-
-export function debugGroupStart(
-  settings: BCSettings,
-  type: "debugMode" | "superDebugMode",
-  group: string
-) {
-  if (settings[type]) {
-    console.groupCollapsed(group);
-  }
-}
-export function debugGroupEnd(
-  settings: BCSettings,
-  type: "debugMode" | "superDebugMode"
-) {
-  if (settings[type]) {
-    console.groupEnd();
-  }
-}
 
 export function splitAndDrop(str: string): string[] {
   return (

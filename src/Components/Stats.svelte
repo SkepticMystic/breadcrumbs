@@ -1,17 +1,21 @@
 <script lang="ts">
   import { sum } from "lodash";
+  import { debug } from "loglevel";
   import { copy } from "obsidian-community-lib";
+  import { Debugger } from "src/Debugger";
   import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "../constants";
+  import { closeImpliedLinks, getOppDir, getSubForFields } from "../graphUtils";
   import type { Directions, HierData } from "../interfaces";
   import type BCPlugin from "../main";
-  import { debug, hierToStr, makeWiki } from "../sharedFunctions";
-  import { closeImpliedLinks, getOppDir, getSubForFields } from "../graphUtils";
+  import { hierToStr, makeWiki } from "../sharedFunctions";
 
   export let plugin: BCPlugin;
 
   const { settings, mainG } = plugin;
   const { userHiers } = settings;
+  const db = new Debugger(plugin);
 
+  db.start2G("StatsView");
   function fillInInfo(
     dir: Directions,
     gType: string,
@@ -87,7 +91,7 @@
     return hierData;
   });
 
-  debug(settings, { data });
+  debug({ data });
 
   const cellStr = (
     i: number,
@@ -96,6 +100,7 @@
   ) => DIRECTIONS.map((dir) => data[i][dir][type][info]).join("\n");
 
   let hierStrs: string[] = userHiers.map(hierToStr);
+  db.end2G();
 </script>
 
 <table>

@@ -122,7 +122,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   alphaSortAsc: true,
   altLinkFields: [],
   CSVPaths: "",
-  debugMode: false,
+  debugMode: "WARN",
   defaultView: true,
   dvWaitTime: 5000,
   dotsColour: "#000000",
@@ -135,7 +135,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   refreshOnNoteChange: false,
   useAllMetadata: true,
   parseJugglLinksWithoutJuggl: false,
-  // refreshIntervalTime: 0,
   orderField: "order",
   showNameOrType: true,
   showRelationType: true,
@@ -172,5 +171,4 @@ export const DEFAULT_SETTINGS: BCSettings = {
   visClosed: "Real",
   visAll: "All",
   wikilinkIndex: true,
-  superDebugMode: false,
 };

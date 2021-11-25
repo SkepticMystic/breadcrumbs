@@ -1,3 +1,4 @@
+import log from "loglevel";
 import {
   App,
   DropdownComponent,
@@ -16,10 +17,10 @@ import {
   RELATIONS,
   VISTYPES,
 } from "./constants";
-import type { Relations, visTypes } from "./interfaces";
+import type { DebugLevel, Relations, visTypes } from "./interfaces";
 import type BCPlugin from "./main";
 import MatrixView from "./MatrixView";
-import { debug, getFields, splitAndTrim } from "./sharedFunctions";
+import { getFields, splitAndTrim } from "./sharedFunctions";
 
 export class BCSettingTab extends PluginSettingTab {
   plugin: BCPlugin;
@@ -94,9 +95,6 @@ export class BCSettingTab extends PluginSettingTab {
             await plugin.saveSettings();
           } else {
             const upFields = getFields(settings.userHiers, "up");
-
-            debug(settings, { downFields: upFields, finalValue });
-
             if (upFields.includes(finalValue)) {
               settings.HNUpField = finalValue;
               await plugin.saveSettings();
@@ -799,24 +797,16 @@ export class BCSettingTab extends PluginSettingTab {
     new Setting(debugDetails)
       .setName("Debug Mode")
       .setDesc(
-        "Toggling this on will enable a few console logs to appear when use the matrix/list view, or the trail."
+        "Set the minimum level of debug messages to console log. If you choose `TRACE`, then everything will be logged. If you choose `ERROR`, then only the most necessary issues will be logged. `SILENT` will turn off all logs."
       )
-      .addToggle((toggle) =>
-        toggle.setValue(settings.debugMode).onChange(async (value) => {
+      .addDropdown((dd) => {
+        Object.keys(log.levels).forEach((key) => dd.addOption(key, key));
+        dd.setValue(settings.debugMode).onChange(async (value: DebugLevel) => {
+          log.setLevel(value);
           settings.debugMode = value;
           await plugin.saveSettings();
-        })
-      );
-
-    new Setting(debugDetails)
-      .setName("Super Debug Mode")
-      .setDesc("Toggling this on will enable ALOT of console logs")
-      .addToggle((toggle) =>
-        toggle.setValue(settings.superDebugMode).onChange(async (value) => {
-          settings.superDebugMode = value;
-          await plugin.saveSettings();
-        })
-      );
+        });
+      });
 
     debugDetails.createEl(
       "button",
