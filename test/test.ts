@@ -17,7 +17,7 @@ describe("When running some tests", function () {
         next: ["next"],
         prev: ["prev"],
         same: ["same"],
-        up: ["up"],
+        up: ["up", "parent"],
       },
     ];
 
@@ -27,7 +27,7 @@ describe("When running some tests", function () {
     g.addNode("C");
 
     g.addEdge("A", "B", { dir: "up", field: "parent" });
-    g.addEdge("C", "A", { dir: "prev", field: "previous" });
+    g.addEdge("C", "A", { dir: "prev", field: "prev" });
 
     getReflexiveClosure(g, userHiers);
 
