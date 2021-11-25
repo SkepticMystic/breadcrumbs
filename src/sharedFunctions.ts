@@ -138,6 +138,12 @@ export function makeWiki(wikiQ: boolean, str: string) {
   return copy;
 }
 
+export function dropWikilinks(str: string) {
+  let copy = str.slice();
+  if (copy.startsWith("[[") && copy.endsWith("]]")) copy = copy.slice(2, -2);
+  return copy;
+}
+
 /**
  * Get all the fields in `dir`.
  * Returns all fields if `dir === 'all'`

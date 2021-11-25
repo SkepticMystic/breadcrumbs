@@ -40,7 +40,6 @@ import {
   addEdgeIfNot,
   addNodesIfNot,
   getFieldInfo,
-  getInNeighbours,
   getOppDir,
   getOppFields,
   getReflexiveClosure,
@@ -60,8 +59,7 @@ import type {
 } from "./interfaces";
 import {
   createOrUpdateYaml,
-  // debugGroupEnd,
-  // debugGroupStart,
+  dropWikilinks,
   getBaseFromPath,
   getDVBasename,
   getFields,
@@ -495,10 +493,11 @@ export default class BCPlugin extends Plugin {
       const rowObj = {};
       row
         .split(",")
-        .map((head) => head.trim())
+        .map((head) => dropWikilinks(head.trim()))
         .forEach((item, i) => {
           rowObj[headers[i]] = item;
         });
+      debug({ rowObj });
       CSVRows.push(rowObj);
     });
     return CSVRows;

@@ -23681,6 +23681,12 @@ function makeWiki(wikiQ, str) {
     }
     return copy;
 }
+function dropWikilinks(str) {
+    let copy = str.slice();
+    if (copy.startsWith("[[") && copy.endsWith("]]"))
+        copy = copy.slice(2, -2);
+    return copy;
+}
 /**
  * Get all the fields in `dir`.
  * Returns all fields if `dir === 'all'`
@@ -50090,10 +50096,11 @@ class BCPlugin extends require$$0.Plugin {
             const rowObj = {};
             row
                 .split(",")
-                .map((head) => head.trim())
+                .map((head) => dropWikilinks(head.trim()))
                 .forEach((item, i) => {
                 rowObj[headers[i]] = item;
             });
+            loglevel.debug({ rowObj });
             CSVRows.push(rowObj);
         });
         return CSVRows;
