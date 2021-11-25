@@ -1074,12 +1074,12 @@ export default class BCPlugin extends Plugin {
       console.time("Link-Notes");
       this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
       console.timeEnd("Link-Notes");
-      this.addTraverseNotesToGraph(
-        eligableAlts["BC-traverse-note"],
-        frontms,
-        mainG,
-        this.buildObsGraph()
-      );
+      // this.addTraverseNotesToGraph(
+      //   eligableAlts["BC-traverse-note"],
+      //   frontms,
+      //   mainG,
+      //   this.buildObsGraph()
+      // );
 
       files.forEach((file) => {
         const { basename } = file;
@@ -1229,19 +1229,20 @@ export default class BCPlugin extends Plugin {
     const { basename, extension } = currFile;
     if (extension !== "md") return null;
 
-    const allTrails: string[][] = this.bfsAllPaths(g, basename);
+    const allTrails = this.bfsAllPaths(g, basename);
     let filteredTrails = [...allTrails];
 
-    const { indexNotes } = this.settings;
+    const { indexNotes, showAllPathsIfNoneToIndexNote } = this.settings;
     // Filter for index notes
-    if (indexNotes[0] !== "" && filteredTrails[0].length > 0) {
+    if (
+      // Works for `undefined` and `""`
+      indexNotes[0] &&
+      filteredTrails.length
+    ) {
       filteredTrails = filteredTrails.filter((trail) =>
         indexNotes.includes(trail[0])
       );
-      if (
-        filteredTrails.length === 0 &&
-        this.settings.showAllPathsIfNoneToIndexNote
-      )
+      if (filteredTrails.length === 0 && showAllPathsIfNoneToIndexNote)
         filteredTrails = [...allTrails];
     }
 
@@ -1249,7 +1250,6 @@ export default class BCPlugin extends Plugin {
       .filter((trail) => trail.length > 0)
       .sort((a, b) => a.length - b.length);
 
-    info({ sortedTrails });
     return sortedTrails;
   }
 

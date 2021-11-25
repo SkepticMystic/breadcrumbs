@@ -26426,7 +26426,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
         });
         new require$$0.Setting(trailDetails)
-            .setName("Index/Home Note(s)")
+            .setName("Index Note(s)")
             .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
             .addText((text) => {
             text
@@ -50547,7 +50547,12 @@ class BCPlugin extends require$$0.Plugin {
             console.time("Link-Notes");
             this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
             console.timeEnd("Link-Notes");
-            this.addTraverseNotesToGraph(eligableAlts["BC-traverse-note"], frontms, mainG, this.buildObsGraph());
+            // this.addTraverseNotesToGraph(
+            //   eligableAlts["BC-traverse-note"],
+            //   frontms,
+            //   mainG,
+            //   this.buildObsGraph()
+            // );
             files.forEach((file) => {
                 const { basename } = file;
                 addNodesIfNot(mainG, [basename]);
@@ -50669,18 +50674,19 @@ class BCPlugin extends require$$0.Plugin {
             return null;
         const allTrails = this.bfsAllPaths(g, basename);
         let filteredTrails = [...allTrails];
-        const { indexNotes } = this.settings;
+        const { indexNotes, showAllPathsIfNoneToIndexNote } = this.settings;
         // Filter for index notes
-        if (indexNotes[0] !== "" && filteredTrails[0].length > 0) {
+        if (
+        // Works for `undefined` and `""`
+        indexNotes[0] &&
+            filteredTrails.length) {
             filteredTrails = filteredTrails.filter((trail) => indexNotes.includes(trail[0]));
-            if (filteredTrails.length === 0 &&
-                this.settings.showAllPathsIfNoneToIndexNote)
+            if (filteredTrails.length === 0 && showAllPathsIfNoneToIndexNote)
                 filteredTrails = [...allTrails];
         }
         const sortedTrails = filteredTrails
             .filter((trail) => trail.length > 0)
             .sort((a, b) => a.length - b.length);
-        loglevel.info({ sortedTrails });
         return sortedTrails;
     }
     getLimitedTrailSub() {
