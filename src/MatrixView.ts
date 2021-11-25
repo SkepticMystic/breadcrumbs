@@ -115,10 +115,6 @@ export default class MatrixView extends ItemView {
     }
     const { basename } = currFile;
 
-    const g = getSubInDirs(mainG, "up", "down");
-    const closed = getReflexiveClosure(g, userHiers);
-    const up = getSubInDirs(closed, "up");
-
     const realsnImplieds = getRealnImplied(plugin, basename);
 
     return userHiers.map((hier) => {
@@ -153,37 +149,31 @@ export default class MatrixView extends ItemView {
 
       // SECTION Implied Siblings
       /// Notes with the same parents
+      const g = getSubInDirs(mainG, "up", "down");
+      const closed = getReflexiveClosure(g, userHiers);
+      const closedUp = getSubInDirs(closed, "up");
 
       let iSameArr: internalLinkObj[] = [];
-      const currParents = up.hasNode(basename)
-        ? up.filterOutNeighbors(basename, (n, a) =>
-            Object.values(hier).flat().includes(a.field)
+      const currParents = closedUp.hasNode(basename)
+        ? closedUp.filterOutNeighbors(basename, (n, a) =>
+            hier.up.includes(a.field)
           )
         : [];
 
       currParents.forEach((parent) => {
-        let impliedSiblings = getInNeighbours(up, parent);
+        let impliedSiblings = [];
+        // const { field } = up.getEdgeAttributes(basename, parent);
+        closedUp.forEachInEdge(parent, (k, a, s, t) => {
+          if (s === basename) return;
+          // if (!settings.filterImpliedSiblingsOfDifferentTypes)
+          impliedSiblings.push(s);
+          // else if (a.field === field) {
+          //   impliedSiblings.push(s);
+          // }
+        });
 
-        // The current note is always it's own implied sibling, so remove it from the list
-        const indexCurrNote = impliedSiblings.indexOf(basename);
-        impliedSiblings.splice(indexCurrNote, 1);
-
-        if (settings.filterImpliedSiblingsOfDifferentTypes) {
-          const currNodeType: string = up.getNodeAttribute(basename, "field");
-          impliedSiblings = impliedSiblings.filter((iSibling) => {
-            const iSiblingType: string = up.getNodeAttribute(iSibling, "field");
-            return iSiblingType === currNodeType;
-          });
-        }
-
-        // Create the implied sibling SquareProps
         impliedSiblings.forEach((impliedSibling) => {
-          iSameArr.push({
-            to: impliedSibling,
-            cls: linkClass(this.app, impliedSibling, false),
-            alt: this.getAlt(impliedSibling, settings),
-            order: this.getOrder(impliedSibling),
-          });
+          iSameArr.push(this.toInternalLinkObj(impliedSibling, false));
         });
       });
 
@@ -292,15 +282,6 @@ export default class MatrixView extends ItemView {
       contentEl.createEl("button", { text: "↻" }, (el) => {
         el.onclick = async () => await this.plugin.refreshIndex();
       });
-
-      // const data = currGraphs.hierGs.map((hierG) => {
-      //   const hierData: { [dir in Directions]: Graph } = blankDirUndef();
-      //   for (const dir of DIRECTIONS) {
-      //     // This is merging all graphs in Dir **In a particular hierarchy**, not accross all hierarchies like mergeGs(getAllGsInDir()) does
-      //     hierData[dir] = mergeGs(...Object.values(hierG[dir]));
-      //   }
-      //   return hierData;
-      // });
 
       const hierSquares = this.getHierSquares(
         userHiers,
