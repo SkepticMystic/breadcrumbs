@@ -1,1 +1,28 @@
-helloWorld
+{
+  "allowSelfLoops": true,
+  "attributes": {},
+  "directedSelfLoopCount": 0,
+  "directedSize": 2,
+  "edges": {
+    "0. (A)->(B)": {
+      "dir": "up",
+      "field": "up"
+    },
+    "0. (B)->(A)": {
+      "dir": "down",
+      "field": "down"
+    }
+  },
+  "implementation": "graphology",
+  "multi": true,
+  "nodes": {
+    "A": {},
+    "B": {}
+  },
+  "order": 2,
+  "selfLoopCount": 0,
+  "size": 2,
+  "type": "mixed",
+  "undirectedSelfLoopCount": 0,
+  "undirectedSize": 0
+}
