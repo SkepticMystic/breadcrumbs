@@ -532,6 +532,7 @@ export default class BCPlugin extends Plugin {
     const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
 
     for (const source in resolvedLinks) {
+      if (!source.endsWith(".md")) continue;
       const sourceBase = getBaseFromMDPath(source);
       addNodesIfNot(ObsG, [sourceBase]);
 
