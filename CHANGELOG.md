@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.15.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.15.0...1.15.1) (2021-11-25)
+
+
+### Bug Fixes
+
+* **TraverseNote:** :bug: Don't add MD notes to ObsG ([cc7be40](https://github.com/SkepticMystic/breadcrumbs/commit/cc7be40577fac7d4a99216bd9e916e664af4b179))
+* **TraverseNote:** :bug: Use fancier dfs alg instead of graphology ([463fac9](https://github.com/SkepticMystic/breadcrumbs/commit/463fac935b17032c0347f131aa2215eca2b163a7))
+
 ## [1.15.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.14.0...1.15.0) (2021-11-25)
 
 
