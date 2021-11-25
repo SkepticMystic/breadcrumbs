@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.14.0...1.15.0) (2021-11-25)
+
+
+### Features
+
+* **TraverseNote:** :sparkles: Working TraverseNotes! Add "BC-traverse-note: fieldName" to a note. Breadcrumbs will DFS the Obsidian graph, adding all edges as `fieldName` types ([e5e365e](https://github.com/SkepticMystic/breadcrumbs/commit/e5e365e6bdc133651294286f39c28317262f6d64))
+
 ## [1.14.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.13.0...1.14.0) (2021-11-25)
 
 
