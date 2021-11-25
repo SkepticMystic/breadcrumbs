@@ -29,8 +29,7 @@ describe("When running some tests", function () {
     this.verifyAsJSON(gStr, {
       reporters: ["tortoisemerge"],
       appendEOL: true,
-      // Doesn't add \n
-      normalizeLineEndingsTo: "\n",
+      normalizeLineEndingsTo: "\r\n",
     });
   });
 });
