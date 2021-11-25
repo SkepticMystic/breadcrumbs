@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.12.2...1.13.0) (2021-11-25)
+
+
+### Features
+
+* :sparkles: BC-order as Suggestor field. Deprecate custom order field ([a771a4a](https://github.com/SkepticMystic/breadcrumbs/commit/a771a4a531add45784e46ae08becf94431db9a7e))
+
+
+### Bug Fixes
+
+* :bug: node.dir and node.field is not well-defined ([4e7c0fd](https://github.com/SkepticMystic/breadcrumbs/commit/4e7c0fd01e2bf3aded441fa71dc29563620bb05e))
+* **List/Matrix View:** :bug: filterImpliedSiblings wasn't implemented correctly. It has been disabled for now ([ba4ced5](https://github.com/SkepticMystic/breadcrumbs/commit/ba4ced548d78c303de9cd12ad821e493ad8e8fdc))
+
 ### [1.12.2](https://github.com/SkepticMystic/breadcrumbs/compare/1.12.1...1.12.2) (2021-11-24)
 
 ### [1.12.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.12.0...1.12.1) (2021-11-24)
