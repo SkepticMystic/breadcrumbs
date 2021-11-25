@@ -104,7 +104,7 @@ export function getReflexiveClosure(
 export function addNodesIfNot(
   g: MultiGraph,
   nodes: string[],
-  attr?: { dir: Directions; field: string }
+  attr?: { order: number }
 ) {
   nodes.forEach((node) => {
     if (!g.hasNode(node)) g.addNode(node, attr);

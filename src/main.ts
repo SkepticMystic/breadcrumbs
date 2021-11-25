@@ -313,7 +313,7 @@ export default class BCPlugin extends Plugin {
 
   writeBCToFile = async (file: TFile) => {
     const { app, settings, mainG } = this;
-    const { limitWriteBCCheckboxStates, writeBCsInline } = settings;
+    const { limitWriteBCCheckboxStates, writeBCsInline, userHiers } = settings;
 
     const { frontmatter } = app.metadataCache.getFileCache(file);
     const api = app.plugins.plugins.metaedit?.api;
@@ -323,10 +323,12 @@ export default class BCPlugin extends Plugin {
       return;
     }
 
-    const succs = getInNeighbours(mainG, file.basename);
+    const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
+      const oppField = getOppFields(userHiers, a.field)[0];
+      return { succ: s, field: oppField };
+    });
 
-    for (const succ of succs) {
-      const { field } = mainG.getNodeAttributes(succ);
+    for (const { succ, field } of succInfo) {
       if (!limitWriteBCCheckboxStates[field]) return;
 
       if (!writeBCsInline) {
@@ -459,17 +461,10 @@ export default class BCPlugin extends Plugin {
     opps?: { oppField: string; oppDir: Directions }
   ): void {
     addNodesIfNot(mainG, [source], {
-      dir,
-      field,
-      //@ts-ignore
       order: sourceOrder,
     });
-    // targets.forEach((target) => {
 
     addNodesIfNot(mainG, [target], {
-      dir,
-      field,
-      //@ts-ignore
       order: targetOrder,
     });
 
@@ -483,7 +478,6 @@ export default class BCPlugin extends Plugin {
         field: opps.oppField,
       });
     }
-    // });
   }
 
   async getCSVRows() {
@@ -518,11 +512,11 @@ export default class BCPlugin extends Plugin {
   ) {
     CSVRows.forEach((row) => {
       //@ts-ignore
-      addNodesIfNot(g, [row.file], { dir, field });
+      addNodesIfNot(g, [row.file]);
       if (field === "" || !row[field]) return;
 
       //@ts-ignore
-      addNodesIfNot(g, [row[field]], { dir, field });
+      addNodesIfNot(g, [row[field]]);
       //@ts-ignore
       addEdgeIfNot(g, row.file, row[field], { dir, field });
     });
@@ -679,7 +673,7 @@ export default class BCPlugin extends Plugin {
         const t = hierarchyNotesArr[i + 1]?.currNote;
 
         //@ts-ignore
-        addNodesIfNot(mainG, [s, t], { dir: "down", field: downField });
+        addNodesIfNot(mainG, [s, t]);
         //@ts-ignore
         addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
       } else {
@@ -688,7 +682,7 @@ export default class BCPlugin extends Plugin {
           field: upField,
         };
         //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote], aUp);
+        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote]);
         //@ts-ignore
         addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
 
@@ -697,7 +691,7 @@ export default class BCPlugin extends Plugin {
           field: downField,
         };
         //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote], aDown);
+        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote]);
         //@ts-ignore
         addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
       }
