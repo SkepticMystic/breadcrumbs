@@ -1,8 +1,8 @@
 import { MultiGraph } from "graphology";
 import type { Attributes } from "graphology-types";
+import type { App } from "obsidian";
 // import { DIRECTIONS } from "./constants";
 import type { Directions, UserHier } from "./interfaces";
-import type { App, ItemView, WorkspaceLeaf } from "obsidian";
 
 // TODO - this is a hack to get the graph to work with the approvals
 // I shouldn't need
@@ -152,7 +152,8 @@ export const getOppDir = (dir: Directions): Directions => {
 export function getFieldInfo(userHiers: UserHier[], field: string) {
   let fieldDir: Directions;
   let fieldHier: UserHier;
-  DIRECTIONS.forEach((dir) => {
+
+  DIRECTIONS.forEach((dir: Directions) => {
     userHiers.forEach((hier) => {
       if (hier[dir].includes(field)) {
         fieldDir = dir;

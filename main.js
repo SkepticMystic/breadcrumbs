@@ -23618,13 +23618,13 @@ function normalise(arr) {
     return arr.map((item) => item / max);
 }
 /**
- * Get basename from `path`
+ * Get basename from a **Markdown** `path`
  * @param  {string} path
  */
-const getBaseFromPath = (path) => {
+const getBaseFromMDPath = (path) => {
     const splitSlash = path.split("/").last();
-    if (splitSlash.includes(".")) {
-        return splitSlash.split(".").slice(0, -1).join(".");
+    if (splitSlash.endsWith(".md")) {
+        return splitSlash.split(".md").slice(0, -1).join(".");
     }
     else
         return splitSlash;
@@ -23795,13 +23795,13 @@ function getRealnImplied(plugin, currNode, dir = null) {
     return realsnImplieds;
 }
 function iterateHiers(userHiers, fn) {
-    for (const hier of userHiers) {
-        for (const dir of DIRECTIONS) {
-            for (const field of hier[dir]) {
+    userHiers.forEach((hier) => {
+        DIRECTIONS.forEach((dir) => {
+            hier[dir].forEach((field) => {
                 fn(hier, dir, field);
-            }
-        }
-    }
+            });
+        });
+    });
 }
 
 class MatrixView extends require$$0.ItemView {
@@ -50086,7 +50086,12 @@ class BCPlugin extends require$$0.Plugin {
         return frontms;
     }
     // SECTION OneSource
-    populateMain(mainG, source, dir, field, target, sourceOrder, targetOrder, opps) {
+    populateMain(mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
+        var _a;
+        const { userHiers } = this.settings;
+        const dir = getFieldInfo(userHiers, field).fieldDir;
+        const oppDir = getOppDir(dir);
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
         addNodesIfNot(mainG, [source], {
             order: sourceOrder,
         });
@@ -50097,10 +50102,10 @@ class BCPlugin extends require$$0.Plugin {
             dir,
             field,
         });
-        if (opps) {
+        if (fillOpp) {
             addEdgeIfNot(mainG, target, source, {
-                dir: opps.oppDir,
-                field: opps.oppField,
+                dir: oppDir,
+                field: oppField,
             });
         }
     }
@@ -50142,20 +50147,22 @@ class BCPlugin extends require$$0.Plugin {
         const ObsG = new graphology_umd_min.MultiGraph();
         const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
         for (const source in resolvedLinks) {
-            const sourceBase = getBaseFromPath(source);
+            const sourceBase = getBaseFromMDPath(source);
             addNodesIfNot(ObsG, [sourceBase]);
             for (const dest in resolvedLinks[source]) {
-                const destBase = getBaseFromPath(dest);
+                const destBase = getBaseFromMDPath(dest);
                 addNodesIfNot(ObsG, [destBase]);
                 ObsG.addEdge(sourceBase, destBase, { resolved: true });
             }
         }
         for (const source in unresolvedLinks) {
-            const sourceBase = getBaseFromPath(source);
+            const sourceBase = getBaseFromMDPath(source);
             addNodesIfNot(ObsG, [sourceBase]);
             for (const dest in unresolvedLinks[source]) {
-                const destBase = getBaseFromPath(dest);
+                const destBase = getBaseFromMDPath(dest);
                 addNodesIfNot(ObsG, [destBase]);
+                if (sourceBase === destBase)
+                    continue;
                 ObsG.addEdge(sourceBase, destBase, { resolved: false });
             }
         }
@@ -50200,7 +50207,7 @@ class BCPlugin extends require$$0.Plugin {
             if (typeof rawValuesPreFlat === "string") {
                 const splits = rawValuesPreFlat.match(splitLinksRegex);
                 if (splits !== null) {
-                    const linkNames = splits.map((link) => getBaseFromPath(link.match(dropHeaderOrAlias)[1]));
+                    const linkNames = splits.map((link) => getBaseFromMDPath(link.match(dropHeaderOrAlias)[1]));
                     parsed.push(...linkNames);
                 }
             }
@@ -50216,14 +50223,14 @@ class BCPlugin extends require$$0.Plugin {
                             const rawAsString = value.toString();
                             const splits = rawAsString.match(splitLinksRegex);
                             if (splits !== null) {
-                                const strs = splits.map((link) => getBaseFromPath(link.match(dropHeaderOrAlias)[1]));
+                                const strs = splits.map((link) => getBaseFromMDPath(link.match(dropHeaderOrAlias)[1]));
                                 parsed.push(...strs);
                             }
                             else
-                                parsed.push(getBaseFromPath(rawAsString));
+                                parsed.push(getBaseFromMDPath(rawAsString));
                         }
                         else if (value.path !== undefined) {
-                            const basename = getBaseFromPath(value.path);
+                            const basename = getBaseFromMDPath(value.path);
                             if (basename !== undefined)
                                 parsed.push(basename);
                         }
@@ -50261,7 +50268,9 @@ class BCPlugin extends require$$0.Plugin {
                 const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
                 const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
                 const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
-                const { fieldDir } = getFieldInfo(userHiers, field);
+                if (field === "")
+                    return;
+                const { fieldDir } = getFieldInfo(userHiers, field) || {};
                 if (!fieldDir)
                     return;
                 jugglLink.links.push({
@@ -50326,7 +50335,9 @@ class BCPlugin extends require$$0.Plugin {
                 const sourceOrder = this.getTargetOrder(frontms, basename);
                 linksInLine.forEach((linkInLine) => {
                     const targetsOrder = this.getTargetOrder(frontms, linkInLine);
-                    this.populateMain(mainG, basename, dir, field, linkInLine, sourceOrder, targetsOrder);
+                    this.populateMain(mainG, basename, 
+                    // dir,
+                    field, linkInLine, sourceOrder, targetsOrder);
                 });
             });
         });
@@ -50340,7 +50351,6 @@ class BCPlugin extends require$$0.Plugin {
         const { userHiers } = this.settings;
         const upFields = getFields(userHiers, "up");
         eligableAlts.forEach((altFile) => {
-            var _a;
             const folderNoteFile = altFile.file;
             const folderNoteBasename = getDVBasename(folderNoteFile);
             const folder = getFolder(folderNoteFile);
@@ -50352,15 +50362,12 @@ class BCPlugin extends require$$0.Plugin {
             if (typeof field !== "string" || !upFields.includes(field)) {
                 field = upFields[0];
             }
-            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-            if (!oppField)
-                return;
             sources.forEach((source) => {
                 var _a;
                 // This is getting the order of the folder note, not the source pointing up to it
                 const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                 const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
-                this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
+                this.populateMain(mainG, source, field, folderNoteBasename, sourceOrder, targetOrder, true);
             });
         });
     }
@@ -50368,7 +50375,6 @@ class BCPlugin extends require$$0.Plugin {
         const { userHiers } = this.settings;
         const upFields = getFields(userHiers, "up");
         eligableAlts.forEach((altFile) => {
-            var _a;
             const tagNoteFile = altFile.file;
             const tagNoteBasename = getDVBasename(tagNoteFile);
             const tag = altFile["BC-tag-note"].trim();
@@ -50387,22 +50393,19 @@ class BCPlugin extends require$$0.Plugin {
             if (typeof field !== "string" || !upFields.includes(field)) {
                 field = upFields[0];
             }
-            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-            if (!oppField)
-                return;
             sources.forEach((source) => {
                 var _a;
                 // This is getting the order of the folder note, not the source pointing up to it
                 const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                 const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
-                this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
+                this.populateMain(mainG, source, field, tagNoteBasename, sourceOrder, targetOrder, true);
             });
         });
     }
     addLinkNotesToGraph(eligableAlts, frontms, mainG) {
         const { userHiers } = this.settings;
         eligableAlts.forEach((altFile) => {
-            var _a, _b, _c;
+            var _a, _b;
             const linkNoteFile = altFile.file;
             const linkNoteBasename = getDVBasename(linkNoteFile);
             let field = altFile["BC-link-note"];
@@ -50412,17 +50415,13 @@ class BCPlugin extends require$$0.Plugin {
                     !getFields(userHiers, fieldDir).includes(field))) {
                 field = getFields(userHiers, fieldDir)[0];
             }
-            const dir = getFieldInfo(userHiers, field).fieldDir;
-            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-            if (!oppField)
-                return;
-            const targets = (_b = this.app.metadataCache
-                .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.links.map((l) => l.link.match(/[^#|]+/)[0]);
+            const targets = (_a = this.app.metadataCache
+                .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links.map((l) => l.link.match(/[^#|]+/)[0]);
             // This is getting the order of the folder note, not the source pointing up to it
             for (const target of targets) {
-                const sourceOrder = parseInt((_c = altFile["BC-order"]) !== null && _c !== void 0 ? _c : "9999");
+                const sourceOrder = parseInt((_b = altFile["BC-order"]) !== null && _b !== void 0 ? _b : "9999");
                 const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
-                this.populateMain(mainG, linkNoteBasename, dir, field, target, sourceOrder, targetOrder, { oppDir: getOppDir(dir), oppField });
+                this.populateMain(mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
             }
         });
     }
@@ -50438,30 +50437,26 @@ class BCPlugin extends require$$0.Plugin {
                     !getFields(userHiers, fieldDir).includes(field))) {
                 field = getFields(userHiers, fieldDir)[0];
             }
-            const dir = getFieldInfo(userHiers, field).fieldDir;
-            const oppField = getOppFields(userHiers, field)[0];
             let prevD = -1;
             let prevN = "";
+            const lastAtDepth = {};
             graphologyTraversal.dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
                 // In depth-first, same depth means not-connected
-                if (d === prevD && n === prevN)
-                    return;
-                // Increase in depth implies connectedness
-                else if (d !== 0 && prevD < d) {
-                    console.log("Adding:", prevN, "→", n);
-                    this.populateMain(mainG, prevN, dir, field, n, 9999, 9999, {
-                        oppDir: getOppDir(dir),
-                        oppField,
-                    });
+                if (d <= prevD) {
+                    loglevel.debug(lastAtDepth[d - 1], "→", n);
+                    this.populateMain(mainG, lastAtDepth[d - 1], field, n, 9999, 9999, true);
                 }
-                else if (d !== 0 && prevD > d) {
-                    return;
+                // Increase in depth implies connectedness
+                else if (d && prevD < d) {
+                    loglevel.debug(prevN, "→", n);
+                    this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
                 }
                 else {
-                    console.log({ prevN, n, prevD, d });
+                    loglevel.debug({ prevN, n, prevD, d });
                 }
                 prevD = d;
                 prevN = n;
+                lastAtDepth[d] = n;
             });
         });
     }
@@ -50506,7 +50501,7 @@ class BCPlugin extends require$$0.Plugin {
                     const values = this.parseFieldValue(frontm[field]);
                     values.forEach((target) => {
                         const targetOrder = this.getTargetOrder(frontms, target);
-                        this.populateMain(mainG, basename, dir, field, target, sourceOrder, targetOrder);
+                        this.populateMain(mainG, basename, field, target, sourceOrder, targetOrder);
                     });
                     if (useCSV)
                         this.addCSVCrumbs(mainG, CSVRows, dir, field);
@@ -50547,12 +50542,11 @@ class BCPlugin extends require$$0.Plugin {
             console.time("Link-Notes");
             this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
             console.timeEnd("Link-Notes");
-            // this.addTraverseNotesToGraph(
-            //   eligableAlts["BC-traverse-note"],
-            //   frontms,
-            //   mainG,
-            //   this.buildObsGraph()
-            // );
+            db.start1G("Traverse-Notes");
+            console.time("Traverse-Notes");
+            this.addTraverseNotesToGraph(eligableAlts["BC-traverse-note"], frontms, mainG, this.buildObsGraph());
+            console.timeEnd("Traverse-Notes");
+            db.end1G();
             files.forEach((file) => {
                 const { basename } = file;
                 addNodesIfNot(mainG, [basename]);

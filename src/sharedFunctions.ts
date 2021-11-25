@@ -37,13 +37,13 @@ export function splitAndDrop(str: string): string[] {
 }
 
 /**
- * Get basename from `path`
+ * Get basename from a **Markdown** `path`
  * @param  {string} path
  */
-export const getBaseFromPath = (path: string) => {
+export const getBaseFromMDPath = (path: string) => {
   const splitSlash = path.split("/").last();
-  if (splitSlash.includes(".")) {
-    return splitSlash.split(".").slice(0, -1).join(".");
+  if (splitSlash.endsWith(".md")) {
+    return splitSlash.split(".md").slice(0, -1).join(".");
   } else return splitSlash;
 };
 
@@ -279,13 +279,13 @@ export function getRealnImplied(
 
 export function iterateHiers(
   userHiers: UserHier[],
-  fn: (hier: UserHier, dir: Directions, field: string) => any
+  fn: (hier: UserHier, dir: Directions, field: string) => void
 ) {
-  for (const hier of userHiers) {
-    for (const dir of DIRECTIONS) {
-      for (const field of hier[dir]) {
+  userHiers.forEach((hier) => {
+    DIRECTIONS.forEach((dir) => {
+      hier[dir].forEach((field) => {
         fn(hier, dir, field);
-      }
-    }
-  }
+      });
+    });
+  });
 }

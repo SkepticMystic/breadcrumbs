@@ -61,7 +61,7 @@ import type {
 import {
   createOrUpdateYaml,
   dropWikilinks,
-  getBaseFromPath,
+  getBaseFromMDPath,
   getDVBasename,
   getFields,
   getFolder,
@@ -452,13 +452,18 @@ export default class BCPlugin extends Plugin {
   populateMain(
     mainG: MultiGraph,
     source: string,
-    dir: Directions,
     field: string,
     target: string,
     sourceOrder: number,
     targetOrder: number,
-    opps?: { oppField: string; oppDir: Directions }
+    fillOpp = false
   ): void {
+    const { userHiers } = this.settings;
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    const oppDir = getOppDir(dir);
+    const oppField =
+      getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
+
     addNodesIfNot(mainG, [source], {
       order: sourceOrder,
     });
@@ -471,10 +476,10 @@ export default class BCPlugin extends Plugin {
       dir,
       field,
     });
-    if (opps) {
+    if (fillOpp) {
       addEdgeIfNot(mainG, target, source, {
-        dir: opps.oppDir,
-        field: opps.oppField,
+        dir: oppDir,
+        field: oppField,
       });
     }
   }
@@ -527,23 +532,24 @@ export default class BCPlugin extends Plugin {
     const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
 
     for (const source in resolvedLinks) {
-      const sourceBase = getBaseFromPath(source);
+      const sourceBase = getBaseFromMDPath(source);
       addNodesIfNot(ObsG, [sourceBase]);
 
       for (const dest in resolvedLinks[source]) {
-        const destBase = getBaseFromPath(dest);
+        const destBase = getBaseFromMDPath(dest);
         addNodesIfNot(ObsG, [destBase]);
         ObsG.addEdge(sourceBase, destBase, { resolved: true });
       }
     }
 
     for (const source in unresolvedLinks) {
-      const sourceBase = getBaseFromPath(source);
+      const sourceBase = getBaseFromMDPath(source);
       addNodesIfNot(ObsG, [sourceBase]);
 
       for (const dest in unresolvedLinks[source]) {
-        const destBase = getBaseFromPath(dest);
+        const destBase = getBaseFromMDPath(dest);
         addNodesIfNot(ObsG, [destBase]);
+        if (sourceBase === destBase) continue;
         ObsG.addEdge(sourceBase, destBase, { resolved: false });
       }
     }
@@ -590,7 +596,7 @@ export default class BCPlugin extends Plugin {
         const splits = rawValuesPreFlat.match(splitLinksRegex);
         if (splits !== null) {
           const linkNames = splits.map((link) =>
-            getBaseFromPath(link.match(dropHeaderOrAlias)[1])
+            getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
           );
           parsed.push(...linkNames);
         }
@@ -608,12 +614,12 @@ export default class BCPlugin extends Plugin {
               const splits = rawAsString.match(splitLinksRegex);
               if (splits !== null) {
                 const strs = splits.map((link) =>
-                  getBaseFromPath(link.match(dropHeaderOrAlias)[1])
+                  getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
                 );
                 parsed.push(...strs);
-              } else parsed.push(getBaseFromPath(rawAsString));
+              } else parsed.push(getBaseFromMDPath(rawAsString));
             } else if (value.path !== undefined) {
-              const basename = getBaseFromPath(value.path);
+              const basename = getBaseFromMDPath(value.path);
               if (basename !== undefined) parsed.push(basename);
             }
           });
@@ -662,7 +668,8 @@ export default class BCPlugin extends Plugin {
           const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
 
           const field = parsedLinks?.properties?.type ?? "";
-          const { fieldDir } = getFieldInfo(userHiers, field);
+          if (field === "") return;
+          const { fieldDir } = getFieldInfo(userHiers, field) || {};
           if (!fieldDir) return;
 
           jugglLink.links.push({
@@ -744,7 +751,7 @@ export default class BCPlugin extends Plugin {
           this.populateMain(
             mainG,
             basename,
-            dir,
+            // dir,
             field,
             linkInLine,
             sourceOrder,
@@ -786,11 +793,6 @@ export default class BCPlugin extends Plugin {
         field = upFields[0];
       }
 
-      const oppField =
-        getOppFields(userHiers, field as string)[0] ??
-        getFields(userHiers, "down")[0];
-      if (!oppField) return;
-
       sources.forEach((source) => {
         // This is getting the order of the folder note, not the source pointing up to it
         const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
@@ -798,12 +800,11 @@ export default class BCPlugin extends Plugin {
         this.populateMain(
           mainG,
           source,
-          "up",
           field as string,
           folderNoteBasename,
           sourceOrder,
           targetOrder,
-          { oppDir: "down", oppField }
+          true
         );
       });
     });
@@ -840,11 +841,6 @@ export default class BCPlugin extends Plugin {
         field = upFields[0];
       }
 
-      const oppField =
-        getOppFields(userHiers, field as string)[0] ??
-        getFields(userHiers, "down")[0];
-      if (!oppField) return;
-
       sources.forEach((source) => {
         // This is getting the order of the folder note, not the source pointing up to it
         const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
@@ -852,12 +848,11 @@ export default class BCPlugin extends Plugin {
         this.populateMain(
           mainG,
           source,
-          "up",
           field as string,
           tagNoteBasename,
           sourceOrder,
           targetOrder,
-          { oppDir: "down", oppField }
+          true
         );
       });
     });
@@ -882,11 +877,6 @@ export default class BCPlugin extends Plugin {
       ) {
         field = getFields(userHiers, fieldDir)[0];
       }
-      const dir = getFieldInfo(userHiers, field as string).fieldDir;
-      const oppField =
-        getOppFields(userHiers, field as string)[0] ??
-        getFields(userHiers, "down")[0];
-      if (!oppField) return;
 
       const targets = this.app.metadataCache
         .getFileCache(linkNoteFile)
@@ -899,12 +889,11 @@ export default class BCPlugin extends Plugin {
         this.populateMain(
           mainG,
           linkNoteBasename,
-          dir,
           field as string,
           target,
           sourceOrder,
           targetOrder,
-          { oppDir: getOppDir(dir), oppField }
+          true
         );
       }
     });
@@ -930,29 +919,37 @@ export default class BCPlugin extends Plugin {
       ) {
         field = getFields(userHiers, fieldDir)[0];
       }
-      const dir = getFieldInfo(userHiers, field as string).fieldDir;
-      const oppField = getOppFields(userHiers, field as string)[0];
 
       let prevD = -1;
       let prevN = "";
+      const lastAtDepth: { [key: number]: string } = {};
+
       dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
         // In depth-first, same depth means not-connected
-        if (d === prevD && n === prevN) return;
+
+        if (d <= prevD) {
+          debug(lastAtDepth[d - 1], "→", n);
+          this.populateMain(
+            mainG,
+            lastAtDepth[d - 1],
+            field,
+            n,
+            9999,
+            9999,
+            true
+          );
+        }
         // Increase in depth implies connectedness
-        else if (d !== 0 && prevD < d) {
-          console.log("Adding:", prevN, "→", n);
-          this.populateMain(mainG, prevN, dir, field, n, 9999, 9999, {
-            oppDir: getOppDir(dir),
-            oppField,
-          });
-        } else if (d !== 0 && prevD > d) {
-          return;
+        else if (d && prevD < d) {
+          debug(prevN, "→", n);
+          this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
         } else {
-          console.log({ prevN, n, prevD, d });
+          debug({ prevN, n, prevD, d });
         }
 
         prevD = d;
         prevN = n;
+        lastAtDepth[d] = n;
       });
     });
   }
@@ -1016,7 +1013,6 @@ export default class BCPlugin extends Plugin {
             this.populateMain(
               mainG,
               basename,
-              dir,
               field,
               target,
               sourceOrder,
@@ -1074,12 +1070,16 @@ export default class BCPlugin extends Plugin {
       console.time("Link-Notes");
       this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
       console.timeEnd("Link-Notes");
-      // this.addTraverseNotesToGraph(
-      //   eligableAlts["BC-traverse-note"],
-      //   frontms,
-      //   mainG,
-      //   this.buildObsGraph()
-      // );
+      db.start1G("Traverse-Notes");
+      console.time("Traverse-Notes");
+      this.addTraverseNotesToGraph(
+        eligableAlts["BC-traverse-note"],
+        frontms,
+        mainG,
+        this.buildObsGraph()
+      );
+      console.timeEnd("Traverse-Notes");
+      db.end1G();
 
       files.forEach((file) => {
         const { basename } = file;
