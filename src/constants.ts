@@ -89,38 +89,53 @@ export const BC_FIELDS = [
     field: "BC-folder-note",
     desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
     after: ": true",
+    alt: true,
   },
   {
     field: "BC-folder-note-up",
     desc: "Manually choose the up field for this folder-note to use",
     after: ": ",
+    alt: false,
   },
   {
     field: "BC-tag-note",
     desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
     after: ": true",
+    alt: true,
   },
   {
     field: "BC-tag-note-up",
     desc: "Manually choose the up field for this tag-note to use",
     after: ": ",
+    alt: false,
   },
   {
     field: "BC-link-note",
-    desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value. ",
+    desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
     after: ": ",
+    alt: true,
+  },
+  {
+    field: "BC-traverse-note",
+    desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
+    after: ": ",
+    alt: true,
   },
   {
     field: "BC-hide-trail",
     desc: "Don't show the trail in this note",
     after: ": true",
+    alt: false,
   },
   {
     field: "BC-order",
     desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
     after: ": ",
+    alt: false,
   },
 ];
+
+export const BC_ALTS = BC_FIELDS.filter((f) => f.alt).map((f) => f.field);
 
 export const DEFAULT_SETTINGS: BCSettings = {
   aliasesInIndex: false,

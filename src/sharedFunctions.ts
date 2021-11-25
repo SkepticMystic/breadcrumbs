@@ -40,7 +40,12 @@ export function splitAndDrop(str: string): string[] {
  * Get basename from `path`
  * @param  {string} path
  */
-export const getBaseFromPath = (path: string) => path.split("/").last();
+export const getBaseFromPath = (path: string) => {
+  const splitSlash = path.split("/").last();
+  if (splitSlash.includes(".")) {
+    return splitSlash.split(".").slice(0, -1).join(".");
+  } else return splitSlash;
+};
 
 export const getDVBasename = (file: TFile) => file.basename || file.name;
 export const getFolder = (file: TFile): string =>

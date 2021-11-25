@@ -23621,7 +23621,14 @@ function normalise(arr) {
  * Get basename from `path`
  * @param  {string} path
  */
-const getBaseFromPath = (path) => path.split("/").last();
+const getBaseFromPath = (path) => {
+    const splitSlash = path.split("/").last();
+    if (splitSlash.includes(".")) {
+        return splitSlash.split(".").slice(0, -1).join(".");
+    }
+    else
+        return splitSlash;
+};
 const getDVBasename = (file) => file.basename || file.name;
 const getFolder = (file) => { var _a; 
 //@ts-ignore
@@ -25217,38 +25224,52 @@ const BC_FIELDS = [
         field: "BC-folder-note",
         desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
         after: ": true",
+        alt: true,
     },
     {
         field: "BC-folder-note-up",
         desc: "Manually choose the up field for this folder-note to use",
         after: ": ",
+        alt: false,
     },
     {
         field: "BC-tag-note",
         desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
         after: ": true",
+        alt: true,
     },
     {
         field: "BC-tag-note-up",
         desc: "Manually choose the up field for this tag-note to use",
         after: ": ",
+        alt: false,
     },
     {
         field: "BC-link-note",
-        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value. ",
+        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
         after: ": ",
+        alt: true,
+    },
+    {
+        field: "BC-traverse-note",
+        desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
+        after: ": ",
+        alt: true,
     },
     {
         field: "BC-hide-trail",
         desc: "Don't show the trail in this note",
         after: ": true",
+        alt: false,
     },
     {
         field: "BC-order",
         desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
         after: ": ",
+        alt: false,
     },
 ];
+const BC_ALTS = BC_FIELDS.filter((f) => f.alt).map((f) => f.field);
 const DEFAULT_SETTINGS = {
     aliasesInIndex: false,
     alphaSortAsc: true,
@@ -50117,6 +50138,29 @@ class BCPlugin extends require$$0.Plugin {
             addEdgeIfNot(g, row.file, row[field], { dir, field });
         });
     }
+    buildObsGraph() {
+        const ObsG = new graphology_umd_min.MultiGraph();
+        const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
+        for (const source in resolvedLinks) {
+            const sourceBase = getBaseFromPath(source);
+            addNodesIfNot(ObsG, [sourceBase]);
+            for (const dest in resolvedLinks[source]) {
+                const destBase = getBaseFromPath(dest);
+                addNodesIfNot(ObsG, [destBase]);
+                ObsG.addEdge(sourceBase, destBase, { resolved: true });
+            }
+        }
+        for (const source in unresolvedLinks) {
+            const sourceBase = getBaseFromPath(source);
+            addNodesIfNot(ObsG, [sourceBase]);
+            for (const dest in unresolvedLinks[source]) {
+                const destBase = getBaseFromPath(dest);
+                addNodesIfNot(ObsG, [destBase]);
+                ObsG.addEdge(sourceBase, destBase, { resolved: false });
+            }
+        }
+        return ObsG;
+    }
     /**
      * Keep unwrapping a proxied item until it isn't one anymore
      * @param  {RawValue} item
@@ -50292,100 +50336,133 @@ class BCPlugin extends require$$0.Plugin {
         const api = lib.getApi(this);
         api.getFolderNote;
     }
-    addFolderNotesToGraph(frontms, mainG) {
+    addFolderNotesToGraph(eligableAlts, frontms, mainG) {
         const { userHiers } = this.settings;
         const upFields = getFields(userHiers, "up");
-        frontms.forEach((frontm) => {
+        eligableAlts.forEach((altFile) => {
             var _a;
-            const folderNoteFile = frontm.file;
-            if (frontm["BC-folder-note"]) {
-                const folderNoteBasename = getDVBasename(folderNoteFile);
-                const folder = getFolder(folderNoteFile);
-                const sources = frontms
-                    .map((ff) => ff.file)
-                    .filter((file) => getFolder(file) === folder && file.path !== folderNoteFile.path)
-                    .map(getDVBasename);
-                let field = frontm["BC-folder-note-up"];
-                if (typeof field !== "string" || !upFields.includes(field)) {
-                    field = upFields[0];
-                }
-                const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-                if (!oppField)
-                    return;
-                sources.forEach((source) => {
-                    var _a;
-                    // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
-                    const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
-                    this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
-                });
+            const folderNoteFile = altFile.file;
+            const folderNoteBasename = getDVBasename(folderNoteFile);
+            const folder = getFolder(folderNoteFile);
+            const sources = frontms
+                .map((ff) => ff.file)
+                .filter((file) => getFolder(file) === folder && file.path !== folderNoteFile.path)
+                .map(getDVBasename);
+            let field = altFile["BC-folder-note-up"];
+            if (typeof field !== "string" || !upFields.includes(field)) {
+                field = upFields[0];
             }
-        });
-    }
-    addTagNotesToGraph(frontms, mainG) {
-        const { userHiers } = this.settings;
-        const upFields = getFields(userHiers, "up");
-        frontms.forEach((frontm) => {
-            var _a;
-            const tagNoteFile = frontm.file;
-            if (frontm["BC-tag-note"]) {
-                const tagNoteBasename = getDVBasename(tagNoteFile);
-                const tag = frontm["BC-tag-note"].trim();
-                if (!tag.startsWith("#"))
-                    return;
-                const sources = frontms
-                    .map((ff) => ff.file)
-                    .filter((file) => {
-                    var _a, _b;
-                    return file.path !== tagNoteFile.path &&
-                        ((_b = (_a = this.app.metadataCache
-                            .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
-                })
-                    .map(getDVBasename);
-                let field = frontm["BC-tag-note-up"];
-                if (typeof field !== "string" || !upFields.includes(field)) {
-                    field = upFields[0];
-                }
-                const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-                if (!oppField)
-                    return;
-                sources.forEach((source) => {
-                    var _a;
-                    // This is getting the order of the folder note, not the source pointing up to it
-                    const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
-                    const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
-                    this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
-                });
-            }
-        });
-    }
-    addLinkNotesToGraph(frontms, mainG) {
-        const { userHiers } = this.settings;
-        frontms.forEach((frontm) => {
-            var _a, _b, _c;
-            const linkNoteFile = frontm.file;
-            if (frontm["BC-link-note"]) {
-                const linkNoteBasename = getDVBasename(linkNoteFile);
-                let field = frontm["BC-link-note"];
-                const { fieldDir } = getFieldInfo(userHiers, field);
-                if (typeof field !== "string" ||
-                    (fieldDir !== undefined &&
-                        !getFields(userHiers, fieldDir).includes(field))) {
-                    field = getFields(userHiers, fieldDir)[0];
-                }
-                const dir = getFieldInfo(userHiers, field).fieldDir;
-                const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
-                if (!oppField)
-                    return;
-                const targets = (_b = this.app.metadataCache
-                    .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.links.map((l) => l.link.match(/[^#|]+/)[0]);
+            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+            if (!oppField)
+                return;
+            sources.forEach((source) => {
+                var _a;
                 // This is getting the order of the folder note, not the source pointing up to it
-                for (const target of targets) {
-                    const sourceOrder = parseInt((_c = frontm["BC-order"]) !== null && _c !== void 0 ? _c : "9999");
-                    const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
-                    this.populateMain(mainG, linkNoteBasename, dir, field, target, sourceOrder, targetOrder, { oppDir: getOppDir(dir), oppField });
-                }
+                const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
+                const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
+                this.populateMain(mainG, source, "up", field, folderNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
+            });
+        });
+    }
+    addTagNotesToGraph(eligableAlts, frontms, mainG) {
+        const { userHiers } = this.settings;
+        const upFields = getFields(userHiers, "up");
+        eligableAlts.forEach((altFile) => {
+            var _a;
+            const tagNoteFile = altFile.file;
+            const tagNoteBasename = getDVBasename(tagNoteFile);
+            const tag = altFile["BC-tag-note"].trim();
+            if (!tag.startsWith("#"))
+                return;
+            const sources = frontms
+                .map((ff) => ff.file)
+                .filter((file) => {
+                var _a, _b;
+                return file.path !== tagNoteFile.path &&
+                    ((_b = (_a = this.app.metadataCache
+                        .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
+            })
+                .map(getDVBasename);
+            let field = altFile["BC-tag-note-up"];
+            if (typeof field !== "string" || !upFields.includes(field)) {
+                field = upFields[0];
             }
+            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+            if (!oppField)
+                return;
+            sources.forEach((source) => {
+                var _a;
+                // This is getting the order of the folder note, not the source pointing up to it
+                const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
+                const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
+                this.populateMain(mainG, source, "up", field, tagNoteBasename, sourceOrder, targetOrder, { oppDir: "down", oppField });
+            });
+        });
+    }
+    addLinkNotesToGraph(eligableAlts, frontms, mainG) {
+        const { userHiers } = this.settings;
+        eligableAlts.forEach((altFile) => {
+            var _a, _b, _c;
+            const linkNoteFile = altFile.file;
+            const linkNoteBasename = getDVBasename(linkNoteFile);
+            let field = altFile["BC-link-note"];
+            const { fieldDir } = getFieldInfo(userHiers, field);
+            if (typeof field !== "string" ||
+                (fieldDir !== undefined &&
+                    !getFields(userHiers, fieldDir).includes(field))) {
+                field = getFields(userHiers, fieldDir)[0];
+            }
+            const dir = getFieldInfo(userHiers, field).fieldDir;
+            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, "down")[0];
+            if (!oppField)
+                return;
+            const targets = (_b = this.app.metadataCache
+                .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.links.map((l) => l.link.match(/[^#|]+/)[0]);
+            // This is getting the order of the folder note, not the source pointing up to it
+            for (const target of targets) {
+                const sourceOrder = parseInt((_c = altFile["BC-order"]) !== null && _c !== void 0 ? _c : "9999");
+                const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
+                this.populateMain(mainG, linkNoteBasename, dir, field, target, sourceOrder, targetOrder, { oppDir: getOppDir(dir), oppField });
+            }
+        });
+    }
+    addTraverseNotesToGraph(traverseNotes, frontms, mainG, ObsG) {
+        const { userHiers } = this.settings;
+        traverseNotes.forEach((altFile) => {
+            const traverseNoteFile = altFile.file;
+            const traverseNoteBasename = getDVBasename(traverseNoteFile);
+            let field = altFile["BC-traverse-note"];
+            const { fieldDir } = getFieldInfo(userHiers, field);
+            if (typeof field !== "string" ||
+                (fieldDir !== undefined &&
+                    !getFields(userHiers, fieldDir).includes(field))) {
+                field = getFields(userHiers, fieldDir)[0];
+            }
+            const dir = getFieldInfo(userHiers, field).fieldDir;
+            const oppField = getOppFields(userHiers, field)[0];
+            let prevD = -1;
+            let prevN = "";
+            graphologyTraversal.dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
+                // In depth-first, same depth means not-connected
+                if (d === prevD && n === prevN)
+                    return;
+                // Increase in depth implies connectedness
+                else if (d !== 0 && prevD < d) {
+                    console.log("Adding:", prevN, "→", n);
+                    this.populateMain(mainG, prevN, dir, field, n, 9999, 9999, {
+                        oppDir: getOppDir(dir),
+                        oppField,
+                    });
+                }
+                else if (d !== 0 && prevD > d) {
+                    return;
+                }
+                else {
+                    console.log({ prevN, n, prevD, d });
+                }
+                prevD = d;
+                prevN = n;
+            });
         });
     }
     async initGraphs() {
@@ -50411,9 +50488,18 @@ class BCPlugin extends require$$0.Plugin {
             }
             const useCSV = settings.CSVPaths !== "";
             const CSVRows = useCSV ? await this.getCSVRows() : [];
+            const eligableAlts = {};
+            BC_ALTS.forEach((alt) => {
+                eligableAlts[alt] = [];
+            });
             db.start2G("addFrontmatterToGraph");
             frontms.forEach((frontm) => {
                 var _a;
+                BC_ALTS.forEach((alt) => {
+                    if (frontm[alt]) {
+                        eligableAlts[alt].push(frontm);
+                    }
+                });
                 const basename = getDVBasename(frontm.file);
                 const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
                 iterateHiers(userHiers, (hier, dir, field) => {
@@ -50453,14 +50539,15 @@ class BCPlugin extends require$$0.Plugin {
             db.end2G({ hierarchyNotesArr });
             // !SECTION  Hierarchy Notes
             console.time("Folder-Notes");
-            this.addFolderNotesToGraph(frontms, mainG);
+            this.addFolderNotesToGraph(eligableAlts["BC-folder-note"], frontms, mainG);
             console.timeEnd("Folder-Notes");
             console.time("Tag-Notes");
-            this.addTagNotesToGraph(frontms, mainG);
+            this.addTagNotesToGraph(eligableAlts["BC-tag-note"], frontms, mainG);
             console.timeEnd("Tag-Notes");
             console.time("Link-Notes");
-            this.addLinkNotesToGraph(frontms, mainG);
+            this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
             console.timeEnd("Link-Notes");
+            this.addTraverseNotesToGraph(eligableAlts["BC-traverse-note"], frontms, mainG, this.buildObsGraph());
             files.forEach((file) => {
                 const { basename } = file;
                 addNodesIfNot(mainG, [basename]);
