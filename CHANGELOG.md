@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* **CSV Crumbs:** :sparkles: Allow CSV items to be wikilinks (The secret is that it doesn't have to be a CSV file! So using wikilinks allows the items to be auto updated) (fix [#196](https://github.com/SkepticMystic/breadcrumbs/issues/196)) ([e1171c5](https://github.com/SkepticMystic/breadcrumbs/commit/e1171c53a50868b4b973750d1cd19ba85f933560))
+* **CSV Crumbs:** :sparkles: Allow CSV items to be wikilinks (The secret is that it doesn't have to be a CSV file! So using wikilinks allows the items to be auto updated) (fix [#169](https://github.com/SkepticMystic/breadcrumbs/issues/169)) ([e1171c5](https://github.com/SkepticMystic/breadcrumbs/commit/e1171c53a50868b4b973750d1cd19ba85f933560))
 
 ## [1.13.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.12.2...1.13.0) (2021-11-25)
 
