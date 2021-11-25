@@ -555,6 +555,7 @@ export default class BCPlugin extends Plugin {
       }
     }
 
+    info({ ObsG });
     return ObsG;
   }
 
@@ -921,37 +922,56 @@ export default class BCPlugin extends Plugin {
         field = getFields(userHiers, fieldDir)[0];
       }
 
-      let prevD = -1;
-      let prevN = "";
-      const lastAtDepth: { [key: number]: string } = {};
-
-      dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
-        // In depth-first, same depth means not-connected
-
-        if (d <= prevD) {
-          debug(lastAtDepth[d - 1], "→", n);
+      const allPaths = this.dfsAllPaths(ObsG, traverseNoteBasename);
+      info(allPaths);
+      const reversed = [...allPaths].map((path) => path.reverse());
+      reversed.forEach((path) => {
+        path.forEach((node, i) => {
+          const next = path[i + 1];
+          if (next === undefined) return;
           this.populateMain(
             mainG,
-            lastAtDepth[d - 1],
-            field,
-            n,
+            node,
+            field as string,
+            next,
             9999,
             9999,
             true
           );
-        }
-        // Increase in depth implies connectedness
-        else if (d && prevD < d) {
-          debug(prevN, "→", n);
-          this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
-        } else {
-          debug({ prevN, n, prevD, d });
-        }
-
-        prevD = d;
-        prevN = n;
-        lastAtDepth[d] = n;
+        });
       });
+
+      // let prevD = -1;
+      // let prevN = "";
+      // const lastAtDepth: { [key: number]: string } = {};
+
+      // dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
+      //   // In depth-first, same depth means not-connected
+
+      //   if (d <= prevD) {
+      //     debug(lastAtDepth[d - 1], "→", n);
+      //     this.populateMain(
+      //       mainG,
+      //       lastAtDepth[d - 1],
+      //       field,
+      //       n,
+      //       9999,
+      //       9999,
+      //       true
+      //     );
+      //   }
+      //   // Increase in depth implies connectedness
+      //   else if (d && prevD < d) {
+      //     debug(prevN, "→", n);
+      //     this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
+      //   } else {
+      //     debug({ prevN, n, prevD, d });
+      //   }
+
+      //   prevD = d;
+      //   prevN = n;
+      //   lastAtDepth[d] = n;
+      // });
     });
   }
 
@@ -1218,12 +1238,6 @@ export default class BCPlugin extends Plugin {
     });
     info({ pathsArr });
     return pathsArr;
-  }
-
-  getdfsFromNode(g: MultiGraph, node: string) {
-    dfsFromNode(g, node, (node, a, depth) => {
-      console.log({ node, a, depth });
-    });
   }
 
   getBreadcrumbs(g: Graph, currFile: TFile): string[][] | null {

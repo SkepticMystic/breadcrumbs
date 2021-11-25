@@ -1105,7 +1105,7 @@ var dfs_1 = {
 	dfsFromNode: dfsFromNode_1
 };
 
-var graphologyTraversal = createCommonjsModule(function (module, exports) {
+createCommonjsModule(function (module, exports) {
 var k;
 
 for (k in bfs_1)
@@ -50147,6 +50147,8 @@ class BCPlugin extends require$$0.Plugin {
         const ObsG = new graphology_umd_min.MultiGraph();
         const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
         for (const source in resolvedLinks) {
+            if (!source.endsWith(".md"))
+                continue;
             const sourceBase = getBaseFromMDPath(source);
             addNodesIfNot(ObsG, [sourceBase]);
             for (const dest in resolvedLinks[source]) {
@@ -50166,6 +50168,7 @@ class BCPlugin extends require$$0.Plugin {
                 ObsG.addEdge(sourceBase, destBase, { resolved: false });
             }
         }
+        loglevel.info({ ObsG });
         return ObsG;
     }
     /**
@@ -50437,27 +50440,45 @@ class BCPlugin extends require$$0.Plugin {
                     !getFields(userHiers, fieldDir).includes(field))) {
                 field = getFields(userHiers, fieldDir)[0];
             }
-            let prevD = -1;
-            let prevN = "";
-            const lastAtDepth = {};
-            graphologyTraversal.dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
-                // In depth-first, same depth means not-connected
-                if (d <= prevD) {
-                    loglevel.debug(lastAtDepth[d - 1], "→", n);
-                    this.populateMain(mainG, lastAtDepth[d - 1], field, n, 9999, 9999, true);
-                }
-                // Increase in depth implies connectedness
-                else if (d && prevD < d) {
-                    loglevel.debug(prevN, "→", n);
-                    this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
-                }
-                else {
-                    loglevel.debug({ prevN, n, prevD, d });
-                }
-                prevD = d;
-                prevN = n;
-                lastAtDepth[d] = n;
+            const allPaths = this.dfsAllPaths(ObsG, traverseNoteBasename);
+            loglevel.info(allPaths);
+            const reversed = [...allPaths].map((path) => path.reverse());
+            reversed.forEach((path) => {
+                path.forEach((node, i) => {
+                    const next = path[i + 1];
+                    if (next === undefined)
+                        return;
+                    this.populateMain(mainG, node, field, next, 9999, 9999, true);
+                });
             });
+            // let prevD = -1;
+            // let prevN = "";
+            // const lastAtDepth: { [key: number]: string } = {};
+            // dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
+            //   // In depth-first, same depth means not-connected
+            //   if (d <= prevD) {
+            //     debug(lastAtDepth[d - 1], "→", n);
+            //     this.populateMain(
+            //       mainG,
+            //       lastAtDepth[d - 1],
+            //       field,
+            //       n,
+            //       9999,
+            //       9999,
+            //       true
+            //     );
+            //   }
+            //   // Increase in depth implies connectedness
+            //   else if (d && prevD < d) {
+            //     debug(prevN, "→", n);
+            //     this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
+            //   } else {
+            //     debug({ prevN, n, prevD, d });
+            //   }
+            //   prevD = d;
+            //   prevN = n;
+            //   lastAtDepth[d] = n;
+            // });
         });
     }
     async initGraphs() {
@@ -50656,11 +50677,6 @@ class BCPlugin extends require$$0.Plugin {
         });
         loglevel.info({ pathsArr });
         return pathsArr;
-    }
-    getdfsFromNode(g, node) {
-        graphologyTraversal.dfsFromNode(g, node, (node, a, depth) => {
-            console.log({ node, a, depth });
-        });
     }
     getBreadcrumbs(g, currFile) {
         const { basename, extension } = currFile;
