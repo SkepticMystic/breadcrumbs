@@ -21,7 +21,7 @@ if you want to view the source visit the plugins github repository
 */
 
 var lib = createCommonjsModule(function (module, exports) {
-var i=Object.create;var n=Object.defineProperty;var s=Object.getOwnPropertyDescriptor;var F=Object.getOwnPropertyNames;var g=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var d=e=>n(e,"__esModule",{value:!0});var N=(e,r)=>{d(e);for(var o in r)n(e,o,{get:r[o],enumerable:!0});},P=(e,r,o)=>{if(r&&typeof r=="object"||typeof r=="function")for(let t of F(r))!f.call(e,t)&&t!=="default"&&n(e,t,{get:()=>r[t],enumerable:!(o=s(r,t))||o.enumerable});return e},m=e=>P(d(n(e!=null?i(g(e)):{},"default",e&&e.__esModule&&"default"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);N(exports,{NoteLoc:()=>l,getApi:()=>a,isPluginEnabled:()=>u,registerApi:()=>b});m(require$$0__default['default']);var l;(function(t){t[t.Index=0]="Index",t[t.Inside=1]="Inside",t[t.Outside=2]="Outside";})(l||(l={}));var a=e=>{var r;return e?(r=e.app.plugins.plugins["folder-note-core"])==null?void 0:r.api:window.FolderNoteAPIv0},u=e=>e.app.plugins.enabledPlugins.has("folder-note-core"),b=(e,r)=>(e.app.vault.on("folder-note:api-ready",r),a(e));
+var i=Object.create;var n=Object.defineProperty;var s=Object.getOwnPropertyDescriptor;var F=Object.getOwnPropertyNames;var g=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var d=e=>n(e,"__esModule",{value:!0});var N=(e,r)=>{d(e);for(var o in r)n(e,o,{get:r[o],enumerable:!0});},P=(e,r,o)=>{if(r&&typeof r=="object"||typeof r=="function")for(let t of F(r))!f.call(e,t)&&t!=="default"&&n(e,t,{get:()=>r[t],enumerable:!(o=s(r,t))||o.enumerable});return e},m=e=>P(d(n(e!=null?i(g(e)):{},"default",e&&e.__esModule&&"default"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);N(exports,{NoteLoc:()=>l,getApi:()=>a,isPluginEnabled:()=>u,registerApi:()=>b});m(require$$0__default["default"]);var l;(function(t){t[t.Index=0]="Index",t[t.Inside=1]="Inside",t[t.Outside=2]="Outside";})(l||(l={}));var a=e=>{var r;return e?(r=e.app.plugins.plugins["folder-note-core"])==null?void 0:r.api:window.FolderNoteAPIv0},u=e=>e.app.plugins.enabledPlugins.has("folder-note-core"),b=(e,r)=>(e.app.vault.on("folder-note:api-ready",r),a(e));
 });
 
 var graphology_umd_min = createCommonjsModule(function (module, exports) {
@@ -21113,46 +21113,27 @@ async function createNewMDNote(app, newName, currFilePath = "") {
     return await app.vault.create(newFilePath, "");
 }
 /**
- * Add '.md' to a `noteName` if it isn't already there.
+ * Add '.md' to `noteName` if it isn't already there.
  * @param  {string} noteName with or without '.md' on the end.
  * @returns {string} noteName with '.md' on the end.
  */
 const addMD = (noteName) => {
-    let withMD = noteName.slice();
-    if (!withMD.endsWith(".md")) {
-        withMD += ".md";
-    }
-    return withMD;
-};
-/**
- * Strip '.md' off the end of a note name to get its basename.
- *
- * Works with the edgecase where a note has '.md' in its basename: `Obsidian.md.md`, for example.
- * @param  {string} noteName with or without '.md' on the end.
- * @returns {string} noteName without '.md'
- */
-const stripMD = (noteName) => {
-    if (noteName.endsWith(".md")) {
-        return noteName.split(".md").slice(0, -1).join(".md");
-    }
-    else
-        return noteName;
+    return noteName.endsWith(".md") ? noteName : noteName + ".md";
 };
 /**
  * When clicking a link, check if that note is already open in another leaf, and switch to that leaf, if so. Otherwise, open the note in a new pane.
  * @param  {App} app
- * @param  {string} dest Basename of note to open
+ * @param  {string} dest Name of note to open. If you want to open a non-md note, be sure to add the file extension.
  * @param  {MouseEvent} event
  * @param  {{createNewFile:boolean}} [options={createNewFile:true}] Whether or not to create `dest` file if it doesn't exist. If `false`, simply return from the function.
  * @returns Promise
  */
 async function openOrSwitch(app, dest, event, options = { createNewFile: true }) {
     const { workspace } = app;
-    const destStripped = stripMD(dest);
-    let destFile = app.metadataCache.getFirstLinkpathDest(destStripped, "");
+    let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
     // If dest doesn't exist, make it
     if (!destFile && options.createNewFile) {
-        destFile = await createNewMDNote(app, destStripped);
+        destFile = await createNewMDNote(app, dest);
     }
     else if (!destFile && !options.createNewFile)
         return;
@@ -21160,9 +21141,10 @@ async function openOrSwitch(app, dest, event, options = { createNewFile: true })
     const leavesWithDestAlreadyOpen = [];
     // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
     workspace.iterateAllLeaves((leaf) => {
-        var _a, _b;
+        var _a;
         if (leaf.view instanceof require$$0.MarkdownView) {
-            if (((_b = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file) === null || _b === void 0 ? void 0 : _b.basename) === destStripped) {
+            const file = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file;
+            if (file && file.basename + "." + file.extension === dest) {
                 leavesWithDestAlreadyOpen.push(leaf);
             }
         }
@@ -22865,8 +22847,8 @@ class Lists extends SvelteComponent {
 
 function add_css$5() {
 	var style = element("style");
-	style.id = "svelte-1wt9kkm-style";
-	style.textContent = "div.BC-Matrix.svelte-1wt9kkm.svelte-1wt9kkm{padding:5px}div.BC-Matrix.svelte-1wt9kkm>div.svelte-1wt9kkm{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-1wt9kkm.svelte-1wt9kkm{border:1px solid var(--background-modifier-border)}.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{margin:2px}h3.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{color:var(--text-title-h3)}h5.BC-Matrix-header.svelte-1wt9kkm.svelte-1wt9kkm{color:var(--text-title-h5)}ol.svelte-1wt9kkm.svelte-1wt9kkm{margin:3px;padding-left:20px}";
+	style.id = "svelte-sp0k97-style";
+	style.textContent = "div.BC-Matrix.svelte-sp0k97.svelte-sp0k97{padding:5px}div.BC-Matrix.svelte-sp0k97>div.svelte-sp0k97{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-sp0k97.svelte-sp0k97{border:1px solid var(--background-modifier-border)}div.BC-Matrix-headers.svelte-sp0k97.svelte-sp0k97{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-sp0k97.svelte-sp0k97{margin:2px;padding:0px 10px}ol.svelte-sp0k97.svelte-sp0k97{margin:3px;padding-left:30px}";
 	append(document.head, style);
 }
 
@@ -22896,35 +22878,45 @@ function get_each_context_3$1(ctx, list, i) {
 
 // (16:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$2(ctx) {
-	let div;
-	let h3;
+	let div1;
+	let div0;
+	let h4;
 	let t0_value = /*square*/ ctx[12].field + "";
 	let t0;
 	let t1;
 	let t2;
-	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_3(ctx);
-	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$1(ctx);
+	let t3;
+	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_5(ctx);
+	let if_block1 = /*square*/ ctx[12].realItems.length && create_if_block_4(ctx);
+	let if_block2 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$1(ctx);
 
 	return {
 		c() {
-			div = element("div");
-			h3 = element("h3");
+			div1 = element("div");
+			div0 = element("div");
+			h4 = element("h4");
 			t0 = text(t0_value);
 			t1 = space();
 			if (if_block0) if_block0.c();
 			t2 = space();
 			if (if_block1) if_block1.c();
-			attr(h3, "class", "BC-Matrix-header svelte-1wt9kkm");
-			attr(div, "class", "BC-Matrix-square svelte-1wt9kkm");
+			t3 = space();
+			if (if_block2) if_block2.c();
+			attr(h4, "class", "BC-Matrix-header svelte-sp0k97");
+			attr(div0, "class", "BC-Matrix-headers svelte-sp0k97");
+			attr(div1, "class", "BC-Matrix-square svelte-sp0k97");
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, h3);
-			append(h3, t0);
-			append(div, t1);
-			if (if_block0) if_block0.m(div, null);
-			append(div, t2);
-			if (if_block1) if_block1.m(div, null);
+			insert(target, div1, anchor);
+			append(div1, div0);
+			append(div0, h4);
+			append(h4, t0);
+			append(div0, t1);
+			if (if_block0) if_block0.m(div0, null);
+			append(div1, t2);
+			if (if_block1) if_block1.m(div1, null);
+			append(div1, t3);
+			if (if_block2) if_block2.m(div1, null);
 		},
 		p(ctx, dirty) {
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
@@ -22933,41 +22925,105 @@ function create_if_block$2(ctx) {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 				} else {
-					if_block0 = create_if_block_3(ctx);
+					if_block0 = create_if_block_5(ctx);
 					if_block0.c();
-					if_block0.m(div, t2);
+					if_block0.m(div0, null);
 				}
 			} else if (if_block0) {
 				if_block0.d(1);
 				if_block0 = null;
 			}
 
-			if (/*square*/ ctx[12].impliedItems.length) {
+			if (/*square*/ ctx[12].realItems.length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
-					if_block1 = create_if_block_1$1(ctx);
+					if_block1 = create_if_block_4(ctx);
 					if_block1.c();
-					if_block1.m(div, null);
+					if_block1.m(div1, t3);
 				}
 			} else if (if_block1) {
 				if_block1.d(1);
 				if_block1 = null;
 			}
+
+			if (/*square*/ ctx[12].impliedItems.length) {
+				if (if_block2) {
+					if_block2.p(ctx, dirty);
+				} else {
+					if_block2 = create_if_block_1$1(ctx);
+					if_block2.c();
+					if_block2.m(div1, null);
+				}
+			} else if (if_block2) {
+				if_block2.d(1);
+				if_block2 = null;
+			}
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(div1);
 			if (if_block0) if_block0.d();
 			if (if_block1) if_block1.d();
+			if (if_block2) if_block2.d();
 		}
 	};
 }
 
-// (20:12) {#if square.realItems.length}
-function create_if_block_3(ctx) {
-	let t;
+// (20:14) {#if square.realItems.length}
+function create_if_block_5(ctx) {
+	let if_block_anchor;
+	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_6();
+
+	return {
+		c() {
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
+		},
+		m(target, anchor) {
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+		},
+		p(ctx, dirty) {
+			if (/*settings*/ ctx[1].showRelationType) {
+				if (if_block) ; else {
+					if_block = create_if_block_6();
+					if_block.c();
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
+		},
+		d(detaching) {
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+// (21:16) {#if settings.showRelationType}
+function create_if_block_6(ctx) {
+	let h6;
+
+	return {
+		c() {
+			h6 = element("h6");
+			h6.textContent = "Real";
+			attr(h6, "class", "BC-Matrix-header svelte-sp0k97");
+		},
+		m(target, anchor) {
+			insert(target, h6, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(h6);
+		}
+	};
+}
+
+// (26:12) {#if square.realItems.length}
+function create_if_block_4(ctx) {
 	let ol;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_4();
 	let each_value_3 = /*square*/ ctx[12].realItems;
 	let each_blocks = [];
 
@@ -22977,19 +23033,15 @@ function create_if_block_3(ctx) {
 
 	return {
 		c() {
-			if (if_block) if_block.c();
-			t = space();
 			ol = element("ol");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "svelte-1wt9kkm");
+			attr(ol, "class", "svelte-sp0k97");
 		},
 		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, t, anchor);
 			insert(target, ol, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -22997,17 +23049,6 @@ function create_if_block_3(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block) ; else {
-					if_block = create_if_block_4();
-					if_block.c();
-					if_block.m(t.parentNode, t);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-
 			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView*/ 13) {
 				each_value_3 = /*square*/ ctx[12].realItems;
 				let i;
@@ -23032,34 +23073,13 @@ function create_if_block_3(ctx) {
 			}
 		},
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(t);
 			if (detaching) detach(ol);
 			destroy_each(each_blocks, detaching);
 		}
 	};
 }
 
-// (21:14) {#if settings.showRelationType}
-function create_if_block_4(ctx) {
-	let h5;
-
-	return {
-		c() {
-			h5 = element("h5");
-			h5.textContent = "Real";
-			attr(h5, "class", "BC-Matrix-header svelte-1wt9kkm");
-		},
-		m(target, anchor) {
-			insert(target, h5, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(h5);
-		}
-	};
-}
-
-// (25:16) {#each square.realItems as realItem}
+// (28:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
@@ -23084,7 +23104,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1wt9kkm"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-sp0k97"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -23105,7 +23125,7 @@ function create_each_block_3$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1wt9kkm"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -23117,12 +23137,15 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (40:12) {#if square.impliedItems.length}
+// (43:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
-	let t;
+	let div;
+	let h4;
+	let t0;
+	let t1;
 	let ol;
 	let ol_start_value;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_2$1();
+	let if_block = /*square*/ ctx[12].impliedItems.length && create_if_block_2$1(ctx);
 	let each_value_2 = /*square*/ ctx[12].impliedItems;
 	let each_blocks = [];
 
@@ -23132,20 +23155,28 @@ function create_if_block_1$1(ctx) {
 
 	return {
 		c() {
+			div = element("div");
+			h4 = element("h4");
+			t0 = space();
 			if (if_block) if_block.c();
-			t = space();
+			t1 = space();
 			ol = element("ol");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
+			attr(h4, "class", "BC-Matrix-header svelte-sp0k97");
+			attr(div, "class", "BC-Matrix-headers svelte-sp0k97");
 			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
-			attr(ol, "class", "svelte-1wt9kkm");
+			attr(ol, "class", "svelte-sp0k97");
 		},
 		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, t, anchor);
+			insert(target, div, anchor);
+			append(div, h4);
+			append(div, t0);
+			if (if_block) if_block.m(div, null);
+			insert(target, t1, anchor);
 			insert(target, ol, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -23153,11 +23184,13 @@ function create_if_block_1$1(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block) ; else {
-					if_block = create_if_block_2$1();
+			if (/*square*/ ctx[12].impliedItems.length) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+				} else {
+					if_block = create_if_block_2$1(ctx);
 					if_block.c();
-					if_block.m(t.parentNode, t);
+					if_block.m(div, null);
 				}
 			} else if (if_block) {
 				if_block.d(1);
@@ -23192,34 +23225,68 @@ function create_if_block_1$1(ctx) {
 			}
 		},
 		d(detaching) {
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(t);
+			if (detaching) detach(div);
+			if (if_block) if_block.d();
+			if (detaching) detach(t1);
 			if (detaching) detach(ol);
 			destroy_each(each_blocks, detaching);
 		}
 	};
 }
 
-// (41:14) {#if settings.showRelationType}
+// (46:16) {#if square.impliedItems.length}
 function create_if_block_2$1(ctx) {
-	let h5;
+	let if_block_anchor;
+	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_3();
 
 	return {
 		c() {
-			h5 = element("h5");
-			h5.textContent = "Implied";
-			attr(h5, "class", "BC-Matrix-header svelte-1wt9kkm");
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
 		},
 		m(target, anchor) {
-			insert(target, h5, anchor);
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+		},
+		p(ctx, dirty) {
+			if (/*settings*/ ctx[1].showRelationType) {
+				if (if_block) ; else {
+					if_block = create_if_block_3();
+					if_block.c();
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
 		},
 		d(detaching) {
-			if (detaching) detach(h5);
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
 		}
 	};
 }
 
-// (45:16) {#each square.impliedItems as impliedItem}
+// (47:18) {#if settings.showRelationType}
+function create_if_block_3(ctx) {
+	let h6;
+
+	return {
+		c() {
+			h6 = element("h6");
+			h6.textContent = "Implied";
+			attr(h6, "class", "BC-Matrix-header svelte-sp0k97");
+		},
+		m(target, anchor) {
+			insert(target, h6, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(h6);
+		}
+	};
+}
+
+// (53:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
@@ -23242,7 +23309,7 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1wt9kkm"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"));
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -23263,7 +23330,7 @@ function create_each_block_2$2(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1wt9kkm"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -23330,7 +23397,7 @@ function create_each_block$6(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "svelte-1wt9kkm");
+			attr(div, "class", "svelte-sp0k97");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -23389,7 +23456,7 @@ function create_fragment$9(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-Matrix  markdown-preview-view svelte-1wt9kkm");
+			attr(div, "class", "BC-Matrix  markdown-preview-view svelte-sp0k97");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -23469,7 +23536,7 @@ function instance$9($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1wt9kkm-style")) add_css$5();
+		if (!document.getElementById("svelte-sp0k97-style")) add_css$5();
 
 		init(this, options, instance$9, create_fragment$9, safe_not_equal, {
 			filteredSquaresArr: 0,
@@ -49953,6 +50020,15 @@ class BCPlugin extends require$$0.Plugin {
             callback: async () => await this.refreshIndex(),
         });
         this.addCommand({
+            id: "Toggle-trail-in-Edit&LP",
+            name: "Toggle: Show Trail/Grid in Edit & LP mode",
+            callback: async () => {
+                this.settings.showBCsInEditLPMode = !this.settings.showBCsInEditLPMode;
+                await this.saveSettings();
+                await this.drawTrail();
+            },
+        });
+        this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
             name: "Write Breadcrumbs to Current File",
             callback: async () => {
@@ -50176,6 +50252,8 @@ class BCPlugin extends require$$0.Plugin {
             const sourceBase = getBaseFromMDPath(source);
             addNodesIfNot(ObsG, [sourceBase]);
             for (const dest in resolvedLinks[source]) {
+                if (!dest.endsWith(".md"))
+                    continue;
                 const destBase = getBaseFromMDPath(dest);
                 addNodesIfNot(ObsG, [destBase]);
                 ObsG.addEdge(sourceBase, destBase, { resolved: true });
@@ -50204,7 +50282,7 @@ class BCPlugin extends require$$0.Plugin {
         const queue = [item];
         while (queue.length) {
             const currItem = queue.shift();
-            if (util__default['default'].types.isProxy(currItem)) {
+            if (util__default["default"].types.isProxy(currItem)) {
                 const possibleUnproxied = Object.assign({}, currItem);
                 const { values } = possibleUnproxied;
                 if (values)
@@ -50717,7 +50795,7 @@ class BCPlugin extends require$$0.Plugin {
         return getSubInDirs(closed, "up");
     }
     async drawTrail() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         try {
             const { settings, db } = this;
             const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, showBCsInEditLPMode, } = settings;
@@ -50727,11 +50805,12 @@ class BCPlugin extends require$$0.Plugin {
             if (!showBCs ||
                 !activeMDView ||
                 (mode !== "preview" && !showBCsInEditLPMode)) {
+                (_a = activeMDView === null || activeMDView === void 0 ? void 0 : activeMDView.containerEl.querySelector(".BC-trail")) === null || _a === void 0 ? void 0 : _a.remove();
                 db.end2G();
                 return;
             }
             const { file } = activeMDView;
-            const { frontmatter } = (_a = this.app.metadataCache.getFileCache(file)) !== null && _a !== void 0 ? _a : {};
+            const { frontmatter } = (_b = this.app.metadataCache.getFileCache(file)) !== null && _b !== void 0 ? _b : {};
             // @ts-ignore
             const { hideTrailField } = settings;
             if (hideTrailField && (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField])) {
@@ -50752,8 +50831,8 @@ class BCPlugin extends require$$0.Plugin {
                     livePreview = true;
                 }
             }
-            (_b = activeMDView.containerEl
-                .querySelectorAll(".BC-trail")) === null || _b === void 0 ? void 0 : _b.forEach((trail) => trail.remove());
+            (_c = activeMDView.containerEl
+                .querySelectorAll(".BC-trail")) === null || _c === void 0 ? void 0 : _c.forEach((trail) => trail.remove());
             const closedUp = this.getLimitedTrailSub();
             const sortedTrails = this.getBreadcrumbs(closedUp, file);
             loglevel.info({ sortedTrails });
@@ -50803,7 +50882,7 @@ class BCPlugin extends require$$0.Plugin {
                 const cmEditor = view.querySelector("div.cm-editor");
                 const cmSizer = view.querySelector("div.CodeMirror-sizer");
                 if (cmEditor)
-                    (_c = cmEditor.firstChild) === null || _c === void 0 ? void 0 : _c.before(trailDiv);
+                    (_d = cmEditor.firstChild) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
                 if (cmSizer)
                     cmSizer.before(trailDiv);
             }

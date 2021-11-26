@@ -17,12 +17,15 @@
       {#each squares as square}
         {#if square.realItems.length > 0 || square.impliedItems.length > 0}
           <div class="BC-Matrix-square">
-            <h3 class="BC-Matrix-header">{square.field}</h3>
-
-            {#if square.realItems.length}
-              {#if settings.showRelationType}
-                <h5 class="BC-Matrix-header">Real</h5>
+            <div class="BC-Matrix-headers">
+              <h4 class="BC-Matrix-header">{square.field}</h4>
+              {#if square.realItems.length}
+                {#if settings.showRelationType}
+                  <h6 class="BC-Matrix-header">Real</h6>
+                {/if}
               {/if}
+            </div>
+            {#if square.realItems.length}
               <ol>
                 {#each square.realItems as realItem}
                   <li>
@@ -40,9 +43,14 @@
             {/if}
 
             {#if square.impliedItems.length}
-              {#if settings.showRelationType}
-                <h5 class="BC-Matrix-header">Implied</h5>
-              {/if}
+              <div class="BC-Matrix-headers">
+                <h4 class="BC-Matrix-header" />
+                {#if square.impliedItems.length}
+                  {#if settings.showRelationType}
+                    <h6 class="BC-Matrix-header">Implied</h6>
+                  {/if}
+                {/if}
+              </div>
               <ol start={square.realItems.length + 1}>
                 {#each square.impliedItems as impliedItem}
                   <li class="BC-Implied">
@@ -87,19 +95,25 @@
     /* border-radius: 3px; */
   }
 
+  div.BC-Matrix-headers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
   .BC-Matrix-header {
     margin: 2px;
+    padding: 0px 10px;
   }
 
-  h3.BC-Matrix-header {
-    color: var(--text-title-h3);
+  /* h4.BC-Matrix-header {
+    color: var(--text-title-h4);
   }
-  h5.BC-Matrix-header {
-    color: var(--text-title-h5);
-  }
+  h6.BC-Matrix-header {
+    color: var(--text-title-h6);
+  } */
 
   ol {
     margin: 3px;
-    padding-left: 20px;
+    padding-left: 30px;
   }
 </style>
