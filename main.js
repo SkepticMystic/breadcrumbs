@@ -23612,6 +23612,30 @@ function getOppFields(userHiers, field) {
     const oppDir = getOppDir(fieldDir);
     return fieldHier[oppDir];
 }
+function dfsAllPaths(g, startNode) {
+    const queue = [
+        { node: startNode, path: [] },
+    ];
+    const visited = [];
+    const allPaths = [];
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+        i++;
+        const { node, path } = queue.shift();
+        const extPath = [node, ...path];
+        const succsNotVisited = g.hasNode(node)
+            ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+            : [];
+        const newItems = succsNotVisited.map((n) => {
+            return { node: n, path: extPath };
+        });
+        visited.push(...succsNotVisited);
+        queue.unshift(...newItems);
+        // if (!g.hasNode(node) || !g.outDegree(node))
+        allPaths.push(extPath);
+    }
+    return allPaths;
+}
 
 function normalise(arr) {
     const max = Math.max(...arr);
@@ -49971,7 +49995,7 @@ class BCPlugin extends require$$0.Plugin {
                 const g = getSubInDirs(mainG, "up", "down");
                 const closed = getReflexiveClosure(g, settings.userHiers);
                 const onlyDowns = getSubInDirs(closed, "down");
-                const allPaths = this.dfsAllPaths(onlyDowns, basename);
+                const allPaths = dfsAllPaths(onlyDowns, basename);
                 const index = this.createIndex(allPaths);
                 loglevel.info({ index });
                 await copy(index);
@@ -49989,7 +50013,7 @@ class BCPlugin extends require$$0.Plugin {
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
                     globalIndex += terminal + "\n";
-                    const allPaths = this.dfsAllPaths(onlyDowns, terminal);
+                    const allPaths = dfsAllPaths(onlyDowns, terminal);
                     globalIndex += this.createIndex(allPaths) + "\n";
                 });
                 loglevel.info({ globalIndex });
@@ -50440,7 +50464,7 @@ class BCPlugin extends require$$0.Plugin {
                     !getFields(userHiers, fieldDir).includes(field))) {
                 field = getFields(userHiers, fieldDir)[0];
             }
-            const allPaths = this.dfsAllPaths(ObsG, traverseNoteBasename);
+            const allPaths = dfsAllPaths(ObsG, traverseNoteBasename);
             loglevel.info(allPaths);
             const reversed = [...allPaths].map((path) => path.reverse());
             reversed.forEach((path) => {
@@ -50581,30 +50605,6 @@ class BCPlugin extends require$$0.Plugin {
         }
     }
     // !SECTION OneSource
-    dfsAllPaths(g, startNode) {
-        const queue = [
-            { node: startNode, path: [] },
-        ];
-        const visited = [];
-        const allPaths = [];
-        let i = 0;
-        while (queue.length > 0 && i < 1000) {
-            i++;
-            const { node, path } = queue.shift();
-            const extPath = [node, ...path];
-            const succsNotVisited = g.hasNode(node)
-                ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
-                : [];
-            const newItems = succsNotVisited.map((n) => {
-                return { node: n, path: extPath };
-            });
-            visited.push(...succsNotVisited);
-            queue.unshift(...newItems);
-            // if (!g.hasNode(node) || !g.outDegree(node))
-            allPaths.push(extPath);
-        }
-        return allPaths;
-    }
     createIndex(allPaths) {
         let index = "";
         const { wikilinkIndex, aliasesInIndex } = this.settings;

@@ -170,3 +170,32 @@ export function getOppFields(userHiers: UserHier[], field: string) {
   const oppDir = getOppDir(fieldDir);
   return fieldHier[oppDir];
 }
+
+export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
+  const queue: { node: string; path: string[] }[] = [
+    { node: startNode, path: [] },
+  ];
+  const visited = [];
+  const allPaths: string[][] = [];
+
+  let i = 0;
+  while (queue.length > 0 && i < 1000) {
+    i++;
+    const { node, path } = queue.shift();
+
+    const extPath = [node, ...path];
+    const succsNotVisited = g.hasNode(node)
+      ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+      : [];
+    const newItems = succsNotVisited.map((n) => {
+      return { node: n, path: extPath };
+    });
+
+    visited.push(...succsNotVisited);
+    queue.unshift(...newItems);
+
+    // if (!g.hasNode(node) || !g.outDegree(node))
+    allPaths.push(extPath);
+  }
+  return allPaths;
+}

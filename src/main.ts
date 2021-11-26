@@ -40,6 +40,7 @@ import { FieldSuggestor } from "./FieldSuggestor";
 import {
   addEdgeIfNot,
   addNodesIfNot,
+  dfsAllPaths,
   getFieldInfo,
   getOppDir,
   getOppFields,
@@ -268,7 +269,7 @@ export default class BCPlugin extends Plugin {
         const closed = getReflexiveClosure(g, settings.userHiers);
         const onlyDowns = getSubInDirs(closed, "down");
 
-        const allPaths = this.dfsAllPaths(onlyDowns, basename);
+        const allPaths = dfsAllPaths(onlyDowns, basename);
         const index = this.createIndex(allPaths);
         info({ index });
         await copy(index);
@@ -290,7 +291,7 @@ export default class BCPlugin extends Plugin {
         let globalIndex = "";
         sinks.forEach((terminal) => {
           globalIndex += terminal + "\n";
-          const allPaths = this.dfsAllPaths(onlyDowns, terminal);
+          const allPaths = dfsAllPaths(onlyDowns, terminal);
           globalIndex += this.createIndex(allPaths) + "\n";
         });
 
@@ -922,7 +923,7 @@ export default class BCPlugin extends Plugin {
         field = getFields(userHiers, fieldDir)[0];
       }
 
-      const allPaths = this.dfsAllPaths(ObsG, traverseNoteBasename);
+      const allPaths = dfsAllPaths(ObsG, traverseNoteBasename);
       info(allPaths);
       const reversed = [...allPaths].map((path) => path.reverse());
       reversed.forEach((path) => {
@@ -1116,34 +1117,7 @@ export default class BCPlugin extends Plugin {
 
   // !SECTION OneSource
 
-  dfsAllPaths(g: Graph, startNode: string): string[][] {
-    const queue: { node: string; path: string[] }[] = [
-      { node: startNode, path: [] },
-    ];
-    const visited = [];
-    const allPaths: string[][] = [];
-
-    let i = 0;
-    while (queue.length > 0 && i < 1000) {
-      i++;
-      const { node, path } = queue.shift();
-
-      const extPath = [node, ...path];
-      const succsNotVisited = g.hasNode(node)
-        ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
-        : [];
-      const newItems = succsNotVisited.map((n) => {
-        return { node: n, path: extPath };
-      });
-
-      visited.push(...succsNotVisited);
-      queue.unshift(...newItems);
-
-      // if (!g.hasNode(node) || !g.outDegree(node))
-      allPaths.push(extPath);
-    }
-    return allPaths;
-  }
+  
 
   createIndex(allPaths: string[][]): string {
     let index = "";
