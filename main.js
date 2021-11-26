@@ -50613,6 +50613,7 @@ class BCPlugin extends require$$0.Plugin {
         reversed.forEach((path) => path.shift());
         const indent = "  ";
         const visited = {};
+        const { metadataCache } = this.app;
         reversed.forEach((path) => {
             var _a, _b, _c, _d;
             for (let depth = 0; depth < path.length; depth++) {
@@ -50625,9 +50626,9 @@ class BCPlugin extends require$$0.Plugin {
                 else {
                     index += `${indent.repeat(depth)}- ${makeWiki(wikilinkIndex, currNode)}`;
                     if (aliasesInIndex) {
-                        const currFile = this.app.metadataCache.getFirstLinkpathDest(currNode, "");
+                        const currFile = metadataCache.getFirstLinkpathDest(currNode, "");
                         if (currFile !== null) {
-                            const cache = this.app.metadataCache.getFileCache(currFile);
+                            const cache = metadataCache.getFileCache(currFile);
                             const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
                             const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
                             const allAliases = [

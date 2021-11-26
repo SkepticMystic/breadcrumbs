@@ -1117,8 +1117,6 @@ export default class BCPlugin extends Plugin {
 
   // !SECTION OneSource
 
-  
-
   createIndex(allPaths: string[][]): string {
     let index = "";
     const { wikilinkIndex, aliasesInIndex } = this.settings;
@@ -1132,6 +1130,7 @@ export default class BCPlugin extends Plugin {
       [node: string]: /** The depths at which `node` was visited */ number[];
     } = {};
 
+    const { metadataCache } = this.app;
     reversed.forEach((path) => {
       for (let depth = 0; depth < path.length; depth++) {
         const currNode = path[depth];
@@ -1149,13 +1148,10 @@ export default class BCPlugin extends Plugin {
           )}`;
 
           if (aliasesInIndex) {
-            const currFile = this.app.metadataCache.getFirstLinkpathDest(
-              currNode,
-              ""
-            );
+            const currFile = metadataCache.getFirstLinkpathDest(currNode, "");
 
             if (currFile !== null) {
-              const cache = this.app.metadataCache.getFileCache(currFile);
+              const cache = metadataCache.getFileCache(currFile);
 
               const alias = cache?.frontmatter?.alias ?? [];
               const aliases = cache?.frontmatter?.aliases ?? [];
