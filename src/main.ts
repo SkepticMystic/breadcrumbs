@@ -219,6 +219,16 @@ export default class BCPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: "Toggle-trail-in-Edit&LP",
+      name: "Toggle: Show Trail/Grid in Edit & LP mode",
+      callback: async () => {
+        this.settings.showBCsInEditLPMode = !this.settings.showBCsInEditLPMode;
+        await this.saveSettings();
+        await this.drawTrail();
+      },
+    });
+
+    this.addCommand({
       id: "Write-Breadcrumbs-to-Current-File",
       name: "Write Breadcrumbs to Current File",
       callback: async () => {
@@ -1279,6 +1289,7 @@ export default class BCPlugin extends Plugin {
         !activeMDView ||
         (mode !== "preview" && !showBCsInEditLPMode)
       ) {
+        activeMDView?.containerEl.querySelector(".BC-trail")?.remove();
         db.end2G();
         return;
       }
