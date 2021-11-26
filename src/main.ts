@@ -538,6 +538,7 @@ export default class BCPlugin extends Plugin {
       addNodesIfNot(ObsG, [sourceBase]);
 
       for (const dest in resolvedLinks[source]) {
+        if (!dest.endsWith(".md")) continue;
         const destBase = getBaseFromMDPath(dest);
         addNodesIfNot(ObsG, [destBase]);
         ObsG.addEdge(sourceBase, destBase, { resolved: true });
@@ -1153,8 +1154,8 @@ export default class BCPlugin extends Plugin {
             if (currFile !== null) {
               const cache = metadataCache.getFileCache(currFile);
 
-              const alias = cache?.frontmatter?.alias ?? [];
-              const aliases = cache?.frontmatter?.aliases ?? [];
+              const alias: string[] = cache?.frontmatter?.alias ?? [];
+              const aliases: string[] = cache?.frontmatter?.aliases ?? [];
 
               const allAliases: string[] = [
                 ...[alias].flat(3),
