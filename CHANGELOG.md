@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.15.1...1.16.0) (2021-11-26)
+
+
+### Features
+
+* **Path View:** :sparkles: cmd: Toggle Show Trail/Grid in Edit & LP mode (fix [#167](https://github.com/SkepticMystic/breadcrumbs/issues/167)) ([775a4f9](https://github.com/SkepticMystic/breadcrumbs/commit/775a4f90da0879a4288246260cf3f65e259d87f0))
+
+
+### Bug Fixes
+
+* **TraverseNote:** :bug: For real, don't add non-md notes to ObsG ([7917e05](https://github.com/SkepticMystic/breadcrumbs/commit/7917e05837874e9ceac34aec412eb6f40a9f0874))
+
 ### [1.15.1](https://github.com/SkepticMystic/breadcrumbs/compare/1.15.0...1.15.1) (2021-11-25)
 
 
