@@ -22573,6 +22573,7 @@ function create_each_block_2$3(ctx) {
 	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
 	let t;
 	let div_class_value;
+	let div_aria_label_value;
 	let mounted;
 	let dispose;
 
@@ -22590,6 +22591,7 @@ function create_each_block_2$3(ctx) {
 			div = element("div");
 			t = text(t_value);
 			attr(div, "class", div_class_value = /*impliedItem*/ ctx[15].cls);
+			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -22612,6 +22614,10 @@ function create_each_block_2$3(ctx) {
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*impliedItem*/ ctx[15].cls)) {
 				attr(div, "class", div_class_value);
+			}
+
+			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "")) {
+				attr(div, "aria-label", div_aria_label_value);
 			}
 		},
 		d(detaching) {
@@ -23293,6 +23299,7 @@ function create_each_block_2$2(ctx) {
 	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
 	let t;
 	let div_class_value;
+	let div_aria_label_value;
 	let mounted;
 	let dispose;
 
@@ -23310,6 +23317,7 @@ function create_each_block_2$2(ctx) {
 			div = element("div");
 			t = text(t_value);
 			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"));
+			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -23332,6 +23340,10 @@ function create_each_block_2$2(ctx) {
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
+			}
+
+			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "")) {
+				attr(div, "aria-label", div_aria_label_value);
 			}
 		},
 		d(detaching) {
@@ -23899,12 +23911,13 @@ class MatrixView extends require$$0.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         this.icon = TRAIL_ICON;
-        this.toInternalLinkObj = (to, realQ = true) => {
+        this.toInternalLinkObj = (to, realQ = true, parent) => {
             return {
                 to,
                 cls: linkClass(this.app, to, realQ),
                 alt: this.getAlt(to, this.plugin.settings),
                 order: this.getOrder(to),
+                parent,
             };
         };
         this.getOrder = (node) => Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
@@ -23996,7 +24009,7 @@ class MatrixView extends require$$0.ItemView {
                     // }
                 });
                 impliedSiblings.forEach((impliedSibling) => {
-                    iSameArr.push(this.toInternalLinkObj(impliedSibling, false));
+                    iSameArr.push(this.toInternalLinkObj(impliedSibling, false, parent));
                 });
             });
             /// A real sibling implies the reverse sibling
@@ -50522,7 +50535,6 @@ class BCPlugin extends require$$0.Plugin {
             }
             const targets = (_a = this.app.metadataCache
                 .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links.map((l) => l.link.match(/[^#|]+/)[0]);
-            // This is getting the order of the folder note, not the source pointing up to it
             for (const target of targets) {
                 const sourceOrder = parseInt((_b = altFile["BC-order"]) !== null && _b !== void 0 ? _b : "9999");
                 const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
@@ -50584,6 +50596,7 @@ class BCPlugin extends require$$0.Plugin {
         });
     }
     async initGraphs() {
+        const mainG = new graphology_umd_min.MultiGraph();
         try {
             const { settings, app, db } = this;
             db.start2G("initGraphs");
@@ -50592,7 +50605,6 @@ class BCPlugin extends require$$0.Plugin {
             let frontms = dvQ
                 ? this.getDVMetadataCache(files)
                 : this.getObsMetadataCache(files);
-            const mainG = new graphology_umd_min.MultiGraph();
             if (frontms[0] === undefined) {
                 db.end2G();
                 new require$$0.Notice("Breadcrumbs cache not initialised yet - Refresh Index.");
@@ -50680,6 +50692,7 @@ class BCPlugin extends require$$0.Plugin {
         catch (err) {
             loglevel.error(err);
             this.db.end2G();
+            return mainG;
         }
     }
     // !SECTION OneSource
@@ -50851,7 +50864,7 @@ class BCPlugin extends require$$0.Plugin {
                     prev.push(i);
                 }
             });
-            const noItems = sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+            const noItems = !sortedTrails.length && !next.length && !prev.length;
             if (noItems && noPathMessage === "") {
                 db.end2G();
                 return;

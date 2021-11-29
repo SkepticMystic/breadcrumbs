@@ -896,7 +896,6 @@ export default class BCPlugin extends Plugin {
         .getFileCache(linkNoteFile)
         ?.links.map((l) => l.link.match(/[^#|]+/)[0]);
 
-      // This is getting the order of the folder note, not the source pointing up to it
       for (const target of targets) {
         const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
         const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
@@ -995,6 +994,7 @@ export default class BCPlugin extends Plugin {
     );
 
   async initGraphs(): Promise<MultiGraph> {
+    const mainG = new MultiGraph();
     try {
       const { settings, app, db } = this;
       db.start2G("initGraphs");
@@ -1005,7 +1005,6 @@ export default class BCPlugin extends Plugin {
         ? this.getDVMetadataCache(files)
         : this.getObsMetadataCache(files);
 
-      const mainG = new MultiGraph();
       if (frontms[0] === undefined) {
         db.end2G();
         new Notice("Breadcrumbs cache not initialised yet - Refresh Index.");
@@ -1123,6 +1122,7 @@ export default class BCPlugin extends Plugin {
     } catch (err) {
       error(err);
       this.db.end2G();
+      return mainG;
     }
   }
 
@@ -1351,8 +1351,7 @@ export default class BCPlugin extends Plugin {
         }
       });
 
-      const noItems =
-        sortedTrails.length === 0 && next.length === 0 && prev.length === 0;
+      const noItems = !sortedTrails.length && !next.length && !prev.length;
 
       if (noItems && noPathMessage === "") {
         db.end2G();
