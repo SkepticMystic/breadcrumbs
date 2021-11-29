@@ -84,58 +84,70 @@ export const blankRealNImplied = () => {
   };
 };
 
-export const BC_FIELDS = [
+export const [
+  BC_FOLDER_NOTE,
+  BC_TAG_NOTE,
+  BC_TAG_NOTE_FIELD,
+  BC_LINK_NOTE,
+  BC_TRAVERSE_NOTE,
+  BC_HIDE_TRAIL,
+  BC_ORDER,
+] = [
+  "BC-folder-note",
+  "BC-tag-note",
+  "BC-tag-note-field",
+  "BC-link-note",
+  "BC-traverse-note",
+  "BC-hide-trail",
+  "BC-order",
+];
+
+export const BC_FIELDS_INFO = [
   {
-    field: "BC-folder-note",
-    desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
-    after: ": true",
+    field: BC_FOLDER_NOTE,
+    desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
+    after: ": ",
     alt: true,
   },
   {
-    field: "BC-folder-note-up",
-    desc: "Manually choose the up field for this folder-note to use",
+    field: BC_TAG_NOTE,
+    desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph in the direction you specify with `BC-tag-note-field: fieldName`",
+    after: ": '#",
+    alt: true,
+  },
+  {
+    field: BC_TAG_NOTE_FIELD,
+    desc: "Manually choose the field for this tag-note to use",
     after: ": ",
     alt: false,
   },
   {
-    field: "BC-tag-note",
-    desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
-    after: ": true",
-    alt: true,
-  },
-  {
-    field: "BC-tag-note-up",
-    desc: "Manually choose the up field for this tag-note to use",
-    after: ": ",
-    alt: false,
-  },
-  {
-    field: "BC-link-note",
+    field: BC_LINK_NOTE,
     desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
     after: ": ",
     alt: true,
   },
   {
-    field: "BC-traverse-note",
+    field: BC_TRAVERSE_NOTE,
     desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
     after: ": ",
     alt: true,
   },
   {
-    field: "BC-hide-trail",
+    field: BC_HIDE_TRAIL,
     desc: "Don't show the trail in this note",
     after: ": true",
     alt: false,
   },
   {
-    field: "BC-order",
+    field: BC_ORDER,
     desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
     after: ": ",
     alt: false,
   },
 ];
 
-export const BC_ALTS = BC_FIELDS.filter((f) => f.alt).map((f) => f.field);
+export const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
 
 export const DEFAULT_SETTINGS: BCSettings = {
   aliasesInIndex: false,

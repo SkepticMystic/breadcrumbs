@@ -29,1092 +29,6 @@ var graphology_umd_min = createCommonjsModule(function (module, exports) {
 
 });
 
-/**
- * Graphology isGraph
- * ===================
- *
- * Very simple function aiming at ensuring the given variable is a
- * graphology instance.
- */
-/**
- * Checking the value is a graphology instance.
- *
- * @param  {any}     value - Target value.
- * @return {boolean}
- */
-var isGraph = function isGraph(value) {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof value.addUndirectedEdgeWithKey === 'function' &&
-    typeof value.dropNode === 'function' &&
-    typeof value.multi === 'boolean'
-  );
-};
-
-var ARRAY_BUFFER_SUPPORT$1 = typeof ArrayBuffer !== 'undefined';
-var SYMBOL_SUPPORT$1 = typeof Symbol !== 'undefined';
-
-var support = {
-	ARRAY_BUFFER_SUPPORT: ARRAY_BUFFER_SUPPORT$1,
-	SYMBOL_SUPPORT: SYMBOL_SUPPORT$1
-};
-
-/**
- * Obliterator ForEach Function
- * =============================
- *
- * Helper function used to easily iterate over mixed values.
- */
-
-var ARRAY_BUFFER_SUPPORT = support.ARRAY_BUFFER_SUPPORT;
-var SYMBOL_SUPPORT = support.SYMBOL_SUPPORT;
-
-/**
- * Function able to iterate over almost any iterable JS value.
- *
- * @param  {any}      iterable - Iterable value.
- * @param  {function} callback - Callback function.
- */
-var foreach = function forEach(iterable, callback) {
-  var iterator, k, i, l, s;
-
-  if (!iterable) throw new Error('obliterator/forEach: invalid iterable.');
-
-  if (typeof callback !== 'function')
-    throw new Error('obliterator/forEach: expecting a callback.');
-
-  // The target is an array or a string or function arguments
-  if (
-    Array.isArray(iterable) ||
-    (ARRAY_BUFFER_SUPPORT && ArrayBuffer.isView(iterable)) ||
-    typeof iterable === 'string' ||
-    iterable.toString() === '[object Arguments]'
-  ) {
-    for (i = 0, l = iterable.length; i < l; i++) callback(iterable[i], i);
-    return;
-  }
-
-  // The target has a #.forEach method
-  if (typeof iterable.forEach === 'function') {
-    iterable.forEach(callback);
-    return;
-  }
-
-  // The target is iterable
-  if (
-    SYMBOL_SUPPORT &&
-    Symbol.iterator in iterable &&
-    typeof iterable.next !== 'function'
-  ) {
-    iterable = iterable[Symbol.iterator]();
-  }
-
-  // The target is an iterator
-  if (typeof iterable.next === 'function') {
-    iterator = iterable;
-    i = 0;
-
-    while (((s = iterator.next()), s.done !== true)) {
-      callback(s.value, i);
-      i++;
-    }
-
-    return;
-  }
-
-  // The target is a plain object
-  for (k in iterable) {
-    if (iterable.hasOwnProperty(k)) {
-      callback(iterable[k], k);
-    }
-  }
-
-  return;
-};
-
-/**
- * Mnemonist Typed Array Helpers
- * ==============================
- *
- * Miscellaneous helpers related to typed arrays.
- */
-
-var typedArrays = createCommonjsModule(function (module, exports) {
-/**
- * When using an unsigned integer array to store pointers, one might want to
- * choose the optimal word size in regards to the actual numbers of pointers
- * to store.
- *
- * This helpers does just that.
- *
- * @param  {number} size - Expected size of the array to map.
- * @return {TypedArray}
- */
-var MAX_8BIT_INTEGER = Math.pow(2, 8) - 1,
-    MAX_16BIT_INTEGER = Math.pow(2, 16) - 1,
-    MAX_32BIT_INTEGER = Math.pow(2, 32) - 1;
-
-var MAX_SIGNED_8BIT_INTEGER = Math.pow(2, 7) - 1,
-    MAX_SIGNED_16BIT_INTEGER = Math.pow(2, 15) - 1,
-    MAX_SIGNED_32BIT_INTEGER = Math.pow(2, 31) - 1;
-
-exports.getPointerArray = function(size) {
-  var maxIndex = size - 1;
-
-  if (maxIndex <= MAX_8BIT_INTEGER)
-    return Uint8Array;
-
-  if (maxIndex <= MAX_16BIT_INTEGER)
-    return Uint16Array;
-
-  if (maxIndex <= MAX_32BIT_INTEGER)
-    return Uint32Array;
-
-  throw new Error('mnemonist: Pointer Array of size > 4294967295 is not supported.');
-};
-
-exports.getSignedPointerArray = function(size) {
-  var maxIndex = size - 1;
-
-  if (maxIndex <= MAX_SIGNED_8BIT_INTEGER)
-    return Int8Array;
-
-  if (maxIndex <= MAX_SIGNED_16BIT_INTEGER)
-    return Int16Array;
-
-  if (maxIndex <= MAX_SIGNED_32BIT_INTEGER)
-    return Int32Array;
-
-  return Float64Array;
-};
-
-/**
- * Function returning the minimal type able to represent the given number.
- *
- * @param  {number} value - Value to test.
- * @return {TypedArrayClass}
- */
-exports.getNumberType = function(value) {
-
-  // <= 32 bits itnteger?
-  if (value === (value | 0)) {
-
-    // Negative
-    if (Math.sign(value) === -1) {
-      if (value <= 127 && value >= -128)
-        return Int8Array;
-
-      if (value <= 32767 && value >= -32768)
-        return Int16Array;
-
-      return Int32Array;
-    }
-    else {
-
-      if (value <= 255)
-        return Uint8Array;
-
-      if (value <= 65535)
-        return Uint16Array;
-
-      return Uint32Array;
-    }
-  }
-
-  // 53 bits integer & floats
-  // NOTE: it's kinda hard to tell whether we could use 32bits or not...
-  return Float64Array;
-};
-
-/**
- * Function returning the minimal type able to represent the given array
- * of JavaScript numbers.
- *
- * @param  {array}    array  - Array to represent.
- * @param  {function} getter - Optional getter.
- * @return {TypedArrayClass}
- */
-var TYPE_PRIORITY = {
-  Uint8Array: 1,
-  Int8Array: 2,
-  Uint16Array: 3,
-  Int16Array: 4,
-  Uint32Array: 5,
-  Int32Array: 6,
-  Float32Array: 7,
-  Float64Array: 8
-};
-
-// TODO: make this a one-shot for one value
-exports.getMinimalRepresentation = function(array, getter) {
-  var maxType = null,
-      maxPriority = 0,
-      p,
-      t,
-      v,
-      i,
-      l;
-
-  for (i = 0, l = array.length; i < l; i++) {
-    v = getter ? getter(array[i]) : array[i];
-    t = exports.getNumberType(v);
-    p = TYPE_PRIORITY[t.name];
-
-    if (p > maxPriority) {
-      maxPriority = p;
-      maxType = t;
-    }
-  }
-
-  return maxType;
-};
-
-/**
- * Function returning whether the given value is a typed array.
- *
- * @param  {any} value - Value to test.
- * @return {boolean}
- */
-exports.isTypedArray = function(value) {
-  return typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(value);
-};
-
-/**
- * Function used to concat byte arrays.
- *
- * @param  {...ByteArray}
- * @return {ByteArray}
- */
-exports.concat = function() {
-  var length = 0,
-      i,
-      o,
-      l;
-
-  for (i = 0, l = arguments.length; i < l; i++)
-    length += arguments[i].length;
-
-  var array = new (arguments[0].constructor)(length);
-
-  for (i = 0, o = 0; i < l; i++) {
-    array.set(arguments[i], o);
-    o += arguments[i].length;
-  }
-
-  return array;
-};
-
-/**
- * Function used to initialize a byte array of indices.
- *
- * @param  {number}    length - Length of target.
- * @return {ByteArray}
- */
-exports.indices = function(length) {
-  var PointerArray = exports.getPointerArray(length);
-
-  var array = new PointerArray(length);
-
-  for (var i = 0; i < length; i++)
-    array[i] = i;
-
-  return array;
-};
-});
-
-/**
- * Mnemonist Iterable Function
- * ============================
- *
- * Harmonized iteration helpers over mixed iterable targets.
- */
-
-/**
- * Function used to determine whether the given object supports array-like
- * random access.
- *
- * @param  {any} target - Target object.
- * @return {boolean}
- */
-function isArrayLike(target) {
-  return Array.isArray(target) || typedArrays.isTypedArray(target);
-}
-
-/**
- * Function used to guess the length of the structure over which we are going
- * to iterate.
- *
- * @param  {any} target - Target object.
- * @return {number|undefined}
- */
-function guessLength(target) {
-  if (typeof target.length === 'number')
-    return target.length;
-
-  if (typeof target.size === 'number')
-    return target.size;
-
-  return;
-}
-
-/**
- * Function used to convert an iterable to an array.
- *
- * @param  {any}   target - Iteration target.
- * @return {array}
- */
-function toArray(target) {
-  var l = guessLength(target);
-
-  var array = typeof l === 'number' ? new Array(l) : [];
-
-  var i = 0;
-
-  // TODO: we could optimize when given target is array like
-  foreach(target, function(value) {
-    array[i++] = value;
-  });
-
-  return array;
-}
-
-/**
- * Same as above but returns a supplementary indices array.
- *
- * @param  {any}   target - Iteration target.
- * @return {array}
- */
-function toArrayWithIndices(target) {
-  var l = guessLength(target);
-
-  var IndexArray = typeof l === 'number' ?
-    typedArrays.getPointerArray(l) :
-    Array;
-
-  var array = typeof l === 'number' ? new Array(l) : [];
-  var indices = typeof l === 'number' ? new IndexArray(l) : [];
-
-  var i = 0;
-
-  // TODO: we could optimize when given target is array like
-  foreach(target, function(value) {
-    array[i] = value;
-    indices[i] = i++;
-  });
-
-  return [array, indices];
-}
-
-/**
- * Exporting.
- */
-var isArrayLike_1 = isArrayLike;
-var guessLength_1 = guessLength;
-var toArray_1 = toArray;
-var toArrayWithIndices_1 = toArrayWithIndices;
-
-var iterables = {
-	isArrayLike: isArrayLike_1,
-	guessLength: guessLength_1,
-	toArray: toArray_1,
-	toArrayWithIndices: toArrayWithIndices_1
-};
-
-/**
- * Obliterator Iterator Class
- * ===========================
- *
- * Simple class representing the library's iterators.
- */
-/**
- * Iterator class.
- *
- * @constructor
- * @param {function} next - Next function.
- */
-function Iterator(next) {
-  if (typeof next !== 'function')
-    throw new Error('obliterator/iterator: expecting a function!');
-
-  this.next = next;
-}
-
-/**
- * If symbols are supported, we add `next` to `Symbol.iterator`.
- */
-if (typeof Symbol !== 'undefined')
-  Iterator.prototype[Symbol.iterator] = function () {
-    return this;
-  };
-
-/**
- * Returning an iterator of the given values.
- *
- * @param  {any...} values - Values.
- * @return {Iterator}
- */
-Iterator.of = function () {
-  var args = arguments,
-    l = args.length,
-    i = 0;
-
-  return new Iterator(function () {
-    if (i >= l) return {done: true};
-
-    return {done: false, value: args[i++]};
-  });
-};
-
-/**
- * Returning an empty iterator.
- *
- * @return {Iterator}
- */
-Iterator.empty = function () {
-  var iterator = new Iterator(function () {
-    return {done: true};
-  });
-
-  return iterator;
-};
-
-/**
- * Returning an iterator over the given indexed sequence.
- *
- * @param  {string|Array} sequence - Target sequence.
- * @return {Iterator}
- */
-Iterator.fromSequence = function (sequence) {
-  var i = 0,
-    l = sequence.length;
-
-  return new Iterator(function () {
-    if (i >= l) return {done: true};
-
-    return {done: false, value: sequence[i++]};
-  });
-};
-
-/**
- * Returning whether the given value is an iterator.
- *
- * @param  {any} value - Value.
- * @return {boolean}
- */
-Iterator.is = function (value) {
-  if (value instanceof Iterator) return true;
-
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.next === 'function'
-  );
-};
-
-/**
- * Exporting.
- */
-var iterator = Iterator;
-
-/**
- * Mnemonist FixedDeque
- * =====================
- *
- * Fixed capacity double-ended queue implemented as ring deque.
- */
-
-/**
- * FixedDeque.
- *
- * @constructor
- */
-function FixedDeque(ArrayClass, capacity) {
-
-  if (arguments.length < 2)
-    throw new Error('mnemonist/fixed-deque: expecting an Array class and a capacity.');
-
-  if (typeof capacity !== 'number' || capacity <= 0)
-    throw new Error('mnemonist/fixed-deque: `capacity` should be a positive number.');
-
-  this.ArrayClass = ArrayClass;
-  this.capacity = capacity;
-  this.items = new ArrayClass(this.capacity);
-  this.clear();
-}
-
-/**
- * Method used to clear the structure.
- *
- * @return {undefined}
- */
-FixedDeque.prototype.clear = function() {
-
-  // Properties
-  this.start = 0;
-  this.size = 0;
-};
-
-/**
- * Method used to append a value to the deque.
- *
- * @param  {any}    item - Item to append.
- * @return {number}      - Returns the new size of the deque.
- */
-FixedDeque.prototype.push = function(item) {
-  if (this.size === this.capacity)
-    throw new Error('mnemonist/fixed-deque.push: deque capacity (' + this.capacity + ') exceeded!');
-
-  var index = (this.start + this.size) % this.capacity;
-
-  this.items[index] = item;
-
-  return ++this.size;
-};
-
-/**
- * Method used to prepend a value to the deque.
- *
- * @param  {any}    item - Item to prepend.
- * @return {number}      - Returns the new size of the deque.
- */
-FixedDeque.prototype.unshift = function(item) {
-  if (this.size === this.capacity)
-    throw new Error('mnemonist/fixed-deque.unshift: deque capacity (' + this.capacity + ') exceeded!');
-
-  var index = this.start - 1;
-
-  if (this.start === 0)
-    index = this.capacity - 1;
-
-  this.items[index] = item;
-  this.start = index;
-
-  return ++this.size;
-};
-
-/**
- * Method used to pop the deque.
- *
- * @return {any} - Returns the popped item.
- */
-FixedDeque.prototype.pop = function() {
-  if (this.size === 0)
-    return;
-
-  const index = (this.start + this.size - 1) % this.capacity;
-
-  this.size--;
-
-  return this.items[index];
-};
-
-/**
- * Method used to shift the deque.
- *
- * @return {any} - Returns the shifted item.
- */
-FixedDeque.prototype.shift = function() {
-  if (this.size === 0)
-    return;
-
-  var index = this.start;
-
-  this.size--;
-  this.start++;
-
-  if (this.start === this.capacity)
-    this.start = 0;
-
-  return this.items[index];
-};
-
-/**
- * Method used to peek the first value of the deque.
- *
- * @return {any}
- */
-FixedDeque.prototype.peekFirst = function() {
-  if (this.size === 0)
-    return;
-
-  return this.items[this.start];
-};
-
-/**
- * Method used to peek the last value of the deque.
- *
- * @return {any}
- */
-FixedDeque.prototype.peekLast = function() {
-  if (this.size === 0)
-    return;
-
-  var index = this.start + this.size - 1;
-
-  if (index > this.capacity)
-    index -= this.capacity;
-
-  return this.items[index];
-};
-
-/**
- * Method used to get the desired value of the deque.
- *
- * @param  {number} index
- * @return {any}
- */
-FixedDeque.prototype.get = function(index) {
-  if (this.size === 0)
-    return;
-
-  index = this.start + index;
-
-  if (index > this.capacity)
-    index -= this.capacity;
-
-  return this.items[index];
-};
-
-/**
- * Method used to iterate over the deque.
- *
- * @param  {function}  callback - Function to call for each item.
- * @param  {object}    scope    - Optional scope.
- * @return {undefined}
- */
-FixedDeque.prototype.forEach = function(callback, scope) {
-  scope = arguments.length > 1 ? scope : this;
-
-  var c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  while (j < l) {
-    callback.call(scope, this.items[i], j, this);
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-  }
-};
-
-/**
- * Method used to convert the deque to a JavaScript array.
- *
- * @return {array}
- */
-// TODO: optional array class as argument?
-FixedDeque.prototype.toArray = function() {
-
-  // Optimization
-  var offset = this.start + this.size;
-
-  if (offset < this.capacity)
-    return this.items.slice(this.start, offset);
-
-  var array = new this.ArrayClass(this.size),
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  while (j < l) {
-    array[j] = this.items[i];
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-  }
-
-  return array;
-};
-
-/**
- * Method used to create an iterator over the deque's values.
- *
- * @return {Iterator}
- */
-FixedDeque.prototype.values = function() {
-  var items = this.items,
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  return new iterator(function() {
-    if (j >= l)
-      return {
-        done: true
-      };
-
-    var value = items[i];
-
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-
-    return {
-      value: value,
-      done: false
-    };
-  });
-};
-
-/**
- * Method used to create an iterator over the deque's entries.
- *
- * @return {Iterator}
- */
-FixedDeque.prototype.entries = function() {
-  var items = this.items,
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  return new iterator(function() {
-    if (j >= l)
-      return {
-        done: true
-      };
-
-    var value = items[i];
-
-    i++;
-
-    if (i === c)
-      i = 0;
-
-    return {
-      value: [j++, value],
-      done: false
-    };
-  });
-};
-
-/**
- * Attaching the #.values method to Symbol.iterator if possible.
- */
-if (typeof Symbol !== 'undefined')
-  FixedDeque.prototype[Symbol.iterator] = FixedDeque.prototype.values;
-
-/**
- * Convenience known methods.
- */
-FixedDeque.prototype.inspect = function() {
-  var array = this.toArray();
-
-  array.type = this.ArrayClass.name;
-  array.capacity = this.capacity;
-
-  // Trick so that node displays the name of the constructor
-  Object.defineProperty(array, 'constructor', {
-    value: FixedDeque,
-    enumerable: false
-  });
-
-  return array;
-};
-
-if (typeof Symbol !== 'undefined')
-  FixedDeque.prototype[Symbol.for('nodejs.util.inspect.custom')] = FixedDeque.prototype.inspect;
-
-/**
- * Static @.from function taking an arbitrary iterable & converting it into
- * a deque.
- *
- * @param  {Iterable} iterable   - Target iterable.
- * @param  {function} ArrayClass - Array class to use.
- * @param  {number}   capacity   - Desired capacity.
- * @return {FiniteStack}
- */
-FixedDeque.from = function(iterable, ArrayClass, capacity) {
-  if (arguments.length < 3) {
-    capacity = iterables.guessLength(iterable);
-
-    if (typeof capacity !== 'number')
-      throw new Error('mnemonist/fixed-deque.from: could not guess iterable length. Please provide desired capacity as last argument.');
-  }
-
-  var deque = new FixedDeque(ArrayClass, capacity);
-
-  if (iterables.isArrayLike(iterable)) {
-    var i, l;
-
-    for (i = 0, l = iterable.length; i < l; i++)
-      deque.items[i] = iterable[i];
-
-    deque.size = l;
-
-    return deque;
-  }
-
-  iterables.forEach(iterable, function(value) {
-    deque.push(value);
-  });
-
-  return deque;
-};
-
-/**
- * Exporting.
- */
-var fixedDeque = FixedDeque;
-
-/**
- * Graphology Traversal Utils
- * ===========================
- *
- * Miscellaneous utils used throughout the library.
- */
-function TraversalRecord$2(node, attr, depth) {
-  this.node = node;
-  this.attributes = attr;
-  this.depth = depth;
-}
-
-var TraversalRecord_1 = TraversalRecord$2;
-
-var utils = {
-	TraversalRecord: TraversalRecord_1
-};
-
-/**
- * Graphology Traversal BFS
- * =========================
- *
- * Breadth-First Search traversal function.
- */
-
-var TraversalRecord$1 = utils.TraversalRecord;
-
-/**
- * BFS traversal in the given graph using a callback function
- *
- * @param {Graph}    graph    - Target graph.
- * @param {function} callback - Iteration callback.
- */
-function bfs(graph, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/bfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/bfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  var seen = new Set();
-  var queue = new fixedDeque(Array, graph.order);
-  var record, depth;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
-  }
-
-  graph.forEachNode(function(node, attr) {
-    if (seen.has(node))
-      return;
-
-    seen.add(node);
-    queue.push(new TraversalRecord$1(node, attr, 0));
-
-    while (queue.size !== 0) {
-      record = queue.shift();
-      depth = record.depth;
-
-      callback(record.node, record.attributes, depth);
-
-      graph.forEachOutboundNeighbor(record.node, neighborCallback);
-    }
-  });
-}
-
-/**
- * BFS traversal in the given graph, starting from the given node, using a
- * callback function.
- *
- * @param {Graph}    graph    - Target graph.
- * @param {string}   node     - Starting node.
- * @param {function} callback - Iteration callback.
- */
-function bfsFromNode(graph, node, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  node = '' + node;
-
-  var seen = new Set();
-  var queue = new fixedDeque(Array, graph.order);
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
-  }
-
-  seen.add(node);
-  queue.push(new TraversalRecord$1(node, graph.getNodeAttributes(node), 0));
-
-  while (queue.size !== 0) {
-    record = queue.shift();
-    depth = record.depth;
-
-    callback(record.node, record.attributes, depth);
-
-    graph.forEachOutboundNeighbor(record.node, neighborCallback);
-  }
-}
-
-var bfs_2 = bfs;
-var bfsFromNode_1 = bfsFromNode;
-
-var bfs_1 = {
-	bfs: bfs_2,
-	bfsFromNode: bfsFromNode_1
-};
-
-/**
- * Graphology Traversal DFS
- * =========================
- *
- * Depth-First Search traversal function.
- */
-
-var TraversalRecord = utils.TraversalRecord;
-
-/**
- * DFS traversal in the given graph using a callback function
- *
- * @param {Graph}    graph    - Target graph.
- * @param {function} callback - Iteration callback.
- */
-function dfs(graph, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  var seen = new Set();
-  var stack = [];
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
-  }
-
-  graph.forEachNode(function(node, attr) {
-    if (seen.has(node))
-      return;
-
-    seen.add(node);
-    stack.push(new TraversalRecord(node, attr, 0));
-
-    while (stack.length !== 0) {
-      record = stack.pop();
-      depth = record.depth;
-
-      callback(record.node, record.attributes, depth);
-
-      graph.forEachOutboundNeighbor(record.node, neighborCallback);
-    }
-  });
-}
-
-/**
- * DFS traversal in the given graph, starting from the given node, using a
- * callback function.
- *
- * @param {Graph}    graph    - Target graph.
- * @param {string}   node     - Starting node.
- * @param {function} callback - Iteration callback.
- */
-function dfsFromNode(graph, node, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  node = '' + node;
-
-  var seen = new Set();
-  var stack = [];
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
-  }
-
-  seen.add(node);
-  stack.push(new TraversalRecord(node, graph.getNodeAttributes(node), 0));
-
-  while (stack.length !== 0) {
-    record = stack.pop();
-    depth = record.depth;
-
-    callback(record.node, record.attributes, depth);
-
-    graph.forEachOutboundNeighbor(record.node, neighborCallback);
-  }
-}
-
-var dfs_2 = dfs;
-var dfsFromNode_1 = dfsFromNode;
-
-var dfs_1 = {
-	dfs: dfs_2,
-	dfsFromNode: dfsFromNode_1
-};
-
-createCommonjsModule(function (module, exports) {
-var k;
-
-for (k in bfs_1)
-  exports[k] = bfs_1[k];
-
-for (k in dfs_1)
-  exports[k] = dfs_1[k];
-});
-
 const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
 const nameRegex = '[^\\W\\d]\\w*';
 const regexEscape = function (str) {
@@ -25323,57 +24237,60 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const BC_FIELDS = [
+const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_HIDE_TRAIL, BC_ORDER,] = [
+    "BC-folder-note",
+    "BC-tag-note",
+    "BC-tag-note-field",
+    "BC-link-note",
+    "BC-traverse-note",
+    "BC-hide-trail",
+    "BC-order",
+];
+const BC_FIELDS_INFO = [
     {
-        field: "BC-folder-note",
-        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will point up to this note",
-        after: ": true",
+        field: BC_FOLDER_NOTE,
+        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
+        after: ": ",
         alt: true,
     },
     {
-        field: "BC-folder-note-up",
-        desc: "Manually choose the up field for this folder-note to use",
+        field: BC_TAG_NOTE,
+        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph in the direction you specify with `BC-tag-note-field: fieldName`",
+        after: ": '#",
+        alt: true,
+    },
+    {
+        field: BC_TAG_NOTE_FIELD,
+        desc: "Manually choose the field for this tag-note to use",
         after: ": ",
         alt: false,
     },
     {
-        field: "BC-tag-note",
-        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will point up to this note",
-        after: ": true",
-        alt: true,
-    },
-    {
-        field: "BC-tag-note-up",
-        desc: "Manually choose the up field for this tag-note to use",
-        after: ": ",
-        alt: false,
-    },
-    {
-        field: "BC-link-note",
+        field: BC_LINK_NOTE,
         desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
         after: ": ",
         alt: true,
     },
     {
-        field: "BC-traverse-note",
+        field: BC_TRAVERSE_NOTE,
         desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
         after: ": ",
         alt: true,
     },
     {
-        field: "BC-hide-trail",
+        field: BC_HIDE_TRAIL,
         desc: "Don't show the trail in this note",
         after: ": true",
         alt: false,
     },
     {
-        field: "BC-order",
+        field: BC_ORDER,
         desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
         after: ": ",
         alt: false,
     },
 ];
-const BC_ALTS = BC_FIELDS.filter((f) => f.alt).map((f) => f.field);
+const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
 const DEFAULT_SETTINGS = {
     aliasesInIndex: false,
     alphaSortAsc: true,
@@ -27842,7 +26759,7 @@ class FieldSuggestor extends require$$0.EditorSuggest {
         super(plugin.app);
         this.getSuggestions = (context) => {
             const { query } = context;
-            return BC_FIELDS.map((sug) => sug.field).filter((sug) => sug.includes(query));
+            return BC_FIELDS_INFO.map((sug) => sug.field).filter((sug) => sug.includes(query));
         };
         this.plugin = plugin;
     }
@@ -27870,7 +26787,7 @@ class FieldSuggestor extends require$$0.EditorSuggest {
             text: suggestion.replace("BC-", ""),
             cls: "BC-suggester-container",
             attr: {
-                "aria-label": (_a = BC_FIELDS.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.desc,
+                "aria-label": (_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.desc,
                 "aria-label-position": "right",
             },
         });
@@ -27879,7 +26796,7 @@ class FieldSuggestor extends require$$0.EditorSuggest {
         var _a;
         const { context } = this;
         if (context) {
-            const replacement = `${suggestion}${(_a = BC_FIELDS.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
+            const replacement = `${suggestion}${(_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
             context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
         }
     }
@@ -49920,8 +48837,9 @@ class BCPlugin extends require$$0.Plugin {
         };
         this.getTargetOrder = (frontms, target) => {
             var _a, _b;
-            return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a["BC-order"]) !== null && _b !== void 0 ? _b : "9999");
+            return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
         };
+        this.getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
     }
     async refreshIndex() {
         var _a;
@@ -50467,56 +49385,51 @@ class BCPlugin extends require$$0.Plugin {
     }
     addFolderNotesToGraph(eligableAlts, frontms, mainG) {
         const { userHiers } = this.settings;
-        const upFields = getFields(userHiers, "up");
+        const fields = getFields(userHiers);
         eligableAlts.forEach((altFile) => {
-            const folderNoteFile = altFile.file;
-            const folderNoteBasename = getDVBasename(folderNoteFile);
-            const folder = getFolder(folderNoteFile);
-            const sources = frontms
+            const { file } = altFile;
+            const basename = getDVBasename(file);
+            const folder = getFolder(file);
+            const targets = frontms
                 .map((ff) => ff.file)
-                .filter((file) => getFolder(file) === folder && file.path !== folderNoteFile.path)
+                .filter((otherFile) => getFolder(otherFile) === folder && otherFile.path !== file.path)
                 .map(getDVBasename);
-            let field = altFile["BC-folder-note-up"];
-            if (typeof field !== "string" || !upFields.includes(field)) {
-                field = upFields[0];
-            }
-            sources.forEach((source) => {
-                var _a;
+            const field = altFile[BC_FOLDER_NOTE];
+            if (typeof field !== "string" || !fields.includes(field))
+                return;
+            targets.forEach((target) => {
                 // This is getting the order of the folder note, not the source pointing up to it
-                const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
-                const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
-                this.populateMain(mainG, source, field, folderNoteBasename, sourceOrder, targetOrder, true);
+                const sourceOrder = this.getSourceOrder(altFile);
+                const targetOrder = this.getTargetOrder(frontms, basename);
+                this.populateMain(mainG, basename, field, target, sourceOrder, targetOrder, true);
             });
         });
     }
     addTagNotesToGraph(eligableAlts, frontms, mainG) {
         const { userHiers } = this.settings;
-        const upFields = getFields(userHiers, "up");
+        const fields = getFields(userHiers);
         eligableAlts.forEach((altFile) => {
             const tagNoteFile = altFile.file;
             const tagNoteBasename = getDVBasename(tagNoteFile);
-            const tag = altFile["BC-tag-note"].trim();
+            const tag = altFile[BC_TAG_NOTE].trim();
             if (!tag.startsWith("#"))
                 return;
-            const sources = frontms
-                .map((ff) => ff.file)
-                .filter((file) => {
+            const hasThisTag = (file) => {
                 var _a, _b;
-                return file.path !== tagNoteFile.path &&
-                    ((_b = (_a = this.app.metadataCache
-                        .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag)));
-            })
+                return (_b = (_a = this.app.metadataCache
+                    .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag));
+            };
+            const targets = frontms
+                .map((ff) => ff.file)
+                .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
                 .map(getDVBasename);
-            let field = altFile["BC-tag-note-up"];
-            if (typeof field !== "string" || !upFields.includes(field)) {
-                field = upFields[0];
-            }
-            sources.forEach((source) => {
-                var _a;
-                // This is getting the order of the folder note, not the source pointing up to it
-                const sourceOrder = parseInt((_a = altFile["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
+            let field = altFile[BC_TAG_NOTE_FIELD];
+            if (typeof field !== "string" || !fields.includes(field))
+                field = fields[0];
+            targets.forEach((target) => {
+                const sourceOrder = this.getSourceOrder(altFile);
                 const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
-                this.populateMain(mainG, source, field, tagNoteBasename, sourceOrder, targetOrder, true);
+                this.populateMain(mainG, tagNoteBasename, field, target, sourceOrder, targetOrder, true);
             });
         });
     }
@@ -50526,17 +49439,16 @@ class BCPlugin extends require$$0.Plugin {
             var _a, _b;
             const linkNoteFile = altFile.file;
             const linkNoteBasename = getDVBasename(linkNoteFile);
-            let field = altFile["BC-link-note"];
-            const { fieldDir } = getFieldInfo(userHiers, field);
-            if (typeof field !== "string" ||
-                (fieldDir !== undefined &&
-                    !getFields(userHiers, fieldDir).includes(field))) {
-                field = getFields(userHiers, fieldDir)[0];
-            }
-            const targets = (_a = this.app.metadataCache
+            let field = altFile[BC_LINK_NOTE];
+            if (typeof field !== "string" || !getFields(userHiers).includes(field))
+                return;
+            const links = (_a = this.app.metadataCache
                 .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links.map((l) => l.link.match(/[^#|]+/)[0]);
+            const embeds = (_b = this.app.metadataCache
+                .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.embeds.map((l) => l.link.match(/[^#|]+/)[0]);
+            const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
             for (const target of targets) {
-                const sourceOrder = parseInt((_b = altFile["BC-order"]) !== null && _b !== void 0 ? _b : "9999");
+                const sourceOrder = this.getSourceOrder(altFile);
                 const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
                 this.populateMain(mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
             }
@@ -50545,16 +49457,12 @@ class BCPlugin extends require$$0.Plugin {
     addTraverseNotesToGraph(traverseNotes, frontms, mainG, ObsG) {
         const { userHiers } = this.settings;
         traverseNotes.forEach((altFile) => {
-            const traverseNoteFile = altFile.file;
-            const traverseNoteBasename = getDVBasename(traverseNoteFile);
-            let field = altFile["BC-traverse-note"];
-            const { fieldDir } = getFieldInfo(userHiers, field);
-            if (typeof field !== "string" ||
-                (fieldDir !== undefined &&
-                    !getFields(userHiers, fieldDir).includes(field))) {
-                field = getFields(userHiers, fieldDir)[0];
-            }
-            const allPaths = dfsAllPaths(ObsG, traverseNoteBasename);
+            const { file } = altFile;
+            const basename = getDVBasename(file);
+            let field = altFile[BC_TRAVERSE_NOTE];
+            if (typeof field !== "string" || !getFields(userHiers).includes(field))
+                return;
+            const allPaths = dfsAllPaths(ObsG, basename);
             loglevel.info(allPaths);
             const reversed = [...allPaths].map((path) => path.reverse());
             reversed.forEach((path) => {
@@ -50622,16 +49530,34 @@ class BCPlugin extends require$$0.Plugin {
             BC_ALTS.forEach((alt) => {
                 eligableAlts[alt] = [];
             });
+            function noticeIfBroken(frontm) {
+                const basename = getDVBasename(frontm.file);
+                if (frontm[BC_FOLDER_NOTE] === true) {
+                    const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+                    new require$$0.Notice(msg);
+                    loglevel.warn(msg);
+                }
+                if (frontm[BC_LINK_NOTE] === true) {
+                    const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+                    new require$$0.Notice(msg);
+                    loglevel.warn(msg);
+                }
+                if (frontm["BC-folder-note-up"]) {
+                    const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note-up value. Instead of setting the fieldName here, it goes directly into 'BC-folder-note: fieldName'.`;
+                    new require$$0.Notice(msg);
+                    loglevel.warn(msg);
+                }
+            }
             db.start2G("addFrontmatterToGraph");
             frontms.forEach((frontm) => {
-                var _a;
                 BC_ALTS.forEach((alt) => {
                     if (frontm[alt]) {
                         eligableAlts[alt].push(frontm);
                     }
                 });
+                noticeIfBroken(frontm);
                 const basename = getDVBasename(frontm.file);
-                const sourceOrder = parseInt((_a = frontm["BC-order"]) !== null && _a !== void 0 ? _a : "9999");
+                const sourceOrder = this.getSourceOrder(frontm);
                 iterateHiers(userHiers, (hier, dir, field) => {
                     const values = this.parseFieldValue(frontm[field]);
                     values.forEach((target) => {
@@ -50669,17 +49595,17 @@ class BCPlugin extends require$$0.Plugin {
             db.end2G({ hierarchyNotesArr });
             // !SECTION  Hierarchy Notes
             console.time("Folder-Notes");
-            this.addFolderNotesToGraph(eligableAlts["BC-folder-note"], frontms, mainG);
+            this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
             console.timeEnd("Folder-Notes");
             console.time("Tag-Notes");
-            this.addTagNotesToGraph(eligableAlts["BC-tag-note"], frontms, mainG);
+            this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
             console.timeEnd("Tag-Notes");
             console.time("Link-Notes");
-            this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
+            this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
             console.timeEnd("Link-Notes");
             db.start1G("Traverse-Notes");
             console.time("Traverse-Notes");
-            this.addTraverseNotesToGraph(eligableAlts["BC-traverse-note"], frontms, mainG, this.buildObsGraph());
+            this.addTraverseNotesToGraph(eligableAlts[BC_TRAVERSE_NOTE], frontms, mainG, this.buildObsGraph());
             console.timeEnd("Traverse-Notes");
             db.end1G();
             files.forEach((file) => {
@@ -50829,7 +49755,7 @@ class BCPlugin extends require$$0.Plugin {
             if (hideTrailField && (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField])) {
                 new require$$0.Notice(`${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`);
             }
-            if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["BC-hide-trail"]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
+            if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[BC_HIDE_TRAIL]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
                 db.end2G();
                 return;
             }

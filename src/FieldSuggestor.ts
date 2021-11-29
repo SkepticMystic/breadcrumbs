@@ -6,7 +6,7 @@ import {
   EditorSuggestTriggerInfo,
   TFile,
 } from "obsidian";
-import { BC_FIELDS } from "./constants";
+import { BC_FIELDS_INFO } from "./constants";
 import type BCPlugin from "./main";
 
 export class FieldSuggestor extends EditorSuggest<string> {
@@ -41,7 +41,7 @@ export class FieldSuggestor extends EditorSuggest<string> {
 
   getSuggestions = (context: EditorSuggestContext) => {
     const { query } = context;
-    return BC_FIELDS.map((sug) => sug.field).filter((sug) =>
+    return BC_FIELDS_INFO.map((sug) => sug.field).filter((sug) =>
       sug.includes(query)
     );
   };
@@ -51,7 +51,7 @@ export class FieldSuggestor extends EditorSuggest<string> {
       text: suggestion.replace("BC-", ""),
       cls: "BC-suggester-container",
       attr: {
-        "aria-label": BC_FIELDS.find((f) => f.field === suggestion)?.desc,
+        "aria-label": BC_FIELDS_INFO.find((f) => f.field === suggestion)?.desc,
         "aria-label-position": "right",
       },
     });
@@ -61,7 +61,7 @@ export class FieldSuggestor extends EditorSuggest<string> {
     const { context } = this;
     if (context) {
       const replacement = `${suggestion}${
-        BC_FIELDS.find((f) => f.field === suggestion)?.after
+        BC_FIELDS_INFO.find((f) => f.field === suggestion)?.after
       }`;
       context.editor.replaceRange(
         replacement,

@@ -1,9 +1,8 @@
 import { getApi } from "@aidenlx/folder-note-core";
 import Graph, { MultiGraph } from "graphology";
-import { dfsFromNode } from "graphology-traversal";
 import { parseTypedLink } from "juggl-api";
 import { cloneDeep } from "lodash";
-import { debug, error, info } from "loglevel";
+import { debug, error, info, warn } from "loglevel";
 import {
   addIcon,
   EventRef,
@@ -28,6 +27,13 @@ import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
 import {
   BC_ALTS,
+  BC_FOLDER_NOTE,
+  BC_HIDE_TRAIL,
+  BC_LINK_NOTE,
+  BC_ORDER,
+  BC_TAG_NOTE,
+  BC_TAG_NOTE_FIELD,
+  BC_TRAVERSE_NOTE,
   DEFAULT_SETTINGS,
   dropHeaderOrAlias,
   MATRIX_VIEW,
@@ -788,34 +794,32 @@ export default class BCPlugin extends Plugin {
     mainG: MultiGraph
   ) {
     const { userHiers } = this.settings;
-    const upFields = getFields(userHiers, "up");
+    const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
-      const folderNoteFile = altFile.file;
-      const folderNoteBasename = getDVBasename(folderNoteFile);
-      const folder = getFolder(folderNoteFile);
+      const { file } = altFile;
+      const basename = getDVBasename(file);
+      const folder = getFolder(file);
 
-      const sources = frontms
+      const targets = frontms
         .map((ff) => ff.file)
         .filter(
-          (file) =>
-            getFolder(file) === folder && file.path !== folderNoteFile.path
+          (otherFile) =>
+            getFolder(otherFile) === folder && otherFile.path !== file.path
         )
         .map(getDVBasename);
 
-      let field = altFile["BC-folder-note-up"];
-      if (typeof field !== "string" || !upFields.includes(field)) {
-        field = upFields[0];
-      }
+      const field = altFile[BC_FOLDER_NOTE] as string;
+      if (typeof field !== "string" || !fields.includes(field)) return;
 
-      sources.forEach((source) => {
+      targets.forEach((target) => {
         // This is getting the order of the folder note, not the source pointing up to it
-        const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
-        const targetOrder = this.getTargetOrder(frontms, folderNoteBasename);
+        const sourceOrder = this.getSourceOrder(altFile);
+        const targetOrder = this.getTargetOrder(frontms, basename);
         this.populateMain(
           mainG,
-          source,
-          field as string,
-          folderNoteBasename,
+          basename,
+          field,
+          target,
           sourceOrder,
           targetOrder,
           true
@@ -830,40 +834,37 @@ export default class BCPlugin extends Plugin {
     mainG: MultiGraph
   ) {
     const { userHiers } = this.settings;
-    const upFields = getFields(userHiers, "up");
+    const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
       const tagNoteFile = altFile.file;
 
       const tagNoteBasename = getDVBasename(tagNoteFile);
-      const tag = (altFile["BC-tag-note"] as string).trim();
+      const tag = (altFile[BC_TAG_NOTE] as string).trim();
       if (!tag.startsWith("#")) return;
 
-      const sources = frontms
+      const hasThisTag = (file: TFile) =>
+        this.app.metadataCache
+          .getFileCache(file)
+          ?.tags?.map((t) => t.tag)
+          .some((t) => t.includes(tag));
+
+      const targets = frontms
         .map((ff) => ff.file)
-        .filter(
-          (file) =>
-            file.path !== tagNoteFile.path &&
-            this.app.metadataCache
-              .getFileCache(file)
-              ?.tags?.map((t) => t.tag)
-              .some((t) => t.includes(tag))
-        )
+        .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
         .map(getDVBasename);
 
-      let field = altFile["BC-tag-note-up"];
-      if (typeof field !== "string" || !upFields.includes(field)) {
-        field = upFields[0];
-      }
+      let field = altFile[BC_TAG_NOTE_FIELD] as string;
+      if (typeof field !== "string" || !fields.includes(field))
+        field = fields[0];
 
-      sources.forEach((source) => {
-        // This is getting the order of the folder note, not the source pointing up to it
-        const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
+      targets.forEach((target) => {
+        const sourceOrder = this.getSourceOrder(altFile);
         const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
         this.populateMain(
           mainG,
-          source,
-          field as string,
           tagNoteBasename,
+          field,
+          target,
           sourceOrder,
           targetOrder,
           true
@@ -882,27 +883,27 @@ export default class BCPlugin extends Plugin {
       const linkNoteFile = altFile.file;
       const linkNoteBasename = getDVBasename(linkNoteFile);
 
-      let field = altFile["BC-link-note"] as string;
-      const { fieldDir } = getFieldInfo(userHiers, field as string);
-      if (
-        typeof field !== "string" ||
-        (fieldDir !== undefined &&
-          !getFields(userHiers, fieldDir).includes(field))
-      ) {
-        field = getFields(userHiers, fieldDir)[0];
-      }
+      let field = altFile[BC_LINK_NOTE] as string;
+      if (typeof field !== "string" || !getFields(userHiers).includes(field))
+        return;
 
-      const targets = this.app.metadataCache
+      const links = this.app.metadataCache
         .getFileCache(linkNoteFile)
         ?.links.map((l) => l.link.match(/[^#|]+/)[0]);
 
+      const embeds = this.app.metadataCache
+        .getFileCache(linkNoteFile)
+        ?.embeds.map((l) => l.link.match(/[^#|]+/)[0]);
+
+      const targets = [...(links ?? []), ...(embeds ?? [])];
+
       for (const target of targets) {
-        const sourceOrder = parseInt((altFile["BC-order"] as string) ?? "9999");
+        const sourceOrder = this.getSourceOrder(altFile);
         const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
         this.populateMain(
           mainG,
           linkNoteBasename,
-          field as string,
+          field,
           target,
           sourceOrder,
           targetOrder,
@@ -920,20 +921,14 @@ export default class BCPlugin extends Plugin {
   ) {
     const { userHiers } = this.settings;
     traverseNotes.forEach((altFile) => {
-      const traverseNoteFile = altFile.file;
-      const traverseNoteBasename = getDVBasename(traverseNoteFile);
+      const { file } = altFile;
+      const basename = getDVBasename(file);
 
-      let field = altFile["BC-traverse-note"] as string;
-      const { fieldDir } = getFieldInfo(userHiers, field as string);
-      if (
-        typeof field !== "string" ||
-        (fieldDir !== undefined &&
-          !getFields(userHiers, fieldDir).includes(field))
-      ) {
-        field = getFields(userHiers, fieldDir)[0];
-      }
+      let field = altFile[BC_TRAVERSE_NOTE] as string;
+      if (typeof field !== "string" || !getFields(userHiers).includes(field))
+        return;
 
-      const allPaths = dfsAllPaths(ObsG, traverseNoteBasename);
+      const allPaths = dfsAllPaths(ObsG, basename);
       info(allPaths);
       const reversed = [...allPaths].map((path) => path.reverse());
       reversed.forEach((path) => {
@@ -989,9 +984,12 @@ export default class BCPlugin extends Plugin {
   getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
     parseInt(
       (frontms.find((arr) => arr.file.basename === target)?.[
-        "BC-order"
+        BC_ORDER
       ] as string) ?? "9999"
     );
+
+  getSourceOrder = (frontm: dvFrontmatterCache) =>
+    parseInt((frontm[BC_ORDER] as string) ?? "9999");
 
   async initGraphs(): Promise<MultiGraph> {
     const mainG = new MultiGraph();
@@ -1026,6 +1024,25 @@ export default class BCPlugin extends Plugin {
         eligableAlts[alt] = [];
       });
 
+      function noticeIfBroken(frontm: dvFrontmatterCache): void {
+        const basename = getDVBasename(frontm.file);
+        if (frontm[BC_FOLDER_NOTE] === true) {
+          const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+          new Notice(msg);
+          warn(msg);
+        }
+        if (frontm[BC_LINK_NOTE] === true) {
+          const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+          new Notice(msg);
+          warn(msg);
+        }
+        if (frontm["BC-folder-note-up"]) {
+          const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note-up value. Instead of setting the fieldName here, it goes directly into 'BC-folder-note: fieldName'.`;
+          new Notice(msg);
+          warn(msg);
+        }
+      }
+
       db.start2G("addFrontmatterToGraph");
       frontms.forEach((frontm) => {
         BC_ALTS.forEach((alt) => {
@@ -1034,8 +1051,10 @@ export default class BCPlugin extends Plugin {
           }
         });
 
+        noticeIfBroken(frontm);
+
         const basename = getDVBasename(frontm.file);
-        const sourceOrder = parseInt((frontm["BC-order"] as string) ?? "9999");
+        const sourceOrder = this.getSourceOrder(frontm);
 
         iterateHiers(userHiers, (hier, dir, field) => {
           const values = this.parseFieldValue(frontm[field]);
@@ -1090,22 +1109,18 @@ export default class BCPlugin extends Plugin {
       // !SECTION  Hierarchy Notes
 
       console.time("Folder-Notes");
-      this.addFolderNotesToGraph(
-        eligableAlts["BC-folder-note"],
-        frontms,
-        mainG
-      );
+      this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
       console.timeEnd("Folder-Notes");
       console.time("Tag-Notes");
-      this.addTagNotesToGraph(eligableAlts["BC-tag-note"], frontms, mainG);
+      this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
       console.timeEnd("Tag-Notes");
       console.time("Link-Notes");
-      this.addLinkNotesToGraph(eligableAlts["BC-link-note"], frontms, mainG);
+      this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
       console.timeEnd("Link-Notes");
       db.start1G("Traverse-Notes");
       console.time("Traverse-Notes");
       this.addTraverseNotesToGraph(
-        eligableAlts["BC-traverse-note"],
+        eligableAlts[BC_TRAVERSE_NOTE],
         frontms,
         mainG,
         this.buildObsGraph()
@@ -1304,7 +1319,7 @@ export default class BCPlugin extends Plugin {
           `${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`
         );
       }
-      if (frontmatter?.["BC-hide-trail"] || frontmatter?.["kanban-plugin"]) {
+      if (frontmatter?.[BC_HIDE_TRAIL] || frontmatter?.["kanban-plugin"]) {
         db.end2G();
         return;
       }
