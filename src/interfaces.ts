@@ -40,6 +40,7 @@ export interface BCSettings {
   showAll: boolean;
   showGrid: boolean;
   showPrevNext: boolean;
+  showRefreshNotice: boolean;
   showTrail: boolean;
   trailSeperator: string;
   useAllMetadata: boolean;

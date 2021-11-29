@@ -173,6 +173,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showAllPathsIfNoneToIndexNote: false,
   showBCs: true,
   showBCsInEditLPMode: false,
+  showRefreshNotice: true,
   showTrail: true,
   showGrid: true,
   showPrevNext: true,

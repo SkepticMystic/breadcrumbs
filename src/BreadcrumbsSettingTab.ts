@@ -122,6 +122,18 @@ export class BCSettingTab extends PluginSettingTab {
       });
 
     new Setting(generalDetails)
+      .setName("Show Refresh Index Notice")
+      .setDesc(
+        "When Refreshing Index, should it show a notice once the operation is complete?"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.showRefreshNotice).onChange(async (value) => {
+          settings.showRefreshNotice = value;
+          await plugin.saveSettings();
+        })
+      );
+
+    new Setting(generalDetails)
       .setName("Enable Field Suggestor")
       .setDesc(
         'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`. The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex /^BC-.*$/. Basically, just type "BC-" at the start of a line to trigger it.'
