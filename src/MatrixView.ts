@@ -82,12 +82,17 @@ export default class MatrixView extends ItemView {
     return alt;
   }
 
-  toInternalLinkObj = (to: string, realQ = true) => {
+  toInternalLinkObj = (
+    to: string,
+    realQ = true,
+    parent?: string
+  ): internalLinkObj => {
     return {
       to,
       cls: linkClass(this.app, to, realQ),
       alt: this.getAlt(to, this.plugin.settings),
       order: this.getOrder(to),
+      parent,
     };
   };
 
@@ -173,7 +178,7 @@ export default class MatrixView extends ItemView {
         });
 
         impliedSiblings.forEach((impliedSibling) => {
-          iSameArr.push(this.toInternalLinkObj(impliedSibling, false));
+          iSameArr.push(this.toInternalLinkObj(impliedSibling, false, parent));
         });
       });
 

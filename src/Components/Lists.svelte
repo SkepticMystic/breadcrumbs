@@ -60,6 +60,7 @@
                         openOrSwitch(app, impliedItem.to, e)}
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, impliedItem.to)}
+                      aria-label={impliedItem.parent ?? ""}
                     >
                       {impliedItem.alt ?? impliedItem.to.split("/").last()}
                     </div>

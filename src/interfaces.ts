@@ -130,6 +130,7 @@ export interface internalLinkObj {
   cls: string;
   alt: string | null;
   order: number;
+  parent?: string;
 }
 
 export interface SquareProps {
