@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.16.0...1.17.0) (2021-11-29)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Show the common-parent of an implied sibling as an aria-label (on hover) ([#81](https://github.com/SkepticMystic/breadcrumbs/issues/81)) ([7dd0b79](https://github.com/SkepticMystic/breadcrumbs/commit/7dd0b79ad9e7949ce205372a0d0dd145a1689b37))
+
 ## [1.16.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.15.1...1.16.0) (2021-11-26)
 
 
