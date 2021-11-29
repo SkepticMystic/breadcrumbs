@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.17.0...2.0.0) (2021-11-29)
+
+
+### Bug Fixes
+
+* :bug: Standardise BC_FIELDS and Alt hierarchies behaviour ([c344208](https://github.com/SkepticMystic/breadcrumbs/commit/c344208380e0cff508931e635865352b682db2e1))
+
 ## [1.17.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.16.0...1.17.0) (2021-11-29)
 
 
