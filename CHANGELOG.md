@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.0.0...2.0.1) (2021-11-29)
+
+
+### Bug Fixes
+
+* **LinkNote:** :bug: Null check on links and embeds ([18975b5](https://github.com/SkepticMystic/breadcrumbs/commit/18975b5d3d339a9aa1901e175f379258415a24a8))
+
 ## [2.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/1.17.0...2.0.0) (2021-11-29)
 
 
