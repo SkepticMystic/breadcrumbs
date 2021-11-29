@@ -49436,16 +49436,16 @@ class BCPlugin extends require$$0.Plugin {
     addLinkNotesToGraph(eligableAlts, frontms, mainG) {
         const { userHiers } = this.settings;
         eligableAlts.forEach((altFile) => {
-            var _a, _b;
+            var _a, _b, _c, _d;
             const linkNoteFile = altFile.file;
             const linkNoteBasename = getDVBasename(linkNoteFile);
             let field = altFile[BC_LINK_NOTE];
             if (typeof field !== "string" || !getFields(userHiers).includes(field))
                 return;
-            const links = (_a = this.app.metadataCache
-                .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links.map((l) => l.link.match(/[^#|]+/)[0]);
-            const embeds = (_b = this.app.metadataCache
-                .getFileCache(linkNoteFile)) === null || _b === void 0 ? void 0 : _b.embeds.map((l) => l.link.match(/[^#|]+/)[0]);
+            const links = (_b = (_a = this.app.metadataCache
+                .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
+            const embeds = (_d = (_c = this.app.metadataCache
+                .getFileCache(linkNoteFile)) === null || _c === void 0 ? void 0 : _c.embeds) === null || _d === void 0 ? void 0 : _d.map((l) => l.link.match(/[^#|]+/)[0]);
             const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
             for (const target of targets) {
                 const sourceOrder = this.getSourceOrder(altFile);

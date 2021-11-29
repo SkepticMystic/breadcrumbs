@@ -889,11 +889,11 @@ export default class BCPlugin extends Plugin {
 
       const links = this.app.metadataCache
         .getFileCache(linkNoteFile)
-        ?.links.map((l) => l.link.match(/[^#|]+/)[0]);
+        ?.links?.map((l) => l.link.match(/[^#|]+/)[0]);
 
       const embeds = this.app.metadataCache
         .getFileCache(linkNoteFile)
-        ?.embeds.map((l) => l.link.match(/[^#|]+/)[0]);
+        ?.embeds?.map((l) => l.link.match(/[^#|]+/)[0]);
 
       const targets = [...(links ?? []), ...(embeds ?? [])];
 
