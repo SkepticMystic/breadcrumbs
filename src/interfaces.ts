@@ -1,6 +1,7 @@
 import type { MultiGraph } from "graphology";
 import type { LogLevel } from "loglevel";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
+import type DownView from "./DownView";
 import type { DIRECTIONS } from "./constants";
 import type DucksView from "./DucksView";
 import type MatrixView from "./MatrixView";
@@ -79,7 +80,7 @@ export type UserHier = {
   [dir in Directions]: string[];
 };
 
-export type MyView = MatrixView | DucksView | StatsView;
+export type MyView = MatrixView | DucksView | StatsView | DownView;
 export type ViewInfo = {
   plain: string;
   type: string;

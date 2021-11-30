@@ -1,3 +1,4 @@
+import DownView from "./DownView";
 import DucksView from "./DucksView";
 import type {
   BCSettings,
@@ -13,6 +14,7 @@ import StatsView from "./StatsView";
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
+export const DOWN_VIEW = "BC-down";
 
 export const VIEWS: ViewInfo[] = [
   {
@@ -28,6 +30,7 @@ export const VIEWS: ViewInfo[] = [
     openOnLoad: true,
   },
   { plain: "Duck", type: DUCK_VIEW, constructor: DucksView, openOnLoad: false },
+  { plain: "Down", type: DOWN_VIEW, constructor: DownView, openOnLoad: true },
 ];
 
 export const TRAIL_ICON = "BC-trail-icon";
