@@ -23,20 +23,21 @@
     nodesToo = true
   ) {
     const gInfo = hierData[dir][gType];
+    const { wikilinkIndex } = settings;
 
     if (nodesToo) {
       gInfo.nodes = gInfo.graph.nodes();
       gInfo.nodesStr = gInfo.nodes
-        .map((n) => makeWiki(settings.wikilinkIndex, n))
+        .map((n) => makeWiki(n, wikilinkIndex))
         .join("\n");
     }
 
     gInfo.edges = gInfo.graph.edges();
     const edgeStrArr = gInfo.graph.mapEdges(
       (k, a, s, t) =>
-        `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${
+        `${makeWiki(nodesToo ? s : t, wikilinkIndex)} ${
           ARROW_DIRECTIONS[dir]
-        } ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`
+        } ${makeWiki(nodesToo ? t : s, wikilinkIndex)}`
     );
     gInfo.edgesStr = edgeStrArr.join("\n");
   }

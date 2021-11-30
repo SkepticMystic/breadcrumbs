@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { info } from "loglevel";
   import {
     hoverPreview,
     isInVault,
@@ -36,13 +37,13 @@
     const down = getSubInDirs(closed, "down");
 
     const allPaths = dfsAllPaths(down, basename);
-    const index = plugin.createIndex(allPaths);
-    console.log({ allPaths, index, down: down.inspect() });
+    const index = plugin.createIndex(allPaths, false);
+    info({ allPaths, index });
 
-    lines = index.split("\n").map((line) => line.split("- ")) as [
-      string,
-      string
-    ][];
+    lines = index
+      .split("\n")
+      .map((line) => line.split("- "))
+      .filter((pair) => pair.length > 1) as [string, string][];
   }
 </script>
 

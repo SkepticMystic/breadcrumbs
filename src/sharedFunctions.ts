@@ -134,7 +134,7 @@ export function complement<T>(A: T[], B: T[]) {
   return A.filter((a) => !B.includes(a));
 }
 
-export function makeWiki(wikiQ: boolean, str: string) {
+export function makeWiki(str: string, wikiQ = true) {
   let copy = str.slice();
   if (wikiQ) {
     copy = "[[" + copy;

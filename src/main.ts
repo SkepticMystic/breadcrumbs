@@ -1147,9 +1147,11 @@ export default class BCPlugin extends Plugin {
 
   // !SECTION OneSource
 
-  createIndex(allPaths: string[][]): string {
+  createIndex(
+    allPaths: string[][],
+    asWikilinks: boolean = this.settings.wikilinkIndex
+  ): string {
     let index = "";
-    const { wikilinkIndex, aliasesInIndex } = this.settings;
     const copy = cloneDeep(allPaths);
     const reversed = copy.map((path) => path.reverse());
     reversed.forEach((path) => path.shift());
@@ -1171,10 +1173,9 @@ export default class BCPlugin extends Plugin {
         ) {
           continue;
         } else {
-          index += `${indent.repeat(depth)}- ${makeWiki(
-            wikilinkIndex,
-            currNode
-          )}`;
+          index += `${indent.repeat(depth)}- ${
+            asWikilinks ? makeWiki(currNode) : currNode
+          }`;
 
           index += "\n";
 
