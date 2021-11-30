@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import { STATS_VIEW } from "./constants";
-import type BCPlugin from "./main";
 import Ducks from "./Components/Ducks.svelte";
+import { DUCK_VIEW } from "./constants";
+import type BCPlugin from "./main";
 
 export default class DucksView extends ItemView {
   private plugin: BCPlugin;
@@ -21,7 +21,7 @@ export default class DucksView extends ItemView {
   }
 
   getViewType() {
-    return STATS_VIEW;
+    return DUCK_VIEW;
   }
   getDisplayText() {
     return "Breadcrumbs Ducks";
