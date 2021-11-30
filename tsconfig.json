@@ -11,6 +11,7 @@
   ],
   "exclude": ["node_modules/*"],
   "compilerOptions": {
+    "module": "esnext",
     "types": ["node", "svelte", "mocha"],
     "baseUrl": ".",
     "paths": {

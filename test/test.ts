@@ -3,14 +3,14 @@ import { getReflexiveClosure } from "../src/graphUtils";
 
 require("approvals").mocha();
 
-describe("When running some tests", function () {
-  it("should be able to use Approvals", function () {
+describe("Graph Functions", function () {
+  it("getReflexiveClosure", async function () {
     const userHiers = [
       {
         down: ["down"],
-        next: ["next"],
-        prev: ["prev"],
-        same: ["same"],
+        next: [],
+        prev: [],
+        same: [],
         up: ["up", "parent"],
       },
     ];
@@ -18,10 +18,8 @@ describe("When running some tests", function () {
     const g = new MultiGraph();
     g.addNode("A");
     g.addNode("B");
-    // g.addNode("C");
 
     g.addEdge("A", "B", { dir: "up", field: "up" });
-    // g.addEdge("C", "A", { dir: "prev", field: "prev" });
 
     const closed = getReflexiveClosure(g, userHiers);
 

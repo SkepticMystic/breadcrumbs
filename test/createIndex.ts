@@ -1,20 +1,11 @@
 import { MultiGraph } from "graphology";
-import { getReflexiveClosure } from "../src/graphUtils";
+import { dfsAllPaths } from "../src/graphUtils";
+import { testGraph } from "./testUtils";
 
 require("approvals").mocha();
 
-describe("When running some tests", function () {
-  it("should be able to use Approvals", function () {
-    const userHiers = [
-      {
-        down: ["down"],
-        next: ["next"],
-        prev: ["prev"],
-        same: ["same"],
-        up: ["up", "parent"],
-      },
-    ];
-
+describe("Traversals", function () {
+  it("dfsAllPaths1", function () {
     const g = new MultiGraph();
     g.addNode("A");
     g.addNode("B");
@@ -23,10 +14,20 @@ describe("When running some tests", function () {
     g.addEdge("A", "B", { dir: "up", field: "up" });
     // g.addEdge("C", "A", { dir: "prev", field: "prev" });
 
-    const closed = getReflexiveClosure(g, userHiers);
+    const paths = dfsAllPaths(g, "A");
 
-    const gStr = closed.inspect();
-    this.verifyAsJSON(gStr, {
+    this.verifyAsJSON(paths, {
+      reporters: ["tortoisemerge"],
+      appendEOL: true,
+      normalizeLineEndingsTo: "\r\n",
+    });
+  });
+
+  it("dfsAllPaths2", function () {
+    const g = testGraph();
+    const paths = dfsAllPaths(g, "a");
+
+    this.verifyAsJSON(paths, {
       reporters: ["tortoisemerge"],
       appendEOL: true,
       normalizeLineEndingsTo: "\r\n",
