@@ -19957,6 +19957,14 @@ module.exports = __webpack_require__(/*! /home/travis/build/feathericons/feather
  * @module obsidian-community-lib
  */
 /**
+ * You can await this Function to delay execution
+ *
+ * @param delay The delay in ms
+ */
+async function wait(delay) {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+}
+/**
  * Adds a specific Feather Icon to Obsidian.
  *
  * @param name official Name of the Icon (https://feathericons.com/)
@@ -20102,6 +20110,35 @@ async function openView(app, viewType, viewClass, side = "right") {
         active: true,
     });
     return leaf.view;
+}
+/**
+ * Check if `app.metadataCache.ResolvedLinks` have fully initalised.
+ *
+ * Used with {@link waitForResolvedLinks}.
+ * @param {App} app
+ * @param  {number} noFiles Number of files in your vault.
+ * @returns {boolean}
+ */
+function resolvedLinksComplete(app, noFiles) {
+    const { resolvedLinks } = app.metadataCache;
+    return Object.keys(resolvedLinks).length === noFiles;
+}
+/**
+ * Wait for `app.metadataCache.ResolvedLinks` to have fully initialised.
+ * @param {App} app
+ * @param  {number} [delay=1000] Number of milliseconds to wait between each check.
+ * @param {number} [max=50] Maximum number of iterations to check before throwing an error and breaking out of the loop.
+ */
+async function waitForResolvedLinks(app, delay = 1000, max = 50) {
+    const noFiles = app.vault.getMarkdownFiles().length;
+    let i = 0;
+    while (!resolvedLinksComplete(app, noFiles) && i < max) {
+        await wait(delay);
+        i++;
+    }
+    if (i === max) {
+        throw Error("Obsidian-Community-Lib: ResolvedLinks did not finish initialising. `max` iterations was reached first.");
+    }
 }
 
 const MATRIX_VIEW = "BC-matrix";
@@ -49604,6 +49641,10 @@ class BCPlugin extends require$$0.Plugin {
                         await this.initEverything();
                     }));
                 }
+            }
+            else {
+                await waitForResolvedLinks(this.app);
+                await this.initEverything();
             }
         });
         require$$0.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);

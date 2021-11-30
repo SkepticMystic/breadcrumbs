@@ -18,6 +18,7 @@ import {
   addFeatherIcon,
   copy,
   openView,
+  waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
 import StatsView from "./StatsView";
 import DownView from "./DownView";
@@ -227,6 +228,9 @@ export default class BCPlugin extends Plugin {
             })
           );
         }
+      } else {
+        await waitForResolvedLinks(this.app);
+        await this.initEverything();
       }
     });
 
