@@ -49,7 +49,7 @@
 
 <div>
   <span
-    class="icon nav-action-button"
+    class="icon"
     aria-label={frozen ? `Frozen on: ${basename}` : "Unfrozen"}
     aria-label-position="left"
     on:click={() => {
