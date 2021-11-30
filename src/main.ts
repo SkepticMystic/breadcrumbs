@@ -18,6 +18,7 @@ import {
   addFeatherIcon,
   copy,
   openView,
+  wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
 import StatsView from "./StatsView";
@@ -146,6 +147,20 @@ export default class BCPlugin extends Plugin {
     this.registerLayoutChangeEvent();
   };
 
+  async waitForCache() {
+    if (this.app.plugins.enabledPlugins.has("dataview")) {
+      let { basename } = this.app.workspace.getActiveFile();
+      while (
+        this.app.plugins.plugins.dataview.api.page(basename) === undefined
+      ) {
+        basename = this.app.workspace.getActiveFile().basename;
+        await wait(100);
+      }
+    } else {
+      await waitForResolvedLinks(this.app);
+    }
+  }
+
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
 
@@ -206,21 +221,12 @@ export default class BCPlugin extends Plugin {
       },
     ];
 
-    for (const view of this.VIEWS) {
-      this.registerView(
-        view.type,
-        (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
-      );
-    }
-
     this.db = new Debugger(this);
     this.registerEditorSuggest(new FieldSuggestor(this));
 
     this.app.workspace.onLayoutReady(async () => {
-      if (this.app.plugins.enabledPlugins.has("dataview")) {
-        const api = this.app.plugins.plugins.dataview?.api;
-        if (api) {
-          await this.initEverything();
+      await this.waitForCache();
+      await this.initEverything();
         } else {
           this.registerEvent(
             this.app.metadataCache.on("dataview:api-ready", async () => {
