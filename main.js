@@ -21075,8 +21075,8 @@ function dfsAllPaths(g, startNode) {
 
 function add_css$8() {
 	var style = element("style");
-	style.id = "svelte-6bbhz1-style";
-	style.textContent = ".BC-downs.svelte-6bbhz1{padding-left:5px}pre.svelte-6bbhz1{display:inline}.is-unresolved.svelte-6bbhz1{color:var(--text-muted)}";
+	style.id = "svelte-n6zmin-style";
+	style.textContent = ".BC-downs.svelte-n6zmin.svelte-n6zmin{padding-left:5px}.BC-downs.svelte-n6zmin>div.svelte-n6zmin{white-space:nowrap}pre.svelte-n6zmin.svelte-n6zmin{display:inline}.is-unresolved.svelte-n6zmin.svelte-n6zmin{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
@@ -21178,13 +21178,14 @@ function create_if_block$4(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-6bbhz1");
+			attr(pre, "class", "svelte-n6zmin");
 
 			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-6bbhz1");
+			: "is-unresolved") + " svelte-n6zmin");
 
 			attr(span, "class", "internal-link");
+			attr(div, "class", "svelte-n6zmin");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -21212,7 +21213,7 @@ function create_if_block$4(ctx) {
 
 			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-6bbhz1")) {
+			: "is-unresolved") + " svelte-n6zmin")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -21313,7 +21314,7 @@ function create_fragment$d(ctx) {
 			attr(span, "aria-label-position", "left");
 			attr(button, "class", "icon");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(div1, "class", "BC-downs svelte-6bbhz1");
+			attr(div1, "class", "BC-downs svelte-n6zmin");
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);
@@ -21478,7 +21479,7 @@ function instance$d($$self, $$props, $$invalidate) {
 class Down extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-6bbhz1-style")) add_css$8();
+		if (!document.getElementById("svelte-n6zmin-style")) add_css$8();
 		init(this, options, instance$d, create_fragment$d, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }

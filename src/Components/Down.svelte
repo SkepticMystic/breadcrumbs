@@ -100,6 +100,9 @@
   .BC-downs {
     padding-left: 5px;
   }
+  .BC-downs > div{
+    white-space: nowrap;
+  }
   pre {
     display: inline;
   }
