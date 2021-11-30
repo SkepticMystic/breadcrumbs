@@ -32,9 +32,7 @@ export default class DownView extends ItemView {
   async onOpen(): Promise<void> {}
 
   onClose(): Promise<void> {
-    if (this.view) {
-      this.view.$destroy();
-    }
+    this.view?.$destroy();
     return Promise.resolve();
   }
 
