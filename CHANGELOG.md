@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.1.1...2.1.2) (2021-11-30)
+
+
+### Bug Fixes
+
+* **DownView:** :bug: Don't depend on `Create Index > make wikilinks` setting ([61c9770](https://github.com/SkepticMystic/breadcrumbs/commit/61c9770d853d60725dbb8b1f2b84451c98cb07e1))
+
 ### [2.1.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.1.0...2.1.1) (2021-11-30)
 
 ## [2.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.0.1...2.1.0) (2021-11-30)
