@@ -637,7 +637,10 @@ export default class BCPlugin extends Plugin {
                   getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
                 );
                 parsed.push(...strs);
-              } else parsed.push(getBaseFromMDPath(rawAsString));
+              } else {
+                const basename = getBaseFromMDPath(rawAsString);
+                parsed.push(basename.split("#")[0].split("|")[0]);
+              }
             } else if (value.path !== undefined) {
               const basename = getBaseFromMDPath(value.path);
               if (basename !== undefined) parsed.push(basename);
