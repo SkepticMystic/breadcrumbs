@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.1.2...2.2.0) (2021-11-30)
+
+
+### Features
+
+* :sparkles: Options to choose which views are oppened onload ([c48c571](https://github.com/SkepticMystic/breadcrumbs/commit/c48c571e2c3b276cf0cc67f0839d5e234e6d7b8e))
+
+
+### Bug Fixes
+
+* :bug: Close views properly onunload ([01f60ff](https://github.com/SkepticMystic/breadcrumbs/commit/01f60ff1dcb941cdf5f114c9118c6d0cead53de1))
+* **DownView:** :lipstick: .icon styles were only being added if Graph Analysis is installed ([b17398c](https://github.com/SkepticMystic/breadcrumbs/commit/b17398cc81568ffe9608f129f133f545de4909db))
+
 ### [2.1.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.1.1...2.1.2) (2021-11-30)
 
 
