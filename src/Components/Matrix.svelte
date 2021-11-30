@@ -11,7 +11,11 @@
   export let app: App;
 </script>
 
-<div class="BC-Matrix  markdown-preview-view">
+<div
+  class="BC-Matrix  markdown-preview-view {filteredSquaresArr.length
+    ? ''
+    : 'BC-empty-view'}"
+>
   {#each filteredSquaresArr as squares}
     <div>
       {#each squares as square}

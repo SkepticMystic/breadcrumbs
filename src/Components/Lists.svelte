@@ -11,7 +11,11 @@
   export let app: App;
 </script>
 
-<div class="BC-list">
+<div
+  class="BC-list markdown-preview-view {filteredSquaresArr.length
+    ? ''
+    : 'BC-empty-view'}"
+>
   {#each filteredSquaresArr as squares}
     <details open>
       <summary class="hier-summary"
@@ -27,7 +31,7 @@
                 <h5 class="BC-header">Real</h5>
               {/if}
 
-              <ol class="markdown-preview-view">
+              <ol>
                 {#each square.realItems as realItem}
                   <li>
                     <div
@@ -48,10 +52,7 @@
                 <h5 class="BC-header">Implied</h5>
               {/if}
 
-              <ol
-                class="markdown-preview-view"
-                start={square.realItems.length + 1}
-              >
+              <ol start={square.realItems.length + 1}>
                 {#each square.impliedItems as impliedItem}
                   <li class="BC-Implied">
                     <div
@@ -89,10 +90,11 @@
     color: var(--text-title-h5);
   }
 
-  ol.markdown-preview-view {
-    /* margin: 3px; */
-    /* padding-left: 20px; */
-    padding-top: 3px;
-    padding-bottom: 5px;
+  .markdown-preview-view {
+    padding-left: 10px;
+  }
+
+  .internal-link.is-unresolved {
+    color: var(--text-muted);
   }
 </style>
