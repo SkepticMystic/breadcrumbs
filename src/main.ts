@@ -95,7 +95,7 @@ export default class BCPlugin extends Plugin {
     this.mainG = await this.initGraphs();
     for (const view of VIEWS) await this.getActiveTYPEView(view.type)?.draw();
     if (this.settings.showTrail) await this.drawTrail();
-    new Notice("Index refreshed");
+    if (this.settings.showRefreshNotice) new Notice("Index refreshed");
   }
 
   registerActiveLeafChangeEvent() {
@@ -286,7 +286,7 @@ export default class BCPlugin extends Plugin {
         const onlyDowns = getSubInDirs(closed, "down");
 
         const allPaths = dfsAllPaths(onlyDowns, basename);
-        const index = this.createIndex(allPaths);
+        const index = this.addAliasesToIndex(this.createIndex(allPaths));
         info({ index });
         await copy(index);
       },
@@ -308,7 +308,8 @@ export default class BCPlugin extends Plugin {
         sinks.forEach((terminal) => {
           globalIndex += terminal + "\n";
           const allPaths = dfsAllPaths(onlyDowns, terminal);
-          globalIndex += this.createIndex(allPaths) + "\n";
+          globalIndex +=
+            this.addAliasesToIndex(this.createIndex(allPaths)) + "\n";
         });
 
         info({ globalIndex });
@@ -1159,7 +1160,6 @@ export default class BCPlugin extends Plugin {
       [node: string]: /** The depths at which `node` was visited */ number[];
     } = {};
 
-    const { metadataCache } = this.app;
     reversed.forEach((path) => {
       for (let depth = 0; depth < path.length; depth++) {
         const currNode = path[depth];
@@ -1176,25 +1176,6 @@ export default class BCPlugin extends Plugin {
             currNode
           )}`;
 
-          if (aliasesInIndex) {
-            const currFile = metadataCache.getFirstLinkpathDest(currNode, "");
-
-            if (currFile !== null) {
-              const cache = metadataCache.getFileCache(currFile);
-
-              const alias: string[] = cache?.frontmatter?.alias ?? [];
-              const aliases: string[] = cache?.frontmatter?.aliases ?? [];
-
-              const allAliases: string[] = [
-                ...[alias].flat(3),
-                ...[aliases].flat(3),
-              ];
-              if (allAliases.length) {
-                index += ` (${allAliases.join(", ")})`;
-              }
-            }
-          }
-
           index += "\n";
 
           if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
@@ -1203,6 +1184,39 @@ export default class BCPlugin extends Plugin {
       }
     });
     return index;
+  }
+
+  /**
+   * Returns a copy of `index`, doesn't mutate.
+   * @param  {string} index
+   */
+  addAliasesToIndex(index: string) {
+    const { aliasesInIndex } = this.settings;
+    const copy = index.slice();
+    const lines = copy.split("\n");
+    for (let line of lines) {
+      if (aliasesInIndex) {
+        const note = line.split("- ")[1];
+        if (!note) continue;
+        const currFile = this.app.metadataCache.getFirstLinkpathDest(note, "");
+
+        if (currFile !== null) {
+          const cache = this.app.metadataCache.getFileCache(currFile);
+
+          const alias: string[] = cache?.frontmatter?.alias ?? [];
+          const aliases: string[] = cache?.frontmatter?.aliases ?? [];
+
+          const allAliases: string[] = [
+            ...[alias].flat(3),
+            ...[aliases].flat(3),
+          ];
+          if (allAliases.length) {
+            line += ` (${allAliases.join(", ")})`;
+          }
+        }
+      }
+    }
+    return lines.join("\n");
   }
 
   // SECTION Breadcrumbs

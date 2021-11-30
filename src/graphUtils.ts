@@ -194,8 +194,7 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
     visited.push(...succsNotVisited);
     queue.unshift(...newItems);
 
-    // if (!g.hasNode(node) || !g.outDegree(node))
-    allPaths.push(extPath);
+    if (!g.hasNode(node) || !g.outDegree(node)) allPaths.push(extPath);
   }
   return allPaths;
 }

@@ -17,6 +17,7 @@
         "FolderNote",
         "TagNote",
         "LinkNote",
-        "TraverseNote"
+        "TraverseNote",
+        "DownView"
     ]
 }
