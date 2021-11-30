@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.3.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.2.0...2.3.0) (2021-11-30)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Add `.BC-empty-view` class on empty views + consistent styling on List view ([1e36a29](https://github.com/SkepticMystic/breadcrumbs/commit/1e36a2977cc396539e8c271e6c3624f9cc103b8c))
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :lipstick: Header structure was inconsistent ([79ae608](https://github.com/SkepticMystic/breadcrumbs/commit/79ae608f29e519f4826a727a50de80c94ba944a4))
+
 ## [2.2.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.1.2...2.2.0) (2021-11-30)
 
 
