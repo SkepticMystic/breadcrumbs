@@ -74,28 +74,32 @@
     ↻
   </button>
 </div>
-
-{#each lines as line}
-  {#if line.length > 1}
-    <div>
-      <pre>{line[0] + "- "}</pre>
-      <span
-        class="internal-link"
-        on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
-        on:mouseover={(e) => hoverPreview(e, view, line[1])}
-      >
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a
-          class="internal-link {isInVault(plugin.app, line[1])
-            ? ''
-            : 'is-unresolved'}">{line[1]}</a
+<div class="BC-downs">
+  {#each lines as line}
+    {#if line.length > 1}
+      <div>
+        <pre>{line[0] + "-"}</pre>
+        <span
+          class="internal-link"
+          on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
+          on:mouseover={(e) => hoverPreview(e, view, line[1])}
         >
-      </span>
-    </div>
-  {/if}
-{/each}
+          <!-- svelte-ignore a11y-missing-attribute -->
+          <a
+            class="internal-link {isInVault(plugin.app, line[1])
+              ? ''
+              : 'is-unresolved'}">{line[1]}</a
+          >
+        </span>
+      </div>
+    {/if}
+  {/each}
+</div>
 
 <style>
+  .BC-downs {
+    padding-left: 5px;
+  }
   pre {
     display: inline;
   }

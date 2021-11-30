@@ -21075,8 +21075,8 @@ function dfsAllPaths(g, startNode) {
 
 function add_css$8() {
 	var style = element("style");
-	style.id = "svelte-1rg5cw9-style";
-	style.textContent = "pre.svelte-1rg5cw9{display:inline}.is-unresolved.svelte-1rg5cw9{color:var(--text-muted)}";
+	style.id = "svelte-6bbhz1-style";
+	style.textContent = ".BC-downs.svelte-6bbhz1{padding-left:5px}pre.svelte-6bbhz1{display:inline}.is-unresolved.svelte-6bbhz1{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
@@ -21086,7 +21086,7 @@ function get_each_context$9(ctx, list, i) {
 	return child_ctx;
 }
 
-// (43:4) {:else}
+// (47:4) {:else}
 function create_else_block$1(ctx) {
 	let fafire;
 	let current;
@@ -21115,7 +21115,7 @@ function create_else_block$1(ctx) {
 	};
 }
 
-// (41:4) {#if frozen}
+// (45:4) {#if frozen}
 function create_if_block_1$3(ctx) {
 	let faregsnowflake;
 	let current;
@@ -21144,11 +21144,11 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (60:2) {#if line.length > 1}
+// (64:4) {#if line.length > 1}
 function create_if_block$4(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[11][0] + "- " + "";
+	let t0_value = /*line*/ ctx[11][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
@@ -21178,11 +21178,11 @@ function create_if_block$4(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-1rg5cw9");
+			attr(pre, "class", "svelte-6bbhz1");
 
 			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-1rg5cw9");
+			: "is-unresolved") + " svelte-6bbhz1");
 
 			attr(span, "class", "internal-link");
 		},
@@ -21207,12 +21207,12 @@ function create_if_block$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*line*/ ctx[11][0] + "- " + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*line*/ ctx[11][0] + "-" + "")) set_data(t0, t0_value);
 			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = /*line*/ ctx[11][1] + "")) set_data(t2, t2_value);
 
 			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-1rg5cw9")) {
+			: "is-unresolved") + " svelte-6bbhz1")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -21224,7 +21224,7 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (59:0) {#each lines as line}
+// (63:2) {#each lines as line}
 function create_each_block$9(ctx) {
 	let if_block_anchor;
 	let if_block = /*line*/ ctx[11].length > 1 && create_if_block$4(ctx);
@@ -21260,7 +21260,7 @@ function create_each_block$9(ctx) {
 }
 
 function create_fragment$d(ctx) {
-	let div;
+	let div0;
 	let span;
 	let current_block_type_index;
 	let if_block;
@@ -21268,7 +21268,7 @@ function create_fragment$d(ctx) {
 	let t0;
 	let button;
 	let t2;
-	let each_1_anchor;
+	let div1;
 	let current;
 	let mounted;
 	let dispose;
@@ -21291,19 +21291,19 @@ function create_fragment$d(ctx) {
 
 	return {
 		c() {
-			div = element("div");
+			div0 = element("div");
 			span = element("span");
 			if_block.c();
 			t0 = space();
 			button = element("button");
 			button.textContent = "↻";
 			t2 = space();
+			div1 = element("div");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			each_1_anchor = empty();
 			attr(span, "class", "icon nav-action-button");
 
 			attr(span, "aria-label", span_aria_label_value = /*frozen*/ ctx[3]
@@ -21313,20 +21313,21 @@ function create_fragment$d(ctx) {
 			attr(span, "aria-label-position", "left");
 			attr(button, "class", "icon");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
+			attr(div1, "class", "BC-downs svelte-6bbhz1");
 		},
 		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, span);
+			insert(target, div0, anchor);
+			append(div0, span);
 			if_blocks[current_block_type_index].m(span, null);
-			append(div, t0);
-			append(div, button);
+			append(div0, t0);
+			append(div0, button);
 			insert(target, t2, anchor);
+			insert(target, div1, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
+				each_blocks[i].m(div1, null);
 			}
 
-			insert(target, each_1_anchor, anchor);
 			current = true;
 
 			if (!mounted) {
@@ -21379,7 +21380,7 @@ function create_fragment$d(ctx) {
 					} else {
 						each_blocks[i] = create_each_block$9(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+						each_blocks[i].m(div1, null);
 					}
 				}
 
@@ -21400,11 +21401,11 @@ function create_fragment$d(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(div);
+			if (detaching) detach(div0);
 			if_blocks[current_block_type_index].d();
 			if (detaching) detach(t2);
+			if (detaching) detach(div1);
 			destroy_each(each_blocks, detaching);
-			if (detaching) detach(each_1_anchor);
 			mounted = false;
 			run_all(dispose);
 		}
@@ -21454,9 +21455,9 @@ function instance$d($$self, $$props, $$invalidate) {
 				const closed = getReflexiveClosure(upnDown, userHiers);
 				const down = getSubInDirs(closed, "down");
 				const allPaths = dfsAllPaths(down, basename);
-				const index = plugin.createIndex(allPaths);
-				console.log({ allPaths, index, down: down.inspect() });
-				$$invalidate(4, lines = index.split("\n").map(line => line.split("- ")));
+				const index = plugin.createIndex(allPaths, false);
+				loglevel.info({ allPaths, index });
+				$$invalidate(4, lines = index.split("\n").map(line => line.split("- ")).filter(pair => pair.length > 1));
 			}
 		}
 	};
@@ -21477,7 +21478,7 @@ function instance$d($$self, $$props, $$invalidate) {
 class Down extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1rg5cw9-style")) add_css$8();
+		if (!document.getElementById("svelte-6bbhz1-style")) add_css$8();
 		init(this, options, instance$d, create_fragment$d, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }
@@ -23325,7 +23326,7 @@ function runs(arr) {
     }
     return runs;
 }
-function makeWiki(wikiQ, str) {
+function makeWiki(str, wikiQ = true) {
     let copy = str.slice();
     if (wikiQ) {
         copy = "[[" + copy;
@@ -23707,7 +23708,7 @@ function get_each_context_7(ctx, list, i) {
 	return child_ctx;
 }
 
-// (93:4) {#each DIRECTIONS as dir}
+// (94:4) {#each DIRECTIONS as dir}
 function create_each_block_7(ctx) {
 	let td;
 	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[28]] + "";
@@ -23730,7 +23731,7 @@ function create_each_block_7(ctx) {
 	};
 }
 
-// (105:6) {#each DIRECTIONS as dir}
+// (106:6) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodes.length + "";
@@ -23774,7 +23775,7 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (126:6) {#each DIRECTIONS as dir}
+// (127:6) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edges.length + "";
@@ -23818,7 +23819,7 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (147:6) {#each DIRECTIONS as dir}
+// (148:6) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edges.length + "";
@@ -23862,7 +23863,7 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (99:2) {#each userHiers as hier, i}
+// (100:2) {#each userHiers as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
@@ -24136,7 +24137,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (170:4) {#each DIRECTIONS as dir}
+// (171:4) {#each DIRECTIONS as dir}
 function create_each_block_2$1(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_3)) + "";
@@ -24188,7 +24189,7 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (212:4) {#each DIRECTIONS as dir}
+// (213:4) {#each DIRECTIONS as dir}
 function create_each_block_1$5(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_5)) + "";
@@ -24240,7 +24241,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (250:4) {#each DIRECTIONS as dir}
+// (251:4) {#each DIRECTIONS as dir}
 function create_each_block$5(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_7)) + "";
@@ -24648,14 +24649,15 @@ function instance$8($$self, $$props, $$invalidate) {
 
 	function fillInInfo(dir, gType, hierData, nodesToo = true) {
 		const gInfo = hierData[dir][gType];
+		const { wikilinkIndex } = settings;
 
 		if (nodesToo) {
 			gInfo.nodes = gInfo.graph.nodes();
-			gInfo.nodesStr = gInfo.nodes.map(n => makeWiki(settings.wikilinkIndex, n)).join("\n");
+			gInfo.nodesStr = gInfo.nodes.map(n => makeWiki(n, wikilinkIndex)).join("\n");
 		}
 
 		gInfo.edges = gInfo.graph.edges();
-		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(settings.wikilinkIndex, nodesToo ? s : t)} ${ARROW_DIRECTIONS[dir]} ${makeWiki(settings.wikilinkIndex, nodesToo ? t : s)}`);
+		const edgeStrArr = gInfo.graph.mapEdges((k, a, s, t) => `${makeWiki(nodesToo ? s : t, wikilinkIndex)} ${ARROW_DIRECTIONS[dir]} ${makeWiki(nodesToo ? t : s, wikilinkIndex)}`);
 		gInfo.edgesStr = edgeStrArr.join("\n");
 	}
 
@@ -50264,9 +50266,8 @@ class BCPlugin extends require$$0.Plugin {
         }
     }
     // !SECTION OneSource
-    createIndex(allPaths) {
+    createIndex(allPaths, asWikilinks = this.settings.wikilinkIndex) {
         let index = "";
-        const { wikilinkIndex, aliasesInIndex } = this.settings;
         const copy = lodash.cloneDeep(allPaths);
         const reversed = copy.map((path) => path.reverse());
         reversed.forEach((path) => path.shift());
@@ -50281,7 +50282,7 @@ class BCPlugin extends require$$0.Plugin {
                     continue;
                 }
                 else {
-                    index += `${indent.repeat(depth)}- ${makeWiki(wikilinkIndex, currNode)}`;
+                    index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}`;
                     index += "\n";
                     if (!visited.hasOwnProperty(currNode))
                         visited[currNode] = [];
