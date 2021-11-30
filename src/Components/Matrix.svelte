@@ -19,10 +19,11 @@
           <div class="BC-Matrix-square">
             <div class="BC-Matrix-headers">
               <h4 class="BC-Matrix-header">{square.field}</h4>
-              {#if square.realItems.length}
-                {#if settings.showRelationType}
-                  <h6 class="BC-Matrix-header">Real</h6>
-                {/if}
+
+              {#if settings.showRelationType}
+                <h6 class="BC-Matrix-header">
+                  {square.realItems.length ? "Real" : "Implied"}
+                </h6>
               {/if}
             </div>
             {#if square.realItems.length}
@@ -46,7 +47,7 @@
               <div class="BC-Matrix-headers">
                 <h4 class="BC-Matrix-header" />
                 {#if square.impliedItems.length}
-                  {#if settings.showRelationType}
+                  {#if settings.showRelationType && square.realItems.length}
                     <h6 class="BC-Matrix-header">Implied</h6>
                   {/if}
                 {/if}
