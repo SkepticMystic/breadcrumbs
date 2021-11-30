@@ -64,7 +64,6 @@
     {/if}
   </span>
   <button
-    class="icon"
     aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
     on:click={async () => {
       await plugin.refreshIndex();
@@ -100,7 +99,7 @@
   .BC-downs {
     padding-left: 5px;
   }
-  .BC-downs > div{
+  .BC-downs > div {
     white-space: nowrap;
   }
   pre {
@@ -109,5 +108,13 @@
 
   .is-unresolved {
     color: var(--text-muted);
+  }
+
+  .icon {
+    color: var(--text-normal);
+    display: inline-block;
+    padding-top: 5px !important;
+    width: 20px;
+    height: 20px;
   }
 </style>
