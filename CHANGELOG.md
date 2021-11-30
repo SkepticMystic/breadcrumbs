@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.0.1...2.1.0) (2021-11-30)
+
+
+### Features
+
+* :sparkles: Option to not show Index Refreshed notice (fix [#177](https://github.com/SkepticMystic/breadcrumbs/issues/177)) ([6f1dbf0](https://github.com/SkepticMystic/breadcrumbs/commit/6f1dbf06f91f3e695ddb0ff070c0c74bd2cad52c))
+* **DownView:** :sparkles: New view! Show all paths going down the child tree. Update on active-leaf-change, press `freeze` to freeze the current view ([a59c79b](https://github.com/SkepticMystic/breadcrumbs/commit/a59c79b65a8f4742516e2a5b95a158678b286b73))
+
+
+### Bug Fixes
+
+* :bug: Drop header and alias when initingGraphs ([cb4cc74](https://github.com/SkepticMystic/breadcrumbs/commit/cb4cc74e85b854efc0c32dcb42383349a890991d))
+* **DucksView:** :bug: Return correct ViewType ([44026e7](https://github.com/SkepticMystic/breadcrumbs/commit/44026e7ea67bd72ec5ee768e2b249422cf763378))
+
 ### [2.0.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.0.0...2.0.1) (2021-11-29)
 
 
