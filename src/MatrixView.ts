@@ -9,16 +9,12 @@ import {
   MATRIX_VIEW,
   TRAIL_ICON,
 } from "./constants";
-import {
-  getInNeighbours,
-  getOppDir,
-  getReflexiveClosure,
-  getSubInDirs,
-} from "./graphUtils";
+import { getOppDir, getReflexiveClosure, getSubInDirs } from "./graphUtils";
 import type {
   BCSettings,
   Directions,
   internalLinkObj,
+  SquareProps,
   UserHier,
 } from "./interfaces";
 import type BCPlugin from "./main";
@@ -109,7 +105,11 @@ export default class MatrixView extends ItemView {
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
-  getHierSquares(userHiers: UserHier[], currFile: TFile, settings: BCSettings) {
+  getHierSquares(
+    userHiers: UserHier[],
+    currFile: TFile,
+    settings: BCSettings
+  ): SquareProps[][] {
     const { plugin } = this;
     const { mainG } = plugin;
     if (!mainG) {
