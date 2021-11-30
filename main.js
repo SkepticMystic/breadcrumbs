@@ -23348,8 +23348,8 @@ class DucksView extends require$$0.ItemView {
 
 function add_css$5() {
 	var style = element("style");
-	style.id = "svelte-ifpk85-style";
-	style.textContent = "summary.hier-summary.svelte-ifpk85{color:var(--text-title-h2);font-size:larger}summary.svelte-ifpk85{color:var(--text-title-h3)}h5.BC-header.svelte-ifpk85{color:var(--text-title-h5)}ol.markdown-preview-view.svelte-ifpk85{padding-top:3px;padding-bottom:5px}";
+	style.id = "svelte-1dlhare-style";
+	style.textContent = "summary.hier-summary.svelte-1dlhare{color:var(--text-title-h2);font-size:larger}summary.svelte-1dlhare{color:var(--text-title-h3)}h5.BC-header.svelte-1dlhare{color:var(--text-title-h5)}.markdown-preview-view.svelte-1dlhare{padding-left:10px}.internal-link.is-unresolved.svelte-1dlhare{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
@@ -23377,7 +23377,7 @@ function get_each_context_3$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (20:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (24:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$3(ctx) {
 	let details;
 	let summary;
@@ -23397,7 +23397,7 @@ function create_if_block$3(ctx) {
 			if (if_block0) if_block0.c();
 			t2 = space();
 			if (if_block1) if_block1.c();
-			attr(summary, "class", "svelte-ifpk85");
+			attr(summary, "class", "svelte-1dlhare");
 			details.open = true;
 			attr(details, "class", "BC-details");
 		},
@@ -23447,7 +23447,7 @@ function create_if_block$3(ctx) {
 	};
 }
 
-// (23:12) {#if square.realItems.length}
+// (27:12) {#if square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let t;
 	let ol;
@@ -23468,8 +23468,6 @@ function create_if_block_3$1(ctx) {
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
-
-			attr(ol, "class", "markdown-preview-view svelte-ifpk85");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -23524,7 +23522,7 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (24:14) {#if settings.showRelationType}
+// (28:14) {#if settings.showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -23532,7 +23530,7 @@ function create_if_block_4$1(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Real";
-			attr(h5, "class", "BC-header svelte-ifpk85");
+			attr(h5, "class", "BC-header svelte-1dlhare");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -23543,7 +23541,7 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (29:16) {#each square.realItems as realItem}
+// (33:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
@@ -23568,7 +23566,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = /*realItem*/ ctx[18].cls);
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1dlhare"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -23589,7 +23587,7 @@ function create_each_block_3$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*realItem*/ ctx[18].cls)) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -23601,7 +23599,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (44:12) {#if square.impliedItems.length}
+// (48:12) {#if square.impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
@@ -23624,7 +23622,6 @@ function create_if_block_1$2(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "markdown-preview-view svelte-ifpk85");
 			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
 		},
 		m(target, anchor) {
@@ -23684,7 +23681,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (45:14) {#if settings.showRelationType}
+// (49:14) {#if settings.showRelationType}
 function create_if_block_2$2(ctx) {
 	let h5;
 
@@ -23692,7 +23689,7 @@ function create_if_block_2$2(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Implied";
-			attr(h5, "class", "BC-header svelte-ifpk85");
+			attr(h5, "class", "BC-header svelte-1dlhare");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -23703,7 +23700,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (53:16) {#each square.impliedItems as impliedItem}
+// (54:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
@@ -23727,7 +23724,7 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = /*impliedItem*/ ctx[15].cls);
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"));
 			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
 			attr(li, "class", "BC-Implied");
 		},
@@ -23749,7 +23746,7 @@ function create_each_block_2$2(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = /*impliedItem*/ ctx[15].cls)) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
 			}
 
@@ -23765,7 +23762,7 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (19:6) {#each squares as square}
+// (23:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$3(ctx);
@@ -23800,7 +23797,7 @@ function create_each_block_1$6(ctx) {
 	};
 }
 
-// (13:2) {#each filteredSquaresArr as squares}
+// (17:2) {#each filteredSquaresArr as squares}
 function create_each_block$6(ctx) {
 	let details;
 	let summary;
@@ -23827,7 +23824,7 @@ function create_each_block$6(ctx) {
 			}
 
 			t2 = space();
-			attr(summary, "class", "hier-summary svelte-ifpk85");
+			attr(summary, "class", "hier-summary svelte-1dlhare");
 			details.open = true;
 		},
 		m(target, anchor) {
@@ -23877,6 +23874,7 @@ function create_each_block$6(ctx) {
 
 function create_fragment$a(ctx) {
 	let div;
+	let div_class_value;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
 
@@ -23892,7 +23890,9 @@ function create_fragment$a(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-list");
+			attr(div, "class", div_class_value = "BC-list markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
+			? ""
+			: "BC-empty-view") + " svelte-1dlhare");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -23923,6 +23923,12 @@ function create_fragment$a(ctx) {
 				}
 
 				each_blocks.length = each_value.length;
+			}
+
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "BC-list markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
+			? ""
+			: "BC-empty-view") + " svelte-1dlhare")) {
+				attr(div, "class", div_class_value);
 			}
 		},
 		i: noop,
@@ -23974,7 +23980,7 @@ function instance$a($$self, $$props, $$invalidate) {
 class Lists extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-ifpk85-style")) add_css$5();
+		if (!document.getElementById("svelte-1dlhare-style")) add_css$5();
 
 		init(this, options, instance$a, create_fragment$a, safe_not_equal, {
 			filteredSquaresArr: 0,
@@ -24019,7 +24025,7 @@ function get_each_context_3(ctx, list, i) {
 	return child_ctx;
 }
 
-// (16:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (20:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$2(ctx) {
 	let div1;
 	let div0;
@@ -24029,7 +24035,7 @@ function create_if_block$2(ctx) {
 	let t1;
 	let t2;
 	let t3;
-	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_5(ctx);
+	let if_block0 = /*settings*/ ctx[1].showRelationType && create_if_block_5(ctx);
 	let if_block1 = /*square*/ ctx[12].realItems.length && create_if_block_4(ctx);
 	let if_block2 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$1(ctx);
 
@@ -24064,7 +24070,7 @@ function create_if_block$2(ctx) {
 		p(ctx, dirty) {
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
 
-			if (/*square*/ ctx[12].realItems.length) {
+			if (/*settings*/ ctx[1].showRelationType) {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 				} else {
@@ -24112,51 +24118,24 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (20:14) {#if square.realItems.length}
+// (25:14) {#if settings.showRelationType}
 function create_if_block_5(ctx) {
-	let if_block_anchor;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_6();
-
-	return {
-		c() {
-			if (if_block) if_block.c();
-			if_block_anchor = empty();
-		},
-		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
-		},
-		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block) ; else {
-					if_block = create_if_block_6();
-					if_block.c();
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-		},
-		d(detaching) {
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(if_block_anchor);
-		}
-	};
-}
-
-// (21:16) {#if settings.showRelationType}
-function create_if_block_6(ctx) {
 	let h6;
+	let t_value = (/*square*/ ctx[12].realItems.length ? "Real" : "Implied") + "";
+	let t;
 
 	return {
 		c() {
 			h6 = element("h6");
-			h6.textContent = "Real";
+			t = text(t_value);
 			attr(h6, "class", "BC-Matrix-header svelte-sp0k97");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
+			append(h6, t);
+		},
+		p(ctx, dirty) {
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*square*/ ctx[12].realItems.length ? "Real" : "Implied") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(h6);
@@ -24164,7 +24143,7 @@ function create_if_block_6(ctx) {
 	};
 }
 
-// (26:12) {#if square.realItems.length}
+// (31:12) {#if square.realItems.length}
 function create_if_block_4(ctx) {
 	let ol;
 	let each_value_3 = /*square*/ ctx[12].realItems;
@@ -24222,7 +24201,7 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (28:16) {#each square.realItems as realItem}
+// (33:16) {#each square.realItems as realItem}
 function create_each_block_3(ctx) {
 	let li;
 	let div;
@@ -24280,7 +24259,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (43:12) {#if square.impliedItems.length}
+// (48:12) {#if square.impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let div;
 	let h4;
@@ -24377,10 +24356,10 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (46:16) {#if square.impliedItems.length}
+// (51:16) {#if square.impliedItems.length}
 function create_if_block_2$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_3();
+	let if_block = /*settings*/ ctx[1].showRelationType && /*square*/ ctx[12].realItems.length && create_if_block_3();
 
 	return {
 		c() {
@@ -24392,7 +24371,7 @@ function create_if_block_2$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
+			if (/*settings*/ ctx[1].showRelationType && /*square*/ ctx[12].realItems.length) {
 				if (if_block) ; else {
 					if_block = create_if_block_3();
 					if_block.c();
@@ -24410,7 +24389,7 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (47:18) {#if settings.showRelationType}
+// (52:18) {#if settings.showRelationType && square.realItems.length}
 function create_if_block_3(ctx) {
 	let h6;
 
@@ -24429,7 +24408,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (53:16) {#each square.impliedItems as impliedItem}
+// (58:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$1(ctx) {
 	let li;
 	let div;
@@ -24491,7 +24470,7 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (15:6) {#each squares as square}
+// (19:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$2(ctx);
@@ -24526,7 +24505,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (13:2) {#each filteredSquaresArr as squares}
+// (17:2) {#each filteredSquaresArr as squares}
 function create_each_block$5(ctx) {
 	let div;
 	let t;
@@ -24590,6 +24569,7 @@ function create_each_block$5(ctx) {
 
 function create_fragment$9(ctx) {
 	let div;
+	let div_class_value;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
 
@@ -24605,7 +24585,9 @@ function create_fragment$9(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-Matrix  markdown-preview-view svelte-sp0k97");
+			attr(div, "class", div_class_value = "BC-Matrix  markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
+			? ""
+			: "BC-empty-view") + " svelte-sp0k97");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -24636,6 +24618,12 @@ function create_fragment$9(ctx) {
 				}
 
 				each_blocks.length = each_value.length;
+			}
+
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "BC-Matrix  markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
+			? ""
+			: "BC-empty-view") + " svelte-sp0k97")) {
+				attr(div, "class", div_class_value);
 			}
 		},
 		i: noop,
@@ -50576,8 +50564,9 @@ class BCPlugin extends require$$0.Plugin {
     onunload() {
         console.log("unloading");
         this.VIEWS.forEach(async (view) => {
-            var _a;
-            await ((_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.onClose());
+            var _a, _b;
+            (_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.unload();
+            await ((_b = this.getActiveTYPEView(view.type)) === null || _b === void 0 ? void 0 : _b.onClose());
             this.app.workspace.detachLeavesOfType(view.type);
         });
         this.visited.forEach((visit) => visit[1].remove());

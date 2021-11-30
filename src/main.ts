@@ -1510,6 +1510,7 @@ export default class BCPlugin extends Plugin {
   onunload(): void {
     console.log("unloading");
     this.VIEWS.forEach(async (view) => {
+      this.getActiveTYPEView(view.type)?.unload();
       await this.getActiveTYPEView(view.type)?.onClose();
       this.app.workspace.detachLeavesOfType(view.type);
     });
