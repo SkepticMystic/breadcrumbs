@@ -22237,9 +22237,8 @@ class StatsView extends require$$0.ItemView {
         await this.plugin.saveSettings();
     }
     onClose() {
-        if (this.view) {
-            this.view.$destroy();
-        }
+        var _a;
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
     async draw() {
@@ -22561,7 +22560,7 @@ function get_each_context$8(ctx, list, i) {
 	return child_ctx;
 }
 
-// (47:4) {:else}
+// (48:4) {:else}
 function create_else_block$1(ctx) {
 	let fafire;
 	let current;
@@ -22590,7 +22589,7 @@ function create_else_block$1(ctx) {
 	};
 }
 
-// (45:4) {#if frozen}
+// (46:4) {#if frozen}
 function create_if_block_1$3(ctx) {
 	let faregsnowflake;
 	let current;
@@ -22619,7 +22618,7 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (63:4) {#if line.length > 1}
+// (64:4) {#if line.length > 1}
 function create_if_block$4(ctx) {
 	let div;
 	let pre;
@@ -22700,7 +22699,7 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (62:2) {#each lines as line}
+// (63:2) {#each lines as line}
 function create_each_block$8(ctx) {
 	let if_block_anchor;
 	let if_block = /*line*/ ctx[11].length > 1 && create_if_block$4(ctx);
@@ -22978,9 +22977,8 @@ class DownView extends require$$0.ItemView {
     }
     async onOpen() { }
     onClose() {
-        if (this.view) {
-            this.view.$destroy();
-        }
+        var _a;
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
     async draw() {
@@ -23367,9 +23365,8 @@ class DucksView extends require$$0.ItemView {
     }
     async onOpen() { }
     onClose() {
-        if (this.view) {
-            this.view.$destroy();
-        }
+        var _a;
+        (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
     async draw() {
@@ -24742,7 +24739,7 @@ class MatrixView extends require$$0.ItemView {
     async onload() {
         super.onload();
         this.matrixQ = this.plugin.settings.defaultView;
-        this.app.workspace.onLayoutReady(async () => {
+        this.app.workspace.onLayoutReady(() => {
             setTimeout(async () => await this.draw(), this.app.plugins.plugins.dataview
                 ? this.app.plugins.plugins.dataview.api
                     ? 1
@@ -49486,18 +49483,6 @@ class BCPlugin extends require$$0.Plugin {
         this.activeLeafChange = undefined;
         this.layoutChange = undefined;
         this.statusBatItemEl = undefined;
-        this.initEverything = async () => {
-            const { settings } = this;
-            this.mainG = await this.initGraphs();
-            for (const view of this.VIEWS) {
-                if (view.openOnLoad)
-                    await openView(this.app, view.type, view.constructor);
-            }
-            if (settings.showBCs)
-                await this.drawTrail();
-            this.registerActiveLeafChangeEvent();
-            this.registerLayoutChangeEvent();
-        };
         this.writeBCToFile = async (file) => {
             var _a;
             const { app, settings, mainG } = this;
@@ -49569,6 +49554,20 @@ class BCPlugin extends require$$0.Plugin {
         });
         this.registerEvent(this.layoutChange);
     }
+    async waitForCache() {
+        var _a, _b, _c;
+        if (this.app.plugins.enabledPlugins.has("dataview")) {
+            let basename;
+            while (!basename ||
+                !this.app.plugins.plugins.dataview.api.page(basename)) {
+                await wait(100);
+                basename = (_c = (_b = (_a = this.app) === null || _a === void 0 ? void 0 : _a.workspace) === null || _b === void 0 ? void 0 : _b.getActiveFile()) === null || _c === void 0 ? void 0 : _c.basename;
+            }
+        }
+        else {
+            await waitForResolvedLinks(this.app);
+        }
+    }
     async onload() {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
@@ -49624,30 +49623,39 @@ class BCPlugin extends require$$0.Plugin {
                 openOnLoad: this.settings.openDownOnLoad,
             },
         ];
+        this.db = new Debugger(this);
+        this.registerEditorSuggest(new FieldSuggestor(this));
         for (const view of this.VIEWS) {
             this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
         }
-        this.db = new Debugger(this);
-        this.registerEditorSuggest(new FieldSuggestor(this));
-        this.app.workspace.onLayoutReady(async () => {
-            var _a;
-            if (this.app.plugins.enabledPlugins.has("dataview")) {
-                const api = (_a = this.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
-                if (api) {
-                    await this.initEverything();
-                }
-                else {
-                    this.registerEvent(this.app.metadataCache.on("dataview:api-ready", async () => {
-                        await this.initEverything();
-                    }));
-                }
-            }
-            else {
-                await waitForResolvedLinks(this.app);
-                await this.initEverything();
-            }
-        });
         require$$0.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
+        await this.waitForCache();
+        this.mainG = await this.initGraphs();
+        for (const view of this.VIEWS) {
+            if (view.openOnLoad)
+                await openView(this.app, view.type, view.constructor);
+        }
+        if (this.settings.showBCs)
+            await this.drawTrail();
+        this.app.workspace.onLayoutReady(async () => {
+            this.registerActiveLeafChangeEvent();
+            this.registerLayoutChangeEvent();
+            //   if (this.app.plugins.enabledPlugins.has("dataview")) {
+            //     const api = this.app.plugins.plugins.dataview?.api;
+            //     if (api) {
+            //       await this.initEverything();
+            //     } else {
+            //       this.registerEvent(
+            //         this.app.metadataCache.on("dataview:api-ready", async () => {
+            //           await this.initEverything();
+            //         })
+            //       );
+            //     }
+            //   } else {
+            //     await waitForResolvedLinks(this.app);
+            //     await this.initEverything();
+            //   }
+        });
         for (const view of this.VIEWS) {
             this.addCommand({
                 id: `show-${view.type}-view`,

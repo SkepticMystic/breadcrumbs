@@ -48,6 +48,7 @@
 </script>
 
 <div>
+  <!-- svelte-ignore a11y-unknown-aria-attribute -->
   <span
     class="icon"
     aria-label={frozen ? `Frozen on: ${basename}` : "Unfrozen"}

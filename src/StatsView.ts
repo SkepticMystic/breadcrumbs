@@ -36,9 +36,7 @@ export default class StatsView extends ItemView {
   }
 
   onClose(): Promise<void> {
-    if (this.view) {
-      this.view.$destroy();
-    }
+    this.view?.$destroy();
     return Promise.resolve();
   }
 

@@ -132,29 +132,15 @@ export default class BCPlugin extends Plugin {
     this.registerEvent(this.layoutChange);
   }
 
-  initEverything = async () => {
-    const { settings } = this;
-    this.mainG = await this.initGraphs();
-
-    for (const view of this.VIEWS) {
-      if (view.openOnLoad)
-        await openView(this.app, view.type, view.constructor);
-    }
-
-    if (settings.showBCs) await this.drawTrail();
-
-    this.registerActiveLeafChangeEvent();
-    this.registerLayoutChangeEvent();
-  };
-
   async waitForCache() {
     if (this.app.plugins.enabledPlugins.has("dataview")) {
-      let { basename } = this.app.workspace.getActiveFile();
+      let basename: string;
       while (
-        this.app.plugins.plugins.dataview.api.page(basename) === undefined
+        !basename ||
+        !this.app.plugins.plugins.dataview.api.page(basename)
       ) {
-        basename = this.app.workspace.getActiveFile().basename;
         await wait(100);
+        basename = this.app?.workspace?.getActiveFile()?.basename;
       }
     } else {
       await waitForResolvedLinks(this.app);
@@ -224,23 +210,44 @@ export default class BCPlugin extends Plugin {
     this.db = new Debugger(this);
     this.registerEditorSuggest(new FieldSuggestor(this));
 
-    this.app.workspace.onLayoutReady(async () => {
-      await this.waitForCache();
-      await this.initEverything();
-        } else {
-          this.registerEvent(
-            this.app.metadataCache.on("dataview:api-ready", async () => {
-              await this.initEverything();
-            })
-          );
-        }
-      } else {
-        await waitForResolvedLinks(this.app);
-        await this.initEverything();
-      }
-    });
-
+    for (const view of this.VIEWS) {
+      this.registerView(
+        view.type,
+        (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
+      );
+    }
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
+    await this.waitForCache();
+
+    this.mainG = await this.initGraphs();
+
+    for (const view of this.VIEWS) {
+      if (view.openOnLoad)
+        await openView(this.app, view.type, view.constructor);
+    }
+
+    if (this.settings.showBCs) await this.drawTrail();
+
+    this.app.workspace.onLayoutReady(async () => {
+      this.registerActiveLeafChangeEvent();
+      this.registerLayoutChangeEvent();
+
+      //   if (this.app.plugins.enabledPlugins.has("dataview")) {
+      //     const api = this.app.plugins.plugins.dataview?.api;
+      //     if (api) {
+      //       await this.initEverything();
+      //     } else {
+      //       this.registerEvent(
+      //         this.app.metadataCache.on("dataview:api-ready", async () => {
+      //           await this.initEverything();
+      //         })
+      //       );
+      //     }
+      //   } else {
+      //     await waitForResolvedLinks(this.app);
+      //     await this.initEverything();
+      //   }
+    });
 
     for (const view of this.VIEWS) {
       this.addCommand({
