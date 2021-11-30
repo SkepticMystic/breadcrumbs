@@ -19,6 +19,10 @@ import {
   copy,
   openView,
 } from "obsidian-community-lib/dist/utils";
+import StatsView from "./StatsView";
+import DownView from "./DownView";
+import DucksView from "./DucksView";
+import MatrixView from "./MatrixView";
 import { Debugger } from "src/Debugger";
 import util from "util";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
@@ -35,12 +39,14 @@ import {
   BC_TAG_NOTE_FIELD,
   BC_TRAVERSE_NOTE,
   DEFAULT_SETTINGS,
+  DOWN_VIEW,
   dropHeaderOrAlias,
+  DUCK_VIEW,
   MATRIX_VIEW,
   splitLinksRegex,
+  STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
-  VIEWS,
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
 import {
@@ -64,6 +70,7 @@ import type {
   JugglLink,
   MyView,
   RawValue,
+  ViewInfo,
 } from "./interfaces";
 import {
   createOrUpdateYaml,
@@ -88,12 +95,14 @@ export default class BCPlugin extends Plugin {
   layoutChange: EventRef = undefined;
   statusBatItemEl: HTMLElement = undefined;
   db: Debugger;
+  VIEWS: ViewInfo[];
 
   async refreshIndex() {
     if (!this.activeLeafChange) this.registerActiveLeafChangeEvent();
     if (!this.layoutChange) this.registerLayoutChangeEvent();
     this.mainG = await this.initGraphs();
-    for (const view of VIEWS) await this.getActiveTYPEView(view.type)?.draw();
+    for (const view of this.VIEWS)
+      await this.getActiveTYPEView(view.type)?.draw();
     if (this.settings.showTrail) await this.drawTrail();
     if (this.settings.showRefreshNotice) new Notice("Index refreshed");
   }
@@ -125,7 +134,7 @@ export default class BCPlugin extends Plugin {
     const { settings } = this;
     this.mainG = await this.initGraphs();
 
-    for (const view of VIEWS) {
+    for (const view of this.VIEWS) {
       if (view.openOnLoad)
         await openView(this.app, view.type, view.constructor);
     }
@@ -169,7 +178,34 @@ export default class BCPlugin extends Plugin {
       }
     }
 
-    for (const view of VIEWS) {
+    this.VIEWS = [
+      {
+        plain: "Matrix",
+        type: MATRIX_VIEW,
+        constructor: MatrixView,
+        openOnLoad: this.settings.openMatrixOnLoad,
+      },
+      {
+        plain: "Stats",
+        type: STATS_VIEW,
+        constructor: StatsView,
+        openOnLoad: this.settings.openStatsOnLoad,
+      },
+      {
+        plain: "Duck",
+        type: DUCK_VIEW,
+        constructor: DucksView,
+        openOnLoad: this.settings.openDuckOnLoad,
+      },
+      {
+        plain: "Down",
+        type: DOWN_VIEW,
+        constructor: DownView,
+        openOnLoad: this.settings.openDownOnLoad,
+      },
+    ];
+
+    for (const view of this.VIEWS) {
       this.registerView(
         view.type,
         (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
@@ -196,7 +232,7 @@ export default class BCPlugin extends Plugin {
 
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
 
-    for (const view of VIEWS) {
+    for (const view of this.VIEWS) {
       this.addCommand({
         id: `show-${view.type}-view`,
         name: `Open ${view.plain} View`,
@@ -362,7 +398,7 @@ export default class BCPlugin extends Plugin {
   };
 
   getActiveTYPEView(type: string): MyView | null {
-    const { constructor } = VIEWS.find((view) => view.type === type);
+    const { constructor } = this.VIEWS.find((view) => view.type === type);
     const leaves = this.app.workspace.getLeavesOfType(type);
     if (leaves && leaves.length >= 1) {
       const view = leaves[0].view;

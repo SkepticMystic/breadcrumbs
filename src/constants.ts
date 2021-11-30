@@ -1,37 +1,15 @@
-import DownView from "./DownView";
-import DucksView from "./DucksView";
 import type {
   BCSettings,
   Directions,
   Relations,
   UserHier,
-  ViewInfo,
   visTypes,
 } from "./interfaces";
-import MatrixView from "./MatrixView";
-import StatsView from "./StatsView";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
 export const DOWN_VIEW = "BC-down";
-
-export const VIEWS: ViewInfo[] = [
-  {
-    plain: "Matrix",
-    type: MATRIX_VIEW,
-    constructor: MatrixView,
-    openOnLoad: true,
-  },
-  {
-    plain: "Stats",
-    type: STATS_VIEW,
-    constructor: StatsView,
-    openOnLoad: true,
-  },
-  { plain: "Duck", type: DUCK_VIEW, constructor: DucksView, openOnLoad: false },
-  { plain: "Down", type: DOWN_VIEW, constructor: DownView, openOnLoad: true },
-];
 
 export const TRAIL_ICON = "BC-trail-icon";
 export const TRAIL_ICON_SVG =
@@ -169,6 +147,10 @@ export const DEFAULT_SETTINGS: BCSettings = {
   HNUpField: "",
   refreshOnNoteChange: false,
   useAllMetadata: true,
+  openMatrixOnLoad: true,
+  openStatsOnLoad: true,
+  openDuckOnLoad: false,
+  openDownOnLoad: true,
   parseJugglLinksWithoutJuggl: false,
   showNameOrType: true,
   showRelationType: true,

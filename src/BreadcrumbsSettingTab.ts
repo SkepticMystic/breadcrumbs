@@ -134,6 +134,46 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(generalDetails)
+      .setName("Open Views by Default")
+      .setDesc("Choose which of the views to open onload")
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Matrix View")
+          .setValue(settings.openMatrixOnLoad)
+          .onChange(async (value) => {
+            settings.openMatrixOnLoad = value;
+            await plugin.saveSettings();
+          });
+      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Stats View")
+          .setValue(settings.openStatsOnLoad)
+          .onChange(async (value) => {
+            settings.openStatsOnLoad = value;
+            await plugin.saveSettings();
+          });
+      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Ducks View")
+          .setValue(settings.openDuckOnLoad)
+          .onChange(async (value) => {
+            settings.openDuckOnLoad = value;
+            await plugin.saveSettings();
+          });
+      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Down View")
+          .setValue(settings.openDownOnLoad)
+          .onChange(async (value) => {
+            settings.openDownOnLoad = value;
+            await plugin.saveSettings();
+          });
+      });
+
+    new Setting(generalDetails)
       .setName("Enable Field Suggestor")
       .setDesc(
         'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`. The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex /^BC-.*$/. Basically, just type "BC-" at the start of a line to trigger it.'

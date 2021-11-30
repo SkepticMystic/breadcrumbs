@@ -28,6 +28,10 @@ export interface BCSettings {
   limitTrailCheckboxStates: { [field: string]: boolean };
   limitWriteBCCheckboxStates: { [field: string]: boolean };
   noPathMessage: string;
+  openMatrixOnLoad: boolean;
+  openStatsOnLoad: boolean;
+  openDuckOnLoad: boolean;
+  openDownOnLoad: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   refreshOnNoteChange: boolean;
   respectReadableLineLength: boolean;
