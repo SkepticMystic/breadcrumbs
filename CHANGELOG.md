@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.4.0...2.5.0) (2021-12-03)
+
+
+### Features
+
+* **DownView:** :sparkles: Option to enable/disable linewrapping (fix [#188](https://github.com/SkepticMystic/breadcrumbs/issues/188)) ([4ea9560](https://github.com/SkepticMystic/breadcrumbs/commit/4ea9560ea2973e0c0e9c218596cd81df055c084b))
+
+
+### Bug Fixes
+
+* **DownView:** :bug: Don't forget to join('- ') after splitting (fix [#189](https://github.com/SkepticMystic/breadcrumbs/issues/189)) ([60df361](https://github.com/SkepticMystic/breadcrumbs/commit/60df3612f9f484755198a6724f50f4693fe9c3ab))
+* **TagNote:** :bug: Check for other formats of tags, too (Fix [#193](https://github.com/SkepticMystic/breadcrumbs/issues/193)) ([929e5c9](https://github.com/SkepticMystic/breadcrumbs/commit/929e5c99a3e895c282bf8fe49e9296e59b04e960))
+
 ## [2.4.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.3.0...2.4.0) (2021-11-30)
 
 
