@@ -20264,8 +20264,9 @@ const DEFAULT_SETTINGS = {
     CSVPaths: "",
     debugMode: "WARN",
     defaultView: true,
-    dvWaitTime: 5000,
+    downViewWrap: false,
     dotsColour: "#000000",
+    dvWaitTime: 5000,
     fieldSuggestor: true,
     filterImpliedSiblingsOfDifferentTypes: false,
     limitWriteBCCheckboxStates: {},
@@ -22569,8 +22570,8 @@ class FaRegSnowflake extends SvelteComponent {
 
 function add_css$7() {
 	var style = element("style");
-	style.id = "svelte-1e6c2hm-style";
-	style.textContent = ".BC-downs.svelte-1e6c2hm.svelte-1e6c2hm{padding-left:5px}.BC-downs.svelte-1e6c2hm>div.svelte-1e6c2hm{white-space:nowrap}pre.svelte-1e6c2hm.svelte-1e6c2hm{display:inline}.is-unresolved.svelte-1e6c2hm.svelte-1e6c2hm{color:var(--text-muted)}.icon.svelte-1e6c2hm.svelte-1e6c2hm{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
+	style.id = "svelte-1mg8nz0-style";
+	style.textContent = ".BC-downs.svelte-1mg8nz0{padding-left:5px}pre.svelte-1mg8nz0{display:inline}.is-unresolved.svelte-1mg8nz0{color:var(--text-muted)}.icon.svelte-1mg8nz0{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
 	append(document.head, style);
 }
 
@@ -22580,7 +22581,7 @@ function get_each_context$8(ctx, list, i) {
 	return child_ctx;
 }
 
-// (48:4) {:else}
+// (51:4) {:else}
 function create_else_block$1(ctx) {
 	let fafire;
 	let current;
@@ -22609,7 +22610,7 @@ function create_else_block$1(ctx) {
 	};
 }
 
-// (46:4) {#if frozen}
+// (49:4) {#if frozen}
 function create_if_block_1$3(ctx) {
 	let faregsnowflake;
 	let current;
@@ -22638,7 +22639,7 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (64:4) {#if line.length > 1}
+// (67:4) {#if line.length > 1}
 function create_if_block$4(ctx) {
 	let div;
 	let pre;
@@ -22651,15 +22652,16 @@ function create_if_block$4(ctx) {
 	let t2;
 	let a_class_value;
 	let t3;
+	let div_style_value;
 	let mounted;
 	let dispose;
 
 	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[7](/*line*/ ctx[11], ...args);
+		return /*click_handler_2*/ ctx[8](/*line*/ ctx[11], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[8](/*line*/ ctx[11], ...args);
+		return /*mouseover_handler*/ ctx[9](/*line*/ ctx[11], ...args);
 	}
 
 	return {
@@ -22672,14 +22674,17 @@ function create_if_block$4(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-1e6c2hm");
+			attr(pre, "class", "svelte-1mg8nz0");
 
 			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-1e6c2hm");
+			: "is-unresolved") + " svelte-1mg8nz0");
 
 			attr(span, "class", "internal-link");
-			attr(div, "class", "svelte-1e6c2hm");
+
+			attr(div, "style", div_style_value = /*settings*/ ctx[5].downViewWrap
+			? ""
+			: "white-space: nowrap;");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -22707,7 +22712,7 @@ function create_if_block$4(ctx) {
 
 			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
-			: "is-unresolved") + " svelte-1e6c2hm")) {
+			: "is-unresolved") + " svelte-1mg8nz0")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -22719,7 +22724,7 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (63:2) {#each lines as line}
+// (66:2) {#each lines as line}
 function create_each_block$8(ctx) {
 	let if_block_anchor;
 	let if_block = /*line*/ ctx[11].length > 1 && create_if_block$4(ctx);
@@ -22799,7 +22804,7 @@ function create_fragment$d(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(span, "class", "icon svelte-1e6c2hm");
+			attr(span, "class", "icon svelte-1mg8nz0");
 
 			attr(span, "aria-label", span_aria_label_value = /*frozen*/ ctx[3]
 			? `Frozen on: ${/*basename*/ ctx[2]}`
@@ -22807,7 +22812,7 @@ function create_fragment$d(ctx) {
 
 			attr(span, "aria-label-position", "left");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(div1, "class", "BC-downs svelte-1e6c2hm");
+			attr(div1, "class", "BC-downs svelte-1mg8nz0");
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);
@@ -22826,8 +22831,8 @@ function create_fragment$d(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", /*click_handler*/ ctx[5]),
-					listen(button, "click", /*click_handler_1*/ ctx[6])
+					listen(span, "click", /*click_handler*/ ctx[6]),
+					listen(button, "click", /*click_handler_1*/ ctx[7])
 				];
 
 				mounted = true;
@@ -22862,7 +22867,7 @@ function create_fragment$d(ctx) {
 				attr(span, "aria-label", span_aria_label_value);
 			}
 
-			if (dirty & /*openOrSwitch, plugin, lines, hoverPreview, view, isInVault*/ 19) {
+			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault*/ 51) {
 				each_value = /*lines*/ ctx[4];
 				let i;
 
@@ -22951,7 +22956,11 @@ function instance$d($$self, $$props, $$invalidate) {
 				const allPaths = dfsAllPaths(down, basename);
 				const index = plugin.createIndex(allPaths, false);
 				loglevel.info({ allPaths, index });
-				$$invalidate(4, lines = index.split("\n").map(line => line.split("- ")).filter(pair => pair.length > 1));
+
+				$$invalidate(4, lines = index.split("\n").map(line => {
+					const pair = line.split("- ");
+					return [pair[0], pair.slice(1).join("- ")];
+				}).filter(pair => pair[1] !== ""));
 			}
 		}
 	};
@@ -22962,6 +22971,7 @@ function instance$d($$self, $$props, $$invalidate) {
 		basename,
 		frozen,
 		lines,
+		settings,
 		click_handler,
 		click_handler_1,
 		click_handler_2,
@@ -22972,7 +22982,7 @@ function instance$d($$self, $$props, $$invalidate) {
 class Down extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1e6c2hm-style")) add_css$7();
+		if (!document.getElementById("svelte-1mg8nz0-style")) add_css$7();
 		init(this, options, instance$d, create_fragment$d, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }
@@ -26223,6 +26233,15 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.respectReadableLineLength = value;
             await plugin.saveSettings();
             await plugin.drawTrail();
+        }));
+        const downViewDetails = containerEl.createEl("details");
+        downViewDetails.createEl("summary", { text: "Down View" });
+        new require$$0.Setting(downViewDetails)
+            .setName("Enable line wrapping")
+            .setDesc("Make the items in the down view line wrap when there isn't enough space (On). Off makes them overflow off the screen.")
+            .addToggle((toggle) => toggle.setValue(settings.downViewWrap).onChange(async (value) => {
+            settings.downViewWrap = value;
+            await plugin.saveSettings();
         }));
         const writeBCsToFileDetails = containerEl.createEl("details");
         writeBCsToFileDetails.createEl("summary", {
@@ -50170,9 +50189,11 @@ class BCPlugin extends require$$0.Plugin {
             if (!tag.startsWith("#"))
                 return;
             const hasThisTag = (file) => {
-                var _a, _b;
-                return (_b = (_a = this.app.metadataCache
-                    .getFileCache(file)) === null || _a === void 0 ? void 0 : _a.tags) === null || _b === void 0 ? void 0 : _b.map((t) => t.tag).some((t) => t.includes(tag));
+                var _a, _b, _c, _d, _e;
+                const cache = this.app.metadataCache.getFileCache(file);
+                return (((_a = cache === null || cache === void 0 ? void 0 : cache.tags) === null || _a === void 0 ? void 0 : _a.map((t) => t.tag).some((t) => t.includes(tag))) ||
+                    ((_c = (_b = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _b === void 0 ? void 0 : _b.tags) === null || _c === void 0 ? void 0 : _c.includes(tag.slice(1))) ||
+                    ((_e = (_d = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _d === void 0 ? void 0 : _d.tag) === null || _e === void 0 ? void 0 : _e.includes(tag.slice(1))));
             };
             const targets = frontms
                 .map((ff) => ff.file)
