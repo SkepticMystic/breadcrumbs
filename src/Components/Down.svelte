@@ -42,8 +42,11 @@
 
     lines = index
       .split("\n")
-      .map((line) => line.split("- "))
-      .filter((pair) => pair.length > 1) as [string, string][];
+      .map((line) => {
+        const pair = line.split("- ");
+        return [pair[0], pair.slice(1).join("- ")] as [string, string];
+      })
+      .filter((pair) => pair[1] !== "");
   }
 </script>
 
