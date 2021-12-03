@@ -220,8 +220,8 @@ export default class BCPlugin extends Plugin {
     }
     addIcon(DUCK_ICON, DUCK_ICON_SVG);
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
-    await this.waitForCache();
 
+    await this.waitForCache();
     this.mainG = await this.initGraphs();
 
     for (const view of this.VIEWS) {
@@ -902,11 +902,14 @@ export default class BCPlugin extends Plugin {
       const tag = (altFile[BC_TAG_NOTE] as string).trim();
       if (!tag.startsWith("#")) return;
 
-      const hasThisTag = (file: TFile) =>
-        this.app.metadataCache
-          .getFileCache(file)
-          ?.tags?.map((t) => t.tag)
-          .some((t) => t.includes(tag));
+      const hasThisTag = (file: TFile): boolean => {
+        const cache = this.app.metadataCache.getFileCache(file);
+        return (
+          cache?.tags?.map((t) => t.tag).some((t) => t.includes(tag)) ||
+          cache?.frontmatter?.tags?.includes(tag.slice(1)) ||
+          cache?.frontmatter?.tag?.includes(tag.slice(1))
+        );
+      };
 
       const targets = frontms
         .map((ff) => ff.file)
