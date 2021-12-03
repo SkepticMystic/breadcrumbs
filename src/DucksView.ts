@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import Ducks from "./Components/Ducks.svelte";
-import { DUCK_VIEW } from "./constants";
+import { DUCK_ICON, DUCK_VIEW } from "./constants";
 import type BCPlugin from "./main";
 
 export default class DucksView extends ItemView {
@@ -28,7 +28,7 @@ export default class DucksView extends ItemView {
   }
 
   // TODO Duck icon
-  icon = "info";
+  icon = DUCK_ICON;
 
   async onOpen(): Promise<void> {}
 

@@ -21,7 +21,7 @@ if you want to view the source visit the plugins github repository
 */
 
 var lib = createCommonjsModule(function (module, exports) {
-var i=Object.create;var n=Object.defineProperty;var s=Object.getOwnPropertyDescriptor;var F=Object.getOwnPropertyNames;var g=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var d=e=>n(e,"__esModule",{value:!0});var N=(e,r)=>{d(e);for(var o in r)n(e,o,{get:r[o],enumerable:!0});},P=(e,r,o)=>{if(r&&typeof r=="object"||typeof r=="function")for(let t of F(r))!f.call(e,t)&&t!=="default"&&n(e,t,{get:()=>r[t],enumerable:!(o=s(r,t))||o.enumerable});return e},m=e=>P(d(n(e!=null?i(g(e)):{},"default",e&&e.__esModule&&"default"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);N(exports,{NoteLoc:()=>l,getApi:()=>a,isPluginEnabled:()=>u,registerApi:()=>b});m(require$$0__default["default"]);var l;(function(t){t[t.Index=0]="Index",t[t.Inside=1]="Inside",t[t.Outside=2]="Outside";})(l||(l={}));var a=e=>{var r;return e?(r=e.app.plugins.plugins["folder-note-core"])==null?void 0:r.api:window.FolderNoteAPIv0},u=e=>e.app.plugins.enabledPlugins.has("folder-note-core"),b=(e,r)=>(e.app.vault.on("folder-note:api-ready",r),a(e));
+var i=Object.create;var n=Object.defineProperty;var s=Object.getOwnPropertyDescriptor;var F=Object.getOwnPropertyNames;var g=Object.getPrototypeOf,f=Object.prototype.hasOwnProperty;var d=e=>n(e,"__esModule",{value:!0});var N=(e,r)=>{d(e);for(var o in r)n(e,o,{get:r[o],enumerable:!0});},P=(e,r,o)=>{if(r&&typeof r=="object"||typeof r=="function")for(let t of F(r))!f.call(e,t)&&t!=="default"&&n(e,t,{get:()=>r[t],enumerable:!(o=s(r,t))||o.enumerable});return e},m=e=>P(d(n(e!=null?i(g(e)):{},"default",e&&e.__esModule&&"default"in e?{get:()=>e.default,enumerable:!0}:{value:e,enumerable:!0})),e);N(exports,{NoteLoc:()=>l,getApi:()=>a,isPluginEnabled:()=>u,registerApi:()=>b});m(require$$0__default['default']);var l;(function(t){t[t.Index=0]="Index",t[t.Inside=1]="Inside",t[t.Outside=2]="Outside";})(l||(l={}));var a=e=>{var r;return e?(r=e.app.plugins.plugins["folder-note-core"])==null?void 0:r.api:window.FolderNoteAPIv0},u=e=>e.app.plugins.enabledPlugins.has("folder-note-core"),b=(e,r)=>(e.app.vault.on("folder-note:api-ready",r),a(e));
 });
 
 var graphology_umd_min = createCommonjsModule(function (module, exports) {
@@ -20035,27 +20035,46 @@ async function createNewMDNote(app, newName, currFilePath = "") {
     return await app.vault.create(newFilePath, "");
 }
 /**
- * Add '.md' to `noteName` if it isn't already there.
+ * Add '.md' to a `noteName` if it isn't already there.
  * @param  {string} noteName with or without '.md' on the end.
  * @returns {string} noteName with '.md' on the end.
  */
 const addMD = (noteName) => {
-    return noteName.endsWith(".md") ? noteName : noteName + ".md";
+    let withMD = noteName.slice();
+    if (!withMD.endsWith(".md")) {
+        withMD += ".md";
+    }
+    return withMD;
+};
+/**
+ * Strip '.md' off the end of a note name to get its basename.
+ *
+ * Works with the edgecase where a note has '.md' in its basename: `Obsidian.md.md`, for example.
+ * @param  {string} noteName with or without '.md' on the end.
+ * @returns {string} noteName without '.md'
+ */
+const stripMD = (noteName) => {
+    if (noteName.endsWith(".md")) {
+        return noteName.split(".md").slice(0, -1).join(".md");
+    }
+    else
+        return noteName;
 };
 /**
  * When clicking a link, check if that note is already open in another leaf, and switch to that leaf, if so. Otherwise, open the note in a new pane.
  * @param  {App} app
- * @param  {string} dest Name of note to open. If you want to open a non-md note, be sure to add the file extension.
+ * @param  {string} dest Basename of note to open
  * @param  {MouseEvent} event
  * @param  {{createNewFile:boolean}} [options={createNewFile:true}] Whether or not to create `dest` file if it doesn't exist. If `false`, simply return from the function.
  * @returns Promise
  */
 async function openOrSwitch(app, dest, event, options = { createNewFile: true }) {
     const { workspace } = app;
-    let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
+    const destStripped = stripMD(dest);
+    let destFile = app.metadataCache.getFirstLinkpathDest(destStripped, "");
     // If dest doesn't exist, make it
     if (!destFile && options.createNewFile) {
-        destFile = await createNewMDNote(app, dest);
+        destFile = await createNewMDNote(app, destStripped);
     }
     else if (!destFile && !options.createNewFile)
         return;
@@ -20063,10 +20082,9 @@ async function openOrSwitch(app, dest, event, options = { createNewFile: true })
     const leavesWithDestAlreadyOpen = [];
     // For all open leaves, if the leave's basename is equal to the link destination, rather activate that leaf instead of opening it in two panes
     workspace.iterateAllLeaves((leaf) => {
-        var _a;
+        var _a, _b;
         if (leaf.view instanceof require$$0.MarkdownView) {
-            const file = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file;
-            if (file && file.basename + "." + file.extension === dest) {
+            if (((_b = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.file) === null || _b === void 0 ? void 0 : _b.basename) === destStripped) {
                 leavesWithDestAlreadyOpen.push(leaf);
             }
         }
@@ -20147,6 +20165,8 @@ const DUCK_VIEW = "BC-ducks";
 const DOWN_VIEW = "BC-down";
 const TRAIL_ICON = "BC-trail-icon";
 const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
+const DUCK_ICON = "BC-duck-icon";
+const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
 const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 const VISTYPES = [
@@ -23347,7 +23367,7 @@ class DucksView extends require$$0.ItemView {
     constructor(leaf, plugin) {
         super(leaf);
         // TODO Duck icon
-        this.icon = "info";
+        this.icon = DUCK_ICON;
         this.plugin = plugin;
     }
     async onload() {
@@ -49628,6 +49648,7 @@ class BCPlugin extends require$$0.Plugin {
         for (const view of this.VIEWS) {
             this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
         }
+        require$$0.addIcon(DUCK_ICON, DUCK_ICON_SVG);
         require$$0.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         await this.waitForCache();
         this.mainG = await this.initGraphs();
@@ -49945,7 +49966,7 @@ class BCPlugin extends require$$0.Plugin {
         const queue = [item];
         while (queue.length) {
             const currItem = queue.shift();
-            if (util__default["default"].types.isProxy(currItem)) {
+            if (util__default['default'].types.isProxy(currItem)) {
                 const possibleUnproxied = Object.assign({}, currItem);
                 const { values } = possibleUnproxied;
                 if (values)

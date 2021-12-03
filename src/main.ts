@@ -43,6 +43,8 @@ import {
   DEFAULT_SETTINGS,
   DOWN_VIEW,
   dropHeaderOrAlias,
+  DUCK_ICON,
+  DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
   splitLinksRegex,
@@ -216,6 +218,7 @@ export default class BCPlugin extends Plugin {
         (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
       );
     }
+    addIcon(DUCK_ICON, DUCK_ICON_SVG);
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
     await this.waitForCache();
 
