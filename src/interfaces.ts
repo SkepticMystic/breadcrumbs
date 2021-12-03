@@ -16,6 +16,7 @@ export interface BCSettings {
   dvWaitTime: number;
   debugMode: DebugLevel;
   defaultView: boolean;
+  downViewWrap: boolean;
   dotsColour: string;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;

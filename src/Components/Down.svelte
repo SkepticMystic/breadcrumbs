@@ -80,7 +80,7 @@
 <div class="BC-downs">
   {#each lines as line}
     {#if line.length > 1}
-      <div>
+      <div style={settings.downViewWrap ? "" : "white-space: nowrap;"}>
         <pre>{line[0] + "-"}</pre>
         <span
           class="internal-link"
@@ -103,9 +103,9 @@
   .BC-downs {
     padding-left: 5px;
   }
-  .BC-downs > div {
+  /* .BC-downs > div {
     white-space: nowrap;
-  }
+  } */
   pre {
     display: inline;
   }

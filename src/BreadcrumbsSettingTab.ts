@@ -666,6 +666,21 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
+    const downViewDetails: HTMLDetailsElement = containerEl.createEl("details");
+    downViewDetails.createEl("summary", { text: "Down View" });
+
+    new Setting(downViewDetails)
+      .setName("Enable line wrapping")
+      .setDesc(
+        "Make the items in the down view line wrap when there isn't enough space (On). Off makes them overflow off the screen."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.downViewWrap).onChange(async (value) => {
+          settings.downViewWrap = value;
+          await plugin.saveSettings();
+        })
+      );
+
     const writeBCsToFileDetails: HTMLDetailsElement =
       containerEl.createEl("details");
     writeBCsToFileDetails.createEl("summary", {
