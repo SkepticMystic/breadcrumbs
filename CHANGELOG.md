@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.7.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.0...2.7.1) (2021-12-04)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Implied siblings were not making it thru the filter, because nodes don't have a.field ([4297153](https://github.com/SkepticMystic/breadcrumbs/commit/4297153dfe10f9d83c1d122e0b692629176a2ab7))
+
 ## [2.7.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.6.1...2.7.0) (2021-12-04)
 
 
