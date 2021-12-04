@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.7.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.6.1...2.7.0) (2021-12-04)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Hierarchy Note Adjuster! ([#143](https://github.com/SkepticMystic/breadcrumbs/issues/143)) ([b5afae2](https://github.com/SkepticMystic/breadcrumbs/commit/b5afae26e3503059d95acb7cadfad9b458a6f0ae))
+
+
+### Bug Fixes
+
+* :bug: Better checks on graphInit ([618251e](https://github.com/SkepticMystic/breadcrumbs/commit/618251e6a9bdab77d8968e330c5c00926da4dfbd))
+
 ### [2.6.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.6.0...2.6.1) (2021-12-04)
 
 
