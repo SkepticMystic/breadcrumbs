@@ -212,11 +212,8 @@ export default class BCPlugin extends Plugin {
     this.db = new Debugger(this);
     this.registerEditorSuggest(new FieldSuggestor(this));
 
-    for (const view of this.VIEWS) {
-      this.registerView(
-        view.type,
-        (leaf: WorkspaceLeaf) => new view.constructor(leaf, this)
-      );
+    for (const { constructor, type } of this.VIEWS) {
+      this.registerView(type, (leaf) => new constructor(leaf, this));
     }
     addIcon(DUCK_ICON, DUCK_ICON_SVG);
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
@@ -224,9 +221,8 @@ export default class BCPlugin extends Plugin {
     await this.waitForCache();
     this.mainG = await this.initGraphs();
 
-    for (const view of this.VIEWS) {
-      if (view.openOnLoad)
-        await openView(this.app, view.type, view.constructor);
+    for (const { openOnLoad, type, constructor } of this.VIEWS) {
+      if (openOnLoad) await openView(this.app, type, constructor);
     }
 
     if (this.settings.showBCs) await this.drawTrail();
@@ -252,16 +248,16 @@ export default class BCPlugin extends Plugin {
       //   }
     });
 
-    for (const view of this.VIEWS) {
+    for (const { type, plain, constructor } of this.VIEWS) {
       this.addCommand({
-        id: `show-${view.type}-view`,
-        name: `Open ${view.plain} View`,
+        id: `show-${type}-view`,
+        name: `Open ${plain} View`,
         //@ts-ignore
         checkCallback: async (checking: boolean) => {
           if (checking) {
-            return this.app.workspace.getLeavesOfType(view.type).length === 0;
+            return this.app.workspace.getLeavesOfType(type).length === 0;
           }
-          await openView(this.app, view.type, view.constructor);
+          await openView(this.app, type, constructor);
         },
       });
     }
