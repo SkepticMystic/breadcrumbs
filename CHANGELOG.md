@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.6.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.6.0...2.6.1) (2021-12-04)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: BC-order was being overwritten ([c673420](https://github.com/SkepticMystic/breadcrumbs/commit/c67342045f95aece1b1e957c26987951941fb109))
+* **Path View:** :bug: Truncation (Fix [#166](https://github.com/SkepticMystic/breadcrumbs/issues/166)) ([fb17090](https://github.com/SkepticMystic/breadcrumbs/commit/fb170903b8c09e3771a9166bf7470519affe8916))
+
 ## [2.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.5.1...2.6.0) (2021-12-04)
 
 
