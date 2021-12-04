@@ -1123,6 +1123,7 @@ export default class BCPlugin extends Plugin {
 
           values.forEach((target) => {
             const targetOrder = this.getTargetOrder(frontms, target);
+
             this.populateMain(
               mainG,
               basename,

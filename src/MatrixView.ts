@@ -130,14 +130,11 @@ export default class MatrixView extends ItemView {
         const { reals, implieds } = realsnImplieds[dir];
         filteredRealNImplied[dir].reals = reals
           .filter((real) => hier[dir].includes(real.field))
-          .map((item) =>
-            this.toInternalLinkObj(item.to, true)
-          ) as internalLinkObj[];
+          .map((item) => this.toInternalLinkObj(item.to, true));
+
         filteredRealNImplied[dir].implieds = implieds
           .filter((implied) => hier[dir].includes(implied.field))
-          .map((item) =>
-            this.toInternalLinkObj(item.to, false)
-          ) as internalLinkObj[];
+          .map((item) => this.toInternalLinkObj(item.to, false));
       }
 
       let {
@@ -168,7 +165,6 @@ export default class MatrixView extends ItemView {
         });
       });
 
-      /// A real sibling implies the reverse sibling
       is.push(...iSamesII);
 
       // !SECTION

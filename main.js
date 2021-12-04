@@ -20849,11 +20849,13 @@ function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
     });
     return copy;
 }
-function addNodesIfNot(g, nodes, attr) {
-    nodes.forEach((node) => {
-        if (!g.hasNode(node))
-            g.addNode(node, attr);
-    });
+function addNodesIfNot(g, nodes, attr = { order: 9999 }) {
+    for (const node of nodes) {
+        g.updateNode(node, (exstantAttrs) => {
+            const extantOrder = exstantAttrs.order;
+            return Object.assign(Object.assign({}, exstantAttrs), { order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order });
+        });
+    }
 }
 function addEdgeIfNot(g, source, target, attr) {
     if (!g.hasEdge(source, target))
@@ -24845,7 +24847,6 @@ class MatrixView extends require$$0.ItemView {
                     iSamesII.push(this.toInternalLinkObj(s, false, parent));
                 });
             });
-            /// A real sibling implies the reverse sibling
             is.push(...iSamesII);
             // !SECTION
             iu = this.removeDuplicateImplied(ru, iu);
@@ -49850,12 +49851,12 @@ class BCPlugin extends require$$0.Plugin {
         for (const item of listItems) {
             const currItem = lines[item.position.start.line];
             const afterBulletCurr = afterBulletReg.exec(currItem)[1];
-            const dropWikiCurr = dropWikiLinksReg.exec(afterBulletCurr)[1];
-            let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
+            const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
+            let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
             // Ensure fieldName is one of the existing up fields. `null` if not
-            if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
-                problemFields.push(fieldCurr);
-                fieldCurr = null;
+            if (field !== null && !upFields.includes(field)) {
+                problemFields.push(field);
+                field = null;
             }
             const { parent } = item;
             if (parent >= 0) {
@@ -49863,16 +49864,16 @@ class BCPlugin extends require$$0.Plugin {
                 const afterBulletParent = afterBulletReg.exec(parentNote)[1];
                 const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
                 hierarchyNoteItems.push({
-                    currNote: dropWikiCurr,
-                    parentNote: dropWikiParent,
-                    field: fieldCurr,
+                    note,
+                    parent: dropWikiParent,
+                    field,
                 });
             }
             else {
                 hierarchyNoteItems.push({
-                    currNote: dropWikiCurr,
-                    parentNote: null,
-                    field: fieldCurr,
+                    note,
+                    parent: null,
+                    field,
                 });
             }
         }
@@ -50125,15 +50126,14 @@ class BCPlugin extends require$$0.Plugin {
         const { HNUpField, userHiers } = this.settings;
         const upFields = getFields(userHiers, "up");
         hierarchyNotesArr.forEach((hnItem, i) => {
-            var _a, _b, _c;
-            const upField = (_a = hnItem.field) !== null && _a !== void 0 ? _a : (HNUpField || upFields[0]);
-            const downField = (_b = getOppFields(userHiers, upField)[0]) !== null && _b !== void 0 ? _b : `${upField}<down>`;
-            if (hnItem.parentNote === null) {
-                const s = hnItem.currNote;
-                const t = (_c = hierarchyNotesArr[i + 1]) === null || _c === void 0 ? void 0 : _c.currNote;
-                //@ts-ignore
+            var _a, _b;
+            const { note, field, parent } = hnItem;
+            const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
+            const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : `${upField}<down>`;
+            if (parent === null) {
+                const s = note;
+                const t = (_b = hierarchyNotesArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
                 addNodesIfNot(mainG, [s, t]);
-                //@ts-ignore
                 addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
             }
             else {
@@ -50141,18 +50141,14 @@ class BCPlugin extends require$$0.Plugin {
                     dir: "up",
                     field: upField,
                 };
-                //@ts-ignore
-                addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote]);
-                //@ts-ignore
-                addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
+                addNodesIfNot(mainG, [note, parent]);
+                addEdgeIfNot(mainG, note, parent, aUp);
                 const aDown = {
                     dir: "down",
                     field: downField,
                 };
-                //@ts-ignore
-                addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote]);
-                //@ts-ignore
-                addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+                addNodesIfNot(mainG, [parent, note]);
+                addEdgeIfNot(mainG, parent, note, aDown);
             }
         });
     }

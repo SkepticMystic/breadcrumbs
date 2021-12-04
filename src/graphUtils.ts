@@ -104,11 +104,17 @@ export function getReflexiveClosure(
 export function addNodesIfNot(
   g: MultiGraph,
   nodes: string[],
-  attr?: { order: number }
+  attr = { order: 9999 }
 ) {
-  nodes.forEach((node) => {
-    if (!g.hasNode(node)) g.addNode(node, attr);
-  });
+  for (const node of nodes) {
+    g.updateNode(node, (exstantAttrs) => {
+      const extantOrder: number | undefined = exstantAttrs.order;
+      return {
+        ...exstantAttrs,
+        order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order,
+      };
+    });
+  }
 }
 
 export function addEdgeIfNot(
