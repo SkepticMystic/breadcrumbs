@@ -1464,7 +1464,7 @@ export default class BCPlugin extends Plugin {
           : null;
       const max_width = elForMaxWidth
         ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
-        : "100%";
+        : "80%";
 
       const trailDiv = createDiv({
         cls: `BC-trail ${

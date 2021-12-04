@@ -50616,7 +50616,7 @@ class BCPlugin extends require$$0.Plugin {
                 : null;
             const max_width = elForMaxWidth
                 ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
-                : "100%";
+                : "80%";
             const trailDiv = createDiv({
                 cls: `BC-trail ${respectReadableLineLength
                     ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
