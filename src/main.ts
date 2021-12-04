@@ -89,6 +89,7 @@ import {
   splitAtYaml,
 } from "./sharedFunctions";
 import { VisModal } from "./VisModal";
+import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -274,6 +275,12 @@ export default class BCPlugin extends Plugin {
       callback: () => {
         new VisModal(this.app, this).open();
       },
+    });
+
+    this.addCommand({
+      id: "manipulate-hierarchy-notes",
+      name: "Adjust Hierarchy Notes",
+      callback: () => new HierarchyNoteSelectorModal(this.app, this).open(),
     });
 
     this.addCommand({

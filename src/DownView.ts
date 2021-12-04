@@ -1,8 +1,8 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
+import { addFeatherIcon } from "obsidian-community-lib";
+import Down from "./Components/Down.svelte";
 import { DOWN_VIEW } from "./constants";
 import type BCPlugin from "./main";
-import Down from "./Components/Down.svelte";
-import { addFeatherIcon } from "obsidian-community-lib";
 
 export default class DownView extends ItemView {
   private plugin: BCPlugin;
