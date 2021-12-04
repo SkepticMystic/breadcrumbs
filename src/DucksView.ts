@@ -1,3 +1,4 @@
+import { trace } from "loglevel";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import Ducks from "./Components/Ducks.svelte";
 import { DUCK_ICON, DUCK_VIEW } from "./constants";
@@ -13,6 +14,7 @@ export default class DucksView extends ItemView {
   }
 
   async onload(): Promise<void> {
+    // trace("DuckView.onload");
     super.onload();
     await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {

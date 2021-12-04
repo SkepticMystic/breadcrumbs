@@ -23014,6 +23014,7 @@ class DownView extends require$$0.ItemView {
         this.plugin = plugin;
     }
     async onload() {
+        // trace("DownView.onload");
         super.onload();
         this.app.workspace.onLayoutReady(async () => {
             await this.draw();
@@ -23401,6 +23402,7 @@ class DucksView extends require$$0.ItemView {
         this.plugin = plugin;
     }
     async onload() {
+        // trace("DuckView.onload");
         super.onload();
         await this.plugin.saveSettings();
         this.app.workspace.onLayoutReady(async () => {
@@ -24517,7 +24519,12 @@ function create_each_block_2$1(ctx) {
 			div = element("div");
 			t = text(t_value);
 			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"));
-			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
+
+			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent
+			? "↑ " + /*impliedItem*/ ctx[15].parent
+			: "");
+
+			attr(div, "aria-label-position", "left");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -24542,7 +24549,9 @@ function create_each_block_2$1(ctx) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "")) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent
+			? "↑ " + /*impliedItem*/ ctx[15].parent
+			: "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 		},
@@ -24853,15 +24862,14 @@ class MatrixView extends require$$0.ItemView {
             const closed = getReflexiveClosure(g, userHiers);
             const closedUp = getSubInDirs(closed, "up");
             const iSamesII = [];
-            const currParents = closedUp.hasNode(basename)
-                ? closedUp.filterOutNeighbors(basename, (n, a) => hier.up.includes(a.field))
-                : [];
-            currParents.forEach((parent) => {
-                closedUp.forEachInEdge(parent, (k, a, s, t) => {
-                    if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
-                        return;
-                    iSamesII.push(this.toInternalLinkObj(s, false, parent));
-                });
+            closedUp.forEachOutEdge(basename, (k, a, s, par) => {
+                if (hier.up.includes(a.field)) {
+                    closedUp.forEachInEdge(par, (k, a, s, t) => {
+                        if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
+                            return;
+                        iSamesII.push(this.toInternalLinkObj(s, false, t));
+                    });
+                }
             });
             is.push(...iSamesII);
             // !SECTION

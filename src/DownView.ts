@@ -1,3 +1,4 @@
+import { trace } from "loglevel";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { addFeatherIcon } from "obsidian-community-lib";
 import Down from "./Components/Down.svelte";
@@ -14,6 +15,7 @@ export default class DownView extends ItemView {
   }
 
   async onload(): Promise<void> {
+    // trace("DownView.onload");
     super.onload();
     this.app.workspace.onLayoutReady(async () => {
       await this.draw();
