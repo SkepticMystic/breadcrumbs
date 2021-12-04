@@ -24832,49 +24832,40 @@ class MatrixView extends require$$0.ItemView {
             const g = getSubInDirs(mainG, "up", "down");
             const closed = getReflexiveClosure(g, userHiers);
             const closedUp = getSubInDirs(closed, "up");
-            let iSameArr = [];
+            const iSamesII = [];
             const currParents = closedUp.hasNode(basename)
                 ? closedUp.filterOutNeighbors(basename, (n, a) => hier.up.includes(a.field))
                 : [];
             currParents.forEach((parent) => {
-                let impliedSiblings = [];
-                // const { field } = up.getEdgeAttributes(basename, parent);
                 closedUp.forEachInEdge(parent, (k, a, s, t) => {
                     if (s === basename)
                         return;
-                    // if (!settings.filterImpliedSiblingsOfDifferentTypes)
-                    impliedSiblings.push(s);
-                    // else if (a.field === field) {
-                    //   impliedSiblings.push(s);
-                    // }
-                });
-                impliedSiblings.forEach((impliedSibling) => {
-                    iSameArr.push(this.toInternalLinkObj(impliedSibling, false, parent));
+                    iSamesII.push(this.toInternalLinkObj(s, false, parent));
                 });
             });
             /// A real sibling implies the reverse sibling
-            iSameArr.push(...is);
+            is.push(...iSamesII);
             // !SECTION
             iu = this.removeDuplicateImplied(ru, iu);
-            iSameArr = this.removeDuplicateImplied(rs, iSameArr);
+            is = this.removeDuplicateImplied(rs, is);
             id = this.removeDuplicateImplied(rd, id);
             iN = this.removeDuplicateImplied(rn, iN);
             ip = this.removeDuplicateImplied(rp, ip);
             const iSameNoDup = [];
-            iSameArr.forEach((impSib) => {
+            is.forEach((impSib) => {
                 if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
                     iSameNoDup.push(impSib);
                 }
             });
-            iSameArr = iSameNoDup;
+            is = iSameNoDup;
             const getFieldInHier = (dir) => hier[dir][0]
                 ? hier[dir].join(", ")
                 : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
             const { alphaSortAsc } = settings;
-            [ru, rs, rd, rn, rp, iu, iSameArr, id, iN, ip].forEach((a) => a
+            [ru, rs, rd, rn, rp, iu, is, id, iN, ip].forEach((a) => a
                 .sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1)
                 .sort((a, b) => a.order - b.order));
-            loglevel.debug({ ru }, { rs }, { rd }, { rn }, { rp }, { iu }, { iSameArr }, { id }, { iN }, { ip });
+            loglevel.debug({ ru }, { rs }, { rd }, { rn }, { rp }, { iu }, { is }, { id }, { iN }, { ip });
             return [
                 {
                     realItems: ru,
@@ -24883,7 +24874,7 @@ class MatrixView extends require$$0.ItemView {
                 },
                 {
                     realItems: rs,
-                    impliedItems: iSameArr,
+                    impliedItems: is,
                     field: getFieldInHier("same"),
                 },
                 {
