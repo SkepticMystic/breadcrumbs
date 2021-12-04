@@ -222,11 +222,16 @@ export default class BCPlugin extends Plugin {
     await this.waitForCache();
     this.mainG = await this.initGraphs();
 
+    if (this.mainG?.nodes.length === 0) {
+      await wait(3000);
+      await this.refreshIndex();
+    }
+
     for (const { openOnLoad, type, constructor } of this.VIEWS) {
       if (openOnLoad) await openView(this.app, type, constructor);
     }
 
-    if (this.settings.showBCs) await this.drawTrail();
+    if (settings.showBCs) await this.drawTrail();
 
     this.app.workspace.onLayoutReady(async () => {
       this.registerActiveLeafChangeEvent();
@@ -324,7 +329,7 @@ export default class BCPlugin extends Plugin {
           }
         }
       },
-      checkCallback: () => this.settings.showWriteAllBCsCmd,
+      checkCallback: () => settings.showWriteAllBCsCmd,
     });
 
     this.addCommand({
@@ -1063,10 +1068,13 @@ export default class BCPlugin extends Plugin {
         ? this.getDVMetadataCache(files)
         : this.getObsMetadataCache(files);
 
-      if (frontms[0] === undefined) {
-        db.end2G();
-        new Notice("Breadcrumbs cache not initialised yet - Refresh Index.");
-        return mainG;
+      if (frontms.some((frontm) => frontm === undefined)) {
+        await wait(2000);
+        frontms = dvQ
+          ? this.getDVMetadataCache(files)
+          : this.getObsMetadataCache(files);
+        // db.end2G();
+        // return mainG;
       }
 
       const { userHiers } = settings;

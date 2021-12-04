@@ -24811,10 +24811,8 @@ class MatrixView extends require$$0.ItemView {
     getHierSquares(userHiers, currFile, settings) {
         const { plugin } = this;
         const { mainG } = plugin;
-        if (!mainG) {
-            new require$$0.Notice("Breadcrumbs graph was not initialised yet. Please Refresh Index");
+        if (!mainG)
             return [];
-        }
         const { basename } = currFile;
         const realsnImplieds = getRealnImplied(plugin, basename);
         return userHiers.map((hier) => {
@@ -49566,7 +49564,7 @@ class BCPlugin extends require$$0.Plugin {
         this.mainG = await this.initGraphs();
         for (const view of this.VIEWS)
             await ((_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.draw());
-        if (this.settings.showTrail)
+        if (this.settings.showBCs)
             await this.drawTrail();
         if (this.settings.showRefreshNotice)
             new require$$0.Notice("Index refreshed");
@@ -49608,32 +49606,34 @@ class BCPlugin extends require$$0.Plugin {
         }
     }
     async onload() {
+        var _a;
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
-        if (typeof this.settings.debugMode === "boolean") {
-            this.settings.debugMode = this.settings.debugMode ? "DEBUG" : "WARN";
+        const { settings } = this;
+        if (typeof settings.debugMode === "boolean") {
+            settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
             await this.saveSettings();
         }
         // Prevent breaking change
         //@ts-ignore
-        const { userHierarchies } = this.settings;
+        const { userHierarchies } = settings;
         if (userHierarchies !== undefined && userHierarchies.length > 0) {
-            this.settings.userHiers = userHierarchies;
+            settings.userHiers = userHierarchies;
             //@ts-ignore
-            delete this.settings.userHierarchies;
+            delete settings.userHierarchies;
             await this.saveSettings();
         }
         ["prev", "next"].forEach((dir) => {
-            this.settings.userHiers.forEach(async (hier, i) => {
+            settings.userHiers.forEach(async (hier, i) => {
                 if (hier[dir] === undefined)
-                    this.settings.userHiers[i][dir] = [];
+                    settings.userHiers[i][dir] = [];
                 await this.saveSettings();
             });
         });
-        const upFields = getFields(this.settings.userHiers, "up");
-        for (const field in this.settings.limitTrailCheckboxStates) {
+        const upFields = getFields(settings.userHiers, "up");
+        for (const field in settings.limitTrailCheckboxStates) {
             if (!upFields.includes(field)) {
-                delete this.settings.limitTrailCheckboxStates[field];
+                delete settings.limitTrailCheckboxStates[field];
             }
         }
         this.VIEWS = [
@@ -49641,41 +49641,45 @@ class BCPlugin extends require$$0.Plugin {
                 plain: "Matrix",
                 type: MATRIX_VIEW,
                 constructor: MatrixView,
-                openOnLoad: this.settings.openMatrixOnLoad,
+                openOnLoad: settings.openMatrixOnLoad,
             },
             {
                 plain: "Stats",
                 type: STATS_VIEW,
                 constructor: StatsView,
-                openOnLoad: this.settings.openStatsOnLoad,
+                openOnLoad: settings.openStatsOnLoad,
             },
             {
                 plain: "Duck",
                 type: DUCK_VIEW,
                 constructor: DucksView,
-                openOnLoad: this.settings.openDuckOnLoad,
+                openOnLoad: settings.openDuckOnLoad,
             },
             {
                 plain: "Down",
                 type: DOWN_VIEW,
                 constructor: DownView,
-                openOnLoad: this.settings.openDownOnLoad,
+                openOnLoad: settings.openDownOnLoad,
             },
         ];
         this.db = new Debugger(this);
         this.registerEditorSuggest(new FieldSuggestor(this));
-        for (const view of this.VIEWS) {
-            this.registerView(view.type, (leaf) => new view.constructor(leaf, this));
+        for (const { constructor, type } of this.VIEWS) {
+            this.registerView(type, (leaf) => new constructor(leaf, this));
         }
         require$$0.addIcon(DUCK_ICON, DUCK_ICON_SVG);
         require$$0.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         await this.waitForCache();
         this.mainG = await this.initGraphs();
-        for (const view of this.VIEWS) {
-            if (view.openOnLoad)
-                await openView(this.app, view.type, view.constructor);
+        if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes.length) === 0) {
+            await wait(3000);
+            await this.refreshIndex();
         }
-        if (this.settings.showBCs)
+        for (const { openOnLoad, type, constructor } of this.VIEWS) {
+            if (openOnLoad)
+                await openView(this.app, type, constructor);
+        }
+        if (settings.showBCs)
             await this.drawTrail();
         this.app.workspace.onLayoutReady(async () => {
             this.registerActiveLeafChangeEvent();
@@ -49696,16 +49700,16 @@ class BCPlugin extends require$$0.Plugin {
             //     await this.initEverything();
             //   }
         });
-        for (const view of this.VIEWS) {
+        for (const { type, plain, constructor } of this.VIEWS) {
             this.addCommand({
-                id: `show-${view.type}-view`,
-                name: `Open ${view.plain} View`,
+                id: `show-${type}-view`,
+                name: `Open ${plain} View`,
                 //@ts-ignore
                 checkCallback: async (checking) => {
                     if (checking) {
-                        return this.app.workspace.getLeavesOfType(view.type).length === 0;
+                        return this.app.workspace.getLeavesOfType(type).length === 0;
                     }
-                    await openView(this.app, view.type, view.constructor);
+                    await openView(this.app, type, constructor);
                 },
             });
         }
@@ -49725,7 +49729,7 @@ class BCPlugin extends require$$0.Plugin {
             id: "Toggle-trail-in-Edit&LP",
             name: "Toggle: Show Trail/Grid in Edit & LP mode",
             callback: async () => {
-                this.settings.showBCsInEditLPMode = !this.settings.showBCsInEditLPMode;
+                settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
                 await this.saveSettings();
                 await this.drawTrail();
             },
@@ -49762,7 +49766,7 @@ class BCPlugin extends require$$0.Plugin {
                     }
                 }
             },
-            checkCallback: () => this.settings.showWriteAllBCsCmd,
+            checkCallback: () => settings.showWriteAllBCsCmd,
         });
         this.addCommand({
             id: "local-index",
@@ -50289,10 +50293,13 @@ class BCPlugin extends require$$0.Plugin {
             let frontms = dvQ
                 ? this.getDVMetadataCache(files)
                 : this.getObsMetadataCache(files);
-            if (frontms[0] === undefined) {
-                db.end2G();
-                new require$$0.Notice("Breadcrumbs cache not initialised yet - Refresh Index.");
-                return mainG;
+            if (frontms.some((frontm) => frontm === undefined)) {
+                await wait(2000);
+                frontms = dvQ
+                    ? this.getDVMetadataCache(files)
+                    : this.getObsMetadataCache(files);
+                // db.end2G();
+                // return mainG;
             }
             const { userHiers } = settings;
             if (userHiers.length === 0) {

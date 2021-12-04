@@ -112,12 +112,8 @@ export default class MatrixView extends ItemView {
   ): SquareProps[][] {
     const { plugin } = this;
     const { mainG } = plugin;
-    if (!mainG) {
-      new Notice(
-        "Breadcrumbs graph was not initialised yet. Please Refresh Index"
-      );
-      return [];
-    }
+    if (!mainG) return [];
+
     const { basename } = currFile;
 
     const realsnImplieds = getRealnImplied(plugin, basename);
