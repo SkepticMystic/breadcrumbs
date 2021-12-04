@@ -144,6 +144,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   downViewWrap: false,
   dotsColour: "#000000",
   dvWaitTime: 5000,
+  enableAlphaSort: true,
   fieldSuggestor: true,
   filterImpliedSiblingsOfDifferentTypes: false,
   limitWriteBCCheckboxStates: {},

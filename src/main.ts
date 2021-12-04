@@ -423,10 +423,8 @@ export default class BCPlugin extends Plugin {
     const { constructor } = this.VIEWS.find((view) => view.type === type);
     const leaves = this.app.workspace.getLeavesOfType(type);
     if (leaves && leaves.length >= 1) {
-      const view = leaves[0].view;
-      if (view instanceof constructor) {
-        return view;
-      }
+      const { view } = leaves[0];
+      if (view instanceof constructor) return view;
     }
     return null;
   }

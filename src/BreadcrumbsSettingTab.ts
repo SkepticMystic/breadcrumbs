@@ -343,18 +343,19 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
-      .setName("Show Relationship Type")
+      .setName("Enable Alpahebtical Sorting")
       .setDesc(
-        "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
+        "By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below."
       )
       .addToggle((toggle) =>
-        toggle.setValue(settings.showRelationType).onChange(async (value) => {
-          settings.showRelationType = value;
+        toggle.setValue(settings.enableAlphaSort).onChange(async (value) => {
+          settings.enableAlphaSort = value;
           await plugin.saveSettings();
           await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
       );
 
+    // TODO hide this setting if !enableAlphaSort
     new Setting(MLViewDetails)
       .setName("Sort Alphabetically Ascending/Descending")
       .setDesc(

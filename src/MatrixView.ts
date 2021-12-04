@@ -193,13 +193,16 @@ export default class MatrixView extends ItemView {
           : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
 
       const { alphaSortAsc } = settings;
-      [ru, rs, rd, rn, rp, iu, is, id, iN, ip].forEach((a) =>
-        a
-          .sort((a, b) =>
+      const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
+
+      if (settings.enableAlphaSort) {
+        squares.forEach((sq) =>
+          sq.sort((a, b) =>
             a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1
           )
-          .sort((a, b) => a.order - b.order)
-      );
+        );
+      }
+      squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
 
       debug(
         { ru },

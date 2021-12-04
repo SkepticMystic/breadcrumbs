@@ -18,6 +18,7 @@ export interface BCSettings {
   defaultView: boolean;
   downViewWrap: boolean;
   dotsColour: string;
+  enableAlphaSort: boolean;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
   gridDots: boolean;

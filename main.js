@@ -20267,12 +20267,16 @@ const DEFAULT_SETTINGS = {
     downViewWrap: false,
     dotsColour: "#000000",
     dvWaitTime: 5000,
+    enableAlphaSort: true,
     fieldSuggestor: true,
     filterImpliedSiblingsOfDifferentTypes: false,
     limitWriteBCCheckboxStates: {},
-    indexNotes: [""],
+    gridDots: false,
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     hierarchyNotes: [""],
     HNUpField: "",
+    indexNotes: [""],
     refreshOnNoteChange: false,
     useAllMetadata: true,
     openMatrixOnLoad: true,
@@ -20291,12 +20295,10 @@ const DEFAULT_SETTINGS = {
     showGrid: true,
     showPrevNext: true,
     limitTrailCheckboxStates: {},
-    gridDots: false,
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     showAll: false,
     noPathMessage: `This note has no real or implied parents`,
     trailSeperator: "→",
+    treatCurrNodeAsImpliedSibling: false,
     respectReadableLineLength: true,
     userHiers: [
         {
@@ -24838,7 +24840,7 @@ class MatrixView extends require$$0.ItemView {
                 : [];
             currParents.forEach((parent) => {
                 closedUp.forEachInEdge(parent, (k, a, s, t) => {
-                    if (s === basename)
+                    if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
                         return;
                     iSamesII.push(this.toInternalLinkObj(s, false, parent));
                 });
@@ -24862,9 +24864,11 @@ class MatrixView extends require$$0.ItemView {
                 ? hier[dir].join(", ")
                 : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
             const { alphaSortAsc } = settings;
-            [ru, rs, rd, rn, rp, iu, is, id, iN, ip].forEach((a) => a
-                .sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1)
-                .sort((a, b) => a.order - b.order));
+            const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
+            if (settings.enableAlphaSort) {
+                squares.forEach((sq) => sq.sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1));
+            }
+            squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
             loglevel.debug({ ru }, { rs }, { rd }, { rn }, { rp }, { iu }, { is }, { id }, { iN }, { ip });
             return [
                 {
@@ -25966,14 +25970,18 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
         }));
         // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
-        new require$$0.Setting(MLViewDetails)
-            .setName("Show all field names or just relation types")
-            .setDesc("This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names.")
-            .addToggle((toggle) => toggle.setValue(settings.showNameOrType).onChange(async (value) => {
-            settings.showNameOrType = value;
-            await plugin.saveSettings();
-            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-        }));
+        // new Setting(MLViewDetails)
+        //   .setName("Show all field names or just relation types")
+        //   .setDesc(
+        //     "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
+        //   )
+        //   .addToggle((toggle) =>
+        //     toggle.setValue(settings.showNameOrType).onChange(async (value) => {
+        //       settings.showNameOrType = value;
+        //       await plugin.saveSettings();
+        //       await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        //     })
+        //   );
         new require$$0.Setting(MLViewDetails)
             .setName("Show Relationship Type")
             .setDesc("Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A.")
@@ -25983,10 +25991,29 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
         new require$$0.Setting(MLViewDetails)
+            .setName("Enable Alpahebtical Sorting")
+            .setDesc("By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below.")
+            .addToggle((toggle) => toggle.setValue(settings.enableAlphaSort).onChange(async (value) => {
+            settings.enableAlphaSort = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
+        // TODO hide this setting if !enableAlphaSort
+        new require$$0.Setting(MLViewDetails)
             .setName("Sort Alphabetically Ascending/Descending")
             .setDesc("Sort square items alphabetically in Ascending (on) or Descending (off) order.")
             .addToggle((toggle) => toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {
             settings.alphaSortAsc = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
+        new require$$0.Setting(MLViewDetails)
+            .setName("Make Current Note an Implied Sibling")
+            .setDesc("Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.treatCurrNodeAsImpliedSibling)
+            .onChange(async (value) => {
+            settings.treatCurrNodeAsImpliedSibling = value;
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
@@ -49802,10 +49829,9 @@ class BCPlugin extends require$$0.Plugin {
         const { constructor } = this.VIEWS.find((view) => view.type === type);
         const leaves = this.app.workspace.getLeavesOfType(type);
         if (leaves && leaves.length >= 1) {
-            const view = leaves[0].view;
-            if (view instanceof constructor) {
+            const { view } = leaves[0];
+            if (view instanceof constructor)
                 return view;
-            }
         }
         return null;
     }
