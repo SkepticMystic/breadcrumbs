@@ -107,7 +107,7 @@ export default class BCPlugin extends Plugin {
     this.mainG = await this.initGraphs();
     for (const view of this.VIEWS)
       await this.getActiveTYPEView(view.type)?.draw();
-    if (this.settings.showTrail) await this.drawTrail();
+    if (this.settings.showBCs) await this.drawTrail();
     if (this.settings.showRefreshNotice) new Notice("Index refreshed");
   }
 
