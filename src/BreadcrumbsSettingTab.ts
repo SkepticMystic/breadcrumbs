@@ -316,14 +316,27 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
+    // new Setting(MLViewDetails)
+    //   .setName("Show all field names or just relation types")
+    //   .setDesc(
+    //     "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
+    //   )
+    //   .addToggle((toggle) =>
+    //     toggle.setValue(settings.showNameOrType).onChange(async (value) => {
+    //       settings.showNameOrType = value;
+    //       await plugin.saveSettings();
+    //       await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+    //     })
+    //   );
+
     new Setting(MLViewDetails)
-      .setName("Show all field names or just relation types")
+      .setName("Show Relationship Type")
       .setDesc(
-        "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. On = show the full list of names."
+        "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. parent:: [[Note]]. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
       )
       .addToggle((toggle) =>
-        toggle.setValue(settings.showNameOrType).onChange(async (value) => {
-          settings.showNameOrType = value;
+        toggle.setValue(settings.showRelationType).onChange(async (value) => {
+          settings.showRelationType = value;
           await plugin.saveSettings();
           await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
@@ -353,6 +366,21 @@ export class BCSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
           await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         })
+      );
+
+    new Setting(MLViewDetails)
+      .setName("Make Current Note an Implied Sibling")
+      .setDesc(
+        "Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.treatCurrNodeAsImpliedSibling)
+          .onChange(async (value) => {
+            settings.treatCurrNodeAsImpliedSibling = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+          })
       );
 
     new Setting(MLViewDetails)

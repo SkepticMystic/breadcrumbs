@@ -49,6 +49,7 @@ export interface BCSettings {
   showRefreshNotice: boolean;
   showTrail: boolean;
   trailSeperator: string;
+  treatCurrNodeAsImpliedSibling: boolean;
   useAllMetadata: boolean;
   userHiers: UserHier[];
   visGraph: visTypes;

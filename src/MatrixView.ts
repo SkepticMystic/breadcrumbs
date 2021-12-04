@@ -163,7 +163,7 @@ export default class MatrixView extends ItemView {
 
       currParents.forEach((parent) => {
         closedUp.forEachInEdge(parent, (k, a, s, t) => {
-          if (s === basename) return;
+          if (s === basename && !settings.treatCurrNodeAsImpliedSibling) return;
           iSamesII.push(this.toInternalLinkObj(s, false, parent));
         });
       });

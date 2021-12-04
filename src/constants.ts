@@ -147,9 +147,14 @@ export const DEFAULT_SETTINGS: BCSettings = {
   fieldSuggestor: true,
   filterImpliedSiblingsOfDifferentTypes: false,
   limitWriteBCCheckboxStates: {},
-  indexNotes: [""],
+  gridDots: false,
+  gridHeatmap: false,
+  heatmapColour: getComputedStyle(document.body).getPropertyValue(
+    "--text-accent"
+  ),
   hierarchyNotes: [""],
   HNUpField: "",
+  indexNotes: [""],
   refreshOnNoteChange: false,
   useAllMetadata: true,
   openMatrixOnLoad: true,
@@ -168,14 +173,10 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showGrid: true,
   showPrevNext: true,
   limitTrailCheckboxStates: {},
-  gridDots: false,
-  gridHeatmap: false,
-  heatmapColour: getComputedStyle(document.body).getPropertyValue(
-    "--text-accent"
-  ),
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
+  treatCurrNodeAsImpliedSibling: false,
   respectReadableLineLength: true,
   userHiers: [
     {
