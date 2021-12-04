@@ -153,32 +153,33 @@ export default class BCPlugin extends Plugin {
     console.log("loading breadcrumbs plugin");
 
     await this.loadSettings();
+    const { settings } = this;
 
-    if (typeof this.settings.debugMode === "boolean") {
-      this.settings.debugMode = this.settings.debugMode ? "DEBUG" : "WARN";
+    if (typeof settings.debugMode === "boolean") {
+      settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
       await this.saveSettings();
     }
 
     // Prevent breaking change
     //@ts-ignore
-    const { userHierarchies } = this.settings;
+    const { userHierarchies } = settings;
     if (userHierarchies !== undefined && userHierarchies.length > 0) {
-      this.settings.userHiers = userHierarchies;
+      settings.userHiers = userHierarchies;
       //@ts-ignore
-      delete this.settings.userHierarchies;
+      delete settings.userHierarchies;
       await this.saveSettings();
     }
 
     ["prev", "next"].forEach((dir) => {
-      this.settings.userHiers.forEach(async (hier, i) => {
-        if (hier[dir] === undefined) this.settings.userHiers[i][dir] = [];
+      settings.userHiers.forEach(async (hier, i) => {
+        if (hier[dir] === undefined) settings.userHiers[i][dir] = [];
         await this.saveSettings();
       });
     });
-    const upFields = getFields(this.settings.userHiers, "up");
-    for (const field in this.settings.limitTrailCheckboxStates) {
+    const upFields = getFields(settings.userHiers, "up");
+    for (const field in settings.limitTrailCheckboxStates) {
       if (!upFields.includes(field)) {
-        delete this.settings.limitTrailCheckboxStates[field];
+        delete settings.limitTrailCheckboxStates[field];
       }
     }
 
@@ -187,25 +188,25 @@ export default class BCPlugin extends Plugin {
         plain: "Matrix",
         type: MATRIX_VIEW,
         constructor: MatrixView,
-        openOnLoad: this.settings.openMatrixOnLoad,
+        openOnLoad: settings.openMatrixOnLoad,
       },
       {
         plain: "Stats",
         type: STATS_VIEW,
         constructor: StatsView,
-        openOnLoad: this.settings.openStatsOnLoad,
+        openOnLoad: settings.openStatsOnLoad,
       },
       {
         plain: "Duck",
         type: DUCK_VIEW,
         constructor: DucksView,
-        openOnLoad: this.settings.openDuckOnLoad,
+        openOnLoad: settings.openDuckOnLoad,
       },
       {
         plain: "Down",
         type: DOWN_VIEW,
         constructor: DownView,
-        openOnLoad: this.settings.openDownOnLoad,
+        openOnLoad: settings.openDownOnLoad,
       },
     ];
 
@@ -280,7 +281,7 @@ export default class BCPlugin extends Plugin {
       id: "Toggle-trail-in-Edit&LP",
       name: "Toggle: Show Trail/Grid in Edit & LP mode",
       callback: async () => {
-        this.settings.showBCsInEditLPMode = !this.settings.showBCsInEditLPMode;
+        settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
         await this.saveSettings();
         await this.drawTrail();
       },
