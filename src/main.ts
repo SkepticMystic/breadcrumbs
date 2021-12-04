@@ -449,13 +449,13 @@ export default class BCPlugin extends Plugin {
       const currItem = lines[item.position.start.line];
 
       const afterBulletCurr = afterBulletReg.exec(currItem)[1];
-      const dropWikiCurr = dropWikiLinksReg.exec(afterBulletCurr)[1];
-      let fieldCurr = fieldReg.exec(afterBulletCurr)[1].trim() || null;
+      const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
+      let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
       // Ensure fieldName is one of the existing up fields. `null` if not
-      if (fieldCurr !== null && !upFields.includes(fieldCurr)) {
-        problemFields.push(fieldCurr);
-        fieldCurr = null;
+      if (field !== null && !upFields.includes(field)) {
+        problemFields.push(field);
+        field = null;
       }
 
       const { parent } = item;
@@ -465,15 +465,15 @@ export default class BCPlugin extends Plugin {
         const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
 
         hierarchyNoteItems.push({
-          currNote: dropWikiCurr,
-          parentNote: dropWikiParent,
-          field: fieldCurr,
+          note,
+          parent: dropWikiParent,
+          field,
         });
       } else {
         hierarchyNoteItems.push({
-          currNote: dropWikiCurr,
-          parentNote: null,
-          field: fieldCurr,
+          note,
+          parent: null,
+          field,
         });
       }
     }
@@ -780,36 +780,32 @@ export default class BCPlugin extends Plugin {
     const upFields = getFields(userHiers, "up");
 
     hierarchyNotesArr.forEach((hnItem, i) => {
-      const upField = hnItem.field ?? (HNUpField || upFields[0]);
+      const { note, field, parent } = hnItem;
+      const upField = field ?? (HNUpField || upFields[0]);
       const downField =
         getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
 
-      if (hnItem.parentNote === null) {
-        const s = hnItem.currNote;
-        const t = hierarchyNotesArr[i + 1]?.currNote;
+      if (parent === null) {
+        const s = note;
+        const t = hierarchyNotesArr[i + 1]?.note;
 
-        //@ts-ignore
         addNodesIfNot(mainG, [s, t]);
-        //@ts-ignore
         addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
       } else {
         const aUp = {
           dir: "up",
           field: upField,
         };
-        //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.currNote, hnItem.parentNote]);
-        //@ts-ignore
-        addEdgeIfNot(mainG, hnItem.currNote, hnItem.parentNote, aUp);
+
+        addNodesIfNot(mainG, [note, parent]);
+        addEdgeIfNot(mainG, note, parent, aUp);
 
         const aDown = {
           dir: "down",
           field: downField,
         };
-        //@ts-ignore
-        addNodesIfNot(mainG, [hnItem.parentNote, hnItem.currNote]);
-        //@ts-ignore
-        addEdgeIfNot(mainG, hnItem.parentNote, hnItem.currNote, aDown);
+        addNodesIfNot(mainG, [parent, note]);
+        addEdgeIfNot(mainG, parent, note, aDown);
       }
     });
   }

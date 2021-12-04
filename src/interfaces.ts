@@ -124,9 +124,9 @@ export type RealNImplied = {
 export type relObj = { [key: string]: string[] } | { current: TFile };
 
 export interface HierarchyNoteItem {
-  parentNote: string;
+  parent: string;
   field: string;
-  currNote: string;
+  note: string;
 }
 
 export interface fileFrontmatter {
@@ -221,7 +221,11 @@ export type HierarchyGraphs = {
   [dir in Directions]: { [field: string]: MultiGraph };
 };
 
-export type SquareItem = { to: string; real: boolean; field: string };
+export type SquareItem = {
+  to: string;
+  real: boolean;
+  field: string;
+};
 
 export interface MetaeditApi {
   /** Adds the key and value */
