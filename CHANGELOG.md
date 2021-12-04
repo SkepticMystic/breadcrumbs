@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.5.1...2.6.0) (2021-12-04)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Option to enbale/disable alphabetical sorting entirely ([f8bf507](https://github.com/SkepticMystic/breadcrumbs/commit/f8bf507b13ffb1959d56f29aff4a49ba15b93ac6))
+* **List/Matrix View:** :sparkles: Option to treat the current note as an implied sibling ([4690e9b](https://github.com/SkepticMystic/breadcrumbs/commit/4690e9bee46b3bb55dbb5e38aba6d8a326c7181b))
+
+
+### Bug Fixes
+
+* :bug: Better waiting for initialisation ([b4c1ce0](https://github.com/SkepticMystic/breadcrumbs/commit/b4c1ce0c9efbf60c9b4b8e464f0adbf8b7690755))
+* **Path View:** :bug: freshIndex should drawTrails if showBCs, not just showTrail ([dbb05dd](https://github.com/SkepticMystic/breadcrumbs/commit/dbb05dd1fe397ea4a33a9ee33bbdb0f45a588234))
+
 ### [2.5.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.5.0...2.5.1) (2021-12-03)
 
 ## [2.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.4.0...2.5.0) (2021-12-03)
