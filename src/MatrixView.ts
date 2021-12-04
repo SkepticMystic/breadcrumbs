@@ -152,17 +152,14 @@ export default class MatrixView extends ItemView {
       const closedUp = getSubInDirs(closed, "up");
 
       const iSamesII: internalLinkObj[] = [];
-      const currParents = closedUp.hasNode(basename)
-        ? closedUp.filterOutNeighbors(basename, (n, a) =>
-            hier.up.includes(a.field)
-          )
-        : [];
-
-      currParents.forEach((parent) => {
-        closedUp.forEachInEdge(parent, (k, a, s, t) => {
-          if (s === basename && !settings.treatCurrNodeAsImpliedSibling) return;
-          iSamesII.push(this.toInternalLinkObj(s, false, parent));
-        });
+      closedUp.forEachOutEdge(basename, (k, a, s, par) => {
+        if (hier.up.includes(a.field)) {
+          closedUp.forEachInEdge(par, (k, a, s, t) => {
+            if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
+              return;
+            iSamesII.push(this.toInternalLinkObj(s, false, t));
+          });
+        }
       });
 
       is.push(...iSamesII);
