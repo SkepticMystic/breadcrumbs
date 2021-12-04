@@ -223,36 +223,20 @@ export default class BCPlugin extends Plugin {
     await this.waitForCache();
     this.mainG = await this.initGraphs();
 
-    if (this.mainG?.nodes.length === 0) {
-      await wait(3000);
-      await this.refreshIndex();
-    }
-
-    for (const { openOnLoad, type, constructor } of this.VIEWS) {
-      if (openOnLoad) await openView(this.app, type, constructor);
-    }
-
-    if (settings.showBCs) await this.drawTrail();
-
     this.app.workspace.onLayoutReady(async () => {
+      const noFiles = this.app.vault.getMarkdownFiles().length;
+      if (this.mainG?.nodes().length < noFiles) {
+        await wait(3000);
+        this.mainG = await this.initGraphs();
+      }
+
+      for (const { openOnLoad, type, constructor } of this.VIEWS) {
+        if (openOnLoad) await openView(this.app, type, constructor);
+      }
+
+      if (settings.showBCs) await this.drawTrail();
       this.registerActiveLeafChangeEvent();
       this.registerLayoutChangeEvent();
-
-      //   if (this.app.plugins.enabledPlugins.has("dataview")) {
-      //     const api = this.app.plugins.plugins.dataview?.api;
-      //     if (api) {
-      //       await this.initEverything();
-      //     } else {
-      //       this.registerEvent(
-      //         this.app.metadataCache.on("dataview:api-ready", async () => {
-      //           await this.initEverything();
-      //         })
-      //       );
-      //     }
-      //   } else {
-      //     await waitForResolvedLinks(this.app);
-      //     await this.initEverything();
-      //   }
     });
 
     for (const { type, plain, constructor } of this.VIEWS) {
