@@ -525,9 +525,6 @@ export default class BCPlugin extends Plugin {
   ): void {
     const { userHiers } = this.settings;
     const dir = getFieldInfo(userHiers, field).fieldDir;
-    const oppDir = getOppDir(dir);
-    const oppField =
-      getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
 
     addNodesIfNot(mainG, [source], {
       order: sourceOrder,
@@ -542,6 +539,9 @@ export default class BCPlugin extends Plugin {
       field,
     });
     if (fillOpp) {
+      const oppDir = getOppDir(dir);
+      const oppField =
+        getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
       addEdgeIfNot(mainG, target, source, {
         dir: oppDir,
         field: oppField,
@@ -581,13 +581,11 @@ export default class BCPlugin extends Plugin {
     field: string
   ) {
     CSVRows.forEach((row) => {
-      //@ts-ignore
+      
       addNodesIfNot(g, [row.file]);
       if (field === "" || !row[field]) return;
 
-      //@ts-ignore
       addNodesIfNot(g, [row[field]]);
-      //@ts-ignore
       addEdgeIfNot(g, row.file, row[field], { dir, field });
     });
   }

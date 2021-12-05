@@ -50513,8 +50513,6 @@ class BCPlugin extends require$$0.Plugin {
         var _a;
         const { userHiers } = this.settings;
         const dir = getFieldInfo(userHiers, field).fieldDir;
-        const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
         addNodesIfNot(mainG, [source], {
             order: sourceOrder,
         });
@@ -50526,6 +50524,8 @@ class BCPlugin extends require$$0.Plugin {
             field,
         });
         if (fillOpp) {
+            const oppDir = getOppDir(dir);
+            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
             addEdgeIfNot(mainG, target, source, {
                 dir: oppDir,
                 field: oppField,
@@ -50556,13 +50556,10 @@ class BCPlugin extends require$$0.Plugin {
     }
     addCSVCrumbs(g, CSVRows, dir, field) {
         CSVRows.forEach((row) => {
-            //@ts-ignore
             addNodesIfNot(g, [row.file]);
             if (field === "" || !row[field])
                 return;
-            //@ts-ignore
             addNodesIfNot(g, [row[field]]);
-            //@ts-ignore
             addEdgeIfNot(g, row.file, row[field], { dir, field });
         });
     }
