@@ -8,8 +8,10 @@ export function testGraph() {
   g.addEdge("a", "b", { dir: "up", field: "up" });
   g.addEdge("a", "c", { dir: "up", field: "up" });
   g.addEdge("b", "c", { dir: "up", field: "up" });
+  g.addEdge("b", "d", { dir: "up", field: "up" });
   g.addEdge("c", "d", { dir: "up", field: "up" });
   g.addEdge("d", "e", { dir: "up", field: "up" });
+  g.addEdge("d", "f", { dir: "up", field: "up" });
   g.addEdge("e", "f", { dir: "up", field: "up" });
 
   return g;

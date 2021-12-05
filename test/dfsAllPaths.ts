@@ -23,11 +23,6 @@ describe("dfsAllPaths", function () {
     const paths = dfsAllPaths(g, "A");
 
     verify.call(this, paths);
-    // this.verifyAsJSON(paths, {
-    //   reporters: ["tortoisemerge"],
-    //   appendEOL: true,
-    //   normalizeLineEndingsTo: "\r\n",
-    // });
   });
 
   it("2", function () {
