@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.7.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.2...2.7.3) (2021-12-05)
+
+
+### Bug Fixes
+
+* :bug: dfsAllPaths works in more cases ([fd8a9b5](https://github.com/SkepticMystic/breadcrumbs/commit/fd8a9b54d092ea689a5f2863ac7739af662cf828))
+
 ### [2.7.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.1...2.7.2) (2021-12-05)
 
 
