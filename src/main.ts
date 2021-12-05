@@ -61,6 +61,7 @@ import {
   getSinks,
   getSubForFields,
   getSubInDirs,
+  removeCycles,
 } from "./graphUtils";
 import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
@@ -994,18 +995,19 @@ export default class BCPlugin extends Plugin {
     traverseNotes: dvFrontmatterCache[],
     frontms: dvFrontmatterCache[],
     mainG: MultiGraph,
-    ObsG: MultiGraph
+    obsG: MultiGraph
   ) {
     const { userHiers } = this.settings;
     traverseNotes.forEach((altFile) => {
       const { file } = altFile;
       const basename = getDVBasename(file);
+      const noCycles = removeCycles(obsG, basename);
 
       let field = altFile[BC_TRAVERSE_NOTE] as string;
       if (typeof field !== "string" || !getFields(userHiers).includes(field))
         return;
 
-      const allPaths = dfsAllPaths(ObsG, basename);
+      const allPaths = dfsAllPaths(noCycles, basename);
       info(allPaths);
       const reversed = [...allPaths].map((path) => path.reverse());
       reversed.forEach((path) => {

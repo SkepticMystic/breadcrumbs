@@ -1,4 +1,5 @@
-import { MultiGraph } from "graphology";
+import Graph, { MultiGraph } from "graphology";
+import { dfsFromNode } from "graphology-traversal";
 import type { Attributes } from "graphology-types";
 import type { App } from "obsidian";
 // import { DIRECTIONS } from "./constants";
@@ -191,11 +192,14 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
 
     const extPath = [node, ...path];
     const succsNotVisited = g.hasNode(node)
-      ? g.filterOutNeighbors(node, (n) => !visited[n] || visited[n] < 5)
+      ? g.filterOutNeighbors(
+          node,
+          (succ) => !visited[succ] || visited[succ] < 5
+        )
       : [];
-    const newItems = succsNotVisited.map((node) => {
-      visited[node] = visited[node] ? visited[node] + 1 : 1;
-      return { node, path: extPath };
+    const newItems = succsNotVisited.map((succ) => {
+      visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
+      return { node: succ, path: extPath };
     });
 
     queue.unshift(...newItems);
@@ -203,4 +207,19 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
     if (!g.hasNode(node) || !g.outDegree(node)) allPaths.push(extPath);
   }
   return allPaths;
+}
+
+export function removeCycles(g: Graph, startNode: string) {
+  const copy = g.copy();
+  let prevNode = null;
+  dfsFromNode(copy, startNode, (n) => {
+    copy.forEachOutNeighbor(n, (t) => {
+      if (t === prevNode) {
+        copy.dropEdge(t, prevNode);
+      }
+    });
+
+    prevNode = n;
+  });
+  return copy;
 }
