@@ -20920,7 +20920,7 @@ function dfsAllPaths(g, startNode) {
     const queue = [
         { node: startNode, path: [] },
     ];
-    const visited = [];
+    const visited = {};
     const allPaths = [];
     let i = 0;
     while (queue.length > 0 && i < 1000) {
@@ -20928,12 +20928,12 @@ function dfsAllPaths(g, startNode) {
         const { node, path } = queue.shift();
         const extPath = [node, ...path];
         const succsNotVisited = g.hasNode(node)
-            ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+            ? g.filterOutNeighbors(node, (n) => !visited[n] || visited[n] < 5)
             : [];
-        const newItems = succsNotVisited.map((n) => {
-            return { node: n, path: extPath };
+        const newItems = succsNotVisited.map((node) => {
+            visited[node] = visited[node] ? visited[node] + 1 : 1;
+            return { node, path: extPath };
         });
-        visited.push(...succsNotVisited);
         queue.unshift(...newItems);
         if (!g.hasNode(node) || !g.outDegree(node))
             allPaths.push(extPath);

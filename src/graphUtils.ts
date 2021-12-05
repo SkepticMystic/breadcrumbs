@@ -181,7 +181,7 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
   const queue: { node: string; path: string[] }[] = [
     { node: startNode, path: [] },
   ];
-  const visited = [];
+  const visited: { [note: string]: number } = {};
   const allPaths: string[][] = [];
 
   let i = 0;
@@ -191,13 +191,13 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
 
     const extPath = [node, ...path];
     const succsNotVisited = g.hasNode(node)
-      ? g.filterOutNeighbors(node, (n, a) => !visited.includes(n))
+      ? g.filterOutNeighbors(node, (n) => !visited[n] || visited[n] < 5)
       : [];
-    const newItems = succsNotVisited.map((n) => {
-      return { node: n, path: extPath };
+    const newItems = succsNotVisited.map((node) => {
+      visited[node] = visited[node] ? visited[node] + 1 : 1;
+      return { node, path: extPath };
     });
 
-    visited.push(...succsNotVisited);
     queue.unshift(...newItems);
 
     if (!g.hasNode(node) || !g.outDegree(node)) allPaths.push(extPath);
