@@ -132,9 +132,9 @@ export const getSinks = (g: MultiGraph) =>
 export const getSources = (g: MultiGraph) =>
   g.filterNodes((node) => g.hasNode(node) && !g.inDegree(node));
 
-export const getOutNeighbours = (g: MultiGraph, node: string): string[] =>
+export const getOutNeighbours = (g: MultiGraph, node: string) =>
   g.hasNode(node) ? g.outNeighbors(node) : [];
-export const getInNeighbours = (g: MultiGraph, node: string): string[] =>
+export const getInNeighbours = (g: MultiGraph, node: string) =>
   g.hasNode(node) ? g.inNeighbors(node) : [];
 
 export const getOppDir = (dir: Directions): Directions => {

@@ -12,7 +12,6 @@ import {
   Plugin,
   Pos,
   TFile,
-  WorkspaceLeaf,
 } from "obsidian";
 import {
   addFeatherIcon,
@@ -21,10 +20,6 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
-import StatsView from "./StatsView";
-import DownView from "./DownView";
-import DucksView from "./DucksView";
-import MatrixView from "./MatrixView";
 import { Debugger } from "src/Debugger";
 import util from "util";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
@@ -52,6 +47,8 @@ import {
   TRAIL_ICON,
   TRAIL_ICON_SVG,
 } from "./constants";
+import DownView from "./DownView";
+import DucksView from "./DucksView";
 import { FieldSuggestor } from "./FieldSuggestor";
 import {
   addEdgeIfNot,
@@ -65,6 +62,7 @@ import {
   getSubForFields,
   getSubInDirs,
 } from "./graphUtils";
+import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
   BCSettings,
   Directions,
@@ -76,6 +74,7 @@ import type {
   RawValue,
   ViewInfo,
 } from "./interfaces";
+import MatrixView from "./MatrixView";
 import {
   createOrUpdateYaml,
   dropWikilinks,
@@ -88,8 +87,8 @@ import {
   makeWiki,
   splitAtYaml,
 } from "./sharedFunctions";
+import StatsView from "./StatsView";
 import { VisModal } from "./VisModal";
-import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -366,6 +365,37 @@ export default class BCPlugin extends Plugin {
       },
     });
 
+    ["up", "down", "next", "prev"].forEach((dir) => {
+      this.addCommand({
+        id: `jump-to-first-${dir}`,
+        name: `Jump to first '${dir}'`,
+        callback: async () => {
+          const file = this.app.workspace.getActiveFile();
+          if (!file) {
+            new Notice("You need to be focussed on a Markdown file");
+            return;
+          }
+          const { basename } = file;
+          const realsNImplieds = getRealnImplied(
+            this,
+            basename,
+            dir as Directions
+          )[dir];
+          const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
+          if (allBCs.length === 0) {
+            new Notice(`No ${dir} found`);
+            return;
+          }
+
+          const toFile = this.app.metadataCache.getFirstLinkpathDest(
+            allBCs[0].to,
+            ""
+          );
+          this.app.workspace.activeLeaf.openFile(toFile);
+        },
+      });
+    });
+
     this.addRibbonIcon(
       addFeatherIcon("tv") as string,
       "Breadcrumbs Visualisation",
@@ -581,7 +611,6 @@ export default class BCPlugin extends Plugin {
     field: string
   ) {
     CSVRows.forEach((row) => {
-      
       addNodesIfNot(g, [row.file]);
       if (field === "" || !row[field]) return;
 
@@ -1077,11 +1106,13 @@ export default class BCPlugin extends Plugin {
 
       function noticeIfBroken(frontm: dvFrontmatterCache): void {
         const basename = getDVBasename(frontm.file);
+        // @ts-ignore
         if (frontm[BC_FOLDER_NOTE] === true) {
           const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
           new Notice(msg);
           warn(msg);
         }
+        // @ts-ignore
         if (frontm[BC_LINK_NOTE] === true) {
           const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
           new Notice(msg);
