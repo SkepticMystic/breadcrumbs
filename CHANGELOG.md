@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.7.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.1...2.7.2) (2021-12-05)
+
+
+### Bug Fixes
+
+* :bug: Filter out Templater templates (Fix [#198](https://github.com/SkepticMystic/breadcrumbs/issues/198)) ([187a270](https://github.com/SkepticMystic/breadcrumbs/commit/187a2708f247e89f159e3276afc1b755a838301a))
+* **List/Matrix View:** :bug: Safety check on implied Siblings II ([7ee5046](https://github.com/SkepticMystic/breadcrumbs/commit/7ee5046504261e0fa0d841fb9df48f8f81d08799))
+
 ### [2.7.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.0...2.7.1) (2021-12-04)
 
 
