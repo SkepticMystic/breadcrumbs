@@ -1,4 +1,5 @@
 import { MultiGraph } from "graphology";
+import type { UserHier } from "../src/interfaces";
 
 export function testGraph() {
   const g = new MultiGraph();
@@ -12,4 +13,24 @@ export function testGraph() {
   g.addEdge("e", "f", { dir: "up", field: "up" });
 
   return g;
+}
+
+export function testHiers(): UserHier[] {
+  return [
+    {
+      down: ["down"],
+      next: ["next"],
+      prev: ["prev"],
+      same: ["same"],
+      up: ["up"],
+    },
+  ];
+}
+
+export function verify(sol: any) {
+  this.verifyAsJSON(sol, {
+    reporters: ["tortoisemerge"],
+    appendEOL: true,
+    normalizeLineEndingsTo: "\r\n",
+  });
 }
