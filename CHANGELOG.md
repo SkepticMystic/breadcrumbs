@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.8.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.3...2.8.0) (2021-12-05)
+
+
+### Features
+
+* :sparkles: Commands to jump to first up/down/next/prev (Fix [#202](https://github.com/SkepticMystic/breadcrumbs/issues/202)) ([a2e21f6](https://github.com/SkepticMystic/breadcrumbs/commit/a2e21f659765b32b6bf52760a8fbb401f88838b5))
+
 ### [2.7.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.2...2.7.3) (2021-12-05)
 
 
