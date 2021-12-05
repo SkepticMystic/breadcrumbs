@@ -24862,15 +24862,17 @@ class MatrixView extends require$$0.ItemView {
             const closed = getReflexiveClosure(g, userHiers);
             const closedUp = getSubInDirs(closed, "up");
             const iSamesII = [];
-            closedUp.forEachOutEdge(basename, (k, a, s, par) => {
-                if (hier.up.includes(a.field)) {
-                    closedUp.forEachInEdge(par, (k, a, s, t) => {
-                        if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
-                            return;
-                        iSamesII.push(this.toInternalLinkObj(s, false, t));
-                    });
-                }
-            });
+            if (closedUp.hasNode(basename)) {
+                closedUp.forEachOutEdge(basename, (k, a, s, par) => {
+                    if (hier.up.includes(a.field)) {
+                        closedUp.forEachInEdge(par, (k, a, s, t) => {
+                            if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
+                                return;
+                            iSamesII.push(this.toInternalLinkObj(s, false, t));
+                        });
+                    }
+                });
+            }
             is.push(...iSamesII);
             // !SECTION
             iu = this.removeDuplicateImplied(ru, iu);
@@ -50953,6 +50955,8 @@ class BCPlugin extends require$$0.Plugin {
                 iterateHiers(userHiers, (hier, dir, field) => {
                     const values = this.parseFieldValue(frontm[field]);
                     values.forEach((target) => {
+                        if (target.startsWith("<%") && target.endsWith("%>"))
+                            return;
                         const targetOrder = this.getTargetOrder(frontms, target);
                         this.populateMain(mainG, basename, field, target, sourceOrder, targetOrder);
                     });

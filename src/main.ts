@@ -1113,6 +1113,7 @@ export default class BCPlugin extends Plugin {
           const values = this.parseFieldValue(frontm[field]);
 
           values.forEach((target) => {
+            if (target.startsWith("<%") && target.endsWith("%>")) return;
             const targetOrder = this.getTargetOrder(frontms, target);
 
             this.populateMain(
