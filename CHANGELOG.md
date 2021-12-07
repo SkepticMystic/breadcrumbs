@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.9.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.8.0...2.9.0) (2021-12-07)
+
+
+### Features
+
+* **DendronNote:** :sparkles: New alternative hierarchy, Dendron notes! (Fix [#194](https://github.com/SkepticMystic/breadcrumbs/issues/194)) ([c01663c](https://github.com/SkepticMystic/breadcrumbs/commit/c01663c3e13b6058c30afdb28cdfb0a1db889c1c))
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Allow empty reverse fields (Fix [#203](https://github.com/SkepticMystic/breadcrumbs/issues/203)) ([3d0cd5d](https://github.com/SkepticMystic/breadcrumbs/commit/3d0cd5dc11fcd42438d03c1dfb0e4a4b8af070dd))
+* **TraverseNote:** :bug: RemoveCycles from obsG ([7068d99](https://github.com/SkepticMystic/breadcrumbs/commit/7068d99e6c26448c1552aaeee4967e452eb63679))
+
 ## [2.8.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.7.3...2.8.0) (2021-12-05)
 
 
