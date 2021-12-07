@@ -1,4 +1,4 @@
-import { debug, error } from "loglevel";
+import { debug, error, info } from "loglevel";
 import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { Debugger } from "src/Debugger";
 import Lists from "./Components/Lists.svelte";
@@ -18,7 +18,11 @@ import type {
   UserHier,
 } from "./interfaces";
 import type BCPlugin from "./main";
-import { getRealnImplied, linkClass } from "./sharedFunctions";
+import {
+  fallbackOppField,
+  getRealnImplied,
+  linkClass,
+} from "./sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -127,13 +131,25 @@ export default class MatrixView extends ItemView {
       } = blankRealNImplied();
 
       for (const dir in realsnImplieds) {
+        const oppDir = getOppDir(dir as Directions);
+        const arrow = ARROW_DIRECTIONS[dir];
         const { reals, implieds } = realsnImplieds[dir];
         filteredRealNImplied[dir].reals = reals
-          .filter((real) => hier[dir].includes(real.field))
+          .filter(
+            (real) =>
+              hier[dir].includes(real.field) ||
+              (real.field.includes(`<${arrow}>`) &&
+                hier[oppDir].includes(real.field.split(" <")[0]))
+          )
           .map((item) => this.toInternalLinkObj(item.to, true));
 
         filteredRealNImplied[dir].implieds = implieds
-          .filter((implied) => hier[dir].includes(implied.field))
+          .filter(
+            (implied) =>
+              hier[dir].includes(implied.field) ||
+              (implied.field.includes(`<${arrow}>`) &&
+                hier[oppDir].includes(implied.field.split(" <")[0]))
+          )
           .map((item) => this.toInternalLinkObj(item.to, false));
       }
 
@@ -198,7 +214,7 @@ export default class MatrixView extends ItemView {
       }
       squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
 
-      debug(
+      info([
         { ru },
         { rs },
         { rd },
@@ -208,8 +224,8 @@ export default class MatrixView extends ItemView {
         { is },
         { id },
         { iN },
-        { ip }
-      );
+        { ip },
+      ]);
 
       return [
         {

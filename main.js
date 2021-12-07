@@ -22257,13 +22257,15 @@ function swapItems(i, j, arr) {
     return arr;
 }
 const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+const fallbackOppField = (field, dir) => `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
 /** Remember to filter by hierarchy in MatrixView! */
 function getRealnImplied(plugin, currNode, dir = null) {
     const realsnImplieds = blankRealNImplied();
     const { userHiers } = plugin.settings;
     plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
+        var _a;
         const { field, dir: edgeDir } = a;
-        const oppField = getOppFields(userHiers, field)[0];
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
         (dir ? [dir, getOppDir(dir)] : DIRECTIONS$1).forEach((currDir) => {
             const oppDir = getOppDir(currDir);
             // Reals
@@ -24564,12 +24566,18 @@ class MatrixView extends require$$0.ItemView {
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
             for (const dir in realsnImplieds) {
+                const oppDir = getOppDir(dir);
+                const arrow = ARROW_DIRECTIONS[dir];
                 const { reals, implieds } = realsnImplieds[dir];
                 filteredRealNImplied[dir].reals = reals
-                    .filter((real) => hier[dir].includes(real.field))
+                    .filter((real) => hier[dir].includes(real.field) ||
+                    (real.field.includes(`<${arrow}>`) &&
+                        hier[oppDir].includes(real.field.split(" <")[0])))
                     .map((item) => this.toInternalLinkObj(item.to, true));
                 filteredRealNImplied[dir].implieds = implieds
-                    .filter((implied) => hier[dir].includes(implied.field))
+                    .filter((implied) => hier[dir].includes(implied.field) ||
+                    (implied.field.includes(`<${arrow}>`) &&
+                        hier[oppDir].includes(implied.field.split(" <")[0])))
                     .map((item) => this.toInternalLinkObj(item.to, false));
             }
             let { up: { reals: ru, implieds: iu }, same: { reals: rs, implieds: is }, down: { reals: rd, implieds: id }, next: { reals: rn, implieds: iN }, prev: { reals: rp, implieds: ip }, } = filteredRealNImplied;
@@ -24613,7 +24621,18 @@ class MatrixView extends require$$0.ItemView {
                 squares.forEach((sq) => sq.sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1));
             }
             squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
-            loglevel.debug({ ru }, { rs }, { rd }, { rn }, { rp }, { iu }, { is }, { id }, { iN }, { ip });
+            loglevel.info([
+                { ru },
+                { rs },
+                { rd },
+                { rn },
+                { rp },
+                { iu },
+                { is },
+                { id },
+                { iN },
+                { ip },
+            ]);
             return [
                 {
                     realItems: ru,

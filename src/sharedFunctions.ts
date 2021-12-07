@@ -238,6 +238,9 @@ export const linkClass = (app: App, to: string, realQ = true) =>
     realQ ? "" : "BC-Implied"
   }`;
 
+export const fallbackOppField = (field: string, dir: Directions) =>
+  `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
+
 /** Remember to filter by hierarchy in MatrixView! */
 export function getRealnImplied(
   plugin: BCPlugin,
@@ -248,8 +251,9 @@ export function getRealnImplied(
   const { userHiers } = plugin.settings;
 
   plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
-    const { field, dir: edgeDir } = a;
-    const oppField = getOppFields(userHiers, field)[0];
+    const { field, dir: edgeDir } = a as { field: string; dir: Directions };
+    const oppField =
+      getOppFields(userHiers, field)[0] ?? fallbackOppField(field, edgeDir);
 
     (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
       const oppDir = getOppDir(currDir);
