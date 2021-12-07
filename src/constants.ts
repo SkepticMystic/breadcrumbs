@@ -135,12 +135,15 @@ export const BC_FIELDS_INFO = [
 export const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
 
 export const DEFAULT_SETTINGS: BCSettings = {
+  addDendronNotes: false,
   aliasesInIndex: false,
   alphaSortAsc: true,
   altLinkFields: [],
   CSVPaths: "",
   debugMode: "WARN",
   defaultView: true,
+  dendronNoteDelimiter: ".",
+  dendronNoteField: "up",
   downViewWrap: false,
   dotsColour: "#000000",
   dvWaitTime: 5000,

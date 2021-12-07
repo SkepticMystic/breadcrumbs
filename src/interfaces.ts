@@ -9,6 +9,7 @@ import type StatsView from "./StatsView";
 
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
+  addDendronNotes: boolean;
   aliasesInIndex: boolean;
   alphaSortAsc: boolean;
   altLinkFields: string[];
@@ -16,6 +17,8 @@ export interface BCSettings {
   dvWaitTime: number;
   debugMode: DebugLevel;
   defaultView: boolean;
+  dendronNoteDelimiter: string;
+  dendronNoteField: string;
   downViewWrap: boolean;
   dotsColour: string;
   enableAlphaSort: boolean;

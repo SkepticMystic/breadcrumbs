@@ -11,6 +11,7 @@ import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
 import {
   ALLUNLINKED,
+  DEFAULT_SETTINGS,
   DIRECTIONS,
   MATRIX_VIEW,
   REAlCLOSED,
@@ -30,7 +31,7 @@ export class BCSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  display(): void {
+  async display(): Promise<void> {
     const { plugin, containerEl } = this;
     const { settings } = plugin;
     containerEl.empty();
@@ -709,6 +710,68 @@ export class BCSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         })
       );
+
+    const alternativeHierarchyDetails: HTMLDetailsElement =
+      containerEl.createEl("details");
+    alternativeHierarchyDetails.createEl("summary", {
+      text: "Alternative Hierarchies",
+    });
+
+    new Setting(alternativeHierarchyDetails)
+      .setName("Add Dendron notes to graph")
+      .setDesc(
+        "Dendron notes create a hierarchy using note names.\n`math.algebra` is a note about algebra, whose parent is `math`.\n`math.calculus.limits` is a note about limits whose parent is the note `math.calculus`, whose parent is `math`."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.addDendronNotes).onChange(async (value) => {
+          settings.addDendronNotes = value;
+          await plugin.saveSettings();
+        })
+      );
+    new Setting(alternativeHierarchyDetails)
+      .setName("Dendron note delimiter")
+      .setDesc(
+        "If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is `.`."
+      )
+      .addText((text) => {
+        text
+          .setPlaceholder("Delimiter")
+          .setValue(settings.dendronNoteDelimiter);
+
+        text.inputEl.onblur = async () => {
+          const value = text.getValue();
+          if (value) {
+            settings.dendronNoteDelimiter = value;
+            await plugin.saveSettings();
+          } else {
+            new Notice(`The delimiter can't be blank`);
+            settings.dendronNoteDelimiter =
+              DEFAULT_SETTINGS.dendronNoteDelimiter;
+            await plugin.saveSettings();
+          }
+        };
+      });
+
+    const fields = getFields(settings.userHiers);
+
+    if (!fields.includes(settings.dendronNoteField)) {
+      settings.dendronNoteField = fields[0];
+      await plugin.saveSettings();
+    }
+    new Setting(alternativeHierarchyDetails)
+      .setName("Dendron Note Field")
+      .setDesc("Which field should Breadcrumbs use for Dendron notes?")
+      .addDropdown((cb: DropdownComponent) => {
+        fields.forEach((field) => {
+          cb.addOption(field, field);
+        });
+        cb.setValue(settings.dendronNoteField);
+
+        cb.onChange(async (value) => {
+          settings.dendronNoteField = value;
+          await plugin.saveSettings();
+        });
+      });
 
     const writeBCsToFileDetails: HTMLDetailsElement =
       containerEl.createEl("details");

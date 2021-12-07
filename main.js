@@ -20791,12 +20791,15 @@ const BC_FIELDS_INFO = [
 ];
 const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
 const DEFAULT_SETTINGS = {
+    addDendronNotes: false,
     aliasesInIndex: false,
     alphaSortAsc: true,
     altLinkFields: [],
     CSVPaths: "",
     debugMode: "WARN",
     defaultView: true,
+    dendronNoteDelimiter: ".",
+    dendronNoteField: "up",
     downViewWrap: false,
     dotsColour: "#000000",
     dvWaitTime: 5000,
@@ -24710,7 +24713,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         super(app, plugin);
         this.plugin = plugin;
     }
-    display() {
+    async display() {
         const { plugin, containerEl } = this;
         const { settings } = plugin;
         containerEl.empty();
@@ -25230,6 +25233,56 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.downViewWrap = value;
             await plugin.saveSettings();
         }));
+        const alternativeHierarchyDetails = containerEl.createEl("details");
+        alternativeHierarchyDetails.createEl("summary", {
+            text: "Alternative Hierarchies",
+        });
+        new require$$0.Setting(alternativeHierarchyDetails)
+            .setName("Add Dendron notes to graph")
+            .setDesc("Dendron notes create a hierarchy using note names.\n`math.algebra` is a note about algebra, whose parent is `math`.\n`math.calculus.limits` is a note about limits whose parent is the note `math.calculus`, whose parent is `math`.")
+            .addToggle((toggle) => toggle.setValue(settings.addDendronNotes).onChange(async (value) => {
+            settings.addDendronNotes = value;
+            await plugin.saveSettings();
+        }));
+        new require$$0.Setting(alternativeHierarchyDetails)
+            .setName("Dendron note delimiter")
+            .setDesc("If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is `.`.")
+            .addText((text) => {
+            text
+                .setPlaceholder("Delimiter")
+                .setValue(settings.dendronNoteDelimiter);
+            text.inputEl.onblur = async () => {
+                const value = text.getValue();
+                if (value) {
+                    settings.dendronNoteDelimiter = value;
+                    await plugin.saveSettings();
+                }
+                else {
+                    new require$$0.Notice(`The delimiter can't be blank`);
+                    settings.dendronNoteDelimiter =
+                        DEFAULT_SETTINGS.dendronNoteDelimiter;
+                    await plugin.saveSettings();
+                }
+            };
+        });
+        const fields = getFields(settings.userHiers);
+        if (!fields.includes(settings.dendronNoteField)) {
+            settings.dendronNoteField = fields[0];
+            await plugin.saveSettings();
+        }
+        new require$$0.Setting(alternativeHierarchyDetails)
+            .setName("Dendron Note Field")
+            .setDesc("Which field should Breadcrumbs use for Dendron notes?")
+            .addDropdown((cb) => {
+            fields.forEach((field) => {
+                cb.addOption(field, field);
+            });
+            cb.setValue(settings.dendronNoteField);
+            cb.onChange(async (value) => {
+                settings.dendronNoteField = value;
+                await plugin.saveSettings();
+            });
+        });
         const writeBCsToFileDetails = containerEl.createEl("details");
         writeBCsToFileDetails.createEl("summary", {
             text: "Write Breadcrumbs to File",
@@ -52002,34 +52055,36 @@ class BCPlugin extends require$$0.Plugin {
                     this.populateMain(mainG, node, field, next, 9999, 9999, true);
                 });
             });
-            // let prevD = -1;
-            // let prevN = "";
-            // const lastAtDepth: { [key: number]: string } = {};
-            // dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
-            //   // In depth-first, same depth means not-connected
-            //   if (d <= prevD) {
-            //     debug(lastAtDepth[d - 1], "→", n);
-            //     this.populateMain(
-            //       mainG,
-            //       lastAtDepth[d - 1],
-            //       field,
-            //       n,
-            //       9999,
-            //       9999,
-            //       true
-            //     );
-            //   }
-            //   // Increase in depth implies connectedness
-            //   else if (d && prevD < d) {
-            //     debug(prevN, "→", n);
-            //     this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
-            //   } else {
-            //     debug({ prevN, n, prevD, d });
-            //   }
-            //   prevD = d;
-            //   prevN = n;
-            //   lastAtDepth[d] = n;
-            // });
+        });
+    }
+    addDendronNotesToGraph(frontms, mainG) {
+        const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = this.settings;
+        if (!addDendronNotes)
+            return;
+        frontms.forEach((frontm) => {
+            const { file } = frontm;
+            const basename = getDVBasename(file);
+            if (mainG.hasNode(basename))
+                return;
+            const splits = basename.split(dendronNoteDelimiter);
+            if (splits.length < 2)
+                return;
+            const reversed = splits.reverse();
+            reversed.forEach((split, i) => {
+                const currSlice = reversed
+                    .slice(i)
+                    .reverse()
+                    .join(dendronNoteDelimiter);
+                const nextSlice = reversed
+                    .slice(i + 1)
+                    .reverse()
+                    .join(dendronNoteDelimiter);
+                if (!nextSlice)
+                    return;
+                const sourceOrder = this.getSourceOrder(frontm);
+                const targetOrder = this.getTargetOrder(frontms, nextSlice);
+                this.populateMain(mainG, currSlice, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
+            });
         });
     }
     async initGraphs() {
@@ -52143,6 +52198,9 @@ class BCPlugin extends require$$0.Plugin {
             console.time("Traverse-Notes");
             this.addTraverseNotesToGraph(eligableAlts[BC_TRAVERSE_NOTE], frontms, mainG, this.buildObsGraph());
             console.timeEnd("Traverse-Notes");
+            console.time("Dendron-Notes");
+            this.addDendronNotesToGraph(frontms, mainG);
+            console.timeEnd("Dendron-Notes");
             db.end1G();
             files.forEach((file) => {
                 const { basename } = file;

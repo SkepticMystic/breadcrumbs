@@ -1025,38 +1025,47 @@ export default class BCPlugin extends Plugin {
           );
         });
       });
+    });
+  }
 
-      // let prevD = -1;
-      // let prevN = "";
-      // const lastAtDepth: { [key: number]: string } = {};
+  addDendronNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
+    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } =
+      this.settings;
+    if (!addDendronNotes) return;
 
-      // dfsFromNode(ObsG, traverseNoteBasename, (n, a, d) => {
-      //   // In depth-first, same depth means not-connected
+    frontms.forEach((frontm) => {
+      const { file } = frontm;
+      const basename = getDVBasename(file);
+      if (mainG.hasNode(basename)) return;
 
-      //   if (d <= prevD) {
-      //     debug(lastAtDepth[d - 1], "→", n);
-      //     this.populateMain(
-      //       mainG,
-      //       lastAtDepth[d - 1],
-      //       field,
-      //       n,
-      //       9999,
-      //       9999,
-      //       true
-      //     );
-      //   }
-      //   // Increase in depth implies connectedness
-      //   else if (d && prevD < d) {
-      //     debug(prevN, "→", n);
-      //     this.populateMain(mainG, prevN, field, n, 9999, 9999, true);
-      //   } else {
-      //     debug({ prevN, n, prevD, d });
-      //   }
+      const splits = basename.split(dendronNoteDelimiter);
+      if (splits.length < 2) return;
 
-      //   prevD = d;
-      //   prevN = n;
-      //   lastAtDepth[d] = n;
-      // });
+      const reversed = splits.reverse();
+      reversed.forEach((split, i) => {
+        const currSlice = reversed
+          .slice(i)
+          .reverse()
+          .join(dendronNoteDelimiter);
+        const nextSlice = reversed
+          .slice(i + 1)
+          .reverse()
+          .join(dendronNoteDelimiter);
+        if (!nextSlice) return;
+
+        const sourceOrder = this.getSourceOrder(frontm);
+        const targetOrder = this.getTargetOrder(frontms, nextSlice);
+
+        this.populateMain(
+          mainG,
+          currSlice,
+          dendronNoteField,
+          nextSlice,
+          sourceOrder,
+          targetOrder,
+          true
+        );
+      });
     });
   }
 
@@ -1212,6 +1221,9 @@ export default class BCPlugin extends Plugin {
         this.buildObsGraph()
       );
       console.timeEnd("Traverse-Notes");
+      console.time("Dendron-Notes");
+      this.addDendronNotesToGraph(frontms, mainG);
+      console.timeEnd("Dendron-Notes");
       db.end1G();
 
       files.forEach((file) => {

@@ -18,6 +18,7 @@
         "TagNote",
         "LinkNote",
         "TraverseNote",
-        "DownView"
+        "DownView",
+        "DendronNote"
     ]
 }
