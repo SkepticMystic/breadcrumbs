@@ -52061,14 +52061,13 @@ class BCPlugin extends require$$0.Plugin {
         const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = this.settings;
         if (!addDendronNotes)
             return;
-        frontms.forEach((frontm) => {
+        for (const frontm of frontms) {
             const { file } = frontm;
             const basename = getDVBasename(file);
-            if (mainG.hasNode(basename))
-                return;
             const splits = basename.split(dendronNoteDelimiter);
             if (splits.length < 2)
-                return;
+                continue;
+            // Probably inefficient to reverse then unreverse it. I can probably just use slice(-i)
             const reversed = splits.reverse();
             reversed.forEach((split, i) => {
                 const currSlice = reversed
@@ -52085,7 +52084,38 @@ class BCPlugin extends require$$0.Plugin {
                 const targetOrder = this.getTargetOrder(frontms, nextSlice);
                 this.populateMain(mainG, currSlice, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
             });
-        });
+        }
+        // frontms.forEach((frontm) => {
+        //   const { file } = frontm;
+        //   const basename = getDVBasename(file);
+        //   // It could have the node from another means already, but that doesn't mean it should return...
+        //   // if (mainG.hasNode(basename)) return;
+        //   const splits = basename.split(dendronNoteDelimiter);
+        //   if (splits.length < 2) return;
+        //   const reversed = splits.reverse();
+        //   reversed.forEach((split, i) => {
+        //     const currSlice = reversed
+        //       .slice(i)
+        //       .reverse()
+        //       .join(dendronNoteDelimiter);
+        //     const nextSlice = reversed
+        //       .slice(i + 1)
+        //       .reverse()
+        //       .join(dendronNoteDelimiter);
+        //     if (!nextSlice) return;
+        //     const sourceOrder = this.getSourceOrder(frontm);
+        //     const targetOrder = this.getTargetOrder(frontms, nextSlice);
+        //     this.populateMain(
+        //       mainG,
+        //       currSlice,
+        //       dendronNoteField,
+        //       nextSlice,
+        //       sourceOrder,
+        //       targetOrder,
+        //       true
+        //     );
+        //   });
+        // });
     }
     async initGraphs() {
         const mainG = new graphology_umd_min.MultiGraph();
