@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.0...2.9.1) (2021-12-14)
+
+
+### Bug Fixes
+
+* **DendronNote:** :bug: Don't return if g.hasNode. It may already have it from other means ([f7c4fe4](https://github.com/SkepticMystic/breadcrumbs/commit/f7c4fe4a6d406bf70e2eded74d138ada16247da1))
+
 ## [2.9.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.8.0...2.9.0) (2021-12-07)
 
 
