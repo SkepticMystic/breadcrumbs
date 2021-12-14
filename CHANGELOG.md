@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.9.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.1...2.9.2) (2021-12-14)
+
+
+### Bug Fixes
+
+* :bug: Don't add Obsidian {{templates}} (fix [#207](https://github.com/SkepticMystic/breadcrumbs/issues/207)) ([4762e13](https://github.com/SkepticMystic/breadcrumbs/commit/4762e1334c43f2ff9ecb41cd5f695f0dadd6294f))
+
 ### [2.9.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.0...2.9.1) (2021-12-14)
 
 
