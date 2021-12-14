@@ -24508,7 +24508,7 @@ class MatrixView extends require$$0.ItemView {
             return {
                 to,
                 cls: linkClass(this.app, to, realQ),
-                alt: this.getAlt(to, this.plugin.settings),
+                alt: this.getAlt(to),
                 order: this.getOrder(to),
                 parent,
             };
@@ -24540,13 +24540,14 @@ class MatrixView extends require$$0.ItemView {
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.$destroy();
         return Promise.resolve();
     }
-    getAlt(node, settings) {
+    getAlt(node) {
+        const { altLinkFields } = this.plugin.settings;
         let alt = null;
-        if (settings.altLinkFields.length) {
+        if (altLinkFields.length) {
             const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
             if (file) {
                 const metadata = this.app.metadataCache.getFileCache(file);
-                settings.altLinkFields.forEach((altLinkField) => {
+                altLinkFields.forEach((altLinkField) => {
                     var _a;
                     alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
                 });
@@ -25746,7 +25747,7 @@ function get_each_context_2$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (82:8) {#if step.value && settings.gridDots}
+// (81:8) {#if step.value && settings.gridDots}
 function create_if_block$3(ctx) {
 	let div;
 	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*step*/ ctx[24].value] / 1000));
@@ -25804,7 +25805,7 @@ function create_if_block$3(ctx) {
 	};
 }
 
-// (84:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (83:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
 function create_each_block_2$1(ctx) {
 	let span;
 
@@ -25824,7 +25825,7 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (65:4) {#each allRuns[i] as step}
+// (64:4) {#each allRuns[i] as step}
 function create_each_block_1$3(ctx) {
 	let div1;
 	let div0;
@@ -25903,7 +25904,7 @@ function create_each_block_1$3(ctx) {
 	};
 }
 
-// (64:2) {#each transposedTrails as col, i}
+// (63:2) {#each transposedTrails as col, i}
 function create_each_block$5(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*allRuns*/ ctx[7][/*i*/ ctx[23]];
@@ -26048,8 +26049,7 @@ function instance$9($$self, $$props, $$invalidate) {
 				wordCounts
 			);
 		} catch(error) {
-			console.log(error);
-			console.log({ currFile });
+			console.log(error, { currFile });
 			$$invalidate(2, wordCounts[cell] = 0, wordCounts);
 		}
 	});
@@ -52180,7 +52180,8 @@ class BCPlugin extends require$$0.Plugin {
                 iterateHiers(userHiers, (hier, dir, field) => {
                     const values = this.parseFieldValue(frontm[field]);
                     values.forEach((target) => {
-                        if (target.startsWith("<%") && target.endsWith("%>"))
+                        if ((target.startsWith("<%") && target.endsWith("%>")) ||
+                            (target.startsWith("{{") && target.endsWith("}}")))
                             return;
                         const targetOrder = this.getTargetOrder(frontms, target);
                         this.populateMain(mainG, basename, field, target, sourceOrder, targetOrder);

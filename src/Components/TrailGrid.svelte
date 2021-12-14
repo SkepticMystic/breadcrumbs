@@ -38,8 +38,7 @@
         ""
       )?.stat.size;
     } catch (error) {
-      console.log(error);
-      console.log({ currFile });
+      console.log(error, { currFile });
       wordCounts[cell] = 0;
     }
   });

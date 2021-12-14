@@ -68,13 +68,14 @@ export default class MatrixView extends ItemView {
     return Promise.resolve();
   }
 
-  getAlt(node: string, settings: BCSettings) {
+  getAlt(node: string): string | null {
+    const { altLinkFields } = this.plugin.settings;
     let alt = null;
-    if (settings.altLinkFields.length) {
+    if (altLinkFields.length) {
       const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
       if (file) {
         const metadata = this.app.metadataCache.getFileCache(file);
-        settings.altLinkFields.forEach((altLinkField) => {
+        altLinkFields.forEach((altLinkField) => {
           alt = metadata?.frontmatter?.[altLinkField];
         });
       }
@@ -90,7 +91,7 @@ export default class MatrixView extends ItemView {
     return {
       to,
       cls: linkClass(this.app, to, realQ),
-      alt: this.getAlt(to, this.plugin.settings),
+      alt: this.getAlt(to),
       order: this.getOrder(to),
       parent,
     };
