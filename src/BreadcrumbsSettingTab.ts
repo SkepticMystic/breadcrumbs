@@ -7,12 +7,12 @@ import {
   Setting,
 } from "obsidian";
 import { isInVault, openView } from "obsidian-community-lib";
+import Checkboxes from "./Components/Checkboxes.svelte";
 import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
 import {
   ALLUNLINKED,
   DEFAULT_SETTINGS,
-  DIRECTIONS,
   MATRIX_VIEW,
   REAlCLOSED,
   RELATIONS,
@@ -455,42 +455,14 @@ export class BCSettingTab extends PluginSettingTab {
       text: "Limit Trail View to only show certain fields",
     });
 
-    const checkboxDiv = limitTrailFieldsDiv.createDiv({ cls: "checkboxes" });
-
-    function drawLimitTrailCheckboxes(div: HTMLDivElement) {
-      checkboxDiv.empty();
-      const checkboxStates = settings.limitTrailCheckboxStates;
-
-      settings.userHiers.forEach((userHier) => {
-        userHier.up.forEach(async (field) => {
-          if (field === "") return;
-          // First sort out limitTrailCheckboxStates
-          if (checkboxStates[field] === undefined) {
-            checkboxStates[field] = true;
-            await plugin.saveSettings();
-          }
-          const cbDiv = div.createDiv();
-          const checkedQ = checkboxStates[field];
-          const cb = cbDiv.createEl("input", {
-            type: "checkbox",
-            attr: { id: field },
-          });
-          cb.checked = checkedQ;
-          cbDiv.createEl("label", {
-            text: field,
-            attr: { for: field },
-          });
-
-          cb.addEventListener("change", async () => {
-            checkboxStates[field] = cb.checked;
-            await plugin.saveSettings();
-            console.log(settings.limitTrailCheckboxStates);
-          });
-        });
-      });
-    }
-
-    drawLimitTrailCheckboxes(checkboxDiv);
+    new Checkboxes({
+      target: trailDetails,
+      props: {
+        plugin: this.plugin,
+        settingName: "limitTrailCheckboxes",
+        options: getFields(settings.userHiers, "up"),
+      },
+    });
 
     // new Setting(trailDetails)
     //   .setName("Field name to hide trail")
@@ -799,46 +771,14 @@ export class BCSettingTab extends PluginSettingTab {
       text: "Limit to only write certain fields to files",
     });
 
-    const limitWriteBCCheckboxDiv = limitWriteBCDiv.createDiv({
-      cls: "checkboxes",
+    new Checkboxes({
+      target: writeBCsToFileDetails,
+      props: {
+        plugin,
+        options: getFields(settings.userHiers),
+        settingName: "limitWriteBCCheckboxes",
+      },
     });
-
-    function drawLimitWriteBCCheckboxes(div: HTMLDivElement) {
-      limitWriteBCCheckboxDiv.empty();
-      const checkboxStates = settings.limitWriteBCCheckboxStates;
-
-      settings.userHiers.forEach((userHier) => {
-        DIRECTIONS.forEach((dir) => {
-          userHier[dir]?.forEach(async (field) => {
-            if (field === "") return;
-            // First sort out limitWriteBCCheckboxStates
-            if (checkboxStates[field] === undefined) {
-              checkboxStates[field] = true;
-              await plugin.saveSettings();
-            }
-            const cbDiv = div.createDiv();
-            const checkedQ = checkboxStates[field];
-            const cb = cbDiv.createEl("input", {
-              type: "checkbox",
-              attr: { id: field },
-            });
-            cb.checked = checkedQ;
-            const label = cbDiv.createEl("label", {
-              text: field,
-              attr: { for: field },
-            });
-
-            cb.addEventListener("change", async (event) => {
-              checkboxStates[field] = cb.checked;
-              await plugin.saveSettings();
-              console.log(settings.limitWriteBCCheckboxStates);
-            });
-          });
-        });
-      });
-    }
-
-    drawLimitWriteBCCheckboxes(limitWriteBCCheckboxDiv);
 
     new Setting(writeBCsToFileDetails)
       .setName("Write BCs to file Inline")

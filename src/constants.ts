@@ -150,7 +150,8 @@ export const DEFAULT_SETTINGS: BCSettings = {
   enableAlphaSort: true,
   fieldSuggestor: true,
   filterImpliedSiblingsOfDifferentTypes: false,
-  limitWriteBCCheckboxStates: {},
+  limitWriteBCCheckboxes: [],
+  CHECKBOX_STATES_OVERWRITTEN: false,
   gridDots: false,
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
@@ -176,7 +177,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showTrail: true,
   showGrid: true,
   showPrevNext: true,
-  limitTrailCheckboxStates: {},
+  limitTrailCheckboxes: [],
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",

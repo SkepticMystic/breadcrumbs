@@ -30,8 +30,11 @@ export interface BCSettings {
   hierarchyNotes: string[];
   HNUpField: string;
   indexNotes: string[];
-  limitTrailCheckboxStates: { [field: string]: boolean };
-  limitWriteBCCheckboxStates: { [field: string]: boolean };
+  /** An array of fields going _up_ which **will** be shown in the trail view */
+  limitTrailCheckboxes: string[];
+  /** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
+  limitWriteBCCheckboxes: string[];
+  CHECKBOX_STATES_OVERWRITTEN: boolean;
   noPathMessage: string;
   openMatrixOnLoad: boolean;
   openStatsOnLoad: boolean;

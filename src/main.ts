@@ -178,11 +178,23 @@ export default class BCPlugin extends Plugin {
         await this.saveSettings();
       });
     });
-    const upFields = getFields(settings.userHiers, "up");
-    for (const field in settings.limitTrailCheckboxStates) {
-      if (!upFields.includes(field)) {
-        delete settings.limitTrailCheckboxStates[field];
-      }
+
+    if (settings.hasOwnProperty("limitTrailCheckboxStates")) {
+      //@ts-ignore
+      delete settings.limitTrailCheckboxStates;
+      await this.saveSettings();
+    }
+    if (settings.hasOwnProperty("limitWriteBCCheckboxStates")) {
+      //@ts-ignore
+      delete settings.limitWriteBCCheckboxStates;
+      await this.saveSettings();
+    }
+
+    if (!settings.CHECKBOX_STATES_OVERWRITTEN) {
+      settings.limitWriteBCCheckboxes = getFields(settings.userHiers);
+      settings.limitTrailCheckboxes = getFields(settings.userHiers, "up");
+      settings.CHECKBOX_STATES_OVERWRITTEN = true;
+      await this.saveSettings();
     }
 
     this.VIEWS = [
@@ -411,7 +423,7 @@ export default class BCPlugin extends Plugin {
 
   writeBCToFile = async (file: TFile) => {
     const { app, settings, mainG } = this;
-    const { limitWriteBCCheckboxStates, writeBCsInline, userHiers } = settings;
+    const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
 
     const { frontmatter } = app.metadataCache.getFileCache(file);
     const api = app.plugins.plugins.metaedit?.api;
@@ -427,7 +439,7 @@ export default class BCPlugin extends Plugin {
     });
 
     for (const { succ, field } of succInfo) {
-      if (!limitWriteBCCheckboxStates[field]) return;
+      if (!limitWriteBCCheckboxes.includes(field)) return;
 
       if (!writeBCsInline) {
         await createOrUpdateYaml(field, succ, file, frontmatter, api);
@@ -1412,19 +1424,23 @@ export default class BCPlugin extends Plugin {
   }
 
   getLimitedTrailSub() {
-    const { limitTrailCheckboxStates, userHiers } = this.settings;
+    const { limitTrailCheckboxes, userHiers } = this.settings;
     let subGraph: MultiGraph;
 
-    if (Object.values(limitTrailCheckboxStates).every((val) => val)) {
+    if (
+      getFields(userHiers).every((field) =>
+        limitTrailCheckboxes.includes(field)
+      )
+    ) {
       subGraph = getSubInDirs(this.mainG, "up", "down");
     } else {
-      const positiveFields = Object.keys(limitTrailCheckboxStates).filter(
-        (field) => limitTrailCheckboxStates[field]
-      );
-      const oppFields = positiveFields
+      const oppFields = limitTrailCheckboxes
         .map((field) => getOppFields(userHiers, field)[0])
         .filter((field) => field !== undefined);
-      subGraph = getSubForFields(this.mainG, [...positiveFields, ...oppFields]);
+      subGraph = getSubForFields(this.mainG, [
+        ...limitTrailCheckboxes,
+        ...oppFields,
+      ]);
     }
 
     const closed = getReflexiveClosure(subGraph, userHiers);
