@@ -48,7 +48,6 @@
     "csv2json": "^2.0.2",
     "csvjson-csv2json": "^5.0.6",
     "d3": "^6.7.0",
-    "fs": "0.0.1-security",
     "graphology": "^0.23.1",
     "graphology-traversal": "^0.2.2",
     "graphology-types": "^0.23.0",
