@@ -70,17 +70,16 @@ export default class MatrixView extends ItemView {
 
   getAlt(node: string): string | null {
     const { altLinkFields } = this.plugin.settings;
-    let alt = null;
     if (altLinkFields.length) {
       const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
       if (file) {
         const metadata = this.app.metadataCache.getFileCache(file);
-        altLinkFields.forEach((altLinkField) => {
-          alt = metadata?.frontmatter?.[altLinkField];
-        });
+        for (const altField of altLinkFields) {
+          const value = metadata?.frontmatter?.[altField];
+          if (value) return value;
+        }
       }
-    }
-    return alt;
+    } else return null;
   }
 
   toInternalLinkObj = (
