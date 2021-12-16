@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.10.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.10.0...2.10.1) (2021-12-16)
+
+
+### Bug Fixes
+
+* :bug: Safety checks for new notes and no markdownView ([452a54b](https://github.com/SkepticMystic/breadcrumbs/commit/452a54bcbdce20424c1de1f9bf61fb3a99f8cdc1))
+
 ## [2.10.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.2...2.10.0) (2021-12-16)
 
 
