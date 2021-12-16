@@ -1,16 +1,8 @@
 import { MultiGraph } from "graphology";
 import { dfsAllPaths } from "../src/graphUtils";
-import { testGraph } from "./testUtils";
+import { testGraph, verify } from "./testUtils";
 
 require("approvals").mocha();
-
-function verify(sol: any) {
-  this.verifyAsJSON(sol, {
-    reporters: ["tortoisemerge"],
-    appendEOL: true,
-    normalizeLineEndingsTo: "\r\n",
-  });
-}
 
 describe("dfsAllPaths", function () {
   it("1", function () {

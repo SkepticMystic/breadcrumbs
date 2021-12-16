@@ -20835,6 +20835,7 @@ const DEFAULT_SETTINGS = {
     noPathMessage: `This note has no real or implied parents`,
     trailSeperator: "→",
     treatCurrNodeAsImpliedSibling: false,
+    trimDendronNotes: false,
     respectReadableLineLength: true,
     userHiers: [
         {
@@ -22115,6 +22116,11 @@ function normalise(arr) {
     const max = Math.max(...arr);
     return arr.map((item) => item / max);
 }
+const dropPath = (path) => path.replace(/^.*\//, "");
+const dropDendron = (path, settings) => settings.trimDendronNotes
+    ? path.split(settings.dendronNoteDelimiter).last()
+    : path;
+const dropPathNDendron = (path, settings) => dropDendron(dropPath(path), settings);
 /**
  * Get basename from a **Markdown** `path`
  * @param  {string} path
@@ -23185,7 +23191,7 @@ function get_each_context_3$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (24:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (25:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$5(ctx) {
 	let details;
 	let summary;
@@ -23255,7 +23261,7 @@ function create_if_block$5(ctx) {
 	};
 }
 
-// (27:12) {#if square.realItems.length}
+// (28:12) {#if square.realItems.length}
 function create_if_block_3$2(ctx) {
 	let t;
 	let ol;
@@ -23298,7 +23304,7 @@ function create_if_block_3$2(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView*/ 13) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_3 = /*square*/ ctx[12].realItems;
 				let i;
 
@@ -23330,7 +23336,7 @@ function create_if_block_3$2(ctx) {
 	};
 }
 
-// (28:14) {#if settings.showRelationType}
+// (29:14) {#if settings.showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -23349,11 +23355,11 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (33:16) {#each square.realItems as realItem}
+// (34:16) {#each square.realItems as realItem}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "";
+	let t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -23393,7 +23399,7 @@ function create_each_block_3$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 3 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "")) set_data(t0, t0_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
@@ -23407,7 +23413,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (48:12) {#if square.impliedItems.length}
+// (49:12) {#if square.impliedItems.length}
 function create_if_block_1$4(ctx) {
 	let t;
 	let ol;
@@ -23453,7 +23459,7 @@ function create_if_block_1$4(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView*/ 13) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_2 = /*square*/ ctx[12].impliedItems;
 				let i;
 
@@ -23489,7 +23495,7 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (49:14) {#if settings.showRelationType}
+// (50:14) {#if settings.showRelationType}
 function create_if_block_2$3(ctx) {
 	let h5;
 
@@ -23508,11 +23514,11 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (54:16) {#each square.impliedItems as impliedItem}
+// (55:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
+	let t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
@@ -23534,6 +23540,7 @@ function create_each_block_2$3(ctx) {
 			t = text(t_value);
 			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"));
 			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
+			attr(div, "aria-label-position", "left");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -23552,7 +23559,7 @@ function create_each_block_2$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 3 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "")) set_data(t, t_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
@@ -23570,7 +23577,7 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (23:6) {#each squares as square}
+// (24:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$5(ctx);
@@ -23605,7 +23612,7 @@ function create_each_block_1$6(ctx) {
 	};
 }
 
-// (17:2) {#each filteredSquaresArr as squares}
+// (18:2) {#each filteredSquaresArr as squares}
 function create_each_block$8(ctx) {
 	let details;
 	let summary;
@@ -23650,7 +23657,7 @@ function create_each_block$8(ctx) {
 		p(ctx, dirty) {
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[9].map(func).join(", ") + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_1 = /*squares*/ ctx[9];
 				let i;
 
@@ -23710,7 +23717,7 @@ function create_fragment$c(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -23833,7 +23840,7 @@ function get_each_context_3$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (20:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (21:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
 function create_if_block$4(ctx) {
 	let div1;
 	let div0;
@@ -23926,7 +23933,7 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (25:14) {#if settings.showRelationType}
+// (26:14) {#if settings.showRelationType}
 function create_if_block_5(ctx) {
 	let h6;
 	let t_value = (/*square*/ ctx[12].realItems.length ? "Real" : "Implied") + "";
@@ -23951,7 +23958,7 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (31:12) {#if square.realItems.length}
+// (32:12) {#if square.realItems.length}
 function create_if_block_4(ctx) {
 	let ol;
 	let each_value_3 = /*square*/ ctx[12].realItems;
@@ -23979,7 +23986,7 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView*/ 13) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_3 = /*square*/ ctx[12].realItems;
 				let i;
 
@@ -24009,11 +24016,11 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (33:16) {#each square.realItems as realItem}
+// (34:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "";
+	let t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -24053,7 +24060,7 @@ function create_each_block_3$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? /*realItem*/ ctx[18].to.split("/").last()) + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 3 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "")) set_data(t0, t0_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
@@ -24067,7 +24074,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (48:12) {#if square.impliedItems.length}
+// (49:12) {#if square.impliedItems.length}
 function create_if_block_1$3(ctx) {
 	let div;
 	let h4;
@@ -24127,7 +24134,7 @@ function create_if_block_1$3(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView*/ 13) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_2 = /*square*/ ctx[12].impliedItems;
 				let i;
 
@@ -24164,7 +24171,7 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (51:16) {#if square.impliedItems.length}
+// (52:16) {#if square.impliedItems.length}
 function create_if_block_2$2(ctx) {
 	let if_block_anchor;
 	let if_block = /*settings*/ ctx[1].showRelationType && /*square*/ ctx[12].realItems.length && create_if_block_3$1();
@@ -24197,7 +24204,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (52:18) {#if settings.showRelationType && square.realItems.length}
+// (53:18) {#if settings.showRelationType && square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let h6;
 
@@ -24216,11 +24223,11 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (58:16) {#each square.impliedItems as impliedItem}
+// (59:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "";
+	let t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
@@ -24265,7 +24272,7 @@ function create_each_block_2$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? /*impliedItem*/ ctx[15].to.split("/").last()) + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 3 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "")) set_data(t, t_value);
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
@@ -24285,7 +24292,7 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (19:6) {#each squares as square}
+// (20:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$4(ctx);
@@ -24320,7 +24327,7 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (17:2) {#each filteredSquaresArr as squares}
+// (18:2) {#each filteredSquaresArr as squares}
 function create_each_block$7(ctx) {
 	let div;
 	let t;
@@ -24352,7 +24359,7 @@ function create_each_block$7(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value_1 = /*squares*/ ctx[9];
 				let i;
 
@@ -24412,7 +24419,7 @@ function create_fragment$b(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -25266,6 +25273,14 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 }
             };
         });
+        new require$$0.Setting(alternativeHierarchyDetails)
+            .setName("Trim Dendron Note Names")
+            .setDesc("When displaying a dendron note name, should it be trimmed to only show the last item in the chain? e.g. `A.B.C` would be trimmed to only display `C`.")
+            .addToggle((toggle) => toggle.setValue(settings.trimDendronNotes).onChange(async (value) => {
+            settings.trimDendronNotes = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
         const fields = getFields(settings.userHiers);
         if (!fields.includes(settings.dendronNoteField)) {
             settings.dendronNoteField = fields[0];
@@ -25829,7 +25844,7 @@ function create_each_block_2$1(ctx) {
 function create_each_block_1$3(ctx) {
 	let div1;
 	let div0;
-	let t0_value = /*step*/ ctx[24].value + "";
+	let t0_value = dropDendron(/*step*/ ctx[24].value, /*settings*/ ctx[4]) + "";
 	let t0;
 	let div0_class_value;
 	let t1;
@@ -25930,7 +25945,7 @@ function create_each_block$5(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass*/ 190) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, dropDendron*/ 190) {
 				each_value_1 = /*allRuns*/ ctx[7][/*i*/ ctx[23]];
 				let i;
 
@@ -25989,7 +26004,7 @@ function create_fragment$9(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass*/ 190) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, dropDendron*/ 190) {
 				each_value = /*transposedTrails*/ ctx[6];
 				let i;
 
@@ -26141,7 +26156,7 @@ function get_each_context_1$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (19:8) {:else}
+// (20:8) {:else}
 function create_else_block$2(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*trail*/ ctx[10];
@@ -26167,7 +26182,7 @@ function create_else_block$2(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view*/ 58) {
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, dropDendron*/ 58) {
 				each_value_1 = /*trail*/ ctx[10];
 				let i;
 
@@ -26197,7 +26212,7 @@ function create_else_block$2(ctx) {
 	};
 }
 
-// (17:8) {#if trail.length === 0}
+// (18:8) {#if trail.length === 0}
 function create_if_block_1$2(ctx) {
 	let span;
 
@@ -26216,7 +26231,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (28:12) {#if i < trail.length - 1}
+// (29:12) {#if i < trail.length - 1}
 function create_if_block_2$1(ctx) {
 	let span;
 
@@ -26235,10 +26250,10 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (20:10) {#each trail as crumb, i}
+// (21:10) {#each trail as crumb, i}
 function create_each_block_1$2(ctx) {
 	let span;
-	let t0_value = /*crumb*/ ctx[13] + "";
+	let t0_value = dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[4]) + "";
 	let t0;
 	let t1;
 	let if_block_anchor;
@@ -26282,7 +26297,7 @@ function create_each_block_1$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*trailsToShow*/ 8 && t0_value !== (t0_value = /*crumb*/ ctx[13] + "")) set_data(t0, t0_value);
+			if (dirty & /*trailsToShow*/ 8 && t0_value !== (t0_value = dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[4]) + "")) set_data(t0, t0_value);
 
 			if (/*i*/ ctx[15] < /*trail*/ ctx[10].length - 1) {
 				if (if_block) {
@@ -26308,7 +26323,7 @@ function create_each_block_1$2(ctx) {
 	};
 }
 
-// (15:4) {#each trailsToShow as trail}
+// (16:4) {#each trailsToShow as trail}
 function create_each_block$4(ctx) {
 	let div;
 	let t;
@@ -26352,7 +26367,7 @@ function create_each_block$4(ctx) {
 	};
 }
 
-// (37:2) {#if sortedTrails.length > 1}
+// (38:2) {#if sortedTrails.length > 1}
 function create_if_block$2(ctx) {
 	let div;
 	let button;
@@ -26428,7 +26443,7 @@ function create_fragment$8(ctx) {
 			if (if_block) if_block.m(span, null);
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view*/ 58) {
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, dropDendron*/ 58) {
 				each_value = /*trailsToShow*/ ctx[3];
 				let i;
 
@@ -26707,7 +26722,7 @@ function get_each_context$3(ctx, list, i) {
 	return child_ctx;
 }
 
-// (51:4) {:else}
+// (52:4) {:else}
 function create_else_block$1(ctx) {
 	let fafire;
 	let current;
@@ -26736,7 +26751,7 @@ function create_else_block$1(ctx) {
 	};
 }
 
-// (49:4) {#if frozen}
+// (50:4) {#if frozen}
 function create_if_block_1$1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -26765,7 +26780,7 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (67:4) {#if line.length > 1}
+// (68:4) {#if line.length > 1}
 function create_if_block$1(ctx) {
 	let div;
 	let pre;
@@ -26774,7 +26789,7 @@ function create_if_block$1(ctx) {
 	let t1;
 	let span;
 	let a;
-	let t2_value = /*line*/ ctx[11][1] + "";
+	let t2_value = dropDendron(/*line*/ ctx[11][1], /*settings*/ ctx[5]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26834,7 +26849,7 @@ function create_if_block$1(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*line*/ ctx[11][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = /*line*/ ctx[11][1] + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[11][1], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
 
 			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
 			? ""
@@ -26850,7 +26865,7 @@ function create_if_block$1(ctx) {
 	};
 }
 
-// (66:2) {#each lines as line}
+// (67:2) {#each lines as line}
 function create_each_block$3(ctx) {
 	let if_block_anchor;
 	let if_block = /*line*/ ctx[11].length > 1 && create_if_block$1(ctx);
@@ -26993,7 +27008,7 @@ function create_fragment$5(ctx) {
 				attr(span, "aria-label", span_aria_label_value);
 			}
 
-			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault*/ 51) {
+			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault, dropDendron*/ 51) {
 				each_value = /*lines*/ ctx[4];
 				let i;
 
