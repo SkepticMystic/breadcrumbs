@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.10.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.2...2.10.0) (2021-12-16)
+
+
+### Features
+
+* **DendronNote:** :sparkles: Option to display trimmed dendron note ([16defd6](https://github.com/SkepticMystic/breadcrumbs/commit/16defd6b1e186b34449c9b34fb6487cdc2e1ba27))
+* **List/Matrix View:** :sparkles: Button to toggle alphabetical sorting direction (Updates the corresponding setting) (Fix [#208](https://github.com/SkepticMystic/breadcrumbs/issues/208)) ([2d164c1](https://github.com/SkepticMystic/breadcrumbs/commit/2d164c1455185a27f46733df106d259251119eb6))
+
+
+### Bug Fixes
+
+* **Hierarchy Note:** :bug: Don't merge all HNs, rather do one at a time (Fix [#216](https://github.com/SkepticMystic/breadcrumbs/issues/216)) ([b3bba6d](https://github.com/SkepticMystic/breadcrumbs/commit/b3bba6da52f0620b491b30c1f80bb267354a6878))
+* **List/Matrix View:** :bug: Break when an altField is found ([4c45603](https://github.com/SkepticMystic/breadcrumbs/commit/4c456035012a87f95316a54c75fcf9645e91c5f5))
+* **List/Matrix View:** :bug: Sort by altField first, then regular note name (Fix [#206](https://github.com/SkepticMystic/breadcrumbs/issues/206)) ([5914cfb](https://github.com/SkepticMystic/breadcrumbs/commit/5914cfb7099e281581db21656f3aa22e9993d710))
+
 ### [2.9.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.9.1...2.9.2) (2021-12-14)
 
 
