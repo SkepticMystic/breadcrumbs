@@ -5,20 +5,20 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
+  import {
+    closeImpliedLinks,
+    getOutNeighbours,
+    getSubInDirs,
+  } from "../graphUtils";
   import type BCPlugin from "../main";
   import {
+    dropDendron,
     linkClass,
     normalise,
     padArray,
     runs,
     transpose,
   } from "../sharedFunctions";
-
-  import {
-    closeImpliedLinks,
-    getOutNeighbours,
-    getSubInDirs,
-  } from "../graphUtils";
   export let sortedTrails: string[][];
   export let app: App;
   export let plugin: BCPlugin;
@@ -114,7 +114,7 @@
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
         <div class={linkClass(app, step.value)}>
-          {step.value}
+          {dropDendron(step.value, settings)}
         </div>
         {#if step.value && settings.gridDots}
           <div class="dots">

@@ -9,6 +9,7 @@ import {
 } from "./constants";
 import { getOppDir, getOppFields } from "./graphUtils";
 import type {
+  BCSettings,
   Directions,
   MetaeditApi,
   RealNImplied,
@@ -36,6 +37,15 @@ export function splitAndDrop(str: string): string[] {
   );
 }
 
+export const dropPath = (path: string) => path.replace(/^.*\//, "");
+export const dropDendron = (path: string, settings: BCSettings) =>
+  settings.trimDendronNotes
+    ? path.split(settings.dendronNoteDelimiter).last()
+    : path;
+
+export const dropPathNDendron = (path: string, settings: BCSettings) =>
+  dropDendron(dropPath(path), settings);
+  
 /**
  * Get basename from a **Markdown** `path`
  * @param  {string} path

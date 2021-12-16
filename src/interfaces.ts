@@ -54,6 +54,7 @@ export interface BCSettings {
   showTrail: boolean;
   trailSeperator: string;
   treatCurrNodeAsImpliedSibling: boolean;
+  trimDendronNotes: boolean;
   useAllMetadata: boolean;
   userHiers: UserHier[];
   visGraph: visTypes;

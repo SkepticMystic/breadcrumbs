@@ -752,6 +752,19 @@ export class BCSettingTab extends PluginSettingTab {
         };
       });
 
+    new Setting(alternativeHierarchyDetails)
+      .setName("Trim Dendron Note Names")
+      .setDesc(
+        "When displaying a dendron note name, should it be trimmed to only show the last item in the chain? e.g. `A.B.C` would be trimmed to only display `C`."
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.trimDendronNotes).onChange(async (value) => {
+          settings.trimDendronNotes = value;
+          await plugin.saveSettings();
+          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        })
+      );
+
     const fields = getFields(settings.userHiers);
 
     if (!fields.includes(settings.dendronNoteField)) {

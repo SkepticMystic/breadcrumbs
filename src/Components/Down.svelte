@@ -14,6 +14,7 @@
     getSubInDirs,
   } from "../graphUtils";
   import type BCPlugin from "../main";
+  import { dropDendron } from "../sharedFunctions";
 
   export let plugin: BCPlugin;
   export let view: DownView;
@@ -91,7 +92,7 @@
           <a
             class="internal-link {isInVault(plugin.app, line[1])
               ? ''
-              : 'is-unresolved'}">{line[1]}</a
+              : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
           >
         </span>
       </div>

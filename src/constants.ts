@@ -181,6 +181,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",
   treatCurrNodeAsImpliedSibling: false,
+  trimDendronNotes: false,
   respectReadableLineLength: true,
   userHiers: [
     {

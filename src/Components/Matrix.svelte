@@ -3,6 +3,7 @@
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import type { BCSettings, SquareProps } from "../interfaces";
   import type MatrixView from "../MatrixView";
+  import { dropPathNDendron } from "../sharedFunctions";
 
   export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;
@@ -40,7 +41,7 @@
                       on:mouseover={(event) =>
                         hoverPreview(event, matrixView, realItem.to)}
                     >
-                      {realItem.alt ?? realItem.to.split("/").last()}
+                      {realItem.alt ?? dropPathNDendron(realItem.to, settings)}
                     </div>
                   </li>
                 {/each}
@@ -70,7 +71,8 @@
                         : ""}
                       aria-label-position="left"
                     >
-                      {impliedItem.alt ?? impliedItem.to.split("/").last()}
+                      {impliedItem.alt ??
+                        dropPathNDendron(impliedItem.to, settings)}
                     </div>
                   </li>
                 {/each}

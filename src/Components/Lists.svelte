@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { App, TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
+  import { dropPathNDendron } from "../sharedFunctions";
   import type { BCSettings, SquareProps } from "../interfaces";
   import type MatrixView from "../MatrixView";
 
@@ -40,7 +41,7 @@
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, realItem.to)}
                     >
-                      {realItem.alt ?? realItem.to.split("/").last()}
+                      {realItem.alt ?? dropPathNDendron(realItem.to, settings)}
                     </div>
                   </li>
                 {/each}
@@ -62,8 +63,10 @@
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, impliedItem.to)}
                       aria-label={impliedItem.parent ?? ""}
+                      aria-label-position="left"
                     >
-                      {impliedItem.alt ?? impliedItem.to.split("/").last()}
+                      {impliedItem.alt ??
+                        dropPathNDendron(impliedItem.to, settings)}
                     </div>
                   </li>
                 {/each}
