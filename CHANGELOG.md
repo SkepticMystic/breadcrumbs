@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.12.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.11.0...2.12.0) (2021-12-16)
+
+
+### Features
+
+* :sparkles: Button to select All/None for all checkbox settings ([c495bc1](https://github.com/SkepticMystic/breadcrumbs/commit/c495bc1cfff675541ae06469ee1b1545d32c420a))
+
+
+### Bug Fixes
+
+* :heavy_minus_sign: `fs` is no longer needed ([17218c9](https://github.com/SkepticMystic/breadcrumbs/commit/17218c9babb128bc3c2b3cfbdf1e2b93722902be))
+
 ## [2.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.10.1...2.11.0) (2021-12-16)
 
 
