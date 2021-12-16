@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.11.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.10.1...2.11.0) (2021-12-16)
+
+
+### Features
+
+* :sparkles: Option to limit which fields are used in `Jump to first <direction>` command (fix [#204](https://github.com/SkepticMystic/breadcrumbs/issues/204)) ([eeb470c](https://github.com/SkepticMystic/breadcrumbs/commit/eeb470c13193ee3c73586da5860830b5bc56a090))
+
 ### [2.10.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.10.0...2.10.1) (2021-12-16)
 
 
