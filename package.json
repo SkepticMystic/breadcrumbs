@@ -54,7 +54,6 @@
     "hierarchy-js": "^1.0.4",
     "juggl-api": "git+https://github.com/HEmile/juggl-api.git",
     "loglevel": "^1.8.0",
-    "nodejs": "^0.0.0",
     "obsidian-community-lib": "^1.2.0",
     "svelte": "3.35.0",
     "svelte-icons": "^2.1.0"

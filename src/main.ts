@@ -21,7 +21,6 @@ import {
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
-import util from "util";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
@@ -688,7 +687,7 @@ export default class BCPlugin extends Plugin {
     const queue = [item];
     while (queue.length) {
       const currItem = queue.shift();
-      if (util.types.isProxy(currItem)) {
+      if (typeof currItem.defaultComparator === "function") {
         const possibleUnproxied = Object.assign({}, currItem);
         const { values } = possibleUnproxied;
         if (values) queue.push(...values);

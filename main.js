@@ -1,13 +1,11 @@
 'use strict';
 
 var require$$0 = require('obsidian');
-var util = require('util');
 var console$1 = require('console');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
 var require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0);
-var util__default = /*#__PURE__*/_interopDefaultLegacy(util);
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -52053,7 +52051,7 @@ class BCPlugin extends require$$0.Plugin {
         const queue = [item];
         while (queue.length) {
             const currItem = queue.shift();
-            if (util__default['default'].types.isProxy(currItem)) {
+            if (typeof currItem.defaultComparator === "function") {
                 const possibleUnproxied = Object.assign({}, currItem);
                 const { values } = possibleUnproxied;
                 if (values)
