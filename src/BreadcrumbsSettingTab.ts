@@ -112,17 +112,6 @@ export class BCSettingTab extends PluginSettingTab {
     generalDetails.createEl("summary", { text: "General Options" });
 
     new Setting(generalDetails)
-      .setName("CSV Breadcrumb Paths")
-      .setDesc("The file path of a csv files with breadcrumbs information.")
-      .addText((text) => {
-        text.setValue(settings.CSVPaths);
-        text.inputEl.onblur = async () => {
-          settings.CSVPaths = text.inputEl.value;
-          await plugin.saveSettings();
-        };
-      });
-
-    new Setting(generalDetails)
       .setName("Show Refresh Index Notice")
       .setDesc(
         "When Refreshing Index, should it show a notice once the operation is complete?"
@@ -240,6 +229,19 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
+    const jumpToFirstFieldsDiv = generalDetails.createDiv().createEl("strong", {
+      text: "When running `Jump to first <direction>` command, limit which fields it can use.",
+    });
+
+    new Checkboxes({
+      target: generalDetails,
+      props: {
+        plugin: this.plugin,
+        settingName: "limitJumpToFirstFields",
+        options: getFields(settings.userHiers),
+      },
+    });
+
     if (this.app.plugins.plugins.dataview !== undefined) {
       new Setting(generalDetails)
         .setName("Dataview Wait Time")
@@ -262,44 +264,6 @@ export class BCSettingTab extends PluginSettingTab {
             })
         );
     }
-
-    // new Setting(generalDetails)
-    //   .setName("Refresh Interval")
-    //   .setDesc(
-    //     "Enter an integer number of seconds to wait before Breadcrumbs auto-refreshes its data. This would update the matrix view and the trail if either are affected. (Set to 0 to disable autorefreshing)"
-    //   )
-    //   .addText((text) =>
-    //     text
-    //       .setPlaceholder("Seconds")
-    //       .setValue(settings.refreshIntervalTime.toString())
-    //       .onChange(async (value) => {
-    //         clearInterval(plugin.refreshIntervalID);
-    //         const num = Number(value);
-
-    //         if (num > 0) {
-    //           settings.refreshIntervalTime = num;
-    //           await plugin.saveSettings();
-
-    //           plugin.refreshIntervalID = window.setInterval(async () => {
-    //             plugin.mainG = await plugin.initGraphs();
-    //             if (settings.showTrail) {
-    //               await plugin.drawTrail();
-    //             }
-    //             const activeMatrix = plugin.getActiveTYPEView(MATRIX_VIEW);
-    //             if (activeMatrix) {
-    //               await activeMatrix.draw();
-    //             }
-    //           }, num * 1000);
-    //           plugin.registerInterval(plugin.refreshIntervalID);
-    //         } else if (num === 0) {
-    //           settings.refreshIntervalTime = num;
-    //           await plugin.saveSettings();
-    //           clearInterval(plugin.refreshIntervalID);
-    //         } else {
-    //           new Notice("The interval must be a non-negative number");
-    //         }
-    //       })
-    //   );
 
     const MLViewDetails: HTMLDetailsElement = containerEl.createEl("details");
     MLViewDetails.createEl("summary", { text: "Matrix/List View" });
@@ -688,6 +652,17 @@ export class BCSettingTab extends PluginSettingTab {
     alternativeHierarchyDetails.createEl("summary", {
       text: "Alternative Hierarchies",
     });
+
+    new Setting(alternativeHierarchyDetails)
+      .setName("CSV Breadcrumb Paths")
+      .setDesc("The file path of a csv files with breadcrumbs information.")
+      .addText((text) => {
+        text.setValue(settings.CSVPaths);
+        text.inputEl.onblur = async () => {
+          settings.CSVPaths = text.inputEl.value;
+          await plugin.saveSettings();
+        };
+      });
 
     new Setting(alternativeHierarchyDetails)
       .setName("Add Dendron notes to graph")

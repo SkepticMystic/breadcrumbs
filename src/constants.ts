@@ -178,6 +178,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showGrid: true,
   showPrevNext: true,
   limitTrailCheckboxes: [],
+  limitJumpToFirstFields: [],
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   trailSeperator: "→",

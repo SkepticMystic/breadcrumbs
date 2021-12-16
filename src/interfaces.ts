@@ -34,6 +34,7 @@ export interface BCSettings {
   limitTrailCheckboxes: string[];
   /** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
   limitWriteBCCheckboxes: string[];
+  limitJumpToFirstFields: string[];
   CHECKBOX_STATES_OVERWRITTEN: boolean;
   noPathMessage: string;
   openMatrixOnLoad: boolean;

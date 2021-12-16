@@ -191,7 +191,9 @@ export default class BCPlugin extends Plugin {
     }
 
     if (!settings.CHECKBOX_STATES_OVERWRITTEN) {
-      settings.limitWriteBCCheckboxes = getFields(settings.userHiers);
+      const fields = getFields(settings.userHiers);
+      settings.limitWriteBCCheckboxes = fields;
+      settings.limitJumpToFirstFields = fields;
       settings.limitTrailCheckboxes = getFields(settings.userHiers, "up");
       settings.CHECKBOX_STATES_OVERWRITTEN = true;
       await this.saveSettings();
@@ -379,7 +381,7 @@ export default class BCPlugin extends Plugin {
       },
     });
 
-    ["up", "down", "next", "prev"].forEach((dir) => {
+    ["up", "down", "next", "prev"].forEach((dir: Directions) => {
       this.addCommand({
         id: `jump-to-first-${dir}`,
         name: `Jump to first '${dir}'`,
@@ -390,22 +392,32 @@ export default class BCPlugin extends Plugin {
             return;
           }
           const { basename } = file;
-          const realsNImplieds = getRealnImplied(
-            this,
-            basename,
-            dir as Directions
-          )[dir];
+
+          const realsNImplieds = getRealnImplied(this, basename, dir)[dir];
           const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
           if (allBCs.length === 0) {
             new Notice(`No ${dir} found`);
             return;
           }
 
+          const toNode = allBCs.find((bc) =>
+            settings.limitJumpToFirstFields.includes(bc.field)
+          )?.to;
+
+          if (!toNode) {
+            new Notice(
+              `No note was found in ${dir} given the limited fields allowed: ${settings.limitJumpToFirstFields.join(
+                ", "
+              )}`
+            );
+            return;
+          }
+
           const toFile = this.app.metadataCache.getFirstLinkpathDest(
-            allBCs[0].to,
+            toNode,
             ""
           );
-          this.app.workspace.activeLeaf.openFile(toFile);
+          await this.app.workspace.activeLeaf.openFile(toFile);
         },
       });
     });
