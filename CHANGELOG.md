@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.12.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.12.0...2.12.1) (2021-12-16)
+
+
+### Bug Fixes
+
+* :bug: Non-node proxy checking ([d9fc78c](https://github.com/SkepticMystic/breadcrumbs/commit/d9fc78caebb66a3fbcf57de10ca8a998e54f3d99))
+
 ## [2.12.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.11.0...2.12.0) (2021-12-16)
 
 
