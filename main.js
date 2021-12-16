@@ -24548,19 +24548,21 @@ class MatrixView extends require$$0.ItemView {
         return Promise.resolve();
     }
     getAlt(node) {
+        var _a;
         const { altLinkFields } = this.plugin.settings;
-        let alt = null;
         if (altLinkFields.length) {
             const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
             if (file) {
                 const metadata = this.app.metadataCache.getFileCache(file);
-                altLinkFields.forEach((altLinkField) => {
-                    var _a;
-                    alt = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altLinkField];
-                });
+                for (const altField of altLinkFields) {
+                    const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
+                    if (value)
+                        return value;
+                }
             }
         }
-        return alt;
+        else
+            return null;
     }
     // ANCHOR Remove duplicate implied links
     removeDuplicateImplied(reals, implieds) {
@@ -24629,7 +24631,16 @@ class MatrixView extends require$$0.ItemView {
             const { alphaSortAsc } = settings;
             const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
             if (settings.enableAlphaSort) {
-                squares.forEach((sq) => sq.sort((a, b) => a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1));
+                squares.forEach((sq) => sq.sort((a, b) => {
+                    var _a, _b;
+                    return ((_a = a.alt) !== null && _a !== void 0 ? _a : a.to) < ((_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
+                        ? alphaSortAsc
+                            ? -1
+                            : 1
+                        : alphaSortAsc
+                            ? 1
+                            : -1;
+                }));
             }
             squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
             loglevel.info([
@@ -24691,9 +24702,7 @@ class MatrixView extends require$$0.ItemView {
                     await this.draw();
                 };
             });
-            contentEl.createEl("button", { text: "↻", attr: { "aria-label": "Refresh Index" } }, (el) => {
-                el.onclick = async () => await this.plugin.refreshIndex();
-            });
+            contentEl.createEl("button", { text: "↻", attr: { "aria-label": "Refresh Index" } }, (el) => (el.onclick = async () => await this.plugin.refreshIndex()));
             contentEl.createEl("button", {
                 text: settings.alphaSortAsc ? "↗" : "↘",
                 attr: { "aria-label": "Alphabetical sorting order" },

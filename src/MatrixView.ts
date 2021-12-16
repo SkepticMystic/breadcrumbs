@@ -208,7 +208,13 @@ export default class MatrixView extends ItemView {
       if (settings.enableAlphaSort) {
         squares.forEach((sq) =>
           sq.sort((a, b) =>
-            a.to < b.to ? (alphaSortAsc ? -1 : 1) : alphaSortAsc ? 1 : -1
+            (a.alt ?? a.to) < (b.alt ?? b.to)
+              ? alphaSortAsc
+                ? -1
+                : 1
+              : alphaSortAsc
+              ? 1
+              : -1
           )
         );
       }
@@ -287,9 +293,7 @@ export default class MatrixView extends ItemView {
       contentEl.createEl(
         "button",
         { text: "↻", attr: { "aria-label": "Refresh Index" } },
-        (el) => {
-          el.onclick = async () => await this.plugin.refreshIndex();
-        }
+        (el) => (el.onclick = async () => await this.plugin.refreshIndex())
       );
 
       contentEl.createEl(
