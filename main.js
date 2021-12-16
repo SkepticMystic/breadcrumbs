@@ -20639,18 +20639,18 @@ class SvelteComponent {
 
 function get_each_context$a(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[7] = list[i];
+	child_ctx[11] = list[i];
 	return child_ctx;
 }
 
-// (9:0) {#each options as option}
+// (41:0) {#each options as option}
 function create_each_block$a(ctx) {
 	let div;
 	let label;
 	let input;
 	let input_value_value;
 	let t0;
-	let t1_value = /*option*/ ctx[7] + "";
+	let t1_value = /*option*/ ctx[11] + "";
 	let t1;
 	let t2;
 	let mounted;
@@ -20665,43 +20665,43 @@ function create_each_block$a(ctx) {
 			t1 = text(t1_value);
 			t2 = space();
 			attr(input, "type", "checkbox");
-			input.__value = input_value_value = /*option*/ ctx[7];
+			input.__value = input_value_value = /*option*/ ctx[11];
 			input.value = input.__value;
-			/*$$binding_groups*/ ctx[5][0].push(input);
+			/*$$binding_groups*/ ctx[8][0].push(input);
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
 			append(div, label);
 			append(label, input);
-			input.checked = ~/*selected*/ ctx[3].indexOf(input.__value);
+			input.checked = ~/*selected*/ ctx[1].indexOf(input.__value);
 			append(label, t0);
 			append(label, t1);
 			append(div, t2);
 
 			if (!mounted) {
 				dispose = [
-					listen(input, "change", /*input_change_handler*/ ctx[4]),
-					listen(input, "change", /*change_handler*/ ctx[6])
+					listen(input, "change", /*input_change_handler*/ ctx[7]),
+					listen(input, "change", /*change_handler*/ ctx[9])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*options*/ 4 && input_value_value !== (input_value_value = /*option*/ ctx[7])) {
+			if (dirty & /*options*/ 1 && input_value_value !== (input_value_value = /*option*/ ctx[11])) {
 				input.__value = input_value_value;
 				input.value = input.__value;
 			}
 
-			if (dirty & /*selected*/ 8) {
-				input.checked = ~/*selected*/ ctx[3].indexOf(input.__value);
+			if (dirty & /*selected*/ 2) {
+				input.checked = ~/*selected*/ ctx[1].indexOf(input.__value);
 			}
 
-			if (dirty & /*options*/ 4 && t1_value !== (t1_value = /*option*/ ctx[7] + "")) set_data(t1, t1_value);
+			if (dirty & /*options*/ 1 && t1_value !== (t1_value = /*option*/ ctx[11] + "")) set_data(t1, t1_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
-			/*$$binding_groups*/ ctx[5][0].splice(/*$$binding_groups*/ ctx[5][0].indexOf(input), 1);
+			/*$$binding_groups*/ ctx[8][0].splice(/*$$binding_groups*/ ctx[8][0].indexOf(input), 1);
 			mounted = false;
 			run_all(dispose);
 		}
@@ -20709,8 +20709,16 @@ function create_each_block$a(ctx) {
 }
 
 function create_fragment$j(ctx) {
+	let div;
+	let button;
+	let t0;
+	let t1_value = (/*toNone*/ ctx[2] ? "None" : "All") + "";
+	let t1;
+	let t2;
 	let each_1_anchor;
-	let each_value = /*options*/ ctx[2];
+	let mounted;
+	let dispose;
+	let each_value = /*options*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -20719,6 +20727,12 @@ function create_fragment$j(ctx) {
 
 	return {
 		c() {
+			div = element("div");
+			button = element("button");
+			t0 = text("Select ");
+			t1 = text(t1_value);
+			t2 = space();
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
@@ -20726,15 +20740,28 @@ function create_fragment$j(ctx) {
 			each_1_anchor = empty();
 		},
 		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, button);
+			append(button, t0);
+			append(button, t1);
+			insert(target, t2, anchor);
+
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(target, anchor);
 			}
 
 			insert(target, each_1_anchor, anchor);
+
+			if (!mounted) {
+				dispose = listen(button, "click", /*click_handler*/ ctx[6]);
+				mounted = true;
+			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*options, selected, plugin, settingName, undefined, console*/ 15) {
-				each_value = /*options*/ ctx[2];
+			if (dirty & /*toNone*/ 4 && t1_value !== (t1_value = (/*toNone*/ ctx[2] ? "None" : "All") + "")) set_data(t1, t1_value);
+
+			if (dirty & /*options, selected, save*/ 11) {
+				each_value = /*options*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -20759,47 +20786,106 @@ function create_fragment$j(ctx) {
 		i: noop,
 		o: noop,
 		d(detaching) {
+			if (detaching) detach(div);
+			if (detaching) detach(t2);
 			destroy_each(each_blocks, detaching);
 			if (detaching) detach(each_1_anchor);
+			mounted = false;
+			dispose();
 		}
 	};
 }
 
 function instance$j($$self, $$props, $$invalidate) {
+	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+		function adopt(value) {
+			return value instanceof P
+			? value
+			: new P(function (resolve) {
+						resolve(value);
+					});
+		}
+
+		return new (P || (P = Promise))(function (resolve, reject) {
+				function fulfilled(value) {
+					try {
+						step(generator.next(value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function rejected(value) {
+					try {
+						step(generator["throw"](value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function step(result) {
+					result.done
+					? resolve(result.value)
+					: adopt(result.value).then(fulfilled, rejected);
+				}
+
+				step((generator = generator.apply(thisArg, _arguments || [])).next());
+			});
+	};
+
 	
 	let { plugin } = $$props;
 	let { settingName } = $$props;
 	let { options } = $$props;
 	let selected = plugin.settings[settingName];
-	console.log({ options, selected });
+	let toNone = selected.length === 0 ? false : true;
+
+	function save() {
+		return __awaiter(this, void 0, void 0, function* () {
+			if (plugin.settings[settingName] === undefined) {
+				return console.log(settingName + " not found in BC settings");
+			}
+
+			$$invalidate(4, plugin.settings[settingName] = selected, plugin);
+			yield plugin.saveSettings();
+			yield plugin.refreshIndex();
+		});
+	}
+
 	const $$binding_groups = [[]];
+
+	const click_handler = async () => {
+		if (toNone) $$invalidate(1, selected = []); else $$invalidate(1, selected = options);
+		await save();
+	};
 
 	function input_change_handler() {
 		selected = get_binding_group_value($$binding_groups[0], this.__value, this.checked);
-		$$invalidate(3, selected);
+		$$invalidate(1, selected);
 	}
 
-	const change_handler = async () => {
-		if (plugin.settings[settingName] === undefined) {
-			return console.log(settingName + " not found in BC settings");
-		}
-
-		$$invalidate(0, plugin.settings[settingName] = selected, plugin);
-		await plugin.saveSettings();
-		await plugin.refreshIndex();
-	};
+	const change_handler = async () => save();
 
 	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("settingName" in $$props) $$invalidate(1, settingName = $$props.settingName);
-		if ("options" in $$props) $$invalidate(2, options = $$props.options);
+		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
+		if ("settingName" in $$props) $$invalidate(5, settingName = $$props.settingName);
+		if ("options" in $$props) $$invalidate(0, options = $$props.options);
+	};
+
+	$$self.$$.update = () => {
+		if ($$self.$$.dirty & /*selected*/ 2) {
+			$$invalidate(2, toNone = selected.length === 0 ? false : true);
+		}
 	};
 
 	return [
-		plugin,
-		settingName,
 		options,
 		selected,
+		toNone,
+		save,
+		plugin,
+		settingName,
+		click_handler,
 		input_change_handler,
 		$$binding_groups,
 		change_handler
@@ -20809,7 +20895,7 @@ function instance$j($$self, $$props, $$invalidate) {
 class Checkboxes extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance$j, create_fragment$j, safe_not_equal, { plugin: 0, settingName: 1, options: 2 });
+		init(this, options, instance$j, create_fragment$j, safe_not_equal, { plugin: 4, settingName: 5, options: 0 });
 	}
 }
 
