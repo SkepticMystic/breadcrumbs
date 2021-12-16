@@ -274,6 +274,7 @@ export default class MatrixView extends ItemView {
         "button",
         {
           text: this.matrixQ ? "List" : "Matrix",
+          attr: { "aria-label": "Mode" },
         },
         (el) => {
           el.onclick = async () => {
@@ -284,9 +285,30 @@ export default class MatrixView extends ItemView {
         }
       );
 
-      contentEl.createEl("button", { text: "↻" }, (el) => {
-        el.onclick = async () => await this.plugin.refreshIndex();
-      });
+      contentEl.createEl(
+        "button",
+        { text: "↻", attr: { "aria-label": "Refresh Index" } },
+        (el) => {
+          el.onclick = async () => await this.plugin.refreshIndex();
+        }
+      );
+
+      contentEl.createEl(
+        "button",
+        {
+          text: settings.alphaSortAsc ? "↗" : "↘",
+          attr: { "aria-label": "Alphabetical sorting order" },
+        },
+        (el) => {
+          el.onclick = async () => {
+            this.plugin.settings.alphaSortAsc =
+              !this.plugin.settings.alphaSortAsc;
+            await this.plugin.saveSettings();
+            el.innerText = settings.alphaSortAsc ? "↗" : "↘";
+            await this.draw();
+          };
+        }
+      );
 
       const hierSquares = this.getHierSquares(
         userHiers,

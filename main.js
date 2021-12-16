@@ -24683,6 +24683,7 @@ class MatrixView extends require$$0.ItemView {
             const currFile = this.app.workspace.getActiveFile();
             contentEl.createEl("button", {
                 text: this.matrixQ ? "List" : "Matrix",
+                attr: { "aria-label": "Mode" },
             }, (el) => {
                 el.onclick = async () => {
                     this.matrixQ = !this.matrixQ;
@@ -24690,8 +24691,20 @@ class MatrixView extends require$$0.ItemView {
                     await this.draw();
                 };
             });
-            contentEl.createEl("button", { text: "↻" }, (el) => {
+            contentEl.createEl("button", { text: "↻", attr: { "aria-label": "Refresh Index" } }, (el) => {
                 el.onclick = async () => await this.plugin.refreshIndex();
+            });
+            contentEl.createEl("button", {
+                text: settings.alphaSortAsc ? "↗" : "↘",
+                attr: { "aria-label": "Alphabetical sorting order" },
+            }, (el) => {
+                el.onclick = async () => {
+                    this.plugin.settings.alphaSortAsc =
+                        !this.plugin.settings.alphaSortAsc;
+                    await this.plugin.saveSettings();
+                    el.innerText = settings.alphaSortAsc ? "↗" : "↘";
+                    await this.draw();
+                };
             });
             const hierSquares = this.getHierSquares(userHiers, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
             const compInput = {
