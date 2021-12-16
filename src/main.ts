@@ -79,6 +79,7 @@ import MatrixView from "./MatrixView";
 import {
   createOrUpdateYaml,
   dropWikilinks,
+  fallbackOppField,
   getBaseFromMDPath,
   getDVBasename,
   getFields,
@@ -794,37 +795,35 @@ export default class BCPlugin extends Plugin {
     return filteredLinks;
   }
 
-  addHNsToGraph(hierarchyNotesArr: HierarchyNoteItem[], mainG: MultiGraph) {
+  addHNsToGraph(hnArr: HierarchyNoteItem[], mainG: MultiGraph) {
     const { HNUpField, userHiers } = this.settings;
     const upFields = getFields(userHiers, "up");
 
-    hierarchyNotesArr.forEach((hnItem, i) => {
+    hnArr.forEach((hnItem, i) => {
       const { note, field, parent } = hnItem;
       const upField = field ?? (HNUpField || upFields[0]);
       const downField =
-        getOppFields(userHiers, upField)[0] ?? `${upField}<down>`;
+        getOppFields(userHiers, upField)[0] ?? fallbackOppField(upField, "up");
 
       if (parent === null) {
         const s = note;
-        const t = hierarchyNotesArr[i + 1]?.note;
+        const t = hnArr[i + 1]?.note;
 
         addNodesIfNot(mainG, [s, t]);
         addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
       } else {
-        const aUp = {
+        addNodesIfNot(mainG, [note, parent]);
+        addEdgeIfNot(mainG, note, parent, {
           dir: "up",
           field: upField,
-        };
+        });
 
-        addNodesIfNot(mainG, [note, parent]);
-        addEdgeIfNot(mainG, note, parent, aUp);
-
-        const aDown = {
+        // I don't think this needs to be done if the reverse is done above
+        addNodesIfNot(mainG, [parent, note]);
+        addEdgeIfNot(mainG, parent, note, {
           dir: "down",
           field: downField,
-        };
-        addNodesIfNot(mainG, [parent, note]);
-        addEdgeIfNot(mainG, parent, note, aDown);
+        });
       }
     });
   }
@@ -1219,15 +1218,15 @@ export default class BCPlugin extends Plugin {
         this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
 
       // !SECTION  Juggl Links
+
       // SECTION  Hierarchy Notes
       db.start2G("Hierarchy Notes");
 
-      const hierarchyNotesArr: HierarchyNoteItem[] = [];
       if (settings.hierarchyNotes[0] !== "") {
         for (const note of settings.hierarchyNotes) {
           const file = app.metadataCache.getFirstLinkpathDest(note, "");
           if (file) {
-            hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
+            this.addHNsToGraph(await this.getHierarchyNoteItems(file), mainG);
           } else {
             new Notice(
               `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
@@ -1236,10 +1235,7 @@ export default class BCPlugin extends Plugin {
         }
       }
 
-      if (hierarchyNotesArr.length)
-        this.addHNsToGraph(hierarchyNotesArr, mainG);
-
-      db.end2G({ hierarchyNotesArr });
+      db.end2G();
       // !SECTION  Hierarchy Notes
 
       console.time("Folder-Notes");

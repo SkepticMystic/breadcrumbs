@@ -51925,33 +51925,32 @@ class BCPlugin extends require$$0.Plugin {
         db.end2G({ filteredLinks });
         return filteredLinks;
     }
-    addHNsToGraph(hierarchyNotesArr, mainG) {
+    addHNsToGraph(hnArr, mainG) {
         const { HNUpField, userHiers } = this.settings;
         const upFields = getFields(userHiers, "up");
-        hierarchyNotesArr.forEach((hnItem, i) => {
+        hnArr.forEach((hnItem, i) => {
             var _a, _b;
             const { note, field, parent } = hnItem;
             const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-            const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : `${upField}<down>`;
+            const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
             if (parent === null) {
                 const s = note;
-                const t = (_b = hierarchyNotesArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
+                const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
                 addNodesIfNot(mainG, [s, t]);
                 addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
             }
             else {
-                const aUp = {
+                addNodesIfNot(mainG, [note, parent]);
+                addEdgeIfNot(mainG, note, parent, {
                     dir: "up",
                     field: upField,
-                };
-                addNodesIfNot(mainG, [note, parent]);
-                addEdgeIfNot(mainG, note, parent, aUp);
-                const aDown = {
+                });
+                // I don't think this needs to be done if the reverse is done above
+                addNodesIfNot(mainG, [parent, note]);
+                addEdgeIfNot(mainG, parent, note, {
                     dir: "down",
                     field: downField,
-                };
-                addNodesIfNot(mainG, [parent, note]);
-                addEdgeIfNot(mainG, parent, note, aDown);
+                });
             }
         });
     }
@@ -52215,21 +52214,18 @@ class BCPlugin extends require$$0.Plugin {
             // !SECTION  Juggl Links
             // SECTION  Hierarchy Notes
             db.start2G("Hierarchy Notes");
-            const hierarchyNotesArr = [];
             if (settings.hierarchyNotes[0] !== "") {
                 for (const note of settings.hierarchyNotes) {
                     const file = app.metadataCache.getFirstLinkpathDest(note, "");
                     if (file) {
-                        hierarchyNotesArr.push(...(await this.getHierarchyNoteItems(file)));
+                        this.addHNsToGraph(await this.getHierarchyNoteItems(file), mainG);
                     }
                     else {
                         new require$$0.Notice(`${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`);
                     }
                 }
             }
-            if (hierarchyNotesArr.length)
-                this.addHNsToGraph(hierarchyNotesArr, mainG);
-            db.end2G({ hierarchyNotesArr });
+            db.end2G();
             // !SECTION  Hierarchy Notes
             console.time("Folder-Notes");
             this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
