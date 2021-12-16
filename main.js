@@ -22461,7 +22461,10 @@ const fallbackOppField = (field, dir) => `${field} <${ARROW_DIRECTIONS[getOppDir
 function getRealnImplied(plugin, currNode, dir = null) {
     const realsnImplieds = blankRealNImplied();
     const { userHiers } = plugin.settings;
-    plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
+    const { mainG } = plugin;
+    if (!mainG.hasNode(currNode))
+        return realsnImplieds;
+    mainG.forEachEdge(currNode, (k, a, s, t) => {
         var _a;
         const { field, dir: edgeDir } = a;
         const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
@@ -24882,6 +24885,8 @@ class MatrixView extends require$$0.ItemView {
             const { settings } = this.plugin;
             const { userHiers } = settings;
             const currFile = this.app.workspace.getActiveFile();
+            if (!currFile)
+                return;
             contentEl.createEl("button", {
                 text: this.matrixQ ? "List" : "Matrix",
                 attr: { "aria-label": "Mode" },
@@ -52684,8 +52689,7 @@ class BCPlugin extends require$$0.Plugin {
     onunload() {
         console.log("unloading");
         this.VIEWS.forEach(async (view) => {
-            var _a;
-            await ((_a = this.getActiveTYPEView(view.type)) === null || _a === void 0 ? void 0 : _a.close());
+            // await this.getActiveTYPEView(view.type)?.close();
             this.app.workspace.detachLeavesOfType(view.type);
         });
         this.visited.forEach((visit) => visit[1].remove());

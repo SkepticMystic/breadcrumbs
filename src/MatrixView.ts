@@ -1,5 +1,5 @@
-import { debug, error, info } from "loglevel";
-import { ItemView, Notice, TFile, WorkspaceLeaf } from "obsidian";
+import { error, info } from "loglevel";
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { Debugger } from "src/Debugger";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -18,11 +18,7 @@ import type {
   UserHier,
 } from "./interfaces";
 import type BCPlugin from "./main";
-import {
-  fallbackOppField,
-  getRealnImplied,
-  linkClass,
-} from "./sharedFunctions";
+import { getRealnImplied, linkClass } from "./sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -274,6 +270,7 @@ export default class MatrixView extends ItemView {
 
       const { userHiers } = settings;
       const currFile = this.app.workspace.getActiveFile();
+      if (!currFile) return;
 
       contentEl.createEl(
         "button",

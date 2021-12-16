@@ -45,7 +45,7 @@ export const dropDendron = (path: string, settings: BCSettings) =>
 
 export const dropPathNDendron = (path: string, settings: BCSettings) =>
   dropDendron(dropPath(path), settings);
-  
+
 /**
  * Get basename from a **Markdown** `path`
  * @param  {string} path
@@ -259,8 +259,10 @@ export function getRealnImplied(
 ): RealNImplied {
   const realsnImplieds: RealNImplied = blankRealNImplied();
   const { userHiers } = plugin.settings;
+  const { mainG } = plugin;
 
-  plugin.mainG.forEachEdge(currNode, (k, a, s, t) => {
+  if (!mainG.hasNode(currNode)) return realsnImplieds;
+  mainG.forEachEdge(currNode, (k, a, s, t) => {
     const { field, dir: edgeDir } = a as { field: string; dir: Directions };
     const oppField =
       getOppFields(userHiers, field)[0] ?? fallbackOppField(field, edgeDir);
