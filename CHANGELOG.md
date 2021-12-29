@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.13.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.12.1...2.13.0) (2021-12-29)
+
+
+### Features
+
+* **Path View:** :sparkles: Show "Index Note" instead of noPathFoundMessage when active note is an indexNote (fix [#220](https://github.com/SkepticMystic/breadcrumbs/issues/220)) ([40b2ceb](https://github.com/SkepticMystic/breadcrumbs/commit/40b2cebc99405f74d272381d1d3bce01dee34f30))
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Properly unload view when loggling Right/Leaf setting ([05a7325](https://github.com/SkepticMystic/breadcrumbs/commit/05a732597b33e9839f5414a2b045b635f28ccfb1))
+* **List/Matrix View:** :bug: Show aria-label on opposite side that leaf is open (fix [#225](https://github.com/SkepticMystic/breadcrumbs/issues/225)) ([76bbda8](https://github.com/SkepticMystic/breadcrumbs/commit/76bbda8b1ab21a1c1a2860c0b563f8f80008b59c))
+* **TagNote:** :bug: Tags notes are case insensitive, and work with string[] or string (fix [#219](https://github.com/SkepticMystic/breadcrumbs/issues/219)) ([bb92c08](https://github.com/SkepticMystic/breadcrumbs/commit/bb92c08a6e4553050884872efa8c6c00e55cfeb4))
+* **WriteBCToFile:** :bug: Use fallback field if needed ([8a53195](https://github.com/SkepticMystic/breadcrumbs/commit/8a53195016c0210878025751434e83c712dd2ae0))
+
 ### [2.12.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.12.0...2.12.1) (2021-12-16)
 
 
