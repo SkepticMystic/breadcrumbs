@@ -25408,7 +25408,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         });
         new require$$0.Setting(trailDetails)
             .setName("Index Note(s)")
-            .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
+            .setDesc("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible.")
             .addText((text) => {
             text
                 .setPlaceholder("Index Note")
@@ -52468,22 +52468,12 @@ class BCPlugin extends require$$0.Plugin {
             }
             db.end2G();
             // !SECTION  Hierarchy Notes
-            console.time("Folder-Notes");
             this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
-            console.timeEnd("Folder-Notes");
-            console.time("Tag-Notes");
             this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
-            console.timeEnd("Tag-Notes");
-            console.time("Link-Notes");
             this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
-            console.timeEnd("Link-Notes");
             db.start1G("Traverse-Notes");
-            console.time("Traverse-Notes");
             this.addTraverseNotesToGraph(eligableAlts[BC_TRAVERSE_NOTE], frontms, mainG, this.buildObsGraph());
-            console.timeEnd("Traverse-Notes");
-            console.time("Dendron-Notes");
             this.addDendronNotesToGraph(frontms, mainG);
-            console.timeEnd("Dendron-Notes");
             db.end1G();
             files.forEach((file) => {
                 const { basename } = file;
@@ -52658,9 +52648,8 @@ class BCPlugin extends require$$0.Plugin {
             }
             else {
                 view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-                if (view.hasClass("is-live-preview")) {
+                if (view.hasClass("is-live-preview"))
                     livePreview = true;
-                }
             }
             (_c = activeMDView.containerEl
                 .querySelectorAll(".BC-trail")) === null || _c === void 0 ? void 0 : _c.forEach((trail) => trail.remove());
@@ -52718,6 +52707,11 @@ class BCPlugin extends require$$0.Plugin {
                     cmSizer.before(trailDiv);
             }
             trailDiv.empty();
+            if (settings.indexNotes.includes(basename)) {
+                trailDiv.innerText = "Index Note";
+                db.end2G();
+                return;
+            }
             if (noItems) {
                 trailDiv.innerText = noPathMessage;
                 db.end2G();
