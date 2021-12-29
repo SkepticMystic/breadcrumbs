@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.14.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.13.0...2.14.0) (2021-12-29)
+
+
+### Features
+
+* **Threading:** :sparkles: Commands to create a new <field> from the current note (fix [#221](https://github.com/SkepticMystic/breadcrumbs/issues/221)) ([ee76b56](https://github.com/SkepticMystic/breadcrumbs/commit/ee76b5691477c52ebb4a7672a6fd3631ce9f97e3))
+
 ## [2.13.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.12.1...2.13.0) (2021-12-29)
 
 
