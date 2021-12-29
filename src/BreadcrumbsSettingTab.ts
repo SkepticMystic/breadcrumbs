@@ -42,10 +42,13 @@ export class BCSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
-    const fieldDetails: HTMLDetailsElement = containerEl.createEl("details", {
-      cls: "field-details",
-    });
-    fieldDetails.createEl("summary", { text: "Hierarchies" });
+    const fieldDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {
+        cls: "field-details",
+      },
+      (details) => details.createEl("summary", { text: "Hierarchies" })
+    );
 
     fieldDetails.createEl("p", {
       text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
@@ -59,8 +62,11 @@ export class BCSettingTab extends PluginSettingTab {
       props: { plugin },
     });
 
-    const generalDetails: HTMLDetailsElement = containerEl.createEl("details");
-    generalDetails.createEl("summary", { text: "General Options" });
+    const generalDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "General Options" })
+    );
 
     new Setting(generalDetails)
       .setName("Show Refresh Index Notice")
@@ -222,8 +228,11 @@ export class BCSettingTab extends PluginSettingTab {
         );
     }
 
-    const MLViewDetails: HTMLDetailsElement = containerEl.createEl("details");
-    MLViewDetails.createEl("summary", { text: "Matrix/List View" });
+    const MLViewDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Matrix/List View" })
+    );
 
     new Setting(MLViewDetails)
       .setName("Show Matrix or List view by default")
@@ -349,8 +358,11 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const trailDetails: HTMLDetailsElement = containerEl.createEl("details");
-    trailDetails.createEl("summary", { text: "Trail/Grid" });
+    const trailDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Trail/Grid" })
+    );
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
@@ -587,8 +599,11 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
-    const downViewDetails: HTMLDetailsElement = containerEl.createEl("details");
-    downViewDetails.createEl("summary", { text: "Down View" });
+    const downViewDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Down View" })
+    );
 
     new Setting(downViewDetails)
       .setName("Enable line wrapping")
@@ -603,19 +618,21 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     const alternativeHierarchyDetails: HTMLDetailsElement =
-      containerEl.createEl("details");
-    alternativeHierarchyDetails.createEl("summary", {
-      text: "Alternative Hierarchies",
-    });
+      containerEl.createEl("details", {}, (d) =>
+        d.createEl("summary", {
+          text: "Alternative Hierarchies",
+        })
+      );
 
     const hierarchyNoteDetails = alternativeHierarchyDetails
       .createDiv({
         attr: { style: "padding-left: 10px;" },
       })
-      .createEl("details");
-    hierarchyNoteDetails.createEl("summary", {
-      text: "Hierarchy Notes",
-    });
+      .createEl("details", {}, (d) =>
+        d.createEl("summary", {
+          text: "Hierarchy Notes",
+        })
+      );
 
     new Setting(hierarchyNoteDetails)
       .setName("Hierarchy Note(s)")
@@ -671,10 +688,12 @@ export class BCSettingTab extends PluginSettingTab {
       .createDiv({
         attr: { style: "padding-left: 10px;" },
       })
-      .createEl("details");
-    csvDetails.createEl("summary", {
-      text: "CSV Notes",
-    });
+      .createEl("details", {}, (d) =>
+        d.createEl("summary", {
+          text: "CSV Notes",
+        })
+      );
+
     new Setting(csvDetails)
       .setName("CSV Breadcrumb Paths")
       .setDesc("The file path of a csv files with breadcrumbs information.")
@@ -690,10 +709,11 @@ export class BCSettingTab extends PluginSettingTab {
       .createDiv({
         attr: { style: "padding-left: 10px;" },
       })
-      .createEl("details");
-    dendronDetails.createEl("summary", {
-      text: "Dendron Notes",
-    });
+      .createEl("details", {}, (d) =>
+        d.createEl("summary", {
+          text: "Dendron Notes",
+        })
+      );
 
     new Setting(dendronDetails)
       .setName("Add Dendron notes to graph")
@@ -770,11 +790,14 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    const writeBCsToFileDetails: HTMLDetailsElement =
-      containerEl.createEl("details");
-    writeBCsToFileDetails.createEl("summary", {
-      text: "Write Breadcrumbs to File",
-    });
+    const writeBCsToFileDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) =>
+        d.createEl("summary", {
+          text: "Write Breadcrumbs to File",
+        })
+    );
 
     const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
       cls: "limit-ML-fields",
@@ -820,8 +843,11 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const visModalDetails: HTMLDetailsElement = containerEl.createEl("details");
-    visModalDetails.createEl("summary", { text: "Visualisation Modal" });
+    const visModalDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Visualisation Modal" })
+    );
 
     new Setting(visModalDetails)
       .setName("Default Visualisation Type")
@@ -880,9 +906,11 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    const createIndexDetails: HTMLDetailsElement =
-      containerEl.createEl("details");
-    createIndexDetails.createEl("summary", { text: "Create Index" });
+    const createIndexDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Create Index" })
+    );
 
     new Setting(createIndexDetails)
       .setName("Add wiklink brackets")
@@ -908,8 +936,11 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const debugDetails: HTMLDetailsElement = containerEl.createEl("details");
-    debugDetails.createEl("summary", { text: "Debugging" });
+    const debugDetails: HTMLDetailsElement = containerEl.createEl(
+      "details",
+      {},
+      (d) => d.createEl("summary", { text: "Debugging" })
+    );
 
     new Setting(debugDetails)
       .setName("Debug Mode")

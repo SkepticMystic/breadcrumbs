@@ -25044,8 +25044,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
         const fieldDetails = containerEl.createEl("details", {
             cls: "field-details",
-        });
-        fieldDetails.createEl("summary", { text: "Hierarchies" });
+        }, (details) => details.createEl("summary", { text: "Hierarchies" }));
         fieldDetails.createEl("p", {
             text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
         });
@@ -25056,8 +25055,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             target: fieldDetails,
             props: { plugin },
         });
-        const generalDetails = containerEl.createEl("details");
-        generalDetails.createEl("summary", { text: "General Options" });
+        const generalDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "General Options" }));
         new require$$0.Setting(generalDetails)
             .setName("Show Refresh Index Notice")
             .setDesc("When Refreshing Index, should it show a notice once the operation is complete?")
@@ -25176,8 +25174,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 }
             }));
         }
-        const MLViewDetails = containerEl.createEl("details");
-        MLViewDetails.createEl("summary", { text: "Matrix/List View" });
+        const MLViewDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Matrix/List View" }));
         new require$$0.Setting(MLViewDetails)
             .setName("Show Matrix or List view by default")
             .setDesc("When Obsidian first loads, which view should it show? ✅ = Matrix, ❌ = List")
@@ -25257,8 +25254,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
-        const trailDetails = containerEl.createEl("details");
-        trailDetails.createEl("summary", { text: "Trail/Grid" });
+        const trailDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Trail/Grid" }));
         new require$$0.Setting(trailDetails)
             .setName("Show Breadcrumbs")
             .setDesc("Show a set of different views at the top of the current note.")
@@ -25433,8 +25429,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
-        const downViewDetails = containerEl.createEl("details");
-        downViewDetails.createEl("summary", { text: "Down View" });
+        const downViewDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Down View" }));
         new require$$0.Setting(downViewDetails)
             .setName("Enable line wrapping")
             .setDesc("Make the items in the down view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen.")
@@ -25442,18 +25437,16 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.downViewWrap = value;
             await plugin.saveSettings();
         }));
-        const alternativeHierarchyDetails = containerEl.createEl("details");
-        alternativeHierarchyDetails.createEl("summary", {
+        const alternativeHierarchyDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", {
             text: "Alternative Hierarchies",
-        });
+        }));
         const hierarchyNoteDetails = alternativeHierarchyDetails
             .createDiv({
             attr: { style: "padding-left: 10px;" },
         })
-            .createEl("details");
-        hierarchyNoteDetails.createEl("summary", {
+            .createEl("details", {}, (d) => d.createEl("summary", {
             text: "Hierarchy Notes",
-        });
+        }));
         new require$$0.Setting(hierarchyNoteDetails)
             .setName("Hierarchy Note(s)")
             .setDesc("A list of notes used to create external Breadcrumb structures.")
@@ -25504,10 +25497,9 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .createDiv({
             attr: { style: "padding-left: 10px;" },
         })
-            .createEl("details");
-        csvDetails.createEl("summary", {
+            .createEl("details", {}, (d) => d.createEl("summary", {
             text: "CSV Notes",
-        });
+        }));
         new require$$0.Setting(csvDetails)
             .setName("CSV Breadcrumb Paths")
             .setDesc("The file path of a csv files with breadcrumbs information.")
@@ -25522,10 +25514,9 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .createDiv({
             attr: { style: "padding-left: 10px;" },
         })
-            .createEl("details");
-        dendronDetails.createEl("summary", {
+            .createEl("details", {}, (d) => d.createEl("summary", {
             text: "Dendron Notes",
-        });
+        }));
         new require$$0.Setting(dendronDetails)
             .setName("Add Dendron notes to graph")
             .setDesc(fragWithHTML("Dendron notes create a hierarchy using note names.</br><code>nmath.algebra</code> is a note about algebra, whose parent is <code>math</code>.</br><code>nmath.calculus.limits</code> is a note about limits whose parent is the note <code>math.calculus</code>, the parent of which is <code>math</code>."))
@@ -25580,10 +25571,9 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        const writeBCsToFileDetails = containerEl.createEl("details");
-        writeBCsToFileDetails.createEl("summary", {
+        const writeBCsToFileDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", {
             text: "Write Breadcrumbs to File",
-        });
+        }));
         const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
             cls: "limit-ML-fields",
         });
@@ -25612,8 +25602,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.showWriteAllBCsCmd = value;
             await plugin.saveSettings();
         }));
-        const visModalDetails = containerEl.createEl("details");
-        visModalDetails.createEl("summary", { text: "Visualisation Modal" });
+        const visModalDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Visualisation Modal" }));
         new require$$0.Setting(visModalDetails)
             .setName("Default Visualisation Type")
             .setDesc("Which visualisation to show by defualt")
@@ -25666,8 +25655,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        const createIndexDetails = containerEl.createEl("details");
-        createIndexDetails.createEl("summary", { text: "Create Index" });
+        const createIndexDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Create Index" }));
         new require$$0.Setting(createIndexDetails)
             .setName("Add wiklink brackets")
             .setDesc(fragWithHTML("When creating an index, should it wrap the note name in wikilinks <code>[[]]</code> or not.\n✅ = yes, ❌ = no."))
@@ -25682,8 +25670,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.aliasesInIndex = value;
             await plugin.saveSettings();
         }));
-        const debugDetails = containerEl.createEl("details");
-        debugDetails.createEl("summary", { text: "Debugging" });
+        const debugDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Debugging" }));
         new require$$0.Setting(debugDetails)
             .setName("Debug Mode")
             .setDesc(fragWithHTML("Set the minimum level of debug messages to console log. If you choose <code>TRACE</code>, then everything will be logged. If you choose <code>ERROR</code>, then only the most necessary issues will be logged. <code>SILENT</code> will turn off all logs."))
@@ -51594,7 +51581,8 @@ class BCPlugin extends require$$0.Plugin {
                 return;
             }
             const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-                const oppField = getOppFields(userHiers, a.field)[0];
+                var _a;
+                const oppField = (_a = getOppFields(userHiers, a.field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(a.field, a.dir);
                 return { succ: s, field: oppField };
             });
             for (const { succ, field } of succInfo) {
@@ -51898,7 +51886,6 @@ class BCPlugin extends require$$0.Plugin {
             });
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
-        this.statusBatItemEl = this.addStatusBarItem();
         this.addSettingTab(new BCSettingTab(this.app, this));
     }
     getActiveTYPEView(type) {
@@ -52273,15 +52260,30 @@ class BCPlugin extends require$$0.Plugin {
         eligableAlts.forEach((altFile) => {
             const tagNoteFile = altFile.file;
             const tagNoteBasename = getDVBasename(tagNoteFile);
-            const tag = altFile[BC_TAG_NOTE].trim();
+            const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
             if (!tag.startsWith("#"))
                 return;
             const hasThisTag = (file) => {
-                var _a, _b, _c, _d, _e;
-                const cache = this.app.metadataCache.getFileCache(file);
-                return (((_a = cache === null || cache === void 0 ? void 0 : cache.tags) === null || _a === void 0 ? void 0 : _a.map((t) => t.tag).some((t) => t.includes(tag))) ||
-                    ((_c = (_b = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _b === void 0 ? void 0 : _b.tags) === null || _c === void 0 ? void 0 : _c.includes(tag.slice(1))) ||
-                    ((_e = (_d = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _d === void 0 ? void 0 : _d.tag) === null || _e === void 0 ? void 0 : _e.includes(tag.slice(1))));
+                var _a, _b;
+                const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
+                if (tags === null || tags === void 0 ? void 0 : tags.map((t) => t.tag.toLowerCase()).some((t) => t.includes(tag)))
+                    return true;
+                if (typeof (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) === "string") {
+                    if (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag.toLowerCase().includes(tag.slice(1)))
+                        return true;
+                }
+                else {
+                    if ((_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) === null || _a === void 0 ? void 0 : _a.some((t) => t.toLowerCase().includes(tag.slice(1))))
+                        return true;
+                }
+                if (typeof (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) === "string") {
+                    if (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags.toLowerCase().includes(tag.slice(1)))
+                        return true;
+                }
+                else {
+                    if ((_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) === null || _b === void 0 ? void 0 : _b.some((t) => t.toLowerCase().includes(tag.slice(1))))
+                        return true;
+                }
             };
             const targets = frontms
                 .map((ff) => ff.file)
