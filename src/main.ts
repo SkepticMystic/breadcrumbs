@@ -1261,27 +1261,21 @@ export default class BCPlugin extends Plugin {
       db.end2G();
       // !SECTION  Hierarchy Notes
 
-      console.time("Folder-Notes");
       this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
-      console.timeEnd("Folder-Notes");
-      console.time("Tag-Notes");
       this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
-      console.timeEnd("Tag-Notes");
-      console.time("Link-Notes");
       this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
-      console.timeEnd("Link-Notes");
+
       db.start1G("Traverse-Notes");
-      console.time("Traverse-Notes");
+
       this.addTraverseNotesToGraph(
         eligableAlts[BC_TRAVERSE_NOTE],
         frontms,
         mainG,
         this.buildObsGraph()
       );
-      console.timeEnd("Traverse-Notes");
-      console.time("Dendron-Notes");
+
       this.addDendronNotesToGraph(frontms, mainG);
-      console.timeEnd("Dendron-Notes");
+
       db.end1G();
 
       files.forEach((file) => {
