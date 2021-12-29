@@ -935,16 +935,36 @@ export default class BCPlugin extends Plugin {
       const tagNoteFile = altFile.file;
 
       const tagNoteBasename = getDVBasename(tagNoteFile);
-      const tag = (altFile[BC_TAG_NOTE] as string).trim();
+      const tag = (altFile[BC_TAG_NOTE] as string).trim().toLowerCase();
       if (!tag.startsWith("#")) return;
 
       const hasThisTag = (file: TFile): boolean => {
-        const cache = this.app.metadataCache.getFileCache(file);
-        return (
-          cache?.tags?.map((t) => t.tag).some((t) => t.includes(tag)) ||
-          cache?.frontmatter?.tags?.includes(tag.slice(1)) ||
-          cache?.frontmatter?.tag?.includes(tag.slice(1))
-        );
+        const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
+        if (tags?.map((t) => t.tag.toLowerCase()).some((t) => t.includes(tag)))
+          return true;
+
+        if (typeof frontmatter?.tag === "string") {
+          if (frontmatter?.tag.toLowerCase().includes(tag.slice(1)))
+            return true;
+        } else {
+          if (
+            (frontmatter?.tag as string[])?.some((t) =>
+              t.toLowerCase().includes(tag.slice(1))
+            )
+          )
+            return true;
+        }
+        if (typeof frontmatter?.tags === "string") {
+          if (frontmatter?.tags.toLowerCase().includes(tag.slice(1)))
+            return true;
+        } else {
+          if (
+            (frontmatter?.tags as string[])?.some((t) =>
+              t.toLowerCase().includes(tag.slice(1))
+            )
+          )
+            return true;
+        }
       };
 
       const targets = frontms
