@@ -427,8 +427,6 @@ export default class BCPlugin extends Plugin {
       () => new VisModal(this.app, this).open()
     );
 
-    this.statusBatItemEl = this.addStatusBarItem();
-
     this.addSettingTab(new BCSettingTab(this.app, this));
   }
 
@@ -445,7 +443,8 @@ export default class BCPlugin extends Plugin {
     }
 
     const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-      const oppField = getOppFields(userHiers, a.field)[0];
+      const oppField =
+        getOppFields(userHiers, a.field)[0] ?? fallbackOppField(a.field, a.dir);
       return { succ: s, field: oppField };
     });
 
