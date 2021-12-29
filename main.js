@@ -23737,7 +23737,7 @@ function create_if_block_1$4(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value_2 = /*square*/ ctx[12].impliedItems;
 				let i;
 
@@ -23800,6 +23800,7 @@ function create_each_block_2$3(ctx) {
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
+	let div_aria_label_position_value;
 	let mounted;
 	let dispose;
 
@@ -23818,7 +23819,7 @@ function create_each_block_2$3(ctx) {
 			t = text(t_value);
 			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"));
 			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
-			attr(div, "aria-label-position", "left");
+			attr(div, "aria-label-position", div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -23845,6 +23846,10 @@ function create_each_block_2$3(ctx) {
 
 			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "")) {
 				attr(div, "aria-label", div_aria_label_value);
+			}
+
+			if (dirty & /*settings*/ 2 && div_aria_label_position_value !== (div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right")) {
+				attr(div, "aria-label-position", div_aria_label_position_value);
 			}
 		},
 		d(detaching) {
@@ -23935,7 +23940,7 @@ function create_each_block$8(ctx) {
 		p(ctx, dirty) {
 			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[9].map(func).join(", ") + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value_1 = /*squares*/ ctx[9];
 				let i;
 
@@ -23995,7 +24000,7 @@ function create_fragment$c(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -24412,7 +24417,7 @@ function create_if_block_1$3(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value_2 = /*square*/ ctx[12].impliedItems;
 				let i;
 
@@ -24509,6 +24514,7 @@ function create_each_block_2$2(ctx) {
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
+	let div_aria_label_position_value;
 	let mounted;
 	let dispose;
 
@@ -24531,7 +24537,7 @@ function create_each_block_2$2(ctx) {
 			? "↑ " + /*impliedItem*/ ctx[15].parent
 			: "");
 
-			attr(div, "aria-label-position", "left");
+			attr(div, "aria-label-position", div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right");
 			attr(li, "class", "BC-Implied");
 		},
 		m(target, anchor) {
@@ -24560,6 +24566,10 @@ function create_each_block_2$2(ctx) {
 			? "↑ " + /*impliedItem*/ ctx[15].parent
 			: "")) {
 				attr(div, "aria-label", div_aria_label_value);
+			}
+
+			if (dirty & /*settings*/ 2 && div_aria_label_position_value !== (div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right")) {
+				attr(div, "aria-label-position", div_aria_label_position_value);
 			}
 		},
 		d(detaching) {
@@ -24637,7 +24647,7 @@ function create_each_block$7(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value_1 = /*squares*/ ctx[9];
 				let i;
 
@@ -24697,7 +24707,7 @@ function create_fragment$b(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
+			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -24891,11 +24901,13 @@ class MatrixView extends require$$0.ItemView {
             }
             is.push(...iSamesII);
             // !SECTION
-            iu = this.removeDuplicateImplied(ru, iu);
-            is = this.removeDuplicateImplied(rs, is);
-            id = this.removeDuplicateImplied(rd, id);
-            iN = this.removeDuplicateImplied(rn, iN);
-            ip = this.removeDuplicateImplied(rp, ip);
+            [iu, is, id, iN, ip] = [
+                this.removeDuplicateImplied(ru, iu),
+                this.removeDuplicateImplied(rs, is),
+                this.removeDuplicateImplied(rd, id),
+                this.removeDuplicateImplied(rn, iN),
+                this.removeDuplicateImplied(rp, ip),
+            ];
             const iSameNoDup = [];
             is.forEach((impSib) => {
                 if (iSameNoDup.every((noDup) => noDup.to !== impSib.to)) {
@@ -25023,6 +25035,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
     constructor(app, plugin) {
         super(app, plugin);
         this.plugin = plugin;
+        this.app = app;
     }
     async display() {
         const { plugin, containerEl } = this;
@@ -25239,10 +25252,9 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .setName("Open View in Right or Left side")
             .setDesc("When loading the matrix view, should it open on the left or right side leaf? ✅ = Right, ❌ = Left.")
             .addToggle((toggle) => toggle.setValue(settings.rlLeaf).onChange(async (value) => {
-            var _a;
             settings.rlLeaf = value;
             await plugin.saveSettings();
-            await ((_a = plugin.getActiveTYPEView(MATRIX_VIEW)) === null || _a === void 0 ? void 0 : _a.onClose());
+            await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
         const trailDetails = containerEl.createEl("details");
@@ -52356,37 +52368,6 @@ class BCPlugin extends require$$0.Plugin {
                 this.populateMain(mainG, currSlice, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
             });
         }
-        // frontms.forEach((frontm) => {
-        //   const { file } = frontm;
-        //   const basename = getDVBasename(file);
-        //   // It could have the node from another means already, but that doesn't mean it should return...
-        //   // if (mainG.hasNode(basename)) return;
-        //   const splits = basename.split(dendronNoteDelimiter);
-        //   if (splits.length < 2) return;
-        //   const reversed = splits.reverse();
-        //   reversed.forEach((split, i) => {
-        //     const currSlice = reversed
-        //       .slice(i)
-        //       .reverse()
-        //       .join(dendronNoteDelimiter);
-        //     const nextSlice = reversed
-        //       .slice(i + 1)
-        //       .reverse()
-        //       .join(dendronNoteDelimiter);
-        //     if (!nextSlice) return;
-        //     const sourceOrder = this.getSourceOrder(frontm);
-        //     const targetOrder = this.getTargetOrder(frontms, nextSlice);
-        //     this.populateMain(
-        //       mainG,
-        //       currSlice,
-        //       dendronNoteField,
-        //       nextSlice,
-        //       sourceOrder,
-        //       targetOrder,
-        //       true
-        //     );
-        //   });
-        // });
     }
     async initGraphs() {
         const mainG = new graphology_umd_min.MultiGraph();

@@ -28,10 +28,12 @@ const fragWithHTML = (html: string) =>
 
 export class BCSettingTab extends PluginSettingTab {
   plugin: BCPlugin;
+  app: App;
 
   constructor(app: App, plugin: BCPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+    this.app = app;
   }
 
   async display(): Promise<void> {
@@ -337,7 +339,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.rlLeaf).onChange(async (value) => {
           settings.rlLeaf = value;
           await plugin.saveSettings();
-          await plugin.getActiveTYPEView(MATRIX_VIEW)?.onClose();
+          await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
           await openView(
             this.app,
             MATRIX_VIEW,
