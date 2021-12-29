@@ -51595,7 +51595,12 @@ class BCPlugin extends require$$0.Plugin {
                     // TODO Check if this note already has this field
                     let content = await app.vault.read(file);
                     const splits = splitAtYaml(content);
-                    content = splits[0] + `\n${field}:: [[${succ}]]` + splits[1];
+                    content =
+                        splits[0] +
+                            (splits[0].length ? "\n" : "") +
+                            `${field}:: [[${succ}]]` +
+                            (splits[1].length ? "\n" : "") +
+                            splits[1];
                     await app.vault.modify(file, content);
                 }
             }
@@ -51882,6 +51887,46 @@ class BCPlugin extends require$$0.Plugin {
                     }
                     const toFile = this.app.metadataCache.getFirstLinkpathDest(toNode, "");
                     await this.app.workspace.activeLeaf.openFile(toFile);
+                },
+            });
+        });
+        getFields(settings.userHiers).forEach((field) => {
+            this.addCommand({
+                id: `new-file-with-curr-as-${field}`,
+                name: `Create a new '${field}' from the current note`,
+                callback: async () => {
+                    var _a, _b;
+                    const { app } = this;
+                    const { userHiers, writeBCsInline } = settings;
+                    const currFile = app.workspace.getActiveFile();
+                    if (!currFile)
+                        return;
+                    const newFilePath = app.fileManager.getNewFileParent(currFile.path);
+                    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, getFieldInfo(userHiers, field).fieldDir);
+                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFilePath.path}/${field} of ${currFile.basename}.md`), writeBCsInline
+                        ? `${oppField}:: [[${currFile.basename}]]`
+                        : `---\n${oppField}: ['${currFile.basename}']\n---`);
+                    if (!writeBCsInline) {
+                        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
+                        if (!api) {
+                            new require$$0.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
+                            return;
+                        }
+                        await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
+                    }
+                    else {
+                        // TODO Check if this note already has this field
+                        let content = await app.vault.read(currFile);
+                        const splits = splitAtYaml(content);
+                        content =
+                            splits[0] +
+                                (splits[0].length ? "\n" : "") +
+                                `${field}:: [[${newFile.basename}]]` +
+                                (splits[1].length ? "\n" : "") +
+                                splits[1];
+                        await app.vault.modify(currFile, content);
+                    }
+                    app.workspace.activeLeaf.openFile(newFile);
                 },
             });
         });
