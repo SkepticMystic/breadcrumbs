@@ -1500,9 +1500,7 @@ export default class BCPlugin extends Plugin {
         );
       } else {
         view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-        if (view.hasClass("is-live-preview")) {
-          livePreview = true;
-        }
+        if (view.hasClass("is-live-preview")) livePreview = true;
       }
 
       activeMDView.containerEl
@@ -1579,6 +1577,11 @@ export default class BCPlugin extends Plugin {
       }
 
       trailDiv.empty();
+      if (settings.indexNotes.includes(basename)) {
+        trailDiv.innerText = "Index Note";
+        db.end2G();
+        return;
+      }
 
       if (noItems) {
         trailDiv.innerText = noPathMessage;

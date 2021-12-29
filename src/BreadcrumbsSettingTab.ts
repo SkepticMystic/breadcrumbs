@@ -534,7 +534,7 @@ export class BCSettingTab extends PluginSettingTab {
     new Setting(trailDetails)
       .setName("Index Note(s)")
       .setDesc(
-        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the name. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."
+        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename. So if your index note is `000 Home.md`, enter `000 Home`. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."
       )
       .addText((text) => {
         text
