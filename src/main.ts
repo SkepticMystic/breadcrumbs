@@ -1089,41 +1089,6 @@ export default class BCPlugin extends Plugin {
         );
       });
     }
-    // frontms.forEach((frontm) => {
-    //   const { file } = frontm;
-    //   const basename = getDVBasename(file);
-    //   // It could have the node from another means already, but that doesn't mean it should return...
-    //   // if (mainG.hasNode(basename)) return;
-
-    //   const splits = basename.split(dendronNoteDelimiter);
-    //   if (splits.length < 2) return;
-
-    //   const reversed = splits.reverse();
-    //   reversed.forEach((split, i) => {
-    //     const currSlice = reversed
-    //       .slice(i)
-    //       .reverse()
-    //       .join(dendronNoteDelimiter);
-    //     const nextSlice = reversed
-    //       .slice(i + 1)
-    //       .reverse()
-    //       .join(dendronNoteDelimiter);
-    //     if (!nextSlice) return;
-
-    //     const sourceOrder = this.getSourceOrder(frontm);
-    //     const targetOrder = this.getTargetOrder(frontms, nextSlice);
-
-    //     this.populateMain(
-    //       mainG,
-    //       currSlice,
-    //       dendronNoteField,
-    //       nextSlice,
-    //       sourceOrder,
-    //       targetOrder,
-    //       true
-    //     );
-    //   });
-    // });
   }
 
   getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>

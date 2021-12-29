@@ -179,11 +179,13 @@ export default class MatrixView extends ItemView {
 
       // !SECTION
 
-      iu = this.removeDuplicateImplied(ru, iu);
-      is = this.removeDuplicateImplied(rs, is);
-      id = this.removeDuplicateImplied(rd, id);
-      iN = this.removeDuplicateImplied(rn, iN);
-      ip = this.removeDuplicateImplied(rp, ip);
+      [iu, is, id, iN, ip] = [
+        this.removeDuplicateImplied(ru, iu),
+        this.removeDuplicateImplied(rs, is),
+        this.removeDuplicateImplied(rd, id),
+        this.removeDuplicateImplied(rn, iN),
+        this.removeDuplicateImplied(rp, ip),
+      ];
 
       const iSameNoDup: internalLinkObj[] = [];
       is.forEach((impSib) => {

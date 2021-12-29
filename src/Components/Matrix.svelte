@@ -69,7 +69,7 @@
                       aria-label={impliedItem.parent
                         ? "↑ " + impliedItem.parent
                         : ""}
-                      aria-label-position="left"
+                      aria-label-position={settings.rlLeaf ? "left" : "right"}
                     >
                       {impliedItem.alt ??
                         dropPathNDendron(impliedItem.to, settings)}
