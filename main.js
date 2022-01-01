@@ -25042,9 +25042,8 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         const { settings } = plugin;
         containerEl.empty();
         containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
-        const fieldDetails = containerEl.createEl("details", {
-            cls: "field-details",
-        }, (details) => details.createEl("summary", { text: "Hierarchies" }));
+        const details = (text, parent = containerEl) => parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
+        const fieldDetails = details("Hierarchies");
         fieldDetails.createEl("p", {
             text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
         });
@@ -25055,7 +25054,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             target: fieldDetails,
             props: { plugin },
         });
-        const generalDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "General Options" }));
+        const generalDetails = details("General Options");
         new require$$0.Setting(generalDetails)
             .setName("Show Refresh Index Notice")
             .setDesc("When Refreshing Index, should it show a notice once the operation is complete?")
@@ -25102,13 +25101,6 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        new require$$0.Setting(generalDetails)
-            .setName("Enable Field Suggestor")
-            .setDesc(fragWithHTML('Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'))
-            .addToggle((toggle) => toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
-            settings.fieldSuggestor = value;
-            await plugin.saveSettings();
-        }));
         new require$$0.Setting(generalDetails)
             .setName("Refresh Index on Note Change")
             .setDesc("Refresh the Breadcrumbs index data everytime you change notes.\nThis is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default.")
@@ -25174,7 +25166,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 }
             }));
         }
-        const MLViewDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Matrix/List View" }));
+        const MLViewDetails = details("Matrix/List View");
         new require$$0.Setting(MLViewDetails)
             .setName("Show Matrix or List view by default")
             .setDesc("When Obsidian first loads, which view should it show? ✅ = Matrix, ❌ = List")
@@ -25254,7 +25246,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
-        const trailDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Trail/Grid" }));
+        const trailDetails = details("Trail/Grid");
         new require$$0.Setting(trailDetails)
             .setName("Show Breadcrumbs")
             .setDesc("Show a set of different views at the top of the current note.")
@@ -25429,7 +25421,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
-        const downViewDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Down View" }));
+        const downViewDetails = details("Down View");
         new require$$0.Setting(downViewDetails)
             .setName("Enable line wrapping")
             .setDesc("Make the items in the down view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen.")
@@ -25437,8 +25429,13 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.downViewWrap = value;
             await plugin.saveSettings();
         }));
-        const alternativeHierarchyDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", {
-            text: "Alternative Hierarchies",
+        const alternativeHierarchyDetails = details("Alternative Hierarchies");
+        new require$$0.Setting(alternativeHierarchyDetails)
+            .setName("Enable Field Suggestor")
+            .setDesc(fragWithHTML('Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'))
+            .addToggle((toggle) => toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+            settings.fieldSuggestor = value;
+            await plugin.saveSettings();
         }));
         const hierarchyNoteDetails = alternativeHierarchyDetails
             .createDiv({
@@ -25571,9 +25568,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        const writeBCsToFileDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", {
-            text: "Write Breadcrumbs to File",
-        }));
+        const writeBCsToFileDetails = details("Write Breadcrumbs to File");
         const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
             cls: "limit-ML-fields",
         });
@@ -25602,7 +25597,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.showWriteAllBCsCmd = value;
             await plugin.saveSettings();
         }));
-        const visModalDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Visualisation Modal" }));
+        const visModalDetails = details("Visualisation Modal");
         new require$$0.Setting(visModalDetails)
             .setName("Default Visualisation Type")
             .setDesc("Which visualisation to show by defualt")
@@ -25655,7 +25650,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        const createIndexDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Create Index" }));
+        const createIndexDetails = details("Create Index");
         new require$$0.Setting(createIndexDetails)
             .setName("Add wiklink brackets")
             .setDesc(fragWithHTML("When creating an index, should it wrap the note name in wikilinks <code>[[]]</code> or not.\n✅ = yes, ❌ = no."))
@@ -25670,7 +25665,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.aliasesInIndex = value;
             await plugin.saveSettings();
         }));
-        const debugDetails = containerEl.createEl("details", {}, (d) => d.createEl("summary", { text: "Debugging" }));
+        const debugDetails = details("Debugging");
         new require$$0.Setting(debugDetails)
             .setName("Debug Mode")
             .setDesc(fragWithHTML("Set the minimum level of debug messages to console log. If you choose <code>TRACE</code>, then everything will be logged. If you choose <code>ERROR</code>, then only the most necessary issues will be logged. <code>SILENT</code> will turn off all logs."))

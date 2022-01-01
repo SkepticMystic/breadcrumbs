@@ -42,13 +42,10 @@ export class BCSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
 
-    const fieldDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {
-        cls: "field-details",
-      },
-      (details) => details.createEl("summary", { text: "Hierarchies" })
-    );
+    const details = (text: string, parent = containerEl) =>
+      parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
+
+    const fieldDetails = details("Hierarchies");
 
     fieldDetails.createEl("p", {
       text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
@@ -62,11 +59,7 @@ export class BCSettingTab extends PluginSettingTab {
       props: { plugin },
     });
 
-    const generalDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "General Options" })
-    );
+    const generalDetails = details("General Options");
 
     new Setting(generalDetails)
       .setName("Show Refresh Index Notice")
@@ -119,20 +112,6 @@ export class BCSettingTab extends PluginSettingTab {
             await plugin.saveSettings();
           });
       });
-
-    new Setting(generalDetails)
-      .setName("Enable Field Suggestor")
-      .setDesc(
-        fragWithHTML(
-          'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'
-        )
-      )
-      .addToggle((toggle) =>
-        toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
-          settings.fieldSuggestor = value;
-          await plugin.saveSettings();
-        })
-      );
 
     new Setting(generalDetails)
       .setName("Refresh Index on Note Change")
@@ -228,11 +207,7 @@ export class BCSettingTab extends PluginSettingTab {
         );
     }
 
-    const MLViewDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Matrix/List View" })
-    );
+    const MLViewDetails = details("Matrix/List View");
 
     new Setting(MLViewDetails)
       .setName("Show Matrix or List view by default")
@@ -358,11 +333,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const trailDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Trail/Grid" })
-    );
+    const trailDetails = details("Trail/Grid");
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
@@ -599,11 +570,7 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
-    const downViewDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Down View" })
-    );
+    const downViewDetails = details("Down View");
 
     new Setting(downViewDetails)
       .setName("Enable line wrapping")
@@ -617,10 +584,19 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const alternativeHierarchyDetails: HTMLDetailsElement =
-      containerEl.createEl("details", {}, (d) =>
-        d.createEl("summary", {
-          text: "Alternative Hierarchies",
+    const alternativeHierarchyDetails = details("Alternative Hierarchies");
+
+    new Setting(alternativeHierarchyDetails)
+      .setName("Enable Field Suggestor")
+      .setDesc(
+        fragWithHTML(
+          'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'
+        )
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+          settings.fieldSuggestor = value;
+          await plugin.saveSettings();
         })
       );
 
@@ -790,14 +766,7 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    const writeBCsToFileDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) =>
-        d.createEl("summary", {
-          text: "Write Breadcrumbs to File",
-        })
-    );
+    const writeBCsToFileDetails = details("Write Breadcrumbs to File");
 
     const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
       cls: "limit-ML-fields",
@@ -843,11 +812,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const visModalDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Visualisation Modal" })
-    );
+    const visModalDetails = details("Visualisation Modal");
 
     new Setting(visModalDetails)
       .setName("Default Visualisation Type")
@@ -906,11 +871,7 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    const createIndexDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Create Index" })
-    );
+    const createIndexDetails = details("Create Index");
 
     new Setting(createIndexDetails)
       .setName("Add wiklink brackets")
@@ -936,11 +897,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const debugDetails: HTMLDetailsElement = containerEl.createEl(
-      "details",
-      {},
-      (d) => d.createEl("summary", { text: "Debugging" })
-    );
+    const debugDetails = details("Debugging");
 
     new Setting(debugDetails)
       .setName("Debug Mode")
