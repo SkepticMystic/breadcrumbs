@@ -177,6 +177,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showTrail: true,
   showGrid: true,
   showPrevNext: true,
+  squareDirectionsOrder: [0, 1, 2, 3, 4],
   limitTrailCheckboxes: [],
   limitJumpToFirstFields: [],
   showAll: false,

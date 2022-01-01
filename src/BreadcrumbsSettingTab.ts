@@ -251,6 +251,46 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
+      .setName("Directions Order")
+      .setDesc(
+        fragWithHTML(
+          `Change the order in which the directions appear in the M/L view. Use numbers to change the order, the default is "up, same, down, next, prev" (<code>01234</code>).
+          <ul>
+            <li>0 = up</li>
+            <li>1 = same</li>
+            <li>2 = down</li>
+            <li>3 = next</li>
+            <li>4 = prev</li>
+          </ul>
+          <strong>Note:</strong> You can only change the order of the directions. You can't add or remove directions.`
+        )
+      )
+      .addText((text) => {
+        text.setValue(settings.squareDirectionsOrder.join(""));
+        text.inputEl.onblur = async () => {
+          const value = text.getValue();
+          if (
+            value.length === 5 &&
+            value.includes("0") &&
+            value.includes("1") &&
+            value.includes("2") &&
+            value.includes("3") &&
+            value.includes("4")
+          ) {
+            settings.squareDirectionsOrder = value
+              .split("")
+              .map((order) => Number.parseInt(order));
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+          } else {
+            new Notice(
+              'The value must be a 5 digit number using only the digits "0", "1", "2", "3", "4"'
+            );
+          }
+        };
+      });
+
+    new Setting(MLViewDetails)
       .setName("Enable Alpahebtical Sorting")
       .setDesc(
         "By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below."

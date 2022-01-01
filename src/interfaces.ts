@@ -56,6 +56,7 @@ export interface BCSettings {
   showPrevNext: boolean;
   showRefreshNotice: boolean;
   showTrail: boolean;
+  squareDirectionsOrder: (0 | 1 | 2 | 3 | 4)[];
   trailSeperator: string;
   treatCurrNodeAsImpliedSibling: boolean;
   trimDendronNotes: boolean;

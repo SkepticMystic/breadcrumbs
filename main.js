@@ -21104,6 +21104,7 @@ const DEFAULT_SETTINGS = {
     showTrail: true,
     showGrid: true,
     showPrevNext: true,
+    squareDirectionsOrder: [0, 1, 2, 3, 4],
     limitTrailCheckboxes: [],
     limitJumpToFirstFields: [],
     showAll: false,
@@ -24857,9 +24858,10 @@ class MatrixView extends require$$0.ItemView {
         const realTos = reals.map((real) => real.to);
         return implieds.filter((implied) => !realTos.includes(implied.to));
     }
-    getHierSquares(userHiers, currFile, settings) {
+    getHierSquares(userHiers, currFile) {
         const { plugin } = this;
-        const { mainG } = plugin;
+        const { mainG, settings } = plugin;
+        const { alphaSortAsc, enableAlphaSort, treatCurrNodeAsImpliedSibling, squareDirectionsOrder, } = settings;
         if (!mainG)
             return [];
         const { basename } = currFile;
@@ -24892,7 +24894,7 @@ class MatrixView extends require$$0.ItemView {
                 closedUp.forEachOutEdge(basename, (k, a, s, par) => {
                     if (hier.up.includes(a.field)) {
                         closedUp.forEachInEdge(par, (k, a, s, t) => {
-                            if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
+                            if (s === basename && !treatCurrNodeAsImpliedSibling)
                                 return;
                             iSamesII.push(this.toInternalLinkObj(s, false, t));
                         });
@@ -24918,9 +24920,8 @@ class MatrixView extends require$$0.ItemView {
             const getFieldInHier = (dir) => hier[dir][0]
                 ? hier[dir].join(", ")
                 : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
-            const { alphaSortAsc } = settings;
             const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
-            if (settings.enableAlphaSort) {
+            if (enableAlphaSort) {
                 squares.forEach((sq) => sq.sort((a, b) => {
                     var _a, _b;
                     return ((_a = a.alt) !== null && _a !== void 0 ? _a : a.to) < ((_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
@@ -24945,7 +24946,7 @@ class MatrixView extends require$$0.ItemView {
                 { iN },
                 { ip },
             ]);
-            return [
+            const square = [
                 {
                     realItems: ru,
                     impliedItems: iu,
@@ -24972,6 +24973,7 @@ class MatrixView extends require$$0.ItemView {
                     field: getFieldInHier("prev"),
                 },
             ];
+            return squareDirectionsOrder.map((order) => square[order]);
         });
     }
     async draw() {
@@ -25007,7 +25009,7 @@ class MatrixView extends require$$0.ItemView {
                     await this.draw();
                 };
             });
-            const hierSquares = this.getHierSquares(userHiers, currFile, settings).filter((squareArr) => squareArr.some((square) => square.realItems.length + square.impliedItems.length > 0));
+            const hierSquares = this.getHierSquares(userHiers, currFile).filter((squareArr) => squareArr.some((sq) => sq.realItems.length + sq.impliedItems.length > 0));
             const compInput = {
                 target: contentEl,
                 props: {
@@ -25195,6 +25197,38 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
+        new require$$0.Setting(MLViewDetails)
+            .setName("Directions Order")
+            .setDesc(fragWithHTML(`Change the order in which the directions appear in the M/L view. Use numbers to change the order, the default is "up, same, down, next, prev" (<code>01234</code>).
+          <ul>
+            <li>0 = up</li>
+            <li>1 = same</li>
+            <li>2 = down</li>
+            <li>3 = next</li>
+            <li>4 = prev</li>
+          </ul>
+          <strong>Note:</strong> You can only change the order of the directions. You can't add or remove directions.`))
+            .addText((text) => {
+            text.setValue(settings.squareDirectionsOrder.join(""));
+            text.inputEl.onblur = async () => {
+                const value = text.getValue();
+                if (value.length === 5 &&
+                    value.includes("0") &&
+                    value.includes("1") &&
+                    value.includes("2") &&
+                    value.includes("3") &&
+                    value.includes("4")) {
+                    settings.squareDirectionsOrder = value
+                        .split("")
+                        .map((order) => Number.parseInt(order));
+                    await plugin.saveSettings();
+                    await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+                }
+                else {
+                    new require$$0.Notice('The value must be a 5 digit number using only the digits "0", "1", "2", "3", "4"');
+                }
+            };
+        });
         new require$$0.Setting(MLViewDetails)
             .setName("Enable Alpahebtical Sorting")
             .setDesc("By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below.")

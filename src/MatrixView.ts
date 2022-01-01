@@ -11,7 +11,6 @@ import {
 } from "./constants";
 import { getOppDir, getReflexiveClosure, getSubInDirs } from "./graphUtils";
 import type {
-  BCSettings,
   Directions,
   internalLinkObj,
   SquareProps,
@@ -105,13 +104,15 @@ export default class MatrixView extends ItemView {
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
-  getHierSquares(
-    userHiers: UserHier[],
-    currFile: TFile,
-    settings: BCSettings
-  ): SquareProps[][] {
+  getHierSquares(userHiers: UserHier[], currFile: TFile): SquareProps[][] {
     const { plugin } = this;
-    const { mainG } = plugin;
+    const { mainG, settings } = plugin;
+    const {
+      alphaSortAsc,
+      enableAlphaSort,
+      treatCurrNodeAsImpliedSibling,
+      squareDirectionsOrder,
+    } = settings;
     if (!mainG) return [];
 
     const { basename } = currFile;
@@ -168,8 +169,7 @@ export default class MatrixView extends ItemView {
         closedUp.forEachOutEdge(basename, (k, a, s, par) => {
           if (hier.up.includes(a.field)) {
             closedUp.forEachInEdge(par, (k, a, s, t) => {
-              if (s === basename && !settings.treatCurrNodeAsImpliedSibling)
-                return;
+              if (s === basename && !treatCurrNodeAsImpliedSibling) return;
               iSamesII.push(this.toInternalLinkObj(s, false, t));
             });
           }
@@ -200,10 +200,9 @@ export default class MatrixView extends ItemView {
           ? hier[dir].join(", ")
           : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
 
-      const { alphaSortAsc } = settings;
       const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
 
-      if (settings.enableAlphaSort) {
+      if (enableAlphaSort) {
         squares.forEach((sq) =>
           sq.sort((a, b) =>
             (a.alt ?? a.to) < (b.alt ?? b.to)
@@ -231,7 +230,7 @@ export default class MatrixView extends ItemView {
         { ip },
       ]);
 
-      return [
+      const square = [
         {
           realItems: ru,
           impliedItems: iu,
@@ -260,6 +259,8 @@ export default class MatrixView extends ItemView {
           field: getFieldInHier("prev"),
         },
       ];
+
+      return squareDirectionsOrder.map((order) => square[order]);
     });
   }
 
@@ -312,14 +313,11 @@ export default class MatrixView extends ItemView {
         }
       );
 
-      const hierSquares = this.getHierSquares(
-        userHiers,
-        currFile,
-        settings
-      ).filter((squareArr) =>
-        squareArr.some(
-          (square) => square.realItems.length + square.impliedItems.length > 0
-        )
+      const hierSquares = this.getHierSquares(userHiers, currFile).filter(
+        (squareArr) =>
+          squareArr.some(
+            (sq) => sq.realItems.length + sq.impliedItems.length > 0
+          )
       );
 
       const compInput = {
