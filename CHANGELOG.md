@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.15.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.14.0...2.15.0) (2022-01-01)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Option to change the order of the directions for each hierarchy (fix [#224](https://github.com/SkepticMystic/breadcrumbs/issues/224)) ([ca3c35b](https://github.com/SkepticMystic/breadcrumbs/commit/ca3c35bf236a3099aefaf94b43a0528738fbba1b))
+
 ## [2.14.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.13.0...2.14.0) (2021-12-29)
 
 
