@@ -58,6 +58,7 @@ export interface BCSettings {
   showTrail: boolean;
   squareDirectionsOrder: (0 | 1 | 2 | 3 | 4)[];
   threadIntoNewPane: boolean;
+  threadingTemplate: string;
   trailSeperator: string;
   treatCurrNodeAsImpliedSibling: boolean;
   trimDendronNotes: boolean;

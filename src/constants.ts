@@ -183,6 +183,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
   threadIntoNewPane: false,
+  threadingTemplate: "{{field}} of {{current}}",
   trailSeperator: "→",
   treatCurrNodeAsImpliedSibling: false,
   trimDendronNotes: false,

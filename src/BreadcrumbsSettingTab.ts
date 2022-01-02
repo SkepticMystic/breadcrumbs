@@ -945,6 +945,30 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
+    new Setting(threadingDetails)
+      .setName("New Note Name Template")
+      .setDesc(
+        fragWithHTML(
+          `When threading into a new note, choose the template for the new note name.</br>
+          The default is <code>{{field}} of {{current}}</code>.</br>
+          Options include:</br>
+          <ul>
+            <li><code>{{field}}</code>: the field being thread into</li>
+            <li><code>{{dir}}</code>: the direction being thread into</li>
+            <li><code>{{current}}</code>: the current note name</li>
+            <li><code>{{date}}</code>: the current date</li>
+          </ul>
+          `
+        )
+      )
+      .addText((text) => {
+        text.setValue(settings.threadingTemplate);
+        text.inputEl.onblur = async () => {
+          settings.threadingTemplate = text.getValue();
+          await plugin.saveSettings();
+        };
+      });
+
     const debugDetails = details("Debugging");
 
     new Setting(debugDetails)

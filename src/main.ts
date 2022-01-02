@@ -434,9 +434,19 @@ export default class BCPlugin extends Plugin {
 
           const newFileParent = app.fileManager.getNewFileParent(currFile.path);
 
+          const dir = getFieldInfo(userHiers, field).fieldDir;
           const oppField =
-            getOppFields(userHiers, field)[0] ??
-            fallbackOppField(field, getFieldInfo(userHiers, field).fieldDir);
+            getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
+
+          let newBasename = settings.threadingTemplate
+            .replace("{{current}}", currFile.basename)
+            .replace("{{field}}", field)
+            .replace("{{dir}}", dir)
+            .replace(
+              "{{date}}",
+              new Date().toLocaleDateString().replaceAll(/[/\\]/g, "")
+            );
+
 
           const newFile = await app.vault.create(
             normalizePath(
