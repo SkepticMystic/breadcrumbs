@@ -51899,7 +51899,8 @@ class BCPlugin extends require$$0.Plugin {
                 const g = getSubInDirs(mainG, "up", "down");
                 const closed = getReflexiveClosure(g, settings.userHiers);
                 const onlyDowns = getSubInDirs(closed, "down");
-                const sinks = getSinks(mainG);
+                const onlyUps = getSubInDirs(closed, "up");
+                const sinks = getSinks(onlyUps);
                 let globalIndex = "";
                 sinks.forEach((terminal) => {
                     globalIndex += terminal + "\n";

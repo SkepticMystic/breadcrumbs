@@ -365,8 +365,9 @@ export default class BCPlugin extends Plugin {
         const g = getSubInDirs(mainG, "up", "down");
         const closed = getReflexiveClosure(g, settings.userHiers);
         const onlyDowns = getSubInDirs(closed, "down");
+        const onlyUps = getSubInDirs(closed, "up");
 
-        const sinks = getSinks(mainG);
+        const sinks = getSinks(onlyUps);
 
         let globalIndex = "";
         sinks.forEach((terminal) => {
