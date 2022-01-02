@@ -21109,6 +21109,7 @@ const DEFAULT_SETTINGS = {
     limitJumpToFirstFields: [],
     showAll: false,
     noPathMessage: `This note has no real or implied parents`,
+    threadIntoNewPane: false,
     trailSeperator: "→",
     treatCurrNodeAsImpliedSibling: false,
     trimDendronNotes: false,
@@ -25045,6 +25046,11 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         containerEl.empty();
         containerEl.createEl("h2", { text: "Settings for Breadcrumbs plugin" });
         const details = (text, parent = containerEl) => parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
+        const subDetails = (text, parent) => parent
+            .createDiv({
+            attr: { style: "padding-left: 10px;" },
+        })
+            .createEl("details", {}, (d) => d.createEl("summary", { text }));
         const fieldDetails = details("Hierarchies");
         fieldDetails.createEl("p", {
             text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
@@ -25168,7 +25174,8 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 }
             }));
         }
-        const MLViewDetails = details("Matrix/List View");
+        const viewDetails = details("Views");
+        const MLViewDetails = subDetails("Matrix/List View", viewDetails);
         new require$$0.Setting(MLViewDetails)
             .setName("Show Matrix or List view by default")
             .setDesc("When Obsidian first loads, which view should it show? ✅ = Matrix, ❌ = List")
@@ -25260,8 +25267,8 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .setName("Filter Implied Siblings")
             .setDesc(fragWithHTML(`Implied siblings are:
           <ol>
-          <li>notes with the same parent, or</li>
-          <li>notes that are real siblings.</li>
+            <li>notes with the same parent, or</li>
+            <li>notes that are real siblings.</li>
           </ol>
           This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations <code>B -parent-> A</code>, and <code>C -parent-> A</code> create an implied sibling between B and C (they have the same parent, A). The two real relations <code>B -parent-> A</code>, and <code>C -up-> A</code> create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).`))
             .addToggle((toggle) => toggle
@@ -25280,7 +25287,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
-        const trailDetails = details("Trail/Grid");
+        const trailDetails = subDetails("Trail/Grid", viewDetails);
         new require$$0.Setting(trailDetails)
             .setName("Show Breadcrumbs")
             .setDesc("Show a set of different views at the top of the current note.")
@@ -25455,7 +25462,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await plugin.saveSettings();
             await plugin.drawTrail();
         }));
-        const downViewDetails = details("Down View");
+        const downViewDetails = subDetails("Down View", viewDetails);
         new require$$0.Setting(downViewDetails)
             .setName("Enable line wrapping")
             .setDesc("Make the items in the down view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen.")
@@ -25463,6 +25470,59 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.downViewWrap = value;
             await plugin.saveSettings();
         }));
+        const visModalDetails = subDetails("Visualisation Modal", viewDetails);
+        new require$$0.Setting(visModalDetails)
+            .setName("Default Visualisation Type")
+            .setDesc("Which visualisation to show by defualt")
+            .addDropdown((cb) => {
+            VISTYPES.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visGraph);
+            cb.onChange(async (value) => {
+                settings.visGraph = value;
+                await plugin.saveSettings();
+            });
+        });
+        new require$$0.Setting(visModalDetails)
+            .setName("Default Relation")
+            .setDesc("Which relation type to show first when opening the modal")
+            .addDropdown((dd) => {
+            RELATIONS.forEach((option) => {
+                dd.addOption(option, option);
+            });
+            dd.setValue(settings.visRelation);
+            dd.onChange(async (value) => {
+                settings.visRelation = value;
+                await plugin.saveSettings();
+            });
+        });
+        new require$$0.Setting(visModalDetails)
+            .setName("Default Real/Closed")
+            .setDesc("Show the real or closed graph by default")
+            .addDropdown((cb) => {
+            REAlCLOSED.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visClosed);
+            cb.onChange(async (value) => {
+                settings.visClosed = value;
+                await plugin.saveSettings();
+            });
+        });
+        new require$$0.Setting(visModalDetails)
+            .setName("Default Unlinked")
+            .setDesc("Show all nodes or only those which have links by default")
+            .addDropdown((cb) => {
+            ALLUNLINKED.forEach((option) => {
+                cb.addOption(option, option);
+            });
+            cb.setValue(settings.visAll);
+            cb.onChange(async (value) => {
+                settings.visAll = value;
+                await plugin.saveSettings();
+            });
+        });
         const alternativeHierarchyDetails = details("Alternative Hierarchies");
         new require$$0.Setting(alternativeHierarchyDetails)
             .setName("Enable Field Suggestor")
@@ -25471,13 +25531,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.fieldSuggestor = value;
             await plugin.saveSettings();
         }));
-        const hierarchyNoteDetails = alternativeHierarchyDetails
-            .createDiv({
-            attr: { style: "padding-left: 10px;" },
-        })
-            .createEl("details", {}, (d) => d.createEl("summary", {
-            text: "Hierarchy Notes",
-        }));
+        const hierarchyNoteDetails = subDetails("Hierarchy Notes", alternativeHierarchyDetails);
         new require$$0.Setting(hierarchyNoteDetails)
             .setName("Hierarchy Note(s)")
             .setDesc("A list of notes used to create external Breadcrumb structures.")
@@ -25524,13 +25578,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 }
             };
         });
-        const csvDetails = alternativeHierarchyDetails
-            .createDiv({
-            attr: { style: "padding-left: 10px;" },
-        })
-            .createEl("details", {}, (d) => d.createEl("summary", {
-            text: "CSV Notes",
-        }));
+        const csvDetails = subDetails("CSV Notes", alternativeHierarchyDetails);
         new require$$0.Setting(csvDetails)
             .setName("CSV Breadcrumb Paths")
             .setDesc("The file path of a csv files with breadcrumbs information.")
@@ -25541,13 +25589,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             };
         });
-        const dendronDetails = alternativeHierarchyDetails
-            .createDiv({
-            attr: { style: "padding-left: 10px;" },
-        })
-            .createEl("details", {}, (d) => d.createEl("summary", {
-            text: "Dendron Notes",
-        }));
+        const dendronDetails = subDetails("Dendron Notes", alternativeHierarchyDetails);
         new require$$0.Setting(dendronDetails)
             .setName("Add Dendron notes to graph")
             .setDesc(fragWithHTML("Dendron notes create a hierarchy using note names.</br><code>nmath.algebra</code> is a note about algebra, whose parent is <code>math</code>.</br><code>nmath.calculus.limits</code> is a note about limits whose parent is the note <code>math.calculus</code>, the parent of which is <code>math</code>."))
@@ -25602,7 +25644,8 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        const writeBCsToFileDetails = details("Write Breadcrumbs to File");
+        const cmdsDetails = details("Commands");
+        const writeBCsToFileDetails = subDetails("Write Breadcrumbs to File", cmdsDetails);
         const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
             cls: "limit-ML-fields",
         });
@@ -25631,60 +25674,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.showWriteAllBCsCmd = value;
             await plugin.saveSettings();
         }));
-        const visModalDetails = details("Visualisation Modal");
-        new require$$0.Setting(visModalDetails)
-            .setName("Default Visualisation Type")
-            .setDesc("Which visualisation to show by defualt")
-            .addDropdown((cb) => {
-            VISTYPES.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visGraph);
-            cb.onChange(async (value) => {
-                settings.visGraph = value;
-                await plugin.saveSettings();
-            });
-        });
-        new require$$0.Setting(visModalDetails)
-            .setName("Default Relation")
-            .setDesc("Which relation type to show first when opening the modal")
-            .addDropdown((cb) => {
-            RELATIONS.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visRelation);
-            cb.onChange(async (value) => {
-                settings.visRelation = value;
-                await plugin.saveSettings();
-            });
-        });
-        new require$$0.Setting(visModalDetails)
-            .setName("Default Real/Closed")
-            .setDesc("Show the real or closed graph by default")
-            .addDropdown((cb) => {
-            REAlCLOSED.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visClosed);
-            cb.onChange(async (value) => {
-                settings.visClosed = value;
-                await plugin.saveSettings();
-            });
-        });
-        new require$$0.Setting(visModalDetails)
-            .setName("Default Unlinked")
-            .setDesc("Show all nodes or only those which have links by default")
-            .addDropdown((cb) => {
-            ALLUNLINKED.forEach((option) => {
-                cb.addOption(option, option);
-            });
-            cb.setValue(settings.visAll);
-            cb.onChange(async (value) => {
-                settings.visAll = value;
-                await plugin.saveSettings();
-            });
-        });
-        const createIndexDetails = details("Create Index");
+        const createIndexDetails = subDetails("Create Index", cmdsDetails);
         new require$$0.Setting(createIndexDetails)
             .setName("Add wiklink brackets")
             .setDesc(fragWithHTML("When creating an index, should it wrap the note name in wikilinks <code>[[]]</code> or not.\n✅ = yes, ❌ = no."))
@@ -25699,6 +25689,16 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.aliasesInIndex = value;
             await plugin.saveSettings();
         }));
+        const threadingDetails = subDetails("Threading", cmdsDetails);
+        threadingDetails.createDiv({
+            text: "Settings for the commands `Create new <field> from current note`",
+        });
+        new require$$0.Setting(threadingDetails)
+            .setName("Open new threads in new pane or current pane")
+            .addToggle((tog) => tog.onChange(async (value) => {
+            settings.threadIntoNewPane = value;
+            await plugin.saveSettings();
+        }));
         const debugDetails = details("Debugging");
         new require$$0.Setting(debugDetails)
             .setName("Debug Mode")
@@ -25711,10 +25711,10 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             });
         });
-        debugDetails.createEl("button", { text: "Console log `settings`" }, (el) => {
+        debugDetails.createEl("button", { text: "Console log settings" }, (el) => {
             el.addEventListener("click", () => console.log(settings));
         });
-        new KoFi({ target: this.containerEl });
+        new KoFi({ target: containerEl });
     }
 }
 
@@ -51930,9 +51930,9 @@ class BCPlugin extends require$$0.Plugin {
                     const currFile = app.workspace.getActiveFile();
                     if (!currFile)
                         return;
-                    const newFilePath = app.fileManager.getNewFileParent(currFile.path);
+                    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
                     const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, getFieldInfo(userHiers, field).fieldDir);
-                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFilePath.path}/${field} of ${currFile.basename}.md`), writeBCsInline
+                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${field} of ${currFile.basename}.md`), writeBCsInline
                         ? `${oppField}:: [[${currFile.basename}]]`
                         : `---\n${oppField}: ['${currFile.basename}']\n---`);
                     if (!writeBCsInline) {
@@ -51955,7 +51955,13 @@ class BCPlugin extends require$$0.Plugin {
                                 splits[1];
                         await app.vault.modify(currFile, content);
                     }
-                    app.workspace.activeLeaf.openFile(newFile);
+                    if (settings.threadIntoNewPane) {
+                        const splitLeaf = app.workspace.splitActiveLeaf();
+                        app.workspace.setActiveLeaf(splitLeaf, false, false);
+                        splitLeaf.openFile(newFile);
+                    }
+                    else
+                        app.workspace.activeLeaf.openFile(newFile);
                 },
             });
         });

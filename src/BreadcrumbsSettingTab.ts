@@ -45,6 +45,13 @@ export class BCSettingTab extends PluginSettingTab {
     const details = (text: string, parent = containerEl) =>
       parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
 
+    const subDetails = (text: string, parent: HTMLDetailsElement) =>
+      parent
+        .createDiv({
+          attr: { style: "padding-left: 10px;" },
+        })
+        .createEl("details", {}, (d) => d.createEl("summary", { text }));
+
     const fieldDetails = details("Hierarchies");
 
     fieldDetails.createEl("p", {
@@ -207,7 +214,8 @@ export class BCSettingTab extends PluginSettingTab {
         );
     }
 
-    const MLViewDetails = details("Matrix/List View");
+    const viewDetails = details("Views");
+    const MLViewDetails = subDetails("Matrix/List View", viewDetails);
 
     new Setting(MLViewDetails)
       .setName("Show Matrix or List view by default")
@@ -338,8 +346,8 @@ export class BCSettingTab extends PluginSettingTab {
         fragWithHTML(
           `Implied siblings are:
           <ol>
-          <li>notes with the same parent, or</li>
-          <li>notes that are real siblings.</li>
+            <li>notes with the same parent, or</li>
+            <li>notes that are real siblings.</li>
           </ol>
           This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations <code>B -parent-> A</code>, and <code>C -parent-> A</code> create an implied sibling between B and C (they have the same parent, A). The two real relations <code>B -parent-> A</code>, and <code>C -up-> A</code> create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).`
         )
@@ -373,7 +381,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const trailDetails = details("Trail/Grid");
+    const trailDetails = subDetails("Trail/Grid", viewDetails);
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
@@ -610,7 +618,7 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
-    const downViewDetails = details("Down View");
+    const downViewDetails = subDetails("Down View", viewDetails);
 
     new Setting(downViewDetails)
       .setName("Enable line wrapping")
@@ -623,6 +631,65 @@ export class BCSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         })
       );
+
+    const visModalDetails = subDetails("Visualisation Modal", viewDetails);
+
+    new Setting(visModalDetails)
+      .setName("Default Visualisation Type")
+      .setDesc("Which visualisation to show by defualt")
+      .addDropdown((cb: DropdownComponent) => {
+        VISTYPES.forEach((option: visTypes) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(settings.visGraph);
+
+        cb.onChange(async (value: visTypes) => {
+          settings.visGraph = value;
+          await plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
+      .setName("Default Relation")
+      .setDesc("Which relation type to show first when opening the modal")
+      .addDropdown((dd) => {
+        RELATIONS.forEach((option: Relations) => {
+          dd.addOption(option, option);
+        });
+        dd.setValue(settings.visRelation);
+
+        dd.onChange(async (value: Relations) => {
+          settings.visRelation = value;
+          await plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
+      .setName("Default Real/Closed")
+      .setDesc("Show the real or closed graph by default")
+      .addDropdown((cb: DropdownComponent) => {
+        REAlCLOSED.forEach((option: string) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(settings.visClosed);
+
+        cb.onChange(async (value: string) => {
+          settings.visClosed = value;
+          await plugin.saveSettings();
+        });
+      });
+    new Setting(visModalDetails)
+      .setName("Default Unlinked")
+      .setDesc("Show all nodes or only those which have links by default")
+      .addDropdown((cb: DropdownComponent) => {
+        ALLUNLINKED.forEach((option: string) => {
+          cb.addOption(option, option);
+        });
+        cb.setValue(settings.visAll);
+
+        cb.onChange(async (value: string) => {
+          settings.visAll = value;
+          await plugin.saveSettings();
+        });
+      });
 
     const alternativeHierarchyDetails = details("Alternative Hierarchies");
 
@@ -640,15 +707,10 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const hierarchyNoteDetails = alternativeHierarchyDetails
-      .createDiv({
-        attr: { style: "padding-left: 10px;" },
-      })
-      .createEl("details", {}, (d) =>
-        d.createEl("summary", {
-          text: "Hierarchy Notes",
-        })
-      );
+    const hierarchyNoteDetails = subDetails(
+      "Hierarchy Notes",
+      alternativeHierarchyDetails
+    );
 
     new Setting(hierarchyNoteDetails)
       .setName("Hierarchy Note(s)")
@@ -700,15 +762,7 @@ export class BCSettingTab extends PluginSettingTab {
         };
       });
 
-    const csvDetails = alternativeHierarchyDetails
-      .createDiv({
-        attr: { style: "padding-left: 10px;" },
-      })
-      .createEl("details", {}, (d) =>
-        d.createEl("summary", {
-          text: "CSV Notes",
-        })
-      );
+    const csvDetails = subDetails("CSV Notes", alternativeHierarchyDetails);
 
     new Setting(csvDetails)
       .setName("CSV Breadcrumb Paths")
@@ -721,15 +775,10 @@ export class BCSettingTab extends PluginSettingTab {
         };
       });
 
-    const dendronDetails = alternativeHierarchyDetails
-      .createDiv({
-        attr: { style: "padding-left: 10px;" },
-      })
-      .createEl("details", {}, (d) =>
-        d.createEl("summary", {
-          text: "Dendron Notes",
-        })
-      );
+    const dendronDetails = subDetails(
+      "Dendron Notes",
+      alternativeHierarchyDetails
+    );
 
     new Setting(dendronDetails)
       .setName("Add Dendron notes to graph")
@@ -806,7 +855,11 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    const writeBCsToFileDetails = details("Write Breadcrumbs to File");
+    const cmdsDetails = details("Commands");
+    const writeBCsToFileDetails = subDetails(
+      "Write Breadcrumbs to File",
+      cmdsDetails
+    );
 
     const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
       cls: "limit-ML-fields",
@@ -852,66 +905,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const visModalDetails = details("Visualisation Modal");
-
-    new Setting(visModalDetails)
-      .setName("Default Visualisation Type")
-      .setDesc("Which visualisation to show by defualt")
-      .addDropdown((cb: DropdownComponent) => {
-        VISTYPES.forEach((option: visTypes) => {
-          cb.addOption(option, option);
-        });
-        cb.setValue(settings.visGraph);
-
-        cb.onChange(async (value: visTypes) => {
-          settings.visGraph = value;
-          await plugin.saveSettings();
-        });
-      });
-    new Setting(visModalDetails)
-      .setName("Default Relation")
-      .setDesc("Which relation type to show first when opening the modal")
-      .addDropdown((cb: DropdownComponent) => {
-        RELATIONS.forEach((option: Relations) => {
-          cb.addOption(option, option);
-        });
-        cb.setValue(settings.visRelation);
-
-        cb.onChange(async (value: Relations) => {
-          settings.visRelation = value;
-          await plugin.saveSettings();
-        });
-      });
-    new Setting(visModalDetails)
-      .setName("Default Real/Closed")
-      .setDesc("Show the real or closed graph by default")
-      .addDropdown((cb: DropdownComponent) => {
-        REAlCLOSED.forEach((option: string) => {
-          cb.addOption(option, option);
-        });
-        cb.setValue(settings.visClosed);
-
-        cb.onChange(async (value: string) => {
-          settings.visClosed = value;
-          await plugin.saveSettings();
-        });
-      });
-    new Setting(visModalDetails)
-      .setName("Default Unlinked")
-      .setDesc("Show all nodes or only those which have links by default")
-      .addDropdown((cb: DropdownComponent) => {
-        ALLUNLINKED.forEach((option: string) => {
-          cb.addOption(option, option);
-        });
-        cb.setValue(settings.visAll);
-
-        cb.onChange(async (value: string) => {
-          settings.visAll = value;
-          await plugin.saveSettings();
-        });
-      });
-
-    const createIndexDetails = details("Create Index");
+    const createIndexDetails = subDetails("Create Index", cmdsDetails);
 
     new Setting(createIndexDetails)
       .setName("Add wiklink brackets")
@@ -969,14 +963,10 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
-    debugDetails.createEl(
-      "button",
-      { text: "Console log `settings`" },
-      (el) => {
-        el.addEventListener("click", () => console.log(settings));
-      }
-    );
+    debugDetails.createEl("button", { text: "Console log settings" }, (el) => {
+      el.addEventListener("click", () => console.log(settings));
+    });
 
-    new KoFi({ target: this.containerEl });
+    new KoFi({ target: containerEl });
   }
 }
