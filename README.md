@@ -71,8 +71,15 @@ This view shows a trail of notes from the top of your vault down to your current
 Using this structure that you impose, you can use the breadcrumb trail to visualise the path back to your parent note.
 
 
-## Video overview of the basic idea and functionality
-[![Breadcrumbs Plugin - Obsidian Community Showcase](https://img.youtube.com/vi/DXXB7fHcArg/0.jpg)](https://www.youtube.com/watch?v=DXXB7fHcArg)
+## Videos
+
+### Latest tutorial as of 2022-01-02
+
+[![image|100](https://user-images.githubusercontent.com/70717676/147882843-bbb28103-a3a4-4dfd-8077-d8a1524f86a3.png)](https://www.youtube.com/watch?v=N4QmszBRu9I&ab_channel=ObsidianCommunityTalks)
+
+### First video about Breadcrumbs
+
+[![image](https://user-images.githubusercontent.com/70717676/147882889-cc38e14a-555a-433e-b500-71f159d49354.png)](https://www.youtube.com/watch?v=DXXB7fHcArg)
 
 
 ## Feed my coffee problem
