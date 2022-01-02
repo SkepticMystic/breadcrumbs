@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.16.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.15.0...2.16.0) (2022-01-02)
+
+
+### Features
+
+* **Threading:** :sparkles: Option for customisable template for new note ([c893b81](https://github.com/SkepticMystic/breadcrumbs/commit/c893b812e382b0b761df0040f83b46e49d74c2c4))
+* **Threading:** :sparkles: Option to thread into new pane or current pane ([625aa6e](https://github.com/SkepticMystic/breadcrumbs/commit/625aa6e506cb41957391f3940bce5d8565ec66ec))
+
+
+### Bug Fixes
+
+* **Threading:** :bug: Add incrementing `i` to new notes (fix [#228](https://github.com/SkepticMystic/breadcrumbs/issues/228)) ([4c90c96](https://github.com/SkepticMystic/breadcrumbs/commit/4c90c963732d775a5c5f0a1c36dcfbf7791ec7a6))
+
 ## [2.15.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.14.0...2.15.0) (2022-01-01)
 
 
