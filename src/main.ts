@@ -432,7 +432,7 @@ export default class BCPlugin extends Plugin {
           const currFile = app.workspace.getActiveFile();
           if (!currFile) return;
 
-          const newFilePath = app.fileManager.getNewFileParent(currFile.path);
+          const newFileParent = app.fileManager.getNewFileParent(currFile.path);
 
           const oppField =
             getOppFields(userHiers, field)[0] ??
@@ -440,7 +440,7 @@ export default class BCPlugin extends Plugin {
 
           const newFile = await app.vault.create(
             normalizePath(
-              `${newFilePath.path}/${field} of ${currFile.basename}.md`
+              `${newFileParent.path}/${field} of ${currFile.basename}.md`
             ),
             writeBCsInline
               ? `${oppField}:: [[${currFile.basename}]]`
@@ -475,7 +475,12 @@ export default class BCPlugin extends Plugin {
 
             await app.vault.modify(currFile, content);
           }
-          app.workspace.activeLeaf.openFile(newFile);
+
+          if (settings.threadIntoNewPane) {
+            const splitLeaf = app.workspace.splitActiveLeaf();
+            app.workspace.setActiveLeaf(splitLeaf, false, false);
+            splitLeaf.openFile(newFile);
+          } else app.workspace.activeLeaf.openFile(newFile);
         },
       });
     });

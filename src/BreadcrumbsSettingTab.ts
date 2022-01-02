@@ -937,6 +937,20 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
+    const threadingDetails = subDetails("Threading", cmdsDetails);
+
+    threadingDetails.createDiv({
+      text: "Settings for the commands `Create new <field> from current note`",
+    });
+    new Setting(threadingDetails)
+      .setName("Open new threads in new pane or current pane")
+      .addToggle((tog) =>
+        tog.onChange(async (value) => {
+          settings.threadIntoNewPane = value;
+          await plugin.saveSettings();
+        })
+      );
+
     const debugDetails = details("Debugging");
 
     new Setting(debugDetails)

@@ -182,6 +182,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   limitJumpToFirstFields: [],
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
+  threadIntoNewPane: false,
   trailSeperator: "→",
   treatCurrNodeAsImpliedSibling: false,
   trimDendronNotes: false,
