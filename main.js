@@ -52003,13 +52003,12 @@ class BCPlugin extends require$$0.Plugin {
                                 splits[1];
                         await app.vault.modify(currFile, content);
                     }
-                    if (settings.threadIntoNewPane) {
-                        const splitLeaf = app.workspace.splitActiveLeaf();
-                        app.workspace.setActiveLeaf(splitLeaf, false, false);
-                        splitLeaf.openFile(newFile);
-                    }
-                    else
-                        app.workspace.activeLeaf.openFile(newFile);
+                    const leaf = settings.threadIntoNewPane
+                        ? app.workspace.splitActiveLeaf()
+                        : app.workspace.activeLeaf;
+                    await leaf.openFile(newFile, { active: true, mode: "source" });
+                    const { editor } = leaf.view;
+                    editor.setCursor(editor.getValue().length);
                 },
             });
         });

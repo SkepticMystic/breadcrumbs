@@ -5,6 +5,7 @@ import { cloneDeep } from "lodash";
 import { debug, error, info, warn } from "loglevel";
 import {
   addIcon,
+  Editor,
   EventRef,
   MarkdownView,
   moment,
@@ -490,11 +491,13 @@ export default class BCPlugin extends Plugin {
             await app.vault.modify(currFile, content);
           }
 
-          if (settings.threadIntoNewPane) {
-            const splitLeaf = app.workspace.splitActiveLeaf();
-            app.workspace.setActiveLeaf(splitLeaf, false, false);
-            splitLeaf.openFile(newFile);
-          } else app.workspace.activeLeaf.openFile(newFile);
+          const leaf = settings.threadIntoNewPane
+            ? app.workspace.splitActiveLeaf()
+            : app.workspace.activeLeaf;
+
+          await leaf.openFile(newFile, { active: true, mode: "source" });
+          const { editor }: { editor: Editor } = leaf.view;
+          editor.setCursor(editor.getValue().length);
         },
       });
     });
