@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.17.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.16.1...2.17.0) (2022-01-02)
+
+
+### Features
+
+* **Threading:** :sparkles: Custom date format in threading template ([df0b7eb](https://github.com/SkepticMystic/breadcrumbs/commit/df0b7eb2934a333974b1c68c28ec9e43f7345a1a))
+* **Threading:** :sparkles: Move cursor to end of line in new note ([#229](https://github.com/SkepticMystic/breadcrumbs/issues/229)) ([8e38bbf](https://github.com/SkepticMystic/breadcrumbs/commit/8e38bbff773b0da7a1353817a3685df3bcb00ddd))
+
 ### [2.16.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.16.0...2.16.1) (2022-01-02)
 
 
