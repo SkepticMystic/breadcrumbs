@@ -21110,6 +21110,7 @@ const DEFAULT_SETTINGS = {
     showAll: false,
     noPathMessage: `This note has no real or implied parents`,
     threadIntoNewPane: false,
+    threadingTemplate: "{{field}} of {{current}}",
     trailSeperator: "→",
     treatCurrNodeAsImpliedSibling: false,
     trimDendronNotes: false,
@@ -25699,6 +25700,25 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.threadIntoNewPane = value;
             await plugin.saveSettings();
         }));
+        new require$$0.Setting(threadingDetails)
+            .setName("New Note Name Template")
+            .setDesc(fragWithHTML(`When threading into a new note, choose the template for the new note name.</br>
+          The default is <code>{{field}} of {{current}}</code>.</br>
+          Options include:</br>
+          <ul>
+            <li><code>{{field}}</code>: the field being thread into</li>
+            <li><code>{{dir}}</code>: the direction being thread into</li>
+            <li><code>{{current}}</code>: the current note name</li>
+            <li><code>{{date}}</code>: the current date</li>
+          </ul>
+          `))
+            .addText((text) => {
+            text.setValue(settings.threadingTemplate);
+            text.inputEl.onblur = async () => {
+                settings.threadingTemplate = text.getValue();
+                await plugin.saveSettings();
+            };
+        });
         const debugDetails = details("Debugging");
         new require$$0.Setting(debugDetails)
             .setName("Debug Mode")
@@ -51931,8 +51951,22 @@ class BCPlugin extends require$$0.Plugin {
                     if (!currFile)
                         return;
                     const newFileParent = app.fileManager.getNewFileParent(currFile.path);
-                    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, getFieldInfo(userHiers, field).fieldDir);
-                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${field} of ${currFile.basename}.md`), writeBCsInline
+                    const dir = getFieldInfo(userHiers, field).fieldDir;
+                    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+                    let newBasename = settings.threadingTemplate
+                        .replace("{{current}}", currFile.basename)
+                        .replace("{{field}}", field)
+                        .replace("{{dir}}", dir)
+                        .replace("{{date}}", new Date().toLocaleDateString().replaceAll(/[/\\]/g, ""));
+                    let i = 1;
+                    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
+                        if (i === 1)
+                            newBasename += ` ${i}`;
+                        else
+                            newBasename = newBasename.slice(0, -1) + ` ${i}`;
+                        i++;
+                    }
+                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${newBasename}.md`), writeBCsInline
                         ? `${oppField}:: [[${currFile.basename}]]`
                         : `---\n${oppField}: ['${currFile.basename}']\n---`);
                     if (!writeBCsInline) {

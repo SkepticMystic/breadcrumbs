@@ -7,6 +7,7 @@ import {
   addIcon,
   EventRef,
   MarkdownView,
+  moment_2,
   normalizePath,
   Notice,
   Plugin,
@@ -447,11 +448,15 @@ export default class BCPlugin extends Plugin {
               new Date().toLocaleDateString().replaceAll(/[/\\]/g, "")
             );
 
+          let i = 1;
+          while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
+            if (i === 1) newBasename += ` ${i}`;
+            else newBasename = newBasename.slice(0, -1) + ` ${i}`;
+            i++;
+          }
 
           const newFile = await app.vault.create(
-            normalizePath(
-              `${newFileParent.path}/${field} of ${currFile.basename}.md`
-            ),
+            normalizePath(`${newFileParent.path}/${newBasename}.md`),
             writeBCsInline
               ? `${oppField}:: [[${currFile.basename}]]`
               : `---\n${oppField}: ['${currFile.basename}']\n---`
