@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.16.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.16.0...2.16.1) (2022-01-02)
+
+
+### Bug Fixes
+
+* **CreateIndex:** :bug: Sinks are nodes with no outgoing **ups** (fix [#231](https://github.com/SkepticMystic/breadcrumbs/issues/231)) ([771a42a](https://github.com/SkepticMystic/breadcrumbs/commit/771a42af3da5a06000d71615a278b1d480cb8f48))
+
 ## [2.16.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.15.0...2.16.0) (2022-01-02)
 
 
