@@ -7,7 +7,7 @@ import {
   addIcon,
   EventRef,
   MarkdownView,
-  moment_2,
+  moment,
   normalizePath,
   Notice,
   Plugin,
@@ -444,10 +444,8 @@ export default class BCPlugin extends Plugin {
             .replace("{{current}}", currFile.basename)
             .replace("{{field}}", field)
             .replace("{{dir}}", dir)
-            .replace(
-              "{{date}}",
-              new Date().toLocaleDateString().replaceAll(/[/\\]/g, "")
-            );
+            //@ts-ignore
+            .replace("{{date}}", moment().format(settings.dateFormat));
 
           let i = 1;
           while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {

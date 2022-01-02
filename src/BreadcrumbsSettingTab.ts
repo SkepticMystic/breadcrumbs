@@ -2,6 +2,7 @@ import log from "loglevel";
 import {
   App,
   DropdownComponent,
+  MomentFormatComponent,
   Notice,
   PluginSettingTab,
   Setting,
@@ -956,9 +957,8 @@ export class BCSettingTab extends PluginSettingTab {
             <li><code>{{field}}</code>: the field being thread into</li>
             <li><code>{{dir}}</code>: the direction being thread into</li>
             <li><code>{{current}}</code>: the current note name</li>
-            <li><code>{{date}}</code>: the current date</li>
-          </ul>
-          `
+            <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+          </ul>`
         )
       )
       .addText((text) => {
@@ -967,6 +967,19 @@ export class BCSettingTab extends PluginSettingTab {
           settings.threadingTemplate = text.getValue();
           await plugin.saveSettings();
         };
+      });
+
+    new Setting(threadingDetails)
+      .setName("Date Format")
+      .setDesc("The date format used in the Threading Template (setting above)")
+      .addMomentFormat((format) => {
+        format
+          .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
+          .setValue(settings.dateFormat)
+          .onChange(async (value) => {
+            settings.dateFormat = value;
+            await plugin.saveSettings();
+          });
       });
 
     const debugDetails = details("Debugging");

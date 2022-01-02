@@ -140,6 +140,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   alphaSortAsc: true,
   altLinkFields: [],
   CSVPaths: "",
+  dateFormat: "YYYY-MM-DD",
   debugMode: "WARN",
   defaultView: true,
   dendronNoteDelimiter: ".",

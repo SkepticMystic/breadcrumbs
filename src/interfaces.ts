@@ -19,6 +19,7 @@ export interface BCSettings {
   defaultView: boolean;
   dendronNoteDelimiter: string;
   dendronNoteField: string;
+  dateFormat: string;
   downViewWrap: boolean;
   dotsColour: string;
   enableAlphaSort: boolean;

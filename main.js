@@ -21069,6 +21069,7 @@ const DEFAULT_SETTINGS = {
     alphaSortAsc: true,
     altLinkFields: [],
     CSVPaths: "",
+    dateFormat: "YYYY-MM-DD",
     debugMode: "WARN",
     defaultView: true,
     dendronNoteDelimiter: ".",
@@ -25709,15 +25710,26 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             <li><code>{{field}}</code>: the field being thread into</li>
             <li><code>{{dir}}</code>: the direction being thread into</li>
             <li><code>{{current}}</code>: the current note name</li>
-            <li><code>{{date}}</code>: the current date</li>
-          </ul>
-          `))
+            <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+          </ul>`))
             .addText((text) => {
             text.setValue(settings.threadingTemplate);
             text.inputEl.onblur = async () => {
                 settings.threadingTemplate = text.getValue();
                 await plugin.saveSettings();
             };
+        });
+        new require$$0.Setting(threadingDetails)
+            .setName("Date Format")
+            .setDesc("The date format used in the Threading Template (setting above)")
+            .addMomentFormat((format) => {
+            format
+                .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
+                .setValue(settings.dateFormat)
+                .onChange(async (value) => {
+                settings.dateFormat = value;
+                await plugin.saveSettings();
+            });
         });
         const debugDetails = details("Debugging");
         new require$$0.Setting(debugDetails)
@@ -51958,7 +51970,8 @@ class BCPlugin extends require$$0.Plugin {
                         .replace("{{current}}", currFile.basename)
                         .replace("{{field}}", field)
                         .replace("{{dir}}", dir)
-                        .replace("{{date}}", new Date().toLocaleDateString().replaceAll(/[/\\]/g, ""));
+                        //@ts-ignore
+                        .replace("{{date}}", require$$0.moment().format(settings.dateFormat));
                     let i = 1;
                     while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
                         if (i === 1)
