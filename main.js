@@ -51920,27 +51920,33 @@ class BCPlugin extends require$$0.Plugin {
             id: "Write-Breadcrumbs-to-All-Files",
             name: "Write Breadcrumbs to **ALL** Files",
             callback: async () => {
-                const first = window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.");
-                if (first) {
-                    const second = window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.");
-                    if (second) {
-                        const third = window.confirm("For real, please make a back up before");
-                        if (third) {
-                            try {
-                                const files = this.app.vault.getMarkdownFiles();
-                                for (const file of files)
+                if (!settings.showWriteAllBCsCmd) {
+                    new require$$0.Notice("You first need to enable this command in Breadcrumbs' settings.");
+                    return;
+                }
+                if (window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.")) {
+                    if (window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.")) {
+                        if (window.confirm("For real, please make a back up before.")) {
+                            const notice = new require$$0.Notice("Operation Started");
+                            const problemFiles = [];
+                            for (const file of this.app.vault.getMarkdownFiles()) {
+                                try {
                                     await this.writeBCToFile(file);
-                                new require$$0.Notice("Operation Complete");
+                                }
+                                catch (e) {
+                                    problemFiles.push(file.path);
+                                }
                             }
-                            catch (err) {
-                                new require$$0.Notice(err);
-                                loglevel.error(err);
+                            notice.setMessage("Operation Complete");
+                            if (problemFiles.length) {
+                                new require$$0.Notice("Some files were not updated due to errors. Check the console to see which ones.");
+                                console.log({ problemFiles });
                             }
                         }
                     }
                 }
             },
-            checkCallback: () => settings.showWriteAllBCsCmd,
+            // checkCallback: () => settings.showWriteAllBCsCmd,
         });
         this.addCommand({
             id: "local-index",
