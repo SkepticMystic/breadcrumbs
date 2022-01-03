@@ -496,7 +496,7 @@ export default class BCPlugin extends Plugin {
             : app.workspace.activeLeaf;
 
           await leaf.openFile(newFile, { active: true, mode: "source" });
-          const { editor }: { editor: Editor } = leaf.view;
+          const editor = leaf.view.editor as Editor;
           editor.setCursor(editor.getValue().length);
         },
       });
@@ -985,8 +985,7 @@ export default class BCPlugin extends Plugin {
       const targets = frontms
         .map((ff) => ff.file)
         .filter(
-          (otherFile) =>
-            getFolder(otherFile) === folder && otherFile.path !== file.path
+          (other) => getFolder(other) === folder && other.path !== file.path
         )
         .map(getDVBasename);
 
