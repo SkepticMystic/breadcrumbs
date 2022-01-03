@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.19.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.19.0...2.19.1) (2022-01-03)
+
+
+### Bug Fixes
+
+* **WriteBCToFile:** :bug: Fix write BCs to ALL files command (fix [#217](https://github.com/SkepticMystic/breadcrumbs/issues/217)) ([426a76e](https://github.com/SkepticMystic/breadcrumbs/commit/426a76e206cb9ad6c4d8f92332fb7bfd711d7af7))
+
 ## [2.19.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.18.0...2.19.0) (2022-01-03)
 
 
