@@ -77,6 +77,10 @@ Using this structure that you impose, you can use the breadcrumb trail to visual
 
 [![image|100](https://user-images.githubusercontent.com/70717676/147882843-bbb28103-a3a4-4dfd-8077-d8a1524f86a3.png)](https://www.youtube.com/watch?v=N4QmszBRu9I&ab_channel=ObsidianCommunityTalks)
 
+### Video going in-depth into Threading feature, by @blizzingout
+
+http://youtube.com/watch?v=AS5Mv6YNmsQ
+
 ### First video about Breadcrumbs
 
 [![image](https://user-images.githubusercontent.com/70717676/147882889-cc38e14a-555a-433e-b500-71f159d49354.png)](https://www.youtube.com/watch?v=DXXB7fHcArg)
