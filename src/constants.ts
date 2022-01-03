@@ -185,6 +185,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   noPathMessage: `This note has no real or implied parents`,
   threadIntoNewPane: false,
   threadingTemplate: "{{field}} of {{current}}",
+  threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
   trailSeperator: "→",
   treatCurrNodeAsImpliedSibling: false,
   trimDendronNotes: false,

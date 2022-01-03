@@ -13,7 +13,9 @@ import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
 import {
   ALLUNLINKED,
+  ARROW_DIRECTIONS,
   DEFAULT_SETTINGS,
+  DIRECTIONS,
   MATRIX_VIEW,
   REAlCLOSED,
   RELATIONS,
@@ -951,14 +953,14 @@ export class BCSettingTab extends PluginSettingTab {
       .setDesc(
         fragWithHTML(
           `When threading into a new note, choose the template for the new note name.</br>
-          The default is <code>{{field}} of {{current}}</code>.</br>
-          Options include:</br>
-          <ul>
-            <li><code>{{field}}</code>: the field being thread into</li>
-            <li><code>{{dir}}</code>: the direction being thread into</li>
-            <li><code>{{current}}</code>: the current note name</li>
-            <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
-          </ul>`
+        The default is <code>{{field}} of {{current}}</code>.</br>
+        Options include:</br>
+        <ul>
+        <li><code>{{field}}</code>: the field being thread into</li>
+        <li><code>{{dir}}</code>: the direction being thread into</li>
+        <li><code>{{current}}</code>: the current note name</li>
+        <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+        </ul>`
         )
       )
       .addText((text) => {
@@ -968,6 +970,27 @@ export class BCSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         };
       });
+    const threadDirTemplatesSetting = new Setting(threadingDetails)
+      .setClass("thread-dir-templates")
+      .setName("Templater Template per Direction")
+      .setDesc(
+        fragWithHTML(
+          `For each direction to be thread into, choose a Templater template to insert into the new note.</br>
+          Give the basename, or the full file path (e.g. <code>Templates/Parent Template</code>).`
+        )
+      );
+
+    DIRECTIONS.forEach((dir) =>
+      threadDirTemplatesSetting.addText((text) => {
+        text
+          .setPlaceholder(ARROW_DIRECTIONS[dir])
+          .setValue(settings.threadingDirTemplates[dir]);
+        text.inputEl.onblur = async () => {
+          settings.threadingDirTemplates[dir] = text.getValue();
+          await plugin.saveSettings();
+        };
+      })
+    );
 
     new Setting(threadingDetails)
       .setName("Date Format")

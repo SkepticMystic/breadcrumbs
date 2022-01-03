@@ -21120,6 +21120,7 @@ const DEFAULT_SETTINGS = {
     noPathMessage: `This note has no real or implied parents`,
     threadIntoNewPane: false,
     threadingTemplate: "{{field}} of {{current}}",
+    threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
     trailSeperator: "→",
     treatCurrNodeAsImpliedSibling: false,
     trimDendronNotes: false,
@@ -25712,14 +25713,14 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         new require$$0.Setting(threadingDetails)
             .setName("New Note Name Template")
             .setDesc(fragWithHTML(`When threading into a new note, choose the template for the new note name.</br>
-          The default is <code>{{field}} of {{current}}</code>.</br>
-          Options include:</br>
-          <ul>
-            <li><code>{{field}}</code>: the field being thread into</li>
-            <li><code>{{dir}}</code>: the direction being thread into</li>
-            <li><code>{{current}}</code>: the current note name</li>
-            <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
-          </ul>`))
+        The default is <code>{{field}} of {{current}}</code>.</br>
+        Options include:</br>
+        <ul>
+        <li><code>{{field}}</code>: the field being thread into</li>
+        <li><code>{{dir}}</code>: the direction being thread into</li>
+        <li><code>{{current}}</code>: the current note name</li>
+        <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+        </ul>`))
             .addText((text) => {
             text.setValue(settings.threadingTemplate);
             text.inputEl.onblur = async () => {
@@ -25727,6 +25728,20 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             };
         });
+        const threadDirTemplatesSetting = new require$$0.Setting(threadingDetails)
+            .setClass("thread-dir-templates")
+            .setName("Templater Template per Direction")
+            .setDesc(fragWithHTML(`For each direction to be thread into, choose a Templater template to insert into the new note.</br>
+          Give the basename, or the full file path (e.g. <code>Templates/Parent Template</code>).`));
+        DIRECTIONS$1.forEach((dir) => threadDirTemplatesSetting.addText((text) => {
+            text
+                .setPlaceholder(ARROW_DIRECTIONS[dir])
+                .setValue(settings.threadingDirTemplates[dir]);
+            text.inputEl.onblur = async () => {
+                settings.threadingDirTemplates[dir] = text.getValue();
+                await plugin.saveSettings();
+            };
+        }));
         new require$$0.Setting(threadingDetails)
             .setName("Date Format")
             .setDesc("The date format used in the Threading Template (setting above)")
@@ -51985,12 +52000,22 @@ class BCPlugin extends require$$0.Plugin {
                         if (i === 1)
                             newBasename += ` ${i}`;
                         else
-                            newBasename = newBasename.slice(0, -1) + ` ${i}`;
+                            newBasename = newBasename.slice(0, -2) + ` ${i}`;
                         i++;
                     }
-                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${newBasename}.md`), writeBCsInline
+                    const crumb = writeBCsInline
                         ? `${oppField}:: [[${currFile.basename}]]`
-                        : `---\n${oppField}: ['${currFile.basename}']\n---`);
+                        : `---\n${oppField}: ['${currFile.basename}']\n---`;
+                    const templatePath = settings.threadingDirTemplates[dir];
+                    let newContent = crumb;
+                    if (templatePath) {
+                        const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
+                        const template = await app.vault.cachedRead(templateFile);
+                        newContent = template.replace(/\{\{BC-thread-crumb\}\}/i, writeBCsInline
+                            ? `${oppField}:: [[${currFile.basename}]]`
+                            : `${oppField}: ['${currFile.basename}']`);
+                    }
+                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
                     if (!writeBCsInline) {
                         const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
                         if (!api) {
@@ -52015,6 +52040,12 @@ class BCPlugin extends require$$0.Plugin {
                         ? app.workspace.splitActiveLeaf()
                         : app.workspace.activeLeaf;
                     await leaf.openFile(newFile, { active: true, mode: "source" });
+                    if (app.plugins.plugins["templater-obsidian"]) {
+                        app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
+                    }
+                    else {
+                        new require$$0.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
+                    }
                     const editor = leaf.view.editor;
                     editor.setCursor(editor.getValue().length);
                 },

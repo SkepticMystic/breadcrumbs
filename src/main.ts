@@ -455,11 +455,30 @@ export default class BCPlugin extends Plugin {
             i++;
           }
 
+          const crumb = writeBCsInline
+            ? `${oppField}:: [[${currFile.basename}]]`
+            : `---\n${oppField}: ['${currFile.basename}']\n---`;
+
+          const templatePath = settings.threadingDirTemplates[dir];
+          let newContent = crumb;
+          if (templatePath) {
+            const templateFile = app.metadataCache.getFirstLinkpathDest(
+              templatePath,
+              ""
+            );
+
+            const template = await app.vault.cachedRead(templateFile);
+            newContent = template.replace(
+              /\{\{BC-thread-crumb\}\}/i,
+              writeBCsInline
+                ? `${oppField}:: [[${currFile.basename}]]`
+                : `${oppField}: ['${currFile.basename}']`
+            );
+          }
+
           const newFile = await app.vault.create(
             normalizePath(`${newFileParent.path}/${newBasename}.md`),
-            writeBCsInline
-              ? `${oppField}:: [[${currFile.basename}]]`
-              : `---\n${oppField}: ['${currFile.basename}']\n---`
+            newContent
           );
 
           if (!writeBCsInline) {
@@ -496,6 +515,16 @@ export default class BCPlugin extends Plugin {
             : app.workspace.activeLeaf;
 
           await leaf.openFile(newFile, { active: true, mode: "source" });
+          if (app.plugins.plugins["templater-obsidian"]) {
+            app.commands.executeCommandById(
+              "templater-obsidian:replace-in-file-templater"
+            );
+          } else {
+            new Notice(
+              "The Templater plugin must be enabled to resolve the templates in the new note"
+            );
+          }
+
           const editor = leaf.view.editor as Editor;
           editor.setCursor(editor.getValue().length);
         },

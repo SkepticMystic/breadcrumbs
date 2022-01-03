@@ -88,3 +88,8 @@
   visibility: hidden;
   opacity: 0;
 }
+
+.thread-dir-templates .setting-item-control {
+  display: flex;
+  flex-direction: column;
+}

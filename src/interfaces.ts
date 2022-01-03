@@ -60,6 +60,7 @@ export interface BCSettings {
   squareDirectionsOrder: (0 | 1 | 2 | 3 | 4)[];
   threadIntoNewPane: boolean;
   threadingTemplate: string;
+  threadingDirTemplates: { [dir in Directions]: string };
   trailSeperator: string;
   treatCurrNodeAsImpliedSibling: boolean;
   trimDendronNotes: boolean;
