@@ -21117,6 +21117,7 @@ const DEFAULT_SETTINGS = {
     showBCs: true,
     showBCsInEditLPMode: false,
     showRefreshNotice: true,
+    showImpliedRelations: true,
     showTrail: true,
     showGrid: true,
     showPrevNext: true,
@@ -23490,7 +23491,7 @@ function get_each_context_3$2(ctx, list, i) {
 	return child_ctx;
 }
 
-// (25:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (25:8) {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
 function create_if_block$5(ctx) {
 	let details;
 	let summary;
@@ -23499,7 +23500,7 @@ function create_if_block$5(ctx) {
 	let t1;
 	let t2;
 	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_3$2(ctx);
-	let if_block1 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$4(ctx);
+	let if_block1 = /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length && create_if_block_1$4(ctx);
 
 	return {
 		c() {
@@ -23539,7 +23540,7 @@ function create_if_block$5(ctx) {
 				if_block0 = null;
 			}
 
-			if (/*square*/ ctx[12].impliedItems.length) {
+			if (/*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -23712,7 +23713,7 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (49:12) {#if square.impliedItems.length}
+// (49:12) {#if settings.showImpliedRelations && square.impliedItems.length}
 function create_if_block_1$4(ctx) {
 	let t;
 	let ol;
@@ -23884,7 +23885,7 @@ function create_each_block_2$3(ctx) {
 // (24:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$5(ctx);
+	let if_block = (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) && create_if_block$5(ctx);
 
 	return {
 		c() {
@@ -23896,7 +23897,7 @@ function create_each_block_1$6(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) {
+			if (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -24144,7 +24145,7 @@ function get_each_context_3$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (21:8) {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+// (21:8) {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
 function create_if_block$4(ctx) {
 	let div1;
 	let div0;
@@ -24156,7 +24157,7 @@ function create_if_block$4(ctx) {
 	let t3;
 	let if_block0 = /*settings*/ ctx[1].showRelationType && create_if_block_5(ctx);
 	let if_block1 = /*square*/ ctx[12].realItems.length && create_if_block_4(ctx);
-	let if_block2 = /*square*/ ctx[12].impliedItems.length && create_if_block_1$3(ctx);
+	let if_block2 = /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length && create_if_block_1$3(ctx);
 
 	return {
 		c() {
@@ -24215,7 +24216,7 @@ function create_if_block$4(ctx) {
 				if_block1 = null;
 			}
 
-			if (/*square*/ ctx[12].impliedItems.length) {
+			if (/*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
 				if (if_block2) {
 					if_block2.p(ctx, dirty);
 				} else {
@@ -24378,7 +24379,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (49:12) {#if square.impliedItems.length}
+// (49:12) {#if settings.showImpliedRelations && square.impliedItems.length}
 function create_if_block_1$3(ctx) {
 	let div;
 	let h4;
@@ -24604,7 +24605,7 @@ function create_each_block_2$2(ctx) {
 // (20:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) && create_if_block$4(ctx);
+	let if_block = (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -24616,7 +24617,7 @@ function create_each_block_1$5(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[12].realItems.length > 0 || /*square*/ ctx[12].impliedItems.length > 0) {
+			if (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -25279,6 +25280,16 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .setValue(settings.treatCurrNodeAsImpliedSibling)
             .onChange(async (value) => {
             settings.treatCurrNodeAsImpliedSibling = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
+        new require$$0.Setting(MLViewDetails)
+            .setName("Show Implied Relations")
+            .setDesc("Whether or not to show implied relations at all.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.showImpliedRelations)
+            .onChange(async (value) => {
+            settings.showImpliedRelations = value;
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));

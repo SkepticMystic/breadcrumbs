@@ -20,7 +20,7 @@
   {#each filteredSquaresArr as squares}
     <div>
       {#each squares as square}
-        {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+        {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
           <div class="BC-Matrix-square">
             <div class="BC-Matrix-headers">
               <h4 class="BC-Matrix-header">{square.field}</h4>
@@ -48,7 +48,7 @@
               </ol>
             {/if}
 
-            {#if square.impliedItems.length}
+            {#if settings.showImpliedRelations && square.impliedItems.length}
               <div class="BC-Matrix-headers">
                 <h4 class="BC-Matrix-header" />
                 {#if square.impliedItems.length}

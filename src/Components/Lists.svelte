@@ -24,7 +24,7 @@
       >
 
       {#each squares as square}
-        {#if square.realItems.length > 0 || square.impliedItems.length > 0}
+        {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
           <details open class="BC-details">
             <summary>{square.field}</summary>
             {#if square.realItems.length}
@@ -48,7 +48,7 @@
               </ol>
             {/if}
 
-            {#if square.impliedItems.length}
+            {#if settings.showImpliedRelations && square.impliedItems.length}
               {#if settings.showRelationType}
                 <h5 class="BC-header">Implied</h5>
               {/if}

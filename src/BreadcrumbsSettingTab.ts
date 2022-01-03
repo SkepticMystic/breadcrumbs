@@ -344,6 +344,19 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
+      .setName("Show Implied Relations")
+      .setDesc("Whether or not to show implied relations at all.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.showImpliedRelations)
+          .onChange(async (value) => {
+            settings.showImpliedRelations = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+          })
+      );
+
+    new Setting(MLViewDetails)
       .setName("Filter Implied Siblings")
       .setDesc(
         fragWithHTML(

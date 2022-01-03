@@ -54,6 +54,7 @@ export interface BCSettings {
   showBCsInEditLPMode: boolean;
   showAll: boolean;
   showGrid: boolean;
+  showImpliedRelations: boolean;
   showPrevNext: boolean;
   showRefreshNotice: boolean;
   showTrail: boolean;
