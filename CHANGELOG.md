@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.19.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.18.0...2.19.0) (2022-01-03)
+
+
+### Features
+
+* **TagNote:** :sparkles: BC-tag-note-exact will only include notes with exactly that tag (fix [#236](https://github.com/SkepticMystic/breadcrumbs/issues/236)) ([efd111a](https://github.com/SkepticMystic/breadcrumbs/commit/efd111af3ba1d940f8faa29c3a06a81cb127e071))
+* **TagNote:** :sparkles: Choose a default tag-note-field ([b647507](https://github.com/SkepticMystic/breadcrumbs/commit/b6475077e615757016ce8f2b8fe28c80955f6bd8))
+
 ## [2.18.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.17.2...2.18.0) (2022-01-03)
 
 
