@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.20.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.19.1...2.20.0) (2022-01-03)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Option to hide implied relations (fix [#226](https://github.com/SkepticMystic/breadcrumbs/issues/226)) ([5e1e435](https://github.com/SkepticMystic/breadcrumbs/commit/5e1e435c54b05347759fb3addd48338ca11bbcef))
+
 ### [2.19.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.19.0...2.19.1) (2022-01-03)
 
 
