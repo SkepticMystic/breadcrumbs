@@ -73,6 +73,7 @@ export const [
   BC_FOLDER_NOTE,
   BC_TAG_NOTE,
   BC_TAG_NOTE_FIELD,
+  BC_TAG_NOTE_EXACT,
   BC_LINK_NOTE,
   BC_TRAVERSE_NOTE,
   BC_HIDE_TRAIL,
@@ -81,6 +82,7 @@ export const [
   "BC-folder-note",
   "BC-tag-note",
   "BC-tag-note-field",
+  "BC-tag-note-exact",
   "BC-link-note",
   "BC-traverse-note",
   "BC-hide-trail",
@@ -104,6 +106,12 @@ export const BC_FIELDS_INFO = [
     field: BC_TAG_NOTE_FIELD,
     desc: "Manually choose the field for this tag-note to use",
     after: ": ",
+    alt: false,
+  },
+  {
+    field: BC_TAG_NOTE_EXACT,
+    desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
+    after: ": true",
     alt: false,
   },
   {

@@ -21017,10 +21017,11 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-tag-note",
     "BC-tag-note-field",
+    "BC-tag-note-exact",
     "BC-link-note",
     "BC-traverse-note",
     "BC-hide-trail",
@@ -21043,6 +21044,12 @@ const BC_FIELDS_INFO = [
         field: BC_TAG_NOTE_FIELD,
         desc: "Manually choose the field for this tag-note to use",
         after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_TAG_NOTE_EXACT,
+        desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
+        after: ": true",
         alt: false,
     },
     {
@@ -51689,6 +51696,15 @@ class BCPlugin extends require$$0.Plugin {
                 }
             }
         };
+        this.getAllTags = (file, withHash = true) => {
+            var _a, _b, _c;
+            const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
+            return [
+                ...((_a = tags === null || tags === void 0 ? void 0 : tags.map((t) => t.tag.slice(1))) !== null && _a !== void 0 ? _a : []),
+                ...[...((_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _b !== void 0 ? _b : [])].flat(),
+                ...[...((_c = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _c !== void 0 ? _c : [])].flat(),
+            ].map((t) => (withHash ? "#" : "") + t.toLowerCase());
+        };
         this.getTargetOrder = (frontms, target) => {
             var _a, _b;
             return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
@@ -52442,26 +52458,10 @@ class BCPlugin extends require$$0.Plugin {
             if (!tag.startsWith("#"))
                 return;
             const hasThisTag = (file) => {
-                var _a, _b;
-                const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
-                if (tags === null || tags === void 0 ? void 0 : tags.map((t) => t.tag.toLowerCase()).some((t) => t.includes(tag)))
-                    return true;
-                if (typeof (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) === "string") {
-                    if (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag.toLowerCase().includes(tag.slice(1)))
-                        return true;
-                }
-                else {
-                    if ((_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) === null || _a === void 0 ? void 0 : _a.some((t) => t.toLowerCase().includes(tag.slice(1))))
-                        return true;
-                }
-                if (typeof (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) === "string") {
-                    if (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags.toLowerCase().includes(tag.slice(1)))
-                        return true;
-                }
-                else {
-                    if ((_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) === null || _b === void 0 ? void 0 : _b.some((t) => t.toLowerCase().includes(tag.slice(1))))
-                        return true;
-                }
+                const allTags = this.getAllTags(file);
+                return altFile[BC_TAG_NOTE_EXACT]
+                    ? allTags.includes(tag)
+                    : allTags.some((t) => t.includes(tag));
             };
             const targets = frontms
                 .map((ff) => ff.file)

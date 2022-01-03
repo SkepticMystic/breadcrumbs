@@ -34,6 +34,7 @@ import {
   BC_LINK_NOTE,
   BC_ORDER,
   BC_TAG_NOTE,
+  BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
   BC_TRAVERSE_NOTE,
   DEFAULT_SETTINGS,
@@ -1061,6 +1062,15 @@ export default class BCPlugin extends Plugin {
     });
   }
 
+  getAllTags = (file: TFile, withHash = true): string[] => {
+    const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
+    return [
+      ...(tags?.map((t) => t.tag.slice(1)) ?? []),
+      ...[...(frontmatter?.tags ?? [])].flat(),
+      ...[...(frontmatter?.tag ?? [])].flat(),
+    ].map((t: string) => (withHash ? "#" : "") + t.toLowerCase());
+  };
+
   addTagNotesToGraph(
     eligableAlts: dvFrontmatterCache[],
     frontms: dvFrontmatterCache[],
@@ -1076,32 +1086,11 @@ export default class BCPlugin extends Plugin {
       if (!tag.startsWith("#")) return;
 
       const hasThisTag = (file: TFile): boolean => {
-        const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
-        if (tags?.map((t) => t.tag.toLowerCase()).some((t) => t.includes(tag)))
-          return true;
+        const allTags = this.getAllTags(file);
 
-        if (typeof frontmatter?.tag === "string") {
-          if (frontmatter?.tag.toLowerCase().includes(tag.slice(1)))
-            return true;
-        } else {
-          if (
-            (frontmatter?.tag as string[])?.some((t) =>
-              t.toLowerCase().includes(tag.slice(1))
-            )
-          )
-            return true;
-        }
-        if (typeof frontmatter?.tags === "string") {
-          if (frontmatter?.tags.toLowerCase().includes(tag.slice(1)))
-            return true;
-        } else {
-          if (
-            (frontmatter?.tags as string[])?.some((t) =>
-              t.toLowerCase().includes(tag.slice(1))
-            )
-          )
-            return true;
-        }
+        return altFile[BC_TAG_NOTE_EXACT]
+          ? allTags.includes(tag)
+          : allTags.some((t) => t.includes(tag));
       };
 
       const targets = frontms
