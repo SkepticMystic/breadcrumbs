@@ -51982,19 +51982,21 @@ class BCPlugin extends require$$0.Plugin {
                 callback: async () => {
                     var _a, _b;
                     const { app } = this;
-                    const { userHiers, writeBCsInline } = settings;
+                    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
                     const currFile = app.workspace.getActiveFile();
                     if (!currFile)
                         return;
                     const newFileParent = app.fileManager.getNewFileParent(currFile.path);
                     const dir = getFieldInfo(userHiers, field).fieldDir;
                     const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-                    let newBasename = settings.threadingTemplate
-                        .replace("{{current}}", currFile.basename)
-                        .replace("{{field}}", field)
-                        .replace("{{dir}}", dir)
-                        //@ts-ignore
-                        .replace("{{date}}", require$$0.moment().format(settings.dateFormat));
+                    let newBasename = threadingTemplate
+                        ? threadingTemplate
+                            .replace("{{current}}", currFile.basename)
+                            .replace("{{field}}", field)
+                            .replace("{{dir}}", dir)
+                            //@ts-ignore
+                            .replace("{{date}}", require$$0.moment().format(dateFormat))
+                        : "Untitled";
                     let i = 1;
                     while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
                         if (i === 1)
@@ -52006,7 +52008,7 @@ class BCPlugin extends require$$0.Plugin {
                     const crumb = writeBCsInline
                         ? `${oppField}:: [[${currFile.basename}]]`
                         : `---\n${oppField}: ['${currFile.basename}']\n---`;
-                    const templatePath = settings.threadingDirTemplates[dir];
+                    const templatePath = threadingDirTemplates[dir];
                     let newContent = crumb;
                     if (templatePath) {
                         const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
@@ -52036,18 +52038,28 @@ class BCPlugin extends require$$0.Plugin {
                                 splits[1];
                         await app.vault.modify(currFile, content);
                     }
-                    const leaf = settings.threadIntoNewPane
+                    const leaf = threadIntoNewPane
                         ? app.workspace.splitActiveLeaf()
                         : app.workspace.activeLeaf;
                     await leaf.openFile(newFile, { active: true, mode: "source" });
-                    if (app.plugins.plugins["templater-obsidian"]) {
-                        app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
+                    if (templatePath) {
+                        if (app.plugins.plugins["templater-obsidian"]) {
+                            app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
+                        }
+                        else {
+                            new require$$0.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
+                        }
+                    }
+                    if (threadingTemplate) {
+                        const editor = leaf.view.editor;
+                        editor.setCursor(editor.getValue().length);
                     }
                     else {
-                        new require$$0.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
+                        const noteNameInputs = document.getElementsByClassName("view-header-title");
+                        const newNoteInputEl = Array.from(noteNameInputs).find((input) => input.innerText === newBasename);
+                        newNoteInputEl.innerText = "";
+                        newNoteInputEl.focus();
                     }
-                    const editor = leaf.view.editor;
-                    editor.setCursor(editor.getValue().length);
                 },
             });
         });

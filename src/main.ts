@@ -430,7 +430,14 @@ export default class BCPlugin extends Plugin {
         name: `Create a new '${field}' from the current note`,
         callback: async () => {
           const { app } = this;
-          const { userHiers, writeBCsInline } = settings;
+          const {
+            userHiers,
+            writeBCsInline,
+            threadingTemplate,
+            dateFormat,
+            threadingDirTemplates,
+            threadIntoNewPane,
+          } = settings;
 
           const currFile = app.workspace.getActiveFile();
           if (!currFile) return;
@@ -441,12 +448,14 @@ export default class BCPlugin extends Plugin {
           const oppField =
             getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
 
-          let newBasename = settings.threadingTemplate
-            .replace("{{current}}", currFile.basename)
-            .replace("{{field}}", field)
-            .replace("{{dir}}", dir)
-            //@ts-ignore
-            .replace("{{date}}", moment().format(settings.dateFormat));
+          let newBasename = threadingTemplate
+            ? threadingTemplate
+                .replace("{{current}}", currFile.basename)
+                .replace("{{field}}", field)
+                .replace("{{dir}}", dir)
+                //@ts-ignore
+                .replace("{{date}}", moment().format(dateFormat))
+            : "Untitled";
 
           let i = 1;
           while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
@@ -459,7 +468,7 @@ export default class BCPlugin extends Plugin {
             ? `${oppField}:: [[${currFile.basename}]]`
             : `---\n${oppField}: ['${currFile.basename}']\n---`;
 
-          const templatePath = settings.threadingDirTemplates[dir];
+          const templatePath = threadingDirTemplates[dir];
           let newContent = crumb;
           if (templatePath) {
             const templateFile = app.metadataCache.getFirstLinkpathDest(
@@ -510,23 +519,37 @@ export default class BCPlugin extends Plugin {
             await app.vault.modify(currFile, content);
           }
 
-          const leaf = settings.threadIntoNewPane
+          const leaf = threadIntoNewPane
             ? app.workspace.splitActiveLeaf()
             : app.workspace.activeLeaf;
 
           await leaf.openFile(newFile, { active: true, mode: "source" });
-          if (app.plugins.plugins["templater-obsidian"]) {
-            app.commands.executeCommandById(
-              "templater-obsidian:replace-in-file-templater"
-            );
-          } else {
-            new Notice(
-              "The Templater plugin must be enabled to resolve the templates in the new note"
-            );
+
+          if (templatePath) {
+            if (app.plugins.plugins["templater-obsidian"]) {
+              app.commands.executeCommandById(
+                "templater-obsidian:replace-in-file-templater"
+              );
+            } else {
+              new Notice(
+                "The Templater plugin must be enabled to resolve the templates in the new note"
+              );
+            }
           }
 
-          const editor = leaf.view.editor as Editor;
-          editor.setCursor(editor.getValue().length);
+          if (threadingTemplate) {
+            const editor = leaf.view.editor as Editor;
+            editor.setCursor(editor.getValue().length);
+          } else {
+            const noteNameInputs =
+              document.getElementsByClassName("view-header-title");
+
+            const newNoteInputEl = Array.from(noteNameInputs).find(
+              (input) => input.innerText === newBasename
+            );
+            newNoteInputEl.innerText = "";
+            newNoteInputEl.focus();
+          }
         },
       });
     });
