@@ -710,6 +710,28 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
+    const tagNoteDetails = subDetails("Tag Notes", alternativeHierarchyDetails);
+
+    new Setting(tagNoteDetails)
+      .setName("Default Tag Note Field")
+      .setDesc(
+        fragWithHTML(
+          "By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>."
+        )
+      )
+      .addDropdown((dd: DropdownComponent) => {
+        const options = {};
+        getFields(settings.userHiers).forEach(
+          (field) => (options[field] = field)
+        );
+        dd.addOptions(options);
+        dd.onChange(async (field) => {
+          settings.tagNoteField = field;
+          await plugin.saveSettings();
+          await plugin.refreshIndex();
+        });
+      });
+
     const hierarchyNoteDetails = subDetails(
       "Hierarchy Notes",
       alternativeHierarchyDetails

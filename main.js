@@ -21125,6 +21125,7 @@ const DEFAULT_SETTINGS = {
     limitJumpToFirstFields: [],
     showAll: false,
     noPathMessage: `This note has no real or implied parents`,
+    tagNoteField: "",
     threadIntoNewPane: false,
     threadingTemplate: "{{field}} of {{current}}",
     threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
@@ -25549,6 +25550,20 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             settings.fieldSuggestor = value;
             await plugin.saveSettings();
         }));
+        const tagNoteDetails = subDetails("Tag Notes", alternativeHierarchyDetails);
+        new require$$0.Setting(tagNoteDetails)
+            .setName("Default Tag Note Field")
+            .setDesc(fragWithHTML("By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>."))
+            .addDropdown((dd) => {
+            const options = {};
+            getFields(settings.userHiers).forEach((field) => (options[field] = field));
+            dd.addOptions(options);
+            dd.onChange(async (field) => {
+                settings.tagNoteField = field;
+                await plugin.saveSettings();
+                await plugin.refreshIndex();
+            });
+        });
         const hierarchyNoteDetails = subDetails("Hierarchy Notes", alternativeHierarchyDetails);
         new require$$0.Setting(hierarchyNoteDetails)
             .setName("Hierarchy Note(s)")
@@ -52449,7 +52464,7 @@ class BCPlugin extends require$$0.Plugin {
         });
     }
     addTagNotesToGraph(eligableAlts, frontms, mainG) {
-        const { userHiers } = this.settings;
+        const { userHiers, tagNoteField } = this.settings;
         const fields = getFields(userHiers);
         eligableAlts.forEach((altFile) => {
             const tagNoteFile = altFile.file;
@@ -52469,7 +52484,7 @@ class BCPlugin extends require$$0.Plugin {
                 .map(getDVBasename);
             let field = altFile[BC_TAG_NOTE_FIELD];
             if (typeof field !== "string" || !fields.includes(field))
-                field = fields[0];
+                field = tagNoteField || fields[0];
             targets.forEach((target) => {
                 const sourceOrder = this.getSourceOrder(altFile);
                 const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);

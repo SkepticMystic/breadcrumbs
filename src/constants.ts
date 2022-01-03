@@ -191,6 +191,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   limitJumpToFirstFields: [],
   showAll: false,
   noPathMessage: `This note has no real or implied parents`,
+  tagNoteField: "",
   threadIntoNewPane: false,
   threadingTemplate: "{{field}} of {{current}}",
   threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },

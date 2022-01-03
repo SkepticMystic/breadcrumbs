@@ -1076,7 +1076,7 @@ export default class BCPlugin extends Plugin {
     frontms: dvFrontmatterCache[],
     mainG: MultiGraph
   ) {
-    const { userHiers } = this.settings;
+    const { userHiers, tagNoteField } = this.settings;
     const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
       const tagNoteFile = altFile.file;
@@ -1087,7 +1087,6 @@ export default class BCPlugin extends Plugin {
 
       const hasThisTag = (file: TFile): boolean => {
         const allTags = this.getAllTags(file);
-
         return altFile[BC_TAG_NOTE_EXACT]
           ? allTags.includes(tag)
           : allTags.some((t) => t.includes(tag));
@@ -1100,7 +1099,7 @@ export default class BCPlugin extends Plugin {
 
       let field = altFile[BC_TAG_NOTE_FIELD] as string;
       if (typeof field !== "string" || !fields.includes(field))
-        field = fields[0];
+        field = tagNoteField || fields[0];
 
       targets.forEach((target) => {
         const sourceOrder = this.getSourceOrder(altFile);

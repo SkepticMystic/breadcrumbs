@@ -58,6 +58,7 @@ export interface BCSettings {
   showRefreshNotice: boolean;
   showTrail: boolean;
   squareDirectionsOrder: (0 | 1 | 2 | 3 | 4)[];
+  tagNoteField: string;
   threadIntoNewPane: boolean;
   threadingTemplate: string;
   threadingDirTemplates: { [dir in Directions]: string };
