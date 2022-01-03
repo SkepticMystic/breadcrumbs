@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.18.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.17.2...2.18.0) (2022-01-03)
+
+
+### Features
+
+* **Threading:** :sparkles: Choose a template to run for each direction ([f46dba1](https://github.com/SkepticMystic/breadcrumbs/commit/f46dba1f98946c2020ec241ee32327f1e426d0f2))
+* **Threading:** :sparkles: Focus note name inputEl if no name template has been chosen ([5a9ed54](https://github.com/SkepticMystic/breadcrumbs/commit/5a9ed549999565351058524e7ab0d89abcbd56b4))
+
+
+### Bug Fixes
+
+* **Threading:** :bug: Increment duplicate note names was not slicing enough off the name each time ([b0b56da](https://github.com/SkepticMystic/breadcrumbs/commit/b0b56da894ea4d7660d5bc8939c88d4144fa2bb1))
+
 ### [2.17.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.17.1...2.17.2) (2022-01-03)
 
 ### [2.17.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.17.0...2.17.1) (2022-01-03)
