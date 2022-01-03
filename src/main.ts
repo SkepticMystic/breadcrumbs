@@ -451,7 +451,7 @@ export default class BCPlugin extends Plugin {
           let i = 1;
           while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
             if (i === 1) newBasename += ` ${i}`;
-            else newBasename = newBasename.slice(0, -1) + ` ${i}`;
+            else newBasename = newBasename.slice(0, -2) + ` ${i}`;
             i++;
           }
 
