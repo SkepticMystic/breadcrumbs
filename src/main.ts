@@ -93,6 +93,7 @@ import {
   iterateHiers,
   makeWiki,
   splitAtYaml,
+  strToRegex,
 } from "./sharedFunctions";
 import StatsView from "./StatsView";
 import { VisModal } from "./VisModal";
@@ -1185,10 +1186,8 @@ export default class BCPlugin extends Plugin {
       const regexNoteFile = altFile.file;
       const regexNoteBasename = getDVBasename(regexNoteFile);
 
-      const outerRegex = altFile[BC_REGEX_NOTE] as string;
-      const [_, innerRegex, flags] = outerRegex.match(regNFlags);
-      const regex = new RegExp(innerRegex, flags);
-      info({ innerRegex, regex });
+      const regex = strToRegex(altFile[BC_REGEX_NOTE] as string);
+      info({ regex });
 
       let field = altFile[BC_REGEX_NOTE_FIELD] as string;
       if (typeof field !== "string" || !fields.includes(field))
@@ -1435,14 +1434,12 @@ export default class BCPlugin extends Plugin {
       this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
       this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
       this.addRegexNotesToGraph(eligableAlts[BC_REGEX_NOTE], frontms, mainG);
-
       this.addTraverseNotesToGraph(
         eligableAlts[BC_TRAVERSE_NOTE],
         frontms,
         mainG,
         this.buildObsGraph()
       );
-
       this.addDendronNotesToGraph(frontms, mainG);
 
       db.end1G();

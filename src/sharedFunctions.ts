@@ -5,6 +5,7 @@ import {
   blankRealNImplied,
   DIRECTIONS,
   dropHeaderOrAlias,
+  regNFlags,
   splitLinksRegex,
 } from "./constants";
 import { getOppDir, getOppFields } from "./graphUtils";
@@ -304,4 +305,17 @@ export function iterateHiers(
       });
     });
   });
+}
+
+export function strToRegex(input: string) {
+  const match = input.match(regNFlags);
+  if (!match) return null;
+  const [, innerRegex, flags] = match;
+  try {
+    const regex = new RegExp(innerRegex, flags);
+    return regex;
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 }
