@@ -158,6 +158,7 @@ export default class BCPlugin extends Plugin {
 
     await this.loadSettings();
     const { settings } = this;
+    this.addSettingTab(new BCSettingTab(this.app, this));
 
     if (typeof settings.debugMode === "boolean") {
       settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
@@ -573,8 +574,6 @@ export default class BCPlugin extends Plugin {
       "Breadcrumbs Visualisation",
       () => new VisModal(this.app, this).open()
     );
-
-    this.addSettingTab(new BCSettingTab(this.app, this));
   }
 
   writeBCToFile = async (file: TFile) => {
