@@ -20983,6 +20983,8 @@ const DUCK_ICON = "BC-duck-icon";
 const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
 const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
+const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
 const VISTYPES = [
     "Force Directed Graph",
     "Tidy Tree",
@@ -21017,13 +21019,15 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-tag-note",
     "BC-tag-note-field",
     "BC-tag-note-exact",
     "BC-link-note",
     "BC-traverse-note",
+    "BC-regex-note",
+    "BC-regex-note-field",
     "BC-hide-trail",
     "BC-order",
 ];
@@ -21063,6 +21067,18 @@ const BC_FIELDS_INFO = [
         desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
         after: ": ",
         alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE,
+        desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Note > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
+        after: ": '/",
+        alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE_FIELD,
+        desc: "Manually choose the field for this regex-note to use",
+        after: ": ",
+        alt: false,
     },
     {
         field: BC_HIDE_TRAIL,
@@ -21112,6 +21128,7 @@ const DEFAULT_SETTINGS = {
     parseJugglLinksWithoutJuggl: false,
     showNameOrType: true,
     showRelationType: true,
+    regexNoteField: "",
     rlLeaf: true,
     showAllPathsIfNoneToIndexNote: false,
     showBCs: true,
@@ -25571,6 +25588,20 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             dd.addOptions(Object.assign(options, { "": "" }));
             dd.onChange(async (field) => {
                 settings.tagNoteField = field;
+                await plugin.saveSettings();
+                await plugin.refreshIndex();
+            });
+        });
+        const regexNoteDetails = subDetails("Regex Notes", alternativeHierarchyDetails);
+        new require$$0.Setting(regexNoteDetails)
+            .setName("Default Regex Note Field")
+            .setDesc(fragWithHTML("By default, regex notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-regex-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."))
+            .addDropdown((dd) => {
+            const options = {};
+            getFields(settings.userHiers).forEach((field) => (options[field] = field));
+            dd.addOptions(Object.assign(options, { "": "" }));
+            dd.onChange(async (field) => {
+                settings.regexNoteField = field;
                 await plugin.saveSettings();
                 await plugin.refreshIndex();
             });
@@ -52530,6 +52561,32 @@ class BCPlugin extends require$$0.Plugin {
             }
         });
     }
+    addRegexNotesToGraph(eligableAlts, frontms, mainG) {
+        const { userHiers, regexNoteField } = this.settings;
+        const fields = getFields(userHiers);
+        eligableAlts.forEach((altFile) => {
+            const regexNoteFile = altFile.file;
+            const regexNoteBasename = getDVBasename(regexNoteFile);
+            const outerRegex = altFile[BC_REGEX_NOTE];
+            const [_, innerRegex, flags] = outerRegex.match(regNFlags);
+            const regex = new RegExp(innerRegex, flags);
+            loglevel.info({ innerRegex, regex });
+            let field = altFile[BC_REGEX_NOTE_FIELD];
+            if (typeof field !== "string" || !fields.includes(field))
+                field = regexNoteField || fields[0];
+            const targets = [];
+            frontms.forEach((page) => {
+                const basename = getDVBasename(page.file);
+                if (basename !== regexNoteBasename && regex.test(basename))
+                    targets.push(basename);
+            });
+            for (const target of targets) {
+                const sourceOrder = this.getSourceOrder(altFile);
+                const targetOrder = this.getTargetOrder(frontms, regexNoteBasename);
+                this.populateMain(mainG, regexNoteBasename, field, target, sourceOrder, targetOrder, true);
+            }
+        });
+    }
     addTraverseNotesToGraph(traverseNotes, frontms, mainG, obsG) {
         const { userHiers } = this.settings;
         traverseNotes.forEach((altFile) => {
@@ -52677,10 +52734,11 @@ class BCPlugin extends require$$0.Plugin {
             }
             db.end2G();
             // !SECTION  Hierarchy Notes
+            db.start1G("Alternative Hierarchies");
             this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
             this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
             this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
-            db.start1G("Traverse-Notes");
+            this.addRegexNotesToGraph(eligableAlts[BC_REGEX_NOTE], frontms, mainG);
             this.addTraverseNotesToGraph(eligableAlts[BC_TRAVERSE_NOTE], frontms, mainG, this.buildObsGraph());
             this.addDendronNotesToGraph(frontms, mainG);
             db.end1G();

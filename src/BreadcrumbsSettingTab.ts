@@ -745,6 +745,31 @@ export class BCSettingTab extends PluginSettingTab {
         });
       });
 
+    const regexNoteDetails = subDetails(
+      "Regex Notes",
+      alternativeHierarchyDetails
+    );
+
+    new Setting(regexNoteDetails)
+      .setName("Default Regex Note Field")
+      .setDesc(
+        fragWithHTML(
+          "By default, regex notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-regex-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."
+        )
+      )
+      .addDropdown((dd: DropdownComponent) => {
+        const options = {};
+        getFields(settings.userHiers).forEach(
+          (field) => (options[field] = field)
+        );
+        dd.addOptions(Object.assign(options, { "": "" }));
+        dd.onChange(async (field) => {
+          settings.regexNoteField = field;
+          await plugin.saveSettings();
+          await plugin.refreshIndex();
+        });
+      });
+
     const hierarchyNoteDetails = subDetails(
       "Hierarchy Notes",
       alternativeHierarchyDetails

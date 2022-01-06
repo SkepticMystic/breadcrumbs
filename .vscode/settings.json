@@ -20,6 +20,7 @@
         "TraverseNote",
         "DownView",
         "DendronNote",
-        "Threading"
+        "Threading",
+        "RegexNote"
     ]
 }

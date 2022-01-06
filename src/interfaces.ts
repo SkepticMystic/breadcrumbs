@@ -49,6 +49,7 @@ export interface BCSettings {
   showNameOrType: boolean;
   showRelationType: boolean;
   showWriteAllBCsCmd: boolean;
+  regexNoteField: string;
   rlLeaf: boolean;
   showBCs: boolean;
   showBCsInEditLPMode: boolean;

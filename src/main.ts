@@ -33,6 +33,8 @@ import {
   BC_HIDE_TRAIL,
   BC_LINK_NOTE,
   BC_ORDER,
+  BC_REGEX_NOTE,
+  BC_REGEX_NOTE_FIELD,
   BC_TAG_NOTE,
   BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
@@ -44,6 +46,7 @@ import {
   DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
+  regNFlags,
   splitLinksRegex,
   STATS_VIEW,
   TRAIL_ICON,
@@ -1168,6 +1171,48 @@ export default class BCPlugin extends Plugin {
       }
     });
   }
+  addRegexNotesToGraph(
+    eligableAlts: dvFrontmatterCache[],
+    frontms: dvFrontmatterCache[],
+    mainG: MultiGraph
+  ) {
+    const { userHiers, regexNoteField } = this.settings;
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+      const regexNoteFile = altFile.file;
+      const regexNoteBasename = getDVBasename(regexNoteFile);
+
+      const outerRegex = altFile[BC_REGEX_NOTE] as string;
+      const [_, innerRegex, flags] = outerRegex.match(regNFlags);
+      const regex = new RegExp(innerRegex, flags);
+      info({ innerRegex, regex });
+
+      let field = altFile[BC_REGEX_NOTE_FIELD] as string;
+      if (typeof field !== "string" || !fields.includes(field))
+        field = regexNoteField || fields[0];
+
+      const targets = [];
+      frontms.forEach((page) => {
+        const basename = getDVBasename(page.file);
+        if (basename !== regexNoteBasename && regex.test(basename))
+          targets.push(basename);
+      });
+
+      for (const target of targets) {
+        const sourceOrder = this.getSourceOrder(altFile);
+        const targetOrder = this.getTargetOrder(frontms, regexNoteBasename);
+        this.populateMain(
+          mainG,
+          regexNoteBasename,
+          field,
+          target,
+          sourceOrder,
+          targetOrder,
+          true
+        );
+      }
+    });
+  }
 
   addTraverseNotesToGraph(
     traverseNotes: dvFrontmatterCache[],
@@ -1381,12 +1426,12 @@ export default class BCPlugin extends Plugin {
 
       db.end2G();
       // !SECTION  Hierarchy Notes
+      db.start1G("Alternative Hierarchies");
 
       this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
       this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
       this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
-
-      db.start1G("Traverse-Notes");
+      this.addRegexNotesToGraph(eligableAlts[BC_REGEX_NOTE], frontms, mainG);
 
       this.addTraverseNotesToGraph(
         eligableAlts[BC_TRAVERSE_NOTE],

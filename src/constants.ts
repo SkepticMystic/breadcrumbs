@@ -22,6 +22,9 @@ export const DUCK_ICON_SVG =
 export const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 
+/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
+export const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
+
 export const VISTYPES: visTypes[] = [
   "Force Directed Graph",
   "Tidy Tree",
@@ -76,6 +79,8 @@ export const [
   BC_TAG_NOTE_EXACT,
   BC_LINK_NOTE,
   BC_TRAVERSE_NOTE,
+  BC_REGEX_NOTE,
+  BC_REGEX_NOTE_FIELD,
   BC_HIDE_TRAIL,
   BC_ORDER,
 ] = [
@@ -85,6 +90,8 @@ export const [
   "BC-tag-note-exact",
   "BC-link-note",
   "BC-traverse-note",
+  "BC-regex-note",
+  "BC-regex-note-field",
   "BC-hide-trail",
   "BC-order",
 ];
@@ -125,6 +132,18 @@ export const BC_FIELDS_INFO = [
     desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
     after: ": ",
     alt: true,
+  },
+  {
+    field: BC_REGEX_NOTE,
+    desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Note > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
+    after: ": '/",
+    alt: true,
+  },
+  {
+    field: BC_REGEX_NOTE_FIELD,
+    desc: "Manually choose the field for this regex-note to use",
+    after: ": ",
+    alt: false,
   },
   {
     field: BC_HIDE_TRAIL,
@@ -178,6 +197,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   parseJugglLinksWithoutJuggl: false,
   showNameOrType: true,
   showRelationType: true,
+  regexNoteField: "",
   rlLeaf: true,
   showAllPathsIfNoneToIndexNote: false,
   showBCs: true,
