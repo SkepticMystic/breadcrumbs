@@ -729,7 +729,7 @@ export class BCSettingTab extends PluginSettingTab {
       .setName("Default Tag Note Field")
       .setDesc(
         fragWithHTML(
-          "By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>."
+          "By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."
         )
       )
       .addDropdown((dd: DropdownComponent) => {
@@ -737,7 +737,7 @@ export class BCSettingTab extends PluginSettingTab {
         getFields(settings.userHiers).forEach(
           (field) => (options[field] = field)
         );
-        dd.addOptions(options);
+        dd.addOptions(Object.assign(options, { "": "" }));
         dd.onChange(async (field) => {
           settings.tagNoteField = field;
           await plugin.saveSettings();

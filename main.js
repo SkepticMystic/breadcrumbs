@@ -25564,11 +25564,11 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         const tagNoteDetails = subDetails("Tag Notes", alternativeHierarchyDetails);
         new require$$0.Setting(tagNoteDetails)
             .setName("Default Tag Note Field")
-            .setDesc(fragWithHTML("By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>."))
+            .setDesc(fragWithHTML("By default, tag notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-tag-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."))
             .addDropdown((dd) => {
             const options = {};
             getFields(settings.userHiers).forEach((field) => (options[field] = field));
-            dd.addOptions(options);
+            dd.addOptions(Object.assign(options, { "": "" }));
             dd.onChange(async (field) => {
                 settings.tagNoteField = field;
                 await plugin.saveSettings();
@@ -51791,6 +51791,7 @@ class BCPlugin extends require$$0.Plugin {
         console.log("loading breadcrumbs plugin");
         await this.loadSettings();
         const { settings } = this;
+        this.addSettingTab(new BCSettingTab(this.app, this));
         if (typeof settings.debugMode === "boolean") {
             settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
             await this.saveSettings();
@@ -52112,7 +52113,6 @@ class BCPlugin extends require$$0.Plugin {
             });
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
-        this.addSettingTab(new BCSettingTab(this.app, this));
     }
     getActiveTYPEView(type) {
         const { constructor } = this.VIEWS.find((view) => view.type === type);
