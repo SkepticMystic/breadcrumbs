@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.21.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.20.0...2.21.0) (2022-01-06)
+
+
+### Features
+
+* **RegexNote:** :sparkles: BC-regex-note! All note names that match the regex will be added ([5e3cea2](https://github.com/SkepticMystic/breadcrumbs/commit/5e3cea2f2de16b56ecdea11be6c4bda469205e4b))
+
+
+### Bug Fixes
+
+* :bug: Load settings much sooner ([d62c0ce](https://github.com/SkepticMystic/breadcrumbs/commit/d62c0ce19d850ada55b118bafcbb84fcc1a9534a))
+* **TagNote:** :bug: Allow blank default tagNoteFiled ([9a522a5](https://github.com/SkepticMystic/breadcrumbs/commit/9a522a56c6d060e9d3dcd97663b0f6b8cfe78d50))
+
 ## [2.20.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.19.1...2.20.0) (2022-01-03)
 
 
