@@ -105,7 +105,7 @@ export const BC_FIELDS_INFO = [
   },
   {
     field: BC_TAG_NOTE,
-    desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph in the direction you specify with `BC-tag-note-field: fieldName`",
+    desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
     after: ": '#",
     alt: true,
   },
@@ -135,7 +135,7 @@ export const BC_FIELDS_INFO = [
   },
   {
     field: BC_REGEX_NOTE,
-    desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Note > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
+    desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
     after: ": '/",
     alt: true,
   },
@@ -188,6 +188,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   hierarchyNotes: [""],
   HNUpField: "",
   indexNotes: [""],
+  namingSystemRegex: "",
   refreshOnNoteChange: false,
   useAllMetadata: true,
   openMatrixOnLoad: true,
