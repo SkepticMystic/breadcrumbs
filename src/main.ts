@@ -1083,7 +1083,10 @@ export default class BCPlugin extends Plugin {
       ...(tags?.map((t) => t.tag.slice(1)) ?? []),
       ...[...(frontmatter?.tags ?? [])].flat(),
       ...[...(frontmatter?.tag ?? [])].flat(),
-    ].map((t: string) => (withHash ? "#" : "") + t.toLowerCase());
+    ].map(
+      (t: string) =>
+        (!t.startsWith("#") && withHash ? "#" : "") + t.toLowerCase()
+    );
   };
 
   addTagNotesToGraph(
