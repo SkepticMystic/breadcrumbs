@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.22.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.21.0...2.22.0) (2022-01-07)
+
+
+### Features
+
+* **NamingNotes:** :construction: Progress ([342d747](https://github.com/SkepticMystic/breadcrumbs/commit/342d7476e1a706ee4283aa0dd2dc1d57bb5b8035))
+
+
+### Bug Fixes
+
+* **TagNote:** :bug: Add # in fewer cases ([261f001](https://github.com/SkepticMystic/breadcrumbs/commit/261f001fa3b80c3182ca49a2cfcbaa711f0024dc))
+* **TagNote:** :bug: Trim tag in fewer cases ([d20819e](https://github.com/SkepticMystic/breadcrumbs/commit/d20819e59e61ec772245bbb76601092b2798fde2))
+
 ## [2.21.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.20.0...2.21.0) (2022-01-06)
 
 
