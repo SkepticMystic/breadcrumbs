@@ -51829,7 +51829,7 @@ class BCPlugin extends require$$0.Plugin {
             var _a, _b, _c;
             const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
             return [
-                ...((_a = tags === null || tags === void 0 ? void 0 : tags.map((t) => t.tag.slice(1))) !== null && _a !== void 0 ? _a : []),
+                ...((_a = tags === null || tags === void 0 ? void 0 : tags.map((t) => (t.tag.startsWith("#") ? t.tag.slice(1) : t.tag))) !== null && _a !== void 0 ? _a : []),
                 ...[...((_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _b !== void 0 ? _b : [])].flat(),
                 ...[...((_c = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _c !== void 0 ? _c : [])].flat(),
             ].map((t) => (!t.startsWith("#") && withHash ? "#" : "") + t.toLowerCase());

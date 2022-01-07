@@ -1081,7 +1081,8 @@ export default class BCPlugin extends Plugin {
   getAllTags = (file: TFile, withHash = true): string[] => {
     const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
     return [
-      ...(tags?.map((t) => t.tag.slice(1)) ?? []),
+      ...(tags?.map((t) => (t.tag.startsWith("#") ? t.tag.slice(1) : t.tag)) ??
+        []),
       ...[...(frontmatter?.tags ?? [])].flat(),
       ...[...(frontmatter?.tag ?? [])].flat(),
     ].map(
