@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.22.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.22.0...2.22.1) (2022-01-07)
+
+
+### Bug Fixes
+
+* **TraverseNote:** :bug: Check if copy.hasEdge(cycle) before trying to dropEdge ([49ca521](https://github.com/SkepticMystic/breadcrumbs/commit/49ca521afb72d084d34b5de4dd52de82c073b79e))
+
 ## [2.22.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.21.0...2.22.0) (2022-01-07)
 
 
