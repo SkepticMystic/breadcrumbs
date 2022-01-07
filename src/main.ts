@@ -1,7 +1,7 @@
 import { getApi } from "@aidenlx/folder-note-core";
 import Graph, { MultiGraph } from "graphology";
 import { parseTypedLink } from "juggl-api";
-import { cloneDeep, split } from "lodash";
+import { cloneDeep } from "lodash";
 import { debug, error, info, warn } from "loglevel";
 import {
   addIcon,
@@ -46,7 +46,6 @@ import {
   DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
-  regNFlags,
   splitLinksRegex,
   STATS_VIEW,
   TRAIL_ICON,
@@ -1079,6 +1078,9 @@ export default class BCPlugin extends Plugin {
   }
 
   getAllTags = (file: TFile, withHash = true): string[] => {
+    // const test = getAllTags(
+    //   this.app.metadataCache.getFileCache(this.app.workspace.getActiveFile())
+    // );
     const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
     return [
       ...(tags?.map((t) => (t.tag.startsWith("#") ? t.tag.slice(1) : t.tag)) ??

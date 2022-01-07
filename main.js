@@ -22421,7 +22421,7 @@ function removeCycles(g, startNode) {
     let prevNode = null;
     graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
         copy.forEachOutNeighbor(n, (t) => {
-            if (t === prevNode) {
+            if (t === prevNode && copy.hasEdge(t, prevNode)) {
                 copy.dropEdge(t, prevNode);
             }
         });
@@ -51827,6 +51827,9 @@ class BCPlugin extends require$$0.Plugin {
         };
         this.getAllTags = (file, withHash = true) => {
             var _a, _b, _c;
+            // const test = getAllTags(
+            //   this.app.metadataCache.getFileCache(this.app.workspace.getActiveFile())
+            // );
             const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
             return [
                 ...((_a = tags === null || tags === void 0 ? void 0 : tags.map((t) => (t.tag.startsWith("#") ? t.tag.slice(1) : t.tag))) !== null && _a !== void 0 ? _a : []),
