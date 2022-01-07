@@ -21,6 +21,7 @@
         "DownView",
         "DendronNote",
         "Threading",
-        "RegexNote"
+        "RegexNote",
+        "NamingNotes"
     ]
 }

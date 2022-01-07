@@ -37,6 +37,10 @@ export interface BCSettings {
   limitWriteBCCheckboxes: string[];
   limitJumpToFirstFields: string[];
   CHECKBOX_STATES_OVERWRITTEN: boolean;
+  namingSystemField: string;
+  namingSystemRegex: string;
+  namingSystemSplit: string;
+  namingSystemEndsWithDelimiter: boolean;
   noPathMessage: string;
   openMatrixOnLoad: boolean;
   openStatsOnLoad: boolean;

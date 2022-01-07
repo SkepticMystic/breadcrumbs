@@ -1,7 +1,7 @@
 import { getApi } from "@aidenlx/folder-note-core";
 import Graph, { MultiGraph } from "graphology";
 import { parseTypedLink } from "juggl-api";
-import { cloneDeep } from "lodash";
+import { cloneDeep, split } from "lodash";
 import { debug, error, info, warn } from "loglevel";
 import {
   addIcon,
@@ -1216,6 +1216,139 @@ export default class BCPlugin extends Plugin {
     });
   }
 
+  addNamingSystemNotesToGraph(
+    frontms: dvFrontmatterCache[],
+    mainG: MultiGraph
+  ) {
+    const {
+      namingSystemRegex,
+      namingSystemSplit,
+      namingSystemField,
+      namingSystemEndsWithDelimiter,
+      userHiers,
+    } = this.settings;
+    const regex = strToRegex(namingSystemRegex);
+    if (!regex) return;
+
+    const field = namingSystemField || getFields(userHiers)[0];
+
+    // const visited: string[] = [];
+    // const deepestMatches = frontms.filter((page) => {
+    //   const basename = getDVBasename(page.file);
+    //   return regex.test(basename);
+    // });
+
+    function splitRegex(regex: RegExp, split: string) {
+      const { source } = regex;
+      const parts = source.split(split);
+      const sliced = parts
+        .slice(0, -1)
+        .map((p) => (p.endsWith("\\") ? p.slice(0, -1) : p));
+
+      let joined = sliced.join("\\" + split);
+      joined = joined.startsWith("^") ? joined : "^" + joined;
+      // joined =
+      //   joined +
+      //   (namingSystemEndsWithDelimiter ? "\\" + namingSystemSplit : "");
+
+      return sliced.length ? new RegExp(joined) : null;
+    }
+
+    function getUp(current: string) {
+      let currReg = splitRegex(regex, namingSystemSplit);
+      let up = current.match(currReg);
+      while (!up || up[0] === current) {
+        if (!currReg) break;
+        currReg = splitRegex(currReg, namingSystemSplit);
+        if (!currReg) break;
+
+        up = current.match(currReg);
+      }
+      console.log({ currReg });
+      return up?.[0] ?? null;
+    }
+
+    frontms.forEach((page) => {
+      const sourceBN = getDVBasename(page.file);
+      const upSystem = getUp(sourceBN);
+      if (!upSystem) return;
+      console.log(sourceBN, "↑", upSystem);
+
+      const upFm = frontms.find((fm) => {
+        const basename = getDVBasename(fm.file);
+        const start =
+          upSystem + (namingSystemEndsWithDelimiter ? namingSystemSplit : "");
+        return (
+          basename !== sourceBN &&
+          (basename === start || basename.startsWith(start + " "))
+        );
+      });
+
+      if (!upFm) return;
+      const upName = getDVBasename(upFm.file);
+
+      if (upName === sourceBN) return;
+
+      const sourceOrder = this.getSourceOrder(page);
+      const targetOrder = this.getTargetOrder(frontms, upName);
+      this.populateMain(
+        mainG,
+        sourceBN,
+        field,
+        upName,
+        sourceOrder,
+        targetOrder,
+        true
+      );
+    });
+
+    // deepestMatches.forEach((deepest) => {
+    //   console.log(deepest.file.name);
+    //   const basename = getDVBasename(deepest.file);
+    //   const allSplits: string[] = [];
+    //   let nextSplit = splitName(basename, namingSystemSplit);
+    //   while (nextSplit) {
+    //     allSplits.push(nextSplit);
+    //     nextSplit = splitName(nextSplit, namingSystemSplit);
+    //   }
+    //   console.log({ allSplits });
+
+    //   let current: dvFrontmatterCache = deepest;
+    //   for (const split of allSplits) {
+    //     const up = frontms.find((page) => {
+    //       const basename = getDVBasename(page.file);
+    //       return (
+    //         !visited.includes(basename) &&
+    //         // For the final split, the naming system part likely won't have any delimiters in it. This means that alot more false positives will match
+    //         // e.g. if system is `\d\.\d\.`, and the final split is `1`, then something like `1 of my favourites snacks` might match before `1 Index`.
+    //         // The setting `namingSystemEndsWithDelimiter` tries to account for this
+    //         basename.startsWith(
+    //           split + (namingSystemEndsWithDelimiter ? namingSystemSplit : "")
+    //         )
+    //       );
+    //     });
+    //     if (!up) continue;
+    //     const upName = getDVBasename(up.file);
+    //     visited.push(upName);
+    //     console.log("up:", upName);
+
+    //     const sourceOrder = this.getSourceOrder(current);
+    //     const targetOrder = this.getTargetOrder(frontms, upName);
+    //     this.populateMain(
+    //       mainG,
+    //       getDVBasename(current.file),
+    //       field,
+    //       upName,
+    //       sourceOrder,
+    //       targetOrder,
+    //       true
+    //     );
+
+    //     current = up;
+    //   }
+    // });
+  }
+
   addTraverseNotesToGraph(
     traverseNotes: dvFrontmatterCache[],
     frontms: dvFrontmatterCache[],
@@ -1336,9 +1469,7 @@ export default class BCPlugin extends Plugin {
       const CSVRows = useCSV ? await this.getCSVRows() : [];
 
       const eligableAlts: { [altField: string]: dvFrontmatterCache[] } = {};
-      BC_ALTS.forEach((alt) => {
-        eligableAlts[alt] = [];
-      });
+      BC_ALTS.forEach((alt) => (eligableAlts[alt] = []));
 
       function noticeIfBroken(frontm: dvFrontmatterCache): void {
         const basename = getDVBasename(frontm.file);
@@ -1434,6 +1565,7 @@ export default class BCPlugin extends Plugin {
       this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
       this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
       this.addRegexNotesToGraph(eligableAlts[BC_REGEX_NOTE], frontms, mainG);
+      // this.addNamingSystemNotesToGraph(frontms, mainG);
       this.addTraverseNotesToGraph(
         eligableAlts[BC_TRAVERSE_NOTE],
         frontms,
