@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.23.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.22.3...2.23.0) (2022-01-08)
+
+
+### Features
+
+* **Codeblock:** :sparkles: Breadcrumbs codeblocks!! ([678b9c3](https://github.com/SkepticMystic/breadcrumbs/commit/678b9c3d75a173f02b1dfda027c30e07e3c92435))
+
 ### [2.22.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.22.2...2.22.3) (2022-01-08)
 
 
