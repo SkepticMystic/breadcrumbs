@@ -23506,38 +23506,38 @@ function add_css$9() {
 
 function get_each_context$9(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[9] = list[i];
+	child_ctx[13] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[12] = list[i];
+	child_ctx[16] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
+	child_ctx[19] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_3$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[18] = list[i];
+	child_ctx[22] = list[i];
 	return child_ctx;
 }
 
-// (25:8) {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
+// (26:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
 function create_if_block$6(ctx) {
 	let details;
 	let summary;
-	let t0_value = /*square*/ ctx[12].field + "";
+	let t0_value = /*square*/ ctx[16].field + "";
 	let t0;
 	let t1;
 	let t2;
-	let if_block0 = /*square*/ ctx[12].realItems.length && create_if_block_3$2(ctx);
-	let if_block1 = /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length && create_if_block_1$5(ctx);
+	let if_block0 = /*square*/ ctx[16].realItems.length && create_if_block_3$2(ctx);
+	let if_block1 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$5(ctx);
 
 	return {
 		c() {
@@ -23562,9 +23562,9 @@ function create_if_block$6(ctx) {
 			if (if_block1) if_block1.m(details, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[16].field + "")) set_data(t0, t0_value);
 
-			if (/*square*/ ctx[12].realItems.length) {
+			if (/*square*/ ctx[16].realItems.length) {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 				} else {
@@ -23577,7 +23577,7 @@ function create_if_block$6(ctx) {
 				if_block0 = null;
 			}
 
-			if (/*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
+			if (/*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -23598,12 +23598,12 @@ function create_if_block$6(ctx) {
 	};
 }
 
-// (28:12) {#if square.realItems.length}
+// (29:12) {#if square.realItems.length}
 function create_if_block_3$2(ctx) {
 	let t;
 	let ol;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_4$1();
-	let each_value_3 = /*square*/ ctx[12].realItems;
+	let if_block = /*showRelationType*/ ctx[8] && create_if_block_4$1();
+	let each_value_3 = /*square*/ ctx[16].realItems;
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -23630,19 +23630,8 @@ function create_if_block_3$2(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block) ; else {
-					if_block = create_if_block_4$1();
-					if_block.c();
-					if_block.m(t.parentNode, t);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
-				each_value_3 = /*square*/ ctx[12].realItems;
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
+				each_value_3 = /*square*/ ctx[16].realItems;
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -23673,7 +23662,7 @@ function create_if_block_3$2(ctx) {
 	};
 }
 
-// (29:14) {#if settings.showRelationType}
+// (30:14) {#if showRelationType}
 function create_if_block_4$1(ctx) {
 	let h5;
 
@@ -23692,11 +23681,11 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (34:16) {#each square.realItems as realItem}
+// (35:16) {#each square.realItems as realItem}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "";
+	let t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -23704,11 +23693,11 @@ function create_each_block_3$2(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[5](/*realItem*/ ctx[18], ...args);
+		return /*click_handler*/ ctx[9](/*realItem*/ ctx[22], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[6](/*realItem*/ ctx[18], ...args);
+		return /*mouseover_handler*/ ctx[10](/*realItem*/ ctx[22], ...args);
 	}
 
 	return {
@@ -23717,7 +23706,7 @@ function create_each_block_3$2(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1dlhare"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-1dlhare"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -23736,9 +23725,9 @@ function create_each_block_3$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 3 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-1dlhare"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -23750,13 +23739,13 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (49:12) {#if settings.showImpliedRelations && square.impliedItems.length}
+// (50:12) {#if showImpliedRelations && square.impliedItems.length}
 function create_if_block_1$5(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
-	let if_block = /*settings*/ ctx[1].showRelationType && create_if_block_2$3();
-	let each_value_2 = /*square*/ ctx[12].impliedItems;
+	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$3();
+	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -23773,7 +23762,7 @@ function create_if_block_1$5(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
+			attr(ol, "start", ol_start_value = /*square*/ ctx[16].realItems.length + 1);
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -23785,19 +23774,8 @@ function create_if_block_1$5(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block) ; else {
-					if_block = create_if_block_2$3();
-					if_block.c();
-					if_block.m(t.parentNode, t);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
-				each_value_2 = /*square*/ ctx[12].impliedItems;
+			if (dirty & /*treatCurrNodeAsImpliedSibling, filteredSquaresArr, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
+				each_value_2 = /*square*/ ctx[16].impliedItems;
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -23819,7 +23797,7 @@ function create_if_block_1$5(ctx) {
 				each_blocks.length = each_value_2.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[12].realItems.length + 1)) {
+			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[16].realItems.length + 1)) {
 				attr(ol, "start", ol_start_value);
 			}
 		},
@@ -23832,7 +23810,7 @@ function create_if_block_1$5(ctx) {
 	};
 }
 
-// (50:14) {#if settings.showRelationType}
+// (51:14) {#if showRelationType}
 function create_if_block_2$3(ctx) {
 	let h5;
 
@@ -23851,24 +23829,25 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (55:16) {#each square.impliedItems as impliedItem}
+// (56:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$3(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "";
+	let t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
 	let div_aria_label_position_value;
+	let li_class_value;
 	let mounted;
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[7](/*impliedItem*/ ctx[15], ...args);
+		return /*click_handler_1*/ ctx[11](/*impliedItem*/ ctx[19], ...args);
 	}
 
 	function mouseover_handler_1(...args) {
-		return /*mouseover_handler_1*/ ctx[8](/*impliedItem*/ ctx[15], ...args);
+		return /*mouseover_handler_1*/ ctx[12](/*impliedItem*/ ctx[19], ...args);
 	}
 
 	return {
@@ -23876,10 +23855,13 @@ function create_each_block_2$3(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"));
-			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "");
-			attr(div, "aria-label-position", div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right");
-			attr(li, "class", "BC-Implied");
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-1dlhare"));
+			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent ?? "");
+			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
+
+			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			? "BC-active-note"
+			: ""));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -23897,18 +23879,20 @@ function create_each_block_2$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 3 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-1dlhare"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent ?? "")) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[19].parent ?? "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
-			if (dirty & /*settings*/ 2 && div_aria_label_position_value !== (div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right")) {
-				attr(div, "aria-label-position", div_aria_label_position_value);
+			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			? "BC-active-note"
+			: ""))) {
+				attr(li, "class", li_class_value);
 			}
 		},
 		d(detaching) {
@@ -23919,10 +23903,10 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (24:6) {#each squares as square}
+// (25:6) {#each squares as square}
 function create_each_block_1$6(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) && create_if_block$6(ctx);
+	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$6(ctx);
 
 	return {
 		c() {
@@ -23934,7 +23918,7 @@ function create_each_block_1$6(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
+			if (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -23954,15 +23938,15 @@ function create_each_block_1$6(ctx) {
 	};
 }
 
-// (18:2) {#each filteredSquaresArr as squares}
+// (19:2) {#each filteredSquaresArr as squares}
 function create_each_block$9(ctx) {
 	let details;
 	let summary;
-	let t0_value = /*squares*/ ctx[9].map(func).join(", ") + "";
+	let t0_value = /*squares*/ ctx[13].map(func).join(", ") + "";
 	let t0;
 	let t1;
 	let t2;
-	let each_value_1 = /*squares*/ ctx[9];
+	let each_value_1 = /*squares*/ ctx[13];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -23997,10 +23981,10 @@ function create_each_block$9(ctx) {
 			append(details, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[9].map(func).join(", ") + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[13].map(func).join(", ") + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
-				each_value_1 = /*squares*/ ctx[9];
+			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value_1 = /*squares*/ ctx[13];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -24059,7 +24043,7 @@ function create_fragment$d(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
+			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -24108,6 +24092,7 @@ function instance$d($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
+	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
 	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, e);
 	const mouseover_handler = (realItem, e) => hoverPreview(e, matrixView, realItem.to);
 	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, e);
@@ -24115,18 +24100,22 @@ function instance$d($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
-		if ("currFile" in $$props) $$invalidate(4, currFile = $$props.currFile);
-		if ("settings" in $$props) $$invalidate(1, settings = $$props.settings);
-		if ("matrixView" in $$props) $$invalidate(2, matrixView = $$props.matrixView);
-		if ("app" in $$props) $$invalidate(3, app = $$props.app);
+		if ("currFile" in $$props) $$invalidate(1, currFile = $$props.currFile);
+		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
+		if ("matrixView" in $$props) $$invalidate(3, matrixView = $$props.matrixView);
+		if ("app" in $$props) $$invalidate(4, app = $$props.app);
 	};
 
 	return [
 		filteredSquaresArr,
+		currFile,
 		settings,
 		matrixView,
 		app,
-		currFile,
+		showImpliedRelations,
+		rlLeaf,
+		treatCurrNodeAsImpliedSibling,
+		showRelationType,
 		click_handler,
 		mouseover_handler,
 		click_handler_1,
@@ -24141,10 +24130,10 @@ class Lists extends SvelteComponent {
 
 		init(this, options, instance$d, create_fragment$d, safe_not_equal, {
 			filteredSquaresArr: 0,
-			currFile: 4,
-			settings: 1,
-			matrixView: 2,
-			app: 3
+			currFile: 1,
+			settings: 2,
+			matrixView: 3,
+			app: 4
 		});
 	}
 }
@@ -24160,41 +24149,41 @@ function add_css$8() {
 
 function get_each_context$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[9] = list[i];
+	child_ctx[13] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[12] = list[i];
+	child_ctx[16] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
+	child_ctx[19] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_3$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[18] = list[i];
+	child_ctx[22] = list[i];
 	return child_ctx;
 }
 
-// (21:8) {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
+// (22:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
 function create_if_block$5(ctx) {
 	let div1;
 	let div0;
 	let h4;
-	let t0_value = /*square*/ ctx[12].field + "";
+	let t0_value = /*square*/ ctx[16].field + "";
 	let t0;
 	let t1;
 	let t2;
 	let t3;
-	let if_block0 = /*settings*/ ctx[1].showRelationType && create_if_block_5(ctx);
-	let if_block1 = /*square*/ ctx[12].realItems.length && create_if_block_4(ctx);
-	let if_block2 = /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length && create_if_block_1$4(ctx);
+	let if_block0 = /*showRelationType*/ ctx[8] && create_if_block_5(ctx);
+	let if_block1 = /*square*/ ctx[16].realItems.length && create_if_block_4(ctx);
+	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$4(ctx);
 
 	return {
 		c() {
@@ -24225,22 +24214,10 @@ function create_if_block$5(ctx) {
 			if (if_block2) if_block2.m(div1, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[12].field + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[16].field + "")) set_data(t0, t0_value);
+			if (/*showRelationType*/ ctx[8]) if_block0.p(ctx, dirty);
 
-			if (/*settings*/ ctx[1].showRelationType) {
-				if (if_block0) {
-					if_block0.p(ctx, dirty);
-				} else {
-					if_block0 = create_if_block_5(ctx);
-					if_block0.c();
-					if_block0.m(div0, null);
-				}
-			} else if (if_block0) {
-				if_block0.d(1);
-				if_block0 = null;
-			}
-
-			if (/*square*/ ctx[12].realItems.length) {
+			if (/*square*/ ctx[16].realItems.length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -24253,7 +24230,7 @@ function create_if_block$5(ctx) {
 				if_block1 = null;
 			}
 
-			if (/*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
+			if (/*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
 				if (if_block2) {
 					if_block2.p(ctx, dirty);
 				} else {
@@ -24275,10 +24252,10 @@ function create_if_block$5(ctx) {
 	};
 }
 
-// (26:14) {#if settings.showRelationType}
+// (27:14) {#if showRelationType}
 function create_if_block_5(ctx) {
 	let h6;
-	let t_value = (/*square*/ ctx[12].realItems.length ? "Real" : "Implied") + "";
+	let t_value = (/*square*/ ctx[16].realItems.length ? "Real" : "Implied") + "";
 	let t;
 
 	return {
@@ -24292,7 +24269,7 @@ function create_if_block_5(ctx) {
 			append(h6, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*square*/ ctx[12].realItems.length ? "Real" : "Implied") + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*square*/ ctx[16].realItems.length ? "Real" : "Implied") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(h6);
@@ -24300,10 +24277,10 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (32:12) {#if square.realItems.length}
+// (33:12) {#if square.realItems.length}
 function create_if_block_4(ctx) {
 	let ol;
-	let each_value_3 = /*square*/ ctx[12].realItems;
+	let each_value_3 = /*square*/ ctx[16].realItems;
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -24328,8 +24305,8 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 15) {
-				each_value_3 = /*square*/ ctx[12].realItems;
+			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
+				each_value_3 = /*square*/ ctx[16].realItems;
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -24358,11 +24335,11 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (34:16) {#each square.realItems as realItem}
+// (35:16) {#each square.realItems as realItem}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "";
+	let t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -24370,11 +24347,11 @@ function create_each_block_3$1(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[5](/*realItem*/ ctx[18], ...args);
+		return /*click_handler*/ ctx[9](/*realItem*/ ctx[22], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[6](/*realItem*/ ctx[18], ...args);
+		return /*mouseover_handler*/ ctx[10](/*realItem*/ ctx[22], ...args);
 	}
 
 	return {
@@ -24383,7 +24360,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-sp0k97"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-sp0k97"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -24402,9 +24379,9 @@ function create_each_block_3$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 3 && t0_value !== (t0_value = (/*realItem*/ ctx[18].alt ?? dropPathNDendron(/*realItem*/ ctx[18].to, /*settings*/ ctx[1])) + "")) set_data(t0, t0_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[18].cls) + " svelte-sp0k97"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -24416,7 +24393,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (49:12) {#if settings.showImpliedRelations && square.impliedItems.length}
+// (50:12) {#if showImpliedRelations && square.impliedItems.length}
 function create_if_block_1$4(ctx) {
 	let div;
 	let h4;
@@ -24424,8 +24401,8 @@ function create_if_block_1$4(ctx) {
 	let t1;
 	let ol;
 	let ol_start_value;
-	let if_block = /*square*/ ctx[12].impliedItems.length && create_if_block_2$2(ctx);
-	let each_value_2 = /*square*/ ctx[12].impliedItems;
+	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2$2(ctx);
+	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -24447,7 +24424,7 @@ function create_if_block_1$4(ctx) {
 
 			attr(h4, "class", "BC-Matrix-header svelte-sp0k97");
 			attr(div, "class", "BC-Matrix-headers svelte-sp0k97");
-			attr(ol, "start", ol_start_value = /*square*/ ctx[12].realItems.length + 1);
+			attr(ol, "start", ol_start_value = /*square*/ ctx[16].realItems.length + 1);
 			attr(ol, "class", "svelte-sp0k97");
 		},
 		m(target, anchor) {
@@ -24463,7 +24440,7 @@ function create_if_block_1$4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[12].impliedItems.length) {
+			if (/*square*/ ctx[16].impliedItems.length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -24476,8 +24453,8 @@ function create_if_block_1$4(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
-				each_value_2 = /*square*/ ctx[12].impliedItems;
+			if (dirty & /*treatCurrNodeAsImpliedSibling, filteredSquaresArr, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
+				each_value_2 = /*square*/ ctx[16].impliedItems;
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -24499,7 +24476,7 @@ function create_if_block_1$4(ctx) {
 				each_blocks.length = each_value_2.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[12].realItems.length + 1)) {
+			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[16].realItems.length + 1)) {
 				attr(ol, "start", ol_start_value);
 			}
 		},
@@ -24513,10 +24490,10 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (52:16) {#if square.impliedItems.length}
+// (53:16) {#if square.impliedItems.length}
 function create_if_block_2$2(ctx) {
 	let if_block_anchor;
-	let if_block = /*settings*/ ctx[1].showRelationType && /*square*/ ctx[12].realItems.length && create_if_block_3$1();
+	let if_block = /*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length && create_if_block_3$1();
 
 	return {
 		c() {
@@ -24528,7 +24505,7 @@ function create_if_block_2$2(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*settings*/ ctx[1].showRelationType && /*square*/ ctx[12].realItems.length) {
+			if (/*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length) {
 				if (if_block) ; else {
 					if_block = create_if_block_3$1();
 					if_block.c();
@@ -24546,7 +24523,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (53:18) {#if settings.showRelationType && square.realItems.length}
+// (54:18) {#if showRelationType && square.realItems.length}
 function create_if_block_3$1(ctx) {
 	let h6;
 
@@ -24565,24 +24542,25 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (59:16) {#each square.impliedItems as impliedItem}
+// (60:16) {#each square.impliedItems as impliedItem}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "";
+	let t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
 	let div_aria_label_position_value;
+	let li_class_value;
 	let mounted;
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[7](/*impliedItem*/ ctx[15], ...args);
+		return /*click_handler_1*/ ctx[11](/*impliedItem*/ ctx[19], ...args);
 	}
 
 	function mouseover_handler_1(...args) {
-		return /*mouseover_handler_1*/ ctx[8](/*impliedItem*/ ctx[15], ...args);
+		return /*mouseover_handler_1*/ ctx[12](/*impliedItem*/ ctx[19], ...args);
 	}
 
 	return {
@@ -24590,14 +24568,17 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-sp0k97"));
 
-			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[15].parent
-			? "↑ " + /*impliedItem*/ ctx[15].parent
+			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent
+			? "↑ " + /*impliedItem*/ ctx[19].parent
 			: "");
 
-			attr(div, "aria-label-position", div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right");
-			attr(li, "class", "BC-Implied");
+			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
+
+			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			? "BC-active-note"
+			: ""));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -24615,20 +24596,22 @@ function create_each_block_2$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 3 && t_value !== (t_value = (/*impliedItem*/ ctx[15].alt ?? dropPathNDendron(/*impliedItem*/ ctx[15].to, /*settings*/ ctx[1])) + "")) set_data(t, t_value);
+			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[15].cls) + " svelte-sp0k97"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[15].parent
-			? "↑ " + /*impliedItem*/ ctx[15].parent
+			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[19].parent
+			? "↑ " + /*impliedItem*/ ctx[19].parent
 			: "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
-			if (dirty & /*settings*/ 2 && div_aria_label_position_value !== (div_aria_label_position_value = /*settings*/ ctx[1].rlLeaf ? "left" : "right")) {
-				attr(div, "aria-label-position", div_aria_label_position_value);
+			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			? "BC-active-note"
+			: ""))) {
+				attr(li, "class", li_class_value);
 			}
 		},
 		d(detaching) {
@@ -24639,10 +24622,10 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (20:6) {#each squares as square}
+// (21:6) {#each squares as square}
 function create_each_block_1$5(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) && create_if_block$5(ctx);
+	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$5(ctx);
 
 	return {
 		c() {
@@ -24654,7 +24637,7 @@ function create_each_block_1$5(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[12].realItems.length || /*settings*/ ctx[1].showImpliedRelations && /*square*/ ctx[12].impliedItems.length) {
+			if (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -24674,11 +24657,11 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (18:2) {#each filteredSquaresArr as squares}
+// (19:2) {#each filteredSquaresArr as squares}
 function create_each_block$8(ctx) {
 	let div;
 	let t;
-	let each_value_1 = /*squares*/ ctx[9];
+	let each_value_1 = /*squares*/ ctx[13];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -24706,8 +24689,8 @@ function create_each_block$8(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
-				each_value_1 = /*squares*/ ctx[9];
+			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value_1 = /*squares*/ ctx[13];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -24766,7 +24749,7 @@ function create_fragment$c(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, settings, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron*/ 15) {
+			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
 				each_value = /*filteredSquaresArr*/ ctx[0];
 				let i;
 
@@ -24813,6 +24796,7 @@ function instance$c($$self, $$props, $$invalidate) {
 	let { settings } = $$props;
 	let { matrixView } = $$props;
 	let { app } = $$props;
+	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
 	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, e);
 	const mouseover_handler = (realItem, event) => hoverPreview(event, matrixView, realItem.to);
 	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, e);
@@ -24820,18 +24804,22 @@ function instance$c($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
-		if ("currFile" in $$props) $$invalidate(4, currFile = $$props.currFile);
-		if ("settings" in $$props) $$invalidate(1, settings = $$props.settings);
-		if ("matrixView" in $$props) $$invalidate(2, matrixView = $$props.matrixView);
-		if ("app" in $$props) $$invalidate(3, app = $$props.app);
+		if ("currFile" in $$props) $$invalidate(1, currFile = $$props.currFile);
+		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
+		if ("matrixView" in $$props) $$invalidate(3, matrixView = $$props.matrixView);
+		if ("app" in $$props) $$invalidate(4, app = $$props.app);
 	};
 
 	return [
 		filteredSquaresArr,
+		currFile,
 		settings,
 		matrixView,
 		app,
-		currFile,
+		showImpliedRelations,
+		rlLeaf,
+		treatCurrNodeAsImpliedSibling,
+		showRelationType,
 		click_handler,
 		mouseover_handler,
 		click_handler_1,
@@ -24846,10 +24834,10 @@ class Matrix extends SvelteComponent {
 
 		init(this, options, instance$c, create_fragment$c, safe_not_equal, {
 			filteredSquaresArr: 0,
-			currFile: 4,
-			settings: 1,
-			matrixView: 2,
-			app: 3
+			currFile: 1,
+			settings: 2,
+			matrixView: 3,
+			app: 4
 		});
 	}
 }
@@ -51796,11 +51784,11 @@ function add_css() {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[21] = list[i];
+	child_ctx[23] = list[i];
 	return child_ctx;
 }
 
-// (35:0) {#if title !== "false"}
+// (42:0) {#if title !== "false"}
 function create_if_block_1(ctx) {
 	let h3;
 	let t0;
@@ -51812,7 +51800,7 @@ function create_if_block_1(ctx) {
 			h3 = element("h3");
 			t0 = text(/*dir*/ ctx[1]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[4]);
+			t2 = text(/*basename*/ ctx[5]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -51829,16 +51817,16 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (40:4) {#if line.length > 1}
+// (47:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[21][0] + "-" + "";
+	let t0_value = /*line*/ ctx[23][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[21][1], /*settings*/ ctx[3]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[23][1], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -51847,7 +51835,7 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*line*/ ctx[21], ...args);
+		return /*click_handler*/ ctx[11](/*line*/ ctx[23], ...args);
 	}
 
 	return {
@@ -51862,13 +51850,13 @@ function create_if_block(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-19hsnmq");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[21][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[23][1])
 			? ""
 			: "is-unresolved") + " svelte-19hsnmq");
 
 			attr(span, "class", "internal-link");
 
-			attr(div, "style", div_style_value = /*settings*/ ctx[3].downViewWrap
+			attr(div, "style", div_style_value = /*settings*/ ctx[4].downViewWrap
 			? ""
 			: "white-space: nowrap;");
 		},
@@ -51894,7 +51882,7 @@ function create_if_block(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[21][1])
+			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[23][1])
 			? ""
 			: "is-unresolved") + " svelte-19hsnmq")) {
 				attr(a, "class", a_class_value);
@@ -51908,10 +51896,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (39:2) {#each lines as line}
+// (46:2) {#each lines as line}
 function create_each_block(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[21].length > 1 && create_if_block(ctx);
+	let if_block = /*line*/ ctx[23].length > 1 && /*line*/ ctx[23][0].length / 2 < /*depthAsNum*/ ctx[3] && create_if_block(ctx);
 
 	return {
 		c() {
@@ -51923,7 +51911,18 @@ function create_each_block(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[21].length > 1) if_block.p(ctx, dirty);
+			if (/*line*/ ctx[23].length > 1 && /*line*/ ctx[23][0].length / 2 < /*depthAsNum*/ ctx[3]) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+				} else {
+					if_block = create_if_block(ctx);
+					if_block.c();
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
 		},
 		d(detaching) {
 			if (if_block) if_block.d(detaching);
@@ -51936,7 +51935,7 @@ function create_fragment(ctx) {
 	let t;
 	let div;
 	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_1(ctx);
-	let each_value = /*lines*/ ctx[5];
+	let each_value = /*lines*/ ctx[6];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -51978,8 +51977,8 @@ function create_fragment(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*settings, openOrSwitch, plugin, lines, isInVault, dropDendron*/ 41) {
-				each_value = /*lines*/ ctx[5];
+			if (dirty & /*settings, openOrSwitch, plugin, lines, isInVault, dropDendron, depthAsNum*/ 89) {
+				each_value = /*lines*/ ctx[6];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -52027,12 +52026,20 @@ function instance($$self, $$props, $$invalidate) {
 	let { dir } = $$props;
 	let { fields } = $$props;
 	let { title } = $$props;
+	let { depth } = $$props;
 	const { settings, app, mainG } = plugin;
 	const { sourcePath } = ctx;
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
 	const { userHiers } = settings;
 	const { basename } = currFile;
 	const oppDir = getOppDir(dir);
+	let depthAsNum = 1000;
+
+	if (depth !== undefined && depth !== "") {
+		const num = parseInt(depth);
+		if (!isNaN(num)) depthAsNum = num;
+	}
+
 	const upnDown = getSubInDirs(mainG, dir, oppDir);
 	const closed = getReflexiveClosure(upnDown, userHiers);
 	const down = getSubInDirs(closed, dir);
@@ -52049,14 +52056,28 @@ function instance($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(6, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(7, el = $$props.el);
+		if ("ctx" in $$props) $$invalidate(7, ctx = $$props.ctx);
+		if ("el" in $$props) $$invalidate(8, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(8, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(9, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
+		if ("depth" in $$props) $$invalidate(10, depth = $$props.depth);
 	};
 
-	return [plugin, dir, title, settings, basename, lines, ctx, el, fields, click_handler];
+	return [
+		plugin,
+		dir,
+		title,
+		depthAsNum,
+		settings,
+		basename,
+		lines,
+		ctx,
+		el,
+		fields,
+		depth,
+		click_handler
+	];
 }
 
 class Tree extends SvelteComponent {
@@ -52066,11 +52087,12 @@ class Tree extends SvelteComponent {
 
 		init(this, options, instance, create_fragment, safe_not_equal, {
 			plugin: 0,
-			ctx: 6,
-			el: 7,
+			ctx: 7,
+			el: 8,
 			dir: 1,
-			fields: 8,
-			title: 2
+			fields: 9,
+			title: 2,
+			depth: 10
 		});
 	}
 }
@@ -52513,8 +52535,8 @@ class BCPlugin extends require$$0.Plugin {
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", (source, el, ctx) => {
-            const { dir, fields, type, title } = this.parseCodeBlockSource(source);
-            const err = this.codeblockError(dir, fields, type);
+            const { dir, fields, type, title, depth } = this.parseCodeBlockSource(source);
+            const err = this.codeblockError(dir, fields, type, title, depth);
             if (err !== "") {
                 el.innerHTML = err;
                 return;
@@ -52523,7 +52545,7 @@ class BCPlugin extends require$$0.Plugin {
                 case "tree":
                     new Tree({
                         target: el,
-                        props: { plugin: this, dir, fields, ctx, el, title },
+                        props: { plugin: this, dir, fields, ctx, el, title, depth },
                     });
                     break;
             }
@@ -52540,26 +52562,32 @@ class BCPlugin extends require$$0.Plugin {
         const title = getItem("title");
         const fields = getItem("fields");
         const type = getItem("type");
+        const depth = getItem("depth");
         return {
             dir,
             type,
             title,
+            depth,
             fields: fields ? splitAndTrim(fields) : undefined,
         };
     }
-    codeblockError(dir, fields, type) {
+    codeblockError(dir, fields, type, title, depth) {
         const { userHiers } = this.settings;
         let err = "";
         if (!CODEBLOCK_TYPES.includes(type))
-            err += `<code>${type}</code> is not a valid type. It must be one of: ${CODEBLOCK_TYPES.map((type) => `<code>${type}</code>`).join(", ")}.</br>`;
+            err += `<code>type: ${type}</code> is not a valid type. It must be one of: ${CODEBLOCK_TYPES.map((type) => `<code>${type}</code>`).join(", ")}.</br>`;
         const validDir = DIRECTIONS$1.includes(dir);
         if (!validDir)
-            err += `<code>${dir}</code> is not a valid direction.</br>`;
+            err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
         const allFields = getFields(userHiers);
         fields === null || fields === void 0 ? void 0 : fields.forEach((f) => {
             if (!allFields.includes(f))
-                err += `<code>${f}</code> is not a field in your hierarchies.</br>`;
+                err += `<code>field: ${f}</code> is not a field in your hierarchies.</br>`;
         });
+        if (title !== undefined && title !== "false")
+            err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
+        if (depth !== undefined && isNaN(parseInt(depth)))
+            err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
         return err === ""
             ? ""
             : `${err}</br>
@@ -52567,15 +52595,14 @@ class BCPlugin extends require$$0.Plugin {
     <pre><code>
       type: tree
       dir: ${validDir ? dir : "down"}
-      ${validDir
-                ? `fields: ${allFields
-                    .map((f) => {
-                    return { f, dir: getFieldInfo(userHiers, f).fieldDir };
-                })
-                    .filter((info) => info.dir === dir)
-                    .map((info) => info.f)
-                    .join(", ") || "child"}`
-                : ""}
+      fields: ${allFields
+                .map((f) => {
+                return { f, dir: getFieldInfo(userHiers, f).fieldDir };
+            })
+                .filter((info) => info.dir === dir)
+                .map((info) => info.f)
+                .join(", ") || "child"}
+      depth: 3
       </code></pre>`;
     }
     getActiveTYPEView(type) {
@@ -53029,7 +53056,7 @@ class BCPlugin extends require$$0.Plugin {
         //   const basename = getDVBasename(page.file);
         //   return regex.test(basename);
         // });
-        function splitRegex(regex, split) {
+        function trimRegex(regex, split) {
             const { source } = regex;
             const parts = source.split(split);
             const sliced = parts
@@ -53044,12 +53071,10 @@ class BCPlugin extends require$$0.Plugin {
         }
         function getUp(current) {
             var _a;
-            let currReg = splitRegex(regex, namingSystemSplit);
+            let currReg = trimRegex(regex, namingSystemSplit);
             let up = current.match(currReg);
-            while (!up || up[0] === current) {
-                if (!currReg)
-                    break;
-                currReg = splitRegex(currReg, namingSystemSplit);
+            while (currReg || !up || up[0] === current) {
+                currReg = trimRegex(currReg, namingSystemSplit);
                 if (!currReg)
                     break;
                 up = current.match(currReg);
@@ -53060,23 +53085,22 @@ class BCPlugin extends require$$0.Plugin {
         frontms.forEach((page) => {
             const sourceBN = getDVBasename(page.file);
             const upSystem = getUp(sourceBN);
+            console.log(sourceBN, "↑", upSystem);
             if (!upSystem)
                 return;
-            console.log(sourceBN, "↑", upSystem);
             const upFm = frontms.find((fm) => {
-                const basename = getDVBasename(fm.file);
+                const upBN = getDVBasename(fm.file);
                 const start = upSystem + (namingSystemEndsWithDelimiter ? namingSystemSplit : "");
-                return (basename !== sourceBN &&
-                    (basename === start || basename.startsWith(start + " ")));
+                return (upBN !== sourceBN && (upBN === start || upBN.startsWith(start + " ")));
             });
             if (!upFm)
                 return;
-            const upName = getDVBasename(upFm.file);
-            if (upName === sourceBN)
+            const upBN = getDVBasename(upFm.file);
+            if (upBN === sourceBN)
                 return;
             const sourceOrder = this.getSourceOrder(page);
-            const targetOrder = this.getTargetOrder(frontms, upName);
-            this.populateMain(mainG, sourceBN, field, upName, sourceOrder, targetOrder, true);
+            const targetOrder = this.getTargetOrder(frontms, upBN);
+            this.populateMain(mainG, sourceBN, field, upBN, sourceOrder, targetOrder, true);
         });
         // deepestMatches.forEach((deepest) => {
         //   console.log(deepest.file.name);

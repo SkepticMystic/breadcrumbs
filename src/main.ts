@@ -1350,7 +1350,7 @@ export default class BCPlugin extends Plugin {
     //   return regex.test(basename);
     // });
 
-    function splitRegex(regex: RegExp, split: string) {
+    function trimRegex(regex: RegExp, split: string) {
       const { source } = regex;
       const parts = source.split(split);
       const sliced = parts
@@ -1367,13 +1367,11 @@ export default class BCPlugin extends Plugin {
     }
 
     function getUp(current: string) {
-      let currReg = splitRegex(regex, namingSystemSplit);
+      let currReg = trimRegex(regex, namingSystemSplit);
       let up = current.match(currReg);
-      while (!up || up[0] === current) {
+      while (currReg || !up || up[0] === current) {
+        currReg = trimRegex(currReg, namingSystemSplit);
         if (!currReg) break;
-        currReg = splitRegex(currReg, namingSystemSplit);
-        if (!currReg) break;
-
         up = current.match(currReg);
       }
       console.log({ currReg });
@@ -1383,31 +1381,30 @@ export default class BCPlugin extends Plugin {
     frontms.forEach((page) => {
       const sourceBN = getDVBasename(page.file);
       const upSystem = getUp(sourceBN);
-      if (!upSystem) return;
       console.log(sourceBN, "↑", upSystem);
+      if (!upSystem) return;
 
       const upFm = frontms.find((fm) => {
-        const basename = getDVBasename(fm.file);
+        const upBN = getDVBasename(fm.file);
         const start =
           upSystem + (namingSystemEndsWithDelimiter ? namingSystemSplit : "");
         return (
-          basename !== sourceBN &&
-          (basename === start || basename.startsWith(start + " "))
+          upBN !== sourceBN && (upBN === start || upBN.startsWith(start + " "))
         );
       });
 
       if (!upFm) return;
-      const upName = getDVBasename(upFm.file);
+      const upBN = getDVBasename(upFm.file);
 
-      if (upName === sourceBN) return;
+      if (upBN === sourceBN) return;
 
       const sourceOrder = this.getSourceOrder(page);
-      const targetOrder = this.getTargetOrder(frontms, upName);
+      const targetOrder = this.getTargetOrder(frontms, upBN);
       this.populateMain(
         mainG,
         sourceBN,
         field,
-        upName,
+        upBN,
         sourceOrder,
         targetOrder,
         true
