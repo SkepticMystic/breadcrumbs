@@ -51784,11 +51784,11 @@ function add_css() {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[24] = list[i];
 	return child_ctx;
 }
 
-// (42:0) {#if title !== "false"}
+// (43:0) {#if title !== "false"}
 function create_if_block_1(ctx) {
 	let h3;
 	let t0;
@@ -51817,16 +51817,16 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (47:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
+// (48:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[23][0] + "-" + "";
+	let t0_value = /*line*/ ctx[24][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[23][1], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[24][1], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -51835,7 +51835,7 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[11](/*line*/ ctx[23], ...args);
+		return /*click_handler*/ ctx[12](/*line*/ ctx[24], ...args);
 	}
 
 	return {
@@ -51850,7 +51850,7 @@ function create_if_block(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-19hsnmq");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[23][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[24][1])
 			? ""
 			: "is-unresolved") + " svelte-19hsnmq");
 
@@ -51882,7 +51882,7 @@ function create_if_block(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[23][1])
+			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[24][1])
 			? ""
 			: "is-unresolved") + " svelte-19hsnmq")) {
 				attr(a, "class", a_class_value);
@@ -51896,10 +51896,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (46:2) {#each lines as line}
+// (47:2) {#each lines as line}
 function create_each_block(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[23].length > 1 && /*line*/ ctx[23][0].length / 2 < /*depthAsNum*/ ctx[3] && create_if_block(ctx);
+	let if_block = /*line*/ ctx[24].length > 1 && /*line*/ ctx[24][0].length / 2 < /*depthAsNum*/ ctx[3] && create_if_block(ctx);
 
 	return {
 		c() {
@@ -51911,7 +51911,7 @@ function create_each_block(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[23].length > 1 && /*line*/ ctx[23][0].length / 2 < /*depthAsNum*/ ctx[3]) {
+			if (/*line*/ ctx[24].length > 1 && /*line*/ ctx[24][0].length / 2 < /*depthAsNum*/ ctx[3]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -52027,6 +52027,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { fields } = $$props;
 	let { title } = $$props;
 	let { depth } = $$props;
+	let { flat } = $$props;
 	const { settings, app, mainG } = plugin;
 	const { sourcePath } = ctx;
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
@@ -52049,7 +52050,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	const lines = index.split("\n").map(line => {
 		const pair = line.split("- ");
-		return [pair[0], pair.slice(1).join("- ")];
+		return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
 	}).filter(pair => pair[1] !== "");
 
 	const click_handler = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
@@ -52062,6 +52063,7 @@ function instance($$self, $$props, $$invalidate) {
 		if ("fields" in $$props) $$invalidate(9, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
 		if ("depth" in $$props) $$invalidate(10, depth = $$props.depth);
+		if ("flat" in $$props) $$invalidate(11, flat = $$props.flat);
 	};
 
 	return [
@@ -52076,6 +52078,7 @@ function instance($$self, $$props, $$invalidate) {
 		el,
 		fields,
 		depth,
+		flat,
 		click_handler
 	];
 }
@@ -52092,7 +52095,8 @@ class Tree extends SvelteComponent {
 			dir: 1,
 			fields: 9,
 			title: 2,
-			depth: 10
+			depth: 10,
+			flat: 11
 		});
 	}
 }
@@ -52535,17 +52539,18 @@ class BCPlugin extends require$$0.Plugin {
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", (source, el, ctx) => {
-            const { dir, fields, type, title, depth } = this.parseCodeBlockSource(source);
-            const err = this.codeblockError(dir, fields, type, title, depth);
+            const parsedSource = this.parseCodeBlockSource(source);
+            const err = this.codeblockError(parsedSource);
             if (err !== "") {
                 el.innerHTML = err;
                 return;
             }
+            const { dir, fields, type, title, depth, flat } = parsedSource;
             switch (type) {
                 case "tree":
                     new Tree({
                         target: el,
-                        props: { plugin: this, dir, fields, ctx, el, title, depth },
+                        props: { plugin: this, dir, fields, ctx, el, title, depth, flat },
                     });
                     break;
             }
@@ -52563,15 +52568,18 @@ class BCPlugin extends require$$0.Plugin {
         const fields = getItem("fields");
         const type = getItem("type");
         const depth = getItem("depth");
+        const flat = getItem("flat");
         return {
             dir,
             type,
             title,
             depth,
+            flat,
             fields: fields ? splitAndTrim(fields) : undefined,
         };
     }
-    codeblockError(dir, fields, type, title, depth) {
+    codeblockError(parsedSource) {
+        const { dir, fields, type, title, depth, flat } = parsedSource;
         const { userHiers } = this.settings;
         let err = "";
         if (!CODEBLOCK_TYPES.includes(type))
@@ -52588,6 +52596,8 @@ class BCPlugin extends require$$0.Plugin {
             err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
         if (depth !== undefined && isNaN(parseInt(depth)))
             err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
+        if (flat !== undefined && flat !== "true")
+            err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
         return err === ""
             ? ""
             : `${err}</br>

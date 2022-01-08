@@ -273,3 +273,12 @@ declare module "obsidian" {
     };
   }
 }
+
+export interface ParsedCodeblock {
+  dir: Directions;
+  fields: string[];
+  title: string;
+  depth: string;
+  flat: string;
+  type: CodeblockType;
+}

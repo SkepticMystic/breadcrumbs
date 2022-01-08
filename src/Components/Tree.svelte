@@ -19,6 +19,7 @@
   export let fields: string[];
   export let title: string;
   export let depth: string;
+  export let flat: string;
 
   const { settings, app, mainG } = plugin;
   const { sourcePath } = ctx;
@@ -45,7 +46,10 @@
     .split("\n")
     .map((line) => {
       const pair = line.split("- ");
-      return [pair[0], pair.slice(1).join("- ")] as [string, string];
+      return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")] as [
+        string,
+        string
+      ];
     })
     .filter((pair) => pair[1] !== "");
 </script>

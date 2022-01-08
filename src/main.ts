@@ -79,6 +79,7 @@ import type {
   HierarchyNoteItem,
   JugglLink,
   MyView,
+  ParsedCodeblock,
   RawValue,
   ViewInfo,
 } from "./interfaces";
@@ -587,20 +588,21 @@ export default class BCPlugin extends Plugin {
     this.registerMarkdownCodeBlockProcessor(
       "breadcrumbs",
       (source, el, ctx) => {
-        const { dir, fields, type, title, depth } =
-          this.parseCodeBlockSource(source);
-        const err = this.codeblockError(dir, fields, type, title, depth);
+        const parsedSource = this.parseCodeBlockSource(source);
+        const err = this.codeblockError(parsedSource);
 
         if (err !== "") {
           el.innerHTML = err;
           return;
         }
 
+        const { dir, fields, type, title, depth, flat } = parsedSource;
+
         switch (type) {
           case "tree":
             new Tree({
               target: el,
-              props: { plugin: this, dir, fields, ctx, el, title, depth },
+              props: { plugin: this, dir, fields, ctx, el, title, depth, flat },
             });
             break;
         }
@@ -608,13 +610,7 @@ export default class BCPlugin extends Plugin {
     );
   }
 
-  parseCodeBlockSource(source: string): {
-    dir: Directions;
-    fields: string[];
-    title: string;
-    depth: string;
-    type: CodeblockType;
-  } {
+  parseCodeBlockSource(source: string): ParsedCodeblock {
     const lines = source.split("\n");
     const getItem = (type: string) =>
       lines
@@ -627,23 +623,20 @@ export default class BCPlugin extends Plugin {
     const fields = getItem("fields");
     const type = getItem("type");
     const depth = getItem("depth");
+    const flat = getItem("flat");
 
     return {
       dir,
       type,
       title,
       depth,
+      flat,
       fields: fields ? splitAndTrim(fields) : undefined,
     };
   }
 
-  codeblockError(
-    dir: Directions,
-    fields: string[],
-    type: CodeblockType,
-    title: string,
-    depth: string
-  ) {
+  codeblockError(parsedSource: ParsedCodeblock) {
+    const { dir, fields, type, title, depth, flat } = parsedSource;
     const { userHiers } = this.settings;
     let err = "";
 
@@ -667,6 +660,9 @@ export default class BCPlugin extends Plugin {
 
     if (depth !== undefined && isNaN(parseInt(depth)))
       err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
+
+    if (flat !== undefined && flat !== "true")
+      err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
 
     return err === ""
       ? ""
