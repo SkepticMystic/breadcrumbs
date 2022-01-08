@@ -21008,6 +21008,15 @@ const RELATIONS = ["Parent", "Sibling", "Child"];
 const REAlCLOSED = ["Real", "Closed"];
 const ALLUNLINKED = ["All", "No Unlinked"];
 const CODEBLOCK_TYPES = ["tree"];
+const CODEBLOCK_FIELDS = [
+    "type",
+    "dir",
+    "fields",
+    "depth",
+    "title",
+    "flat",
+    "content",
+];
 const blankUserHier = () => {
     return { up: [], same: [], down: [], next: [], prev: [] };
 };
@@ -23744,7 +23753,7 @@ function create_if_block_1$5(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
-	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$3();
+	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$4();
 	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
@@ -23811,7 +23820,7 @@ function create_if_block_1$5(ctx) {
 }
 
 // (51:14) {#if showRelationType}
-function create_if_block_2$3(ctx) {
+function create_if_block_2$4(ctx) {
 	let h5;
 
 	return {
@@ -24401,7 +24410,7 @@ function create_if_block_1$4(ctx) {
 	let t1;
 	let ol;
 	let ol_start_value;
-	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2$2(ctx);
+	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2$3(ctx);
 	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
@@ -24444,7 +24453,7 @@ function create_if_block_1$4(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block_2$2(ctx);
+					if_block = create_if_block_2$3(ctx);
 					if_block.c();
 					if_block.m(div, null);
 				}
@@ -24491,7 +24500,7 @@ function create_if_block_1$4(ctx) {
 }
 
 // (53:16) {#if square.impliedItems.length}
-function create_if_block_2$2(ctx) {
+function create_if_block_2$3(ctx) {
 	let if_block_anchor;
 	let if_block = /*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length && create_if_block_3$1();
 
@@ -26605,7 +26614,7 @@ function get_each_context_1$2(ctx, list, i) {
 }
 
 // (20:8) {:else}
-function create_else_block$2(ctx) {
+function create_else_block$3(ctx) {
 	let each_1_anchor;
 	let each_value_1 = /*trail*/ ctx[10];
 	let each_blocks = [];
@@ -26680,7 +26689,7 @@ function create_if_block_1$3(ctx) {
 }
 
 // (29:12) {#if i < trail.length - 1}
-function create_if_block_2$1(ctx) {
+function create_if_block_2$2(ctx) {
 	let span;
 
 	return {
@@ -26716,7 +26725,7 @@ function create_each_block_1$2(ctx) {
 		return /*mouseover_handler*/ ctx[8](/*crumb*/ ctx[13], ...args);
 	}
 
-	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2$1(ctx);
+	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2$2(ctx);
 
 	return {
 		c() {
@@ -26751,7 +26760,7 @@ function create_each_block_1$2(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block_2$1(ctx);
+					if_block = create_if_block_2$2(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -26778,7 +26787,7 @@ function create_each_block$5(ctx) {
 
 	function select_block_type(ctx, dirty) {
 		if (/*trail*/ ctx[10].length === 0) return create_if_block_1$3;
-		return create_else_block$2;
+		return create_else_block$3;
 	}
 
 	let current_block_type = select_block_type(ctx);
@@ -27171,7 +27180,7 @@ function get_each_context$4(ctx, list, i) {
 }
 
 // (52:4) {:else}
-function create_else_block$1(ctx) {
+function create_else_block$2(ctx) {
 	let fafire;
 	let current;
 	fafire = new FaFire({});
@@ -27361,7 +27370,7 @@ function create_fragment$6(ctx) {
 	let current;
 	let mounted;
 	let dispose;
-	const if_block_creators = [create_if_block_1$2, create_else_block$1];
+	const if_block_creators = [create_if_block_1$2, create_else_block$2];
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
@@ -28057,12 +28066,12 @@ function add_css$2() {
 }
 
 // (21:2) {#if rel === "up"}
-function create_if_block_2(ctx) {
+function create_if_block_2$1(ctx) {
 	let if_block_anchor;
 
 	function select_block_type(ctx, dirty) {
 		if (/*hnItem*/ ctx[2].depth === 0) return create_if_block_3;
-		return create_else_block;
+		return create_else_block$1;
 	}
 
 	let current_block_type = select_block_type(ctx);
@@ -28098,7 +28107,7 @@ function create_if_block_2(ctx) {
 }
 
 // (24:4) {:else}
-function create_else_block(ctx) {
+function create_else_block$1(ctx) {
 	let div;
 	let pre;
 	let t_value = /*buildNewItem*/ ctx[6](/*newItem*/ ctx[5], /*hnItem*/ ctx[2].depth - 4, true) + "";
@@ -28228,7 +28237,7 @@ function create_fragment$3(ctx) {
 	let button;
 	let mounted;
 	let dispose;
-	let if_block0 = /*rel*/ ctx[0] === "up" && create_if_block_2(ctx);
+	let if_block0 = /*rel*/ ctx[0] === "up" && create_if_block_2$1(ctx);
 
 	function select_block_type_1(ctx, dirty) {
 		if (/*rel*/ ctx[0] === "same") return create_if_block$1;
@@ -28328,7 +28337,7 @@ function create_fragment$3(ctx) {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 				} else {
-					if_block0 = create_if_block_2(ctx);
+					if_block0 = create_if_block_2$1(ctx);
 					if_block0.c();
 					if_block0.m(div1, t5);
 				}
@@ -51777,19 +51786,21 @@ class VisModal extends require$$0.Modal {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-19hsnmq-style";
-	style.textContent = ".BC-tree.svelte-19hsnmq{padding-left:5px}pre.indent.svelte-19hsnmq{display:inline;background-color:transparent}.is-unresolved.svelte-19hsnmq{color:var(--text-muted)}";
+	style.id = "svelte-yt7jmz-style";
+	style.textContent = ".BC-tree.svelte-yt7jmz{padding-left:5px}pre.indent.svelte-yt7jmz{display:inline;background-color:transparent;position:top}details.svelte-yt7jmz{display:inline-block}.is-unresolved.svelte-yt7jmz{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[24] = list[i];
+	child_ctx[31] = list[i];
+	child_ctx[32] = list;
+	child_ctx[33] = i;
 	return child_ctx;
 }
 
-// (43:0) {#if title !== "false"}
-function create_if_block_1(ctx) {
+// (66:0) {#if title !== "false"}
+function create_if_block_2(ctx) {
 	let h3;
 	let t0;
 	let t1;
@@ -51800,7 +51811,7 @@ function create_if_block_1(ctx) {
 			h3 = element("h3");
 			t0 = text(/*dir*/ ctx[1]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[5]);
+			t2 = text(/*basename*/ ctx[7]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -51809,7 +51820,7 @@ function create_if_block_1(ctx) {
 			append(h3, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
+			if (dirty[0] & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
 		},
 		d(detaching) {
 			if (detaching) detach(h3);
@@ -51817,25 +51828,65 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (48:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
+// (71:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
 function create_if_block(ctx) {
+	let if_block_anchor;
+
+	function select_block_type(ctx, dirty) {
+		if (/*content*/ ctx[3] === "true") return create_if_block_1;
+		return create_else_block;
+	}
+
+	let current_block_type = select_block_type(ctx);
+	let if_block = current_block_type(ctx);
+
+	return {
+		c() {
+			if_block.c();
+			if_block_anchor = empty();
+		},
+		m(target, anchor) {
+			if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+		},
+		p(ctx, dirty) {
+			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block) {
+				if_block.p(ctx, dirty);
+			} else {
+				if_block.d(1);
+				if_block = current_block_type(ctx);
+
+				if (if_block) {
+					if_block.c();
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			}
+		},
+		d(detaching) {
+			if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+// (107:6) {:else}
+function create_else_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[24][0] + "-" + "";
+	let t0_value = /*line*/ ctx[31][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[24][1], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[31][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
-	let div_style_value;
 	let mounted;
 	let dispose;
 
-	function click_handler(...args) {
-		return /*click_handler*/ ctx[12](/*line*/ ctx[24], ...args);
+	function click_handler_2(...args) {
+		return /*click_handler_2*/ ctx[18](/*line*/ ctx[31], ...args);
 	}
 
 	return {
@@ -51848,17 +51899,13 @@ function create_if_block(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "indent svelte-19hsnmq");
+			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[24][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[31][1])
 			? ""
-			: "is-unresolved") + " svelte-19hsnmq");
+			: "is-unresolved") + " svelte-yt7jmz");
 
 			attr(span, "class", "internal-link");
-
-			attr(div, "style", div_style_value = /*settings*/ ctx[4].downViewWrap
-			? ""
-			: "white-space: nowrap;");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -51872,8 +51919,8 @@ function create_if_block(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", click_handler),
-					listen(span, "mouseover", mouseover_handler)
+					listen(span, "click", click_handler_2),
+					listen(span, "mouseover", mouseover_handler_1)
 				];
 
 				mounted = true;
@@ -51882,9 +51929,9 @@ function create_if_block(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[24][1])
+			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[31][1])
 			? ""
-			: "is-unresolved") + " svelte-19hsnmq")) {
+			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -51896,10 +51943,108 @@ function create_if_block(ctx) {
 	};
 }
 
-// (47:2) {#each lines as line}
+// (72:6) {#if content === "true"}
+function create_if_block_1(ctx) {
+	let div;
+	let pre;
+	let t0_value = /*line*/ ctx[31][0] + "";
+	let t0;
+	let t1;
+	let details;
+	let summary;
+	let span;
+	let a;
+	let t2_value = dropDendron(/*line*/ ctx[31][1], /*settings*/ ctx[6]) + "";
+	let t2;
+	let a_class_value;
+	let line = /*line*/ ctx[31];
+	let t3;
+	let mounted;
+	let dispose;
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[15](/*line*/ ctx[31], ...args);
+	}
+
+	const assign_details = () => /*details_binding*/ ctx[16](details, line);
+	const unassign_details = () => /*details_binding*/ ctx[16](null, line);
+
+	function click_handler_1(...args) {
+		return /*click_handler_1*/ ctx[17](/*line*/ ctx[31], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			pre = element("pre");
+			t0 = text(t0_value);
+			t1 = space();
+			details = element("details");
+			summary = element("summary");
+			span = element("span");
+			a = element("a");
+			t2 = text(t2_value);
+			t3 = space();
+			attr(pre, "class", "indent svelte-yt7jmz");
+
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[31][1])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz");
+
+			attr(span, "class", "internal-link");
+			attr(details, "class", "svelte-yt7jmz");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, pre);
+			append(pre, t0);
+			append(div, t1);
+			append(div, details);
+			append(details, summary);
+			append(summary, span);
+			append(span, a);
+			append(a, t2);
+			assign_details();
+			append(div, t3);
+
+			if (!mounted) {
+				dispose = [
+					listen(span, "click", click_handler),
+					listen(span, "mouseover", mouseover_handler),
+					listen(details, "click", click_handler_1)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+
+			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[31][1])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz")) {
+				attr(a, "class", a_class_value);
+			}
+
+			if (line !== /*line*/ ctx[31]) {
+				unassign_details();
+				line = /*line*/ ctx[31];
+				assign_details();
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			unassign_details();
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (70:2) {#each lines as line}
 function create_each_block(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[24].length > 1 && /*line*/ ctx[24][0].length / 2 < /*depthAsNum*/ ctx[3] && create_if_block(ctx);
+	let if_block = /*line*/ ctx[31].length > 1 && /*line*/ ctx[31][0].length / 2 < /*depthAsNum*/ ctx[5] && create_if_block(ctx);
 
 	return {
 		c() {
@@ -51911,7 +52056,7 @@ function create_each_block(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[24].length > 1 && /*line*/ ctx[24][0].length / 2 < /*depthAsNum*/ ctx[3]) {
+			if (/*line*/ ctx[31].length > 1 && /*line*/ ctx[31][0].length / 2 < /*depthAsNum*/ ctx[5]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -51934,8 +52079,8 @@ function create_each_block(ctx) {
 function create_fragment(ctx) {
 	let t;
 	let div;
-	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_1(ctx);
-	let each_value = /*lines*/ ctx[6];
+	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2(ctx);
+	let each_value = /*lines*/ ctx[9];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -51952,7 +52097,7 @@ function create_fragment(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-tree svelte-19hsnmq");
+			attr(div, "class", "BC-tree svelte-yt7jmz");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -51963,12 +52108,12 @@ function create_fragment(ctx) {
 				each_blocks[i].m(div, null);
 			}
 		},
-		p(ctx, [dirty]) {
+		p(ctx, dirty) {
 			if (/*title*/ ctx[2] !== "false") {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block_1(ctx);
+					if_block = create_if_block_2(ctx);
 					if_block.c();
 					if_block.m(t.parentNode, t);
 				}
@@ -51977,8 +52122,8 @@ function create_fragment(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*settings, openOrSwitch, plugin, lines, isInVault, dropDendron, depthAsNum*/ 89) {
-				each_value = /*lines*/ ctx[6];
+			if (dirty[0] & /*nodes, lines, appendContent, plugin, settings, content, depthAsNum*/ 889) {
+				each_value = /*lines*/ ctx[9];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -52016,7 +52161,48 @@ const mouseover_handler = e => {
 }; //   hoverPreview needs an itemView so it can access `app`...
 //   hoverPreview(e, el, line[1])
 
+const mouseover_handler_1 = e => {
+	
+}; //   hoverPreview needs an itemView so it can access `app`...
+//   hoverPreview(e, el, line[1])
+
 function instance($$self, $$props, $$invalidate) {
+	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+		function adopt(value) {
+			return value instanceof P
+			? value
+			: new P(function (resolve) {
+						resolve(value);
+					});
+		}
+
+		return new (P || (P = Promise))(function (resolve, reject) {
+				function fulfilled(value) {
+					try {
+						step(generator.next(value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function rejected(value) {
+					try {
+						step(generator["throw"](value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function step(result) {
+					result.done
+					? resolve(result.value)
+					: adopt(result.value).then(fulfilled, rejected);
+				}
+
+				step((generator = generator.apply(thisArg, _arguments || [])).next());
+			});
+	};
+
 	
 	
 	
@@ -52028,12 +52214,28 @@ function instance($$self, $$props, $$invalidate) {
 	let { title } = $$props;
 	let { depth } = $$props;
 	let { flat } = $$props;
+	let { content } = $$props;
 	const { settings, app, mainG } = plugin;
 	const { sourcePath } = ctx;
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
 	const { userHiers } = settings;
 	const { basename } = currFile;
-	const oppDir = getOppDir(dir);
+	const nodes = {};
+
+	function appendContent(note) {
+		return __awaiter(this, void 0, void 0, function* () {
+			const node = nodes[note];
+			const file = app.metadataCache.getFirstLinkpathDest(note, "");
+			const content = yield app.vault.cachedRead(file);
+
+			node.createEl("div", {
+				text: content,
+				cls: "BC-note-content",
+				attr: { style: "padding-left: 20px;" }
+			});
+		});
+	}
+
 	let depthAsNum = 1000;
 
 	if (depth !== undefined && depth !== "") {
@@ -52041,6 +52243,7 @@ function instance($$self, $$props, $$invalidate) {
 		if (!isNaN(num)) depthAsNum = num;
 	}
 
+	const oppDir = getOppDir(dir);
 	const upnDown = getSubInDirs(mainG, dir, oppDir);
 	const closed = getReflexiveClosure(upnDown, userHiers);
 	const down = getSubInDirs(closed, dir);
@@ -52055,49 +52258,82 @@ function instance($$self, $$props, $$invalidate) {
 
 	const click_handler = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
 
+	function details_binding($$value, line) {
+		binding_callbacks[$$value ? "unshift" : "push"](() => {
+			nodes[line[1]] = $$value;
+			$$invalidate(4, nodes);
+			$$invalidate(9, lines);
+		});
+	}
+
+	const click_handler_1 = async (line, e) => {
+		// I think `open` only gets toggled after this finishes, so check if `!open`
+		if (!e.target.open && !nodes[line[1]].querySelector(".BC-note-content")) {
+			await appendContent(line[1]);
+		}
+	};
+
+	const click_handler_2 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
+
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(7, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(8, el = $$props.el);
+		if ("ctx" in $$props) $$invalidate(10, ctx = $$props.ctx);
+		if ("el" in $$props) $$invalidate(11, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(9, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(12, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("depth" in $$props) $$invalidate(10, depth = $$props.depth);
-		if ("flat" in $$props) $$invalidate(11, flat = $$props.flat);
+		if ("depth" in $$props) $$invalidate(13, depth = $$props.depth);
+		if ("flat" in $$props) $$invalidate(14, flat = $$props.flat);
+		if ("content" in $$props) $$invalidate(3, content = $$props.content);
 	};
 
 	return [
 		plugin,
 		dir,
 		title,
+		content,
+		nodes,
 		depthAsNum,
 		settings,
 		basename,
+		appendContent,
 		lines,
 		ctx,
 		el,
 		fields,
 		depth,
 		flat,
-		click_handler
+		click_handler,
+		details_binding,
+		click_handler_1,
+		click_handler_2
 	];
 }
 
 class Tree extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-19hsnmq-style")) add_css();
+		if (!document.getElementById("svelte-yt7jmz-style")) add_css();
 
-		init(this, options, instance, create_fragment, safe_not_equal, {
-			plugin: 0,
-			ctx: 7,
-			el: 8,
-			dir: 1,
-			fields: 9,
-			title: 2,
-			depth: 10,
-			flat: 11
-		});
+		init(
+			this,
+			options,
+			instance,
+			create_fragment,
+			safe_not_equal,
+			{
+				plugin: 0,
+				ctx: 10,
+				el: 11,
+				dir: 1,
+				fields: 12,
+				title: 2,
+				depth: 13,
+				flat: 14,
+				content: 3
+			},
+			[-1, -1]
+		);
 	}
 }
 
@@ -52540,6 +52776,7 @@ class BCPlugin extends require$$0.Plugin {
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", (source, el, ctx) => {
             const parsedSource = this.parseCodeBlockSource(source);
+            console.log(parsedSource);
             const err = this.codeblockError(parsedSource);
             if (err !== "") {
                 el.innerHTML = err;
@@ -52550,7 +52787,8 @@ class BCPlugin extends require$$0.Plugin {
                 case "tree":
                     new Tree({
                         target: el,
-                        props: { plugin: this, dir, fields, ctx, el, title, depth, flat },
+                        props: Object.assign({ plugin: this, ctx,
+                            el }, parsedSource),
                     });
                     break;
             }
@@ -52558,28 +52796,20 @@ class BCPlugin extends require$$0.Plugin {
     }
     parseCodeBlockSource(source) {
         const lines = source.split("\n");
-        const getItem = (type) => {
+        const getValue = (type) => {
             var _a, _b, _c;
             return (_c = (_b = (_a = lines
                 .find((l) => l.startsWith(`${type}:`))) === null || _a === void 0 ? void 0 : _a.split(":")) === null || _b === void 0 ? void 0 : _b[1]) === null || _c === void 0 ? void 0 : _c.trim();
         };
-        const dir = getItem("dir");
-        const title = getItem("title");
-        const fields = getItem("fields");
-        const type = getItem("type");
-        const depth = getItem("depth");
-        const flat = getItem("flat");
-        return {
-            dir,
-            type,
-            title,
-            depth,
-            flat,
-            fields: fields ? splitAndTrim(fields) : undefined,
-        };
+        const results = {};
+        CODEBLOCK_FIELDS.forEach((field) => (results[field] = getValue(field)));
+        results.field = results.field
+            ? splitAndTrim(results.field)
+            : undefined;
+        return results;
     }
     codeblockError(parsedSource) {
-        const { dir, fields, type, title, depth, flat } = parsedSource;
+        const { dir, fields, type, title, depth, flat, content } = parsedSource;
         const { userHiers } = this.settings;
         let err = "";
         if (!CODEBLOCK_TYPES.includes(type))
@@ -52598,6 +52828,8 @@ class BCPlugin extends require$$0.Plugin {
             err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
         if (flat !== undefined && flat !== "true")
             err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
+        if (content !== undefined && content !== "true")
+            err += `<code>content: ${content}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
         return err === ""
             ? ""
             : `${err}</br>

@@ -39,6 +39,7 @@ import {
   BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
   BC_TRAVERSE_NOTE,
+  CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
   DEFAULT_SETTINGS,
   DIRECTIONS,
@@ -72,6 +73,7 @@ import {
 import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
   BCSettings,
+  CodeblockFields,
   CodeblockType,
   Directions,
   dvFrontmatterCache,
@@ -589,6 +591,7 @@ export default class BCPlugin extends Plugin {
       "breadcrumbs",
       (source, el, ctx) => {
         const parsedSource = this.parseCodeBlockSource(source);
+        console.log(parsedSource);
         const err = this.codeblockError(parsedSource);
 
         if (err !== "") {
@@ -602,7 +605,12 @@ export default class BCPlugin extends Plugin {
           case "tree":
             new Tree({
               target: el,
-              props: { plugin: this, dir, fields, ctx, el, title, depth, flat },
+              props: {
+                plugin: this,
+                ctx,
+                el,
+                ...parsedSource,
+              },
             });
             break;
         }
@@ -612,31 +620,24 @@ export default class BCPlugin extends Plugin {
 
   parseCodeBlockSource(source: string): ParsedCodeblock {
     const lines = source.split("\n");
-    const getItem = (type: string) =>
+    const getValue = (type: string) =>
       lines
         .find((l) => l.startsWith(`${type}:`))
         ?.split(":")?.[1]
         ?.trim();
 
-    const dir = getItem("dir") as Directions;
-    const title = getItem("title");
-    const fields = getItem("fields");
-    const type = getItem("type");
-    const depth = getItem("depth");
-    const flat = getItem("flat");
+    const results: { [field in CodeblockFields]: string | string[] } = {};
+    CODEBLOCK_FIELDS.forEach((field) => (results[field] = getValue(field)));
 
-    return {
-      dir,
-      type,
-      title,
-      depth,
-      flat,
-      fields: fields ? splitAndTrim(fields) : undefined,
-    };
+    results.field = results.field
+      ? splitAndTrim(results.field as string)
+      : undefined;
+
+    return results as unknown as ParsedCodeblock;
   }
 
   codeblockError(parsedSource: ParsedCodeblock) {
-    const { dir, fields, type, title, depth, flat } = parsedSource;
+    const { dir, fields, type, title, depth, flat, content } = parsedSource;
     const { userHiers } = this.settings;
     let err = "";
 
@@ -663,6 +664,9 @@ export default class BCPlugin extends Plugin {
 
     if (flat !== undefined && flat !== "true")
       err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
+
+    if (content !== undefined && content !== "true")
+      err += `<code>content: ${content}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
 
     return err === ""
       ? ""

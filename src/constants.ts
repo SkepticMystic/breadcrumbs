@@ -49,6 +49,15 @@ export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
 export const CODEBLOCK_TYPES = ["tree"];
+export const CODEBLOCK_FIELDS = [
+  "type",
+  "dir",
+  "fields",
+  "depth",
+  "title",
+  "flat",
+  "content",
+];
 
 export const blankUserHier = (): UserHier => {
   return { up: [], same: [], down: [], next: [], prev: [] };

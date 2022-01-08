@@ -20,13 +20,25 @@
   export let title: string;
   export let depth: string;
   export let flat: string;
+  export let content: string;
 
   const { settings, app, mainG } = plugin;
   const { sourcePath } = ctx;
   const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
   const { userHiers } = settings;
   const { basename } = currFile;
-  const oppDir = getOppDir(dir);
+  const nodes: { [note: string]: HTMLElement } = {};
+
+  async function appendContent(note: string) {
+    const node = nodes[note];
+    const file = app.metadataCache.getFirstLinkpathDest(note, "");
+    const content = await app.vault.cachedRead(file);
+    node.createEl("div", {
+      text: content,
+      cls: "BC-note-content",
+      attr: { style: "padding-left: 20px;" },
+    });
+  }
 
   let depthAsNum: number = 1000;
   if (depth !== undefined && depth !== "") {
@@ -34,6 +46,7 @@
     if (!isNaN(num)) depthAsNum = num;
   }
 
+  const oppDir = getOppDir(dir);
   const upnDown = getSubInDirs(mainG, dir, oppDir);
   const closed = getReflexiveClosure(upnDown, userHiers);
   const down = getSubInDirs(closed, dir);
@@ -60,24 +73,61 @@
 <div class="BC-tree">
   {#each lines as line}
     {#if line.length > 1 && line[0].length / 2 < depthAsNum}
-      <div style={settings.downViewWrap ? "" : "white-space: nowrap;"}>
-        <pre class="indent">{line[0] + "-"}</pre>
-        <span
-          class="internal-link"
-          on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
-          on:mouseover={(e) => {
-            //   hoverPreview needs an itemView so it can access `app`...
-            //   hoverPreview(e, el, line[1])
-          }}
-        >
-          <!-- svelte-ignore a11y-missing-attribute -->
-          <a
-            class="internal-link {isInVault(plugin.app, line[1])
-              ? ''
-              : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+      {#if content === "true"}
+        <div>
+          <pre class="indent">{line[0]}</pre>
+          <details
+            bind:this={nodes[line[1]]}
+            on:click={async (e) => {
+              // I think `open` only gets toggled after this finishes, so check if `!open`
+              if (
+                !e.target.open &&
+                !nodes[line[1]].querySelector(".BC-note-content")
+              ) {
+                await appendContent(line[1]);
+              }
+            }}
           >
-        </span>
-      </div>
+            <summary>
+              <span
+                class="internal-link"
+                on:click={async (e) =>
+                  await openOrSwitch(plugin.app, line[1], e)}
+                on:mouseover={(e) => {
+                  //   hoverPreview needs an itemView so it can access `app`...
+                  //   hoverPreview(e, el, line[1])
+                }}
+              >
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <a
+                  class="internal-link {isInVault(plugin.app, line[1])
+                    ? ''
+                    : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+                >
+              </span>
+            </summary>
+          </details>
+        </div>
+      {:else}
+        <div>
+          <pre class="indent">{line[0] + "-"}</pre>
+          <span
+            class="internal-link"
+            on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
+            on:mouseover={(e) => {
+              //   hoverPreview needs an itemView so it can access `app`...
+              //   hoverPreview(e, el, line[1])
+            }}
+          >
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <a
+              class="internal-link {isInVault(plugin.app, line[1])
+                ? ''
+                : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+            >
+          </span>
+        </div>
+      {/if}
     {/if}
   {/each}
 </div>
@@ -92,9 +142,18 @@
   pre.indent {
     display: inline;
     background-color: transparent;
+    position: top;
+  }
+  details {
+    display: inline-block;
   }
 
   .is-unresolved {
     color: var(--text-muted);
+  }
+
+  button.append-content {
+    padding: 1px 5px;
+    margin-right: 2px;
   }
 </style>
