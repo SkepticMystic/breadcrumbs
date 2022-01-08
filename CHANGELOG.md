@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.26.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.25.0...2.26.0) (2022-01-08)
+
+
+### Features
+
+* **Codeblock:** :sparkles: `content: open` or `content: closed` to show content of each note ([6a350fc](https://github.com/SkepticMystic/breadcrumbs/commit/6a350fce9f6652358d1535a3089a4373d7f2e4a8))
+
 ## [2.25.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.24.0...2.25.0) (2022-01-08)
 
 
