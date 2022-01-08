@@ -10,6 +10,13 @@
   export let settings: BCSettings;
   export let matrixView: MatrixView;
   export let app: App;
+
+  const {
+    showImpliedRelations,
+    rlLeaf,
+    treatCurrNodeAsImpliedSibling,
+    showRelationType,
+  } = settings;
 </script>
 
 <div
@@ -20,12 +27,12 @@
   {#each filteredSquaresArr as squares}
     <div>
       {#each squares as square}
-        {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
+        {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
           <div class="BC-Matrix-square">
             <div class="BC-Matrix-headers">
               <h4 class="BC-Matrix-header">{square.field}</h4>
 
-              {#if settings.showRelationType}
+              {#if showRelationType}
                 <h6 class="BC-Matrix-header">
                   {square.realItems.length ? "Real" : "Implied"}
                 </h6>
@@ -48,18 +55,23 @@
               </ol>
             {/if}
 
-            {#if settings.showImpliedRelations && square.impliedItems.length}
+            {#if showImpliedRelations && square.impliedItems.length}
               <div class="BC-Matrix-headers">
                 <h4 class="BC-Matrix-header" />
                 {#if square.impliedItems.length}
-                  {#if settings.showRelationType && square.realItems.length}
+                  {#if showRelationType && square.realItems.length}
                     <h6 class="BC-Matrix-header">Implied</h6>
                   {/if}
                 {/if}
               </div>
               <ol start={square.realItems.length + 1}>
                 {#each square.impliedItems as impliedItem}
-                  <li class="BC-Implied">
+                  <li
+                    class="BC-Implied {treatCurrNodeAsImpliedSibling &&
+                    impliedItem.to === currFile.basename
+                      ? 'BC-active-note'
+                      : ''}"
+                  >
                     <div
                       class={impliedItem.cls}
                       on:click={async (e) =>
@@ -69,7 +81,7 @@
                       aria-label={impliedItem.parent
                         ? "↑ " + impliedItem.parent
                         : ""}
-                      aria-label-position={settings.rlLeaf ? "left" : "right"}
+                      aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {impliedItem.alt ??
                         dropPathNDendron(impliedItem.to, settings)}

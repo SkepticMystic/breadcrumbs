@@ -10,6 +10,13 @@
   export let settings: BCSettings;
   export let matrixView: MatrixView;
   export let app: App;
+
+  const {
+    showImpliedRelations,
+    rlLeaf,
+    treatCurrNodeAsImpliedSibling,
+    showRelationType,
+  } = settings;
 </script>
 
 <div
@@ -24,11 +31,11 @@
       >
 
       {#each squares as square}
-        {#if square.realItems.length || (settings.showImpliedRelations && square.impliedItems.length)}
+        {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
           <details open class="BC-details">
             <summary>{square.field}</summary>
             {#if square.realItems.length}
-              {#if settings.showRelationType}
+              {#if showRelationType}
                 <h5 class="BC-header">Real</h5>
               {/if}
 
@@ -48,14 +55,19 @@
               </ol>
             {/if}
 
-            {#if settings.showImpliedRelations && square.impliedItems.length}
-              {#if settings.showRelationType}
+            {#if showImpliedRelations && square.impliedItems.length}
+              {#if showRelationType}
                 <h5 class="BC-header">Implied</h5>
               {/if}
 
               <ol start={square.realItems.length + 1}>
                 {#each square.impliedItems as impliedItem}
-                  <li class="BC-Implied">
+                  <li
+                    class="BC-Implied {treatCurrNodeAsImpliedSibling &&
+                    impliedItem.to === currFile.basename
+                      ? 'BC-active-note'
+                      : ''}"
+                  >
                     <div
                       class={impliedItem.cls}
                       on:click={async (e) =>
@@ -63,7 +75,7 @@
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, impliedItem.to)}
                       aria-label={impliedItem.parent ?? ""}
-                      aria-label-position={settings.rlLeaf ? "left" : "right"}
+                      aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {impliedItem.alt ??
                         dropPathNDendron(impliedItem.to, settings)}
