@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.24.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.23.0...2.24.0) (2022-01-08)
+
+
+### Features
+
+* **Codeblock:** :sparkles: `flat: true` will flatten the results ([a65d0a2](https://github.com/SkepticMystic/breadcrumbs/commit/a65d0a25118ae4849e50d6f166c4993e60198f92))
+* **Codeblock:** :sparkles: Limit depth on type: tree ([144a33c](https://github.com/SkepticMystic/breadcrumbs/commit/144a33c198cf861ea0e14b3e12876d03be2170c8))
+* **List/Matrix View:** :lipstick: Add `BC-active-note` class to current note (Fix [#245](https://github.com/SkepticMystic/breadcrumbs/issues/245)) ([83f8b55](https://github.com/SkepticMystic/breadcrumbs/commit/83f8b552ecad1c648929f8a9dc1088d6f96b90d4))
+
 ## [2.23.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.22.3...2.23.0) (2022-01-08)
 
 
