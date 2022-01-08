@@ -82,6 +82,7 @@ import type {
 import MatrixView from "./MatrixView";
 import {
   createOrUpdateYaml,
+  dropHash,
   dropWikilinks,
   fallbackOppField,
   getBaseFromMDPath,
@@ -1078,19 +1079,19 @@ export default class BCPlugin extends Plugin {
   }
 
   getAllTags = (file: TFile, withHash = true): string[] => {
-    // const test = getAllTags(
-    //   this.app.metadataCache.getFileCache(this.app.workspace.getActiveFile())
-    // );
     const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
-    return [
-      ...(tags?.map((t) => (t.tag.startsWith("#") ? t.tag.slice(1) : t.tag)) ??
-        []),
-      ...[...(frontmatter?.tags ?? [])].flat(),
-      ...[...(frontmatter?.tag ?? [])].flat(),
-    ].map(
-      (t: string) =>
-        (!t.startsWith("#") && withHash ? "#" : "") + t.toLowerCase()
-    );
+    const allTags: string[] = [];
+
+    tags?.forEach((t) => allTags.push(dropHash(t.tag)));
+
+    [frontmatter?.tags ?? []]
+      .flat()
+      .forEach((t: string) => allTags.push(dropHash(t)));
+    [frontmatter?.tag ?? []]
+      .flat()
+      .forEach((t: string) => allTags.push(dropHash(t)));
+
+    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
   };
 
   addTagNotesToGraph(
@@ -1109,7 +1110,7 @@ export default class BCPlugin extends Plugin {
 
       const hasThisTag = (file: TFile): boolean => {
         const allTags = this.getAllTags(file);
-        return altFile[BC_TAG_NOTE_EXACT]
+        return altFile[BC_TAG_NOTE_EXACT] !== undefined
           ? allTags.includes(tag)
           : allTags.some((t) => t.includes(tag));
       };

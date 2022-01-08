@@ -319,3 +319,6 @@ export function strToRegex(input: string) {
     return null;
   }
 }
+
+export const dropHash = (tag: string) =>
+  tag.startsWith("#") ? tag.slice(1) : tag;
