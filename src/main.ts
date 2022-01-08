@@ -92,6 +92,7 @@ import {
   getRealnImplied,
   iterateHiers,
   makeWiki,
+  splitAndTrim,
   splitAtYaml,
   strToRegex,
 } from "./sharedFunctions";
@@ -1084,12 +1085,12 @@ export default class BCPlugin extends Plugin {
 
     tags?.forEach((t) => allTags.push(dropHash(t.tag)));
 
-    [frontmatter?.tags ?? []]
-      .flat()
-      .forEach((t: string) => allTags.push(dropHash(t)));
-    [frontmatter?.tag ?? []]
-      .flat()
-      .forEach((t: string) => allTags.push(dropHash(t)));
+    [frontmatter?.tags ?? []].flat().forEach((t: string) => {
+      splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
+    [frontmatter?.tag ?? []].flat().forEach((t: string) => {
+      splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
 
     return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
   };

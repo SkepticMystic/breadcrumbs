@@ -51831,12 +51831,12 @@ class BCPlugin extends require$$0.Plugin {
             const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
             const allTags = [];
             tags === null || tags === void 0 ? void 0 : tags.forEach((t) => allTags.push(dropHash(t.tag)));
-            [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []]
-                .flat()
-                .forEach((t) => allTags.push(dropHash(t)));
-            [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []]
-                .flat()
-                .forEach((t) => allTags.push(dropHash(t)));
+            [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []].flat().forEach((t) => {
+                splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+            });
+            [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []].flat().forEach((t) => {
+                splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+            });
             return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
         };
         this.getTargetOrder = (frontms, target) => {
