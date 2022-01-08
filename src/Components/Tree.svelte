@@ -11,6 +11,7 @@
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
+  import RenderMarkdown from "./RenderMarkdown.svelte";
 
   export let plugin: BCPlugin;
   export let ctx: MarkdownPostProcessorContext;
@@ -27,18 +28,6 @@
   const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
   const { userHiers } = settings;
   const { basename } = currFile;
-  const nodes: { [note: string]: HTMLElement } = {};
-
-  async function appendContent(note: string) {
-    const node = nodes[note];
-    const file = app.metadataCache.getFirstLinkpathDest(note, "");
-    const content = await app.vault.cachedRead(file);
-    node.createEl("div", {
-      text: content,
-      cls: "BC-note-content",
-      attr: { style: "padding-left: 20px;" },
-    });
-  }
 
   let depthAsNum: number = 1000;
   if (depth !== undefined && depth !== "") {
@@ -73,21 +62,10 @@
 <div class="BC-tree">
   {#each lines as line}
     {#if line.length > 1 && line[0].length / 2 < depthAsNum}
-      {#if content === "true"}
+      {#if content === "open" || content === "closed"}
         <div>
           <pre class="indent">{line[0]}</pre>
-          <details
-            bind:this={nodes[line[1]]}
-            on:click={async (e) => {
-              // I think `open` only gets toggled after this finishes, so check if `!open`
-              if (
-                !e.target.open &&
-                !nodes[line[1]].querySelector(".BC-note-content")
-              ) {
-                await appendContent(line[1]);
-              }
-            }}
-          >
+          <details open={content === "open"}>
             <summary>
               <span
                 class="internal-link"
@@ -106,6 +84,7 @@
                 >
               </span>
             </summary>
+            <RenderMarkdown {app} path={line[1]} />
           </details>
         </div>
       {:else}

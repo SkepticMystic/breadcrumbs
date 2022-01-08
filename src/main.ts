@@ -665,8 +665,8 @@ export default class BCPlugin extends Plugin {
     if (flat !== undefined && flat !== "true")
       err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
 
-    if (content !== undefined && content !== "true")
-      err += `<code>content: ${content}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
+    if (content !== undefined && content !== "open" && content !== "closed")
+      err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
 
     return err === ""
       ? ""
