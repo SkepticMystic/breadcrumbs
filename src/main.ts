@@ -39,7 +39,9 @@ import {
   BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
   BC_TRAVERSE_NOTE,
+  CODEBLOCK_TYPES,
   DEFAULT_SETTINGS,
+  DIRECTIONS,
   DOWN_VIEW,
   dropHeaderOrAlias,
   DUCK_ICON,
@@ -70,6 +72,7 @@ import {
 import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
   BCSettings,
+  CodeblockType,
   Directions,
   dvFrontmatterCache,
   dvLink,
@@ -98,6 +101,7 @@ import {
 } from "./sharedFunctions";
 import StatsView from "./StatsView";
 import { VisModal } from "./VisModal";
+import Tree from "./Components/Tree.svelte";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -579,6 +583,95 @@ export default class BCPlugin extends Plugin {
       "Breadcrumbs Visualisation",
       () => new VisModal(this.app, this).open()
     );
+
+    this.registerMarkdownCodeBlockProcessor(
+      "breadcrumbs",
+      (source, el, ctx) => {
+        const { dir, fields, type, title } = this.parseCodeBlockSource(source);
+        const err = this.codeblockError(dir, fields, type);
+
+        if (err !== "") {
+          el.innerHTML = err;
+          return;
+        }
+
+        switch (type) {
+          case "tree":
+            new Tree({
+              target: el,
+              props: { plugin: this, dir, fields, ctx, el, title },
+            });
+            break;
+        }
+      }
+    );
+  }
+
+  parseCodeBlockSource(source: string): {
+    dir: Directions;
+    fields: string[];
+    title: string;
+    type: CodeblockType;
+  } {
+    const lines = source.split("\n");
+    const getItem = (type: string) =>
+      lines
+        .find((l) => l.startsWith(`${type}:`))
+        ?.split(":")?.[1]
+        ?.trim();
+
+    const dir = getItem("dir") as Directions;
+    const title = getItem("title");
+    const fields = getItem("fields");
+    const type = getItem("type");
+
+    return {
+      dir,
+      type,
+      title,
+      fields: fields ? splitAndTrim(fields) : undefined,
+    };
+  }
+
+  codeblockError(dir: Directions, fields: string[], type: CodeblockType) {
+    const { userHiers } = this.settings;
+    let err = "";
+
+    if (!CODEBLOCK_TYPES.includes(type))
+      err += `<code>${type}</code> is not a valid type. It must be one of: ${CODEBLOCK_TYPES.map(
+        (type) => `<code>${type}</code>`
+      ).join(", ")}.</br>`;
+
+    const validDir = DIRECTIONS.includes(dir);
+    if (!validDir) err += `<code>${dir}</code> is not a valid direction.</br>`;
+
+    const allFields = getFields(userHiers);
+    fields?.forEach((f) => {
+      if (!allFields.includes(f))
+        err += `<code>${f}</code> is not a field in your hierarchies.</br>`;
+    });
+
+    return err === ""
+      ? ""
+      : `${err}</br>
+    A valid example would be:
+    <pre><code>
+      type: tree
+      dir: ${validDir ? dir : "down"}
+      ${
+        validDir
+          ? `fields: ${
+              allFields
+                .map((f) => {
+                  return { f, dir: getFieldInfo(userHiers, f).fieldDir };
+                })
+                .filter((info) => info.dir === dir)
+                .map((info) => info.f)
+                .join(", ") || "child"
+            }`
+          : ""
+      }
+      </code></pre>`;
   }
 
   writeBCToFile = async (file: TFile) => {

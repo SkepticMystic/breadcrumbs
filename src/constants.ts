@@ -48,6 +48,7 @@ export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
+export const CODEBLOCK_TYPES = ["tree"];
 
 export const blankUserHier = (): UserHier => {
   return { up: [], same: [], down: [], next: [], prev: [] };
