@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.25.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.24.0...2.25.0) (2022-01-08)
+
+
+### Features
+
+* **Codeblock:** :sparkles: Use `content: true` to show dropdowns with the note content inside ([95bb202](https://github.com/SkepticMystic/breadcrumbs/commit/95bb202f14e0688f49949b463bca654be087f0b4))
+
 ## [2.24.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.23.0...2.24.0) (2022-01-08)
 
 
