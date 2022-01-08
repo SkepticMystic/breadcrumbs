@@ -1,6 +1,7 @@
 <script lang="ts">
-  import type { MarkdownPostProcessorContext, TFile } from "obsidian";
-  import type BCPlugin from "../main";
+  import { info } from "loglevel";
+  import type { MarkdownPostProcessorContext } from "obsidian";
+  import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
   import {
     dfsAllPaths,
     getOppDir,
@@ -8,12 +9,7 @@
     getSubInDirs,
   } from "../graphUtils";
   import type { Directions } from "../interfaces";
-  import { info } from "loglevel";
-  import {
-    hoverPreview,
-    isInVault,
-    openOrSwitch,
-  } from "obsidian-community-lib/dist/utils";
+  import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
 
   export let plugin: BCPlugin;
@@ -22,6 +18,7 @@
   export let dir: Directions;
   export let fields: string[];
   export let title: string;
+  export let depth: string;
 
   const { settings, app, mainG } = plugin;
   const { sourcePath } = ctx;
@@ -29,6 +26,12 @@
   const { userHiers } = settings;
   const { basename } = currFile;
   const oppDir = getOppDir(dir);
+
+  let depthAsNum: number = 1000;
+  if (depth !== undefined && depth !== "") {
+    const num = parseInt(depth);
+    if (!isNaN(num)) depthAsNum = num;
+  }
 
   const upnDown = getSubInDirs(mainG, dir, oppDir);
   const closed = getReflexiveClosure(upnDown, userHiers);
@@ -52,7 +55,7 @@
 {/if}
 <div class="BC-tree">
   {#each lines as line}
-    {#if line.length > 1}
+    {#if line.length > 1 && line[0].length / 2 < depthAsNum}
       <div style={settings.downViewWrap ? "" : "white-space: nowrap;"}>
         <pre class="indent">{line[0] + "-"}</pre>
         <span
