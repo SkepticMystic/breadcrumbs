@@ -5,6 +5,11 @@
   margin-bottom: 5px !important;
 }
 
+/* completely hides the trail when "no path found message" is left empty and no path is found */
+.BC-trail:empty {
+	display: none;
+}
+
 .BC-matrix-square li {
   text-align: left;
 }
