@@ -25045,7 +25045,10 @@ class MatrixView extends require$$0.ItemView {
                 return;
             contentEl.createEl("button", {
                 text: this.matrixQ ? "List" : "Matrix",
-                attr: { "aria-label": "Mode" },
+                attr: {
+                    "aria-label": "Mode",
+                    style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
+                },
             }, (el) => {
                 el.onclick = async () => {
                     this.matrixQ = !this.matrixQ;
@@ -25053,10 +25056,19 @@ class MatrixView extends require$$0.ItemView {
                     await this.draw();
                 };
             });
-            contentEl.createEl("button", { text: "↻", attr: { "aria-label": "Refresh Index" } }, (el) => (el.onclick = async () => await this.plugin.refreshIndex()));
+            contentEl.createEl("button", {
+                text: "↻",
+                attr: {
+                    "aria-label": "Refresh Index",
+                    style: "padding: 1px 6px 2px 6px;",
+                },
+            }, (el) => (el.onclick = async () => await this.plugin.refreshIndex()));
             contentEl.createEl("button", {
                 text: settings.alphaSortAsc ? "↗" : "↘",
-                attr: { "aria-label": "Alphabetical sorting order" },
+                attr: {
+                    "aria-label": "Alphabetical sorting order",
+                    style: "padding: 1px 6px 2px 6px;",
+                },
             }, (el) => {
                 el.onclick = async () => {
                     this.plugin.settings.alphaSortAsc =
@@ -27178,18 +27190,18 @@ class FaRegSnowflake extends SvelteComponent {
 
 function add_css$5() {
 	var style = element("style");
-	style.id = "svelte-1mg8nz0-style";
-	style.textContent = ".BC-downs.svelte-1mg8nz0{padding-left:5px}pre.svelte-1mg8nz0{display:inline}.is-unresolved.svelte-1mg8nz0{color:var(--text-muted)}.icon.svelte-1mg8nz0{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
+	style.id = "svelte-66659j-style";
+	style.textContent = "button.svelte-66659j.svelte-66659j{display:inline;padding:1px 6px 2px 6px}.dir-grid.svelte-66659j.svelte-66659j{display:grid;grid-template-columns:repeat(3, 1fr)}.dir-grid.svelte-66659j span.svelte-66659j{border:1px solid var(--background-modifier-border)}.dir-grid.svelte-66659j .dir.svelte-66659j{text-align:center}.active-dir.svelte-66659j.svelte-66659j{color:var(--text-accent);font-weight:bolder}.BC-downs.svelte-66659j.svelte-66659j{padding-left:5px}pre.svelte-66659j.svelte-66659j{display:inline}.is-unresolved.svelte-66659j.svelte-66659j{color:var(--text-muted)}.icon.svelte-66659j.svelte-66659j{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
 	append(document.head, style);
 }
 
 function get_each_context$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[11] = list[i];
+	child_ctx[18] = list[i];
 	return child_ctx;
 }
 
-// (52:4) {:else}
+// (55:4) {:else}
 function create_else_block$2(ctx) {
 	let fafire;
 	let current;
@@ -27218,7 +27230,7 @@ function create_else_block$2(ctx) {
 	};
 }
 
-// (50:4) {#if frozen}
+// (53:4) {#if frozen}
 function create_if_block_1$2(ctx) {
 	let faregsnowflake;
 	let current;
@@ -27247,16 +27259,16 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (68:4) {#if line.length > 1}
+// (99:4) {#if line.length > 1}
 function create_if_block$2(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[11][0] + "-" + "";
+	let t0_value = /*line*/ ctx[18][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[11][1], /*settings*/ ctx[5]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[18][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -27264,12 +27276,12 @@ function create_if_block$2(ctx) {
 	let mounted;
 	let dispose;
 
-	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[8](/*line*/ ctx[11], ...args);
+	function click_handler_7(...args) {
+		return /*click_handler_7*/ ctx[15](/*line*/ ctx[18], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[9](/*line*/ ctx[11], ...args);
+		return /*mouseover_handler*/ ctx[16](/*line*/ ctx[18], ...args);
 	}
 
 	return {
@@ -27282,15 +27294,15 @@ function create_if_block$2(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-1mg8nz0");
+			attr(pre, "class", "svelte-66659j");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[18][1])
 			? ""
-			: "is-unresolved") + " svelte-1mg8nz0");
+			: "is-unresolved") + " svelte-66659j");
 
 			attr(span, "class", "internal-link");
 
-			attr(div, "style", div_style_value = /*settings*/ ctx[5].downViewWrap
+			attr(div, "style", div_style_value = /*settings*/ ctx[6].downViewWrap
 			? ""
 			: "white-space: nowrap;");
 		},
@@ -27306,7 +27318,7 @@ function create_if_block$2(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", click_handler_2),
+					listen(span, "click", click_handler_7),
 					listen(span, "mouseover", mouseover_handler)
 				];
 
@@ -27315,12 +27327,12 @@ function create_if_block$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*line*/ ctx[11][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[11][1], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[18][0] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[18][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[11][1])
+			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[18][1])
 			? ""
-			: "is-unresolved") + " svelte-1mg8nz0")) {
+			: "is-unresolved") + " svelte-66659j")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -27332,10 +27344,10 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (67:2) {#each lines as line}
+// (98:2) {#each lines as line}
 function create_each_block$4(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[11].length > 1 && create_if_block$2(ctx);
+	let if_block = /*line*/ ctx[18].length > 1 && create_if_block$2(ctx);
 
 	return {
 		c() {
@@ -27347,7 +27359,7 @@ function create_each_block$4(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[11].length > 1) {
+			if (/*line*/ ctx[18].length > 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -27369,13 +27381,43 @@ function create_each_block$4(ctx) {
 
 function create_fragment$7(ctx) {
 	let div0;
-	let span;
+	let span0;
 	let current_block_type_index;
 	let if_block;
-	let span_aria_label_value;
+	let span0_aria_label_value;
 	let t0;
 	let button;
 	let t2;
+	let span11;
+	let span10;
+	let span1;
+	let t3;
+	let span2;
+	let t4;
+	let span2_class_value;
+	let t5;
+	let span3;
+	let t6;
+	let span4;
+	let t7;
+	let span4_class_value;
+	let t8;
+	let span5;
+	let t9;
+	let span5_class_value;
+	let t10;
+	let span6;
+	let t11;
+	let span6_class_value;
+	let t12;
+	let span7;
+	let t13;
+	let span8;
+	let t14;
+	let span8_class_value;
+	let t15;
+	let span9;
+	let t16;
 	let div1;
 	let current;
 	let mounted;
@@ -27384,13 +27426,13 @@ function create_fragment$7(ctx) {
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
-		if (/*frozen*/ ctx[3]) return 0;
+		if (/*frozen*/ ctx[4]) return 0;
 		return 1;
 	}
 
 	current_block_type_index = select_block_type(ctx);
 	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-	let each_value = /*lines*/ ctx[4];
+	let each_value = /*lines*/ ctx[5];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -27400,35 +27442,97 @@ function create_fragment$7(ctx) {
 	return {
 		c() {
 			div0 = element("div");
-			span = element("span");
+			span0 = element("span");
 			if_block.c();
 			t0 = space();
 			button = element("button");
 			button.textContent = "↻";
 			t2 = space();
+			span11 = element("span");
+			span10 = element("span");
+			span1 = element("span");
+			t3 = space();
+			span2 = element("span");
+			t4 = text("↑");
+			t5 = space();
+			span3 = element("span");
+			t6 = space();
+			span4 = element("span");
+			t7 = text("←");
+			t8 = space();
+			span5 = element("span");
+			t9 = text("↔");
+			t10 = space();
+			span6 = element("span");
+			t11 = text("→");
+			t12 = space();
+			span7 = element("span");
+			t13 = space();
+			span8 = element("span");
+			t14 = text("↓");
+			t15 = space();
+			span9 = element("span");
+			t16 = space();
 			div1 = element("div");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			attr(span, "class", "icon svelte-1mg8nz0");
+			attr(span0, "class", "icon svelte-66659j");
 
-			attr(span, "aria-label", span_aria_label_value = /*frozen*/ ctx[3]
-			? `Frozen on: ${/*basename*/ ctx[2]}`
+			attr(span0, "aria-label", span0_aria_label_value = /*frozen*/ ctx[4]
+			? `Frozen on: ${/*basename*/ ctx[3]}`
 			: "Unfrozen");
 
-			attr(span, "aria-label-position", "left");
+			attr(span0, "aria-label-position", "left");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(div1, "class", "BC-downs svelte-1mg8nz0");
+			attr(button, "class", "svelte-66659j");
+			attr(span1, "class", "filler svelte-66659j");
+			attr(span2, "class", span2_class_value = "dir " + (/*dir*/ ctx[2] === "up" ? "active-dir" : "") + " svelte-66659j");
+			attr(span3, "class", "filler svelte-66659j");
+			attr(span4, "class", span4_class_value = "dir " + (/*dir*/ ctx[2] === "prev" ? "active-dir" : "") + " svelte-66659j");
+			attr(span5, "class", span5_class_value = "dir " + (/*dir*/ ctx[2] === "same" ? "active-dir" : "") + " svelte-66659j");
+			attr(span6, "class", span6_class_value = "dir " + (/*dir*/ ctx[2] === "next" ? "active-dir" : "") + " svelte-66659j");
+			attr(span7, "class", "filler svelte-66659j");
+			attr(span8, "class", span8_class_value = "dir " + (/*dir*/ ctx[2] === "down" ? "active-dir" : "") + " svelte-66659j");
+			attr(span9, "class", "filler svelte-66659j");
+			attr(span10, "class", "dir-grid svelte-66659j");
+			attr(span11, "class", "grid-container");
+			attr(div1, "class", "BC-downs svelte-66659j");
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);
-			append(div0, span);
-			if_blocks[current_block_type_index].m(span, null);
+			append(div0, span0);
+			if_blocks[current_block_type_index].m(span0, null);
 			append(div0, t0);
 			append(div0, button);
-			insert(target, t2, anchor);
+			append(div0, t2);
+			append(div0, span11);
+			append(span11, span10);
+			append(span10, span1);
+			append(span10, t3);
+			append(span10, span2);
+			append(span2, t4);
+			append(span10, t5);
+			append(span10, span3);
+			append(span10, t6);
+			append(span10, span4);
+			append(span4, t7);
+			append(span10, t8);
+			append(span10, span5);
+			append(span5, t9);
+			append(span10, t10);
+			append(span10, span6);
+			append(span6, t11);
+			append(span10, t12);
+			append(span10, span7);
+			append(span10, t13);
+			append(span10, span8);
+			append(span8, t14);
+			append(span10, t15);
+			append(span10, span9);
+			insert(target, t16, anchor);
 			insert(target, div1, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -27439,8 +27543,13 @@ function create_fragment$7(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", /*click_handler*/ ctx[6]),
-					listen(button, "click", /*click_handler_1*/ ctx[7])
+					listen(span0, "click", /*click_handler*/ ctx[8]),
+					listen(button, "click", /*click_handler_1*/ ctx[9]),
+					listen(span2, "click", /*click_handler_2*/ ctx[10]),
+					listen(span4, "click", /*click_handler_3*/ ctx[11]),
+					listen(span5, "click", /*click_handler_4*/ ctx[12]),
+					listen(span6, "click", /*click_handler_5*/ ctx[13]),
+					listen(span8, "click", /*click_handler_6*/ ctx[14])
 				];
 
 				mounted = true;
@@ -27466,17 +27575,37 @@ function create_fragment$7(ctx) {
 				}
 
 				transition_in(if_block, 1);
-				if_block.m(span, null);
+				if_block.m(span0, null);
 			}
 
-			if (!current || dirty & /*frozen, basename*/ 12 && span_aria_label_value !== (span_aria_label_value = /*frozen*/ ctx[3]
-			? `Frozen on: ${/*basename*/ ctx[2]}`
+			if (!current || dirty & /*frozen, basename*/ 24 && span0_aria_label_value !== (span0_aria_label_value = /*frozen*/ ctx[4]
+			? `Frozen on: ${/*basename*/ ctx[3]}`
 			: "Unfrozen")) {
-				attr(span, "aria-label", span_aria_label_value);
+				attr(span0, "aria-label", span0_aria_label_value);
 			}
 
-			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault, dropDendron*/ 51) {
-				each_value = /*lines*/ ctx[4];
+			if (!current || dirty & /*dir*/ 4 && span2_class_value !== (span2_class_value = "dir " + (/*dir*/ ctx[2] === "up" ? "active-dir" : "") + " svelte-66659j")) {
+				attr(span2, "class", span2_class_value);
+			}
+
+			if (!current || dirty & /*dir*/ 4 && span4_class_value !== (span4_class_value = "dir " + (/*dir*/ ctx[2] === "prev" ? "active-dir" : "") + " svelte-66659j")) {
+				attr(span4, "class", span4_class_value);
+			}
+
+			if (!current || dirty & /*dir*/ 4 && span5_class_value !== (span5_class_value = "dir " + (/*dir*/ ctx[2] === "same" ? "active-dir" : "") + " svelte-66659j")) {
+				attr(span5, "class", span5_class_value);
+			}
+
+			if (!current || dirty & /*dir*/ 4 && span6_class_value !== (span6_class_value = "dir " + (/*dir*/ ctx[2] === "next" ? "active-dir" : "") + " svelte-66659j")) {
+				attr(span6, "class", span6_class_value);
+			}
+
+			if (!current || dirty & /*dir*/ 4 && span8_class_value !== (span8_class_value = "dir " + (/*dir*/ ctx[2] === "down" ? "active-dir" : "") + " svelte-66659j")) {
+				attr(span8, "class", span8_class_value);
+			}
+
+			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault, dropDendron*/ 99) {
+				each_value = /*lines*/ ctx[5];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -27510,7 +27639,7 @@ function create_fragment$7(ctx) {
 		d(detaching) {
 			if (detaching) detach(div0);
 			if_blocks[current_block_type_index].d();
-			if (detaching) detach(t2);
+			if (detaching) detach(t16);
 			if (detaching) detach(div1);
 			destroy_each(each_blocks, detaching);
 			mounted = false;
@@ -27520,25 +27649,28 @@ function create_fragment$7(ctx) {
 }
 
 function instance$7($$self, $$props, $$invalidate) {
+	let oppDir;
+	
 	
 	
 	let { plugin } = $$props;
 	let { view } = $$props;
 	const { settings } = plugin;
 	const { userHiers } = settings;
+	let dir = "down";
 	let frozen = false;
 	let { basename } = plugin.app.workspace.getActiveFile();
 
 	plugin.app.workspace.on("active-leaf-change", () => {
 		if (frozen) return;
-		$$invalidate(2, basename = plugin.app.workspace.getActiveFile().basename);
+		$$invalidate(3, basename = plugin.app.workspace.getActiveFile().basename);
 	});
 
 	let lines;
 
 	const click_handler = () => {
-		$$invalidate(3, frozen = !frozen);
-		if (!frozen) $$invalidate(2, basename = plugin.app.workspace.getActiveFile().basename);
+		$$invalidate(4, frozen = !frozen);
+		if (!frozen) $$invalidate(3, basename = plugin.app.workspace.getActiveFile().basename);
 	};
 
 	const click_handler_1 = async () => {
@@ -27546,7 +27678,12 @@ function instance$7($$self, $$props, $$invalidate) {
 		await view.draw();
 	};
 
-	const click_handler_2 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
+	const click_handler_2 = () => $$invalidate(2, dir = "up");
+	const click_handler_3 = () => $$invalidate(2, dir = "prev");
+	const click_handler_4 = () => $$invalidate(2, dir = "same");
+	const click_handler_5 = () => $$invalidate(2, dir = "next");
+	const click_handler_6 = () => $$invalidate(2, dir = "down");
+	const click_handler_7 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
 	const mouseover_handler = (line, e) => hoverPreview(e, view, line[1]);
 
 	$$self.$$set = $$props => {
@@ -27555,17 +27692,21 @@ function instance$7($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*plugin, basename*/ 5) {
+		if ($$self.$$.dirty & /*dir*/ 4) {
+			$$invalidate(7, oppDir = getOppDir(dir));
+		}
+
+		if ($$self.$$.dirty & /*plugin, dir, oppDir, basename*/ 141) {
 			{
 				const { mainG } = plugin;
-				const upnDown = getSubInDirs(mainG, "up", "down");
+				const upnDown = getSubInDirs(mainG, dir, oppDir);
 				const closed = getReflexiveClosure(upnDown, userHiers);
-				const down = getSubInDirs(closed, "down");
+				const down = getSubInDirs(closed, dir);
 				const allPaths = dfsAllPaths(down, basename);
 				const index = plugin.createIndex(allPaths, false);
 				loglevel.info({ allPaths, index });
 
-				$$invalidate(4, lines = index.split("\n").map(line => {
+				$$invalidate(5, lines = index.split("\n").map(line => {
 					const pair = line.split("- ");
 					return [pair[0], pair.slice(1).join("- ")];
 				}).filter(pair => pair[1] !== ""));
@@ -27576,13 +27717,20 @@ function instance$7($$self, $$props, $$invalidate) {
 	return [
 		plugin,
 		view,
+		dir,
 		basename,
 		frozen,
 		lines,
 		settings,
+		oppDir,
 		click_handler,
 		click_handler_1,
 		click_handler_2,
+		click_handler_3,
+		click_handler_4,
+		click_handler_5,
+		click_handler_6,
+		click_handler_7,
 		mouseover_handler
 	];
 }
@@ -27590,7 +27738,7 @@ function instance$7($$self, $$props, $$invalidate) {
 class Down extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1mg8nz0-style")) add_css$5();
+		if (!document.getElementById("svelte-66659j-style")) add_css$5();
 		init(this, options, instance$7, create_fragment$7, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }
@@ -51899,7 +52047,7 @@ class RenderMarkdown extends SvelteComponent {
 	}
 }
 
-/* src\Components\Tree.svelte generated by Svelte v3.35.0 */
+/* src\Components\CBTree.svelte generated by Svelte v3.35.0 */
 
 function add_css() {
 	var style = element("style");
@@ -52447,7 +52595,7 @@ function instance($$self, $$props, $$invalidate) {
 	];
 }
 
-class Tree extends SvelteComponent {
+class CBTree extends SvelteComponent {
 	constructor(options) {
 		super();
 		if (!document.getElementById("svelte-yt7jmz-style")) add_css();
@@ -52914,7 +53062,7 @@ class BCPlugin extends require$$0.Plugin {
             const { dir, fields, type, title, depth, flat } = parsedSource;
             switch (type) {
                 case "tree":
-                    new Tree({
+                    new CBTree({
                         target: el,
                         props: Object.assign({ plugin: this, ctx,
                             el }, parsedSource),

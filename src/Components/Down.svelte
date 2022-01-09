@@ -10,11 +10,13 @@
   import type DownView from "../DownView";
   import {
     dfsAllPaths,
+    getOppDir,
     getReflexiveClosure,
     getSubInDirs,
   } from "../graphUtils";
   import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
+  import type { Directions } from "../interfaces";
 
   export let plugin: BCPlugin;
   export let view: DownView;
@@ -22,6 +24,8 @@
   const { settings } = plugin;
   const { userHiers } = settings;
 
+  let dir: Directions = "down";
+  $: oppDir = getOppDir(dir);
   let frozen = false;
   let { basename } = plugin.app.workspace.getActiveFile();
 
@@ -33,9 +37,9 @@
   let lines: [string, string][];
   $: {
     const { mainG } = plugin;
-    const upnDown = getSubInDirs(mainG, "up", "down");
+    const upnDown = getSubInDirs(mainG, dir, oppDir);
     const closed = getReflexiveClosure(upnDown, userHiers);
-    const down = getSubInDirs(closed, "down");
+    const down = getSubInDirs(closed, dir);
 
     const allPaths = dfsAllPaths(down, basename);
     const index = plugin.createIndex(allPaths, false);
@@ -77,6 +81,34 @@
   >
     ↻
   </button>
+  <span class="grid-container">
+    <span class="dir-grid">
+      <span class="filler" />
+      <span
+        class="dir {dir === 'up' ? 'active-dir' : ''}"
+        on:click={() => (dir = "up")}>↑</span
+      >
+      <span class="filler" />
+      <span
+        class="dir {dir === 'prev' ? 'active-dir' : ''}"
+        on:click={() => (dir = "prev")}>←</span
+      >
+      <span
+        class="dir {dir === 'same' ? 'active-dir' : ''}"
+        on:click={() => (dir = "same")}>↔</span
+      >
+      <span
+        class="dir {dir === 'next' ? 'active-dir' : ''}"
+        on:click={() => (dir = "next")}>→</span
+      >
+      <span class="filler" />
+      <span
+        class="dir {dir === 'down' ? 'active-dir' : ''}"
+        on:click={() => (dir = "down")}>↓</span
+      >
+      <span class="filler" />
+    </span>
+  </span>
 </div>
 <div class="BC-downs">
   {#each lines as line}
@@ -101,6 +133,28 @@
 </div>
 
 <style>
+  button {
+    display: inline;
+    padding: 1px 6px 2px 6px;
+  }
+
+  .dir-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dir-grid span {
+    border: 1px solid var(--background-modifier-border);
+  }
+
+  .dir-grid .dir {
+    text-align: center;
+  }
+
+  .active-dir {
+    color: var(--text-accent);
+    font-weight: bolder;
+  }
   .BC-downs {
     padding-left: 5px;
   }
