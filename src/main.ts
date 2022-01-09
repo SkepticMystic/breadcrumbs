@@ -104,7 +104,7 @@ import {
 } from "./sharedFunctions";
 import StatsView from "./StatsView";
 import { VisModal } from "./VisModal";
-import Tree from "./Components/Tree.svelte";
+import CBTree from "./Components/CBTree.svelte";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -603,7 +603,7 @@ export default class BCPlugin extends Plugin {
 
         switch (type) {
           case "tree":
-            new Tree({
+            new CBTree({
               target: el,
               props: {
                 plugin: this,
