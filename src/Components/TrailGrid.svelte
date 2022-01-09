@@ -13,10 +13,12 @@
   import type BCPlugin from "../main";
   import {
     dropDendron,
+    getAlt,
     linkClass,
     normalise,
     padArray,
     runs,
+    splitAndTrim,
     transpose,
   } from "../sharedFunctions";
   export let sortedTrails: string[][];
@@ -114,7 +116,7 @@
         on:mouseover={(e) => hoverPreview(e, activeLeafView, step.value)}
       >
         <div class={linkClass(app, step.value)}>
-          {dropDendron(step.value, settings)}
+          {getAlt(step.value, plugin) ?? dropDendron(step.value, settings)}
         </div>
         {#if step.value && settings.gridDots}
           <div class="dots">

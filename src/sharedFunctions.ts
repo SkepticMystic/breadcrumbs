@@ -322,3 +322,21 @@ export function strToRegex(input: string) {
 
 export const dropHash = (tag: string) =>
   tag.startsWith("#") ? tag.slice(1) : tag;
+
+export function getAlt(node: string, plugin: BCPlugin): string | null {
+  const { app } = plugin;
+  const { altLinkFields, showAllAliases } = plugin.settings;
+  if (altLinkFields.length) {
+    const file = app.metadataCache.getFirstLinkpathDest(node, "");
+    if (file) {
+      const metadata = app.metadataCache.getFileCache(file);
+      for (const altField of altLinkFields) {
+        const value = metadata?.frontmatter?.[altField];
+
+        const arr: string[] =
+          typeof value === "string" ? splitAndTrim(value) : value;
+        if (value) return showAllAliases ? arr.join(", ") : arr[0];
+      }
+    }
+  } else return null;
+}

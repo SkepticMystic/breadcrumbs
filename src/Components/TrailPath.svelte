@@ -4,7 +4,7 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import { dropDendron } from "../sharedFunctions";
+  import { dropDendron, getAlt, splitAndTrim } from "../sharedFunctions";
   import type BCPlugin from "../main";
 
   export let sortedTrails: string[][];
@@ -32,7 +32,7 @@
               on:click={async (e) => await openOrSwitch(app, crumb, e)}
               on:mouseover={(e) => hoverPreview(e, view, crumb)}
             >
-              {dropDendron(crumb, settings)}
+              {getAlt(crumb, plugin) ?? dropDendron(crumb, settings)}
             </span>
             {#if i < trail.length - 1}
               <span>{" " + settings.trailSeperator + " "}</span>
