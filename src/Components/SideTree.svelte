@@ -17,6 +17,7 @@
   import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
   import type TreeView from "../TreeView";
+  import { DIRECTIONS } from "../constants";
 
   export let plugin: BCPlugin;
   export let view: TreeView;
@@ -55,61 +56,39 @@
   }
 </script>
 
-<div>
-  <!-- svelte-ignore a11y-unknown-aria-attribute -->
-  <span
-    class="icon"
-    aria-label={frozen ? `Frozen on: ${basename}` : "Unfrozen"}
-    aria-label-position="left"
-    on:click={() => {
-      frozen = !frozen;
-      if (!frozen) basename = plugin.app.workspace.getActiveFile().basename;
-    }}
-  >
-    {#if frozen}
-      <FaRegSnowflake />
-    {:else}
-      <FaFire />
-    {/if}
-  </span>
-  <button
-    aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
-    on:click={async () => {
-      await plugin.refreshIndex();
-      await view.draw();
-    }}
-  >
-    ↻
-  </button>
-  <span class="grid-container">
-    <span class="dir-grid">
-      <span class="filler" />
-      <span
-        class="dir {dir === 'up' ? 'active-dir' : ''}"
-        on:click={() => (dir = "up")}>↑</span
-      >
-      <span class="filler" />
-      <span
-        class="dir {dir === 'prev' ? 'active-dir' : ''}"
-        on:click={() => (dir = "prev")}>←</span
-      >
-      <span
-        class="dir {dir === 'same' ? 'active-dir' : ''}"
-        on:click={() => (dir = "same")}>↔</span
-      >
-      <span
-        class="dir {dir === 'next' ? 'active-dir' : ''}"
-        on:click={() => (dir = "next")}>→</span
-      >
-      <span class="filler" />
-      <span
-        class="dir {dir === 'down' ? 'active-dir' : ''}"
-        on:click={() => (dir = "down")}>↓</span
-      >
-      <span class="filler" />
-    </span>
-  </span>
-</div>
+<!-- svelte-ignore a11y-unknown-aria-attribute -->
+<span
+  class="icon"
+  aria-label={frozen ? `Frozen on: ${basename}` : "Unfrozen"}
+  aria-label-position="left"
+  on:click={() => {
+    frozen = !frozen;
+    if (!frozen) basename = plugin.app.workspace.getActiveFile().basename;
+  }}
+>
+  {#if frozen}
+    <FaRegSnowflake />
+  {:else}
+    <FaFire />
+  {/if}
+</span>
+
+<button
+  aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
+  on:click={async () => {
+    await plugin.refreshIndex();
+    await view.draw();
+  }}
+>
+  ↻
+</button>
+
+<select class="dropdown" bind:value={dir}>
+  {#each DIRECTIONS as direction}
+    <option value={direction}>{direction}</option>
+  {/each}
+</select>
+
 <div class="BC-downs">
   {#each lines as line}
     {#if line.length > 1}
@@ -138,23 +117,6 @@
     padding: 1px 6px 2px 6px;
   }
 
-  .dir-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .dir-grid span {
-    border: 1px solid var(--background-modifier-border);
-  }
-
-  .dir-grid .dir {
-    text-align: center;
-  }
-
-  .active-dir {
-    color: var(--text-accent);
-    font-weight: 900 !important;
-  }
   .BC-downs {
     padding-left: 5px;
   }

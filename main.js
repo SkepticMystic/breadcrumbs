@@ -23052,14 +23052,14 @@ function get_each_context$a(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$7(ctx, list, i) {
+function get_each_context_1$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
 // (93:6) {#each DIRECTIONS as dir}
-function create_each_block_1$7(ctx) {
+function create_each_block_1$8(ctx) {
 	let div;
 	let label;
 	let t0_value = ARROW_DIRECTIONS[/*dir*/ ctx[15]] + "";
@@ -23155,7 +23155,7 @@ function create_each_block$a(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$7(get_each_context_1$7(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$8(get_each_context_1$8(ctx, each_value_1, i));
 	}
 
 	return {
@@ -23228,12 +23228,12 @@ function create_each_block$a(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$7(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$8(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$7(child_ctx);
+						each_blocks[i] = create_each_block_1$8(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(details, t8);
 					}
@@ -23520,7 +23520,7 @@ function get_each_context$9(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$6(ctx, list, i) {
+function get_each_context_1$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[16] = list[i];
 	return child_ctx;
@@ -23914,7 +23914,7 @@ function create_each_block_2$3(ctx) {
 }
 
 // (25:6) {#each squares as square}
-function create_each_block_1$6(ctx) {
+function create_each_block_1$7(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$6(ctx);
 
@@ -23960,7 +23960,7 @@ function create_each_block$9(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$6(get_each_context_1$6(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$7(get_each_context_1$7(ctx, each_value_1, i));
 	}
 
 	return {
@@ -23998,12 +23998,12 @@ function create_each_block$9(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$6(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$7(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$6(child_ctx);
+						each_blocks[i] = create_each_block_1$7(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(details, t2);
 					}
@@ -24163,7 +24163,7 @@ function get_each_context$8(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$5(ctx, list, i) {
+function get_each_context_1$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[16] = list[i];
 	return child_ctx;
@@ -24633,7 +24633,7 @@ function create_each_block_2$2(ctx) {
 }
 
 // (21:6) {#each squares as square}
-function create_each_block_1$5(ctx) {
+function create_each_block_1$6(ctx) {
 	let if_block_anchor;
 	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$5(ctx);
 
@@ -24675,7 +24675,7 @@ function create_each_block$8(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$5(get_each_context_1$5(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$6(get_each_context_1$6(ctx, each_value_1, i));
 	}
 
 	return {
@@ -24704,12 +24704,12 @@ function create_each_block$8(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$5(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$6(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$5(child_ctx);
+						each_blocks[i] = create_each_block_1$6(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div, t);
 					}
@@ -26619,14 +26619,14 @@ function get_each_context$6(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$4(ctx, list, i) {
+function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[9] = list[i];
 	return child_ctx;
 }
 
 // (15:6) {#each prev as p}
-function create_each_block_1$4(ctx) {
+function create_each_block_1$5(ctx) {
 	let div;
 	let strong;
 	let t0_value = /*p*/ ctx[9].field + "";
@@ -26752,7 +26752,7 @@ function create_fragment$a(ctx) {
 	let each_blocks_1 = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks_1[i] = create_each_block_1$4(get_each_context_1$4(ctx, each_value_1, i));
+		each_blocks_1[i] = create_each_block_1$5(get_each_context_1$5(ctx, each_value_1, i));
 	}
 
 	let each_value = /*next*/ ctx[1];
@@ -26807,12 +26807,12 @@ function create_fragment$a(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$4(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$5(ctx, each_value_1, i);
 
 					if (each_blocks_1[i]) {
 						each_blocks_1[i].p(child_ctx, dirty);
 					} else {
-						each_blocks_1[i] = create_each_block_1$4(child_ctx);
+						each_blocks_1[i] = create_each_block_1$5(child_ctx);
 						each_blocks_1[i].c();
 						each_blocks_1[i].m(span0, null);
 					}
@@ -26903,7 +26903,7 @@ function get_each_context$5(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$3(ctx, list, i) {
+function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[24] = list[i];
 	return child_ctx;
@@ -26994,7 +26994,7 @@ function create_each_block_2$1(ctx) {
 }
 
 // (64:4) {#each allRuns[i] as step}
-function create_each_block_1$3(ctx) {
+function create_each_block_1$4(ctx) {
 	let div1;
 	let div0;
 	let t0_value = dropDendron(/*step*/ ctx[24].value, /*settings*/ ctx[4]) + "";
@@ -27079,7 +27079,7 @@ function create_each_block$5(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$3(get_each_context_1$3(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$4(get_each_context_1$4(ctx, each_value_1, i));
 	}
 
 	return {
@@ -27103,12 +27103,12 @@ function create_each_block$5(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$3(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$4(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$3(child_ctx);
+						each_blocks[i] = create_each_block_1$4(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
 					}
@@ -27302,7 +27302,7 @@ function get_each_context$4(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$2(ctx, list, i) {
+function get_each_context_1$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[13] = list[i];
 	child_ctx[15] = i;
@@ -27316,7 +27316,7 @@ function create_else_block$2(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$2(get_each_context_1$2(ctx, each_value_1, i));
+		each_blocks[i] = create_each_block_1$3(get_each_context_1$3(ctx, each_value_1, i));
 	}
 
 	return {
@@ -27340,12 +27340,12 @@ function create_else_block$2(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$2(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$3(ctx, each_value_1, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_1$2(child_ctx);
+						each_blocks[i] = create_each_block_1$3(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
 					}
@@ -27404,7 +27404,7 @@ function create_if_block_2$1(ctx) {
 }
 
 // (21:10) {#each trail as crumb, i}
-function create_each_block_1$2(ctx) {
+function create_each_block_1$3(ctx) {
 	let span;
 	let t0_value = dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[4]) + "";
 	let t0;
@@ -28722,7 +28722,7 @@ function get_each_context$2(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_1$1(ctx, list, i) {
+function get_each_context_1$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[28] = list[i];
 	return child_ctx;
@@ -29247,7 +29247,7 @@ function create_each_block_2(ctx) {
 }
 
 // (213:4) {#each DIRECTIONS as dir}
-function create_each_block_1$1(ctx) {
+function create_each_block_1$2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_5)) + "";
 	let t0;
@@ -29409,7 +29409,7 @@ function create_fragment$4(ctx) {
 	let each_blocks_1 = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks_1[i] = create_each_block_1$1(get_each_context_1$1(ctx, each_value_1, i));
+		each_blocks_1[i] = create_each_block_1$2(get_each_context_1$2(ctx, each_value_1, i));
 	}
 
 	let each_value = DIRECTIONS$1;
@@ -29639,12 +29639,12 @@ function create_fragment$4(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$1(ctx, each_value_1, i);
+					const child_ctx = get_each_context_1$2(ctx, each_value_1, i);
 
 					if (each_blocks_1[i]) {
 						each_blocks_1[i].p(child_ctx, dirty);
 					} else {
-						each_blocks_1[i] = create_each_block_1$1(child_ctx);
+						each_blocks_1[i] = create_each_block_1$2(child_ctx);
 						each_blocks_1[i].c();
 						each_blocks_1[i].m(tr3, null);
 					}
@@ -30041,18 +30041,24 @@ class FaRegSnowflake extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-9qgrmh-style";
-	style.textContent = "button.svelte-9qgrmh.svelte-9qgrmh{display:inline;padding:1px 6px 2px 6px}.dir-grid.svelte-9qgrmh.svelte-9qgrmh{display:grid;grid-template-columns:repeat(3, 1fr)}.dir-grid.svelte-9qgrmh span.svelte-9qgrmh{border:1px solid var(--background-modifier-border)}.dir-grid.svelte-9qgrmh .dir.svelte-9qgrmh{text-align:center}.active-dir.svelte-9qgrmh.svelte-9qgrmh{color:var(--text-accent);font-weight:900 !important}.BC-downs.svelte-9qgrmh.svelte-9qgrmh{padding-left:5px}pre.svelte-9qgrmh.svelte-9qgrmh{display:inline}.is-unresolved.svelte-9qgrmh.svelte-9qgrmh{color:var(--text-muted)}.icon.svelte-9qgrmh.svelte-9qgrmh{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
+	style.id = "svelte-7s7d25-style";
+	style.textContent = "button.svelte-7s7d25{display:inline;padding:1px 6px 2px 6px}.BC-downs.svelte-7s7d25{padding-left:5px}pre.svelte-7s7d25{display:inline}.is-unresolved.svelte-7s7d25{color:var(--text-muted)}.icon.svelte-7s7d25{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
 	append(document.head, style);
 }
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[18] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
-// (55:4) {:else}
+function get_each_context_1$1(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[17] = list[i];
+	return child_ctx;
+}
+
+// (55:2) {:else}
 function create_else_block(ctx) {
 	let fafire;
 	let current;
@@ -30081,7 +30087,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (53:4) {#if frozen}
+// (53:2) {#if frozen}
 function create_if_block_1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -30110,16 +30116,41 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (99:4) {#if line.length > 1}
+// (71:2) {#each DIRECTIONS as direction}
+function create_each_block_1$1(ctx) {
+	let option;
+	let t_value = /*direction*/ ctx[17] + "";
+	let t;
+	let option_value_value;
+
+	return {
+		c() {
+			option = element("option");
+			t = text(t_value);
+			option.__value = option_value_value = /*direction*/ ctx[17];
+			option.value = option.__value;
+		},
+		m(target, anchor) {
+			insert(target, option, anchor);
+			append(option, t);
+		},
+		p: noop,
+		d(detaching) {
+			if (detaching) detach(option);
+		}
+	};
+}
+
+// (78:4) {#if line.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[18][0] + "-" + "";
+	let t0_value = /*line*/ ctx[14][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[18][1], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -30127,12 +30158,12 @@ function create_if_block(ctx) {
 	let mounted;
 	let dispose;
 
-	function click_handler_7(...args) {
-		return /*click_handler_7*/ ctx[15](/*line*/ ctx[18], ...args);
+	function click_handler_2(...args) {
+		return /*click_handler_2*/ ctx[11](/*line*/ ctx[14], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[16](/*line*/ ctx[18], ...args);
+		return /*mouseover_handler*/ ctx[12](/*line*/ ctx[14], ...args);
 	}
 
 	return {
@@ -30145,11 +30176,11 @@ function create_if_block(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-9qgrmh");
+			attr(pre, "class", "svelte-7s7d25");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[18][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[14][1])
 			? ""
-			: "is-unresolved") + " svelte-9qgrmh");
+			: "is-unresolved") + " svelte-7s7d25");
 
 			attr(span, "class", "internal-link");
 
@@ -30169,7 +30200,7 @@ function create_if_block(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", click_handler_7),
+					listen(span, "click", click_handler_2),
 					listen(span, "mouseover", mouseover_handler)
 				];
 
@@ -30178,12 +30209,12 @@ function create_if_block(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[18][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[18][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[14][0] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[18][1])
+			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[14][1])
 			? ""
-			: "is-unresolved") + " svelte-9qgrmh")) {
+			: "is-unresolved") + " svelte-7s7d25")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -30195,10 +30226,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (98:2) {#each lines as line}
+// (77:2) {#each lines as line}
 function create_each_block$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[18].length > 1 && create_if_block(ctx);
+	let if_block = /*line*/ ctx[14].length > 1 && create_if_block(ctx);
 
 	return {
 		c() {
@@ -30210,7 +30241,7 @@ function create_each_block$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[18].length > 1) {
+			if (/*line*/ ctx[14].length > 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -30231,45 +30262,16 @@ function create_each_block$1(ctx) {
 }
 
 function create_fragment$1(ctx) {
-	let div0;
-	let span0;
+	let span;
 	let current_block_type_index;
 	let if_block;
-	let span0_aria_label_value;
+	let span_aria_label_value;
 	let t0;
 	let button;
 	let t2;
-	let span11;
-	let span10;
-	let span1;
+	let select;
 	let t3;
-	let span2;
-	let t4;
-	let span2_class_value;
-	let t5;
-	let span3;
-	let t6;
-	let span4;
-	let t7;
-	let span4_class_value;
-	let t8;
-	let span5;
-	let t9;
-	let span5_class_value;
-	let t10;
-	let span6;
-	let t11;
-	let span6_class_value;
-	let t12;
-	let span7;
-	let t13;
-	let span8;
-	let t14;
-	let span8_class_value;
-	let t15;
-	let span9;
-	let t16;
-	let div1;
+	let div;
 	let current;
 	let mounted;
 	let dispose;
@@ -30283,6 +30285,13 @@ function create_fragment$1(ctx) {
 
 	current_block_type_index = select_block_type(ctx);
 	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+	let each_value_1 = DIRECTIONS$1;
+	let each_blocks_1 = [];
+
+	for (let i = 0; i < each_value_1.length; i += 1) {
+		each_blocks_1[i] = create_each_block_1$1(get_each_context_1$1(ctx, each_value_1, i));
+	}
+
 	let each_value = /*lines*/ ctx[5];
 	let each_blocks = [];
 
@@ -30292,115 +30301,65 @@ function create_fragment$1(ctx) {
 
 	return {
 		c() {
-			div0 = element("div");
-			span0 = element("span");
+			span = element("span");
 			if_block.c();
 			t0 = space();
 			button = element("button");
 			button.textContent = "↻";
 			t2 = space();
-			span11 = element("span");
-			span10 = element("span");
-			span1 = element("span");
+			select = element("select");
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].c();
+			}
+
 			t3 = space();
-			span2 = element("span");
-			t4 = text("↑");
-			t5 = space();
-			span3 = element("span");
-			t6 = space();
-			span4 = element("span");
-			t7 = text("←");
-			t8 = space();
-			span5 = element("span");
-			t9 = text("↔");
-			t10 = space();
-			span6 = element("span");
-			t11 = text("→");
-			t12 = space();
-			span7 = element("span");
-			t13 = space();
-			span8 = element("span");
-			t14 = text("↓");
-			t15 = space();
-			span9 = element("span");
-			t16 = space();
-			div1 = element("div");
+			div = element("div");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
 			}
 
-			attr(span0, "class", "icon svelte-9qgrmh");
+			attr(span, "class", "icon svelte-7s7d25");
 
-			attr(span0, "aria-label", span0_aria_label_value = /*frozen*/ ctx[4]
+			attr(span, "aria-label", span_aria_label_value = /*frozen*/ ctx[4]
 			? `Frozen on: ${/*basename*/ ctx[3]}`
 			: "Unfrozen");
 
-			attr(span0, "aria-label-position", "left");
+			attr(span, "aria-label-position", "left");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(button, "class", "svelte-9qgrmh");
-			attr(span1, "class", "filler svelte-9qgrmh");
-			attr(span2, "class", span2_class_value = "dir " + (/*dir*/ ctx[2] === "up" ? "active-dir" : "") + " svelte-9qgrmh");
-			attr(span3, "class", "filler svelte-9qgrmh");
-			attr(span4, "class", span4_class_value = "dir " + (/*dir*/ ctx[2] === "prev" ? "active-dir" : "") + " svelte-9qgrmh");
-			attr(span5, "class", span5_class_value = "dir " + (/*dir*/ ctx[2] === "same" ? "active-dir" : "") + " svelte-9qgrmh");
-			attr(span6, "class", span6_class_value = "dir " + (/*dir*/ ctx[2] === "next" ? "active-dir" : "") + " svelte-9qgrmh");
-			attr(span7, "class", "filler svelte-9qgrmh");
-			attr(span8, "class", span8_class_value = "dir " + (/*dir*/ ctx[2] === "down" ? "active-dir" : "") + " svelte-9qgrmh");
-			attr(span9, "class", "filler svelte-9qgrmh");
-			attr(span10, "class", "dir-grid svelte-9qgrmh");
-			attr(span11, "class", "grid-container");
-			attr(div1, "class", "BC-downs svelte-9qgrmh");
+			attr(button, "class", "svelte-7s7d25");
+			attr(select, "class", "dropdown");
+			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[10].call(select));
+			attr(div, "class", "BC-downs svelte-7s7d25");
 		},
 		m(target, anchor) {
-			insert(target, div0, anchor);
-			append(div0, span0);
-			if_blocks[current_block_type_index].m(span0, null);
-			append(div0, t0);
-			append(div0, button);
-			append(div0, t2);
-			append(div0, span11);
-			append(span11, span10);
-			append(span10, span1);
-			append(span10, t3);
-			append(span10, span2);
-			append(span2, t4);
-			append(span10, t5);
-			append(span10, span3);
-			append(span10, t6);
-			append(span10, span4);
-			append(span4, t7);
-			append(span10, t8);
-			append(span10, span5);
-			append(span5, t9);
-			append(span10, t10);
-			append(span10, span6);
-			append(span6, t11);
-			append(span10, t12);
-			append(span10, span7);
-			append(span10, t13);
-			append(span10, span8);
-			append(span8, t14);
-			append(span10, t15);
-			append(span10, span9);
-			insert(target, t16, anchor);
-			insert(target, div1, anchor);
+			insert(target, span, anchor);
+			if_blocks[current_block_type_index].m(span, null);
+			insert(target, t0, anchor);
+			insert(target, button, anchor);
+			insert(target, t2, anchor);
+			insert(target, select, anchor);
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].m(select, null);
+			}
+
+			select_option(select, /*dir*/ ctx[2]);
+			insert(target, t3, anchor);
+			insert(target, div, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div1, null);
+				each_blocks[i].m(div, null);
 			}
 
 			current = true;
 
 			if (!mounted) {
 				dispose = [
-					listen(span0, "click", /*click_handler*/ ctx[8]),
+					listen(span, "click", /*click_handler*/ ctx[8]),
 					listen(button, "click", /*click_handler_1*/ ctx[9]),
-					listen(span2, "click", /*click_handler_2*/ ctx[10]),
-					listen(span4, "click", /*click_handler_3*/ ctx[11]),
-					listen(span5, "click", /*click_handler_4*/ ctx[12]),
-					listen(span6, "click", /*click_handler_5*/ ctx[13]),
-					listen(span8, "click", /*click_handler_6*/ ctx[14])
+					listen(select, "change", /*select_change_handler*/ ctx[10])
 				];
 
 				mounted = true;
@@ -30426,33 +30385,40 @@ function create_fragment$1(ctx) {
 				}
 
 				transition_in(if_block, 1);
-				if_block.m(span0, null);
+				if_block.m(span, null);
 			}
 
-			if (!current || dirty & /*frozen, basename*/ 24 && span0_aria_label_value !== (span0_aria_label_value = /*frozen*/ ctx[4]
+			if (!current || dirty & /*frozen, basename*/ 24 && span_aria_label_value !== (span_aria_label_value = /*frozen*/ ctx[4]
 			? `Frozen on: ${/*basename*/ ctx[3]}`
 			: "Unfrozen")) {
-				attr(span0, "aria-label", span0_aria_label_value);
+				attr(span, "aria-label", span_aria_label_value);
 			}
 
-			if (!current || dirty & /*dir*/ 4 && span2_class_value !== (span2_class_value = "dir " + (/*dir*/ ctx[2] === "up" ? "active-dir" : "") + " svelte-9qgrmh")) {
-				attr(span2, "class", span2_class_value);
+			if (dirty & /*DIRECTIONS*/ 0) {
+				each_value_1 = DIRECTIONS$1;
+				let i;
+
+				for (i = 0; i < each_value_1.length; i += 1) {
+					const child_ctx = get_each_context_1$1(ctx, each_value_1, i);
+
+					if (each_blocks_1[i]) {
+						each_blocks_1[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_1[i] = create_each_block_1$1(child_ctx);
+						each_blocks_1[i].c();
+						each_blocks_1[i].m(select, null);
+					}
+				}
+
+				for (; i < each_blocks_1.length; i += 1) {
+					each_blocks_1[i].d(1);
+				}
+
+				each_blocks_1.length = each_value_1.length;
 			}
 
-			if (!current || dirty & /*dir*/ 4 && span4_class_value !== (span4_class_value = "dir " + (/*dir*/ ctx[2] === "prev" ? "active-dir" : "") + " svelte-9qgrmh")) {
-				attr(span4, "class", span4_class_value);
-			}
-
-			if (!current || dirty & /*dir*/ 4 && span5_class_value !== (span5_class_value = "dir " + (/*dir*/ ctx[2] === "same" ? "active-dir" : "") + " svelte-9qgrmh")) {
-				attr(span5, "class", span5_class_value);
-			}
-
-			if (!current || dirty & /*dir*/ 4 && span6_class_value !== (span6_class_value = "dir " + (/*dir*/ ctx[2] === "next" ? "active-dir" : "") + " svelte-9qgrmh")) {
-				attr(span6, "class", span6_class_value);
-			}
-
-			if (!current || dirty & /*dir*/ 4 && span8_class_value !== (span8_class_value = "dir " + (/*dir*/ ctx[2] === "down" ? "active-dir" : "") + " svelte-9qgrmh")) {
-				attr(span8, "class", span8_class_value);
+			if (dirty & /*dir, DIRECTIONS*/ 4) {
+				select_option(select, /*dir*/ ctx[2]);
 			}
 
 			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault, dropDendron*/ 99) {
@@ -30467,7 +30433,7 @@ function create_fragment$1(ctx) {
 					} else {
 						each_blocks[i] = create_each_block$1(child_ctx);
 						each_blocks[i].c();
-						each_blocks[i].m(div1, null);
+						each_blocks[i].m(div, null);
 					}
 				}
 
@@ -30488,10 +30454,15 @@ function create_fragment$1(ctx) {
 			current = false;
 		},
 		d(detaching) {
-			if (detaching) detach(div0);
+			if (detaching) detach(span);
 			if_blocks[current_block_type_index].d();
-			if (detaching) detach(t16);
-			if (detaching) detach(div1);
+			if (detaching) detach(t0);
+			if (detaching) detach(button);
+			if (detaching) detach(t2);
+			if (detaching) detach(select);
+			destroy_each(each_blocks_1, detaching);
+			if (detaching) detach(t3);
+			if (detaching) detach(div);
 			destroy_each(each_blocks, detaching);
 			mounted = false;
 			run_all(dispose);
@@ -30529,12 +30500,12 @@ function instance$1($$self, $$props, $$invalidate) {
 		await view.draw();
 	};
 
-	const click_handler_2 = () => $$invalidate(2, dir = "up");
-	const click_handler_3 = () => $$invalidate(2, dir = "prev");
-	const click_handler_4 = () => $$invalidate(2, dir = "same");
-	const click_handler_5 = () => $$invalidate(2, dir = "next");
-	const click_handler_6 = () => $$invalidate(2, dir = "down");
-	const click_handler_7 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
+	function select_change_handler() {
+		dir = select_value(this);
+		$$invalidate(2, dir);
+	}
+
+	const click_handler_2 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
 	const mouseover_handler = (line, e) => hoverPreview(e, view, line[1]);
 
 	$$self.$$set = $$props => {
@@ -30576,12 +30547,8 @@ function instance$1($$self, $$props, $$invalidate) {
 		oppDir,
 		click_handler,
 		click_handler_1,
+		select_change_handler,
 		click_handler_2,
-		click_handler_3,
-		click_handler_4,
-		click_handler_5,
-		click_handler_6,
-		click_handler_7,
 		mouseover_handler
 	];
 }
@@ -30589,7 +30556,7 @@ function instance$1($$self, $$props, $$invalidate) {
 class SideTree extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-9qgrmh-style")) add_css();
+		if (!document.getElementById("svelte-7s7d25-style")) add_css();
 		init(this, options, instance$1, create_fragment$1, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }
