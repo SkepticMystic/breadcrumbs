@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.28.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.28.0...2.28.1) (2022-01-09)
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Show aliases in Path/Grid view, too (fix [#212](https://github.com/SkepticMystic/breadcrumbs/issues/212)) ([55a6f60](https://github.com/SkepticMystic/breadcrumbs/commit/55a6f60a8e42f8d73b7f9ee26d49658056c89489))
+
 ## [2.28.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.27.2...2.28.0) (2022-01-09)
 
 
