@@ -14,6 +14,11 @@
   text-align: left;
 }
 
+/* ensure empty headers not leaving an element  */
+.BC-Matrix .BC-Matrix-square .BC-Matrix-header:empty{
+	display: none;
+}
+
 .internal-link.BC-Link {
   color: var(--text-accent);
 }
