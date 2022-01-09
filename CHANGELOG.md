@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.28.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.27.2...2.28.0) (2022-01-09)
+
+
+### Features
+
+* **FolderNote:** :sparkles: `BC-folder-note-subfolders: true` takes notes in subfolders of the folderNote and adds those notes, too ([#218](https://github.com/SkepticMystic/breadcrumbs/issues/218)) ([0d839ac](https://github.com/SkepticMystic/breadcrumbs/commit/0d839ac2b5e37af119b098c1738f44082837817b))
+
 ### [2.27.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.27.1...2.27.2) (2022-01-09)
 
 ### [2.27.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.27.0...2.27.1) (2022-01-09)
