@@ -116,7 +116,7 @@ export class BCSettingTab extends PluginSettingTab {
       })
       .addToggle((toggle) => {
         toggle
-          .setTooltip("Down View")
+          .setTooltip("Tree View")
           .setValue(settings.openDownOnLoad)
           .onChange(async (value) => {
             settings.openDownOnLoad = value;
@@ -648,12 +648,12 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
 
-    const downViewDetails = subDetails("Down View", viewDetails);
+    const treeViewDetails = subDetails("Tree View", viewDetails);
 
-    new Setting(downViewDetails)
+    new Setting(treeViewDetails)
       .setName("Enable line wrapping")
       .setDesc(
-        "Make the items in the down view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen."
+        "Make the items in the tree view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen."
       )
       .addToggle((toggle) =>
         toggle.setValue(settings.downViewWrap).onChange(async (value) => {

@@ -9,7 +9,7 @@ import type {
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
-export const DOWN_VIEW = "BC-down";
+export const TREE_VIEW = "BC-tree";
 
 export const TRAIL_ICON = "BC-trail-icon";
 export const TRAIL_ICON_SVG =

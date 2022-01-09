@@ -5,21 +5,21 @@
     isInVault,
     openOrSwitch,
   } from "obsidian-community-lib";
-  import FaFire from "svelte-icons/fa/FaFire.svelte";
-  import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
-  import type DownView from "../DownView";
   import {
     dfsAllPaths,
     getOppDir,
     getReflexiveClosure,
     getSubInDirs,
   } from "../graphUtils";
+  import FaFire from "svelte-icons/fa/FaFire.svelte";
+  import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
+  import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
-  import type { Directions } from "../interfaces";
+  import type TreeView from "../TreeView";
 
   export let plugin: BCPlugin;
-  export let view: DownView;
+  export let view: TreeView;
 
   const { settings } = plugin;
   const { userHiers } = settings;
@@ -153,7 +153,7 @@
 
   .active-dir {
     color: var(--text-accent);
-    font-weight: bolder;
+    font-weight: 900 !important;
   }
   .BC-downs {
     padding-left: 5px;

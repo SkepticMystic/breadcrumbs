@@ -1,13 +1,12 @@
-import { trace } from "loglevel";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { addFeatherIcon } from "obsidian-community-lib";
-import Down from "./Components/Down.svelte";
-import { DOWN_VIEW } from "./constants";
+import SideTree from "./Components/SideTree.svelte";
+import { TREE_VIEW } from "./constants";
 import type BCPlugin from "./main";
 
-export default class DownView extends ItemView {
+export default class TreeView extends ItemView {
   private plugin: BCPlugin;
-  private view: Down;
+  private view: SideTree;
 
   constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
     super(leaf);
@@ -15,7 +14,6 @@ export default class DownView extends ItemView {
   }
 
   async onload(): Promise<void> {
-    // trace("DownView.onload");
     super.onload();
     this.app.workspace.onLayoutReady(async () => {
       await this.draw();
@@ -23,7 +21,7 @@ export default class DownView extends ItemView {
   }
 
   getViewType() {
-    return DOWN_VIEW;
+    return TREE_VIEW;
   }
   getDisplayText() {
     return "Breadcrumbs Down";
@@ -41,7 +39,7 @@ export default class DownView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
-    this.view = new Down({
+    this.view = new SideTree({
       target: this.contentEl,
       props: { plugin: this.plugin, view: this },
     });

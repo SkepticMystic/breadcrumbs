@@ -23,6 +23,7 @@
         "Threading",
         "RegexNote",
         "NamingNotes",
-        "Codeblock"
+        "Codeblock",
+        "TreeView"
     ]
 }

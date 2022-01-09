@@ -24,6 +24,7 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
+import CBTree from "./Components/CBTree.svelte";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
@@ -43,7 +44,6 @@ import {
   CODEBLOCK_TYPES,
   DEFAULT_SETTINGS,
   DIRECTIONS,
-  DOWN_VIEW,
   dropHeaderOrAlias,
   DUCK_ICON,
   DUCK_ICON_SVG,
@@ -53,8 +53,8 @@ import {
   STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
+  TREE_VIEW,
 } from "./constants";
-import DownView from "./DownView";
 import DucksView from "./DucksView";
 import { FieldSuggestor } from "./FieldSuggestor";
 import {
@@ -74,7 +74,6 @@ import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
   BCSettings,
   CodeblockFields,
-  CodeblockType,
   Directions,
   dvFrontmatterCache,
   dvLink,
@@ -103,8 +102,8 @@ import {
   strToRegex,
 } from "./sharedFunctions";
 import StatsView from "./StatsView";
+import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
-import CBTree from "./Components/CBTree.svelte";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -235,8 +234,8 @@ export default class BCPlugin extends Plugin {
       },
       {
         plain: "Down",
-        type: DOWN_VIEW,
-        constructor: DownView,
+        type: TREE_VIEW,
+        constructor: TreeView,
         openOnLoad: settings.openDownOnLoad,
       },
     ];
@@ -565,6 +564,7 @@ export default class BCPlugin extends Plugin {
           }
 
           if (threadingTemplate) {
+            // @ts-ignore
             const editor = leaf.view.editor as Editor;
             editor.setCursor(editor.getValue().length);
           } else {
@@ -572,8 +572,8 @@ export default class BCPlugin extends Plugin {
               document.getElementsByClassName("view-header-title");
 
             const newNoteInputEl = Array.from(noteNameInputs).find(
-              (input) => input.innerText === newBasename
-            );
+              (input: HTMLInputElement) => input.innerText === newBasename
+            ) as HTMLInputElement;
             newNoteInputEl.innerText = "";
             newNoteInputEl.focus();
           }
@@ -949,6 +949,7 @@ export default class BCPlugin extends Plugin {
     const queue = [item];
     while (queue.length) {
       const currItem = queue.shift();
+      // @ts-ignore
       if (typeof currItem.defaultComparator === "function") {
         const possibleUnproxied = Object.assign({}, currItem);
         const { values } = possibleUnproxied;

@@ -1,7 +1,7 @@
 import type { MultiGraph } from "graphology";
 import type { LogLevel } from "loglevel";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
-import type DownView from "./DownView";
+import type TreeView from "./TreeView";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
@@ -114,7 +114,7 @@ export type UserHier = {
 export type CodeblockType = typeof CODEBLOCK_TYPES[number];
 export type CodeblockFields = typeof CODEBLOCK_FIELDS[number];
 
-export type MyView = MatrixView | DucksView | StatsView | DownView;
+export type MyView = MatrixView | DucksView | StatsView | TreeView;
 export type ViewInfo = {
   plain: string;
   type: string;
@@ -277,6 +277,7 @@ declare module "obsidian" {
       };
       enabledPlugins: { has: (plugin: string) => boolean };
     };
+    commands: { executeCommandById: (id: string) => void };
   }
 }
 
