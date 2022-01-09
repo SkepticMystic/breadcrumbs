@@ -54,6 +54,7 @@ export interface BCSettings {
   refreshOnNoteChange: boolean;
   respectReadableLineLength: boolean;
   showAllPathsIfNoneToIndexNote: boolean;
+  showAllAliases: boolean;
   showNameOrType: boolean;
   showRelationType: boolean;
   showWriteAllBCsCmd: boolean;

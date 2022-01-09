@@ -17,7 +17,7 @@ import type {
   UserHier,
 } from "./interfaces";
 import type BCPlugin from "./main";
-import { getRealnImplied, linkClass } from "./sharedFunctions";
+import { getRealnImplied, linkClass, splitAndTrim } from "./sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -64,14 +64,17 @@ export default class MatrixView extends ItemView {
   }
 
   getAlt(node: string): string | null {
-    const { altLinkFields } = this.plugin.settings;
+    const { altLinkFields, showAllAliases } = this.plugin.settings;
     if (altLinkFields.length) {
       const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
       if (file) {
         const metadata = this.app.metadataCache.getFileCache(file);
         for (const altField of altLinkFields) {
           const value = metadata?.frontmatter?.[altField];
-          if (value) return value;
+
+          const arr: string[] =
+            typeof value === "string" ? splitAndTrim(value) : value;
+          if (value) return showAllAliases ? arr.join(", ") : arr[0];
         }
       }
     } else return null;

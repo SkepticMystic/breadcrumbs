@@ -21145,6 +21145,7 @@ const DEFAULT_SETTINGS = {
     regexNoteField: "",
     rlLeaf: true,
     showAllPathsIfNoneToIndexNote: false,
+    showAllAliases: true,
     showBCs: true,
     showBCsInEditLPMode: false,
     showRefreshNotice: true,
@@ -24893,15 +24894,16 @@ class MatrixView extends require$$0.ItemView {
     }
     getAlt(node) {
         var _a;
-        const { altLinkFields } = this.plugin.settings;
+        const { altLinkFields, showAllAliases } = this.plugin.settings;
         if (altLinkFields.length) {
             const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
             if (file) {
                 const metadata = this.app.metadataCache.getFileCache(file);
                 for (const altField of altLinkFields) {
                     const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
+                    const arr = typeof value === "string" ? splitAndTrim(value) : value;
                     if (value)
-                        return value;
+                        return showAllAliases ? arr.join(", ") : arr[0];
                 }
             }
         }
@@ -25183,6 +25185,14 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 await plugin.saveSettings();
             };
         });
+        new require$$0.Setting(generalDetails)
+            .setName("Only show first alias")
+            .setDesc("If a note has an alias (using the fields in the setting above), should only the first one be shown?")
+            .addToggle((toggle) => toggle.setValue(!settings.showAllAliases).onChange(async (value) => {
+            settings.showAllAliases = !value;
+            await plugin.saveSettings();
+            await plugin.refreshIndex();
+        }));
         new require$$0.Setting(generalDetails)
             .setName("Use yaml or inline fields for hierarchy data")
             .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled).\nIf this is disabled, it will only use Juggl links for it's metadata (See below).")

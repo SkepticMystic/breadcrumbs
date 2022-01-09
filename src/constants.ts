@@ -214,6 +214,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   regexNoteField: "",
   rlLeaf: true,
   showAllPathsIfNoneToIndexNote: false,
+  showAllAliases: true,
   showBCs: true,
   showBCsInEditLPMode: false,
   showRefreshNotice: true,

@@ -154,6 +154,19 @@ export class BCSettingTab extends PluginSettingTab {
       });
 
     new Setting(generalDetails)
+      .setName("Only show first alias")
+      .setDesc(
+        "If a note has an alias (using the fields in the setting above), should only the first one be shown?"
+      )
+      .addToggle((toggle) =>
+        toggle.setValue(!settings.showAllAliases).onChange(async (value) => {
+          settings.showAllAliases = !value;
+          await plugin.saveSettings();
+          await plugin.refreshIndex();
+        })
+      );
+
+    new Setting(generalDetails)
       .setName("Use yaml or inline fields for hierarchy data")
       .setDesc(
         "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled).\nIf this is disabled, it will only use Juggl links for it's metadata (See below)."
