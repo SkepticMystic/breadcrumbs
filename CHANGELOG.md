@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.27.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.26.0...2.27.0) (2022-01-09)
+
+
+### Features
+
+* **DownView:** :sparkles: Expand Down View to allow any direction ([c48551f](https://github.com/SkepticMystic/breadcrumbs/commit/c48551fb9969bc2ea372e63de90aaea70fc0e0fc))
+* **List/Matrix View:** :sparkles: Option to only show the first alias (Fix [#237](https://github.com/SkepticMystic/breadcrumbs/issues/237)) ([aa0be01](https://github.com/SkepticMystic/breadcrumbs/commit/aa0be0119f94c13ebecde6a19ff5662a22762573))
+
 ## [2.26.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.25.0...2.26.0) (2022-01-08)
 
 
