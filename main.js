@@ -21029,8 +21029,9 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_FOLDER_NOTE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDER, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
+    "BC-folder-note-subfolder",
     "BC-tag-note",
     "BC-tag-note-field",
     "BC-tag-note-exact",
@@ -21047,6 +21048,12 @@ const BC_FIELDS_INFO = [
         desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
         after: ": ",
         alt: true,
+    },
+    {
+        field: BC_FOLDER_NOTE_SUBFOLDER,
+        desc: "This folder note should take notes in the same folder as it, _and_ notes in subfolders of it.",
+        after: ": true",
+        alt: false,
     },
     {
         field: BC_TAG_NOTE,
@@ -53442,9 +53449,12 @@ class BCPlugin extends require$$0.Plugin {
             const { file } = altFile;
             const basename = getDVBasename(file);
             const folder = getFolder(file);
+            const subfolders = altFile[BC_FOLDER_NOTE_SUBFOLDER];
             const targets = frontms
                 .map((ff) => ff.file)
-                .filter((other) => getFolder(other) === folder && other.path !== file.path)
+                .filter((other) => (subfolders
+                ? getFolder(other).includes(folder)
+                : getFolder(other) === folder) && other.path !== file.path)
                 .map(getDVBasename);
             const field = altFile[BC_FOLDER_NOTE];
             if (typeof field !== "string" || !fields.includes(field))

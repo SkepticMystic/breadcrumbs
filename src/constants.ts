@@ -84,6 +84,7 @@ export const blankRealNImplied = () => {
 
 export const [
   BC_FOLDER_NOTE,
+  BC_FOLDER_NOTE_SUBFOLDER,
   BC_TAG_NOTE,
   BC_TAG_NOTE_FIELD,
   BC_TAG_NOTE_EXACT,
@@ -95,6 +96,7 @@ export const [
   BC_ORDER,
 ] = [
   "BC-folder-note",
+  "BC-folder-note-subfolder",
   "BC-tag-note",
   "BC-tag-note-field",
   "BC-tag-note-exact",
@@ -112,6 +114,12 @@ export const BC_FIELDS_INFO = [
     desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
     after: ": ",
     alt: true,
+  },
+  {
+    field: BC_FOLDER_NOTE_SUBFOLDER,
+    desc: "This folder note should take notes in the same folder as it, _and_ notes in subfolders of it.",
+    after: ": true",
+    alt: false,
   },
   {
     field: BC_TAG_NOTE,

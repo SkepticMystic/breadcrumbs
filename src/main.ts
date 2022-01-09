@@ -31,6 +31,7 @@ import TrailPath from "./Components/TrailPath.svelte";
 import {
   BC_ALTS,
   BC_FOLDER_NOTE,
+  BC_FOLDER_NOTE_SUBFOLDER,
   BC_HIDE_TRAIL,
   BC_LINK_NOTE,
   BC_ORDER,
@@ -1159,11 +1160,15 @@ export default class BCPlugin extends Plugin {
       const { file } = altFile;
       const basename = getDVBasename(file);
       const folder = getFolder(file);
+      const subfolders = altFile[BC_FOLDER_NOTE_SUBFOLDER];
 
       const targets = frontms
         .map((ff) => ff.file)
         .filter(
-          (other) => getFolder(other) === folder && other.path !== file.path
+          (other) =>
+            (subfolders
+              ? getFolder(other).includes(folder)
+              : getFolder(other) === folder) && other.path !== file.path
         )
         .map(getDVBasename);
 
