@@ -282,7 +282,10 @@ export default class MatrixView extends ItemView {
         "button",
         {
           text: this.matrixQ ? "List" : "Matrix",
-          attr: { "aria-label": "Mode" },
+          attr: {
+            "aria-label": "Mode",
+            style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
+          },
         },
         (el) => {
           el.onclick = async () => {
@@ -295,7 +298,13 @@ export default class MatrixView extends ItemView {
 
       contentEl.createEl(
         "button",
-        { text: "↻", attr: { "aria-label": "Refresh Index" } },
+        {
+          text: "↻",
+          attr: {
+            "aria-label": "Refresh Index",
+            style: "padding: 1px 6px 2px 6px;",
+          },
+        },
         (el) => (el.onclick = async () => await this.plugin.refreshIndex())
       );
 
@@ -303,7 +312,10 @@ export default class MatrixView extends ItemView {
         "button",
         {
           text: settings.alphaSortAsc ? "↗" : "↘",
-          attr: { "aria-label": "Alphabetical sorting order" },
+          attr: {
+            "aria-label": "Alphabetical sorting order",
+            style: "padding: 1px 6px 2px 6px;",
+          },
         },
         (el) => {
           el.onclick = async () => {
