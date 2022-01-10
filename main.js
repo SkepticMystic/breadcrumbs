@@ -22475,7 +22475,7 @@ const getFolder = (file) => { var _a;
 //@ts-ignore
 return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
 const splitAndTrim = (fields) => {
-    if (fields === "")
+    if (!fields || fields === "")
         return [];
     else
         return fields.split(",").map((str) => str.trim());

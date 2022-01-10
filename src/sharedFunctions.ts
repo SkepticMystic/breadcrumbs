@@ -64,7 +64,7 @@ export const getFolder = (file: TFile): string =>
   file?.parent?.name || file.folder;
 
 export const splitAndTrim = (fields: string): string[] => {
-  if (fields === "") return [];
+  if (!fields || fields === "") return [];
   else return fields.split(",").map((str) => str.trim());
 };
 
@@ -322,6 +322,8 @@ export function strToRegex(input: string) {
 
 export const dropHash = (tag: string) =>
   tag.startsWith("#") ? tag.slice(1) : tag;
+
+export const addHash = (tag: string) => (tag.startsWith("#") ? tag : `#${tag}`);
 
 export function getAlt(node: string, plugin: BCPlugin): string | null {
   const { app } = plugin;
