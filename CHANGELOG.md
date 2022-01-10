@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.30.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.28.1...2.30.0) (2022-01-10)
+
+
+### Features
+
+* **Codeblock:** :sparkles: BREAKING: default `depth` syntax now sets the MIN value. Use `depth: 1-3` to specify a range. ([04d2a10](https://github.com/SkepticMystic/breadcrumbs/commit/04d2a102536594a32653840653feeeee4e856567))
+
 ## [2.29.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.28.1...2.29.0) (2022-01-10)
 
 
