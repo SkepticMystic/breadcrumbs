@@ -634,6 +634,11 @@ export default class BCPlugin extends Plugin {
       ? splitAndTrim(results.field as string)
       : undefined;
 
+    if (results.depth) {
+      const match = (results.depth as string).match(/(\d*)-?(\d*)/);
+      results.depth = [match[1], match[2]];
+    }
+
     return results as unknown as ParsedCodeblock;
   }
 
@@ -660,7 +665,7 @@ export default class BCPlugin extends Plugin {
     if (title !== undefined && title !== "false")
       err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
 
-    if (depth !== undefined && isNaN(parseInt(depth)))
+    if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
       err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
 
     if (flat !== undefined && flat !== "true")
