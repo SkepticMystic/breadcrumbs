@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.31.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.30.0...2.31.0) (2022-01-10)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Option to sort by note name, but show it's alias. Default is to sort by alias if one is found (fix [#255](https://github.com/SkepticMystic/breadcrumbs/issues/255)) ([bb25b48](https://github.com/SkepticMystic/breadcrumbs/commit/bb25b485488a7449f7505c71d7c1b431855ec82b))
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Safety on `field` in codeblockError ([6a3d42f](https://github.com/SkepticMystic/breadcrumbs/commit/6a3d42f08d978bede3a552823d127f43efa4bb02))
+
 ## [2.30.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.28.1...2.30.0) (2022-01-10)
 
 
