@@ -657,7 +657,7 @@ export default class BCPlugin extends Plugin {
       err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
 
     const allFields = getFields(userHiers);
-    fields?.forEach((f) => {
+    [fields].flat()?.forEach((f) => {
       if (!allFields.includes(f))
         err += `<code>field: ${f}</code> is not a field in your hierarchies.</br>`;
     });

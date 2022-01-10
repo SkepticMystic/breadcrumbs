@@ -21160,6 +21160,7 @@ const DEFAULT_SETTINGS = {
     showTrail: true,
     showGrid: true,
     showPrevNext: true,
+    sortByNameShowAlias: false,
     squareDirectionsOrder: [0, 1, 2, 3, 4],
     limitTrailCheckboxes: [],
     limitJumpToFirstFields: [],
@@ -24944,7 +24945,7 @@ class MatrixView extends require$$0.ItemView {
     getHierSquares(userHiers, currFile) {
         const { plugin } = this;
         const { mainG, settings } = plugin;
-        const { alphaSortAsc, enableAlphaSort, treatCurrNodeAsImpliedSibling, squareDirectionsOrder, } = settings;
+        const { alphaSortAsc, enableAlphaSort, treatCurrNodeAsImpliedSibling, squareDirectionsOrder, sortByNameShowAlias, } = settings;
         if (!mainG)
             return [];
         const { basename } = currFile;
@@ -25007,7 +25008,8 @@ class MatrixView extends require$$0.ItemView {
             if (enableAlphaSort) {
                 squares.forEach((sq) => sq.sort((a, b) => {
                     var _a, _b;
-                    return ((_a = a.alt) !== null && _a !== void 0 ? _a : a.to) < ((_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
+                    return (sortByNameShowAlias ? a.to : (_a = a.alt) !== null && _a !== void 0 ? _a : a.to) <
+                        (sortByNameShowAlias ? b.to : (_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
                         ? alphaSortAsc
                             ? -1
                             : 1
@@ -25353,6 +25355,16 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             .setDesc("Sort square items alphabetically in Ascending (✅) or Descending (❌) order, by default.")
             .addToggle((toggle) => toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {
             settings.alphaSortAsc = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+        }));
+        new require$$0.Setting(MLViewDetails)
+            .setName("Sort by note name, but show alias")
+            .setDesc("When this is turned off, notes will first be sorted by their alias, and then by their name if no alias is found. Turn this on to sort by note name always, but still show the alias in the results.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.sortByNameShowAlias)
+            .onChange(async (value) => {
+            settings.sortByNameShowAlias = value;
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));
@@ -53087,6 +53099,7 @@ class BCPlugin extends require$$0.Plugin {
         return results;
     }
     codeblockError(parsedSource) {
+        var _a;
         const { dir, fields, type, title, depth, flat, content } = parsedSource;
         const { userHiers } = this.settings;
         let err = "";
@@ -53096,7 +53109,7 @@ class BCPlugin extends require$$0.Plugin {
         if (!validDir)
             err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
         const allFields = getFields(userHiers);
-        fields === null || fields === void 0 ? void 0 : fields.forEach((f) => {
+        (_a = [fields].flat()) === null || _a === void 0 ? void 0 : _a.forEach((f) => {
             if (!allFields.includes(f))
                 err += `<code>field: ${f}</code> is not a field in your hierarchies.</br>`;
         });
