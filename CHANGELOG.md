@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.31.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.0...2.31.1) (2022-01-10)
+
+
+### Bug Fixes
+
+* **TagNote:** :bug: Null-check on tags coming in ([6da0b7e](https://github.com/SkepticMystic/breadcrumbs/commit/6da0b7e59cf40dd72a14b1c2f4a35244a67b6f09))
+
 ## [2.31.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.30.0...2.31.0) (2022-01-10)
 
 
