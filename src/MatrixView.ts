@@ -115,6 +115,7 @@ export default class MatrixView extends ItemView {
       enableAlphaSort,
       treatCurrNodeAsImpliedSibling,
       squareDirectionsOrder,
+      sortByNameShowAlias,
     } = settings;
     if (!mainG) return [];
 
@@ -208,7 +209,8 @@ export default class MatrixView extends ItemView {
       if (enableAlphaSort) {
         squares.forEach((sq) =>
           sq.sort((a, b) =>
-            (a.alt ?? a.to) < (b.alt ?? b.to)
+            (sortByNameShowAlias ? a.to : a.alt ?? a.to) <
+            (sortByNameShowAlias ? b.to : b.alt ?? b.to)
               ? alphaSortAsc
                 ? -1
                 : 1

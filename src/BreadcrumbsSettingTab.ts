@@ -343,6 +343,21 @@ export class BCSettingTab extends PluginSettingTab {
       );
 
     new Setting(MLViewDetails)
+      .setName("Sort by note name, but show alias")
+      .setDesc(
+        "When this is turned off, notes will first be sorted by their alias, and then by their name if no alias is found. Turn this on to sort by note name always, but still show the alias in the results."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.sortByNameShowAlias)
+          .onChange(async (value) => {
+            settings.sortByNameShowAlias = value;
+            await plugin.saveSettings();
+            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+          })
+      );
+
+    new Setting(MLViewDetails)
       .setName("Make Current Note an Implied Sibling")
       .setDesc(
         "Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show."

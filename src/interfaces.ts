@@ -58,6 +58,7 @@ export interface BCSettings {
   showNameOrType: boolean;
   showRelationType: boolean;
   showWriteAllBCsCmd: boolean;
+  sortByNameShowAlias: boolean;
   regexNoteField: string;
   rlLeaf: boolean;
   showBCs: boolean;
