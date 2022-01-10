@@ -285,7 +285,7 @@ export interface ParsedCodeblock {
   dir: Directions;
   fields: string[];
   title: string;
-  depth: string;
+  depth: string[];
   flat: string;
   type: CodeblockType;
   content: string;

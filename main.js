@@ -26074,11 +26074,12 @@ function add_css$7() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[26] = list[i];
+	child_ctx[27] = list[i][0];
+	child_ctx[28] = list[i][1];
 	return child_ctx;
 }
 
-// (45:0) {#if title !== "false"}
+// (48:0) {#if title !== "false"}
 function create_if_block_2$2(ctx) {
 	let h3;
 	let t0;
@@ -26090,7 +26091,7 @@ function create_if_block_2$2(ctx) {
 			h3 = element("h3");
 			t0 = text(/*dir*/ ctx[1]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[7]);
+			t2 = text(/*basename*/ ctx[8]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -26107,7 +26108,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (50:4) {#if line.length > 1 && line[0].length / 2 < depthAsNum}
+// (53:4) {#if indent.length / 2 <= max && indent.length / 2 >= min}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26177,16 +26178,16 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (76:6) {:else}
+// (78:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[26][0] + "-" + "";
+	let t0_value = /*indent*/ ctx[27] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[26][1], /*settings*/ ctx[5]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[28], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26194,7 +26195,7 @@ function create_else_block$3(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[15](/*line*/ ctx[26], ...args);
+		return /*click_handler_1*/ ctx[16](/*link*/ ctx[28], ...args);
 	}
 
 	return {
@@ -26209,7 +26210,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[26][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26237,7 +26238,7 @@ function create_else_block$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[26][1])
+			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26253,18 +26254,18 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (51:6) {#if content === "open" || content === "closed"}
+// (54:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[26][0] + "";
+	let t0_value = /*indent*/ ctx[27] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[26][1], /*settings*/ ctx[5]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[28], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26276,13 +26277,13 @@ function create_if_block_1$3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[14](/*line*/ ctx[26], ...args);
+		return /*click_handler*/ ctx[15](/*link*/ ctx[28], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
-				app: /*app*/ ctx[6],
-				path: /*line*/ ctx[26][1]
+				app: /*app*/ ctx[7],
+				path: /*link*/ ctx[28]
 			}
 		});
 
@@ -26302,7 +26303,7 @@ function create_if_block_1$3(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[26][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26337,7 +26338,7 @@ function create_if_block_1$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (!current || dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[26][1])
+			if (!current || dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26365,11 +26366,11 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (49:2) {#each lines as line}
+// (52:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
 	let if_block_anchor;
 	let current;
-	let if_block = /*line*/ ctx[26].length > 1 && /*line*/ ctx[26][0].length / 2 < /*depthAsNum*/ ctx[4] && create_if_block$4(ctx);
+	let if_block = /*indent*/ ctx[27].length / 2 <= /*max*/ ctx[5] && /*indent*/ ctx[27].length / 2 >= /*min*/ ctx[4] && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -26382,11 +26383,11 @@ function create_each_block$7(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[26].length > 1 && /*line*/ ctx[26][0].length / 2 < /*depthAsNum*/ ctx[4]) {
+			if (/*indent*/ ctx[27].length / 2 <= /*max*/ ctx[5] && /*indent*/ ctx[27].length / 2 >= /*min*/ ctx[4]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty & /*depthAsNum*/ 16) {
+					if (dirty & /*max, min*/ 48) {
 						transition_in(if_block, 1);
 					}
 				} else {
@@ -26426,7 +26427,7 @@ function create_fragment$b(ctx) {
 	let div;
 	let current;
 	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2$2(ctx);
-	let each_value = /*lines*/ ctx[8];
+	let each_value = /*lines*/ ctx[9];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -26474,8 +26475,8 @@ function create_fragment$b(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, depthAsNum*/ 377) {
-				each_value = /*lines*/ ctx[8];
+			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, max, min*/ 761) {
+				each_value = /*lines*/ ctx[9];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -26531,12 +26532,12 @@ function create_fragment$b(ctx) {
 const mouseover_handler = e => {
 	
 }; //   hoverPreview needs an itemView so it can access `app`...
-//   hoverPreview(e, el, line[1])
+//   hoverPreview(e, el, link)
 
 const mouseover_handler_1 = e => {
 	
 }; //   hoverPreview needs an itemView so it can access `app`...
-//   hoverPreview(e, el, line[1])
+//   hoverPreview(e, el, link)
 
 function instance$b($$self, $$props, $$invalidate) {
 	
@@ -26556,11 +26557,13 @@ function instance$b($$self, $$props, $$invalidate) {
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
 	const { userHiers } = settings;
 	const { basename } = currFile;
-	let depthAsNum = 1000;
+	let min = 0, max = Infinity;
 
-	if (depth !== undefined && depth !== "") {
-		const num = parseInt(depth);
-		if (!isNaN(num)) depthAsNum = num;
+	if (depth !== undefined) {
+		const minNum = parseInt(depth[0]);
+		if (!isNaN(minNum)) min = minNum;
+		const maxNum = parseInt(depth[1]);
+		if (!isNaN(maxNum)) max = maxNum;
 	}
 
 	const oppDir = getOppDir(dir);
@@ -26576,18 +26579,18 @@ function instance$b($$self, $$props, $$invalidate) {
 		return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
 	}).filter(pair => pair[1] !== "");
 
-	const click_handler = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
-	const click_handler_1 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
+	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
+	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(9, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(10, el = $$props.el);
+		if ("ctx" in $$props) $$invalidate(10, ctx = $$props.ctx);
+		if ("el" in $$props) $$invalidate(11, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(11, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(12, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("depth" in $$props) $$invalidate(12, depth = $$props.depth);
-		if ("flat" in $$props) $$invalidate(13, flat = $$props.flat);
+		if ("depth" in $$props) $$invalidate(13, depth = $$props.depth);
+		if ("flat" in $$props) $$invalidate(14, flat = $$props.flat);
 		if ("content" in $$props) $$invalidate(3, content = $$props.content);
 	};
 
@@ -26596,7 +26599,8 @@ function instance$b($$self, $$props, $$invalidate) {
 		dir,
 		title,
 		content,
-		depthAsNum,
+		min,
+		max,
 		settings,
 		app,
 		basename,
@@ -26618,13 +26622,13 @@ class CBTree extends SvelteComponent {
 
 		init(this, options, instance$b, create_fragment$b, safe_not_equal, {
 			plugin: 0,
-			ctx: 9,
-			el: 10,
+			ctx: 10,
+			el: 11,
 			dir: 1,
-			fields: 11,
+			fields: 12,
 			title: 2,
-			depth: 12,
-			flat: 13,
+			depth: 13,
+			flat: 14,
 			content: 3
 		});
 	}
@@ -53076,6 +53080,10 @@ class BCPlugin extends require$$0.Plugin {
         results.field = results.field
             ? splitAndTrim(results.field)
             : undefined;
+        if (results.depth) {
+            const match = results.depth.match(/(\d*)-?(\d*)/);
+            results.depth = [match[1], match[2]];
+        }
         return results;
     }
     codeblockError(parsedSource) {
@@ -53094,7 +53102,7 @@ class BCPlugin extends require$$0.Plugin {
         });
         if (title !== undefined && title !== "false")
             err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
-        if (depth !== undefined && isNaN(parseInt(depth)))
+        if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
             err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
         if (flat !== undefined && flat !== "true")
             err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;

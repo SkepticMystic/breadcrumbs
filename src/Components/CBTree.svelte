@@ -19,7 +19,7 @@
   export let dir: Directions;
   export let fields: string[];
   export let title: string;
-  export let depth: string;
+  export let depth: string[];
   export let flat: string;
   export let content: string;
 
@@ -29,10 +29,14 @@
   const { userHiers } = settings;
   const { basename } = currFile;
 
-  let depthAsNum: number = 1000;
-  if (depth !== undefined && depth !== "") {
-    const num = parseInt(depth);
-    if (!isNaN(num)) depthAsNum = num;
+  let min = 0,
+    max = Infinity;
+
+  if (depth !== undefined) {
+    const minNum = parseInt(depth[0]);
+    if (!isNaN(minNum)) min = minNum;
+    const maxNum = parseInt(depth[1]);
+    if (!isNaN(maxNum)) max = maxNum;
   }
 
   const oppDir = getOppDir(dir);
@@ -60,49 +64,48 @@
   <h3>{dir} of {basename}</h3>
 {/if}
 <div class="BC-tree">
-  {#each lines as line}
-    {#if line.length > 1 && line[0].length / 2 < depthAsNum}
+  {#each lines as [indent, link]}
+    {#if indent.length / 2 <= max && indent.length / 2 >= min}
       {#if content === "open" || content === "closed"}
         <div>
-          <pre class="indent">{line[0]}</pre>
+          <pre class="indent">{indent}</pre>
           <details open={content === "open"}>
             <summary>
               <span
                 class="internal-link"
-                on:click={async (e) =>
-                  await openOrSwitch(plugin.app, line[1], e)}
+                on:click={async (e) => await openOrSwitch(plugin.app, link, e)}
                 on:mouseover={(e) => {
                   //   hoverPreview needs an itemView so it can access `app`...
-                  //   hoverPreview(e, el, line[1])
+                  //   hoverPreview(e, el, link)
                 }}
               >
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <a
-                  class="internal-link {isInVault(plugin.app, line[1])
+                  class="internal-link {isInVault(plugin.app, link)
                     ? ''
-                    : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+                    : 'is-unresolved'}">{dropDendron(link, settings)}</a
                 >
               </span>
             </summary>
-            <RenderMarkdown {app} path={line[1]} />
+            <RenderMarkdown {app} path={link} />
           </details>
         </div>
       {:else}
         <div>
-          <pre class="indent">{line[0] + "-"}</pre>
+          <pre class="indent">{indent + "-"}</pre>
           <span
             class="internal-link"
-            on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
+            on:click={async (e) => await openOrSwitch(plugin.app, link, e)}
             on:mouseover={(e) => {
               //   hoverPreview needs an itemView so it can access `app`...
-              //   hoverPreview(e, el, line[1])
+              //   hoverPreview(e, el, link)
             }}
           >
             <!-- svelte-ignore a11y-missing-attribute -->
             <a
-              class="internal-link {isInVault(plugin.app, line[1])
+              class="internal-link {isInVault(plugin.app, link)
                 ? ''
-                : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+                : 'is-unresolved'}">{dropDendron(link, settings)}</a
             >
           </span>
         </div>
