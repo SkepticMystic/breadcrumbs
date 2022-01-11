@@ -23,6 +23,7 @@
   export let flat: string;
   export let content: string;
   export let from: string;
+  export let implied: string;
 
   const { settings, app, mainG } = plugin;
   const { sourcePath } = ctx;
@@ -54,11 +55,14 @@
   }
 
   const oppDir = getOppDir(dir);
-  const upnDown = getSubInDirs(mainG, dir, oppDir);
-  const closed = getReflexiveClosure(upnDown, userHiers);
-  const down = getSubInDirs(closed, dir);
+  const sub =
+    implied === "false"
+      ? getSubInDirs(mainG, dir)
+      : getSubInDirs(mainG, dir, oppDir);
+  const closed = getReflexiveClosure(sub, userHiers);
+  const subClosed = getSubInDirs(closed, dir);
 
-  const allPaths = dfsAllPaths(down, basename);
+  const allPaths = dfsAllPaths(subClosed, basename);
   const index = plugin.createIndex(allPaths, false);
   info({ allPaths, index });
 

@@ -21017,6 +21017,7 @@ const CODEBLOCK_FIELDS = [
     "flat",
     "content",
     "from",
+    "implied",
 ];
 const blankUserHier = () => {
     return { up: [], same: [], down: [], next: [], prev: [] };
@@ -26088,12 +26089,12 @@ function add_css$7() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[33] = list[i][0];
-	child_ctx[34] = list[i][1];
+	child_ctx[34] = list[i][0];
+	child_ctx[35] = list[i][1];
 	return child_ctx;
 }
 
-// (72:0) {#if title !== "false"}
+// (75:0) {#if title !== "false"}
 function create_if_block_2$2(ctx) {
 	let h3;
 	let t0;
@@ -26122,7 +26123,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (77:4) {#if meetsConditions(indent, link)}
+// (80:4) {#if meetsConditions(indent, link)}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26192,16 +26193,16 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (102:6) {:else}
+// (105:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[33] + "-" + "";
+	let t0_value = /*indent*/ ctx[34] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[34], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[35], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26209,7 +26210,7 @@ function create_else_block$3(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[16](/*link*/ ctx[34], ...args);
+		return /*click_handler_1*/ ctx[17](/*link*/ ctx[35], ...args);
 	}
 
 	return {
@@ -26224,7 +26225,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26252,7 +26253,7 @@ function create_else_block$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
+			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26268,18 +26269,18 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (78:6) {#if content === "open" || content === "closed"}
+// (81:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[33] + "";
+	let t0_value = /*indent*/ ctx[34] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[34], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[35], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26291,13 +26292,13 @@ function create_if_block_1$3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[15](/*link*/ ctx[34], ...args);
+		return /*click_handler*/ ctx[16](/*link*/ ctx[35], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
 				app: /*app*/ ctx[5],
-				path: /*link*/ ctx[34]
+				path: /*link*/ ctx[35]
 			}
 		});
 
@@ -26317,7 +26318,7 @@ function create_if_block_1$3(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26352,7 +26353,7 @@ function create_if_block_1$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
+			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26380,9 +26381,9 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (76:2) {#each lines as [indent, link]}
+// (79:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
-	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[33], /*link*/ ctx[34]);
+	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[34], /*link*/ ctx[35]);
 	let if_block_anchor;
 	let current;
 	let if_block = show_if && create_if_block$4(ctx);
@@ -26547,6 +26548,7 @@ function instance$b($$self, $$props, $$invalidate) {
 	let { flat } = $$props;
 	let { content } = $$props;
 	let { from } = $$props;
+	let { implied } = $$props;
 	const { settings, app, mainG } = plugin;
 	const { sourcePath } = ctx;
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
@@ -26582,10 +26584,14 @@ function instance$b($$self, $$props, $$invalidate) {
 	}
 
 	const oppDir = getOppDir(dir);
-	const upnDown = getSubInDirs(mainG, dir, oppDir);
-	const closed = getReflexiveClosure(upnDown, userHiers);
-	const down = getSubInDirs(closed, dir);
-	const allPaths = dfsAllPaths(down, basename);
+
+	const sub = implied === "false"
+	? getSubInDirs(mainG, dir)
+	: getSubInDirs(mainG, dir, oppDir);
+
+	const closed = getReflexiveClosure(sub, userHiers);
+	const subClosed = getSubInDirs(closed, dir);
+	const allPaths = dfsAllPaths(subClosed, basename);
 	const index = plugin.createIndex(allPaths, false);
 	loglevel.info({ allPaths, index });
 
@@ -26615,6 +26621,7 @@ function instance$b($$self, $$props, $$invalidate) {
 		if ("flat" in $$props) $$invalidate(13, flat = $$props.flat);
 		if ("content" in $$props) $$invalidate(3, content = $$props.content);
 		if ("from" in $$props) $$invalidate(14, from = $$props.from);
+		if ("implied" in $$props) $$invalidate(15, implied = $$props.implied);
 	};
 
 	return [
@@ -26633,6 +26640,7 @@ function instance$b($$self, $$props, $$invalidate) {
 		depth,
 		flat,
 		from,
+		implied,
 		click_handler,
 		click_handler_1
 	];
@@ -26659,7 +26667,8 @@ class CBTree extends SvelteComponent {
 				depth: 12,
 				flat: 13,
 				content: 3,
-				from: 14
+				from: 14,
+				implied: 15
 			},
 			[-1, -1]
 		);
@@ -53124,7 +53133,7 @@ class BCPlugin extends require$$0.Plugin {
     }
     codeblockError(parsedSource) {
         var _a;
-        const { dir, fields, type, title, depth, flat, content, from } = parsedSource;
+        const { dir, fields, type, title, depth, flat, content, from, implied } = parsedSource;
         const { userHiers } = this.settings;
         let err = "";
         if (!CODEBLOCK_TYPES.includes(type))
@@ -53149,6 +53158,8 @@ class BCPlugin extends require$$0.Plugin {
             !this.app.plugins.enabledPlugins.has("dataview")) {
             err += `Dataview must be enabled to use <code>from</code>.</br>`;
         }
+        if (implied !== undefined && implied !== "false")
+            err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
         return err === ""
             ? ""
             : `${err}</br>

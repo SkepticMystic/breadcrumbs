@@ -58,6 +58,7 @@ export const CODEBLOCK_FIELDS = [
   "flat",
   "content",
   "from",
+  "implied",
 ];
 
 export const blankUserHier = (): UserHier => {

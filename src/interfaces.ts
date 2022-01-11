@@ -291,4 +291,5 @@ export interface ParsedCodeblock {
   type: CodeblockType;
   content: string;
   from: string;
+  implied: string;
 }

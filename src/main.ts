@@ -647,7 +647,7 @@ export default class BCPlugin extends Plugin {
   }
 
   codeblockError(parsedSource: ParsedCodeblock) {
-    const { dir, fields, type, title, depth, flat, content, from } =
+    const { dir, fields, type, title, depth, flat, content, from, implied } =
       parsedSource;
     const { userHiers } = this.settings;
     let err = "";
@@ -685,6 +685,9 @@ export default class BCPlugin extends Plugin {
     ) {
       err += `Dataview must be enabled to use <code>from</code>.</br>`;
     }
+
+    if (implied !== undefined && implied !== "false")
+      err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
 
     return err === ""
       ? ""
