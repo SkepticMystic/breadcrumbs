@@ -267,6 +267,12 @@ export default class BCPlugin extends Plugin {
       if (settings.showBCs) await this.drawTrail();
       this.registerActiveLeafChangeEvent();
       this.registerLayoutChangeEvent();
+
+      this.app.workspace.iterateAllLeaves((leaf) => {
+        if (leaf instanceof MarkdownView) {
+          leaf.view.previewMode.rerender(true);
+        }
+      });
     });
 
     for (const { type, plain, constructor } of this.VIEWS) {
@@ -600,9 +606,7 @@ export default class BCPlugin extends Plugin {
           return;
         }
 
-        const { dir, fields, type, title, depth, flat } = parsedSource;
-
-        switch (type) {
+        switch (parsedSource.type) {
           case "tree":
             new CBTree({
               target: el,
