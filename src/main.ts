@@ -662,8 +662,7 @@ export default class BCPlugin extends Plugin {
 
     const allFields = getFields(userHiers);
     [fields].flat()?.forEach((f) => {
-      if (!allFields.includes(f))
-        err += `<code>field: ${f}</code> is not a field in your hierarchies.</br>`;
+      if (f !== undefined && !allFields.includes(f))
     });
 
     if (title !== undefined && title !== "false")
