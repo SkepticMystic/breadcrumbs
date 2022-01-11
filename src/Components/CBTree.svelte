@@ -75,8 +75,8 @@
 
   const indentToDepth = (indent: string) => indent.length / 2 + 1;
 
-  const meetsConditions = (node: string) => {
-    const depth = indentToDepth(node.split("\n")[0]);
+  const meetsConditions = (indent: string, node: string) => {
+    const depth = indentToDepth(indent);
     return (
       depth >= min &&
       depth <= max &&
@@ -90,7 +90,7 @@
 {/if}
 <div class="BC-tree">
   {#each lines as [indent, link]}
-    {#if meetsConditions(link)}
+    {#if meetsConditions(indent, link)}
       {#if content === "open" || content === "closed"}
         <div>
           <pre class="indent">{indent}</pre>

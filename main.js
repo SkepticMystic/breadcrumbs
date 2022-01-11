@@ -26122,7 +26122,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (77:4) {#if meetsConditions(link)}
+// (77:4) {#if meetsConditions(indent, link)}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26382,7 +26382,7 @@ function create_if_block_1$3(ctx) {
 
 // (76:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
-	let show_if = /*meetsConditions*/ ctx[8](/*link*/ ctx[34]);
+	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[33], /*link*/ ctx[34]);
 	let if_block_anchor;
 	let current;
 	let if_block = show_if && create_if_block$4(ctx);
@@ -26596,8 +26596,8 @@ function instance$b($$self, $$props, $$invalidate) {
 
 	const indentToDepth = indent => indent.length / 2 + 1;
 
-	const meetsConditions = node => {
-		const depth = indentToDepth(node.split("\n")[0]);
+	const meetsConditions = (indent, node) => {
+		const depth = indentToDepth(indent);
 		return depth >= min && depth <= max && (froms === undefined || froms.includes(node));
 	};
 
