@@ -24,6 +24,7 @@
         "RegexNote",
         "NamingNotes",
         "Codeblock",
-        "TreeView"
+        "TreeView",
+        "impliedRelations"
     ]
 }

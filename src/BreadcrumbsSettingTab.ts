@@ -2,7 +2,6 @@ import log from "loglevel";
 import {
   App,
   DropdownComponent,
-  MomentFormatComponent,
   Notice,
   PluginSettingTab,
   Setting,
@@ -69,6 +68,8 @@ export class BCSettingTab extends PluginSettingTab {
       target: fieldDetails,
       props: { plugin },
     });
+
+    const relationDetails = details("Relationships");
 
     const generalDetails = details("General Options");
 

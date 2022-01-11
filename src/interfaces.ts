@@ -34,6 +34,20 @@ export interface BCSettings {
   heatmapColour: string;
   hierarchyNotes: string[];
   HNUpField: string;
+  impliedRelations: {
+    /** Has it's own toggle already */
+    siblingIdentity: boolean;
+    /** TypeII implied (currently) */
+    sameParentIsSibling: boolean;
+    /** Traverse siblings horizontally to make all siblings siblings of each other */
+    siblingsSiblingIsSibling: boolean;
+    /** Aunt and Uncle */
+    parentsSiblingsIsParents: boolean;
+    /** Grandparents */
+    parentsParentsIsParent: boolean;
+    /** If two separate parents are siblings, their children are cousins */
+    cousinsIsSibling: boolean;
+  };
   indexNotes: string[];
   /** An array of fields going _up_ which **will** be shown in the trail view */
   limitTrailCheckboxes: string[];
