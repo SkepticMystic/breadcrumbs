@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.31.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.1...2.31.2) (2022-01-11)
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Refresh codeblocks after initialising index ([c150cb9](https://github.com/SkepticMystic/breadcrumbs/commit/c150cb9ddc156ab8895f3bda3b7a2677f78b6456))
+* **TreeView:** :bug: Fail silently if mainG is not ready yet ([a2b19a1](https://github.com/SkepticMystic/breadcrumbs/commit/a2b19a1e96bdc3e5a5949998789da91e4c6bcae3))
+
 ### [2.31.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.0...2.31.1) (2022-01-10)
 
 
