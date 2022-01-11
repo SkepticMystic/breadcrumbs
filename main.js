@@ -22306,7 +22306,7 @@ function removeUnlinkedNodes(g) {
  */
 function getSubInDirs(main, ...dirs) {
     const sub = new graphology_umd_min.MultiGraph();
-    main.forEachEdge((k, a, s, t) => {
+    main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
         if (dirs.includes(a.dir)) {
             //@ts-ignore
             addNodesIfNot(sub, [s, t], a);
@@ -52826,6 +52826,11 @@ class BCPlugin extends require$$0.Plugin {
                 await this.drawTrail();
             this.registerActiveLeafChangeEvent();
             this.registerLayoutChangeEvent();
+            this.app.workspace.iterateAllLeaves((leaf) => {
+                if (leaf instanceof require$$0.MarkdownView) {
+                    leaf.view.previewMode.rerender(true);
+                }
+            });
         });
         for (const { type, plain, constructor } of this.VIEWS) {
             this.addCommand({
@@ -53068,8 +53073,7 @@ class BCPlugin extends require$$0.Plugin {
                 el.innerHTML = err;
                 return;
             }
-            const { dir, fields, type, title, depth, flat } = parsedSource;
-            switch (type) {
+            switch (parsedSource.type) {
                 case "tree":
                     new CBTree({
                         target: el,

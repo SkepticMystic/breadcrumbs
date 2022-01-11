@@ -41,7 +41,7 @@ export function removeUnlinkedNodes(g: MultiGraph) {
  */
 export function getSubInDirs(main: MultiGraph, ...dirs: Directions[]) {
   const sub = new MultiGraph();
-  main.forEachEdge((k, a, s, t) => {
+  main?.forEachEdge((k, a, s, t) => {
     if (dirs.includes(a.dir)) {
       //@ts-ignore
       addNodesIfNot(sub, [s, t], a);
