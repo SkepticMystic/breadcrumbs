@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.32.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.32.0...2.32.1) (2022-01-11)
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Copilot isn't always right. Use `indent` to calculate nodeDepth ([8d722ee](https://github.com/SkepticMystic/breadcrumbs/commit/8d722ee85a9df4fa17568cc82319d0dafd91876e))
+
 ## [2.32.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.4...2.32.0) (2022-01-11)
 
 
