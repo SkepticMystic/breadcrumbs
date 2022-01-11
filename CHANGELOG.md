@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.31.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.2...2.31.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Check if `f` is undefined first (fix [#265](https://github.com/SkepticMystic/breadcrumbs/issues/265)) ([d530454](https://github.com/SkepticMystic/breadcrumbs/commit/d530454660e411f4b83a7a2fc28b4d5630a70ca1))
+
 ### [2.31.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.1...2.31.2) (2022-01-11)
 
 
