@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.32.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.4...2.32.0) (2022-01-11)
+
+
+### Features
+
+* **Codeblock:** :sparkles: `from: "folder" or -#tag` lets you filter the results by folders or tags (Using Dataview api) ([0a70d6c](https://github.com/SkepticMystic/breadcrumbs/commit/0a70d6cf7bb2f56c833dd7e123e69b6a4f494fae))
+
 ### [2.31.4](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.3...2.31.4) (2022-01-11)
 
 
