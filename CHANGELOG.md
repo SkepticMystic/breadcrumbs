@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.31.4](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.3...2.31.4) (2022-01-11)
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Minimum `depth` is 1 (Fix [#267](https://github.com/SkepticMystic/breadcrumbs/issues/267)) ([589d8c5](https://github.com/SkepticMystic/breadcrumbs/commit/589d8c543b99277e22fa9622cae7666d8a1db3a8))
+
 ### [2.31.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.31.2...2.31.3) (2022-01-11)
 
 
