@@ -21016,6 +21016,7 @@ const CODEBLOCK_FIELDS = [
     "title",
     "flat",
     "content",
+    "from",
 ];
 const blankUserHier = () => {
     return { up: [], same: [], down: [], next: [], prev: [] };
@@ -22474,6 +22475,7 @@ const getDVBasename = (file) => file.basename || file.name;
 const getFolder = (file) => { var _a; 
 //@ts-ignore
 return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
+const dropFolder = (path) => path.split("/").last().split(".").slice(0, -1).join(".");
 const splitAndTrim = (fields) => {
     if (!fields || fields === "")
         return [];
@@ -26086,12 +26088,12 @@ function add_css$7() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i][0];
-	child_ctx[29] = list[i][1];
+	child_ctx[33] = list[i][0];
+	child_ctx[34] = list[i][1];
 	return child_ctx;
 }
 
-// (49:0) {#if title !== "false"}
+// (72:0) {#if title !== "false"}
 function create_if_block_2$2(ctx) {
 	let h3;
 	let t0;
@@ -26103,7 +26105,7 @@ function create_if_block_2$2(ctx) {
 			h3 = element("h3");
 			t0 = text(/*dir*/ ctx[1]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[8]);
+			t2 = text(/*basename*/ ctx[6]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -26120,7 +26122,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (54:4) {#if indentToDepth(indent) <= max && indentToDepth(indent) >= min}
+// (77:4) {#if meetsConditions(link)}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26190,16 +26192,16 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (79:6) {:else}
+// (102:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[28] + "-" + "";
+	let t0_value = /*indent*/ ctx[33] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[29], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[34], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26207,7 +26209,7 @@ function create_else_block$3(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[17](/*link*/ ctx[29], ...args);
+		return /*click_handler_1*/ ctx[16](/*link*/ ctx[34], ...args);
 	}
 
 	return {
@@ -26222,7 +26224,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26250,7 +26252,7 @@ function create_else_block$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
+			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26266,18 +26268,18 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (55:6) {#if content === "open" || content === "closed"}
+// (78:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[28] + "";
+	let t0_value = /*indent*/ ctx[33] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[29], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[34], /*settings*/ ctx[4]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26289,13 +26291,13 @@ function create_if_block_1$3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[16](/*link*/ ctx[29], ...args);
+		return /*click_handler*/ ctx[15](/*link*/ ctx[34], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
-				app: /*app*/ ctx[7],
-				path: /*link*/ ctx[29]
+				app: /*app*/ ctx[5],
+				path: /*link*/ ctx[34]
 			}
 		});
 
@@ -26315,7 +26317,7 @@ function create_if_block_1$3(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26350,7 +26352,7 @@ function create_if_block_1$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
+			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[34])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26378,9 +26380,9 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (53:2) {#each lines as [indent, link]}
+// (76:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
-	let show_if = /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) <= /*max*/ ctx[5] && /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) >= /*min*/ ctx[4];
+	let show_if = /*meetsConditions*/ ctx[8](/*link*/ ctx[34]);
 	let if_block_anchor;
 	let current;
 	let if_block = show_if && create_if_block$4(ctx);
@@ -26396,30 +26398,7 @@ function create_each_block$7(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*max, min*/ 48) show_if = /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) <= /*max*/ ctx[5] && /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) >= /*min*/ ctx[4];
-
-			if (show_if) {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-
-					if (dirty[0] & /*max, min*/ 48) {
-						transition_in(if_block, 1);
-					}
-				} else {
-					if_block = create_if_block$4(ctx);
-					if_block.c();
-					transition_in(if_block, 1);
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-				}
-			} else if (if_block) {
-				group_outros();
-
-				transition_out(if_block, 1, 1, () => {
-					if_block = null;
-				});
-
-				check_outros();
-			}
+			if (show_if) if_block.p(ctx, dirty);
 		},
 		i(local) {
 			if (current) return;
@@ -26442,7 +26421,7 @@ function create_fragment$b(ctx) {
 	let div;
 	let current;
 	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2$2(ctx);
-	let each_value = /*lines*/ ctx[9];
+	let each_value = /*lines*/ ctx[7];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -26490,8 +26469,8 @@ function create_fragment$b(ctx) {
 				if_block = null;
 			}
 
-			if (dirty[0] & /*content, app, lines, plugin, settings, indentToDepth, max, min*/ 1785) {
-				each_value = /*lines*/ ctx[9];
+			if (dirty[0] & /*content, app, lines, plugin, settings, meetsConditions*/ 441) {
+				each_value = /*lines*/ ctx[7];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -26555,7 +26534,7 @@ const mouseover_handler_1 = e => {
 //   hoverPreview(e, el, link)
 
 function instance$b($$self, $$props, $$invalidate) {
-	
+	var _a, _b;
 	
 	
 	let { plugin } = $$props;
@@ -26567,6 +26546,7 @@ function instance$b($$self, $$props, $$invalidate) {
 	let { depth } = $$props;
 	let { flat } = $$props;
 	let { content } = $$props;
+	let { from } = $$props;
 	const { settings, app, mainG } = plugin;
 	const { sourcePath } = ctx;
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
@@ -26579,6 +26559,26 @@ function instance$b($$self, $$props, $$invalidate) {
 		if (!isNaN(minNum)) min = minNum;
 		const maxNum = parseInt(depth[1]);
 		if (!isNaN(maxNum)) max = maxNum;
+	}
+
+	let froms = undefined;
+
+	if (from !== undefined) {
+		try {
+			const api = (_a = app.plugins.plugins.dataview) === null || _a === void 0
+			? void 0
+			: _a.api;
+
+			if (api) {
+				const pages = (_b = api.pagePaths(from)) === null || _b === void 0
+				? void 0
+				: _b.values;
+
+				froms = pages.map(dropFolder);
+			} else new require$$0.Notice("Dataview must be enabled for `from` to work.");
+		} catch(e) {
+			new require$$0.Notice(`The query "${from}" failed.`);
+		}
 	}
 
 	const oppDir = getOppDir(dir);
@@ -26595,19 +26595,26 @@ function instance$b($$self, $$props, $$invalidate) {
 	}).filter(pair => pair[1] !== "");
 
 	const indentToDepth = indent => indent.length / 2 + 1;
+
+	const meetsConditions = node => {
+		const depth = indentToDepth(node.split("\n")[0]);
+		return depth >= min && depth <= max && (froms === undefined || froms.includes(node));
+	};
+
 	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
 	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(11, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(12, el = $$props.el);
+		if ("ctx" in $$props) $$invalidate(9, ctx = $$props.ctx);
+		if ("el" in $$props) $$invalidate(10, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(13, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(11, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("depth" in $$props) $$invalidate(14, depth = $$props.depth);
-		if ("flat" in $$props) $$invalidate(15, flat = $$props.flat);
+		if ("depth" in $$props) $$invalidate(12, depth = $$props.depth);
+		if ("flat" in $$props) $$invalidate(13, flat = $$props.flat);
 		if ("content" in $$props) $$invalidate(3, content = $$props.content);
+		if ("from" in $$props) $$invalidate(14, from = $$props.from);
 	};
 
 	return [
@@ -26615,18 +26622,17 @@ function instance$b($$self, $$props, $$invalidate) {
 		dir,
 		title,
 		content,
-		min,
-		max,
 		settings,
 		app,
 		basename,
 		lines,
-		indentToDepth,
+		meetsConditions,
 		ctx,
 		el,
 		fields,
 		depth,
 		flat,
+		from,
 		click_handler,
 		click_handler_1
 	];
@@ -26645,14 +26651,15 @@ class CBTree extends SvelteComponent {
 			safe_not_equal,
 			{
 				plugin: 0,
-				ctx: 11,
-				el: 12,
+				ctx: 9,
+				el: 10,
 				dir: 1,
-				fields: 13,
+				fields: 11,
 				title: 2,
-				depth: 14,
-				flat: 15,
-				content: 3
+				depth: 12,
+				flat: 13,
+				content: 3,
+				from: 14
 			},
 			[-1, -1]
 		);
@@ -53117,7 +53124,7 @@ class BCPlugin extends require$$0.Plugin {
     }
     codeblockError(parsedSource) {
         var _a;
-        const { dir, fields, type, title, depth, flat, content } = parsedSource;
+        const { dir, fields, type, title, depth, flat, content, from } = parsedSource;
         const { userHiers } = this.settings;
         let err = "";
         if (!CODEBLOCK_TYPES.includes(type))
@@ -53138,6 +53145,10 @@ class BCPlugin extends require$$0.Plugin {
             err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
         if (content !== undefined && content !== "open" && content !== "closed")
             err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
+        if (from !== undefined &&
+            !this.app.plugins.enabledPlugins.has("dataview")) {
+            err += `Dataview must be enabled to use <code>from</code>.</br>`;
+        }
         return err === ""
             ? ""
             : `${err}</br>

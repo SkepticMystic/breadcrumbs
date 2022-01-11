@@ -63,6 +63,9 @@ export const getFolder = (file: TFile): string =>
   //@ts-ignore
   file?.parent?.name || file.folder;
 
+export const dropFolder = (path: string) =>
+  path.split("/").last().split(".").slice(0, -1).join(".");
+
 export const splitAndTrim = (fields: string): string[] => {
   if (!fields || fields === "") return [];
   else return fields.split(",").map((str) => str.trim());

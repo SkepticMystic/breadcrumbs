@@ -1,6 +1,6 @@
 <script lang="ts">
   import { info } from "loglevel";
-  import type { MarkdownPostProcessorContext } from "obsidian";
+  import { MarkdownPostProcessorContext, Notice } from "obsidian";
   import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
   import {
     dfsAllPaths,
@@ -10,7 +10,7 @@
   } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
-  import { dropDendron } from "../sharedFunctions";
+  import { dropDendron, dropFolder } from "../sharedFunctions";
   import RenderMarkdown from "./RenderMarkdown.svelte";
 
   export let plugin: BCPlugin;
@@ -22,6 +22,7 @@
   export let depth: string[];
   export let flat: string;
   export let content: string;
+  export let from: string;
 
   const { settings, app, mainG } = plugin;
   const { sourcePath } = ctx;
@@ -37,6 +38,19 @@
     if (!isNaN(minNum)) min = minNum;
     const maxNum = parseInt(depth[1]);
     if (!isNaN(maxNum)) max = maxNum;
+  }
+
+  let froms = undefined;
+  if (from !== undefined) {
+    try {
+      const api = app.plugins.plugins.dataview?.api;
+      if (api) {
+        const pages = api.pagePaths(from)?.values as string[];
+        froms = pages.map(dropFolder);
+      } else new Notice("Dataview must be enabled for `from` to work.");
+    } catch (e) {
+      new Notice(`The query "${from}" failed.`);
+    }
   }
 
   const oppDir = getOppDir(dir);
@@ -60,6 +74,15 @@
     .filter((pair) => pair[1] !== "");
 
   const indentToDepth = (indent: string) => indent.length / 2 + 1;
+
+  const meetsConditions = (node: string) => {
+    const depth = indentToDepth(node.split("\n")[0]);
+    return (
+      depth >= min &&
+      depth <= max &&
+      (froms === undefined || froms.includes(node))
+    );
+  };
 </script>
 
 {#if title !== "false"}
@@ -67,7 +90,7 @@
 {/if}
 <div class="BC-tree">
   {#each lines as [indent, link]}
-    {#if indentToDepth(indent) <= max && indentToDepth(indent) >= min}
+    {#if meetsConditions(link)}
       {#if content === "open" || content === "closed"}
         <div>
           <pre class="indent">{indent}</pre>

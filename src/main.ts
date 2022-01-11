@@ -647,7 +647,8 @@ export default class BCPlugin extends Plugin {
   }
 
   codeblockError(parsedSource: ParsedCodeblock) {
-    const { dir, fields, type, title, depth, flat, content } = parsedSource;
+    const { dir, fields, type, title, depth, flat, content, from } =
+      parsedSource;
     const { userHiers } = this.settings;
     let err = "";
 
@@ -677,6 +678,13 @@ export default class BCPlugin extends Plugin {
 
     if (content !== undefined && content !== "open" && content !== "closed")
       err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
+
+    if (
+      from !== undefined &&
+      !this.app.plugins.enabledPlugins.has("dataview")
+    ) {
+      err += `Dataview must be enabled to use <code>from</code>.</br>`;
+    }
 
     return err === ""
       ? ""

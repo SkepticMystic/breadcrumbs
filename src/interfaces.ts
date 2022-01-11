@@ -290,4 +290,5 @@ export interface ParsedCodeblock {
   flat: string;
   type: CodeblockType;
   content: string;
+  from: string;
 }

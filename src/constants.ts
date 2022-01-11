@@ -57,6 +57,7 @@ export const CODEBLOCK_FIELDS = [
   "title",
   "flat",
   "content",
+  "from",
 ];
 
 export const blankUserHier = (): UserHier => {
