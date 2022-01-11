@@ -26086,12 +26086,12 @@ function add_css$7() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i][0];
-	child_ctx[28] = list[i][1];
+	child_ctx[28] = list[i][0];
+	child_ctx[29] = list[i][1];
 	return child_ctx;
 }
 
-// (48:0) {#if title !== "false"}
+// (49:0) {#if title !== "false"}
 function create_if_block_2$2(ctx) {
 	let h3;
 	let t0;
@@ -26112,7 +26112,7 @@ function create_if_block_2$2(ctx) {
 			append(h3, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
+			if (dirty[0] & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
 		},
 		d(detaching) {
 			if (detaching) detach(h3);
@@ -26120,7 +26120,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (53:4) {#if indent.length / 2 <= max && indent.length / 2 >= min}
+// (54:4) {#if indentToDepth(indent) <= max && indentToDepth(indent) >= min}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26190,16 +26190,16 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (78:6) {:else}
+// (79:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[27] + "-" + "";
+	let t0_value = /*indent*/ ctx[28] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[28], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[29], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26207,7 +26207,7 @@ function create_else_block$3(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[16](/*link*/ ctx[28], ...args);
+		return /*click_handler_1*/ ctx[17](/*link*/ ctx[29], ...args);
 	}
 
 	return {
@@ -26222,7 +26222,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26250,7 +26250,7 @@ function create_else_block$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
+			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26266,18 +26266,18 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (54:6) {#if content === "open" || content === "closed"}
+// (55:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[27] + "";
+	let t0_value = /*indent*/ ctx[28] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[28], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[29], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26289,13 +26289,13 @@ function create_if_block_1$3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[15](/*link*/ ctx[28], ...args);
+		return /*click_handler*/ ctx[16](/*link*/ ctx[29], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
 				app: /*app*/ ctx[7],
-				path: /*link*/ ctx[28]
+				path: /*link*/ ctx[29]
 			}
 		});
 
@@ -26315,7 +26315,7 @@ function create_if_block_1$3(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26350,13 +26350,13 @@ function create_if_block_1$3(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (!current || dirty & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[28])
+			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[29])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
 			}
 
-			if (!current || dirty & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
+			if (!current || dirty[0] & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
 				details.open = details_open_value;
 			}
 		},
@@ -26378,11 +26378,12 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (52:2) {#each lines as [indent, link]}
+// (53:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
+	let show_if = /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) <= /*max*/ ctx[5] && /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) >= /*min*/ ctx[4];
 	let if_block_anchor;
 	let current;
-	let if_block = /*indent*/ ctx[27].length / 2 <= /*max*/ ctx[5] && /*indent*/ ctx[27].length / 2 >= /*min*/ ctx[4] && create_if_block$4(ctx);
+	let if_block = show_if && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -26395,11 +26396,13 @@ function create_each_block$7(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (/*indent*/ ctx[27].length / 2 <= /*max*/ ctx[5] && /*indent*/ ctx[27].length / 2 >= /*min*/ ctx[4]) {
+			if (dirty[0] & /*max, min*/ 48) show_if = /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) <= /*max*/ ctx[5] && /*indentToDepth*/ ctx[10](/*indent*/ ctx[28]) >= /*min*/ ctx[4];
+
+			if (show_if) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty & /*max, min*/ 48) {
+					if (dirty[0] & /*max, min*/ 48) {
 						transition_in(if_block, 1);
 					}
 				} else {
@@ -26473,7 +26476,7 @@ function create_fragment$b(ctx) {
 
 			current = true;
 		},
-		p(ctx, [dirty]) {
+		p(ctx, dirty) {
 			if (/*title*/ ctx[2] !== "false") {
 				if (if_block) {
 					if_block.p(ctx, dirty);
@@ -26487,7 +26490,7 @@ function create_fragment$b(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, max, min*/ 761) {
+			if (dirty[0] & /*content, app, lines, plugin, settings, indentToDepth, max, min*/ 1785) {
 				each_value = /*lines*/ ctx[9];
 				let i;
 
@@ -26569,7 +26572,7 @@ function instance$b($$self, $$props, $$invalidate) {
 	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
 	const { userHiers } = settings;
 	const { basename } = currFile;
-	let min = 0, max = Infinity;
+	let min = 1, max = Infinity;
 
 	if (depth !== undefined) {
 		const minNum = parseInt(depth[0]);
@@ -26591,18 +26594,19 @@ function instance$b($$self, $$props, $$invalidate) {
 		return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
 	}).filter(pair => pair[1] !== "");
 
+	const indentToDepth = indent => indent.length / 2 + 1;
 	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
 	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(10, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(11, el = $$props.el);
+		if ("ctx" in $$props) $$invalidate(11, ctx = $$props.ctx);
+		if ("el" in $$props) $$invalidate(12, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(12, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(13, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("depth" in $$props) $$invalidate(13, depth = $$props.depth);
-		if ("flat" in $$props) $$invalidate(14, flat = $$props.flat);
+		if ("depth" in $$props) $$invalidate(14, depth = $$props.depth);
+		if ("flat" in $$props) $$invalidate(15, flat = $$props.flat);
 		if ("content" in $$props) $$invalidate(3, content = $$props.content);
 	};
 
@@ -26617,6 +26621,7 @@ function instance$b($$self, $$props, $$invalidate) {
 		app,
 		basename,
 		lines,
+		indentToDepth,
 		ctx,
 		el,
 		fields,
@@ -26632,17 +26637,25 @@ class CBTree extends SvelteComponent {
 		super();
 		if (!document.getElementById("svelte-yt7jmz-style")) add_css$7();
 
-		init(this, options, instance$b, create_fragment$b, safe_not_equal, {
-			plugin: 0,
-			ctx: 10,
-			el: 11,
-			dir: 1,
-			fields: 12,
-			title: 2,
-			depth: 13,
-			flat: 14,
-			content: 3
-		});
+		init(
+			this,
+			options,
+			instance$b,
+			create_fragment$b,
+			safe_not_equal,
+			{
+				plugin: 0,
+				ctx: 11,
+				el: 12,
+				dir: 1,
+				fields: 13,
+				title: 2,
+				depth: 14,
+				flat: 15,
+				content: 3
+			},
+			[-1, -1]
+		);
 	}
 }
 

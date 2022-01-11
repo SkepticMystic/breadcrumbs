@@ -29,7 +29,7 @@
   const { userHiers } = settings;
   const { basename } = currFile;
 
-  let min = 0,
+  let min = 1,
     max = Infinity;
 
   if (depth !== undefined) {
@@ -58,6 +58,8 @@
       ];
     })
     .filter((pair) => pair[1] !== "");
+
+  const indentToDepth = (indent: string) => indent.length / 2 + 1;
 </script>
 
 {#if title !== "false"}
@@ -65,7 +67,7 @@
 {/if}
 <div class="BC-tree">
   {#each lines as [indent, link]}
-    {#if indent.length / 2 <= max && indent.length / 2 >= min}
+    {#if indentToDepth(indent) <= max && indentToDepth(indent) >= min}
       {#if content === "open" || content === "closed"}
         <div>
           <pre class="indent">{indent}</pre>
