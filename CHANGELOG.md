@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.33.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.32.1...2.33.0) (2022-01-11)
+
+
+### Features
+
+* **Codeblock:** :sparkles: `implied: false` to only use real relationships in the specified direction ([a1bee7a](https://github.com/SkepticMystic/breadcrumbs/commit/a1bee7aa0150867fd517f78f65852e6de240a599))
+
 ### [2.32.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.32.0...2.32.1) (2022-01-11)
 
 
