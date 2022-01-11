@@ -53114,8 +53114,8 @@ class BCPlugin extends require$$0.Plugin {
             err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
         const allFields = getFields(userHiers);
         (_a = [fields].flat()) === null || _a === void 0 ? void 0 : _a.forEach((f) => {
-            if (!allFields.includes(f))
-                err += `<code>field: ${f}</code> is not a field in your hierarchies.</br>`;
+            if (f !== undefined && !allFields.includes(f))
+                err += `<code>fields: ${f}</code> is not a field in your hierarchies.</br>`;
         });
         if (title !== undefined && title !== "false")
             err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
