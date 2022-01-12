@@ -10,6 +10,7 @@ import type {
 import type DucksView from "./DucksView";
 import type MatrixView from "./MatrixView";
 import type StatsView from "./StatsView";
+import type {IJugglSettings} from "juggl-api";
 
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
@@ -282,7 +283,7 @@ declare module "obsidian" {
   }
 }
 
-export interface ParsedCodeblock {
+export interface ParsedCodeblock extends IJugglSettings{
   dir: Directions;
   fields: string[];
   title: string;

@@ -24,7 +24,7 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
-import CBTree  from "./Components/CBTree.svelte";
+import CBTree from "./Components/CBTree.svelte";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
@@ -608,7 +608,7 @@ export default class BCPlugin extends Plugin {
         }
         let min = 1,
             max = Infinity;
-        let {depth, dir, from, implied} = parsedSource;
+        let {depth, dir, from, implied, flat} = parsedSource;
         if (depth !== undefined) {
           const minNum = parseInt(depth[0]);
           if (!isNaN(minNum)) min = minNum;
@@ -645,6 +645,16 @@ export default class BCPlugin extends Plugin {
         const index = this.createIndex(allPaths, false);
         info({ allPaths, index });
         console.log({allPaths, index})
+        const lines = index
+            .split("\n")
+            .map((line) => {
+              const pair = line.split("- ");
+              return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")] as [
+                string,
+                string
+              ];
+            })
+            .filter((pair) => pair[1] !== "");
 
         switch (parsedSource.type) {
           case "tree":
@@ -655,7 +665,7 @@ export default class BCPlugin extends Plugin {
                 el,
                 min,
                 max,
-                index,
+                lines,
                 froms,
                 basename,
                 ...parsedSource,
@@ -663,7 +673,7 @@ export default class BCPlugin extends Plugin {
             });
             break;
           case "juggl":
-            createdJugglCB(el, parsedSource);
+            createdJugglCB(this, el, parsedSource, lines, froms, min, max);
             break;
         }
       }

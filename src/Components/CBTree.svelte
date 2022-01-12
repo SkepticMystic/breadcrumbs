@@ -10,9 +10,8 @@
   export let dir: Directions;
   export let fields: string[];
   export let title: string;
-  export let flat: string;
   export let content: string;
-  export let index: any;
+  export let lines: [string, string][];
   export let froms: string[];
   export let min: number;
   export let max: number;
@@ -20,16 +19,6 @@
 
   const {settings, app} = plugin;
 
-  const lines = index
-    .split("\n")
-    .map((line) => {
-      const pair = line.split("- ");
-      return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")] as [
-        string,
-        string
-      ];
-    })
-    .filter((pair) => pair[1] !== "");
 
   const indentToDepth = (indent: string) => indent.length / 2 + 1;
 
