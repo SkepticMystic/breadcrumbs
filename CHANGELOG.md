@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.34.0](https://github.com/HEmile/breadcrumbs/compare/2.33.0...2.34.0) (2022-01-12)
+
+
+### Features
+
+* Better default values, allow customizing juggl through code block ([5c4b876](https://github.com/HEmile/breadcrumbs/commit/5c4b876b43d4e09df72a11dfb2b5f92f547b55ad))
+* Initial work on juggl code blocks ([e92021d](https://github.com/HEmile/breadcrumbs/commit/e92021d44476bd76c4329dfdd3e1ae798e0a77cb))
+
 ## [2.33.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.32.1...2.33.0) (2022-01-11)
 
 
