@@ -5,6 +5,7 @@ import type {
   UserHier,
   visTypes,
 } from "./interfaces";
+import {IJugglSettings} from "juggl-api";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
@@ -60,6 +61,31 @@ export const CODEBLOCK_FIELDS = [
   "from",
   "implied",
 ];
+
+
+export const JUGGL_CB_DEFAULTS: IJugglSettings = {
+  autoAddNodes: false,
+      autoExpand: false,
+      autoZoom: false,
+      coreStore: "Obsidian",
+      expandInitial: false,
+      fdgdLayout: 'cola',
+      filter: '',
+      height: '650px',
+      hoverEdges: false,
+      layout: 'force-directed',
+      limit: 400,
+      mergeEdges: true,
+      metaKeyHover: true,
+      mode: 'workspace',
+      navigator: true,
+      openWithShift: false,
+      styleGroups: [],
+      toolbar: true,
+      width: '100%',
+      zoomSpeed: 1,
+};
+CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 
 export const blankUserHier = (): UserHier => {
   return { up: [], same: [], down: [], next: [], prev: [] };
