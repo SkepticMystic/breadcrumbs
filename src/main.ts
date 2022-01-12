@@ -24,7 +24,7 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
-import CBTree from "./Components/CBTree.svelte";
+import CBTree  from "./Components/CBTree.svelte";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
@@ -87,7 +87,7 @@ import type {
 } from "./interfaces";
 import MatrixView from "./MatrixView";
 import {
-  createOrUpdateYaml,
+  createOrUpdateYaml, dropFolder,
   dropHash,
   dropWikilinks,
   fallbackOppField,
@@ -105,6 +105,7 @@ import {
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
+import {createdJugglCB} from "./Visualisations/CBJuggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -605,6 +606,45 @@ export default class BCPlugin extends Plugin {
           el.innerHTML = err;
           return;
         }
+        let min = 1,
+            max = Infinity;
+        let {depth, dir, from, implied} = parsedSource;
+        if (depth !== undefined) {
+          const minNum = parseInt(depth[0]);
+          if (!isNaN(minNum)) min = minNum;
+          const maxNum = parseInt(depth[1]);
+          if (!isNaN(maxNum)) max = maxNum;
+        }
+
+        const currFile = this.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
+        const { userHiers } = settings;
+        const { basename } = currFile;
+
+        let froms = undefined;
+        if (from !== undefined) {
+          try {
+            const api = this.app.plugins.plugins.dataview?.api;
+            if (api) {
+              const pages = api.pagePaths(from)?.values as string[];
+              froms = pages.map(dropFolder);
+            } else new Notice("Dataview must be enabled for `from` to work.");
+          } catch (e) {
+            new Notice(`The query "${from}" failed.`);
+          }
+        }
+
+        const oppDir = getOppDir(dir);
+        const sub =
+            implied === "false"
+                ? getSubInDirs(this.mainG, dir)
+                : getSubInDirs(this.mainG, dir, oppDir);
+        const closed = getReflexiveClosure(sub, userHiers);
+        const subClosed = getSubInDirs(closed, dir);
+
+        const allPaths = dfsAllPaths(subClosed, basename);
+        const index = this.createIndex(allPaths, false);
+        info({ allPaths, index });
+        console.log({allPaths, index})
 
         switch (parsedSource.type) {
           case "tree":
@@ -612,11 +652,18 @@ export default class BCPlugin extends Plugin {
               target: el,
               props: {
                 plugin: this,
-                ctx,
                 el,
+                min,
+                max,
+                index,
+                froms,
+                basename,
                 ...parsedSource,
               },
             });
+            break;
+          case "juggl":
+            createdJugglCB(el, parsedSource);
             break;
         }
       }

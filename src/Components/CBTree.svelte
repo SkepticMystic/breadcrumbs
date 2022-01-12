@@ -1,70 +1,24 @@
 <script lang="ts">
-  import { info } from "loglevel";
-  import { MarkdownPostProcessorContext, Notice } from "obsidian";
   import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
-  import {
-    dfsAllPaths,
-    getOppDir,
-    getReflexiveClosure,
-    getSubInDirs,
-  } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { dropDendron, dropFolder } from "../sharedFunctions";
   import RenderMarkdown from "./RenderMarkdown.svelte";
 
   export let plugin: BCPlugin;
-  export let ctx: MarkdownPostProcessorContext;
   export let el: HTMLElement;
   export let dir: Directions;
   export let fields: string[];
   export let title: string;
-  export let depth: string[];
   export let flat: string;
   export let content: string;
-  export let from: string;
-  export let implied: string;
+  export let index: any;
+  export let froms: string[];
+  export let min: number;
+  export let max: number;
+  export let basename: string;
 
-  const { settings, app, mainG } = plugin;
-  const { sourcePath } = ctx;
-  const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
-  const { userHiers } = settings;
-  const { basename } = currFile;
-
-  let min = 1,
-    max = Infinity;
-
-  if (depth !== undefined) {
-    const minNum = parseInt(depth[0]);
-    if (!isNaN(minNum)) min = minNum;
-    const maxNum = parseInt(depth[1]);
-    if (!isNaN(maxNum)) max = maxNum;
-  }
-
-  let froms = undefined;
-  if (from !== undefined) {
-    try {
-      const api = app.plugins.plugins.dataview?.api;
-      if (api) {
-        const pages = api.pagePaths(from)?.values as string[];
-        froms = pages.map(dropFolder);
-      } else new Notice("Dataview must be enabled for `from` to work.");
-    } catch (e) {
-      new Notice(`The query "${from}" failed.`);
-    }
-  }
-
-  const oppDir = getOppDir(dir);
-  const sub =
-    implied === "false"
-      ? getSubInDirs(mainG, dir)
-      : getSubInDirs(mainG, dir, oppDir);
-  const closed = getReflexiveClosure(sub, userHiers);
-  const subClosed = getSubInDirs(closed, dir);
-
-  const allPaths = dfsAllPaths(subClosed, basename);
-  const index = plugin.createIndex(allPaths, false);
-  info({ allPaths, index });
+  const {settings, app} = plugin;
 
   const lines = index
     .split("\n")
