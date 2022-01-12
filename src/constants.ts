@@ -74,7 +74,7 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
       height: '650px',
       hoverEdges: false,
       layout: 'force-directed',
-      limit: 400,
+      limit: 250,
       mergeEdges: true,
       metaKeyHover: true,
       mode: 'workspace',
