@@ -5,7 +5,7 @@ import type {
   UserHier,
   visTypes,
 } from "./interfaces";
-import {IJugglSettings} from "juggl-api";
+import type {IJugglSettings} from "juggl-api";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
@@ -67,7 +67,7 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
   autoAddNodes: false,
       autoExpand: false,
       autoZoom: false,
-      coreStore: "Obsidian",
+      coreStore: "core",
       expandInitial: false,
       fdgdLayout: 'cola',
       filter: '',
