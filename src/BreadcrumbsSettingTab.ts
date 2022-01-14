@@ -426,7 +426,7 @@ export class BCSettingTab extends PluginSettingTab {
         })
       );
 
-    const trailDetails = subDetails("Trail/Grid", viewDetails);
+    const trailDetails = subDetails("Trail/Grid/Juggl", viewDetails);
 
     new Setting(trailDetails)
       .setName("Show Breadcrumbs")
@@ -473,7 +473,7 @@ export class BCSettingTab extends PluginSettingTab {
     new Setting(trailDetails)
       .setName("Views to show")
       .setDesc(
-        "Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view."
+        "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view."
       )
       .addToggle((toggle) => {
         toggle
@@ -495,6 +495,16 @@ export class BCSettingTab extends PluginSettingTab {
             await plugin.drawTrail();
           });
       })
+    .addToggle((toggle) => {
+        toggle
+            .setTooltip("Show Juggl view")
+            .setValue(settings.showJuggl)
+            .onChange(async (value) => {
+                settings.showJuggl = value;
+                await plugin.saveSettings();
+                await plugin.drawTrail();
+            });
+    })
       .addToggle((toggle) => {
         toggle
           .setTooltip("Show Next/Previous view")

@@ -67,6 +67,7 @@ export interface BCSettings {
   showAll: boolean;
   showGrid: boolean;
   showImpliedRelations: boolean;
+  showJuggl: boolean;
   showPrevNext: boolean;
   showRefreshNotice: boolean;
   showTrail: boolean;

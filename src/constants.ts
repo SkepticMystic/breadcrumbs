@@ -85,6 +85,13 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
   width: '100%',
   zoomSpeed: 1,
 };
+
+export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign( JUGGL_CB_DEFAULTS, {
+  autoZoom: true,
+  fdgdLayout: 'd3-force',
+  height: '400px',
+  toolbar: false,
+});
 CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 
 export const blankUserHier = (): UserHier => {
@@ -257,6 +264,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showImpliedRelations: true,
   showTrail: true,
   showGrid: true,
+  showJuggl: false,
   showPrevNext: true,
   sortByNameShowAlias: false,
   squareDirectionsOrder: [0, 1, 2, 3, 4],

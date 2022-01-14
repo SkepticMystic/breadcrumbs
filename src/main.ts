@@ -48,7 +48,7 @@ import {
   dropHeaderOrAlias,
   DUCK_ICON,
   DUCK_ICON_SVG,
-  DUCK_VIEW,
+  DUCK_VIEW, JUGGL_TRAIL_DEFAULTS,
   MATRIX_VIEW,
   splitLinksRegex,
   STATS_VIEW,
@@ -105,7 +105,7 @@ import {
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
-import {createdJugglCB} from "./Visualisations/CBJuggl";
+import {createdJugglCB, createJugglTrail} from "./Visualisations/CBJuggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -1959,6 +1959,7 @@ export default class BCPlugin extends Plugin {
         respectReadableLineLength,
         showTrail,
         showGrid,
+        showJuggl,
         showPrevNext,
         showBCsInEditLPMode,
       } = settings;
@@ -2106,6 +2107,9 @@ export default class BCPlugin extends Plugin {
           target: trailDiv,
           props: { app: this.app, plugin: this, next, prev },
         });
+      }
+      if (showJuggl && sortedTrails.length) {
+        createJugglTrail(this, trailDiv, props.sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
       }
       db.end2G();
     } catch (err) {
