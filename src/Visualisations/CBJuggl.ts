@@ -4,7 +4,6 @@ import {
     DataStoreEvents,
     getPlugin,
     ICoreDataStore,
-    IDataStore,
     IJuggl,
     IJugglPlugin, IJugglSettings, IJugglStores, nodeDangling,
     nodeFromFile,
@@ -84,9 +83,17 @@ class BCStore extends Component implements ICoreDataStore {
         return new BCStoreEvents();
     }
 
-    getNeighbourhood(nodeId: VizId[]): Promise<cytoscape.NodeDefinition[]> {
-        // TODO
-        return Promise.resolve([]);
+    async getNeighbourhood(nodeId: VizId[]): Promise<cytoscape.NodeDefinition[]> {
+        const newNodes: cytoscape.NodeDefinition[] = [];
+        for (const id of nodeId)  {
+            const source = id.id.slice(0, -3);
+            await this.graph.forEachNeighbor(source, async (neighbor) => {
+                const neighborId = new VizId(neighbor + ".md", STORE_ID);
+                newNodes.push(await this.get(neighborId));
+            })
+        }
+        console.log({newNodes})
+        return newNodes;
     }
 
     refreshNode(view: IJuggl, id: VizId): void | Promise<void> {
@@ -96,6 +103,8 @@ class BCStore extends Component implements ICoreDataStore {
     storeId(): string {
         return STORE_ID;
     }
+
+
 
     get(nodeId: VizId): Promise<cytoscape.NodeDefinition> {
         const file = this.getFile(nodeId);
@@ -109,7 +118,7 @@ class BCStore extends Component implements ICoreDataStore {
             console.log('returning empty cache', nodeId);
             return Promise.resolve(nodeDangling(nodeId.id));
         }
-        return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
+        return nodeFromFile(file, this.plugin, nodeId.toId());
     }
 
 }
