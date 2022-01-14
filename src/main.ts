@@ -606,7 +606,7 @@ export default class BCPlugin extends Plugin {
           el.innerHTML = err;
           return;
         }
-        let min = 1,
+        let min = 0,
             max = Infinity;
         let {depth, dir, from, implied, flat} = parsedSource;
         if (depth !== undefined) {
@@ -673,7 +673,7 @@ export default class BCPlugin extends Plugin {
             });
             break;
           case "juggl":
-            createdJugglCB(this, el, parsedSource, lines, froms, min, max);
+            createdJugglCB(this, el, parsedSource, lines, froms, basename, min, max);
             break;
         }
       }
@@ -688,8 +688,16 @@ export default class BCPlugin extends Plugin {
         ?.split(":")?.[1]
         ?.trim();
 
-    const results: { [field in CodeblockFields]: string | string[] } = {};
-    CODEBLOCK_FIELDS.forEach((field) => (results[field] = getValue(field)));
+    const results: { [field in CodeblockFields]: string | boolean | string[] } = {};
+    CODEBLOCK_FIELDS.forEach((field) => {
+      results[field] = getValue(field);
+      if (results[field] === "false") {
+        results[field] = false;
+      }
+      if (results[field] === "true") {
+        results[field] = true;
+      }
+    });
 
     results.field = results.field
       ? splitAndTrim(results.field as string)

@@ -122,6 +122,7 @@ export function createdJugglCB(plugin: BCPlugin,
                                args: ParsedCodeblock,
                                lines: [string, string][],
                                froms: string[],
+                               source: string,
                                min: number,
                                max: number) {
     try {
@@ -138,6 +139,9 @@ export function createdJugglCB(plugin: BCPlugin,
         const nodes = lines
             .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
             .map(([_, node]) => node + ".md");
+        if (min <= 0) {
+            nodes.push(source + ".md");
+        }
 
         const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin);
         const stores: IJugglStores = {
@@ -145,6 +149,7 @@ export function createdJugglCB(plugin: BCPlugin,
             dataStores: [bcStore]
         }
 
+        console.log({args});
         const juggl = jugglPlugin.createJuggl(target, args, stores, nodes)
         plugin.addChild(juggl);
         juggl.load();
