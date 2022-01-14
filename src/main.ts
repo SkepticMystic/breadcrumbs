@@ -33,6 +33,7 @@ import {
   BC_FOLDER_NOTE,
   BC_FOLDER_NOTE_SUBFOLDER,
   BC_HIDE_TRAIL,
+  BC_IGNORE_DENDRON,
   BC_LINK_NOTE,
   BC_ORDER,
   BC_REGEX_NOTE,
@@ -48,7 +49,8 @@ import {
   dropHeaderOrAlias,
   DUCK_ICON,
   DUCK_ICON_SVG,
-  DUCK_VIEW, JUGGL_TRAIL_DEFAULTS,
+  DUCK_VIEW,
+  JUGGL_TRAIL_DEFAULTS,
   MATRIX_VIEW,
   splitLinksRegex,
   STATS_VIEW,
@@ -87,7 +89,8 @@ import type {
 } from "./interfaces";
 import MatrixView from "./MatrixView";
 import {
-  createOrUpdateYaml, dropFolder,
+  createOrUpdateYaml,
+  dropFolder,
   dropHash,
   dropWikilinks,
   fallbackOppField,
@@ -105,7 +108,7 @@ import {
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
-import {createdJugglCB, createJugglTrail} from "./Visualisations/CBJuggl";
+import { createdJugglCB, createJugglTrail } from "./Visualisations/CBJuggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -607,8 +610,8 @@ export default class BCPlugin extends Plugin {
           return;
         }
         let min = 0,
-            max = Infinity;
-        let {depth, dir, from, implied, flat} = parsedSource;
+          max = Infinity;
+        let { depth, dir, from, implied, flat } = parsedSource;
         if (depth !== undefined) {
           const minNum = parseInt(depth[0]);
           if (!isNaN(minNum)) min = minNum;
@@ -616,7 +619,10 @@ export default class BCPlugin extends Plugin {
           if (!isNaN(maxNum)) max = maxNum;
         }
 
-        const currFile = this.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
+        const currFile = this.app.metadataCache.getFirstLinkpathDest(
+          ctx.sourcePath,
+          ""
+        );
         const { userHiers } = settings;
         const { basename } = currFile;
 
@@ -635,26 +641,26 @@ export default class BCPlugin extends Plugin {
 
         const oppDir = getOppDir(dir);
         const sub =
-            implied === "false"
-                ? getSubInDirs(this.mainG, dir)
-                : getSubInDirs(this.mainG, dir, oppDir);
+          implied === "false"
+            ? getSubInDirs(this.mainG, dir)
+            : getSubInDirs(this.mainG, dir, oppDir);
         const closed = getReflexiveClosure(sub, userHiers);
         const subClosed = getSubInDirs(closed, dir);
 
         const allPaths = dfsAllPaths(subClosed, basename);
         const index = this.createIndex(allPaths, false);
         info({ allPaths, index });
-        console.log({allPaths, index})
+        console.log({ allPaths, index });
         const lines = index
-            .split("\n")
-            .map((line) => {
-              const pair = line.split("- ");
-              return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")] as [
-                string,
-                string
-              ];
-            })
-            .filter((pair) => pair[1] !== "");
+          .split("\n")
+          .map((line) => {
+            const pair = line.split("- ");
+            return [
+              flat === "true" ? "" : pair[0],
+              pair.slice(1).join("- "),
+            ] as [string, string];
+          })
+          .filter((pair) => pair[1] !== "");
 
         switch (parsedSource.type) {
           case "tree":
@@ -673,7 +679,16 @@ export default class BCPlugin extends Plugin {
             });
             break;
           case "juggl":
-            createdJugglCB(this, el, parsedSource, lines, froms, basename, min, max);
+            createdJugglCB(
+              this,
+              el,
+              parsedSource,
+              lines,
+              froms,
+              basename,
+              min,
+              max
+            );
             break;
         }
       }
@@ -688,7 +703,8 @@ export default class BCPlugin extends Plugin {
         ?.split(":")?.[1]
         ?.trim();
 
-    const results: { [field in CodeblockFields]: string | boolean | string[] } = {};
+    const results: { [field in CodeblockFields]: string | boolean | string[] } =
+      {};
     CODEBLOCK_FIELDS.forEach((field) => {
       results[field] = getValue(field);
       if (results[field] === "false") {
@@ -1592,6 +1608,8 @@ export default class BCPlugin extends Plugin {
     if (!addDendronNotes) return;
 
     for (const frontm of frontms) {
+      // Doesn't currently work yet
+      if (frontm[BC_IGNORE_DENDRON]) continue;
       const { file } = frontm;
       const basename = getDVBasename(file);
 
@@ -2109,7 +2127,13 @@ export default class BCPlugin extends Plugin {
         });
       }
       if (showJuggl && sortedTrails.length) {
-        createJugglTrail(this, trailDiv, props.sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
+        createJugglTrail(
+          this,
+          trailDiv,
+          props.sortedTrails,
+          basename,
+          JUGGL_TRAIL_DEFAULTS
+        );
       }
       db.end2G();
     } catch (err) {
