@@ -2601,1047 +2601,6 @@ async function waitForResolvedLinks(app, delay = 1000, max = 50) {
     }
 }
 
-/*
-* loglevel - https://github.com/pimterry/loglevel
-*
-* Copyright (c) 2013 Tim Perry
-* Licensed under the MIT license.
-*/
-
-var loglevel = createCommonjsModule(function (module) {
-(function (root, definition) {
-    if (module.exports) {
-        module.exports = definition();
-    } else {
-        root.log = definition();
-    }
-}(commonjsGlobal, function () {
-
-    // Slightly dubious tricks to cut down minimized file size
-    var noop = function() {};
-    var undefinedType = "undefined";
-    var isIE = (typeof window !== undefinedType) && (typeof window.navigator !== undefinedType) && (
-        /Trident\/|MSIE /.test(window.navigator.userAgent)
-    );
-
-    var logMethods = [
-        "trace",
-        "debug",
-        "info",
-        "warn",
-        "error"
-    ];
-
-    // Cross-browser bind equivalent that works at least back to IE6
-    function bindMethod(obj, methodName) {
-        var method = obj[methodName];
-        if (typeof method.bind === 'function') {
-            return method.bind(obj);
-        } else {
-            try {
-                return Function.prototype.bind.call(method, obj);
-            } catch (e) {
-                // Missing bind shim or IE8 + Modernizr, fallback to wrapping
-                return function() {
-                    return Function.prototype.apply.apply(method, [obj, arguments]);
-                };
-            }
-        }
-    }
-
-    // Trace() doesn't print the message in IE, so for that case we need to wrap it
-    function traceForIE() {
-        if (console.log) {
-            if (console.log.apply) {
-                console.log.apply(console, arguments);
-            } else {
-                // In old IE, native console methods themselves don't have apply().
-                Function.prototype.apply.apply(console.log, [console, arguments]);
-            }
-        }
-        if (console.trace) console.trace();
-    }
-
-    // Build the best logging method possible for this env
-    // Wherever possible we want to bind, not wrap, to preserve stack traces
-    function realMethod(methodName) {
-        if (methodName === 'debug') {
-            methodName = 'log';
-        }
-
-        if (typeof console === undefinedType) {
-            return false; // No method possible, for now - fixed later by enableLoggingWhenConsoleArrives
-        } else if (methodName === 'trace' && isIE) {
-            return traceForIE;
-        } else if (console[methodName] !== undefined) {
-            return bindMethod(console, methodName);
-        } else if (console.log !== undefined) {
-            return bindMethod(console, 'log');
-        } else {
-            return noop;
-        }
-    }
-
-    // These private functions always need `this` to be set properly
-
-    function replaceLoggingMethods(level, loggerName) {
-        /*jshint validthis:true */
-        for (var i = 0; i < logMethods.length; i++) {
-            var methodName = logMethods[i];
-            this[methodName] = (i < level) ?
-                noop :
-                this.methodFactory(methodName, level, loggerName);
-        }
-
-        // Define log.log as an alias for log.debug
-        this.log = this.debug;
-    }
-
-    // In old IE versions, the console isn't present until you first open it.
-    // We build realMethod() replacements here that regenerate logging methods
-    function enableLoggingWhenConsoleArrives(methodName, level, loggerName) {
-        return function () {
-            if (typeof console !== undefinedType) {
-                replaceLoggingMethods.call(this, level, loggerName);
-                this[methodName].apply(this, arguments);
-            }
-        };
-    }
-
-    // By default, we use closely bound real methods wherever possible, and
-    // otherwise we wait for a console to appear, and then try again.
-    function defaultMethodFactory(methodName, level, loggerName) {
-        /*jshint validthis:true */
-        return realMethod(methodName) ||
-               enableLoggingWhenConsoleArrives.apply(this, arguments);
-    }
-
-    function Logger(name, defaultLevel, factory) {
-      var self = this;
-      var currentLevel;
-      defaultLevel = defaultLevel == null ? "WARN" : defaultLevel;
-
-      var storageKey = "loglevel";
-      if (typeof name === "string") {
-        storageKey += ":" + name;
-      } else if (typeof name === "symbol") {
-        storageKey = undefined;
-      }
-
-      function persistLevelIfPossible(levelNum) {
-          var levelName = (logMethods[levelNum] || 'silent').toUpperCase();
-
-          if (typeof window === undefinedType || !storageKey) return;
-
-          // Use localStorage if available
-          try {
-              window.localStorage[storageKey] = levelName;
-              return;
-          } catch (ignore) {}
-
-          // Use session cookie as fallback
-          try {
-              window.document.cookie =
-                encodeURIComponent(storageKey) + "=" + levelName + ";";
-          } catch (ignore) {}
-      }
-
-      function getPersistedLevel() {
-          var storedLevel;
-
-          if (typeof window === undefinedType || !storageKey) return;
-
-          try {
-              storedLevel = window.localStorage[storageKey];
-          } catch (ignore) {}
-
-          // Fallback to cookies if local storage gives us nothing
-          if (typeof storedLevel === undefinedType) {
-              try {
-                  var cookie = window.document.cookie;
-                  var location = cookie.indexOf(
-                      encodeURIComponent(storageKey) + "=");
-                  if (location !== -1) {
-                      storedLevel = /^([^;]+)/.exec(cookie.slice(location))[1];
-                  }
-              } catch (ignore) {}
-          }
-
-          // If the stored level is not valid, treat it as if nothing was stored.
-          if (self.levels[storedLevel] === undefined) {
-              storedLevel = undefined;
-          }
-
-          return storedLevel;
-      }
-
-      function clearPersistedLevel() {
-          if (typeof window === undefinedType || !storageKey) return;
-
-          // Use localStorage if available
-          try {
-              window.localStorage.removeItem(storageKey);
-              return;
-          } catch (ignore) {}
-
-          // Use session cookie as fallback
-          try {
-              window.document.cookie =
-                encodeURIComponent(storageKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
-          } catch (ignore) {}
-      }
-
-      /*
-       *
-       * Public logger API - see https://github.com/pimterry/loglevel for details
-       *
-       */
-
-      self.name = name;
-
-      self.levels = { "TRACE": 0, "DEBUG": 1, "INFO": 2, "WARN": 3,
-          "ERROR": 4, "SILENT": 5};
-
-      self.methodFactory = factory || defaultMethodFactory;
-
-      self.getLevel = function () {
-          return currentLevel;
-      };
-
-      self.setLevel = function (level, persist) {
-          if (typeof level === "string" && self.levels[level.toUpperCase()] !== undefined) {
-              level = self.levels[level.toUpperCase()];
-          }
-          if (typeof level === "number" && level >= 0 && level <= self.levels.SILENT) {
-              currentLevel = level;
-              if (persist !== false) {  // defaults to true
-                  persistLevelIfPossible(level);
-              }
-              replaceLoggingMethods.call(self, level, name);
-              if (typeof console === undefinedType && level < self.levels.SILENT) {
-                  return "No console available for logging";
-              }
-          } else {
-              throw "log.setLevel() called with invalid level: " + level;
-          }
-      };
-
-      self.setDefaultLevel = function (level) {
-          defaultLevel = level;
-          if (!getPersistedLevel()) {
-              self.setLevel(level, false);
-          }
-      };
-
-      self.resetLevel = function () {
-          self.setLevel(defaultLevel, false);
-          clearPersistedLevel();
-      };
-
-      self.enableAll = function(persist) {
-          self.setLevel(self.levels.TRACE, persist);
-      };
-
-      self.disableAll = function(persist) {
-          self.setLevel(self.levels.SILENT, persist);
-      };
-
-      // Initialize with the right level
-      var initialLevel = getPersistedLevel();
-      if (initialLevel == null) {
-          initialLevel = defaultLevel;
-      }
-      self.setLevel(initialLevel, false);
-    }
-
-    /*
-     *
-     * Top-level API
-     *
-     */
-
-    var defaultLogger = new Logger();
-
-    var _loggersByName = {};
-    defaultLogger.getLogger = function getLogger(name) {
-        if ((typeof name !== "symbol" && typeof name !== "string") || name === "") {
-          throw new TypeError("You must supply a name when creating a logger.");
-        }
-
-        var logger = _loggersByName[name];
-        if (!logger) {
-          logger = _loggersByName[name] = new Logger(
-            name, defaultLogger.getLevel(), defaultLogger.methodFactory);
-        }
-        return logger;
-    };
-
-    // Grab the current global log variable in case of overwrite
-    var _log = (typeof window !== undefinedType) ? window.log : undefined;
-    defaultLogger.noConflict = function() {
-        if (typeof window !== undefinedType &&
-               window.log === defaultLogger) {
-            window.log = _log;
-        }
-
-        return defaultLogger;
-    };
-
-    defaultLogger.getLoggers = function getLoggers() {
-        return _loggersByName;
-    };
-
-    // ES6 default export, for compatibility
-    defaultLogger['default'] = defaultLogger;
-
-    return defaultLogger;
-}));
-});
-
-class Debugger {
-    constructor(plugin) {
-        this.debugLessThan = (level) => loglevel.levels[this.plugin.settings.debugMode] < level;
-        this.plugin = plugin;
-    }
-    start2G(group) {
-        if (this.debugLessThan(3))
-            console.groupCollapsed(group);
-    }
-    end2G(...msgs) {
-        if (this.debugLessThan(3)) {
-            if (msgs.length)
-                loglevel.info(...msgs);
-            console.groupEnd();
-        }
-    }
-    start1G(group) {
-        if (this.debugLessThan(2))
-            console.groupCollapsed(group);
-    }
-    end1G(...msgs) {
-        if (this.debugLessThan(2)) {
-            if (msgs.length)
-                loglevel.debug(...msgs);
-            console.groupEnd();
-        }
-    }
-    startGs(...groups) {
-        this.start2G(groups[0]);
-        if (groups[1])
-            this.start1G(groups[1]);
-    }
-    /**
-     * End a debug and info group, logging `msgs` in `endDebugGroup`
-     * @param  {1|2} count The number of groups to end. `1` ends Trace, 2 ends both
-     * @param  {any[]} ...msgs
-     */
-    endGs(count, ...msgs) {
-        if (count === 1)
-            this.end2G(...msgs);
-        else {
-            this.end1G();
-            this.end2G(...msgs);
-        }
-    }
-}
-
-function noop() { }
-function assign(tar, src) {
-    // @ts-ignore
-    for (const k in src)
-        tar[k] = src[k];
-    return tar;
-}
-function run(fn) {
-    return fn();
-}
-function blank_object() {
-    return Object.create(null);
-}
-function run_all(fns) {
-    fns.forEach(run);
-}
-function is_function(thing) {
-    return typeof thing === 'function';
-}
-function safe_not_equal(a, b) {
-    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
-}
-function is_empty(obj) {
-    return Object.keys(obj).length === 0;
-}
-function create_slot(definition, ctx, $$scope, fn) {
-    if (definition) {
-        const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
-        return definition[0](slot_ctx);
-    }
-}
-function get_slot_context(definition, ctx, $$scope, fn) {
-    return definition[1] && fn
-        ? assign($$scope.ctx.slice(), definition[1](fn(ctx)))
-        : $$scope.ctx;
-}
-function get_slot_changes(definition, $$scope, dirty, fn) {
-    if (definition[2] && fn) {
-        const lets = definition[2](fn(dirty));
-        if ($$scope.dirty === undefined) {
-            return lets;
-        }
-        if (typeof lets === 'object') {
-            const merged = [];
-            const len = Math.max($$scope.dirty.length, lets.length);
-            for (let i = 0; i < len; i += 1) {
-                merged[i] = $$scope.dirty[i] | lets[i];
-            }
-            return merged;
-        }
-        return $$scope.dirty | lets;
-    }
-    return $$scope.dirty;
-}
-function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_changes_fn, get_slot_context_fn) {
-    const slot_changes = get_slot_changes(slot_definition, $$scope, dirty, get_slot_changes_fn);
-    if (slot_changes) {
-        const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
-        slot.p(slot_context, slot_changes);
-    }
-}
-function exclude_internal_props(props) {
-    const result = {};
-    for (const k in props)
-        if (k[0] !== '$')
-            result[k] = props[k];
-    return result;
-}
-function null_to_empty(value) {
-    return value == null ? '' : value;
-}
-
-function append(target, node) {
-    target.appendChild(node);
-}
-function insert(target, node, anchor) {
-    target.insertBefore(node, anchor || null);
-}
-function detach(node) {
-    node.parentNode.removeChild(node);
-}
-function destroy_each(iterations, detaching) {
-    for (let i = 0; i < iterations.length; i += 1) {
-        if (iterations[i])
-            iterations[i].d(detaching);
-    }
-}
-function element(name) {
-    return document.createElement(name);
-}
-function svg_element(name) {
-    return document.createElementNS('http://www.w3.org/2000/svg', name);
-}
-function text(data) {
-    return document.createTextNode(data);
-}
-function space() {
-    return text(' ');
-}
-function empty() {
-    return text('');
-}
-function listen(node, event, handler, options) {
-    node.addEventListener(event, handler, options);
-    return () => node.removeEventListener(event, handler, options);
-}
-function attr(node, attribute, value) {
-    if (value == null)
-        node.removeAttribute(attribute);
-    else if (node.getAttribute(attribute) !== value)
-        node.setAttribute(attribute, value);
-}
-function get_binding_group_value(group, __value, checked) {
-    const value = new Set();
-    for (let i = 0; i < group.length; i += 1) {
-        if (group[i].checked)
-            value.add(group[i].__value);
-    }
-    if (!checked) {
-        value.delete(__value);
-    }
-    return Array.from(value);
-}
-function children(element) {
-    return Array.from(element.childNodes);
-}
-function set_data(text, data) {
-    data = '' + data;
-    if (text.wholeText !== data)
-        text.data = data;
-}
-function set_input_value(input, value) {
-    input.value = value == null ? '' : value;
-}
-function set_style(node, key, value, important) {
-    node.style.setProperty(key, value, important ? 'important' : '');
-}
-function select_option(select, value) {
-    for (let i = 0; i < select.options.length; i += 1) {
-        const option = select.options[i];
-        if (option.__value === value) {
-            option.selected = true;
-            return;
-        }
-    }
-}
-function select_value(select) {
-    const selected_option = select.querySelector(':checked') || select.options[0];
-    return selected_option && selected_option.__value;
-}
-
-let current_component;
-function set_current_component(component) {
-    current_component = component;
-}
-function get_current_component() {
-    if (!current_component)
-        throw new Error('Function called outside component initialization');
-    return current_component;
-}
-function onMount(fn) {
-    get_current_component().$$.on_mount.push(fn);
-}
-
-const dirty_components = [];
-const binding_callbacks = [];
-const render_callbacks = [];
-const flush_callbacks = [];
-const resolved_promise = Promise.resolve();
-let update_scheduled = false;
-function schedule_update() {
-    if (!update_scheduled) {
-        update_scheduled = true;
-        resolved_promise.then(flush);
-    }
-}
-function add_render_callback(fn) {
-    render_callbacks.push(fn);
-}
-let flushing = false;
-const seen_callbacks = new Set();
-function flush() {
-    if (flushing)
-        return;
-    flushing = true;
-    do {
-        // first, call beforeUpdate functions
-        // and update components
-        for (let i = 0; i < dirty_components.length; i += 1) {
-            const component = dirty_components[i];
-            set_current_component(component);
-            update(component.$$);
-        }
-        set_current_component(null);
-        dirty_components.length = 0;
-        while (binding_callbacks.length)
-            binding_callbacks.pop()();
-        // then, once components are updated, call
-        // afterUpdate functions. This may cause
-        // subsequent updates...
-        for (let i = 0; i < render_callbacks.length; i += 1) {
-            const callback = render_callbacks[i];
-            if (!seen_callbacks.has(callback)) {
-                // ...so guard against infinite loops
-                seen_callbacks.add(callback);
-                callback();
-            }
-        }
-        render_callbacks.length = 0;
-    } while (dirty_components.length);
-    while (flush_callbacks.length) {
-        flush_callbacks.pop()();
-    }
-    update_scheduled = false;
-    flushing = false;
-    seen_callbacks.clear();
-}
-function update($$) {
-    if ($$.fragment !== null) {
-        $$.update();
-        run_all($$.before_update);
-        const dirty = $$.dirty;
-        $$.dirty = [-1];
-        $$.fragment && $$.fragment.p($$.ctx, dirty);
-        $$.after_update.forEach(add_render_callback);
-    }
-}
-const outroing = new Set();
-let outros;
-function group_outros() {
-    outros = {
-        r: 0,
-        c: [],
-        p: outros // parent group
-    };
-}
-function check_outros() {
-    if (!outros.r) {
-        run_all(outros.c);
-    }
-    outros = outros.p;
-}
-function transition_in(block, local) {
-    if (block && block.i) {
-        outroing.delete(block);
-        block.i(local);
-    }
-}
-function transition_out(block, local, detach, callback) {
-    if (block && block.o) {
-        if (outroing.has(block))
-            return;
-        outroing.add(block);
-        outros.c.push(() => {
-            outroing.delete(block);
-            if (callback) {
-                if (detach)
-                    block.d(1);
-                callback();
-            }
-        });
-        block.o(local);
-    }
-}
-
-function get_spread_update(levels, updates) {
-    const update = {};
-    const to_null_out = {};
-    const accounted_for = { $$scope: 1 };
-    let i = levels.length;
-    while (i--) {
-        const o = levels[i];
-        const n = updates[i];
-        if (n) {
-            for (const key in o) {
-                if (!(key in n))
-                    to_null_out[key] = 1;
-            }
-            for (const key in n) {
-                if (!accounted_for[key]) {
-                    update[key] = n[key];
-                    accounted_for[key] = 1;
-                }
-            }
-            levels[i] = n;
-        }
-        else {
-            for (const key in o) {
-                accounted_for[key] = 1;
-            }
-        }
-    }
-    for (const key in to_null_out) {
-        if (!(key in update))
-            update[key] = undefined;
-    }
-    return update;
-}
-function get_spread_object(spread_props) {
-    return typeof spread_props === 'object' && spread_props !== null ? spread_props : {};
-}
-function create_component(block) {
-    block && block.c();
-}
-function mount_component(component, target, anchor, customElement) {
-    const { fragment, on_mount, on_destroy, after_update } = component.$$;
-    fragment && fragment.m(target, anchor);
-    if (!customElement) {
-        // onMount happens before the initial afterUpdate
-        add_render_callback(() => {
-            const new_on_destroy = on_mount.map(run).filter(is_function);
-            if (on_destroy) {
-                on_destroy.push(...new_on_destroy);
-            }
-            else {
-                // Edge case - component was destroyed immediately,
-                // most likely as a result of a binding initialising
-                run_all(new_on_destroy);
-            }
-            component.$$.on_mount = [];
-        });
-    }
-    after_update.forEach(add_render_callback);
-}
-function destroy_component(component, detaching) {
-    const $$ = component.$$;
-    if ($$.fragment !== null) {
-        run_all($$.on_destroy);
-        $$.fragment && $$.fragment.d(detaching);
-        // TODO null out other refs, including component.$$ (but need to
-        // preserve final state?)
-        $$.on_destroy = $$.fragment = null;
-        $$.ctx = [];
-    }
-}
-function make_dirty(component, i) {
-    if (component.$$.dirty[0] === -1) {
-        dirty_components.push(component);
-        schedule_update();
-        component.$$.dirty.fill(0);
-    }
-    component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
-}
-function init(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
-    const parent_component = current_component;
-    set_current_component(component);
-    const $$ = component.$$ = {
-        fragment: null,
-        ctx: null,
-        // state
-        props,
-        update: noop,
-        not_equal,
-        bound: blank_object(),
-        // lifecycle
-        on_mount: [],
-        on_destroy: [],
-        on_disconnect: [],
-        before_update: [],
-        after_update: [],
-        context: new Map(parent_component ? parent_component.$$.context : []),
-        // everything else
-        callbacks: blank_object(),
-        dirty,
-        skip_bound: false
-    };
-    let ready = false;
-    $$.ctx = instance
-        ? instance(component, options.props || {}, (i, ret, ...rest) => {
-            const value = rest.length ? rest[0] : ret;
-            if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
-                if (!$$.skip_bound && $$.bound[i])
-                    $$.bound[i](value);
-                if (ready)
-                    make_dirty(component, i);
-            }
-            return ret;
-        })
-        : [];
-    $$.update();
-    ready = true;
-    run_all($$.before_update);
-    // `false` as a special case of no DOM component
-    $$.fragment = create_fragment ? create_fragment($$.ctx) : false;
-    if (options.target) {
-        if (options.hydrate) {
-            const nodes = children(options.target);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            $$.fragment && $$.fragment.l(nodes);
-            nodes.forEach(detach);
-        }
-        else {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            $$.fragment && $$.fragment.c();
-        }
-        if (options.intro)
-            transition_in(component.$$.fragment);
-        mount_component(component, options.target, options.anchor, options.customElement);
-        flush();
-    }
-    set_current_component(parent_component);
-}
-/**
- * Base class for Svelte components. Used when dev=false.
- */
-class SvelteComponent {
-    $destroy() {
-        destroy_component(this, 1);
-        this.$destroy = noop;
-    }
-    $on(type, callback) {
-        const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
-        callbacks.push(callback);
-        return () => {
-            const index = callbacks.indexOf(callback);
-            if (index !== -1)
-                callbacks.splice(index, 1);
-        };
-    }
-    $set($$props) {
-        if (this.$$set && !is_empty($$props)) {
-            this.$$.skip_bound = true;
-            this.$$set($$props);
-            this.$$.skip_bound = false;
-        }
-    }
-}
-
-const MATRIX_VIEW = "BC-matrix";
-const STATS_VIEW = "BC-stats";
-const DUCK_VIEW = "BC-ducks";
-const TREE_VIEW = "BC-tree";
-const TRAIL_ICON = "BC-trail-icon";
-const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
-const DUCK_ICON = "BC-duck-icon";
-const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
-const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
-const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
-const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
-const VISTYPES = [
-    "Force Directed Graph",
-    "Tidy Tree",
-    "Circle Packing",
-    "Edge Bundling",
-    "Arc Diagram",
-    "Sunburst",
-    "Tree Map",
-    "Icicle",
-    "Radial Tree",
-];
-const DIRECTIONS$1 = ["up", "same", "down", "next", "prev"];
-const ARROW_DIRECTIONS = {
-    up: "↑",
-    same: "↔",
-    down: "↓",
-    next: "→",
-    prev: "←",
-};
-const RELATIONS = ["Parent", "Sibling", "Child"];
-const REAlCLOSED = ["Real", "Closed"];
-const ALLUNLINKED = ["All", "No Unlinked"];
-const CODEBLOCK_TYPES = ["tree", "juggl"];
-const CODEBLOCK_FIELDS = [
-    "type",
-    "dir",
-    "fields",
-    "depth",
-    "title",
-    "flat",
-    "content",
-    "from",
-    "implied",
-];
-const JUGGL_CB_DEFAULTS = {
-    autoAddNodes: false,
-    autoExpand: false,
-    autoZoom: false,
-    coreStore: "core",
-    expandInitial: false,
-    fdgdLayout: "d3-force",
-    filter: "",
-    height: "750px",
-    hoverEdges: false,
-    layout: "force-directed",
-    limit: 250,
-    mergeEdges: true,
-    metaKeyHover: true,
-    mode: "workspace",
-    navigator: true,
-    openWithShift: false,
-    readContent: true,
-    styleGroups: [],
-    toolbar: true,
-    width: "100%",
-    zoomSpeed: 1,
-};
-const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
-    autoZoom: true,
-    fdgdLayout: "d3-force",
-    height: "400px",
-    readContent: false,
-    toolbar: false,
-    navigator: false
-});
-CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
-const blankUserHier = () => {
-    return { up: [], same: [], down: [], next: [], prev: [] };
-};
-const blankRealNImplied = () => {
-    return {
-        up: { reals: [], implieds: [] },
-        down: { reals: [], implieds: [] },
-        same: { reals: [], implieds: [] },
-        next: { reals: [], implieds: [] },
-        prev: { reals: [], implieds: [] },
-    };
-};
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
-    "BC-folder-note",
-    "BC-folder-note-recursive",
-    "BC-tag-note",
-    "BC-tag-note-field",
-    "BC-tag-note-exact",
-    "BC-link-note",
-    "BC-traverse-note",
-    "BC-regex-note",
-    "BC-regex-note-field",
-    "BC-ignore-dendron",
-    "BC-hide-trail",
-    "BC-order",
-];
-const BC_FIELDS_INFO = [
-    {
-        field: BC_FOLDER_NOTE,
-        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_FOLDER_NOTE_RECURSIVE,
-        desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_TAG_NOTE,
-        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
-        after: ": '#",
-        alt: true,
-    },
-    {
-        field: BC_TAG_NOTE_FIELD,
-        desc: "Manually choose the field for this tag-note to use",
-        after: ": ",
-        alt: false,
-    },
-    {
-        field: BC_TAG_NOTE_EXACT,
-        desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_LINK_NOTE,
-        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_TRAVERSE_NOTE,
-        desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_REGEX_NOTE,
-        desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
-        after: ": '/",
-        alt: true,
-    },
-    {
-        field: BC_REGEX_NOTE_FIELD,
-        desc: "Manually choose the field for this regex-note to use",
-        after: ": ",
-        alt: false,
-    },
-    {
-        field: BC_IGNORE_DENDRON,
-        desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_HIDE_TRAIL,
-        desc: "Don't show the trail in this note",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_ORDER,
-        desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
-        after: ": ",
-        alt: false,
-    },
-];
-const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
-const DEFAULT_SETTINGS = {
-    addDendronNotes: false,
-    aliasesInIndex: false,
-    alphaSortAsc: true,
-    altLinkFields: [],
-    CSVPaths: "",
-    dateFormat: "YYYY-MM-DD",
-    debugMode: "WARN",
-    defaultView: true,
-    dendronNoteDelimiter: ".",
-    dendronNoteField: "up",
-    downViewWrap: false,
-    dotsColour: "#000000",
-    dvWaitTime: 5000,
-    enableAlphaSort: true,
-    fieldSuggestor: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
-    limitWriteBCCheckboxes: [],
-    CHECKBOX_STATES_OVERWRITTEN: false,
-    gridDots: false,
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
-    hierarchyNotes: [""],
-    HNUpField: "",
-    indexNotes: [""],
-    namingSystemField: "",
-    namingSystemRegex: "",
-    namingSystemSplit: ".",
-    namingSystemEndsWithDelimiter: false,
-    refreshOnNoteChange: false,
-    useAllMetadata: true,
-    openMatrixOnLoad: true,
-    openStatsOnLoad: true,
-    openDuckOnLoad: false,
-    openDownOnLoad: true,
-    parseJugglLinksWithoutJuggl: false,
-    showNameOrType: true,
-    showRelationType: true,
-    regexNoteField: "",
-    rlLeaf: true,
-    showAllPathsIfNoneToIndexNote: false,
-    showAllAliases: true,
-    showBCs: true,
-    showBCsInEditLPMode: false,
-    showRefreshNotice: true,
-    showImpliedRelations: true,
-    showTrail: true,
-    showGrid: true,
-    showJuggl: false,
-    showPrevNext: true,
-    sortByNameShowAlias: false,
-    squareDirectionsOrder: [0, 1, 2, 3, 4],
-    limitTrailCheckboxes: [],
-    limitJumpToFirstFields: [],
-    showAll: false,
-    noPathMessage: `This note has no real or implied parents`,
-    tagNoteField: "",
-    threadIntoNewPane: false,
-    threadingTemplate: "{{field}} of {{current}}",
-    threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
-    trailSeperator: "→",
-    treatCurrNodeAsImpliedSibling: false,
-    trimDendronNotes: false,
-    respectReadableLineLength: true,
-    userHiers: [
-        {
-            up: ["up"],
-            same: ["same"],
-            down: ["down"],
-            next: ["next"],
-            prev: ["prev"],
-        },
-    ],
-    writeBCsInline: false,
-    showWriteAllBCsCmd: false,
-    visGraph: "Force Directed Graph",
-    visRelation: "Parent",
-    visClosed: "Real",
-    visAll: "All",
-    wikilinkIndex: true,
-    impliedRelations: {
-        siblingIdentity: false,
-        sameParentIsSibling: false,
-        siblingsSiblingIsSibling: false,
-        parentsSiblingsIsParents: false,
-        parentsParentsIsParent: false,
-        cousinsIsSibling: false,
-    },
-};
-
 var graphology_umd_min = createCommonjsModule(function (module, exports) {
 !function(t,e){module.exports=e();}(commonjsGlobal,(function(){function t(e){return t="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t},t(e)}function e(t,e){t.prototype=Object.create(e.prototype),t.prototype.constructor=t,r(t,e);}function n(t){return n=Object.setPrototypeOf?Object.getPrototypeOf:function(t){return t.__proto__||Object.getPrototypeOf(t)},n(t)}function r(t,e){return r=Object.setPrototypeOf||function(t,e){return t.__proto__=e,t},r(t,e)}function i(){if("undefined"==typeof Reflect||!Reflect.construct)return !1;if(Reflect.construct.sham)return !1;if("function"==typeof Proxy)return !0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(t){return !1}}function o(t,e,n){return o=i()?Reflect.construct:function(t,e,n){var i=[null];i.push.apply(i,e);var o=new(Function.bind.apply(t,i));return n&&r(o,n.prototype),o},o.apply(null,arguments)}function a(t){var e="function"==typeof Map?new Map:void 0;return a=function(t){if(null===t||(i=t,-1===Function.toString.call(i).indexOf("[native code]")))return t;var i;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==e){if(e.has(t))return e.get(t);e.set(t,a);}function a(){return o(t,arguments,n(this).constructor)}return a.prototype=Object.create(t.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),r(a,t)},a(t)}function u(t){if(void 0===t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return t}var c=function(){for(var t=arguments[0],e=1,n=arguments.length;e<n;e++)if(arguments[e])for(var r in arguments[e])t[r]=arguments[e][r];return t};function d(t,e,n,r){var i=t._nodes.get(e),o=null;return i?o="mixed"===r?i.out&&i.out[n]||i.undirected&&i.undirected[n]:"directed"===r?i.out&&i.out[n]:i.undirected&&i.undirected[n]:o}function s(e){return null!==e&&"object"===t(e)&&"function"==typeof e.addUndirectedEdgeWithKey&&"function"==typeof e.dropNode}function h(e){return "object"===t(e)&&null!==e&&e.constructor===Object}function f(t){var e;for(e in t)return !1;return !0}function p(t,e,n){Object.defineProperty(t,e,{enumerable:!1,configurable:!1,writable:!0,value:n});}function l(t,e,n){var r={enumerable:!0,configurable:!0};"function"==typeof n?r.get=n:(r.value=n,r.writable=!1),Object.defineProperty(t,e,r);}function g(t){return !!h(t)&&!(t.attributes&&!Array.isArray(t.attributes))}"function"==typeof Object.assign&&(c=Object.assign);var y,v={exports:{}},b="object"==typeof Reflect?Reflect:null,w=b&&"function"==typeof b.apply?b.apply:function(t,e,n){return Function.prototype.apply.call(t,e,n)};y=b&&"function"==typeof b.ownKeys?b.ownKeys:Object.getOwnPropertySymbols?function(t){return Object.getOwnPropertyNames(t).concat(Object.getOwnPropertySymbols(t))}:function(t){return Object.getOwnPropertyNames(t)};var m=Number.isNaN||function(t){return t!=t};function _(){_.init.call(this);}v.exports=_,v.exports.once=function(t,e){return new Promise((function(n,r){function i(n){t.removeListener(e,o),r(n);}function o(){"function"==typeof t.removeListener&&t.removeListener("error",i),n([].slice.call(arguments));}U(t,e,o,{once:!0}),"error"!==e&&function(t,e,n){"function"==typeof t.on&&U(t,"error",e,n);}(t,i,{once:!0});}))},_.EventEmitter=_,_.prototype._events=void 0,_.prototype._eventsCount=0,_.prototype._maxListeners=void 0;var k=10;function G(t){if("function"!=typeof t)throw new TypeError('The "listener" argument must be of type Function. Received type '+typeof t)}function x(t){return void 0===t._maxListeners?_.defaultMaxListeners:t._maxListeners}function E(t,e,n,r){var i,o,a,u;if(G(n),void 0===(o=t._events)?(o=t._events=Object.create(null),t._eventsCount=0):(void 0!==o.newListener&&(t.emit("newListener",e,n.listener?n.listener:n),o=t._events),a=o[e]),void 0===a)a=o[e]=n,++t._eventsCount;else if("function"==typeof a?a=o[e]=r?[n,a]:[a,n]:r?a.unshift(n):a.push(n),(i=x(t))>0&&a.length>i&&!a.warned){a.warned=!0;var c=new Error("Possible EventEmitter memory leak detected. "+a.length+" "+String(e)+" listeners added. Use emitter.setMaxListeners() to increase limit");c.name="MaxListenersExceededWarning",c.emitter=t,c.type=e,c.count=a.length,u=c,console&&console.warn&&console.warn(u);}return t}function S(){if(!this.fired)return this.target.removeListener(this.type,this.wrapFn),this.fired=!0,0===arguments.length?this.listener.call(this.target):this.listener.apply(this.target,arguments)}function A(t,e,n){var r={fired:!1,wrapFn:void 0,target:t,type:e,listener:n},i=S.bind(r);return i.listener=n,r.wrapFn=i,i}function L(t,e,n){var r=t._events;if(void 0===r)return [];var i=r[e];return void 0===i?[]:"function"==typeof i?n?[i.listener||i]:[i]:n?function(t){for(var e=new Array(t.length),n=0;n<e.length;++n)e[n]=t[n].listener||t[n];return e}(i):N(i,i.length)}function D(t){var e=this._events;if(void 0!==e){var n=e[t];if("function"==typeof n)return 1;if(void 0!==n)return n.length}return 0}function N(t,e){for(var n=new Array(e),r=0;r<e;++r)n[r]=t[r];return n}function U(t,e,n,r){if("function"==typeof t.on)r.once?t.once(e,n):t.on(e,n);else {if("function"!=typeof t.addEventListener)throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type '+typeof t);t.addEventListener(e,(function i(o){r.once&&t.removeEventListener(e,i),n(o);}));}}function j(t){if("function"!=typeof t)throw new Error("obliterator/iterator: expecting a function!");this.next=t;}Object.defineProperty(_,"defaultMaxListeners",{enumerable:!0,get:function(){return k},set:function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received '+t+".");k=t;}}),_.init=function(){void 0!==this._events&&this._events!==Object.getPrototypeOf(this)._events||(this._events=Object.create(null),this._eventsCount=0),this._maxListeners=this._maxListeners||void 0;},_.prototype.setMaxListeners=function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received '+t+".");return this._maxListeners=t,this},_.prototype.getMaxListeners=function(){return x(this)},_.prototype.emit=function(t){for(var e=[],n=1;n<arguments.length;n++)e.push(arguments[n]);var r="error"===t,i=this._events;if(void 0!==i)r=r&&void 0===i.error;else if(!r)return !1;if(r){var o;if(e.length>0&&(o=e[0]),o instanceof Error)throw o;var a=new Error("Unhandled error."+(o?" ("+o.message+")":""));throw a.context=o,a}var u=i[t];if(void 0===u)return !1;if("function"==typeof u)w(u,this,e);else {var c=u.length,d=N(u,c);for(n=0;n<c;++n)w(d[n],this,e);}return !0},_.prototype.addListener=function(t,e){return E(this,t,e,!1)},_.prototype.on=_.prototype.addListener,_.prototype.prependListener=function(t,e){return E(this,t,e,!0)},_.prototype.once=function(t,e){return G(e),this.on(t,A(this,t,e)),this},_.prototype.prependOnceListener=function(t,e){return G(e),this.prependListener(t,A(this,t,e)),this},_.prototype.removeListener=function(t,e){var n,r,i,o,a;if(G(e),void 0===(r=this._events))return this;if(void 0===(n=r[t]))return this;if(n===e||n.listener===e)0==--this._eventsCount?this._events=Object.create(null):(delete r[t],r.removeListener&&this.emit("removeListener",t,n.listener||e));else if("function"!=typeof n){for(i=-1,o=n.length-1;o>=0;o--)if(n[o]===e||n[o].listener===e){a=n[o].listener,i=o;break}if(i<0)return this;0===i?n.shift():function(t,e){for(;e+1<t.length;e++)t[e]=t[e+1];t.pop();}(n,i),1===n.length&&(r[t]=n[0]),void 0!==r.removeListener&&this.emit("removeListener",t,a||e);}return this},_.prototype.off=_.prototype.removeListener,_.prototype.removeAllListeners=function(t){var e,n,r;if(void 0===(n=this._events))return this;if(void 0===n.removeListener)return 0===arguments.length?(this._events=Object.create(null),this._eventsCount=0):void 0!==n[t]&&(0==--this._eventsCount?this._events=Object.create(null):delete n[t]),this;if(0===arguments.length){var i,o=Object.keys(n);for(r=0;r<o.length;++r)"removeListener"!==(i=o[r])&&this.removeAllListeners(i);return this.removeAllListeners("removeListener"),this._events=Object.create(null),this._eventsCount=0,this}if("function"==typeof(e=n[t]))this.removeListener(t,e);else if(void 0!==e)for(r=e.length-1;r>=0;r--)this.removeListener(t,e[r]);return this},_.prototype.listeners=function(t){return L(this,t,!0)},_.prototype.rawListeners=function(t){return L(this,t,!1)},_.listenerCount=function(t,e){return "function"==typeof t.listenerCount?t.listenerCount(e):D.call(t,e)},_.prototype.listenerCount=D,_.prototype.eventNames=function(){return this._eventsCount>0?y(this._events):[]},"undefined"!=typeof Symbol&&(j.prototype[Symbol.iterator]=function(){return this}),j.of=function(){var t=arguments,e=t.length,n=0;return new j((function(){return n>=e?{done:!0}:{done:!1,value:t[n++]}}))},j.empty=function(){return new j((function(){return {done:!0}}))},j.fromSequence=function(t){var e=0,n=t.length;return new j((function(){return e>=n?{done:!0}:{done:!1,value:t[e++]}}))},j.is=function(t){return t instanceof j||"object"==typeof t&&null!==t&&"function"==typeof t.next};var O=j,C={};C.ARRAY_BUFFER_SUPPORT="undefined"!=typeof ArrayBuffer,C.SYMBOL_SUPPORT="undefined"!=typeof Symbol;var z=O,M=C,P=M.ARRAY_BUFFER_SUPPORT,T=M.SYMBOL_SUPPORT;var R=function(t){var e=function(t){return "string"==typeof t||Array.isArray(t)||P&&ArrayBuffer.isView(t)?z.fromSequence(t):"object"!=typeof t||null===t?null:T&&"function"==typeof t[Symbol.iterator]?t[Symbol.iterator]():"function"==typeof t.next?t:null}(t);if(!e)throw new Error("obliterator: target is not iterable nor a valid iterator.");return e},W=R,K=function(t,e){for(var n,r=arguments.length>1?e:1/0,i=r!==1/0?new Array(r):[],o=0,a=W(t);;){if(o===r)return i;if((n=a.next()).done)return o!==e&&(i.length=o),i;i[o++]=n.value;}},I=function(t){function n(e){var n;return (n=t.call(this)||this).name="GraphError",n.message=e,n}return e(n,t),n}(a(Error)),F=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="InvalidArgumentsGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),Y=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="NotFoundGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),B=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="UsageGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I);function q(t,e){this.key=t,this.attributes=e,this.clear();}function J(t,e){this.key=t,this.attributes=e,this.clear();}function V(t,e){this.key=t,this.attributes=e,this.clear();}function H(t,e,n,r,i){this.key=e,this.attributes=i,this.undirected=t,this.source=n,this.target=r;}function Q(t,e,n,r,i,o,a){var u,c,d="out",s="in";if(e&&(d=s="undirected"),t.multi){if(void 0===(c=(u=o[d])[i])&&(c=new Set,u[i]=c),c.add(n),r===i&&e)return;void 0===(u=a[s])[r]&&(u[r]=c);}else {if(o[d][i]=n,r===i&&e)return;a[s][r]=n;}}function X(t,e,n){var r=t.multi,i=n.source,o=n.target,a=i.key,u=o.key,c=i[e?"undirected":"out"],d=e?"undirected":"in";if(u in c)if(r){var s=c[u];1===s.size?(delete c[u],delete o[d][a]):s.delete(n);}else delete c[u];r||delete o[d][a];}q.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.undirectedDegree=0,this.directedSelfLoops=0,this.undirectedSelfLoops=0,this.in={},this.out={},this.undirected={};},J.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};},J.prototype.upgradeToMixed=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.clear=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.upgradeToMixed=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};};function Z(t,e,n,r,i,o,a){var u,c,d,s;if(r=""+r,0===n){if(!(u=t._nodes.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" node in the graph.'));d=i,s=o;}else if(3===n){if(i=""+i,!(c=t._edges.get(i)))throw new Y("Graph.".concat(e,': could not find the "').concat(i,'" edge in the graph.'));var h=c.source.key,f=c.target.key;if(r===h)u=c.target;else {if(r!==f)throw new Y("Graph.".concat(e,': the "').concat(r,'" node is not attached to the "').concat(i,'" edge (').concat(h,", ").concat(f,")."));u=c.source;}d=o,s=a;}else {if(!(c=t._edges.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" edge in the graph.'));u=1===n?c.source:c.target,d=i,s=o;}return [u,d,s]}var $=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes[u]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){return Z(this,e,n,t,r)[0].attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes.hasOwnProperty(u)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];return u.attributes[c]=d,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];if("function"!=typeof d)throw new F("Graph.".concat(e,": updater should be a function."));var s=u.attributes,h=d(s[c]);return s[c]=h,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return delete a.attributes[u],this.emit("nodeAttributesUpdated",{key:a.key,type:"remove",attributes:a.attributes,name:u}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return a.attributes=u,this.emit("nodeAttributesUpdated",{key:a.key,type:"replace",attributes:a.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return c(a.attributes,u),this.emit("nodeAttributesUpdated",{key:a.key,type:"merge",attributes:a.attributes,data:u}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if("function"!=typeof u)throw new F("Graph.".concat(e,": provided updater is not a function."));return a.attributes=u(a.attributes),this.emit("nodeAttributesUpdated",{key:a.key,type:"update",attributes:a.attributes}),this};}}];var tt=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes[r]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t){var r;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>1){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var i=""+t,o=""+arguments[1];if(!(r=d(this,i,o,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(i,'" - "').concat(o,'").'))}else if(t=""+t,!(r=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&r.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return r.attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes.hasOwnProperty(r)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i,this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof i)throw new F("Graph.".concat(e,": updater should be a function."));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i(o.attributes[r]),this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return delete i.attributes[r],this.emit("edgeAttributesUpdated",{key:i.key,type:"remove",attributes:i.attributes,name:r}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r,this.emit("edgeAttributesUpdated",{key:i.key,type:"replace",attributes:i.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return c(i.attributes,r),this.emit("edgeAttributesUpdated",{key:i.key,type:"merge",attributes:i.attributes,data:r}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof r)throw new F("Graph.".concat(e,": provided updater is not a function."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r(i.attributes),this.emit("edgeAttributesUpdated",{key:i.key,type:"update",attributes:i.attributes}),this};}}];var et=O,nt=R,rt=function(){var t,e=arguments,n=-1;return new et((function r(){if(!t){if(++n>=e.length)return {done:!0};t=nt(e[n]);}var i=t.next();return i.done?(t=null,r()):i}))},it=[{name:"edges",type:"mixed"},{name:"inEdges",type:"directed",direction:"in"},{name:"outEdges",type:"directed",direction:"out"},{name:"inboundEdges",type:"mixed",direction:"in"},{name:"outboundEdges",type:"mixed",direction:"out"},{name:"directedEdges",type:"directed"},{name:"undirectedEdges",type:"undirected"}];function ot(t,e){for(var n in e)t.push(e[n].key);}function at(t,e){for(var n in e)e[n].forEach((function(e){return t.push(e.key)}));}function ut(t,e,n){for(var r in t)if(r!==n){var i=t[r];e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected);}}function ct(t,e,n){for(var r in t)r!==n&&t[r].forEach((function(t){return e(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function dt(t,e,n){for(var r in t)if(r!==n){var i=t[r];if(e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected))return i.key}}function st(t,e,n){var r,i,o,a,u;for(var c in t)if(c!==n)for(r=t[c].values();!0!==(i=r.next()).done;)if(a=(o=i.value).source,u=o.target,e(o.key,o.attributes,a.key,u.key,a.attributes,u.attributes,o.undirected))return o.key}function ht(t,e){var n=Object.keys(t),r=n.length,i=null,o=0;return new O((function a(){var u;if(i){var c=i.next();if(c.done)return i=null,o++,a();u=c.value;}else {if(o>=r)return {done:!0};var d=n[o];if(d===e)return o++,a();if((u=t[d])instanceof Set)return i=u.values(),a();o++;}return {done:!1,value:{edge:u.key,attributes:u.attributes,source:u.source.key,target:u.target.key,sourceAttributes:u.source.attributes,targetAttributes:u.target.attributes,undirected:u.undirected}}}))}function ft(t,e,n){var r=e[n];r&&t.push(r.key);}function pt(t,e,n){var r=e[n];r&&r.forEach((function(e){return t.push(e.key)}));}function lt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);}}function gt(t,e,n){var r=t[e];r&&r.forEach((function(t){return n(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function yt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;return n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected)?r.key:void 0}}function vt(t,e,n){var r=t[e];if(r)for(var i,o,a=r.values();!0!==(i=a.next()).done;)if(n((o=i.value).key,o.attributes,o.source.key,o.target.key,o.source.attributes,o.target.attributes,o.undirected))return o.key}function bt(t,e){var n=t[e];if(n instanceof Set){var r=n.values();return new O((function(){var t=r.next();if(t.done)return t;var e=t.value;return {done:!1,value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected}}}))}return O.of([n.key,n.attributes,n.source.key,n.target.key,n.source.attributes,n.target.attributes])}function wt(t,e){if(0===t.size)return [];if("mixed"===e||e===t.type)return "function"==typeof Array.from?Array.from(t._edges.keys()):K(t._edges.keys(),t._edges.size);for(var n,r,i="undirected"===e?t.undirectedSize:t.directedSize,o=new Array(i),a="undirected"===e,u=t._edges.values(),c=0;!0!==(n=u.next()).done;)(r=n.value).undirected===a&&(o[c++]=r.key);return o}function mt(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected);}}function _t(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;if(n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected))return d}}function kt(t,e){if(0===t.size)return O.empty();var n="mixed"!==e&&e!==t.type,r="undirected"===e,i=t._edges.values();return new O((function(){for(var t,e;;){if((t=i.next()).done)return t;if(e=t.value,!n||e.undirected===r)break}return {value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected},done:!1}}))}function Gt(t,e,n,r){var i=[],o=t?at:ot;return "undirected"!==e&&("out"!==n&&o(i,r.in),"in"!==n&&o(i,r.out),!n&&r.directedSelfLoops>0&&i.splice(i.lastIndexOf(r.key),1)),"directed"!==e&&o(i,r.undirected),i}function xt(t,e,n,r,i){var o=t?ct:ut;"undirected"!==e&&("out"!==n&&o(r.in,i),"in"!==n&&o(r.out,i,n?null:r.key)),"directed"!==e&&o(r.undirected,i);}function Et(t,e,n,r,i){var o,a=t?st:dt;if("undirected"!==e){if("out"!==n&&(o=a(r.in,i)))return o;if("in"!==n&&(o=a(r.out,i,n?null:r.key)))return o}if("directed"!==e&&(o=a(r.undirected,i)))return o}function St(t,e,n){var r=O.empty();return "undirected"!==t&&("out"!==e&&void 0!==n.in&&(r=rt(r,ht(n.in))),"in"!==e&&void 0!==n.out&&(r=rt(r,ht(n.out,e?null:n.key)))),"directed"!==t&&void 0!==n.undirected&&(r=rt(r,ht(n.undirected))),r}function At(t,e,n,r,i){var o=e?pt:ft,a=[];return "undirected"!==t&&(void 0!==r.in&&"out"!==n&&o(a,r.in,i),void 0!==r.out&&"in"!==n&&o(a,r.out,i),!n&&r.directedSelfLoops>0&&a.splice(a.lastIndexOf(r.key),1)),"directed"!==t&&void 0!==r.undirected&&o(a,r.undirected,i),a}function Lt(t,e,n,r,i,o){var a=e?gt:lt;"undirected"!==t&&(void 0!==r.in&&"out"!==n&&a(r.in,i,o),r.key!==i&&void 0!==r.out&&"in"!==n&&a(r.out,i,o)),"directed"!==t&&void 0!==r.undirected&&a(r.undirected,i,o);}function Dt(t,e,n,r,i,o){var a,u=e?vt:yt;if("undirected"!==t){if(void 0!==r.in&&"out"!==n&&(a=u(r.in,i,o)))return a;if(r.key!==i&&void 0!==r.out&&"in"!==n&&(a=u(r.out,i,o,n?null:r.key)))return a}if("directed"!==t&&void 0!==r.undirected&&(a=u(r.undirected,i,o)))return a}function Nt(t,e,n,r){var i=O.empty();return "undirected"!==t&&(void 0!==n.in&&"out"!==e&&r in n.in&&(i=rt(i,bt(n.in,r))),void 0!==n.out&&"in"!==e&&r in n.out&&(i=rt(i,bt(n.out,r)))),"directed"!==t&&void 0!==n.undirected&&r in n.undirected&&(i=rt(i,bt(n.undirected,r))),i}var Ut=[{name:"neighbors",type:"mixed"},{name:"inNeighbors",type:"directed",direction:"in"},{name:"outNeighbors",type:"directed",direction:"out"},{name:"inboundNeighbors",type:"mixed",direction:"in"},{name:"outboundNeighbors",type:"mixed",direction:"out"},{name:"directedNeighbors",type:"directed"},{name:"undirectedNeighbors",type:"undirected"}];function jt(t,e){if(void 0!==e)for(var n in e)t.add(n);}function Ot(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;n(u.key,u.attributes);}}function Ct(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;t.has(c.key)||(t.add(c.key),r(c.key,c.attributes));}}function zt(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;if(n(u.key,u.attributes))return u.key}}function Mt(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;if(!t.has(c.key))if(t.add(c.key),r(c.key,c.attributes))return c.key}}function Pt(t,e){var n=Object.keys(e),r=n.length,i=0;return new O((function(){if(i>=r)return {done:!0};var o=e[n[i++]];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===t?u:a;return {done:!1,value:{neighbor:c.key,attributes:c.attributes}}}))}function Tt(t,e,n){var r=Object.keys(n),i=r.length,o=0;return new O((function a(){if(o>=i)return {done:!0};var u=n[r[o++]];u instanceof Set&&(u=u.values().next().value);var c=u.source,d=u.target,s=c===e?d:c;return t.has(s.key)?a():(t.add(s.key),{done:!1,value:{neighbor:s.key,attributes:s.attributes}})}))}function Rt(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Object.keys(n.undirected);if("string"==typeof e)return Object.keys(n[e])}var r=new Set;return "undirected"!==t&&("out"!==e&&jt(r,n.in),"in"!==e&&jt(r,n.out)),"directed"!==t&&jt(r,n.undirected),K(r.values(),r.size)}("mixed"===r?this.type:r,i,e)};}function Wt(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));!function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return Ot(n,n.undirected,r);if("string"==typeof e)return Ot(n,n[e],r)}var i=new Set;"undirected"!==t&&("out"!==e&&Ct(i,n,n.in,r),"in"!==e&&Ct(i,n,n.out,r)),"directed"!==t&&Ct(i,n,n.undirected,r);}("mixed"===r?this.type:r,i,n,e);}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(t,e){var n=[];return this[o](t,(function(t,r){n.push(e(t,r));})),n};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(t,e){var n=[];return this[o](t,(function(t,r){e(t,r)&&n.push(t);})),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(t,e,n){if(arguments.length<3)throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));var r=n;return this[o](t,(function(t,n){r=e(r,t,n);})),r};}function Kt(t,e){var n=e.name,r=e.type,i=e.direction,o=n[0].toUpperCase()+n.slice(1,-1),a="find"+o;t.prototype[a]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(a,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return zt(n,n.undirected,r);if("string"==typeof e)return zt(n,n[e],r)}var i,o=new Set;if("undirected"!==t){if("out"!==e&&(i=Mt(o,n,n.in,r)))return i;if("in"!==e&&(i=Mt(o,n,n.out,r)))return i}if("directed"!==t&&(i=Mt(o,n,n.undirected,r)))return i}("mixed"===r?this.type:r,i,n,e)}};var u="some"+o;t.prototype[u]=function(t,e){return !!this[a](t,e)};var c="every"+o;t.prototype[c]=function(t,e){return !this[a](t,(function(t,n){return !e(t,n)}))};}function It(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Pt(n,n.undirected);if("string"==typeof e)return Pt(n,n[e])}var r=O.empty(),i=new Set;return "undirected"!==t&&("out"!==e&&(r=rt(r,Tt(i,n,n.in))),"in"!==e&&(r=rt(r,Tt(i,n,n.out)))),"directed"!==t&&(r=rt(r,Tt(i,n,n.undirected))),r}("mixed"===r?this.type:r,i,e)};}function Ft(t,e,n,r,i){for(var o,a,u,c,d,s,h,f=r._nodes.values(),p=r.type;!0!==(o=f.next()).done;){var l=!1;if(a=o.value,"undirected"!==p)for(u in c=a.out)if(s=(d=c[u]).target,l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h)return d;if("directed"!==p)for(u in c=a.undirected)if(!(e&&a.key>u)&&((s=(d=c[u]).target).key!==u&&(s=d.source),l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h))return d;if(n&&!l&&(h=i(a.key,null,a.attributes,null,null,null,null),t&&h))return null}}function Yt(t,e,n,r,i){for(var o,a,u,c,d,s,h,f,p,l=r._nodes.values(),g=r.type;!0!==(o=l.next()).done;){var y=!1;if(a=o.value,"undirected"!==g)for(u in s=a.out)for(c=s[u].values();!0!==(d=c.next()).done;)if(f=(h=d.value).target,y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if("directed"!==g)for(u in s=a.undirected)if(!(e&&a.key>u))for(c=s[u].values();!0!==(d=c.next()).done;)if((f=(h=d.value).target).key!==u&&(f=h.source),y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if(n&&!y&&(p=i(a.key,null,a.attributes,null,null,null,null),t&&p))return null}}function Bt(t,e){var n={key:t};return f(e.attributes)||(n.attributes=c({},e.attributes)),n}function qt(t,e){var n={key:t,source:e.source.key,target:e.target.key};return f(e.attributes)||(n.attributes=c({},e.attributes)),e.undirected&&(n.undirected=!0),n}function Jt(t){return h(t)?"key"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?null:"invalid-attributes":"no-key":"not-object"}function Vt(t){return h(t)?"source"in t?"target"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?"undirected"in t&&"boolean"!=typeof t.undirected?"invalid-undirected":null:"invalid-attributes":"no-target":"no-source":"not-object"}var Ht,Qt=(Ht=255&Math.floor(256*Math.random()),function(){return Ht++}),Xt=new Set(["directed","undirected","mixed"]),Zt=new Set(["domain","_events","_eventsCount","_maxListeners"]),$t={allowSelfLoops:!0,multi:!1,type:"mixed"};function te(t,e,n){var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}function ee(t,e,n,r,i,o,a,u){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot add a directed edge to an undirected graph. Use the #.addEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot add an undirected edge to a directed graph. Use the #.addEdge or #.addDirectedEdge instead."));if(u&&!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));if(o=""+o,a=""+a,u=u||{},!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var c=t._nodes.get(o),d=t._nodes.get(a);if(!c)throw new Y("Graph.".concat(e,': source node "').concat(o,'" not found.'));if(!d)throw new Y("Graph.".concat(e,': target node "').concat(a,'" not found.'));var s={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));if(!t.multi&&(r?void 0!==c.undirected[a]:void 0!==c.out[a]))throw new B("Graph.".concat(e,': an edge linking "').concat(o,'" to "').concat(a,"\" already exists. If you really want to add multiple edges linking those nodes, you should create a multi graph by using the 'multi' option."));var f=new H(r,i,c,d,u);return t._edges.set(i,f),o===a?r?(c.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(c.directedSelfLoops++,t._directedSelfLoopCount++):r?(c.undirectedDegree++,d.undirectedDegree++):(c.outDegree++,d.inDegree++),Q(t,r,f,o,a,c,d),r?t._undirectedSize++:t._directedSize++,s.key=i,t.emit("edgeAdded",s),i}function ne(t,e,n,r,i,o,a,u,d){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update a directed edge to an undirected graph. Use the #.mergeEdge/#.updateEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update an undirected edge to a directed graph. Use the #.mergeEdge/#.updateEdge or #.addDirectedEdge instead."));if(u)if(d){if("function"!=typeof u)throw new F("Graph.".concat(e,': invalid updater function. Expecting a function but got "').concat(u,'"'))}else if(!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));var s;if(o=""+o,a=""+a,d&&(s=u,u=void 0),!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var f,p,l=t._nodes.get(o),g=t._nodes.get(a);if(!n&&(f=t._edges.get(i))){if(f.source.key!==o||f.target.key!==a||r&&(f.source.key!==a||f.target.key!==o))throw new B("Graph.".concat(e,': inconsistency detected when attempting to merge the "').concat(i,'" edge with "').concat(o,'" source & "').concat(a,'" target vs. ("').concat(f.source.key,'", "').concat(f.target.key,'").'));p=f;}if(p||t.multi||!l||(p=r?l.undirected[a]:l.out[a]),p){var y=[p.key,!1,!1,!1];if(d?!s:!u)return y;if(d){var v=p.attributes;p.attributes=s(v),t.emit("edgeAttributesUpdated",{type:"replace",key:p.key,attributes:p.attributes});}else c(p.attributes,u),t.emit("edgeAttributesUpdated",{type:"merge",key:p.key,attributes:p.attributes,data:u});return y}u=u||{},d&&s&&(u=s(u));var b={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));var w=!1,m=!1;return l||(l=te(t,o,{}),w=!0,o===a&&(g=l,m=!0)),g||(g=te(t,a,{}),m=!0),f=new H(r,i,l,g,u),t._edges.set(i,f),o===a?r?(l.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(l.directedSelfLoops++,t._directedSelfLoopCount++):r?(l.undirectedDegree++,g.undirectedDegree++):(l.outDegree++,g.inDegree++),Q(t,r,f,o,a,l,g),r?t._undirectedSize++:t._directedSize++,b.key=i,t.emit("edgeAdded",b),[i,!0,w,m]}var re=function(n){function r(t){var e;if(e=n.call(this)||this,"boolean"!=typeof(t=c({},$t,t)).multi)throw new F("Graph.constructor: invalid 'multi' option. Expecting a boolean but got \"".concat(t.multi,'".'));if(!Xt.has(t.type))throw new F('Graph.constructor: invalid \'type\' option. Should be one of "mixed", "directed" or "undirected" but got "'.concat(t.type,'".'));if("boolean"!=typeof t.allowSelfLoops)throw new F("Graph.constructor: invalid 'allowSelfLoops' option. Expecting a boolean but got \"".concat(t.allowSelfLoops,'".'));var r="mixed"===t.type?q:"directed"===t.type?J:V;p(u(e),"NodeDataClass",r);var i=Qt(),o=0;return p(u(e),"_attributes",{}),p(u(e),"_nodes",new Map),p(u(e),"_edges",new Map),p(u(e),"_directedSize",0),p(u(e),"_undirectedSize",0),p(u(e),"_directedSelfLoopCount",0),p(u(e),"_undirectedSelfLoopCount",0),p(u(e),"_edgeKeyGenerator",(function(){var t;do{t="geid_"+i+"_"+o++;}while(e._edges.has(t));return t})),p(u(e),"_options",t),Zt.forEach((function(t){return p(u(e),t,e[t])})),l(u(e),"order",(function(){return e._nodes.size})),l(u(e),"size",(function(){return e._edges.size})),l(u(e),"directedSize",(function(){return e._directedSize})),l(u(e),"undirectedSize",(function(){return e._undirectedSize})),l(u(e),"selfLoopCount",(function(){return e._directedSelfLoopCount+e._undirectedSelfLoopCount})),l(u(e),"directedSelfLoopCount",(function(){return e._directedSelfLoopCount})),l(u(e),"undirectedSelfLoopCount",(function(){return e._undirectedSelfLoopCount})),l(u(e),"multi",e._options.multi),l(u(e),"type",e._options.type),l(u(e),"allowSelfLoops",e._options.allowSelfLoops),l(u(e),"implementation",(function(){return "graphology"})),e}e(r,n);var i=r.prototype;return i._resetInstanceCounters=function(){this._directedSize=0,this._undirectedSize=0,this._directedSelfLoopCount=0,this._undirectedSelfLoopCount=0;},i.hasNode=function(t){return this._nodes.has(""+t)},i.hasDirectedEdge=function(t,e){if("undirected"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&!r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.out[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasUndirectedEdge=function(t,e){if("directed"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.undirected[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasEdge=function(t,e){if(1===arguments.length){var n=""+t;return this._edges.has(n)}if(2===arguments.length){t=""+t,e=""+e;var r=this._nodes.get(t);if(!r)return !1;var i=void 0!==r.out&&r.out[e];return i||(i=void 0!==r.undirected&&r.undirected[e]),!!i&&(!this.multi||!!i.size)}throw new F("Graph.hasEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.directedEdge=function(t,e){if("undirected"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.directedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.directedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.directedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.directedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||void 0;return r?r.key:void 0}},i.undirectedEdge=function(t,e){if("directed"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.undirectedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.undirectedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.undirectedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.undirectedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.undirected&&n.undirected[e]||void 0;return r?r.key:void 0}},i.edge=function(t,e){if(this.multi)throw new B("Graph.edge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.edges instead.");t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.edge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.edge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||n.undirected&&n.undirected[e]||void 0;if(r)return r.key},i.areDirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areDirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)},i.areOutNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out},i.areInNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in},i.areUndirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areUndirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "directed"!==this.type&&e in n.undirected},i.areNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)||"directed"!==this.type&&e in n.undirected},i.areInboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in||"directed"!==this.type&&e in n.undirected},i.areOutboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out||"directed"!==this.type&&e in n.undirected},i.inDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.directedSelfLoops},i.outDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree+e.directedSelfLoops},i.directedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegree: could not find the "'.concat(t,'" node in the graph.'));if("undirected"===this.type)return 0;var n=e.directedSelfLoops;return e.inDegree+n+(e.outDegree+n)},i.undirectedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegree: could not find the "'.concat(t,'" node in the graph.'));if("directed"===this.type)return 0;var n=e.undirectedSelfLoops;return e.undirectedDegree+2*n},i.degree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degree: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree+2*e.undirectedSelfLoops),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree+2*e.directedSelfLoops),n},i.inDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree},i.outDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree},i.directedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.outDegree},i.undirectedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "directed"===this.type?0:e.undirectedDegree},i.degreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree),n},i.source=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.source: could not find the "'.concat(t,'" edge in the graph.'));return e.source.key},i.target=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.target: could not find the "'.concat(t,'" edge in the graph.'));return e.target.key},i.extremities=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.extremities: could not find the "'.concat(t,'" edge in the graph.'));return [e.source.key,e.target.key]},i.opposite=function(t,e){t=""+t,e=""+e;var n=this._edges.get(e);if(!n)throw new Y('Graph.opposite: could not find the "'.concat(e,'" edge in the graph.'));var r=n.source.key,i=n.target.key;if(t===r)return i;if(t===i)return r;throw new Y('Graph.opposite: the "'.concat(t,'" node is not attached to the "').concat(e,'" edge (').concat(r,", ").concat(i,")."))},i.hasExtremity=function(t,e){t=""+t,e=""+e;var n=this._edges.get(t);if(!n)throw new Y('Graph.hasExtremity: could not find the "'.concat(t,'" edge in the graph.'));return n.source.key===e||n.target.key===e},i.isUndirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isUndirected: could not find the "'.concat(t,'" edge in the graph.'));return e.undirected},i.isDirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isDirected: could not find the "'.concat(t,'" edge in the graph.'));return !e.undirected},i.isSelfLoop=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isSelfLoop: could not find the "'.concat(t,'" edge in the graph.'));return e.source===e.target},i.addNode=function(t,e){var n=function(t,e,n){if(n&&!h(n))throw new F('Graph.addNode: invalid attributes. Expecting an object but got "'.concat(n,'"'));if(e=""+e,n=n||{},t._nodes.has(e))throw new B('Graph.addNode: the "'.concat(e,'" node already exist in the graph.'));var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}(this,t,e);return n.key},i.mergeNode=function(t,e){if(e&&!h(e))throw new F('Graph.mergeNode: invalid attributes. Expecting an object but got "'.concat(e,'"'));t=""+t,e=e||{};var n=this._nodes.get(t);return n?(e&&(c(n.attributes,e),this.emit("nodeAttributesUpdated",{type:"merge",key:t,attributes:n.attributes,data:e})),[t,!1]):(n=new this.NodeDataClass(t,e),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:e}),[t,!0])},i.updateNode=function(t,e){if(e&&"function"!=typeof e)throw new F('Graph.updateNode: invalid updater function. Expecting a function but got "'.concat(e,'"'));t=""+t;var n=this._nodes.get(t);if(n){if(e){var r=n.attributes;n.attributes=e(r),this.emit("nodeAttributesUpdated",{type:"replace",key:t,attributes:n.attributes});}return [t,!1]}var i=e?e({}):{};return n=new this.NodeDataClass(t,i),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:i}),[t,!0]},i.dropNode=function(t){var e=this;t=""+t;var n=this._nodes.get(t);if(!n)throw new Y('Graph.dropNode: could not find the "'.concat(t,'" node in the graph.'));this.forEachEdge(t,(function(t){e.dropEdge(t);})),this._nodes.delete(t),this.emit("nodeDropped",{key:t,attributes:n.attributes});},i.dropEdge=function(t){var e;if(arguments.length>1){var n=""+arguments[0],r=""+arguments[1];if(!(e=d(this,n,r,this.type)))throw new Y('Graph.dropEdge: could not find the "'.concat(n,'" -> "').concat(r,'" edge in the graph.'))}else if(t=""+t,!(e=this._edges.get(t)))throw new Y('Graph.dropEdge: could not find the "'.concat(t,'" edge in the graph.'));this._edges.delete(e.key);var i=e,o=i.source,a=i.target,u=i.attributes,c=e.undirected;return o===a?c?(o.undirectedSelfLoops--,this._undirectedSelfLoopCount--):(o.directedSelfLoops--,this._directedSelfLoopCount--):c?(o.undirectedDegree--,a.undirectedDegree--):(o.outDegree--,a.inDegree--),X(this,c,e),c?this._undirectedSize--:this._directedSize--,this.emit("edgeDropped",{key:t,attributes:u,source:o.key,target:a.key,undirected:c}),this},i.clear=function(){this._edges.clear(),this._nodes.clear(),this._resetInstanceCounters(),this.emit("cleared");},i.clearEdges=function(){!function(t){for(var e,n=t._nodes.values();!0!==(e=n.next()).done;)e.value.clear();}(this),this._edges.clear(),this._resetInstanceCounters(),this.emit("edgesCleared");},i.getAttribute=function(t){return this._attributes[t]},i.getAttributes=function(){return this._attributes},i.hasAttribute=function(t){return this._attributes.hasOwnProperty(t)},i.setAttribute=function(t,e){return this._attributes[t]=e,this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.updateAttribute=function(t,e){if("function"!=typeof e)throw new F("Graph.updateAttribute: updater should be a function.");var n=this._attributes[t];return this._attributes[t]=e(n),this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.removeAttribute=function(t){return delete this._attributes[t],this.emit("attributesUpdated",{type:"remove",attributes:this._attributes,name:t}),this},i.replaceAttributes=function(t){if(!h(t))throw new F("Graph.replaceAttributes: provided attributes are not a plain object.");return this._attributes=t,this.emit("attributesUpdated",{type:"replace",attributes:this._attributes}),this},i.mergeAttributes=function(t){if(!h(t))throw new F("Graph.mergeAttributes: provided attributes are not a plain object.");return c(this._attributes,t),this.emit("attributesUpdated",{type:"merge",attributes:this._attributes,data:t}),this},i.updateAttributes=function(t){if("function"!=typeof t)throw new F("Graph.updateAttributes: provided updater is not a function.");return this._attributes=t(this._attributes),this.emit("attributesUpdated",{type:"update",attributes:this._attributes}),this},i.updateEachNodeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachNodeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachNodeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i=this._nodes.values();!0!==(n=i.next()).done;)(r=n.value).attributes=t(r.key,r.attributes);this.emit("eachNodeAttributesUpdated",{hints:e||null});},i.updateEachEdgeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachEdgeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachEdgeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i,o,a=this._edges.values();!0!==(n=a.next()).done;)i=(r=n.value).source,o=r.target,r.attributes=t(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);this.emit("eachEdgeAttributesUpdated",{hints:e||null});},i.forEachAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!1,!1,this,t):Ft(!1,!1,!1,this,t);},i.forEachAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!1,!0,this,t):Ft(!1,!1,!0,this,t);},i.forEachAssymetricAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!0,!1,this,t):Ft(!1,!0,!1,this,t);},i.forEachAssymetricAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!0,!0,this,t):Ft(!1,!0,!0,this,t);},i.nodes=function(){return "function"==typeof Array.from?Array.from(this._nodes.keys()):K(this._nodes.keys(),this._nodes.size)},i.forEachNode=function(t){if("function"!=typeof t)throw new F("Graph.forEachNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes);},i.findNode=function(t){if("function"!=typeof t)throw new F("Graph.findNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return n.key},i.mapNodes=function(t){if("function"!=typeof t)throw new F("Graph.mapNode: expecting a callback.");for(var e,n,r=this._nodes.values(),i=new Array(this.order),o=0;!0!==(e=r.next()).done;)n=e.value,i[o++]=t(n.key,n.attributes);return i},i.someNode=function(t){if("function"!=typeof t)throw new F("Graph.someNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return !0;return !1},i.everyNode=function(t){if("function"!=typeof t)throw new F("Graph.everyNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(!t((n=e.value).key,n.attributes))return !1;return !0},i.filterNodes=function(t){if("function"!=typeof t)throw new F("Graph.filterNodes: expecting a callback.");for(var e,n,r=this._nodes.values(),i=[];!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes)&&i.push(n.key);return i},i.reduceNodes=function(t,e){if("function"!=typeof t)throw new F("Graph.reduceNodes: expecting a callback.");if(arguments.length<2)throw new F("Graph.reduceNodes: missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array.");for(var n,r,i=e,o=this._nodes.values();!0!==(n=o.next()).done;)i=t(i,(r=n.value).key,r.attributes);return i},i.nodeEntries=function(){var t=this._nodes.values();return new O((function(){var e=t.next();if(e.done)return e;var n=e.value;return {value:{node:n.key,attributes:n.attributes},done:!1}}))},i.exportNode=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.exportNode: could not find the "'.concat(t,'" node in the graph.'));return Bt(t,e)},i.exportEdge=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.exportEdge: could not find the "'.concat(t,'" edge in the graph.'));return qt(t,e)},i.export=function(){var t=new Array(this._nodes.size),e=0;this._nodes.forEach((function(n,r){t[e++]=Bt(r,n);}));var n=new Array(this._edges.size);return e=0,this._edges.forEach((function(t,r){n[e++]=qt(r,t);})),{attributes:this.getAttributes(),nodes:t,edges:n,options:{type:this.type,multi:this.multi,allowSelfLoops:this.allowSelfLoops}}},i.importNode=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Jt(t);if(n){if("not-object"===n)throw new F('Graph.importNode: invalid serialized node. A serialized node should be a plain object with at least a "key" property.');if("no-key"===n)throw new F("Graph.importNode: no key provided.");if("invalid-attributes"===n)throw new F("Graph.importNode: invalid attributes. Attributes should be a plain object, null or omitted.")}var r=t.key,i=t.attributes,o=void 0===i?{}:i;return e?this.mergeNode(r,o):this.addNode(r,o),this},i.importEdge=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Vt(t);if(n){if("not-object"===n)throw new F('Graph.importEdge: invalid serialized edge. A serialized edge should be a plain object with at least a "source" & "target" property.');if("no-source"===n)throw new F("Graph.importEdge: missing souce.");if("no-target"===n)throw new F("Graph.importEdge: missing target.");if("invalid-attributes"===n)throw new F("Graph.importEdge: invalid attributes. Attributes should be a plain object, null or omitted.");if("invalid-undirected"===n)throw new F("Graph.importEdge: invalid undirected. Undirected should be boolean or omitted.")}var r=t.source,i=t.target,o=t.attributes,a=void 0===o?{}:o,u=t.undirected,c=void 0!==u&&u;return "key"in t?(e?c?this.mergeUndirectedEdgeWithKey:this.mergeDirectedEdgeWithKey:c?this.addUndirectedEdgeWithKey:this.addDirectedEdgeWithKey).call(this,t.key,r,i,a):(e?c?this.mergeUndirectedEdge:this.mergeDirectedEdge:c?this.addUndirectedEdge:this.addDirectedEdge).call(this,r,i,a),this},i.import=function(t){var e,n,r,i=arguments.length>1&&void 0!==arguments[1]&&arguments[1];if(s(t))return this.import(t.export(),i),this;if(!h(t))throw new F("Graph.import: invalid argument. Expecting a serialized graph or, alternatively, a Graph instance.");if(t.attributes){if(!h(t.attributes))throw new F("Graph.import: invalid attributes. Expecting a plain object.");i?this.mergeAttributes(t.attributes):this.replaceAttributes(t.attributes);}if(t.nodes){if(r=t.nodes,!Array.isArray(r))throw new F("Graph.import: invalid nodes. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importNode(r[e],i);}if(t.edges){if(r=t.edges,!Array.isArray(r))throw new F("Graph.import: invalid edges. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importEdge(r[e],i);}return this},i.nullCopy=function(t){var e=new r(c({},this._options,t));return e.replaceAttributes(c({},this.getAttributes())),e},i.emptyCopy=function(t){var e=this.nullCopy(t);return this._nodes.forEach((function(t,n){var r=c({},t.attributes);t=new e.NodeDataClass(n,r),e._nodes.set(n,t);})),e},i.copy=function(){for(var t,e,n=this.emptyCopy(),r=this._edges.values();!0!==(t=r.next()).done;)ee(n,"copy",!1,(e=t.value).undirected,e.key,e.source.key,e.target.key,c({},e.attributes));return n},i.upgradeToMixed=function(){return "mixed"===this.type||(this._nodes.forEach((function(t){return t.upgradeToMixed()})),this._options.type="mixed",l(this,"type",this._options.type),p(this,"NodeDataClass",q)),this},i.upgradeToMulti=function(){return this.multi||(this._options.multi=!0,l(this,"multi",!0),(t=this)._nodes.forEach((function(e,n){if(e.out)for(var r in e.out){var i=new Set;i.add(e.out[r]),e.out[r]=i,t._nodes.get(r).in[n]=i;}if(e.undirected)for(var o in e.undirected)if(!(o>n)){var a=new Set;a.add(e.undirected[o]),e.undirected[o]=a,t._nodes.get(o).undirected[n]=a;}}))),this;var t;},i.toJSON=function(){return this.export()},i.toString=function(){return "[object Graph]"},i.inspect=function(){var e=this,n={};this._nodes.forEach((function(t,e){n[e]=t.attributes;}));var r={},i={};this._edges.forEach((function(t,n){var o,a=t.undirected?"--":"->",u="",c=t.source.key,d=t.target.key;t.undirected&&c>d&&(o=c,c=d,d=o);var s="(".concat(c,")").concat(a,"(").concat(d,")");n.startsWith("geid_")?e.multi&&(void 0===i[s]?i[s]=0:i[s]++,u+="".concat(i[s],". ")):u+="[".concat(n,"]: "),r[u+=s]=t.attributes;}));var o={};for(var a in this)this.hasOwnProperty(a)&&!Zt.has(a)&&"function"!=typeof this[a]&&"symbol"!==t(a)&&(o[a]=this[a]);return o.attributes=this._attributes,o.nodes=n,o.edges=r,p(o,"constructor",this.constructor),o},r}(v.exports.EventEmitter);"undefined"!=typeof Symbol&&(re.prototype[Symbol.for("nodejs.util.inspect.custom")]=re.prototype.inspect),[{name:function(t){return "".concat(t,"Edge")},generateKey:!0},{name:function(t){return "".concat(t,"DirectedEdge")},generateKey:!0,type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdge")},generateKey:!0,type:"undirected"},{name:function(t){return "".concat(t,"EdgeWithKey")}},{name:function(t){return "".concat(t,"DirectedEdgeWithKey")},type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdgeWithKey")},type:"undirected"}].forEach((function(t){["add","merge","update"].forEach((function(e){var n=t.name(e),r="add"===e?ee:ne;t.generateKey?re.prototype[n]=function(i,o,a){return r(this,n,!0,"undirected"===(t.type||this.type),null,i,o,a,"update"===e)}:re.prototype[n]=function(i,o,a,u){return r(this,n,!1,"undirected"===(t.type||this.type),i,o,a,u,"update"===e)};}));})),function(t){$.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Node"),0),r(t,n("Source"),1),r(t,n("Target"),2),r(t,n("Opposite"),3);}));}(re),function(t){tt.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Edge"),"mixed"),r(t,n("DirectedEdge"),"directed"),r(t,n("UndirectedEdge"),"undirected");}));}(re),function(t){it.forEach((function(e){!function(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];if(!arguments.length)return wt(this,r);if(1===arguments.length){t=""+t;var o=this._nodes.get(t);if(void 0===o)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return Gt(this.multi,"mixed"===r?this.type:r,i,o)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(n,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(n,':  could not find the "').concat(e,'" target node in the graph.'));return At(r,this.multi,i,a,e)}throw new F("Graph.".concat(n,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"===r||"mixed"===this.type||r===this.type){if(1===arguments.length)return mt(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return xt(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Lt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(){var t,e=Array.prototype.slice.call(arguments),n=e.pop();if(0===e.length){var i=0;"directed"!==r&&(i+=this.undirectedSize),"undirected"!==r&&(i+=this.directedSize),t=new Array(i);var a=0;e.push((function(e,r,i,o,u,c,d){t[a++]=n(e,r,i,o,u,c,d);}));}else t=[],e.push((function(e,r,i,o,a,u,c){t.push(n(e,r,i,o,a,u,c));}));return this[o].apply(this,e),t};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop(),n=[];return t.push((function(t,r,i,o,a,u,c){e(t,r,i,o,a,u,c)&&n.push(t);})),this[o].apply(this,t),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(){var t,e,n=Array.prototype.slice.call(arguments);if(n.length<2||n.length>4)throw new F("Graph.".concat(c,": invalid number of arguments (expecting 2, 3 or 4 and got ").concat(n.length,")."));if("function"==typeof n[n.length-1]&&"function"!=typeof n[n.length-2])throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));2===n.length?(t=n[0],e=n[1],n=[]):3===n.length?(t=n[1],e=n[2],n=[n[0]]):4===n.length&&(t=n[2],e=n[3],n=[n[0],n[1]]);var r=e;return n.push((function(e,n,i,o,a,u,c){r=t(r,e,n,i,o,a,u,c);})),this[o].apply(this,n),r};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="find"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return !1;if(1===arguments.length)return _t(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return Et(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Dt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))};var a="some"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[a]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return e(t,n,r,i,o,a,u)})),!!this[o].apply(this,t)};var u="every"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return !e(t,n,r,i,o,a,u)})),!this[o].apply(this,t)};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();if(!arguments.length)return kt(this,r);if(1===arguments.length){t=""+t;var n=this._nodes.get(t);if(!n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return St(r,i,n)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Nt(r,i,a,e)}throw new F("Graph.".concat(o,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e);}));}(re),function(t){Ut.forEach((function(e){Rt(t,e),Wt(t,e),Kt(t,e),It(t,e);}));}(re);var ie=function(t){function n(e){var n=c({type:"directed"},e);if("multi"in n&&!1!==n.multi)throw new F("DirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("directed"!==n.type)throw new F('DirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),oe=function(t){function n(e){var n=c({type:"undirected"},e);if("multi"in n&&!1!==n.multi)throw new F("UndirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("undirected"!==n.type)throw new F('UndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ae=function(t){function n(e){var n=c({multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiGraph.from: inconsistent indication that the graph should be simple in given options!");return t.call(this,n)||this}return e(n,t),n}(re),ue=function(t){function n(e){var n=c({type:"directed",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiDirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("directed"!==n.type)throw new F('MultiDirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ce=function(t){function n(e){var n=c({type:"undirected",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiUndirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("undirected"!==n.type)throw new F('MultiUndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re);function de(t){t.from=function(e,n){var r=c({},e.options,n),i=new t(r);return i.import(e),i};}return de(re),de(ie),de(oe),de(ae),de(ue),de(ce),re.Graph=re,re.DirectedGraph=ie,re.UndirectedGraph=oe,re.MultiGraph=ae,re.MultiDirectedGraph=ue,re.MultiUndirectedGraph=ce,re.InvalidArgumentsGraphError=F,re.NotFoundGraphError=Y,re.UsageGraphError=B,re}));
 
@@ -4733,265 +3692,571 @@ for (k in dfs_1)
   exports[k] = dfs_1[k];
 });
 
-// TODO - this is a hack to get the graph to work with the approvals
-// I shouldn't need
-const DIRECTIONS = ["up", "same", "down", "next", "prev"];
-// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
-// It makes implied relations real
-// TODO use reflexiveClosure instead
-function closeImpliedLinks(real, implied) {
-    const closedG = real.copy();
-    implied.forEachEdge((key, a, s, t) => {
-        closedG.mergeEdge(t, s, a);
-    });
-    return closedG;
-}
-function removeUnlinkedNodes(g) {
-    const copy = g.copy();
-    copy.forEachNode((node) => {
-        if (!copy.degree(node))
-            copy.dropNode(node);
-    });
-    return copy;
-}
-/**
- * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
- * @param  {MultiGraph} main
- * @param  {Directions} dir
- */
-function getSubInDirs(main, ...dirs) {
-    const sub = new graphology_umd_min.MultiGraph();
-    main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
-        if (dirs.includes(a.dir)) {
-            //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
-            sub.addEdge(s, t, a);
-        }
-    });
-    return sub;
-}
-/**
- * Return a subgraph of all nodes & edges with `files.includes(a.field)`
- * @param  {MultiGraph} main
- * @param  {string[]} fields
- */
-function getSubForFields(main, fields) {
-    const sub = new graphology_umd_min.MultiGraph();
-    main.forEachEdge((k, a, s, t) => {
-        if (fields.includes(a.field)) {
-            //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
-            sub.addEdge(s, t, a);
-        }
-    });
-    return sub;
-}
-/**
- * For every edge in `g`, add the reverse of the edge to a copy of `g`.
- *
- * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
- * @param  {MultiGraph} g
- * @param  {UserHier[]} userHiers
- * @param  {boolean} closeAsOpposite
- */
-function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
-    const copy = g.copy();
-    copy.forEachEdge((k, a, s, t) => {
-        const { dir, field } = a;
-        if (field === undefined)
-            return;
-        const oppDir = getOppDir(dir);
-        const oppField = getOppFields(userHiers, field)[0];
-        addNodesIfNot(copy, [s, t], {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-        });
-        addEdgeIfNot(copy, t, s, {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-        });
-    });
-    return copy;
-}
-function addNodesIfNot(g, nodes, attr = { order: 9999 }) {
-    for (const node of nodes) {
-        g.updateNode(node, (exstantAttrs) => {
-            const extantOrder = exstantAttrs.order;
-            return Object.assign(Object.assign({}, exstantAttrs), { order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order });
-        });
+/*
+* loglevel - https://github.com/pimterry/loglevel
+*
+* Copyright (c) 2013 Tim Perry
+* Licensed under the MIT license.
+*/
+
+var loglevel = createCommonjsModule(function (module) {
+(function (root, definition) {
+    if (module.exports) {
+        module.exports = definition();
+    } else {
+        root.log = definition();
     }
-}
-function addEdgeIfNot(g, source, target, attr) {
-    if (!g.hasEdge(source, target))
-        g.addEdge(source, target, attr);
-}
-const getSinks = (g) => g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
-const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
-const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
-const getOppDir = (dir) => {
-    switch (dir) {
-        case "up":
-            return "down";
-        case "down":
-            return "up";
-        case "same":
-            return "same";
-        case "next":
-            return "prev";
-        case "prev":
-            return "next";
-    }
-};
-/**
- *  Get the hierarchy and direction that `field` is in
- * */
-function getFieldInfo(userHiers, field) {
-    let fieldDir;
-    let fieldHier;
-    DIRECTIONS.forEach((dir) => {
-        userHiers.forEach((hier) => {
-            if (hier[dir].includes(field)) {
-                fieldDir = dir;
-                fieldHier = hier;
-                return;
+}(commonjsGlobal, function () {
+
+    // Slightly dubious tricks to cut down minimized file size
+    var noop = function() {};
+    var undefinedType = "undefined";
+    var isIE = (typeof window !== undefinedType) && (typeof window.navigator !== undefinedType) && (
+        /Trident\/|MSIE /.test(window.navigator.userAgent)
+    );
+
+    var logMethods = [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error"
+    ];
+
+    // Cross-browser bind equivalent that works at least back to IE6
+    function bindMethod(obj, methodName) {
+        var method = obj[methodName];
+        if (typeof method.bind === 'function') {
+            return method.bind(obj);
+        } else {
+            try {
+                return Function.prototype.bind.call(method, obj);
+            } catch (e) {
+                // Missing bind shim or IE8 + Modernizr, fallback to wrapping
+                return function() {
+                    return Function.prototype.apply.apply(method, [obj, arguments]);
+                };
             }
-        });
-    });
-    return { fieldHier, fieldDir };
-}
-function getOppFields(userHiers, field) {
-    const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
-    const oppDir = getOppDir(fieldDir);
-    return fieldHier[oppDir];
-}
-function dfsAllPaths(g, start) {
-    const queue = [{ node: start, path: [] }];
-    const visited = {};
-    const allPaths = [];
-    let i = 0;
-    while (queue.length > 0 && i < 1000) {
-        i++;
-        const { node, path } = queue.shift();
-        const extPath = [node, ...path];
-        const succsNotVisited = g.hasNode(node)
-            ? g.filterOutNeighbors(node, (succ) => !visited[succ] || visited[succ] < 5)
-            : [];
-        const newItems = succsNotVisited.map((succ) => {
-            visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
-            return { node: succ, path: extPath };
-        });
-        queue.unshift(...newItems);
-        if (!g.hasNode(node) || !g.outDegree(node))
-            allPaths.push(extPath);
-    }
-    return allPaths;
-}
-function bfsAllPaths(g, start) {
-    const pathsArr = [];
-    const queue = [{ node: start, path: [] }];
-    let i = 0;
-    while (queue.length !== 0 && i < 1000) {
-        i++;
-        const { node, path } = queue.shift();
-        const extPath = [node, ...path];
-        const succs = g.hasNode(node)
-            ? g.filterOutNeighbors(node, (n) => !path.includes(n))
-            : [];
-        for (const node of succs) {
-            queue.push({ node, path: extPath });
-        }
-        // terminal node
-        if (!g.hasNode(node) || succs.length === 0) {
-            pathsArr.push(extPath);
         }
     }
-    // Splice off the current note from the path
-    pathsArr.forEach((path) => {
-        if (path.length)
-            path.splice(path.length - 1, 1);
-    });
-    loglevel.info({ pathsArr });
-    return pathsArr;
-}
-function removeCycles(g, startNode) {
-    const copy = g.copy();
-    let prevNode = null;
-    graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
-        copy.forEachOutNeighbor(n, (t) => {
-            if (t === prevNode && copy.hasEdge(t, prevNode)) {
-                copy.dropEdge(t, prevNode);
+
+    // Trace() doesn't print the message in IE, so for that case we need to wrap it
+    function traceForIE() {
+        if (console.log) {
+            if (console.log.apply) {
+                console.log.apply(console, arguments);
+            } else {
+                // In old IE, native console methods themselves don't have apply().
+                Function.prototype.apply.apply(console.log, [console, arguments]);
             }
-        });
-        prevNode = n;
-    });
-    return copy;
-}
-function getSubCloseSub(g, userHiers, ...dirs) {
-    const sub = getSubInDirs(g, ...dirs);
-    const closed = getReflexiveClosure(sub, userHiers);
-    const closedSub = getSubInDirs(closed, dirs[0]);
-    return closedSub;
-}
-function buildObsGraph(app) {
-    const ObsG = new graphology_umd_min.MultiGraph();
-    const { resolvedLinks, unresolvedLinks } = app.metadataCache;
-    for (const source in resolvedLinks) {
-        if (!source.endsWith(".md"))
-            continue;
-        const sourceBase = getBaseFromMDPath(source);
-        addNodesIfNot(ObsG, [sourceBase]);
-        for (const dest in resolvedLinks[source]) {
-            if (!dest.endsWith(".md"))
-                continue;
-            const destBase = getBaseFromMDPath(dest);
-            addNodesIfNot(ObsG, [destBase]);
-            ObsG.addEdge(sourceBase, destBase, { resolved: true });
+        }
+        if (console.trace) console.trace();
+    }
+
+    // Build the best logging method possible for this env
+    // Wherever possible we want to bind, not wrap, to preserve stack traces
+    function realMethod(methodName) {
+        if (methodName === 'debug') {
+            methodName = 'log';
+        }
+
+        if (typeof console === undefinedType) {
+            return false; // No method possible, for now - fixed later by enableLoggingWhenConsoleArrives
+        } else if (methodName === 'trace' && isIE) {
+            return traceForIE;
+        } else if (console[methodName] !== undefined) {
+            return bindMethod(console, methodName);
+        } else if (console.log !== undefined) {
+            return bindMethod(console, 'log');
+        } else {
+            return noop;
         }
     }
-    for (const source in unresolvedLinks) {
-        const sourceBase = getBaseFromMDPath(source);
-        addNodesIfNot(ObsG, [sourceBase]);
-        for (const dest in unresolvedLinks[source]) {
-            const destBase = getBaseFromMDPath(dest);
-            addNodesIfNot(ObsG, [destBase]);
-            if (sourceBase === destBase)
-                continue;
-            ObsG.addEdge(sourceBase, destBase, { resolved: false });
+
+    // These private functions always need `this` to be set properly
+
+    function replaceLoggingMethods(level, loggerName) {
+        /*jshint validthis:true */
+        for (var i = 0; i < logMethods.length; i++) {
+            var methodName = logMethods[i];
+            this[methodName] = (i < level) ?
+                noop :
+                this.methodFactory(methodName, level, loggerName);
         }
+
+        // Define log.log as an alias for log.debug
+        this.log = this.debug;
     }
-    loglevel.info({ ObsG });
-    return ObsG;
-}
-function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
-    var _a;
-    const { userHiers } = settings;
-    const dir = getFieldInfo(userHiers, field).fieldDir;
-    addNodesIfNot(mainG, [source], {
-        order: sourceOrder,
-    });
-    addNodesIfNot(mainG, [target], {
-        order: targetOrder,
-    });
-    addEdgeIfNot(mainG, source, target, {
-        dir,
-        field,
-    });
-    if (fillOpp) {
-        const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
-        addEdgeIfNot(mainG, target, source, {
-            dir: oppDir,
-            field: oppField,
-        });
+
+    // In old IE versions, the console isn't present until you first open it.
+    // We build realMethod() replacements here that regenerate logging methods
+    function enableLoggingWhenConsoleArrives(methodName, level, loggerName) {
+        return function () {
+            if (typeof console !== undefinedType) {
+                replaceLoggingMethods.call(this, level, loggerName);
+                this[methodName].apply(this, arguments);
+            }
+        };
     }
-}
-const getTargetOrder = (frontms, target) => {
-    var _a, _b;
-    return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
+
+    // By default, we use closely bound real methods wherever possible, and
+    // otherwise we wait for a console to appear, and then try again.
+    function defaultMethodFactory(methodName, level, loggerName) {
+        /*jshint validthis:true */
+        return realMethod(methodName) ||
+               enableLoggingWhenConsoleArrives.apply(this, arguments);
+    }
+
+    function Logger(name, defaultLevel, factory) {
+      var self = this;
+      var currentLevel;
+      defaultLevel = defaultLevel == null ? "WARN" : defaultLevel;
+
+      var storageKey = "loglevel";
+      if (typeof name === "string") {
+        storageKey += ":" + name;
+      } else if (typeof name === "symbol") {
+        storageKey = undefined;
+      }
+
+      function persistLevelIfPossible(levelNum) {
+          var levelName = (logMethods[levelNum] || 'silent').toUpperCase();
+
+          if (typeof window === undefinedType || !storageKey) return;
+
+          // Use localStorage if available
+          try {
+              window.localStorage[storageKey] = levelName;
+              return;
+          } catch (ignore) {}
+
+          // Use session cookie as fallback
+          try {
+              window.document.cookie =
+                encodeURIComponent(storageKey) + "=" + levelName + ";";
+          } catch (ignore) {}
+      }
+
+      function getPersistedLevel() {
+          var storedLevel;
+
+          if (typeof window === undefinedType || !storageKey) return;
+
+          try {
+              storedLevel = window.localStorage[storageKey];
+          } catch (ignore) {}
+
+          // Fallback to cookies if local storage gives us nothing
+          if (typeof storedLevel === undefinedType) {
+              try {
+                  var cookie = window.document.cookie;
+                  var location = cookie.indexOf(
+                      encodeURIComponent(storageKey) + "=");
+                  if (location !== -1) {
+                      storedLevel = /^([^;]+)/.exec(cookie.slice(location))[1];
+                  }
+              } catch (ignore) {}
+          }
+
+          // If the stored level is not valid, treat it as if nothing was stored.
+          if (self.levels[storedLevel] === undefined) {
+              storedLevel = undefined;
+          }
+
+          return storedLevel;
+      }
+
+      function clearPersistedLevel() {
+          if (typeof window === undefinedType || !storageKey) return;
+
+          // Use localStorage if available
+          try {
+              window.localStorage.removeItem(storageKey);
+              return;
+          } catch (ignore) {}
+
+          // Use session cookie as fallback
+          try {
+              window.document.cookie =
+                encodeURIComponent(storageKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+          } catch (ignore) {}
+      }
+
+      /*
+       *
+       * Public logger API - see https://github.com/pimterry/loglevel for details
+       *
+       */
+
+      self.name = name;
+
+      self.levels = { "TRACE": 0, "DEBUG": 1, "INFO": 2, "WARN": 3,
+          "ERROR": 4, "SILENT": 5};
+
+      self.methodFactory = factory || defaultMethodFactory;
+
+      self.getLevel = function () {
+          return currentLevel;
+      };
+
+      self.setLevel = function (level, persist) {
+          if (typeof level === "string" && self.levels[level.toUpperCase()] !== undefined) {
+              level = self.levels[level.toUpperCase()];
+          }
+          if (typeof level === "number" && level >= 0 && level <= self.levels.SILENT) {
+              currentLevel = level;
+              if (persist !== false) {  // defaults to true
+                  persistLevelIfPossible(level);
+              }
+              replaceLoggingMethods.call(self, level, name);
+              if (typeof console === undefinedType && level < self.levels.SILENT) {
+                  return "No console available for logging";
+              }
+          } else {
+              throw "log.setLevel() called with invalid level: " + level;
+          }
+      };
+
+      self.setDefaultLevel = function (level) {
+          defaultLevel = level;
+          if (!getPersistedLevel()) {
+              self.setLevel(level, false);
+          }
+      };
+
+      self.resetLevel = function () {
+          self.setLevel(defaultLevel, false);
+          clearPersistedLevel();
+      };
+
+      self.enableAll = function(persist) {
+          self.setLevel(self.levels.TRACE, persist);
+      };
+
+      self.disableAll = function(persist) {
+          self.setLevel(self.levels.SILENT, persist);
+      };
+
+      // Initialize with the right level
+      var initialLevel = getPersistedLevel();
+      if (initialLevel == null) {
+          initialLevel = defaultLevel;
+      }
+      self.setLevel(initialLevel, false);
+    }
+
+    /*
+     *
+     * Top-level API
+     *
+     */
+
+    var defaultLogger = new Logger();
+
+    var _loggersByName = {};
+    defaultLogger.getLogger = function getLogger(name) {
+        if ((typeof name !== "symbol" && typeof name !== "string") || name === "") {
+          throw new TypeError("You must supply a name when creating a logger.");
+        }
+
+        var logger = _loggersByName[name];
+        if (!logger) {
+          logger = _loggersByName[name] = new Logger(
+            name, defaultLogger.getLevel(), defaultLogger.methodFactory);
+        }
+        return logger;
+    };
+
+    // Grab the current global log variable in case of overwrite
+    var _log = (typeof window !== undefinedType) ? window.log : undefined;
+    defaultLogger.noConflict = function() {
+        if (typeof window !== undefinedType &&
+               window.log === defaultLogger) {
+            window.log = _log;
+        }
+
+        return defaultLogger;
+    };
+
+    defaultLogger.getLoggers = function getLoggers() {
+        return _loggersByName;
+    };
+
+    // ES6 default export, for compatibility
+    defaultLogger['default'] = defaultLogger;
+
+    return defaultLogger;
+}));
+});
+
+const MATRIX_VIEW = "BC-matrix";
+const STATS_VIEW = "BC-stats";
+const DUCK_VIEW = "BC-ducks";
+const TREE_VIEW = "BC-tree";
+const TRAIL_ICON = "BC-trail-icon";
+const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
+const DUCK_ICON = "BC-duck-icon";
+const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
+const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
+const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
+const VISTYPES = [
+    "Force Directed Graph",
+    "Tidy Tree",
+    "Circle Packing",
+    "Edge Bundling",
+    "Arc Diagram",
+    "Sunburst",
+    "Tree Map",
+    "Icicle",
+    "Radial Tree",
+];
+const DIRECTIONS$1 = ["up", "same", "down", "next", "prev"];
+const ARROW_DIRECTIONS = {
+    up: "↑",
+    same: "↔",
+    down: "↓",
+    next: "→",
+    prev: "←",
 };
-const getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
+const RELATIONS = ["Parent", "Sibling", "Child"];
+const REAlCLOSED = ["Real", "Closed"];
+const ALLUNLINKED = ["All", "No Unlinked"];
+const CODEBLOCK_TYPES = ["tree", "juggl"];
+const CODEBLOCK_FIELDS = [
+    "type",
+    "dir",
+    "fields",
+    "depth",
+    "title",
+    "flat",
+    "content",
+    "from",
+    "implied",
+];
+const JUGGL_CB_DEFAULTS = {
+    autoAddNodes: false,
+    autoExpand: false,
+    autoZoom: false,
+    coreStore: "core",
+    expandInitial: false,
+    fdgdLayout: "d3-force",
+    filter: "",
+    height: "750px",
+    hoverEdges: false,
+    layout: "force-directed",
+    limit: 250,
+    mergeEdges: true,
+    metaKeyHover: true,
+    mode: "workspace",
+    navigator: true,
+    openWithShift: false,
+    readContent: true,
+    styleGroups: [],
+    toolbar: true,
+    width: "100%",
+    zoomSpeed: 1,
+};
+const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
+    autoZoom: true,
+    fdgdLayout: "d3-force",
+    height: "400px",
+    readContent: false,
+    toolbar: false,
+    navigator: false
+});
+CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
+const blankUserHier = () => {
+    return { up: [], same: [], down: [], next: [], prev: [] };
+};
+const blankRealNImplied = () => {
+    return {
+        up: { reals: [], implieds: [] },
+        down: { reals: [], implieds: [] },
+        same: { reals: [], implieds: [] },
+        next: { reals: [], implieds: [] },
+        prev: { reals: [], implieds: [] },
+    };
+};
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
+    "BC-folder-note",
+    "BC-folder-note-recursive",
+    "BC-tag-note",
+    "BC-tag-note-field",
+    "BC-tag-note-exact",
+    "BC-link-note",
+    "BC-traverse-note",
+    "BC-regex-note",
+    "BC-regex-note-field",
+    "BC-ignore-dendron",
+    "BC-hide-trail",
+    "BC-order",
+];
+const BC_FIELDS_INFO = [
+    {
+        field: BC_FOLDER_NOTE,
+        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_FOLDER_NOTE_RECURSIVE,
+        desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_TAG_NOTE,
+        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
+        after: ": '#",
+        alt: true,
+    },
+    {
+        field: BC_TAG_NOTE_FIELD,
+        desc: "Manually choose the field for this tag-note to use",
+        after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_TAG_NOTE_EXACT,
+        desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_LINK_NOTE,
+        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_TRAVERSE_NOTE,
+        desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE,
+        desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
+        after: ": '/",
+        alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE_FIELD,
+        desc: "Manually choose the field for this regex-note to use",
+        after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_IGNORE_DENDRON,
+        desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_HIDE_TRAIL,
+        desc: "Don't show the trail in this note",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_ORDER,
+        desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+        after: ": ",
+        alt: false,
+    },
+];
+const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
+const DEFAULT_SETTINGS = {
+    addDendronNotes: false,
+    aliasesInIndex: false,
+    alphaSortAsc: true,
+    altLinkFields: [],
+    CSVPaths: "",
+    dateFormat: "YYYY-MM-DD",
+    debugMode: "WARN",
+    defaultView: true,
+    dendronNoteDelimiter: ".",
+    dendronNoteField: "up",
+    downViewWrap: false,
+    dotsColour: "#000000",
+    dvWaitTime: 5000,
+    enableAlphaSort: true,
+    fieldSuggestor: true,
+    filterImpliedSiblingsOfDifferentTypes: false,
+    limitWriteBCCheckboxes: [],
+    CHECKBOX_STATES_OVERWRITTEN: false,
+    gridDots: false,
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+    hierarchyNotes: [""],
+    HNUpField: "",
+    indexNotes: [""],
+    namingSystemField: "",
+    namingSystemRegex: "",
+    namingSystemSplit: ".",
+    namingSystemEndsWithDelimiter: false,
+    refreshOnNoteChange: false,
+    useAllMetadata: true,
+    openMatrixOnLoad: true,
+    openStatsOnLoad: true,
+    openDuckOnLoad: false,
+    openDownOnLoad: true,
+    parseJugglLinksWithoutJuggl: false,
+    showNameOrType: true,
+    showRelationType: true,
+    regexNoteField: "",
+    rlLeaf: true,
+    showAllPathsIfNoneToIndexNote: false,
+    showAllAliases: true,
+    showBCs: true,
+    showBCsInEditLPMode: false,
+    showRefreshNotice: true,
+    showImpliedRelations: true,
+    showTrail: true,
+    showGrid: true,
+    showJuggl: false,
+    showPrevNext: true,
+    sortByNameShowAlias: false,
+    squareDirectionsOrder: [0, 1, 2, 3, 4],
+    limitTrailCheckboxes: [],
+    limitJumpToFirstFields: [],
+    showAll: false,
+    noPathMessage: `This note has no real or implied parents`,
+    tagNoteField: "",
+    threadIntoNewPane: false,
+    threadingTemplate: "{{field}} of {{current}}",
+    threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
+    trailSeperator: "→",
+    treatCurrNodeAsImpliedSibling: false,
+    trimDendronNotes: false,
+    respectReadableLineLength: true,
+    userHiers: [
+        {
+            up: ["up"],
+            same: ["same"],
+            down: ["down"],
+            next: ["next"],
+            prev: ["prev"],
+        },
+    ],
+    writeBCsInline: false,
+    showWriteAllBCsCmd: false,
+    visGraph: "Force Directed Graph",
+    visRelation: "Parent",
+    visClosed: "Real",
+    visAll: "All",
+    wikilinkIndex: true,
+    impliedRelations: {
+        siblingIdentity: false,
+        sameParentIsSibling: false,
+        siblingsSiblingIsSibling: false,
+        parentsSiblingsIsParents: false,
+        parentsParentsIsParent: false,
+        cousinsIsSibling: false,
+    },
+};
 
 function normalise(arr) {
     const max = Math.max(...arr);
@@ -5227,6 +4492,736 @@ function getAlt(node, plugin) {
     }
     else
         return null;
+}
+
+// TODO - this is a hack to get the graph to work with the approvals
+// I shouldn't need
+const DIRECTIONS = ["up", "same", "down", "next", "prev"];
+// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
+// It makes implied relations real
+// TODO use reflexiveClosure instead
+function closeImpliedLinks(real, implied) {
+    const closedG = real.copy();
+    implied.forEachEdge((key, a, s, t) => {
+        closedG.mergeEdge(t, s, a);
+    });
+    return closedG;
+}
+function removeUnlinkedNodes(g) {
+    const copy = g.copy();
+    copy.forEachNode((node) => {
+        if (!copy.degree(node))
+            copy.dropNode(node);
+    });
+    return copy;
+}
+/**
+ * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
+ * @param  {MultiGraph} main
+ * @param  {Directions} dir
+ */
+function getSubInDirs(main, ...dirs) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
+        if (dirs.includes(a.dir)) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
+        }
+    });
+    return sub;
+}
+/**
+ * Return a subgraph of all nodes & edges with `files.includes(a.field)`
+ * @param  {MultiGraph} main
+ * @param  {string[]} fields
+ */
+function getSubForFields(main, fields) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main.forEachEdge((k, a, s, t) => {
+        if (fields.includes(a.field)) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
+        }
+    });
+    return sub;
+}
+/**
+ * For every edge in `g`, add the reverse of the edge to a copy of `g`.
+ *
+ * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
+ * @param  {MultiGraph} g
+ * @param  {UserHier[]} userHiers
+ * @param  {boolean} closeAsOpposite
+ */
+function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
+    const copy = g.copy();
+    copy.forEachEdge((k, a, s, t) => {
+        const { dir, field } = a;
+        if (field === undefined)
+            return;
+        const oppDir = getOppDir(dir);
+        const oppField = getOppFields(userHiers, field)[0];
+        addNodesIfNot(copy, [s, t], {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+        });
+        addEdgeIfNot(copy, t, s, {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+            implied: true,
+        });
+    });
+    return copy;
+}
+function addNodesIfNot(g, nodes, attr = { order: 9999 }) {
+    for (const node of nodes) {
+        g.updateNode(node, (exstantAttrs) => {
+            const extantOrder = exstantAttrs.order;
+            return Object.assign(Object.assign({}, exstantAttrs), { order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order });
+        });
+    }
+}
+function addEdgeIfNot(g, source, target, attr) {
+    if (!g.hasEdge(source, target))
+        g.addEdge(source, target, attr);
+}
+const getSinks = (g) => g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
+const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
+const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
+const getOppDir = (dir) => {
+    switch (dir) {
+        case "up":
+            return "down";
+        case "down":
+            return "up";
+        case "same":
+            return "same";
+        case "next":
+            return "prev";
+        case "prev":
+            return "next";
+    }
+};
+/**
+ *  Get the hierarchy and direction that `field` is in
+ * */
+function getFieldInfo(userHiers, field) {
+    let fieldDir;
+    let fieldHier;
+    DIRECTIONS.forEach((dir) => {
+        userHiers.forEach((hier) => {
+            if (hier[dir].includes(field)) {
+                fieldDir = dir;
+                fieldHier = hier;
+                return;
+            }
+        });
+    });
+    return { fieldHier, fieldDir };
+}
+function getOppFields(userHiers, field) {
+    const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
+    const oppDir = getOppDir(fieldDir);
+    return fieldHier[oppDir];
+}
+function dfsAllPaths(g, start) {
+    const queue = [{ node: start, path: [] }];
+    const visited = {};
+    const allPaths = [];
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+        i++;
+        const { node, path } = queue.shift();
+        const extPath = [node, ...path];
+        const succsNotVisited = g.hasNode(node)
+            ? g.filterOutNeighbors(node, (succ) => !visited[succ] || visited[succ] < 5)
+            : [];
+        const newItems = succsNotVisited.map((succ) => {
+            visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
+            return { node: succ, path: extPath };
+        });
+        queue.unshift(...newItems);
+        if (!g.hasNode(node) || !g.outDegree(node))
+            allPaths.push(extPath);
+    }
+    return allPaths;
+}
+function bfsAllPaths(g, start) {
+    const pathsArr = [];
+    const queue = [{ node: start, path: [] }];
+    let i = 0;
+    while (queue.length !== 0 && i < 1000) {
+        i++;
+        const { node, path } = queue.shift();
+        const extPath = [node, ...path];
+        const succs = g.hasNode(node)
+            ? g.filterOutNeighbors(node, (n) => !path.includes(n))
+            : [];
+        for (const node of succs) {
+            queue.push({ node, path: extPath });
+        }
+        // terminal node
+        if (!g.hasNode(node) || succs.length === 0) {
+            pathsArr.push(extPath);
+        }
+    }
+    // Splice off the current note from the path
+    pathsArr.forEach((path) => {
+        if (path.length)
+            path.splice(path.length - 1, 1);
+    });
+    loglevel.info({ pathsArr });
+    return pathsArr;
+}
+function removeCycles(g, startNode) {
+    const copy = g.copy();
+    let prevNode = null;
+    graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
+        copy.forEachOutNeighbor(n, (t) => {
+            if (t === prevNode && copy.hasEdge(t, prevNode)) {
+                copy.dropEdge(t, prevNode);
+            }
+        });
+        prevNode = n;
+    });
+    return copy;
+}
+function buildObsGraph(app) {
+    const ObsG = new graphology_umd_min.MultiGraph();
+    const { resolvedLinks, unresolvedLinks } = app.metadataCache;
+    for (const source in resolvedLinks) {
+        if (!source.endsWith(".md"))
+            continue;
+        const sourceBase = getBaseFromMDPath(source);
+        addNodesIfNot(ObsG, [sourceBase]);
+        for (const dest in resolvedLinks[source]) {
+            if (!dest.endsWith(".md"))
+                continue;
+            const destBase = getBaseFromMDPath(dest);
+            addNodesIfNot(ObsG, [destBase]);
+            ObsG.addEdge(sourceBase, destBase, { resolved: true });
+        }
+    }
+    for (const source in unresolvedLinks) {
+        const sourceBase = getBaseFromMDPath(source);
+        addNodesIfNot(ObsG, [sourceBase]);
+        for (const dest in unresolvedLinks[source]) {
+            const destBase = getBaseFromMDPath(dest);
+            addNodesIfNot(ObsG, [destBase]);
+            if (sourceBase === destBase)
+                continue;
+            ObsG.addEdge(sourceBase, destBase, { resolved: false });
+        }
+    }
+    loglevel.info({ ObsG });
+    return ObsG;
+}
+function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
+    var _a;
+    const { userHiers } = settings;
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    addNodesIfNot(mainG, [source], {
+        order: sourceOrder,
+    });
+    addNodesIfNot(mainG, [target], {
+        order: targetOrder,
+    });
+    addEdgeIfNot(mainG, source, target, {
+        dir,
+        field,
+    });
+    if (fillOpp) {
+        const oppDir = getOppDir(dir);
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
+        addEdgeIfNot(mainG, target, source, {
+            dir: oppDir,
+            field: oppField,
+        });
+    }
+}
+const getTargetOrder = (frontms, target) => {
+    var _a, _b;
+    return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
+};
+const getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
+
+class Debugger {
+    constructor(plugin) {
+        this.debugLessThan = (level) => loglevel.levels[this.plugin.settings.debugMode] < level;
+        this.plugin = plugin;
+    }
+    start2G(group) {
+        if (this.debugLessThan(3))
+            console.groupCollapsed(group);
+    }
+    end2G(...msgs) {
+        if (this.debugLessThan(3)) {
+            if (msgs.length)
+                loglevel.info(...msgs);
+            console.groupEnd();
+        }
+    }
+    start1G(group) {
+        if (this.debugLessThan(2))
+            console.groupCollapsed(group);
+    }
+    end1G(...msgs) {
+        if (this.debugLessThan(2)) {
+            if (msgs.length)
+                loglevel.debug(...msgs);
+            console.groupEnd();
+        }
+    }
+    startGs(...groups) {
+        this.start2G(groups[0]);
+        if (groups[1])
+            this.start1G(groups[1]);
+    }
+    /**
+     * End a debug and info group, logging `msgs` in `endDebugGroup`
+     * @param  {1|2} count The number of groups to end. `1` ends Trace, 2 ends both
+     * @param  {any[]} ...msgs
+     */
+    endGs(count, ...msgs) {
+        if (count === 1)
+            this.end2G(...msgs);
+        else {
+            this.end1G();
+            this.end2G(...msgs);
+        }
+    }
+}
+
+function noop() { }
+function assign(tar, src) {
+    // @ts-ignore
+    for (const k in src)
+        tar[k] = src[k];
+    return tar;
+}
+function run(fn) {
+    return fn();
+}
+function blank_object() {
+    return Object.create(null);
+}
+function run_all(fns) {
+    fns.forEach(run);
+}
+function is_function(thing) {
+    return typeof thing === 'function';
+}
+function safe_not_equal(a, b) {
+    return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
+function is_empty(obj) {
+    return Object.keys(obj).length === 0;
+}
+function create_slot(definition, ctx, $$scope, fn) {
+    if (definition) {
+        const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
+        return definition[0](slot_ctx);
+    }
+}
+function get_slot_context(definition, ctx, $$scope, fn) {
+    return definition[1] && fn
+        ? assign($$scope.ctx.slice(), definition[1](fn(ctx)))
+        : $$scope.ctx;
+}
+function get_slot_changes(definition, $$scope, dirty, fn) {
+    if (definition[2] && fn) {
+        const lets = definition[2](fn(dirty));
+        if ($$scope.dirty === undefined) {
+            return lets;
+        }
+        if (typeof lets === 'object') {
+            const merged = [];
+            const len = Math.max($$scope.dirty.length, lets.length);
+            for (let i = 0; i < len; i += 1) {
+                merged[i] = $$scope.dirty[i] | lets[i];
+            }
+            return merged;
+        }
+        return $$scope.dirty | lets;
+    }
+    return $$scope.dirty;
+}
+function update_slot(slot, slot_definition, ctx, $$scope, dirty, get_slot_changes_fn, get_slot_context_fn) {
+    const slot_changes = get_slot_changes(slot_definition, $$scope, dirty, get_slot_changes_fn);
+    if (slot_changes) {
+        const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
+        slot.p(slot_context, slot_changes);
+    }
+}
+function exclude_internal_props(props) {
+    const result = {};
+    for (const k in props)
+        if (k[0] !== '$')
+            result[k] = props[k];
+    return result;
+}
+function null_to_empty(value) {
+    return value == null ? '' : value;
+}
+
+function append(target, node) {
+    target.appendChild(node);
+}
+function insert(target, node, anchor) {
+    target.insertBefore(node, anchor || null);
+}
+function detach(node) {
+    node.parentNode.removeChild(node);
+}
+function destroy_each(iterations, detaching) {
+    for (let i = 0; i < iterations.length; i += 1) {
+        if (iterations[i])
+            iterations[i].d(detaching);
+    }
+}
+function element(name) {
+    return document.createElement(name);
+}
+function svg_element(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+}
+function text(data) {
+    return document.createTextNode(data);
+}
+function space() {
+    return text(' ');
+}
+function empty() {
+    return text('');
+}
+function listen(node, event, handler, options) {
+    node.addEventListener(event, handler, options);
+    return () => node.removeEventListener(event, handler, options);
+}
+function attr(node, attribute, value) {
+    if (value == null)
+        node.removeAttribute(attribute);
+    else if (node.getAttribute(attribute) !== value)
+        node.setAttribute(attribute, value);
+}
+function get_binding_group_value(group, __value, checked) {
+    const value = new Set();
+    for (let i = 0; i < group.length; i += 1) {
+        if (group[i].checked)
+            value.add(group[i].__value);
+    }
+    if (!checked) {
+        value.delete(__value);
+    }
+    return Array.from(value);
+}
+function children(element) {
+    return Array.from(element.childNodes);
+}
+function set_data(text, data) {
+    data = '' + data;
+    if (text.wholeText !== data)
+        text.data = data;
+}
+function set_input_value(input, value) {
+    input.value = value == null ? '' : value;
+}
+function set_style(node, key, value, important) {
+    node.style.setProperty(key, value, important ? 'important' : '');
+}
+function select_option(select, value) {
+    for (let i = 0; i < select.options.length; i += 1) {
+        const option = select.options[i];
+        if (option.__value === value) {
+            option.selected = true;
+            return;
+        }
+    }
+}
+function select_value(select) {
+    const selected_option = select.querySelector(':checked') || select.options[0];
+    return selected_option && selected_option.__value;
+}
+
+let current_component;
+function set_current_component(component) {
+    current_component = component;
+}
+function get_current_component() {
+    if (!current_component)
+        throw new Error('Function called outside component initialization');
+    return current_component;
+}
+function onMount(fn) {
+    get_current_component().$$.on_mount.push(fn);
+}
+
+const dirty_components = [];
+const binding_callbacks = [];
+const render_callbacks = [];
+const flush_callbacks = [];
+const resolved_promise = Promise.resolve();
+let update_scheduled = false;
+function schedule_update() {
+    if (!update_scheduled) {
+        update_scheduled = true;
+        resolved_promise.then(flush);
+    }
+}
+function add_render_callback(fn) {
+    render_callbacks.push(fn);
+}
+let flushing = false;
+const seen_callbacks = new Set();
+function flush() {
+    if (flushing)
+        return;
+    flushing = true;
+    do {
+        // first, call beforeUpdate functions
+        // and update components
+        for (let i = 0; i < dirty_components.length; i += 1) {
+            const component = dirty_components[i];
+            set_current_component(component);
+            update(component.$$);
+        }
+        set_current_component(null);
+        dirty_components.length = 0;
+        while (binding_callbacks.length)
+            binding_callbacks.pop()();
+        // then, once components are updated, call
+        // afterUpdate functions. This may cause
+        // subsequent updates...
+        for (let i = 0; i < render_callbacks.length; i += 1) {
+            const callback = render_callbacks[i];
+            if (!seen_callbacks.has(callback)) {
+                // ...so guard against infinite loops
+                seen_callbacks.add(callback);
+                callback();
+            }
+        }
+        render_callbacks.length = 0;
+    } while (dirty_components.length);
+    while (flush_callbacks.length) {
+        flush_callbacks.pop()();
+    }
+    update_scheduled = false;
+    flushing = false;
+    seen_callbacks.clear();
+}
+function update($$) {
+    if ($$.fragment !== null) {
+        $$.update();
+        run_all($$.before_update);
+        const dirty = $$.dirty;
+        $$.dirty = [-1];
+        $$.fragment && $$.fragment.p($$.ctx, dirty);
+        $$.after_update.forEach(add_render_callback);
+    }
+}
+const outroing = new Set();
+let outros;
+function group_outros() {
+    outros = {
+        r: 0,
+        c: [],
+        p: outros // parent group
+    };
+}
+function check_outros() {
+    if (!outros.r) {
+        run_all(outros.c);
+    }
+    outros = outros.p;
+}
+function transition_in(block, local) {
+    if (block && block.i) {
+        outroing.delete(block);
+        block.i(local);
+    }
+}
+function transition_out(block, local, detach, callback) {
+    if (block && block.o) {
+        if (outroing.has(block))
+            return;
+        outroing.add(block);
+        outros.c.push(() => {
+            outroing.delete(block);
+            if (callback) {
+                if (detach)
+                    block.d(1);
+                callback();
+            }
+        });
+        block.o(local);
+    }
+}
+
+function get_spread_update(levels, updates) {
+    const update = {};
+    const to_null_out = {};
+    const accounted_for = { $$scope: 1 };
+    let i = levels.length;
+    while (i--) {
+        const o = levels[i];
+        const n = updates[i];
+        if (n) {
+            for (const key in o) {
+                if (!(key in n))
+                    to_null_out[key] = 1;
+            }
+            for (const key in n) {
+                if (!accounted_for[key]) {
+                    update[key] = n[key];
+                    accounted_for[key] = 1;
+                }
+            }
+            levels[i] = n;
+        }
+        else {
+            for (const key in o) {
+                accounted_for[key] = 1;
+            }
+        }
+    }
+    for (const key in to_null_out) {
+        if (!(key in update))
+            update[key] = undefined;
+    }
+    return update;
+}
+function get_spread_object(spread_props) {
+    return typeof spread_props === 'object' && spread_props !== null ? spread_props : {};
+}
+function create_component(block) {
+    block && block.c();
+}
+function mount_component(component, target, anchor, customElement) {
+    const { fragment, on_mount, on_destroy, after_update } = component.$$;
+    fragment && fragment.m(target, anchor);
+    if (!customElement) {
+        // onMount happens before the initial afterUpdate
+        add_render_callback(() => {
+            const new_on_destroy = on_mount.map(run).filter(is_function);
+            if (on_destroy) {
+                on_destroy.push(...new_on_destroy);
+            }
+            else {
+                // Edge case - component was destroyed immediately,
+                // most likely as a result of a binding initialising
+                run_all(new_on_destroy);
+            }
+            component.$$.on_mount = [];
+        });
+    }
+    after_update.forEach(add_render_callback);
+}
+function destroy_component(component, detaching) {
+    const $$ = component.$$;
+    if ($$.fragment !== null) {
+        run_all($$.on_destroy);
+        $$.fragment && $$.fragment.d(detaching);
+        // TODO null out other refs, including component.$$ (but need to
+        // preserve final state?)
+        $$.on_destroy = $$.fragment = null;
+        $$.ctx = [];
+    }
+}
+function make_dirty(component, i) {
+    if (component.$$.dirty[0] === -1) {
+        dirty_components.push(component);
+        schedule_update();
+        component.$$.dirty.fill(0);
+    }
+    component.$$.dirty[(i / 31) | 0] |= (1 << (i % 31));
+}
+function init(component, options, instance, create_fragment, not_equal, props, dirty = [-1]) {
+    const parent_component = current_component;
+    set_current_component(component);
+    const $$ = component.$$ = {
+        fragment: null,
+        ctx: null,
+        // state
+        props,
+        update: noop,
+        not_equal,
+        bound: blank_object(),
+        // lifecycle
+        on_mount: [],
+        on_destroy: [],
+        on_disconnect: [],
+        before_update: [],
+        after_update: [],
+        context: new Map(parent_component ? parent_component.$$.context : []),
+        // everything else
+        callbacks: blank_object(),
+        dirty,
+        skip_bound: false
+    };
+    let ready = false;
+    $$.ctx = instance
+        ? instance(component, options.props || {}, (i, ret, ...rest) => {
+            const value = rest.length ? rest[0] : ret;
+            if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
+                if (!$$.skip_bound && $$.bound[i])
+                    $$.bound[i](value);
+                if (ready)
+                    make_dirty(component, i);
+            }
+            return ret;
+        })
+        : [];
+    $$.update();
+    ready = true;
+    run_all($$.before_update);
+    // `false` as a special case of no DOM component
+    $$.fragment = create_fragment ? create_fragment($$.ctx) : false;
+    if (options.target) {
+        if (options.hydrate) {
+            const nodes = children(options.target);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            $$.fragment && $$.fragment.l(nodes);
+            nodes.forEach(detach);
+        }
+        else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            $$.fragment && $$.fragment.c();
+        }
+        if (options.intro)
+            transition_in(component.$$.fragment);
+        mount_component(component, options.target, options.anchor, options.customElement);
+        flush();
+    }
+    set_current_component(parent_component);
+}
+/**
+ * Base class for Svelte components. Used when dev=false.
+ */
+class SvelteComponent {
+    $destroy() {
+        destroy_component(this, 1);
+        this.$destroy = noop;
+    }
+    $on(type, callback) {
+        const callbacks = (this.$$.callbacks[type] || (this.$$.callbacks[type] = []));
+        callbacks.push(callback);
+        return () => {
+            const index = callbacks.indexOf(callback);
+            if (index !== -1)
+                callbacks.splice(index, 1);
+        };
+    }
+    $set($$props) {
+        if (this.$$set && !is_empty($$props)) {
+            this.$$.skip_bound = true;
+            this.$$set($$props);
+            this.$$.skip_bound = false;
+        }
+    }
 }
 
 /* src\Components\ModifyHNItemComp.svelte generated by Svelte v3.35.0 */
@@ -23958,22 +23953,20 @@ function createIndex(allPaths, asWikilinks) {
     return index;
 }
 async function copyLocalIndex(plugin) {
-    const { settings, mainG } = plugin;
-    const { userHiers, wikilinkIndex } = settings;
+    const { settings, closedG } = plugin;
+    const { wikilinkIndex } = settings;
     const { basename } = plugin.app.workspace.getActiveFile();
-    const onlyDowns = getSubCloseSub(mainG, userHiers, "down", "up");
+    const onlyDowns = getSubInDirs(closedG, "down");
     const allPaths = dfsAllPaths(onlyDowns, basename);
     const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex));
     loglevel.info({ index });
     await copy(index);
 }
 async function copyGlobalIndex(plugin) {
-    const { mainG, settings } = plugin;
-    const { userHiers, wikilinkIndex } = settings;
-    const g = getSubInDirs(mainG, "up", "down");
-    const closed = getReflexiveClosure(g, userHiers);
-    const onlyDowns = getSubInDirs(closed, "down");
-    const onlyUps = getSubInDirs(closed, "up");
+    const { settings, closedG } = plugin;
+    const { wikilinkIndex } = settings;
+    const onlyDowns = getSubInDirs(closedG, "down");
+    const onlyUps = getSubInDirs(closedG, "up");
     const sinks = getSinks(onlyUps);
     let globalIndex = "";
     sinks.forEach((terminal) => {
@@ -26034,7 +26027,7 @@ function parseFieldValue(value) {
         return parsed;
     }
 }
-async function initGraphs(plugin) {
+async function buildMainG(plugin) {
     const mainG = new graphology_umd_min.MultiGraph();
     try {
         const { settings, app, db } = plugin;
@@ -26154,7 +26147,8 @@ async function refreshIndex(plugin) {
         plugin.registerActiveLeafChangeEvent();
     if (!plugin.layoutChange)
         plugin.registerLayoutChangeEvent();
-    plugin.mainG = await initGraphs(plugin);
+    plugin.mainG = await buildMainG(plugin);
+    plugin.closedG = getReflexiveClosure(plugin.mainG, plugin.settings.userHiers);
     for (const { type } of plugin.VIEWS)
         await ((_a = plugin.getActiveTYPEView(type)) === null || _a === void 0 ? void 0 : _a.draw());
     if (plugin.settings.showBCs)
@@ -31747,17 +31741,17 @@ function add_css() {
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[14] = list[i];
+	child_ctx[12] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[17] = list[i];
+	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
-// (55:2) {:else}
+// (53:2) {:else}
 function create_else_block(ctx) {
 	let fafire;
 	let current;
@@ -31786,7 +31780,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (53:2) {#if frozen}
+// (51:2) {#if frozen}
 function create_if_block_1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -31815,10 +31809,10 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (71:2) {#each DIRECTIONS as direction}
+// (69:2) {#each DIRECTIONS as direction}
 function create_each_block_1$1(ctx) {
 	let option;
-	let t_value = /*direction*/ ctx[17] + "";
+	let t_value = /*direction*/ ctx[15] + "";
 	let t;
 	let option_value_value;
 
@@ -31826,7 +31820,7 @@ function create_each_block_1$1(ctx) {
 		c() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*direction*/ ctx[17];
+			option.__value = option_value_value = /*direction*/ ctx[15];
 			option.value = option.__value;
 		},
 		m(target, anchor) {
@@ -31840,16 +31834,16 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (78:4) {#if line.length > 1}
+// (76:4) {#if line.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[14][0] + "-" + "";
+	let t0_value = /*line*/ ctx[12][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[12][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -31858,11 +31852,11 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[11](/*line*/ ctx[14], ...args);
+		return /*click_handler_2*/ ctx[10](/*line*/ ctx[12], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[12](/*line*/ ctx[14], ...args);
+		return /*mouseover_handler*/ ctx[11](/*line*/ ctx[12], ...args);
 	}
 
 	return {
@@ -31877,7 +31871,7 @@ function create_if_block(ctx) {
 			t3 = space();
 			attr(pre, "class", "svelte-7s7d25");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[14][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[12][1])
 			? ""
 			: "is-unresolved") + " svelte-7s7d25");
 
@@ -31908,10 +31902,10 @@ function create_if_block(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[14][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[12][0] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[12][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[14][1])
+			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[12][1])
 			? ""
 			: "is-unresolved") + " svelte-7s7d25")) {
 				attr(a, "class", a_class_value);
@@ -31925,10 +31919,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (77:2) {#each lines as line}
+// (75:2) {#each lines as line}
 function create_each_block$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[14].length > 1 && create_if_block(ctx);
+	let if_block = /*line*/ ctx[12].length > 1 && create_if_block(ctx);
 
 	return {
 		c() {
@@ -31940,7 +31934,7 @@ function create_each_block$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[14].length > 1) {
+			if (/*line*/ ctx[12].length > 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -32029,7 +32023,7 @@ function create_fragment$1(ctx) {
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
 			attr(button, "class", "svelte-7s7d25");
 			attr(select, "class", "dropdown");
-			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[10].call(select));
+			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[9].call(select));
 			attr(div, "class", "BC-downs svelte-7s7d25");
 		},
 		m(target, anchor) {
@@ -32056,9 +32050,9 @@ function create_fragment$1(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", /*click_handler*/ ctx[8]),
-					listen(button, "click", /*click_handler_1*/ ctx[9]),
-					listen(select, "change", /*select_change_handler*/ ctx[10])
+					listen(span, "click", /*click_handler*/ ctx[7]),
+					listen(button, "click", /*click_handler_1*/ ctx[8]),
+					listen(select, "change", /*select_change_handler*/ ctx[9])
 				];
 
 				mounted = true;
@@ -32170,14 +32164,12 @@ function create_fragment$1(ctx) {
 }
 
 function instance$1($$self, $$props, $$invalidate) {
-	let oppDir;
 	
 	
 	
 	let { plugin } = $$props;
 	let { view } = $$props;
 	const { settings } = plugin;
-	const { userHiers } = settings;
 	let dir = "down";
 	let frozen = false;
 	let { basename } = plugin.app.workspace.getActiveFile();
@@ -32213,15 +32205,11 @@ function instance$1($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*dir*/ 4) {
-			$$invalidate(7, oppDir = getOppDir(dir));
-		}
-
-		if ($$self.$$.dirty & /*plugin, dir, oppDir, basename*/ 141) {
+		if ($$self.$$.dirty & /*plugin, dir, basename*/ 13) {
 			{
-				const { mainG } = plugin;
-				const down = getSubCloseSub(mainG, userHiers, dir, oppDir);
-				const allPaths = dfsAllPaths(down, basename);
+				const { closedG } = plugin;
+				const downG = getSubInDirs(closedG, dir);
+				const allPaths = dfsAllPaths(downG, basename);
 				const index = createIndex(allPaths, false);
 				loglevel.info({ allPaths, index });
 
@@ -32241,7 +32229,6 @@ function instance$1($$self, $$props, $$invalidate) {
 		frozen,
 		lines,
 		settings,
-		oppDir,
 		click_handler,
 		click_handler_1,
 		select_change_handler,
@@ -54396,13 +54383,15 @@ class BCPlugin extends obsidian.Plugin {
         obsidian.addIcon(DUCK_ICON, DUCK_ICON_SVG);
         obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         await this.waitForCache();
-        this.mainG = await initGraphs(this);
+        this.mainG = await buildMainG(this);
+        this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
         this.app.workspace.onLayoutReady(async () => {
             var _a;
             const noFiles = this.app.vault.getMarkdownFiles().length;
             if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes().length) < noFiles) {
                 await wait(3000);
-                this.mainG = await initGraphs(this);
+                this.mainG = await buildMainG(this);
+                this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
             }
             for (const { openOnLoad, type, constructor } of this.VIEWS) {
                 if (openOnLoad)
@@ -54518,7 +54507,9 @@ class BCPlugin extends obsidian.Plugin {
         console.log("unloading");
         this.VIEWS.forEach(async (view) => {
             // await this.getActiveTYPEView(view.type)?.close();
-            this.app.workspace.detachLeavesOfType(view.type);
+            this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
+                leaf.detach();
+            });
         });
         this.visited.forEach((visit) => visit[1].remove());
     }

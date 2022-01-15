@@ -9,7 +9,7 @@
   import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
   import { createIndex } from "../Commands/CreateIndex";
   import { DIRECTIONS } from "../constants";
-  import { dfsAllPaths, getOppDir, getSubCloseSub } from "../graphUtils";
+  import { dfsAllPaths, getOppDir, getSubInDirs } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { refreshIndex } from "../refreshIndex";
@@ -20,10 +20,8 @@
   export let view: TreeView;
 
   const { settings } = plugin;
-  const { userHiers } = settings;
 
   let dir: Directions = "down";
-  $: oppDir = getOppDir(dir);
   let frozen = false;
   let { basename } = plugin.app.workspace.getActiveFile();
 
@@ -34,10 +32,9 @@
 
   let lines: [string, string][];
   $: {
-    const { mainG } = plugin;
-    const down = getSubCloseSub(mainG, userHiers, dir, oppDir);
-
-    const allPaths = dfsAllPaths(down, basename);
+    const { closedG } = plugin;
+    const downG = getSubInDirs(closedG, dir);
+    const allPaths = dfsAllPaths(downG, basename);
     const index = createIndex(allPaths, false);
     info({ allPaths, index });
 

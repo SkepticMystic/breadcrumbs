@@ -88,26 +88,24 @@ export function createIndex(
 }
 
 export async function copyLocalIndex(plugin: BCPlugin) {
-  const { settings, mainG } = plugin;
-  const { userHiers, wikilinkIndex } = settings;
+  const { settings, closedG } = plugin;
+  const { wikilinkIndex } = settings;
   const { basename } = plugin.app.workspace.getActiveFile();
 
-  const onlyDowns = getSubCloseSub(mainG, userHiers, "down", "up");
-
+  const onlyDowns = getSubInDirs(closedG, "down");
   const allPaths = dfsAllPaths(onlyDowns, basename);
   const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex));
+
   info({ index });
   await copy(index);
 }
 
 export async function copyGlobalIndex(plugin: BCPlugin) {
-  const { mainG, settings } = plugin;
-  const { userHiers, wikilinkIndex } = settings;
+  const { settings, closedG } = plugin;
+  const { wikilinkIndex } = settings;
 
-  const g = getSubInDirs(mainG, "up", "down");
-  const closed = getReflexiveClosure(g, userHiers);
-  const onlyDowns = getSubInDirs(closed, "down");
-  const onlyUps = getSubInDirs(closed, "up");
+  const onlyDowns = getSubInDirs(closedG, "down");
+  const onlyUps = getSubInDirs(closedG, "up");
 
   const sinks = getSinks(onlyUps);
 

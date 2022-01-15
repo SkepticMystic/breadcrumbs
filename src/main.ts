@@ -6,6 +6,7 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
+import { getReflexiveClosure } from "./graphUtils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
@@ -27,7 +28,7 @@ import {
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
-import { initGraphs, refreshIndex } from "./refreshIndex";
+import { buildMainG, refreshIndex } from "./refreshIndex";
 import { getFields } from "./sharedFunctions";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
@@ -41,6 +42,7 @@ export default class BCPlugin extends Plugin {
   visited: [string, HTMLDivElement][] = [];
   refreshIntervalID: number;
   mainG: MultiGraph;
+  closedG: MultiGraph;
   activeLeafChange: EventRef = undefined;
   layoutChange: EventRef = undefined;
   statusBatItemEl: HTMLElement = undefined;
@@ -171,13 +173,15 @@ export default class BCPlugin extends Plugin {
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
 
     await this.waitForCache();
-    this.mainG = await initGraphs(this);
+    this.mainG = await buildMainG(this);
+    this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
 
     this.app.workspace.onLayoutReady(async () => {
       const noFiles = this.app.vault.getMarkdownFiles().length;
       if (this.mainG?.nodes().length < noFiles) {
         await wait(3000);
-        this.mainG = await initGraphs(this);
+        this.mainG = await buildMainG(this);
+        this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
       }
 
       for (const { openOnLoad, type, constructor } of this.VIEWS) {
@@ -317,7 +321,9 @@ export default class BCPlugin extends Plugin {
     console.log("unloading");
     this.VIEWS.forEach(async (view) => {
       // await this.getActiveTYPEView(view.type)?.close();
-      this.app.workspace.detachLeavesOfType(view.type);
+      this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
+        leaf.detach();
+      });
     });
 
     this.visited.forEach((visit) => visit[1].remove());

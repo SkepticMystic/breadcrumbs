@@ -101,6 +101,7 @@ export function getReflexiveClosure(
       //@ts-ignore
       dir: closeAsOpposite ? oppDir : dir,
       field: closeAsOpposite ? oppField : field,
+      implied: true,
     });
   });
   return copy;

@@ -31,6 +31,7 @@ import {
 import {
   addNodesIfNot,
   buildObsGraph,
+  getReflexiveClosure,
   getSourceOrder,
   getTargetOrder,
   populateMain,
@@ -159,7 +160,7 @@ export function parseFieldValue(
   }
 }
 
-export async function initGraphs(plugin: BCPlugin): Promise<MultiGraph> {
+export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
   const mainG = new MultiGraph();
   try {
     const { settings, app, db } = plugin;
@@ -319,7 +320,9 @@ export async function refreshIndex(plugin: BCPlugin) {
   if (!plugin.activeLeafChange) plugin.registerActiveLeafChangeEvent();
   if (!plugin.layoutChange) plugin.registerLayoutChangeEvent();
 
-  plugin.mainG = await initGraphs(plugin);
+  plugin.mainG = await buildMainG(plugin);
+  plugin.closedG = getReflexiveClosure(plugin.mainG, plugin.settings.userHiers);
+
   for (const { type } of plugin.VIEWS)
     await plugin.getActiveTYPEView(type)?.draw();
 
