@@ -3436,6 +3436,7 @@ const JUGGL_CB_DEFAULTS = {
     mode: "workspace",
     navigator: true,
     openWithShift: false,
+    readContent: true,
     styleGroups: [],
     toolbar: true,
     width: "100%",
@@ -3445,7 +3446,9 @@ const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
     autoZoom: true,
     fdgdLayout: "d3-force",
     height: "400px",
+    readContent: false,
     toolbar: false,
+    navigator: false
 });
 CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 const blankUserHier = () => {
@@ -5905,7 +5908,7 @@ const getClasses = function (file, metadataCache) {
     }
     return [CAT_DANGLING];
 };
-const nodeFromFile = async function (file, plugin, id) {
+const nodeFromFile = async function (file, plugin, settings, id) {
     if (!id) {
         id = VizId.toId(file.name, CORE_STORE_ID);
     }
@@ -5924,7 +5927,7 @@ const nodeFromFile = async function (file, plugin, id) {
         }
         catch { }
     }
-    if (file.extension == 'md') {
+    if (settings.readContent && file.extension == 'md') {
         data['content'] = await plugin.app.vault.cachedRead(file);
     }
     const frontmatter = cache?.frontmatter;
@@ -24177,20 +24180,20 @@ class BCStore extends obsidian.Component {
         });
         return Promise.resolve(edges);
     }
-    getEvents() {
+    getEvents(view) {
         return new BCStoreEvents();
     }
     getNeighbourhood(nodeId) {
         // TODO
         return Promise.resolve([]);
     }
-    refreshNode(view, id) {
+    refreshNode(id, view) {
         return;
     }
     storeId() {
         return STORE_ID;
     }
-    get(nodeId) {
+    get(nodeId, view) {
         const file = this.getFile(nodeId);
         if (file === null) {
             const dangling = nodeDangling(nodeId.id);
@@ -24202,7 +24205,7 @@ class BCStore extends obsidian.Component {
             console.log("returning empty cache", nodeId);
             return Promise.resolve(nodeDangling(nodeId.id));
         }
-        return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
+        return Promise.resolve(nodeFromFile(file, this.plugin, view.settings, nodeId.toId()));
     }
 }
 function createJuggl(plugin, target, initialNodes, args) {
@@ -24225,7 +24228,7 @@ function createJuggl(plugin, target, initialNodes, args) {
         console.log({ args }, { initialNodes });
         const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
         plugin.addChild(juggl);
-        juggl.load();
+        // juggl.load();
         console.log({ juggl });
     }
     catch (error) {
@@ -25549,25 +25552,19 @@ function addDendronNotesToGraph(plugin, frontms, mainG) {
         // Doesn't currently work yet
         if (frontm[BC_IGNORE_DENDRON])
             continue;
-        const { file } = frontm;
-        const basename = getDVBasename(file);
+        const basename = getDVBasename(frontm.file);
         const splits = basename.split(dendronNoteDelimiter);
-        if (splits.length < 2)
+        if (splits.length <= 1)
             continue;
-        // Probably inefficient to reverse then unreverse it. I can probably just use slice(-i)
-        const reversed = splits.reverse();
-        reversed.forEach((split, i) => {
-            const currSlice = reversed.slice(i).reverse().join(dendronNoteDelimiter);
-            const nextSlice = reversed
-                .slice(i + 1)
-                .reverse()
-                .join(dendronNoteDelimiter);
-            if (!nextSlice)
-                return;
-            const sourceOrder = getSourceOrder(frontm);
-            const targetOrder = getTargetOrder(frontms, nextSlice);
-            populateMain(settings, mainG, currSlice, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
-        });
+        const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
+        if (!nextSlice)
+            continue;
+        const nextSliceFile = frontms.find((fm) => getDVBasename(fm.file) === nextSlice);
+        if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON])
+            continue;
+        const sourceOrder = getSourceOrder(frontm);
+        const targetOrder = getTargetOrder(frontms, nextSlice);
+        populateMain(settings, mainG, basename, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
     }
 }
 
@@ -25647,7 +25644,6 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
             const { subFolders } = getSubsFromFolder(topFolder);
             const folderQueue = [...subFolders];
             console.log({ startingQueue: folderQueue.slice() });
-            let prevFolderNote = topFolderName;
             let currFolder = folderQueue.shift();
             while (currFolder !== undefined) {
                 const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
@@ -25656,7 +25652,8 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
                 // if (!isInVault(app, folderNote, folderNote)) continue;
                 const sourceOrder = 9999; // getSourceOrder(altFile);
                 const targetOrder = 9999; //  getTargetOrder(frontms, basename);
-                populateMain(settings, mainG, prevFolderNote, field, folderNote, sourceOrder, targetOrder, true);
+                const parentFolderNote = currFolder.parent.name;
+                populateMain(settings, mainG, parentFolderNote, field, folderNote, sourceOrder, targetOrder, true);
                 targets.forEach((target) => {
                     if (target === folderNote)
                         return;
@@ -25667,7 +25664,6 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
                 });
                 folderQueue.push(...subFolders);
                 currFolder = folderQueue.shift();
-                prevFolderNote = folderNote;
             }
         }
         // First add otherNotes to graph
@@ -29271,7 +29267,8 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         });
         new obsidian.Setting(trailDetails)
             .setName("Views to show")
-            .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view.")
+            .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
+            "Juggl requires having the Juggl plugin installed.")
             .addToggle((toggle) => {
             toggle
                 .setTooltip("Show Trail view")
@@ -54304,8 +54301,7 @@ class BCPlugin extends obsidian.Plugin {
     }
     registerLayoutChangeEvent() {
         this.layoutChange = this.app.workspace.on("layout-change", async () => {
-            if (this.settings.showBCs)
-                await drawTrail(this);
+            // if (this.settings.showBCs) await drawTrail(this);
         });
         this.registerEvent(this.layoutChange);
     }

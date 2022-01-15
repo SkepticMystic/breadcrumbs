@@ -107,7 +107,6 @@ export function addFolderNotesToGraph(
       const folderQueue: TFolder[] = [...subFolders];
       console.log({ startingQueue: folderQueue.slice() });
 
-      let prevFolderNote = topFolderName;
       let currFolder = folderQueue.shift();
       while (currFolder !== undefined) {
         const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
@@ -120,10 +119,12 @@ export function addFolderNotesToGraph(
         const sourceOrder = 9999; // getSourceOrder(altFile);
         const targetOrder = 9999; //  getTargetOrder(frontms, basename);
 
+        const parentFolderNote = currFolder.parent.name;
+
         populateMain(
           settings,
           mainG,
-          prevFolderNote,
+          parentFolderNote,
           field,
           folderNote,
           sourceOrder,
@@ -151,7 +152,6 @@ export function addFolderNotesToGraph(
 
         folderQueue.push(...subFolders);
         currFolder = folderQueue.shift();
-        prevFolderNote = folderNote;
       }
     }
 
