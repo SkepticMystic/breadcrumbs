@@ -1,6 +1,6 @@
 import { App, Modal, TFile } from "obsidian";
-import ModifyHNItemComp from "./Components/ModifyHNItemComp.svelte";
-import type BCPlugin from "./main";
+import ModifyHNItemComp from "../Components/ModifyHNItemComp.svelte";
+import type BCPlugin from "../main";
 
 interface HNItem {
   depth: number;

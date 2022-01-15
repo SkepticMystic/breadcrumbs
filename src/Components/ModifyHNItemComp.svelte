@@ -1,11 +1,10 @@
 <script lang="ts">
   import { error } from "console";
-
   import { Notice, TFile } from "obsidian";
   import { onMount } from "svelte";
   import { ARROW_DIRECTIONS } from "../constants";
+  import type { ModifyHierItemModal } from "../HierarchyNotes/ModifyHierItemModal";
   import type { BCSettings } from "../interfaces";
-  import type { ModifyHierItemModal } from "../ModifyHierItemModal";
   import { dropWikilinks, makeWiki } from "../sharedFunctions";
 
   export let modal: ModifyHierItemModal;
@@ -50,7 +49,9 @@
   {/if}
   <div>
     <pre>
-        <strong>{buildNewItem(dropWikilinks(hnItem.line), hnItem.depth, true)}</strong>
+        <strong
+        >{buildNewItem(dropWikilinks(hnItem.line), hnItem.depth, true)}</strong
+      >
     </pre>
   </div>
   {#if rel === "same"}

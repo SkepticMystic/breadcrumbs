@@ -616,98 +616,6 @@ export default class BCPlugin extends Plugin {
     return null;
   }
 
-  async getHierarchyNoteItems(file: TFile) {
-    const { userHiers } = this.settings;
-    const { listItems } = this.app.metadataCache.getFileCache(file);
-    if (!listItems) return [];
-
-    const lines = (await this.app.vault.cachedRead(file)).split("\n");
-
-    const hierarchyNoteItems: HierarchyNoteItem[] = [];
-
-    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
-    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
-
-    const problemFields: string[] = [];
-
-    const upFields = getFields(userHiers, "up");
-    for (const item of listItems) {
-      const currItem = lines[item.position.start.line];
-
-      const afterBulletCurr = afterBulletReg.exec(currItem)[1];
-      const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
-      let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-
-      // Ensure fieldName is one of the existing up fields. `null` if not
-      if (field !== null && !upFields.includes(field)) {
-        problemFields.push(field);
-        field = null;
-      }
-
-      const { parent } = item;
-      if (parent >= 0) {
-        const parentNote = lines[parent];
-        const afterBulletParent = afterBulletReg.exec(parentNote)[1];
-        const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
-
-        hierarchyNoteItems.push({
-          note,
-          parent: dropWikiParent,
-          field,
-        });
-      } else {
-        hierarchyNoteItems.push({
-          note,
-          parent: null,
-          field,
-        });
-      }
-    }
-    if (problemFields.length > 0) {
-      const msg = `'${problemFields.join(
-        ", "
-      )}' is/are not a field in any of your hierarchies, but is/are being used in: '${
-        file.basename
-      }'`;
-      new Notice(msg);
-      console.log(msg, { problemFields });
-    }
-    return hierarchyNoteItems;
-  }
-
-  getDVMetadataCache(files: TFile[]) {
-    const { app, db } = this;
-    db.startGs("getDVMetadataCache", "dvCaches");
-
-    const frontms: dvFrontmatterCache[] = files.map((file) => {
-      const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
-        file.path
-      );
-      debug(`${file.basename}:`, { dvCache });
-      return dvCache;
-    });
-
-    db.endGs(2, { frontms });
-    return frontms;
-  }
-
-  getObsMetadataCache(files: TFile[]) {
-    const { app, db } = this;
-    db.startGs("getObsMetadataCache", "obsCaches");
-
-    const frontms: dvFrontmatterCache[] = files.map((file) => {
-      debug(`GetObsMetadataCache: ${file.basename}`);
-      const { frontmatter } = app.metadataCache.getFileCache(file);
-      debug({ frontmatter });
-      if (frontmatter) return { file, ...frontmatter };
-      else return { file };
-    });
-
-    db.endGs(2, { frontms });
-    return frontms;
-  }
-
   // SECTION OneSource
 
   populateMain(
@@ -1543,7 +1451,7 @@ export default class BCPlugin extends Plugin {
         for (const note of settings.hierarchyNotes) {
           const file = app.metadataCache.getFirstLinkpathDest(note, "");
           if (file) {
-            this.addHNsToGraph(await this.getHierarchyNoteItems(file), mainG);
+            this.addHNsToGraph(await getHierarchyNoteItems(this, file), mainG);
           } else {
             new Notice(
               `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`

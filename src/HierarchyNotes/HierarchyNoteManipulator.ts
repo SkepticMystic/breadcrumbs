@@ -9,9 +9,9 @@ import {
   TFile,
 } from "obsidian";
 import { ModifyHierItemModal } from "./ModifyHierItemModal";
-import type { BCSettings } from "./interfaces";
-import type BCPlugin from "./main";
-import { dropWikilinks } from "./sharedFunctions";
+import type { BCSettings } from "../interfaces";
+import type BCPlugin from "../main";
+import { dropWikilinks } from "../sharedFunctions";
 
 interface HNItem {
   depth: number;
