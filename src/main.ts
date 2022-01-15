@@ -109,6 +109,7 @@ import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
 import { createdJugglCB, createJugglTrail } from "./Visualisations/CBJuggl";
+import { jumpToFirstDir } from "./jumpToFirstDir";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -355,40 +356,7 @@ export default class BCPlugin extends Plugin {
       this.addCommand({
         id: `jump-to-first-${dir}`,
         name: `Jump to first '${dir}'`,
-        callback: async () => {
-          const file = this.app.workspace.getActiveFile();
-          if (!file) {
-            new Notice("You need to be focussed on a Markdown file");
-            return;
-          }
-          const { basename } = file;
-
-          const realsNImplieds = getRealnImplied(this, basename, dir)[dir];
-          const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
-          if (allBCs.length === 0) {
-            new Notice(`No ${dir} found`);
-            return;
-          }
-
-          const toNode = allBCs.find((bc) =>
-            settings.limitJumpToFirstFields.includes(bc.field)
-          )?.to;
-
-          if (!toNode) {
-            new Notice(
-              `No note was found in ${dir} given the limited fields allowed: ${settings.limitJumpToFirstFields.join(
-                ", "
-              )}`
-            );
-            return;
-          }
-
-          const toFile = this.app.metadataCache.getFirstLinkpathDest(
-            toNode,
-            ""
-          );
-          await this.app.workspace.activeLeaf.openFile(toFile);
-        },
+        callback: async () => jumpToFirstDir(this, dir),
       });
     });
 
