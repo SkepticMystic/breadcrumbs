@@ -93,9 +93,6 @@ import {
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
-import { createdJugglCB, createJugglTrail } from "./Visualisations/CBJuggl";
-import { jumpToFirstDir } from "./jumpToFirstDir";
-import { thread } from "./threading";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -393,16 +390,14 @@ export default class BCPlugin extends Plugin {
       const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
       let frontms: dvFrontmatterCache[] = dvQ
-        ? this.getDVMetadataCache(files)
-        : this.getObsMetadataCache(files);
+        ? getDVMetadataCache(this, files)
+        : getObsMetadataCache(this, files);
 
       if (frontms.some((frontm) => frontm === undefined)) {
         await wait(2000);
         frontms = dvQ
-          ? this.getDVMetadataCache(files)
-          : this.getObsMetadataCache(files);
-        // db.end2G();
-        // return mainG;
+          ? getDVMetadataCache(this, files)
+          : getObsMetadataCache(this, files);
       }
 
       const { userHiers } = settings;
@@ -450,10 +445,10 @@ export default class BCPlugin extends Plugin {
         noticeIfBroken(frontm);
 
         const basename = getDVBasename(frontm.file);
-        const sourceOrder = this.getSourceOrder(frontm);
+        const sourceOrder = getSourceOrder(frontm);
 
         iterateHiers(userHiers, (hier, dir, field) => {
-          const values = this.parseFieldValue(frontm[field]);
+          const values = parseFieldValue(frontm[field]);
 
           values.forEach((target) => {
             if (
@@ -461,9 +456,10 @@ export default class BCPlugin extends Plugin {
               (target.startsWith("{{") && target.endsWith("}}"))
             )
               return;
-            const targetOrder = this.getTargetOrder(frontms, target);
+            const targetOrder = getTargetOrder(frontms, target);
 
-            this.populateMain(
+            populateMain(
+              settings,
               mainG,
               basename,
               field,

@@ -1,13 +1,22 @@
 import Graph, { MultiGraph } from "graphology";
 import { dfsFromNode } from "graphology-traversal";
 import type { Attributes } from "graphology-types";
+import { info } from "loglevel";
 import type { App } from "obsidian";
+import { BC_ORDER } from "./constants";
 // import { DIRECTIONS } from "./constants";
-import type { Directions, UserHier } from "./interfaces";
+import type {
+  BCSettings,
+  Directions,
+  dvFrontmatterCache,
+  UserHier,
+} from "./interfaces";
+import { getBaseFromMDPath, getFields } from "./sharedFunctions";
 
 // TODO - this is a hack to get the graph to work with the approvals
 // I shouldn't need
 const DIRECTIONS = ["up", "same", "down", "next", "prev"];
+
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -21,11 +30,6 @@ export function closeImpliedLinks(
   });
   return closedG;
 }
-
-export function currFile(app: App) {
-  return app.vault.getMarkdownFiles();
-}
-
 export function removeUnlinkedNodes(g: MultiGraph) {
   const copy = g.copy();
   copy.forEachNode((node) => {
@@ -33,7 +37,6 @@ export function removeUnlinkedNodes(g: MultiGraph) {
   });
   return copy;
 }
-
 /**
  * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
  * @param  {MultiGraph} main
@@ -108,7 +111,7 @@ export function addNodesIfNot(
   attr = { order: 9999 }
 ) {
   for (const node of nodes) {
-    g.updateNode(node, (exstantAttrs) => {
+    g.updateNode(node, (exstantAttrs: Attributes) => {
       const extantOrder: number | undefined = exstantAttrs.order;
       return {
         ...exstantAttrs,
@@ -234,3 +237,82 @@ export function getSubCloseSub(
   const closedSub = getSubInDirs(closed, dirs[0]);
   return closedSub;
 }
+
+export function buildObsGraph(app: App): MultiGraph {
+  const ObsG = new MultiGraph();
+  const { resolvedLinks, unresolvedLinks } = app.metadataCache;
+
+  for (const source in resolvedLinks) {
+    if (!source.endsWith(".md")) continue;
+    const sourceBase = getBaseFromMDPath(source);
+    addNodesIfNot(ObsG, [sourceBase]);
+
+    for (const dest in resolvedLinks[source]) {
+      if (!dest.endsWith(".md")) continue;
+      const destBase = getBaseFromMDPath(dest);
+      addNodesIfNot(ObsG, [destBase]);
+      ObsG.addEdge(sourceBase, destBase, { resolved: true });
+    }
+  }
+
+  for (const source in unresolvedLinks) {
+    const sourceBase = getBaseFromMDPath(source);
+    addNodesIfNot(ObsG, [sourceBase]);
+
+    for (const dest in unresolvedLinks[source]) {
+      const destBase = getBaseFromMDPath(dest);
+      addNodesIfNot(ObsG, [destBase]);
+      if (sourceBase === destBase) continue;
+      ObsG.addEdge(sourceBase, destBase, { resolved: false });
+    }
+  }
+
+  info({ ObsG });
+  return ObsG;
+}
+
+export function populateMain(
+  settings: BCSettings,
+  mainG: MultiGraph,
+  source: string,
+  field: string,
+  target: string,
+  sourceOrder: number,
+  targetOrder: number,
+  fillOpp = false
+): void {
+  const { userHiers } = settings;
+  const dir = getFieldInfo(userHiers, field).fieldDir;
+
+  addNodesIfNot(mainG, [source], {
+    order: sourceOrder,
+  });
+
+  addNodesIfNot(mainG, [target], {
+    order: targetOrder,
+  });
+
+  addEdgeIfNot(mainG, source, target, {
+    dir,
+    field,
+  });
+  if (fillOpp) {
+    const oppDir = getOppDir(dir);
+    const oppField =
+      getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
+    addEdgeIfNot(mainG, target, source, {
+      dir: oppDir,
+      field: oppField,
+    });
+  }
+}
+
+export const getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
+  parseInt(
+    (frontms.find((arr) => arr.file.basename === target)?.[
+      BC_ORDER
+    ] as string) ?? "9999"
+  );
+
+export const getSourceOrder = (frontm: dvFrontmatterCache) =>
+  parseInt((frontm[BC_ORDER] as string) ?? "9999");
