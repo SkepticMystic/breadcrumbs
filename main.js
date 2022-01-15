@@ -22450,6 +22450,12 @@ function removeCycles(g, startNode) {
     });
     return copy;
 }
+function getSubCloseSub(g, userHiers, ...dirs) {
+    const sub = getSubInDirs(g, ...dirs);
+    const closed = getReflexiveClosure(sub, userHiers);
+    const closedSub = getSubInDirs(closed, dirs[0]);
+    return closedSub;
+}
 
 function normalise(arr) {
     const max = Math.max(...arr);
@@ -25162,6 +25168,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             target: fieldDetails,
             props: { plugin },
         });
+        details("Relationships");
         const generalDetails = details("General Options");
         new require$$0.Setting(generalDetails)
             .setName("Show Refresh Index Notice")
@@ -52946,9 +52953,7 @@ class BCPlugin extends require$$0.Plugin {
             callback: async () => {
                 const { settings, mainG } = this;
                 const { basename } = this.app.workspace.getActiveFile();
-                const g = getSubInDirs(mainG, "up", "down");
-                const closed = getReflexiveClosure(g, settings.userHiers);
-                const onlyDowns = getSubInDirs(closed, "down");
+                const onlyDowns = getSubCloseSub(mainG, settings.userHiers, "down", "up");
                 const allPaths = dfsAllPaths(onlyDowns, basename);
                 const index = this.addAliasesToIndex(this.createIndex(allPaths));
                 loglevel.info({ index });

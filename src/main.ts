@@ -67,6 +67,7 @@ import {
   getOppFields,
   getReflexiveClosure,
   getSinks,
+  getSubCloseSub,
   getSubForFields,
   getSubInDirs,
   removeCycles,
@@ -379,9 +380,12 @@ export default class BCPlugin extends Plugin {
         const { settings, mainG } = this;
         const { basename } = this.app.workspace.getActiveFile();
 
-        const g = getSubInDirs(mainG, "up", "down");
-        const closed = getReflexiveClosure(g, settings.userHiers);
-        const onlyDowns = getSubInDirs(closed, "down");
+        const onlyDowns = getSubCloseSub(
+          mainG,
+          settings.userHiers,
+          "down",
+          "up"
+        );
 
         const allPaths = dfsAllPaths(onlyDowns, basename);
         const index = this.addAliasesToIndex(this.createIndex(allPaths));

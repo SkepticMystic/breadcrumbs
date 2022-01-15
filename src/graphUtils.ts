@@ -223,3 +223,14 @@ export function removeCycles(g: Graph, startNode: string) {
   });
   return copy;
 }
+
+export function getSubCloseSub(
+  g: MultiGraph,
+  userHiers: UserHier[],
+  ...dirs: Directions[]
+) {
+  const sub = getSubInDirs(g, ...dirs);
+  const closed = getReflexiveClosure(sub, userHiers);
+  const closedSub = getSubInDirs(closed, dirs[0]);
+  return closedSub;
+}
