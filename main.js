@@ -20328,6 +20328,34 @@ async function waitForResolvedLinks(app, delay = 1000, max = 50) {
     }
 }
 
+async function writeBCsToAllFiles(plugin) {
+    if (!plugin.settings.showWriteAllBCsCmd) {
+        new require$$0.Notice("You first need to enable this command in Breadcrumbs' settings.");
+        return;
+    }
+    if (window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.")) {
+        if (window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.")) {
+            if (window.confirm("For real, please make a back up before.")) {
+                const notice = new require$$0.Notice("Operation Started");
+                const problemFiles = [];
+                for (const file of plugin.app.vault.getMarkdownFiles()) {
+                    try {
+                        await plugin.writeBCToFile(file);
+                    }
+                    catch (e) {
+                        problemFiles.push(file.path);
+                    }
+                }
+                notice.setMessage("Operation Complete");
+                if (problemFiles.length) {
+                    new require$$0.Notice("Some files were not updated due to errors. Check the console to see which ones.");
+                    console.log({ problemFiles });
+                }
+            }
+        }
+    }
+}
+
 class Debugger {
     constructor(plugin) {
         this.debugLessThan = (level) => loglevel.levels[this.plugin.settings.debugMode] < level;
@@ -53055,6 +53083,114 @@ function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
     createJuggl(plugin, target, nodes, args);
 }
 
+async function jumpToFirstDir(plugin, dir) {
+    var _a;
+    const { limitJumpToFirstFields } = plugin.settings;
+    const file = plugin.app.workspace.getActiveFile();
+    if (!file) {
+        new require$$0.Notice("You need to be focussed on a Markdown file");
+        return;
+    }
+    const { basename } = file;
+    const realsNImplieds = getRealnImplied(plugin, basename, dir)[dir];
+    const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
+    if (allBCs.length === 0) {
+        new require$$0.Notice(`No ${dir} found`);
+        return;
+    }
+    const toNode = (_a = allBCs.find((bc) => limitJumpToFirstFields.includes(bc.field))) === null || _a === void 0 ? void 0 : _a.to;
+    if (!toNode) {
+        new require$$0.Notice(`No note was found in ${dir} given the limited fields allowed: ${limitJumpToFirstFields.join(", ")}`);
+        return;
+    }
+    const toFile = plugin.app.metadataCache.getFirstLinkpathDest(toNode, "");
+    await plugin.app.workspace.activeLeaf.openFile(toFile);
+}
+
+async function thread(plugin, field) {
+    var _a, _b;
+    const { app, settings } = plugin;
+    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
+    const currFile = app.workspace.getActiveFile();
+    if (!currFile)
+        return;
+    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+    let newBasename = threadingTemplate
+        ? threadingTemplate
+            .replace("{{current}}", currFile.basename)
+            .replace("{{field}}", field)
+            .replace("{{dir}}", dir)
+            //@ts-ignore
+            .replace("{{date}}", moment().format(dateFormat))
+        : "Untitled";
+    let i = 1;
+    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
+        if (i === 1)
+            newBasename += ` ${i}`;
+        else
+            newBasename = newBasename.slice(0, -2) + ` ${i}`;
+        i++;
+    }
+    const crumb = writeBCsInline
+        ? `${oppField}:: [[${currFile.basename}]]`
+        : `---\n${oppField}: ['${currFile.basename}']\n---`;
+    const templatePath = threadingDirTemplates[dir];
+    let newContent = crumb;
+    if (templatePath) {
+        const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
+        const template = await app.vault.cachedRead(templateFile);
+        newContent = template.replace(/\{\{BC-thread-crumb\}\}/i, writeBCsInline
+            ? `${oppField}:: [[${currFile.basename}]]`
+            : `${oppField}: ['${currFile.basename}']`);
+    }
+    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
+    if (!writeBCsInline) {
+        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
+        if (!api) {
+            new require$$0.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
+            return;
+        }
+        await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
+    }
+    else {
+        // TODO Check if this note already has this field
+        let content = await app.vault.read(currFile);
+        const splits = splitAtYaml(content);
+        content =
+            splits[0] +
+                (splits[0].length ? "\n" : "") +
+                `${field}:: [[${newFile.basename}]]` +
+                (splits[1].length ? "\n" : "") +
+                splits[1];
+        await app.vault.modify(currFile, content);
+    }
+    const leaf = threadIntoNewPane
+        ? app.workspace.splitActiveLeaf()
+        : app.workspace.activeLeaf;
+    await leaf.openFile(newFile, { active: true, mode: "source" });
+    if (templatePath) {
+        if (app.plugins.plugins["templater-obsidian"]) {
+            app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
+        }
+        else {
+            new require$$0.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
+        }
+    }
+    if (threadingTemplate) {
+        // @ts-ignore
+        const editor = leaf.view.editor;
+        editor.setCursor(editor.getValue().length);
+    }
+    else {
+        const noteNameInputs = document.getElementsByClassName("view-header-title");
+        const newNoteInputEl = Array.from(noteNameInputs).find((input) => input.innerText === newBasename);
+        newNoteInputEl.innerText = "";
+        newNoteInputEl.focus();
+    }
+}
+
 class BCPlugin extends require$$0.Plugin {
     constructor() {
         super(...arguments);
@@ -53316,34 +53452,7 @@ class BCPlugin extends require$$0.Plugin {
         this.addCommand({
             id: "Write-Breadcrumbs-to-All-Files",
             name: "Write Breadcrumbs to **ALL** Files",
-            callback: async () => {
-                if (!settings.showWriteAllBCsCmd) {
-                    new require$$0.Notice("You first need to enable this command in Breadcrumbs' settings.");
-                    return;
-                }
-                if (window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.")) {
-                    if (window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.")) {
-                        if (window.confirm("For real, please make a back up before.")) {
-                            const notice = new require$$0.Notice("Operation Started");
-                            const problemFiles = [];
-                            for (const file of this.app.vault.getMarkdownFiles()) {
-                                try {
-                                    await this.writeBCToFile(file);
-                                }
-                                catch (e) {
-                                    problemFiles.push(file.path);
-                                }
-                            }
-                            notice.setMessage("Operation Complete");
-                            if (problemFiles.length) {
-                                new require$$0.Notice("Some files were not updated due to errors. Check the console to see which ones.");
-                                console.log({ problemFiles });
-                            }
-                        }
-                    }
-                }
-            },
-            // checkCallback: () => settings.showWriteAllBCsCmd,
+            callback: async () => writeBCsToAllFiles(this),
         });
         this.addCommand({
             id: "local-index",
@@ -53359,117 +53468,14 @@ class BCPlugin extends require$$0.Plugin {
             this.addCommand({
                 id: `jump-to-first-${dir}`,
                 name: `Jump to first '${dir}'`,
-                callback: async () => {
-                    var _a;
-                    const file = this.app.workspace.getActiveFile();
-                    if (!file) {
-                        new require$$0.Notice("You need to be focussed on a Markdown file");
-                        return;
-                    }
-                    const { basename } = file;
-                    const realsNImplieds = getRealnImplied(this, basename, dir)[dir];
-                    const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
-                    if (allBCs.length === 0) {
-                        new require$$0.Notice(`No ${dir} found`);
-                        return;
-                    }
-                    const toNode = (_a = allBCs.find((bc) => settings.limitJumpToFirstFields.includes(bc.field))) === null || _a === void 0 ? void 0 : _a.to;
-                    if (!toNode) {
-                        new require$$0.Notice(`No note was found in ${dir} given the limited fields allowed: ${settings.limitJumpToFirstFields.join(", ")}`);
-                        return;
-                    }
-                    const toFile = this.app.metadataCache.getFirstLinkpathDest(toNode, "");
-                    await this.app.workspace.activeLeaf.openFile(toFile);
-                },
+                callback: async () => jumpToFirstDir(this, dir),
             });
         });
         getFields(settings.userHiers).forEach((field) => {
             this.addCommand({
                 id: `new-file-with-curr-as-${field}`,
                 name: `Create a new '${field}' from the current note`,
-                callback: async () => {
-                    var _a, _b;
-                    const { app } = this;
-                    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
-                    const currFile = app.workspace.getActiveFile();
-                    if (!currFile)
-                        return;
-                    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
-                    const dir = getFieldInfo(userHiers, field).fieldDir;
-                    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-                    let newBasename = threadingTemplate
-                        ? threadingTemplate
-                            .replace("{{current}}", currFile.basename)
-                            .replace("{{field}}", field)
-                            .replace("{{dir}}", dir)
-                            //@ts-ignore
-                            .replace("{{date}}", require$$0.moment().format(dateFormat))
-                        : "Untitled";
-                    let i = 1;
-                    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
-                        if (i === 1)
-                            newBasename += ` ${i}`;
-                        else
-                            newBasename = newBasename.slice(0, -2) + ` ${i}`;
-                        i++;
-                    }
-                    const crumb = writeBCsInline
-                        ? `${oppField}:: [[${currFile.basename}]]`
-                        : `---\n${oppField}: ['${currFile.basename}']\n---`;
-                    const templatePath = threadingDirTemplates[dir];
-                    let newContent = crumb;
-                    if (templatePath) {
-                        const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
-                        const template = await app.vault.cachedRead(templateFile);
-                        newContent = template.replace(/\{\{BC-thread-crumb\}\}/i, writeBCsInline
-                            ? `${oppField}:: [[${currFile.basename}]]`
-                            : `${oppField}: ['${currFile.basename}']`);
-                    }
-                    const newFile = await app.vault.create(require$$0.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
-                    if (!writeBCsInline) {
-                        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
-                        if (!api) {
-                            new require$$0.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
-                            return;
-                        }
-                        await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
-                    }
-                    else {
-                        // TODO Check if this note already has this field
-                        let content = await app.vault.read(currFile);
-                        const splits = splitAtYaml(content);
-                        content =
-                            splits[0] +
-                                (splits[0].length ? "\n" : "") +
-                                `${field}:: [[${newFile.basename}]]` +
-                                (splits[1].length ? "\n" : "") +
-                                splits[1];
-                        await app.vault.modify(currFile, content);
-                    }
-                    const leaf = threadIntoNewPane
-                        ? app.workspace.splitActiveLeaf()
-                        : app.workspace.activeLeaf;
-                    await leaf.openFile(newFile, { active: true, mode: "source" });
-                    if (templatePath) {
-                        if (app.plugins.plugins["templater-obsidian"]) {
-                            app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
-                        }
-                        else {
-                            new require$$0.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
-                        }
-                    }
-                    if (threadingTemplate) {
-                        // @ts-ignore
-                        const editor = leaf.view.editor;
-                        editor.setCursor(editor.getValue().length);
-                    }
-                    else {
-                        const noteNameInputs = document.getElementsByClassName("view-header-title");
-                        const newNoteInputEl = Array.from(noteNameInputs).find((input) => input.innerText === newBasename);
-                        newNoteInputEl.innerText = "";
-                        newNoteInputEl.focus();
-                    }
-                },
+                callback: async () => thread(this, field),
             });
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
