@@ -25572,45 +25572,6 @@ const getSubsFromFolder = (folder) => {
     });
     return { otherNotes, subFolders };
 };
-// export function addFolderNotesToGraph(
-//   settings: BCSettings,
-//   folderNotes: dvFrontmatterCache[],
-//   frontms: dvFrontmatterCache[],
-//   mainG: MultiGraph
-// ) {
-//   const { userHiers } = settings;
-//   const fields = getFields(userHiers);
-//   folderNotes.forEach((altFile) => {
-//     const { file } = altFile;
-//     const basename = getDVBasename(file);
-//     const topFolder = getFolderName(file);
-//     const recursive = altFile[BC_FOLDER_NOTE_RECURSIVE];
-//     const targets = frontms
-//       .map((ff) => ff.file)
-//       .filter(
-//         (other) =>
-//           getFolderName(other) === topFolder && other.path !== file.path
-//       )
-//       .map(getDVBasename);
-//     const field = altFile[BC_FOLDER_NOTE] as string;
-//     if (typeof field !== "string" || !fields.includes(field)) return;
-//     targets.forEach((target) => {
-//       // This is getting the order of the folder note, not the source pointing up to it
-//       const sourceOrder = getSourceOrder(altFile);
-//       const targetOrder = getTargetOrder(frontms, basename);
-//       populateMain(
-//         settings,
-//         mainG,
-//         basename,
-//         field,
-//         target,
-//         sourceOrder,
-//         targetOrder,
-//         true
-//       );
-//     });
-//   });
-// }
 function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
     const { settings, app } = plugin;
     const { userHiers } = settings;
@@ -26141,6 +26102,12 @@ async function buildMainG(plugin) {
         return mainG;
     }
 }
+function buildClosedG(plugin) {
+    const { mainG, settings } = plugin;
+    const { userHiers } = settings;
+    const reflexClosed = getReflexiveClosure(mainG, userHiers);
+    return reflexClosed;
+}
 async function refreshIndex(plugin) {
     var _a;
     if (!plugin.activeLeafChange)
@@ -26148,7 +26115,7 @@ async function refreshIndex(plugin) {
     if (!plugin.layoutChange)
         plugin.registerLayoutChangeEvent();
     plugin.mainG = await buildMainG(plugin);
-    plugin.closedG = getReflexiveClosure(plugin.mainG, plugin.settings.userHiers);
+    plugin.closedG = buildClosedG(plugin);
     for (const { type } of plugin.VIEWS)
         await ((_a = plugin.getActiveTYPEView(type)) === null || _a === void 0 ? void 0 : _a.draw());
     if (plugin.settings.showBCs)
@@ -28782,9 +28749,6 @@ class MatrixView extends obsidian.ItemView {
             let { up: { reals: ru, implieds: iu }, same: { reals: rs, implieds: is }, down: { reals: rd, implieds: id }, next: { reals: rn, implieds: iN }, prev: { reals: rp, implieds: ip }, } = filteredRealNImplied;
             // SECTION Implied Siblings
             /// Notes with the same parents
-            // const g = getSubInDirs(mainG, "up", "down");
-            // const closed = getReflexiveClosure(g, userHiers);
-            // const closedUp = getSubInDirs(closed, "up");
             const closedUp = getSubInDirs(plugin.closedG, "up");
             const iSamesII = [];
             if (closedUp.hasNode(basename)) {
@@ -54389,14 +54353,14 @@ class BCPlugin extends obsidian.Plugin {
         obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
         await this.waitForCache();
         this.mainG = await buildMainG(this);
-        this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
+        this.closedG = buildClosedG(this);
         this.app.workspace.onLayoutReady(async () => {
             var _a;
             const noFiles = this.app.vault.getMarkdownFiles().length;
             if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes().length) < noFiles) {
                 await wait(3000);
                 this.mainG = await buildMainG(this);
-                this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
+                this.closedG = buildClosedG(this);
             }
             for (const { openOnLoad, type, constructor } of this.VIEWS) {
                 if (openOnLoad)

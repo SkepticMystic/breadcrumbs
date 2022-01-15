@@ -29,6 +29,7 @@ import {
   splitLinksRegex,
 } from "./constants";
 import {
+  addEdgeIfNot,
   addNodesIfNot,
   buildObsGraph,
   getReflexiveClosure,
@@ -316,12 +317,39 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
   }
 }
 
+function addSiblingsFromSameParent(g: MultiGraph) {
+  g.forEachNode((n, a) => {
+    g.forEachOutEdge(n, (k, a, s, t) => {
+      if (a.dir !== "up") return;
+
+      g.forEachOutEdge(t, (k, a, s, t) => {
+        if (a.dir !== "down" || s === n) return;
+
+        addEdgeIfNot(g, n, t, {
+          dir: "same",
+          // field: ...
+        });
+      });
+    });
+  });
+}
+function addSiblingsFromSiblings(g: MultiGraph) {}
+
+export function buildClosedG(plugin: BCPlugin) {
+  const { mainG, settings } = plugin;
+  const { userHiers } = settings;
+
+  const reflexClosed = getReflexiveClosure(mainG, userHiers);
+
+  return reflexClosed;
+}
+
 export async function refreshIndex(plugin: BCPlugin) {
   if (!plugin.activeLeafChange) plugin.registerActiveLeafChangeEvent();
   if (!plugin.layoutChange) plugin.registerLayoutChangeEvent();
 
   plugin.mainG = await buildMainG(plugin);
-  plugin.closedG = getReflexiveClosure(plugin.mainG, plugin.settings.userHiers);
+  plugin.closedG = buildClosedG(plugin);
 
   for (const { type } of plugin.VIEWS)
     await plugin.getActiveTYPEView(type)?.draw();
