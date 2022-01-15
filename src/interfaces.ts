@@ -314,3 +314,8 @@ export interface ParsedCodeblock extends IJugglSettings {
   from: string;
   implied: string;
 }
+
+export interface NodePath {
+  node: string;
+  path: string[];
+}
