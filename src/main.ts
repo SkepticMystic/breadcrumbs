@@ -28,7 +28,7 @@ import {
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
-import { buildMainG, refreshIndex } from "./refreshIndex";
+import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
 import { getFields } from "./sharedFunctions";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
@@ -174,14 +174,14 @@ export default class BCPlugin extends Plugin {
 
     await this.waitForCache();
     this.mainG = await buildMainG(this);
-    this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
+    this.closedG = buildClosedG(this);
 
     this.app.workspace.onLayoutReady(async () => {
       const noFiles = this.app.vault.getMarkdownFiles().length;
       if (this.mainG?.nodes().length < noFiles) {
         await wait(3000);
         this.mainG = await buildMainG(this);
-        this.closedG = getReflexiveClosure(this.mainG, settings.userHiers);
+        this.closedG = buildClosedG(this);
       }
 
       for (const { openOnLoad, type, constructor } of this.VIEWS) {

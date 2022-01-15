@@ -17,49 +17,6 @@ const getSubsFromFolder = (folder: TFolder) => {
   return { otherNotes, subFolders };
 };
 
-// export function addFolderNotesToGraph(
-//   settings: BCSettings,
-//   folderNotes: dvFrontmatterCache[],
-//   frontms: dvFrontmatterCache[],
-//   mainG: MultiGraph
-// ) {
-//   const { userHiers } = settings;
-//   const fields = getFields(userHiers);
-//   folderNotes.forEach((altFile) => {
-//     const { file } = altFile;
-//     const basename = getDVBasename(file);
-//     const topFolder = getFolderName(file);
-//     const recursive = altFile[BC_FOLDER_NOTE_RECURSIVE];
-
-//     const targets = frontms
-//       .map((ff) => ff.file)
-//       .filter(
-//         (other) =>
-//           getFolderName(other) === topFolder && other.path !== file.path
-//       )
-//       .map(getDVBasename);
-
-//     const field = altFile[BC_FOLDER_NOTE] as string;
-//     if (typeof field !== "string" || !fields.includes(field)) return;
-
-//     targets.forEach((target) => {
-//       // This is getting the order of the folder note, not the source pointing up to it
-//       const sourceOrder = getSourceOrder(altFile);
-//       const targetOrder = getTargetOrder(frontms, basename);
-//       populateMain(
-//         settings,
-//         mainG,
-//         basename,
-//         field,
-//         target,
-//         sourceOrder,
-//         targetOrder,
-//         true
-//       );
-//     });
-//   });
-// }
-
 export function addFolderNotesToGraph(
   plugin: BCPlugin,
   folderNotes: dvFrontmatterCache[],

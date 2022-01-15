@@ -166,9 +166,6 @@ export default class MatrixView extends ItemView {
 
       // SECTION Implied Siblings
       /// Notes with the same parents
-      // const g = getSubInDirs(mainG, "up", "down");
-      // const closed = getReflexiveClosure(g, userHiers);
-      // const closedUp = getSubInDirs(closed, "up");
       const closedUp = getSubInDirs(plugin.closedG, "up");
 
       const iSamesII: internalLinkObj[] = [];
