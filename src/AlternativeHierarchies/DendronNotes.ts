@@ -17,35 +17,32 @@ export function addDendronNotesToGraph(
   for (const frontm of frontms) {
     // Doesn't currently work yet
     if (frontm[BC_IGNORE_DENDRON]) continue;
-    const { file } = frontm;
-    const basename = getDVBasename(file);
+
+    const basename = getDVBasename(frontm.file);
 
     const splits = basename.split(dendronNoteDelimiter);
-    if (splits.length < 2) continue;
+    if (splits.length <= 1) continue;
 
-    // Probably inefficient to reverse then unreverse it. I can probably just use slice(-i)
-    const reversed = splits.reverse();
-    reversed.forEach((split, i) => {
-      const currSlice = reversed.slice(i).reverse().join(dendronNoteDelimiter);
-      const nextSlice = reversed
-        .slice(i + 1)
-        .reverse()
-        .join(dendronNoteDelimiter);
-      if (!nextSlice) return;
+    const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
+    if (!nextSlice) continue;
+    const nextSliceFile = frontms.find(
+      (fm) => getDVBasename(fm.file) === nextSlice
+    );
 
-      const sourceOrder = getSourceOrder(frontm);
-      const targetOrder = getTargetOrder(frontms, nextSlice);
+    if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON]) continue;
 
-      populateMain(
-        settings,
-        mainG,
-        currSlice,
-        dendronNoteField,
-        nextSlice,
-        sourceOrder,
-        targetOrder,
-        true
-      );
-    });
+    const sourceOrder = getSourceOrder(frontm);
+    const targetOrder = getTargetOrder(frontms, nextSlice);
+
+    populateMain(
+      settings,
+      mainG,
+      basename,
+      dendronNoteField,
+      nextSlice,
+      sourceOrder,
+      targetOrder,
+      true
+    );
   }
 }
