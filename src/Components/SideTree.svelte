@@ -9,6 +9,7 @@
     dfsAllPaths,
     getOppDir,
     getReflexiveClosure,
+    getSubCloseSub,
     getSubInDirs,
   } from "../graphUtils";
   import FaFire from "svelte-icons/fa/FaFire.svelte";
@@ -18,6 +19,7 @@
   import { dropDendron } from "../sharedFunctions";
   import type TreeView from "../TreeView";
   import { DIRECTIONS } from "../constants";
+  import { createIndex } from "../CreateIndex";
 
   export let plugin: BCPlugin;
   export let view: TreeView;
@@ -38,12 +40,10 @@
   let lines: [string, string][];
   $: {
     const { mainG } = plugin;
-    const upnDown = getSubInDirs(mainG, dir, oppDir);
-    const closed = getReflexiveClosure(upnDown, userHiers);
-    const down = getSubInDirs(closed, dir);
+    const down = getSubCloseSub(mainG, userHiers, dir, oppDir);
 
     const allPaths = dfsAllPaths(down, basename);
-    const index = plugin.createIndex(allPaths, false);
+    const index = createIndex(allPaths, false);
     info({ allPaths, index });
 
     lines = index

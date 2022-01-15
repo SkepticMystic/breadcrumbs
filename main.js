@@ -28,6 +28,167 @@ var graphology_umd_min = createCommonjsModule(function (module, exports) {
 
 });
 
+const CAT_DANGLING = 'dangling';
+const CORE_STORE_ID = 'core';
+class VizId {
+    constructor(id, storeId) {
+        this.id = id;
+        this.storeId = storeId;
+    }
+    toString() {
+        return `${this.storeId}:${this.id}`;
+    }
+    toId() {
+        return this.toString();
+    }
+    static fromId(id) {
+        const split = id.split(':');
+        const storeId = split[0];
+        const _id = split.slice(1).join(':');
+        return new VizId(_id, storeId);
+    }
+    static fromNode(node) {
+        return VizId.fromId(node.id());
+    }
+    static fromNodes(nodes) {
+        return nodes.map((n) => VizId.fromNode(n));
+    }
+    static fromFile(file) {
+        return new VizId(file.name, 'core');
+    }
+    static toId(id, storeId) {
+        return new VizId(id, storeId).toId();
+    }
+}
+const _parseTags = function (tags) {
+    return [].concat(...tags
+        .map((tag) => {
+        tag = tag.slice(1);
+        const hSplit = tag.split('/');
+        const tags = [];
+        for (const i in hSplit) {
+            const hTag = hSplit.slice(0, parseInt(i) + 1).join('-');
+            tags.push(`tag-${hTag}`);
+        }
+        return tags;
+    }));
+};
+const getClasses = function (file, metadataCache) {
+    if (file) {
+        const classes = [];
+        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+            classes.push('image');
+        }
+        else if (['mp3', 'webm', 'wav', 'm4a', 'ogg', '3gp', 'flac'].contains(file.extension)) {
+            classes.push('audio');
+        }
+        else if (['mp4', 'webm', 'ogv'].contains(file.extension)) {
+            classes.push('video');
+        }
+        else if (file.extension === 'pdf') {
+            classes.push('pdf');
+        }
+        // This is replaced by the 'path' data attribute.
+        // if (!(file.parent.name === '/' || file.parent.name === '')) {
+        //   classes.push(`folder-${file.parent.name
+        //       .replace(' ', '_')}`);
+        // } else {
+        //   classes.push('root');
+        // }
+        if (file.extension === 'md') {
+            classes.push('note');
+            const cache = metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                if ('image' in cache.frontmatter) {
+                    classes.push('image');
+                }
+                if ('tags' in cache.frontmatter) {
+                    const tags = require$$0.parseFrontMatterTags(cache.frontmatter);
+                    if (tags) {
+                        classes.push(..._parseTags(tags));
+                    }
+                }
+                if ('cssclass' in cache.frontmatter) {
+                    const clazzes = require$$0.parseFrontMatterStringArray(cache.frontmatter, 'cssclass');
+                    if (clazzes) {
+                        classes.push(...clazzes);
+                    }
+                }
+            }
+            if (cache?.tags) {
+                classes.push(..._parseTags(cache.tags.map((t) => t.tag)));
+            }
+        }
+        else {
+            classes.push('file');
+        }
+        return classes;
+    }
+    return [CAT_DANGLING];
+};
+const nodeFromFile = async function (file, plugin, id) {
+    if (!id) {
+        id = VizId.toId(file.name, CORE_STORE_ID);
+    }
+    const cache = plugin.app.metadataCache.getFileCache(file);
+    const name = file.extension === 'md' ? file.basename : file.name;
+    const classes = getClasses(file, plugin.app.metadataCache).join(' ');
+    const data = {
+        id,
+        name,
+        path: file.path,
+    };
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+        try {
+            // @ts-ignore
+            data['resource_url'] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(file.path)}`;
+        }
+        catch { }
+    }
+    if (file.extension == 'md') {
+        data['content'] = await plugin.app.vault.cachedRead(file);
+    }
+    const frontmatter = cache?.frontmatter;
+    if (frontmatter) {
+        Object.keys(frontmatter).forEach((k) => {
+            if (!(k === 'position')) {
+                if (k === 'image') {
+                    const imageField = frontmatter[k];
+                    try {
+                        // Check if url. throws error otherwise
+                        new URL(imageField);
+                        data[k] = imageField;
+                    }
+                    catch {
+                        try {
+                            // @ts-ignore
+                            data[k] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(imageField)}`;
+                        }
+                        catch { }
+                    }
+                }
+                else {
+                    data[k] = frontmatter[k];
+                }
+            }
+        });
+    }
+    return {
+        group: 'nodes',
+        data: data,
+        classes: classes,
+    };
+};
+const nodeDangling = function (path) {
+    return {
+        group: 'nodes',
+        data: {
+            id: VizId.toId(path, CORE_STORE_ID),
+            name: path,
+        },
+        classes: 'dangling',
+    };
+};
 const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
 const nameRegex = '[^\\W\\d]\\w*';
 const regexEscape = function (str) {
@@ -67,6 +228,15 @@ const parseTypedLink = function (link, line, typedLinkPrefix) {
                 type: match[1],
             },
         };
+    }
+    return null;
+};
+
+const getPlugin = function (app) {
+    // @ts-ignore
+    if ('juggl' in app.plugins.plugins) {
+        // @ts-ignore
+        return app.plugins.plugins['juggl'];
     }
     return null;
 };
@@ -21007,7 +21177,7 @@ const ARROW_DIRECTIONS = {
 const RELATIONS = ["Parent", "Sibling", "Child"];
 const REAlCLOSED = ["Real", "Closed"];
 const ALLUNLINKED = ["All", "No Unlinked"];
-const CODEBLOCK_TYPES = ["tree"];
+const CODEBLOCK_TYPES = ["tree", "juggl"];
 const CODEBLOCK_FIELDS = [
     "type",
     "dir",
@@ -21019,6 +21189,35 @@ const CODEBLOCK_FIELDS = [
     "from",
     "implied",
 ];
+const JUGGL_CB_DEFAULTS = {
+    autoAddNodes: false,
+    autoExpand: false,
+    autoZoom: false,
+    coreStore: "core",
+    expandInitial: false,
+    fdgdLayout: "d3-force",
+    filter: "",
+    height: "750px",
+    hoverEdges: false,
+    layout: "force-directed",
+    limit: 250,
+    mergeEdges: true,
+    metaKeyHover: true,
+    mode: "workspace",
+    navigator: true,
+    openWithShift: false,
+    styleGroups: [],
+    toolbar: true,
+    width: "100%",
+    zoomSpeed: 1,
+};
+const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
+    autoZoom: true,
+    fdgdLayout: "d3-force",
+    height: "400px",
+    toolbar: false,
+});
+CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 const blankUserHier = () => {
     return { up: [], same: [], down: [], next: [], prev: [] };
 };
@@ -21031,7 +21230,7 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDER, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDER, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-subfolder",
     "BC-tag-note",
@@ -21041,6 +21240,7 @@ const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDER, BC_TAG_NOTE, BC_TAG_NOTE_FIELD,
     "BC-traverse-note",
     "BC-regex-note",
     "BC-regex-note-field",
+    "BC-ignore-dendron",
     "BC-hide-trail",
     "BC-order",
 ];
@@ -21097,6 +21297,12 @@ const BC_FIELDS_INFO = [
         field: BC_REGEX_NOTE_FIELD,
         desc: "Manually choose the field for this regex-note to use",
         after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_IGNORE_DENDRON,
+        desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
+        after: ": true",
         alt: false,
     },
     {
@@ -21161,6 +21367,7 @@ const DEFAULT_SETTINGS = {
     showImpliedRelations: true,
     showTrail: true,
     showGrid: true,
+    showJuggl: false,
     showPrevNext: true,
     sortByNameShowAlias: false,
     squareDirectionsOrder: [0, 1, 2, 3, 4],
@@ -25422,7 +25629,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
             await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
             await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
         }));
-        const trailDetails = subDetails("Trail/Grid", viewDetails);
+        const trailDetails = subDetails("Trail/Grid/Juggl", viewDetails);
         new require$$0.Setting(trailDetails)
             .setName("Show Breadcrumbs")
             .setDesc("Show a set of different views at the top of the current note.")
@@ -25457,7 +25664,7 @@ class BCSettingTab extends require$$0.PluginSettingTab {
         });
         new require$$0.Setting(trailDetails)
             .setName("Views to show")
-            .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, and/or the Next-Previous view.")
+            .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view.")
             .addToggle((toggle) => {
             toggle
                 .setTooltip("Show Trail view")
@@ -25474,6 +25681,16 @@ class BCSettingTab extends require$$0.PluginSettingTab {
                 .setValue(settings.showGrid)
                 .onChange(async (value) => {
                 settings.showGrid = value;
+                await plugin.saveSettings();
+                await plugin.drawTrail();
+            });
+        })
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Show Juggl view")
+                .setValue(settings.showJuggl)
+                .onChange(async (value) => {
+                settings.showJuggl = value;
                 await plugin.saveSettings();
                 await plugin.drawTrail();
             });
@@ -26096,12 +26313,12 @@ function add_css$7() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[34] = list[i][0];
-	child_ctx[35] = list[i][1];
+	child_ctx[17] = list[i][0];
+	child_ctx[18] = list[i][1];
 	return child_ctx;
 }
 
-// (75:0) {#if title !== "false"}
+// (27:0) {#if title !== "false"}
 function create_if_block_2$2(ctx) {
 	let h3;
 	let t0;
@@ -26113,7 +26330,7 @@ function create_if_block_2$2(ctx) {
 			h3 = element("h3");
 			t0 = text(/*dir*/ ctx[1]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[6]);
+			t2 = text(/*basename*/ ctx[5]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -26122,7 +26339,8 @@ function create_if_block_2$2(ctx) {
 			append(h3, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
+			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
+			if (dirty & /*basename*/ 32) set_data(t2, /*basename*/ ctx[5]);
 		},
 		d(detaching) {
 			if (detaching) detach(h3);
@@ -26130,7 +26348,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (80:4) {#if meetsConditions(indent, link)}
+// (32:4) {#if meetsConditions(indent, link)}
 function create_if_block$4(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -26200,16 +26418,16 @@ function create_if_block$4(ctx) {
 	};
 }
 
-// (105:6) {:else}
+// (57:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[34] + "-" + "";
+	let t0_value = /*indent*/ ctx[17] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[35], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26217,7 +26435,7 @@ function create_else_block$3(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[17](/*link*/ ctx[35], ...args);
+		return /*click_handler_1*/ ctx[15](/*link*/ ctx[18], ...args);
 	}
 
 	return {
@@ -26232,7 +26450,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26259,8 +26477,10 @@ function create_else_block$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
+			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*indent*/ ctx[17] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
+			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
@@ -26276,18 +26496,18 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (81:6) {#if content === "open" || content === "closed"}
+// (33:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[34] + "";
+	let t0_value = /*indent*/ ctx[17] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[35], /*settings*/ ctx[4]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -26299,13 +26519,13 @@ function create_if_block_1$3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[16](/*link*/ ctx[35], ...args);
+		return /*click_handler*/ ctx[14](/*link*/ ctx[18], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
-				app: /*app*/ ctx[5],
-				path: /*link*/ ctx[35]
+				app: /*app*/ ctx[7],
+				path: /*link*/ ctx[18]
 			}
 		});
 
@@ -26325,7 +26545,7 @@ function create_if_block_1$3(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-yt7jmz");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz");
 
@@ -26359,14 +26579,20 @@ function create_if_block_1$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
+			if ((!current || dirty & /*lines*/ 16) && t0_value !== (t0_value = /*indent*/ ctx[17] + "")) set_data(t0, t0_value);
+			if ((!current || dirty & /*lines*/ 16) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (!current || dirty[0] & /*plugin*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[35])
+			if (!current || dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
 			? ""
 			: "is-unresolved") + " svelte-yt7jmz")) {
 				attr(a, "class", a_class_value);
 			}
 
-			if (!current || dirty[0] & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
+			const rendermarkdown_changes = {};
+			if (dirty & /*lines*/ 16) rendermarkdown_changes.path = /*link*/ ctx[18];
+			rendermarkdown.$set(rendermarkdown_changes);
+
+			if (!current || dirty & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
 				details.open = details_open_value;
 			}
 		},
@@ -26388,9 +26614,9 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (79:2) {#each lines as [indent, link]}
+// (31:2) {#each lines as [indent, link]}
 function create_each_block$7(ctx) {
-	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[34], /*link*/ ctx[35]);
+	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
 	let if_block_anchor;
 	let current;
 	let if_block = show_if && create_if_block$4(ctx);
@@ -26406,7 +26632,30 @@ function create_each_block$7(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (show_if) if_block.p(ctx, dirty);
+			if (dirty & /*lines*/ 16) show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
+
+			if (show_if) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+
+					if (dirty & /*lines*/ 16) {
+						transition_in(if_block, 1);
+					}
+				} else {
+					if_block = create_if_block$4(ctx);
+					if_block.c();
+					transition_in(if_block, 1);
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				group_outros();
+
+				transition_out(if_block, 1, 1, () => {
+					if_block = null;
+				});
+
+				check_outros();
+			}
 		},
 		i(local) {
 			if (current) return;
@@ -26429,7 +26678,7 @@ function create_fragment$b(ctx) {
 	let div;
 	let current;
 	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2$2(ctx);
-	let each_value = /*lines*/ ctx[7];
+	let each_value = /*lines*/ ctx[4];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -26463,7 +26712,7 @@ function create_fragment$b(ctx) {
 
 			current = true;
 		},
-		p(ctx, dirty) {
+		p(ctx, [dirty]) {
 			if (/*title*/ ctx[2] !== "false") {
 				if (if_block) {
 					if_block.p(ctx, dirty);
@@ -26477,8 +26726,8 @@ function create_fragment$b(ctx) {
 				if_block = null;
 			}
 
-			if (dirty[0] & /*content, app, lines, plugin, settings, meetsConditions*/ 441) {
-				each_value = /*lines*/ ctx[7];
+			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, meetsConditions*/ 473) {
+				each_value = /*lines*/ ctx[4];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -26542,71 +26791,20 @@ const mouseover_handler_1 = e => {
 //   hoverPreview(e, el, link)
 
 function instance$b($$self, $$props, $$invalidate) {
-	var _a, _b;
 	
 	
 	let { plugin } = $$props;
-	let { ctx } = $$props;
 	let { el } = $$props;
 	let { dir } = $$props;
 	let { fields } = $$props;
 	let { title } = $$props;
-	let { depth } = $$props;
-	let { flat } = $$props;
 	let { content } = $$props;
-	let { from } = $$props;
-	let { implied } = $$props;
-	const { settings, app, mainG } = plugin;
-	const { sourcePath } = ctx;
-	const currFile = app.metadataCache.getFirstLinkpathDest(sourcePath, "");
-	const { userHiers } = settings;
-	const { basename } = currFile;
-	let min = 1, max = Infinity;
-
-	if (depth !== undefined) {
-		const minNum = parseInt(depth[0]);
-		if (!isNaN(minNum)) min = minNum;
-		const maxNum = parseInt(depth[1]);
-		if (!isNaN(maxNum)) max = maxNum;
-	}
-
-	let froms = undefined;
-
-	if (from !== undefined) {
-		try {
-			const api = (_a = app.plugins.plugins.dataview) === null || _a === void 0
-			? void 0
-			: _a.api;
-
-			if (api) {
-				const pages = (_b = api.pagePaths(from)) === null || _b === void 0
-				? void 0
-				: _b.values;
-
-				froms = pages.map(dropFolder);
-			} else new require$$0.Notice("Dataview must be enabled for `from` to work.");
-		} catch(e) {
-			new require$$0.Notice(`The query "${from}" failed.`);
-		}
-	}
-
-	const oppDir = getOppDir(dir);
-
-	const sub = implied === "false"
-	? getSubInDirs(mainG, dir)
-	: getSubInDirs(mainG, dir, oppDir);
-
-	const closed = getReflexiveClosure(sub, userHiers);
-	const subClosed = getSubInDirs(closed, dir);
-	const allPaths = dfsAllPaths(subClosed, basename);
-	const index = plugin.createIndex(allPaths, false);
-	loglevel.info({ allPaths, index });
-
-	const lines = index.split("\n").map(line => {
-		const pair = line.split("- ");
-		return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
-	}).filter(pair => pair[1] !== "");
-
+	let { lines } = $$props;
+	let { froms } = $$props;
+	let { min } = $$props;
+	let { max } = $$props;
+	let { basename } = $$props;
+	const { settings, app } = plugin;
 	const indentToDepth = indent => indent.length / 2 + 1;
 
 	const meetsConditions = (indent, node) => {
@@ -26619,16 +26817,16 @@ function instance$b($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("ctx" in $$props) $$invalidate(9, ctx = $$props.ctx);
-		if ("el" in $$props) $$invalidate(10, el = $$props.el);
+		if ("el" in $$props) $$invalidate(9, el = $$props.el);
 		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(11, fields = $$props.fields);
+		if ("fields" in $$props) $$invalidate(10, fields = $$props.fields);
 		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("depth" in $$props) $$invalidate(12, depth = $$props.depth);
-		if ("flat" in $$props) $$invalidate(13, flat = $$props.flat);
 		if ("content" in $$props) $$invalidate(3, content = $$props.content);
-		if ("from" in $$props) $$invalidate(14, from = $$props.from);
-		if ("implied" in $$props) $$invalidate(15, implied = $$props.implied);
+		if ("lines" in $$props) $$invalidate(4, lines = $$props.lines);
+		if ("froms" in $$props) $$invalidate(11, froms = $$props.froms);
+		if ("min" in $$props) $$invalidate(12, min = $$props.min);
+		if ("max" in $$props) $$invalidate(13, max = $$props.max);
+		if ("basename" in $$props) $$invalidate(5, basename = $$props.basename);
 	};
 
 	return [
@@ -26636,18 +26834,16 @@ function instance$b($$self, $$props, $$invalidate) {
 		dir,
 		title,
 		content,
+		lines,
+		basename,
 		settings,
 		app,
-		basename,
-		lines,
 		meetsConditions,
-		ctx,
 		el,
 		fields,
-		depth,
-		flat,
-		from,
-		implied,
+		froms,
+		min,
+		max,
 		click_handler,
 		click_handler_1
 	];
@@ -26658,27 +26854,19 @@ class CBTree extends SvelteComponent {
 		super();
 		if (!document.getElementById("svelte-yt7jmz-style")) add_css$7();
 
-		init(
-			this,
-			options,
-			instance$b,
-			create_fragment$b,
-			safe_not_equal,
-			{
-				plugin: 0,
-				ctx: 9,
-				el: 10,
-				dir: 1,
-				fields: 11,
-				title: 2,
-				depth: 12,
-				flat: 13,
-				content: 3,
-				from: 14,
-				implied: 15
-			},
-			[-1, -1]
-		);
+		init(this, options, instance$b, create_fragment$b, safe_not_equal, {
+			plugin: 0,
+			el: 9,
+			dir: 1,
+			fields: 10,
+			title: 2,
+			content: 3,
+			lines: 4,
+			froms: 11,
+			min: 12,
+			max: 13,
+			basename: 5
+		});
 	}
 }
 
@@ -27767,6 +27955,95 @@ class TrailPath extends SvelteComponent {
 		if (!document.getElementById("svelte-3c1frp-style")) add_css$4();
 		init(this, options, instance$8, create_fragment$8, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
 	}
+}
+
+/**
+ * Returns a copy of `index`, doesn't mutate.
+ * @param  {string} index
+ */
+function addAliasesToIndex(plugin, index) {
+    var _a, _b, _c, _d;
+    const { aliasesInIndex } = plugin.settings;
+    const copy = index.slice();
+    const lines = copy.split("\n");
+    for (let line of lines) {
+        if (aliasesInIndex) {
+            const note = line.split("- ")[1];
+            if (!note)
+                continue;
+            const currFile = plugin.app.metadataCache.getFirstLinkpathDest(note, "");
+            if (currFile !== null) {
+                const cache = plugin.app.metadataCache.getFileCache(currFile);
+                const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
+                const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
+                const allAliases = [...[alias].flat(3), ...[aliases].flat(3)];
+                if (allAliases.length) {
+                    line += ` (${allAliases.join(", ")})`;
+                }
+            }
+        }
+    }
+    return lines.join("\n");
+}
+/**
+ * Create an index of all the paths in the graph.
+ * @param allPaths - A list of all paths from the root to the leaves.
+ * @param {boolean} asWikilinks - Whether to use wikilinks instead of plain text.
+ * @returns A string.
+ */
+function createIndex(allPaths, asWikilinks) {
+    let index = "";
+    const copy = lodash.cloneDeep(allPaths);
+    const reversed = copy.map((path) => path.reverse());
+    reversed.forEach((path) => path.shift());
+    const indent = "  ";
+    const visited = {};
+    reversed.forEach((path) => {
+        for (let depth = 0; depth < path.length; depth++) {
+            const currNode = path[depth];
+            // If that node has been visited before at the current depth
+            if (visited.hasOwnProperty(currNode) &&
+                visited[currNode].includes(depth)) {
+                continue;
+            }
+            else {
+                index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}`;
+                index += "\n";
+                if (!visited.hasOwnProperty(currNode))
+                    visited[currNode] = [];
+                visited[currNode].push(depth);
+            }
+        }
+    });
+    return index;
+}
+async function copyLocalIndex(plugin) {
+    const { settings, mainG } = plugin;
+    const { userHiers, wikilinkIndex } = settings;
+    const { basename } = plugin.app.workspace.getActiveFile();
+    const onlyDowns = getSubCloseSub(mainG, userHiers, "down", "up");
+    const allPaths = dfsAllPaths(onlyDowns, basename);
+    const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex));
+    loglevel.info({ index });
+    await copy(index);
+}
+async function copyGlobalIndex(plugin) {
+    const { mainG, settings } = plugin;
+    const { userHiers, wikilinkIndex } = settings;
+    const g = getSubInDirs(mainG, "up", "down");
+    const closed = getReflexiveClosure(g, userHiers);
+    const onlyDowns = getSubInDirs(closed, "down");
+    const onlyUps = getSubInDirs(closed, "up");
+    const sinks = getSinks(onlyUps);
+    let globalIndex = "";
+    sinks.forEach((terminal) => {
+        globalIndex += terminal + "\n";
+        const allPaths = dfsAllPaths(onlyDowns, terminal);
+        globalIndex +=
+            addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex)) + "\n";
+    });
+    loglevel.info({ globalIndex });
+    await copy(globalIndex);
 }
 
 /* node_modules\svelte-icons\fa\FaInfo.svelte generated by Svelte v3.35.0 */
@@ -30137,7 +30414,7 @@ function get_each_context_1$1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (55:2) {:else}
+// (54:2) {:else}
 function create_else_block(ctx) {
 	let fafire;
 	let current;
@@ -30166,7 +30443,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (53:2) {#if frozen}
+// (52:2) {#if frozen}
 function create_if_block_1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -30195,7 +30472,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (71:2) {#each DIRECTIONS as direction}
+// (70:2) {#each DIRECTIONS as direction}
 function create_each_block_1$1(ctx) {
 	let option;
 	let t_value = /*direction*/ ctx[17] + "";
@@ -30220,7 +30497,7 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (78:4) {#if line.length > 1}
+// (77:4) {#if line.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let pre;
@@ -30305,7 +30582,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (77:2) {#each lines as line}
+// (76:2) {#each lines as line}
 function create_each_block$1(ctx) {
 	let if_block_anchor;
 	let if_block = /*line*/ ctx[14].length > 1 && create_if_block(ctx);
@@ -30600,11 +30877,9 @@ function instance$1($$self, $$props, $$invalidate) {
 		if ($$self.$$.dirty & /*plugin, dir, oppDir, basename*/ 141) {
 			{
 				const { mainG } = plugin;
-				const upnDown = getSubInDirs(mainG, dir, oppDir);
-				const closed = getReflexiveClosure(upnDown, userHiers);
-				const down = getSubInDirs(closed, dir);
+				const down = getSubCloseSub(mainG, userHiers, dir, oppDir);
 				const allPaths = dfsAllPaths(down, basename);
-				const index = plugin.createIndex(allPaths, false);
+				const index = createIndex(allPaths, false);
 				loglevel.info({ allPaths, index });
 
 				$$invalidate(5, lines = index.split("\n").map(line => {
@@ -52658,6 +52933,128 @@ class VisModal extends require$$0.Modal {
     }
 }
 
+const STORE_ID = "core";
+function indentToDepth(indent) {
+    return indent.length / 2 + 1;
+}
+function meetsConditions(indent, node, froms, min, max) {
+    const depth = indentToDepth(indent);
+    return (depth >= min &&
+        depth <= max &&
+        (froms === undefined || froms.includes(node)));
+}
+class BCStoreEvents extends require$$0.Events {
+}
+class BCStore extends require$$0.Component {
+    constructor(graph, metadata, plugin) {
+        super();
+        this.graph = graph;
+        this.cache = metadata;
+        this.plugin = plugin;
+    }
+    asString(node) {
+        const id = VizId.fromNode(node);
+        return id.id.slice(0, -3);
+    }
+    getFile(nodeId) {
+        return this.cache.getFirstLinkpathDest(nodeId.id, '');
+    }
+    async connectNodes(allNodes, newNodes, graph) {
+        const edges = [];
+        const nodesListS = new Set(allNodes
+            .map((node) => this.asString(node))
+            .filter((s) => s));
+        newNodes.forEach((node) => {
+            console.log({ node });
+            this.graph.forEachOutEdge(this.asString(node), (key, attr, source, target) => {
+                if (nodesListS.has(target)) {
+                    edges.push({
+                        data: {
+                            id: `BC:${source}->${target}`,
+                            source: VizId.toId(source, STORE_ID) + ".md",
+                            target: VizId.toId(target, STORE_ID) + ".md",
+                            type: attr.field,
+                            dir: attr.dir,
+                        },
+                        classes: `type-${attr.field} dir-${attr.dir} breadcrumbs$`
+                    });
+                }
+            });
+        });
+        return Promise.resolve(edges);
+    }
+    getEvents() {
+        return new BCStoreEvents();
+    }
+    getNeighbourhood(nodeId) {
+        // TODO
+        return Promise.resolve([]);
+    }
+    refreshNode(view, id) {
+        return;
+    }
+    storeId() {
+        return STORE_ID;
+    }
+    get(nodeId) {
+        const file = this.getFile(nodeId);
+        if (file === null) {
+            const dangling = nodeDangling(nodeId.id);
+            console.log({ dangling });
+            return Promise.resolve(nodeDangling(nodeId.id));
+        }
+        const cache = this.cache.getFileCache(file);
+        if (cache === null) {
+            console.log('returning empty cache', nodeId);
+            return Promise.resolve(nodeDangling(nodeId.id));
+        }
+        return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
+    }
+}
+function createJuggl(plugin, target, initialNodes, args) {
+    try {
+        const jugglPlugin = getPlugin(plugin.app);
+        if (!jugglPlugin) {
+            // TODO: Error handling
+            return;
+        }
+        for (let key in JUGGL_CB_DEFAULTS) {
+            if (key in args && args[key] === undefined) {
+                args[key] = JUGGL_CB_DEFAULTS[key];
+            }
+        }
+        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin);
+        const stores = {
+            coreStore: bcStore,
+            dataStores: [bcStore]
+        };
+        console.log({ args }, { initialNodes });
+        const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
+        plugin.addChild(juggl);
+        juggl.load();
+        console.log({ juggl });
+    }
+    catch (error) {
+        console.log({ error });
+    }
+}
+function createJugglTrail(plugin, target, paths, source, args) {
+    let nodes = Array.from(new Set(paths.reduce((prev, curr) => prev.concat(curr), [])));
+    nodes.push(source);
+    nodes = nodes.map(s => s + ".md");
+    createJuggl(plugin, target, nodes, args);
+}
+function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
+    const nodes = lines
+        .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
+        .map(([_, node]) => node + ".md");
+    if (min <= 0) {
+        nodes.push(source + ".md");
+    }
+    console.log({ lines, nodes });
+    createJuggl(plugin, target, nodes, args);
+}
+
 class BCPlugin extends require$$0.Plugin {
     constructor() {
         super(...arguments);
@@ -52864,6 +53261,7 @@ class BCPlugin extends require$$0.Plugin {
             this.registerLayoutChangeEvent();
             this.app.workspace.iterateAllLeaves((leaf) => {
                 if (leaf instanceof require$$0.MarkdownView) {
+                    //@ts-ignore
                     leaf.view.previewMode.rerender(true);
                 }
             });
@@ -52950,36 +53348,12 @@ class BCPlugin extends require$$0.Plugin {
         this.addCommand({
             id: "local-index",
             name: "Copy a Local Index to the clipboard",
-            callback: async () => {
-                const { settings, mainG } = this;
-                const { basename } = this.app.workspace.getActiveFile();
-                const onlyDowns = getSubCloseSub(mainG, settings.userHiers, "down", "up");
-                const allPaths = dfsAllPaths(onlyDowns, basename);
-                const index = this.addAliasesToIndex(this.createIndex(allPaths));
-                loglevel.info({ index });
-                await copy(index);
-            },
+            callback: async () => copyLocalIndex(this),
         });
         this.addCommand({
             id: "global-index",
             name: "Copy a Global Index to the clipboard",
-            callback: async () => {
-                const { mainG, settings } = this;
-                const g = getSubInDirs(mainG, "up", "down");
-                const closed = getReflexiveClosure(g, settings.userHiers);
-                const onlyDowns = getSubInDirs(closed, "down");
-                const onlyUps = getSubInDirs(closed, "up");
-                const sinks = getSinks(onlyUps);
-                let globalIndex = "";
-                sinks.forEach((terminal) => {
-                    globalIndex += terminal + "\n";
-                    const allPaths = dfsAllPaths(onlyDowns, terminal);
-                    globalIndex +=
-                        this.addAliasesToIndex(this.createIndex(allPaths)) + "\n";
-                });
-                loglevel.info({ globalIndex });
-                await copy(globalIndex);
-            },
+            callback: async () => copyGlobalIndex(this),
         });
         ["up", "down", "next", "prev"].forEach((dir) => {
             this.addCommand({
@@ -53100,6 +53474,7 @@ class BCPlugin extends require$$0.Plugin {
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", (source, el, ctx) => {
+            var _a, _b;
             const parsedSource = this.parseCodeBlockSource(source);
             console.log(parsedSource);
             const err = this.codeblockError(parsedSource);
@@ -53107,13 +53482,68 @@ class BCPlugin extends require$$0.Plugin {
                 el.innerHTML = err;
                 return;
             }
+            let min = 0, max = Infinity;
+            let { depth, dir, from, implied, flat } = parsedSource;
+            if (depth !== undefined) {
+                const minNum = parseInt(depth[0]);
+                if (!isNaN(minNum))
+                    min = minNum;
+                const maxNum = parseInt(depth[1]);
+                if (!isNaN(maxNum))
+                    max = maxNum;
+            }
+            const currFile = this.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
+            const { userHiers } = settings;
+            const { basename } = currFile;
+            let froms = undefined;
+            if (from !== undefined) {
+                try {
+                    const api = (_a = this.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
+                    if (api) {
+                        const pages = (_b = api.pagePaths(from)) === null || _b === void 0 ? void 0 : _b.values;
+                        froms = pages.map(dropFolder);
+                    }
+                    else
+                        new require$$0.Notice("Dataview must be enabled for `from` to work.");
+                }
+                catch (e) {
+                    new require$$0.Notice(`The query "${from}" failed.`);
+                }
+            }
+            const oppDir = getOppDir(dir);
+            const sub = implied === "false"
+                ? getSubInDirs(this.mainG, dir)
+                : getSubInDirs(this.mainG, dir, oppDir);
+            const closed = getReflexiveClosure(sub, userHiers);
+            const subClosed = getSubInDirs(closed, dir);
+            const allPaths = dfsAllPaths(subClosed, basename);
+            const index = createIndex(allPaths, false);
+            loglevel.info({ allPaths, index });
+            console.log({ allPaths, index });
+            const lines = index
+                .split("\n")
+                .map((line) => {
+                const pair = line.split("- ");
+                return [
+                    flat === "true" ? "" : pair[0],
+                    pair.slice(1).join("- "),
+                ];
+            })
+                .filter((pair) => pair[1] !== "");
             switch (parsedSource.type) {
                 case "tree":
                     new CBTree({
                         target: el,
-                        props: Object.assign({ plugin: this, ctx,
-                            el }, parsedSource),
+                        props: Object.assign({ plugin: this, el,
+                            min,
+                            max,
+                            lines,
+                            froms,
+                            basename }, parsedSource),
                     });
+                    break;
+                case "juggl":
+                    createdJugglCB(this, el, parsedSource, lines, froms, basename, min, max);
                     break;
             }
         });
@@ -53126,7 +53556,15 @@ class BCPlugin extends require$$0.Plugin {
                 .find((l) => l.startsWith(`${type}:`))) === null || _a === void 0 ? void 0 : _a.split(":")) === null || _b === void 0 ? void 0 : _b[1]) === null || _c === void 0 ? void 0 : _c.trim();
         };
         const results = {};
-        CODEBLOCK_FIELDS.forEach((field) => (results[field] = getValue(field)));
+        CODEBLOCK_FIELDS.forEach((field) => {
+            results[field] = getValue(field);
+            if (results[field] === "false") {
+                results[field] = false;
+            }
+            if (results[field] === "true") {
+                results[field] = true;
+            }
+        });
         results.field = results.field
             ? splitAndTrim(results.field)
             : undefined;
@@ -53753,6 +54191,9 @@ class BCPlugin extends require$$0.Plugin {
         if (!addDendronNotes)
             return;
         for (const frontm of frontms) {
+            // Doesn't currently work yet
+            if (frontm[BC_IGNORE_DENDRON])
+                continue;
             const { file } = frontm;
             const basename = getDVBasename(file);
             const splits = basename.split(dendronNoteDelimiter);
@@ -53894,63 +54335,6 @@ class BCPlugin extends require$$0.Plugin {
         }
     }
     // !SECTION OneSource
-    createIndex(allPaths, asWikilinks = this.settings.wikilinkIndex) {
-        let index = "";
-        const copy = lodash.cloneDeep(allPaths);
-        const reversed = copy.map((path) => path.reverse());
-        reversed.forEach((path) => path.shift());
-        const indent = "  ";
-        const visited = {};
-        reversed.forEach((path) => {
-            for (let depth = 0; depth < path.length; depth++) {
-                const currNode = path[depth];
-                // If that node has been visited before at the current depth
-                if (visited.hasOwnProperty(currNode) &&
-                    visited[currNode].includes(depth)) {
-                    continue;
-                }
-                else {
-                    index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}`;
-                    index += "\n";
-                    if (!visited.hasOwnProperty(currNode))
-                        visited[currNode] = [];
-                    visited[currNode].push(depth);
-                }
-            }
-        });
-        return index;
-    }
-    /**
-     * Returns a copy of `index`, doesn't mutate.
-     * @param  {string} index
-     */
-    addAliasesToIndex(index) {
-        var _a, _b, _c, _d;
-        const { aliasesInIndex } = this.settings;
-        const copy = index.slice();
-        const lines = copy.split("\n");
-        for (let line of lines) {
-            if (aliasesInIndex) {
-                const note = line.split("- ")[1];
-                if (!note)
-                    continue;
-                const currFile = this.app.metadataCache.getFirstLinkpathDest(note, "");
-                if (currFile !== null) {
-                    const cache = this.app.metadataCache.getFileCache(currFile);
-                    const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
-                    const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
-                    const allAliases = [
-                        ...[alias].flat(3),
-                        ...[aliases].flat(3),
-                    ];
-                    if (allAliases.length) {
-                        line += ` (${allAliases.join(", ")})`;
-                    }
-                }
-            }
-        }
-        return lines.join("\n");
-    }
     // SECTION Breadcrumbs
     bfsAllPaths(g, startNode) {
         const pathsArr = [];
@@ -54024,7 +54408,7 @@ class BCPlugin extends require$$0.Plugin {
         var _a, _b, _c, _d;
         try {
             const { settings, db } = this;
-            const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showPrevNext, showBCsInEditLPMode, } = settings;
+            const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showJuggl, showPrevNext, showBCsInEditLPMode, } = settings;
             db.start2G("drawTrail");
             const activeMDView = this.app.workspace.getActiveViewOfType(require$$0.MarkdownView);
             const mode = activeMDView === null || activeMDView === void 0 ? void 0 : activeMDView.getMode();
@@ -54140,6 +54524,9 @@ class BCPlugin extends require$$0.Plugin {
                     target: trailDiv,
                     props: { app: this.app, plugin: this, next, prev },
                 });
+            }
+            if (showJuggl && sortedTrails.length) {
+                createJugglTrail(this, trailDiv, props.sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
             }
             db.end2G();
         }

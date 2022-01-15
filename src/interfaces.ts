@@ -10,7 +10,7 @@ import type {
 import type DucksView from "./DucksView";
 import type MatrixView from "./MatrixView";
 import type StatsView from "./StatsView";
-import type {IJugglSettings} from "juggl-api";
+import type { IJugglSettings } from "juggl-api";
 
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
@@ -286,7 +286,12 @@ declare module "obsidian" {
   interface App {
     plugins: {
       plugins: {
-        dataview: { api: { page: (page: string) => dvFrontmatterCache } };
+        dataview: {
+          api: {
+            page: (page: string) => dvFrontmatterCache;
+            pagePaths: (query?: string) => { values: string[] };
+          };
+        };
         metaedit: {
           api: MetaeditApi;
         };
@@ -298,7 +303,7 @@ declare module "obsidian" {
   }
 }
 
-export interface ParsedCodeblock extends IJugglSettings{
+export interface ParsedCodeblock extends IJugglSettings {
   dir: Directions;
   fields: string[];
   title: string;

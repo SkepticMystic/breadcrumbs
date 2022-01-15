@@ -17,7 +17,6 @@ import {
 } from "obsidian";
 import {
   addFeatherIcon,
-  copy,
   openView,
   wait,
   waitForResolvedLinks,
@@ -58,6 +57,7 @@ import {
   TRAIL_ICON_SVG,
   TREE_VIEW,
 } from "./constants";
+import { copyGlobalIndex, copyLocalIndex, createIndex } from "./CreateIndex";
 import DucksView from "./DucksView";
 import { FieldSuggestor } from "./FieldSuggestor";
 import {
@@ -68,8 +68,6 @@ import {
   getOppDir,
   getOppFields,
   getReflexiveClosure,
-  getSinks,
-  getSubCloseSub,
   getSubForFields,
   getSubInDirs,
   removeCycles,
@@ -275,6 +273,7 @@ export default class BCPlugin extends Plugin {
 
       this.app.workspace.iterateAllLeaves((leaf) => {
         if (leaf instanceof MarkdownView) {
+          //@ts-ignore
           leaf.view.previewMode.rerender(true);
         }
       });
@@ -380,48 +379,13 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
-      callback: async () => {
-        const { settings, mainG } = this;
-        const { basename } = this.app.workspace.getActiveFile();
-
-        const onlyDowns = getSubCloseSub(
-          mainG,
-          settings.userHiers,
-          "down",
-          "up"
-        );
-
-        const allPaths = dfsAllPaths(onlyDowns, basename);
-        const index = this.addAliasesToIndex(this.createIndex(allPaths));
-        info({ index });
-        await copy(index);
-      },
+      callback: async () => copyLocalIndex(this),
     });
 
     this.addCommand({
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
-      callback: async () => {
-        const { mainG, settings } = this;
-
-        const g = getSubInDirs(mainG, "up", "down");
-        const closed = getReflexiveClosure(g, settings.userHiers);
-        const onlyDowns = getSubInDirs(closed, "down");
-        const onlyUps = getSubInDirs(closed, "up");
-
-        const sinks = getSinks(onlyUps);
-
-        let globalIndex = "";
-        sinks.forEach((terminal) => {
-          globalIndex += terminal + "\n";
-          const allPaths = dfsAllPaths(onlyDowns, terminal);
-          globalIndex +=
-            this.addAliasesToIndex(this.createIndex(allPaths)) + "\n";
-        });
-
-        info({ globalIndex });
-        await copy(globalIndex);
-      },
+      callback: async () => copyGlobalIndex(this),
     });
 
     ["up", "down", "next", "prev"].forEach((dir: Directions) => {
@@ -635,7 +599,7 @@ export default class BCPlugin extends Plugin {
           try {
             const api = this.app.plugins.plugins.dataview?.api;
             if (api) {
-              const pages = api.pagePaths(from)?.values as string[];
+              const pages = api.pagePaths(from)?.values;
               froms = pages.map(dropFolder);
             } else new Notice("Dataview must be enabled for `from` to work.");
           } catch (e) {
@@ -652,7 +616,7 @@ export default class BCPlugin extends Plugin {
         const subClosed = getSubInDirs(closed, dir);
 
         const allPaths = dfsAllPaths(subClosed, basename);
-        const index = this.createIndex(allPaths, false);
+        const index = createIndex(allPaths, false);
         info({ allPaths, index });
         console.log({ allPaths, index });
         const lines = index
@@ -1812,79 +1776,6 @@ export default class BCPlugin extends Plugin {
   }
 
   // !SECTION OneSource
-
-  createIndex(
-    allPaths: string[][],
-    asWikilinks: boolean = this.settings.wikilinkIndex
-  ): string {
-    let index = "";
-    const copy = cloneDeep(allPaths);
-    const reversed = copy.map((path) => path.reverse());
-    reversed.forEach((path) => path.shift());
-
-    const indent = "  ";
-
-    const visited: {
-      [node: string]: /** The depths at which `node` was visited */ number[];
-    } = {};
-
-    reversed.forEach((path) => {
-      for (let depth = 0; depth < path.length; depth++) {
-        const currNode = path[depth];
-
-        // If that node has been visited before at the current depth
-        if (
-          visited.hasOwnProperty(currNode) &&
-          visited[currNode].includes(depth)
-        ) {
-          continue;
-        } else {
-          index += `${indent.repeat(depth)}- ${
-            asWikilinks ? makeWiki(currNode) : currNode
-          }`;
-
-          index += "\n";
-
-          if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
-          visited[currNode].push(depth);
-        }
-      }
-    });
-    return index;
-  }
-
-  /**
-   * Returns a copy of `index`, doesn't mutate.
-   * @param  {string} index
-   */
-  addAliasesToIndex(index: string) {
-    const { aliasesInIndex } = this.settings;
-    const copy = index.slice();
-    const lines = copy.split("\n");
-    for (let line of lines) {
-      if (aliasesInIndex) {
-        const note = line.split("- ")[1];
-        if (!note) continue;
-        const currFile = this.app.metadataCache.getFirstLinkpathDest(note, "");
-
-        if (currFile !== null) {
-          const cache = this.app.metadataCache.getFileCache(currFile);
-
-          const alias: string[] = cache?.frontmatter?.alias ?? [];
-          const aliases: string[] = cache?.frontmatter?.aliases ?? [];
-
-          const allAliases: string[] = [
-            ...[alias].flat(3),
-            ...[aliases].flat(3),
-          ];
-          if (allAliases.length) {
-            line += ` (${allAliases.join(", ")})`;
-          }
-        }
-      }
-    }
-    return lines.join("\n");
-  }
 
   // SECTION Breadcrumbs
 
