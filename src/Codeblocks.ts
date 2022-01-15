@@ -314,7 +314,7 @@ class BCStore extends Component implements ICoreDataStore {
     return Promise.resolve(edges);
   }
 
-  getEvents(): DataStoreEvents {
+  getEvents(view: IJuggl): DataStoreEvents {
     return new BCStoreEvents();
   }
 
@@ -323,7 +323,7 @@ class BCStore extends Component implements ICoreDataStore {
     return Promise.resolve([]);
   }
 
-  refreshNode(view: IJuggl, id: VizId): void | Promise<void> {
+  refreshNode(id: VizId, view: IJuggl): void | Promise<void> {
     return;
   }
 
@@ -331,7 +331,7 @@ class BCStore extends Component implements ICoreDataStore {
     return STORE_ID;
   }
 
-  get(nodeId: VizId): Promise<cytoscape.NodeDefinition> {
+  get(nodeId: VizId, view: IJuggl): Promise<cytoscape.NodeDefinition> {
     const file = this.getFile(nodeId);
     if (file === null) {
       const dangling = nodeDangling(nodeId.id);
@@ -343,7 +343,7 @@ class BCStore extends Component implements ICoreDataStore {
       console.log("returning empty cache", nodeId);
       return Promise.resolve(nodeDangling(nodeId.id));
     }
-    return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
+    return Promise.resolve(nodeFromFile(file, this.plugin, view.settings, nodeId.toId()));
   }
 }
 

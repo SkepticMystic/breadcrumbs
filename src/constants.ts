@@ -79,6 +79,7 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
   mode: "workspace",
   navigator: true,
   openWithShift: false,
+  readContent: true,
   styleGroups: [],
   toolbar: true,
   width: "100%",
@@ -91,7 +92,9 @@ export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign(
     autoZoom: true,
     fdgdLayout: "d3-force",
     height: "400px",
+    readContent: false,
     toolbar: false,
+    navigator: false
   }
 );
 CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
