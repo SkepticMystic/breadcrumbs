@@ -1,5 +1,6 @@
 <script lang="ts">
   import type BCPlugin from "../main";
+  import { refreshIndex } from "../refreshIndex";
 
   export let plugin: BCPlugin;
   export let settingName: string;
@@ -17,7 +18,7 @@
 
     plugin.settings[settingName] = selected;
     await plugin.saveSettings();
-    await plugin.refreshIndex();
+    await refreshIndex(plugin);
   }
 </script>
 

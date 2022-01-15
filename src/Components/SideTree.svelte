@@ -12,6 +12,7 @@
   import { dfsAllPaths, getOppDir, getSubCloseSub } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
+  import { refreshIndex } from "../refreshIndex";
   import { dropDendron } from "../sharedFunctions";
   import type TreeView from "../TreeView";
 
@@ -70,7 +71,7 @@
 <button
   aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
   on:click={async () => {
-    await plugin.refreshIndex();
+    await refreshIndex(plugin);
     await view.draw();
   }}
 >

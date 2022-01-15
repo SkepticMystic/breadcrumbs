@@ -1,5 +1,6 @@
 import { error, info } from "loglevel";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { refreshIndex } from "./refreshIndex";
 import { Debugger } from "src/Debugger";
 import Lists from "./Components/Lists.svelte";
 import Matrix from "./Components/Matrix.svelte";
@@ -307,7 +308,7 @@ export default class MatrixView extends ItemView {
             style: "padding: 1px 6px 2px 6px;",
           },
         },
-        (el) => (el.onclick = async () => await this.plugin.refreshIndex())
+        (el) => (el.onclick = async () => await refreshIndex(this.plugin))
       );
 
       contentEl.createEl(

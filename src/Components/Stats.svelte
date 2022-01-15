@@ -2,7 +2,8 @@
   import { sum } from "lodash";
   import { debug } from "loglevel";
   import { copy } from "obsidian-community-lib";
-  import { Debugger } from "src/Debugger";
+  import { refreshIndex } from "../refreshIndex";
+  import { Debugger } from "../Debugger";
   import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "../constants";
   import { closeImpliedLinks, getOppDir, getSubForFields } from "../graphUtils";
   import type { Directions, HierData } from "../interfaces";
@@ -118,7 +119,7 @@
         class="icon"
         aria-label="Refresh Stats View (also refreshes Breadcrumbs Index)"
         on:click={async () => {
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
           await plugin.getActiveTYPEView(STATS_VIEW)?.draw();
         }}
       >
