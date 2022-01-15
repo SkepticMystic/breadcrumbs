@@ -1,7 +1,9 @@
+import type { MultiGraph } from "graphology";
 import { Notice, TFile } from "obsidian";
-import { getFields } from "../sharedFunctions";
-import type { HierarchyNoteItem } from "../interfaces";
-import type BCPlugin from "../main";
+import { addEdgeIfNot, addNodesIfNot, getOppFields } from "../../graphUtils";
+import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
+import type BCPlugin from "../../main";
+import { fallbackOppField, getFields } from "../../sharedFunctions";
 
 export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
   const { userHiers } = plugin.settings;
@@ -61,4 +63,41 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
     console.log(msg, { problemFields });
   }
   return hierarchyNoteItems;
+}
+
+export function addHNsToGraph(
+  settings: BCSettings,
+  hnArr: HierarchyNoteItem[],
+  mainG: MultiGraph
+) {
+  const { HNUpField, userHiers } = settings;
+  const upFields = getFields(userHiers, "up");
+
+  hnArr.forEach((hnItem, i) => {
+    const { note, field, parent } = hnItem;
+    const upField = field ?? (HNUpField || upFields[0]);
+    const downField =
+      getOppFields(userHiers, upField)[0] ?? fallbackOppField(upField, "up");
+
+    if (parent === null) {
+      const s = note;
+      const t = hnArr[i + 1]?.note;
+
+      addNodesIfNot(mainG, [s, t]);
+      addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+    } else {
+      addNodesIfNot(mainG, [note, parent]);
+      addEdgeIfNot(mainG, note, parent, {
+        dir: "up",
+        field: upField,
+      });
+
+      // I don't think this needs to be done if the reverse is done above
+      addNodesIfNot(mainG, [parent, note]);
+      addEdgeIfNot(mainG, parent, note, {
+        dir: "down",
+        field: downField,
+      });
+    }
+  });
 }

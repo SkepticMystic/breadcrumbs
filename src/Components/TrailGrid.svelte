@@ -6,8 +6,8 @@
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
   import {
-    closeImpliedLinks,
     getOutNeighbours,
+    getReflexiveClosure,
     getSubInDirs,
   } from "../graphUtils";
   import type BCPlugin from "../main";
@@ -18,14 +18,14 @@
     normalise,
     padArray,
     runs,
-    splitAndTrim,
     transpose,
   } from "../sharedFunctions";
   export let sortedTrails: string[][];
   export let app: App;
   export let plugin: BCPlugin;
 
-  const settings = plugin.settings;
+  const { settings } = plugin;
+  const { userHiers } = settings;
 
   const currFile = app.workspace.getActiveFile();
   const activeLeafView = app.workspace.activeLeaf.view;
@@ -49,9 +49,14 @@
   // allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 
   const { mainG } = plugin;
-  const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
+  // const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
 
-  const closedParents = closeImpliedLinks(up, down);
+  // const closedParents = closeImpliedLinks(up, down);
+
+  const closedParents = getReflexiveClosure(
+    getSubInDirs(mainG, "up", "down"),
+    userHiers
+  );
 
   const children: { [cell: string]: number } = {};
   allCells.forEach(

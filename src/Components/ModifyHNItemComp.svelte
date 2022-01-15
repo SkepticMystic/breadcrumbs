@@ -3,7 +3,7 @@
   import { Notice, TFile } from "obsidian";
   import { onMount } from "svelte";
   import { ARROW_DIRECTIONS } from "../constants";
-  import type { ModifyHierItemModal } from "../HierarchyNotes/ModifyHierItemModal";
+  import type { ModifyHierItemModal } from "../AlternativeHierarchies/HierarchyNotes/ModifyHierItemModal";
   import type { BCSettings } from "../interfaces";
   import { dropWikilinks, makeWiki } from "../sharedFunctions";
 

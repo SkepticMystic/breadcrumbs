@@ -1,18 +1,12 @@
 import { getApi } from "@aidenlx/folder-note-core";
 import Graph, { MultiGraph } from "graphology";
-import { parseTypedLink } from "juggl-api";
-import { cloneDeep } from "lodash";
-import { debug, error, info, warn } from "loglevel";
+import { error, info, warn } from "loglevel";
 import {
   addIcon,
-  Editor,
   EventRef,
   MarkdownView,
-  moment,
-  normalizePath,
   Notice,
   Plugin,
-  Pos,
   TFile,
 } from "obsidian";
 import {
@@ -21,89 +15,80 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
-import { writeBCsToAllFiles } from "./WriteBCsToAllFiles";
 import { Debugger } from "src/Debugger";
+import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
+import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
+import { addFolderNotesToGraph } from "./AlternativeHierarchies/FolderNotes";
+import {
+  addHNsToGraph,
+  getHierarchyNoteItems,
+} from "./AlternativeHierarchies/HierarchyNotes/HierarchyNotes";
+import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
+import { addLinkNotesToGraph } from "./AlternativeHierarchies/LinkNotes";
+import { addRegexNotesToGraph } from "./AlternativeHierarchies/RegexNotes";
+import { addTagNotesToGraph } from "./AlternativeHierarchies/TagNotes";
+import { addTraverseNotesToGraph } from "./AlternativeHierarchies/TraverseNotes";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
-import CBTree from "./Components/CBTree.svelte";
+import { createJugglTrail, getCodeblockCB } from "./Codeblocks";
+import { copyGlobalIndex, copyLocalIndex } from "./Commands/CreateIndex";
+import { jumpToFirstDir } from "./Commands/jumpToFirstDir";
+import { thread } from "./Commands/threading";
+import { writeBCsToAllFiles, writeBCToFile } from "./Commands/WriteBCs";
 import NextPrev from "./Components/NextPrev.svelte";
 import TrailGrid from "./Components/TrailGrid.svelte";
 import TrailPath from "./Components/TrailPath.svelte";
 import {
   BC_ALTS,
   BC_FOLDER_NOTE,
-  BC_FOLDER_NOTE_SUBFOLDER,
   BC_HIDE_TRAIL,
-  BC_IGNORE_DENDRON,
   BC_LINK_NOTE,
-  BC_ORDER,
   BC_REGEX_NOTE,
-  BC_REGEX_NOTE_FIELD,
   BC_TAG_NOTE,
-  BC_TAG_NOTE_EXACT,
-  BC_TAG_NOTE_FIELD,
   BC_TRAVERSE_NOTE,
-  CODEBLOCK_FIELDS,
-  CODEBLOCK_TYPES,
   DEFAULT_SETTINGS,
-  DIRECTIONS,
-  dropHeaderOrAlias,
   DUCK_ICON,
   DUCK_ICON_SVG,
   DUCK_VIEW,
   JUGGL_TRAIL_DEFAULTS,
   MATRIX_VIEW,
-  splitLinksRegex,
   STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   TREE_VIEW,
 } from "./constants";
-import { copyGlobalIndex, copyLocalIndex, createIndex } from "./CreateIndex";
 import DucksView from "./DucksView";
 import { FieldSuggestor } from "./FieldSuggestor";
 import {
-  addEdgeIfNot,
   addNodesIfNot,
-  dfsAllPaths,
-  getFieldInfo,
-  getOppDir,
+  buildObsGraph,
   getOppFields,
   getReflexiveClosure,
+  getSourceOrder,
   getSubForFields,
   getSubInDirs,
-  removeCycles,
+  getTargetOrder,
+  populateMain,
 } from "./graphUtils";
-import { HierarchyNoteSelectorModal } from "./HierNoteModal";
 import type {
   BCSettings,
-  CodeblockFields,
   Directions,
   dvFrontmatterCache,
-  dvLink,
-  HierarchyNoteItem,
-  JugglLink,
   MyView,
-  ParsedCodeblock,
-  RawValue,
   ViewInfo,
 } from "./interfaces";
 import MatrixView from "./MatrixView";
 import {
-  createOrUpdateYaml,
-  dropFolder,
-  dropHash,
-  dropWikilinks,
-  fallbackOppField,
-  getBaseFromMDPath,
+  addJugglLinksToGraph,
+  getDVMetadataCache,
+  getJugglLinks,
+  getObsMetadataCache,
+  parseFieldValue,
+} from "./refreshIndex";
+import {
   getDVBasename,
   getFields,
-  getFolder,
   getRealnImplied,
   iterateHiers,
-  makeWiki,
-  splitAndTrim,
-  splitAtYaml,
-  strToRegex,
 } from "./sharedFunctions";
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
@@ -331,7 +316,7 @@ export default class BCPlugin extends Plugin {
       name: "Write Breadcrumbs to Current File",
       callback: async () => {
         const currFile = this.app.workspace.getActiveFile();
-        await this.writeBCToFile(currFile);
+        await writeBCToFile(this, currFile);
       },
     });
 
@@ -393,727 +378,11 @@ export default class BCPlugin extends Plugin {
 
   // SECTION OneSource
 
-  populateMain(
-    mainG: MultiGraph,
-    source: string,
-    field: string,
-    target: string,
-    sourceOrder: number,
-    targetOrder: number,
-    fillOpp = false
-  ): void {
-    const { userHiers } = this.settings;
-    const dir = getFieldInfo(userHiers, field).fieldDir;
-
-    addNodesIfNot(mainG, [source], {
-      order: sourceOrder,
-    });
-
-    addNodesIfNot(mainG, [target], {
-      order: targetOrder,
-    });
-
-    addEdgeIfNot(mainG, source, target, {
-      dir,
-      field,
-    });
-    if (fillOpp) {
-      const oppDir = getOppDir(dir);
-      const oppField =
-        getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
-      addEdgeIfNot(mainG, target, source, {
-        dir: oppDir,
-        field: oppField,
-      });
-    }
-  }
-
-  async getCSVRows() {
-    const { CSVPaths } = this.settings;
-    const CSVRows: { [key: string]: string }[] = [];
-    if (CSVPaths === "") return CSVRows;
-
-    const fullPath = normalizePath(CSVPaths);
-
-    const content = await this.app.vault.adapter.read(fullPath);
-    const lines = content.split("\n");
-
-    const headers = lines[0].split(",").map((head) => head.trim());
-    lines.slice(1).forEach((row) => {
-      const rowObj = {};
-      row
-        .split(",")
-        .map((head) => dropWikilinks(head.trim()))
-        .forEach((item, i) => {
-          rowObj[headers[i]] = item;
-        });
-      debug({ rowObj });
-      CSVRows.push(rowObj);
-    });
-    return CSVRows;
-  }
-
-  addCSVCrumbs(
-    g: Graph,
-    CSVRows: { [key: string]: string }[],
-    dir: Directions,
-    field: string
-  ) {
-    CSVRows.forEach((row) => {
-      addNodesIfNot(g, [row.file]);
-      if (field === "" || !row[field]) return;
-
-      addNodesIfNot(g, [row[field]]);
-      addEdgeIfNot(g, row.file, row[field], { dir, field });
-    });
-  }
-
-  buildObsGraph(): MultiGraph {
-    const ObsG = new MultiGraph();
-    const { resolvedLinks, unresolvedLinks } = this.app.metadataCache;
-
-    for (const source in resolvedLinks) {
-      if (!source.endsWith(".md")) continue;
-      const sourceBase = getBaseFromMDPath(source);
-      addNodesIfNot(ObsG, [sourceBase]);
-
-      for (const dest in resolvedLinks[source]) {
-        if (!dest.endsWith(".md")) continue;
-        const destBase = getBaseFromMDPath(dest);
-        addNodesIfNot(ObsG, [destBase]);
-        ObsG.addEdge(sourceBase, destBase, { resolved: true });
-      }
-    }
-
-    for (const source in unresolvedLinks) {
-      const sourceBase = getBaseFromMDPath(source);
-      addNodesIfNot(ObsG, [sourceBase]);
-
-      for (const dest in unresolvedLinks[source]) {
-        const destBase = getBaseFromMDPath(dest);
-        addNodesIfNot(ObsG, [destBase]);
-        if (sourceBase === destBase) continue;
-        ObsG.addEdge(sourceBase, destBase, { resolved: false });
-      }
-    }
-
-    info({ ObsG });
-    return ObsG;
-  }
-
-  /**
-   * Keep unwrapping a proxied item until it isn't one anymore
-   * @param  {RawValue} item
-   */
-  unproxy(item: RawValue) {
-    const unproxied = [];
-
-    const queue = [item];
-    while (queue.length) {
-      const currItem = queue.shift();
-      // @ts-ignore
-      if (typeof currItem.defaultComparator === "function") {
-        const possibleUnproxied = Object.assign({}, currItem);
-        const { values } = possibleUnproxied;
-        if (values) queue.push(...values);
-        else unproxied.push(possibleUnproxied);
-      } else {
-        unproxied.push(currItem);
-      }
-    }
-    return unproxied;
-  }
-
-  /**
-   * Given a `dvCache[field]` value, parse the link(s) out of it
-   * @param  {string|string[]|string[][]|dvLink|dvLink[]|Pos|TFile} value
-   * @param  {BCSettings} settings
-   */
-  parseFieldValue(
-    value: string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile
-  ) {
-    if (value === undefined) return [];
-    const parsed: string[] = [];
-    try {
-      const rawValuesPreFlat = value;
-      if (!rawValuesPreFlat) return [];
-      if (typeof rawValuesPreFlat === "string") {
-        const splits = rawValuesPreFlat.match(splitLinksRegex);
-        if (splits !== null) {
-          const linkNames = splits.map((link) =>
-            getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
-          );
-          parsed.push(...linkNames);
-        }
-      } else {
-        const rawValues: RawValue[] = [value].flat(4);
-
-        debug(...rawValues);
-
-        rawValues.forEach((rawItem) => {
-          if (!rawItem) return;
-          const unProxied = this.unproxy(rawItem);
-          unProxied.forEach((value) => {
-            if (typeof value === "string" || typeof value === "number") {
-              const rawAsString = value.toString();
-              const splits = rawAsString.match(splitLinksRegex);
-              if (splits !== null) {
-                const strs = splits.map((link) =>
-                  getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
-                );
-                parsed.push(...strs);
-              } else {
-                const basename = getBaseFromMDPath(rawAsString);
-                parsed.push(basename.split("#")[0].split("|")[0]);
-              }
-            } else if (value.path !== undefined) {
-              const basename = getBaseFromMDPath(value.path);
-              if (basename !== undefined) parsed.push(basename);
-            }
-          });
-        });
-      }
-      return parsed;
-    } catch (err) {
-      error(err);
-      return parsed;
-    }
-  }
-
-  // TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
-  // => {[note: string]: {type: string, linksInLine: string[]}[]}
-  async getJugglLinks(files: TFile[]): Promise<JugglLink[]> {
-    const { settings, app, db } = this;
-    db.start2G("getJugglLinks");
-
-    const { userHiers } = settings;
-
-    // Add Juggl links
-    const typedLinksArr: JugglLink[] = await Promise.all(
-      files.map(async (file) => {
-        const jugglLink: JugglLink = { file, links: [] };
-
-        // Use Obs metadatacache to get the links in the current file
-        const links = app.metadataCache.getFileCache(file)?.links ?? [];
-
-        const content = links.length ? await app.vault.cachedRead(file) : "";
-        const lines = content.split("\n");
-
-        links.forEach((link) => {
-          const lineNo = link.position.start.line;
-          const line = lines[lineNo];
-
-          // Check the line for wikilinks, and return an array of link.innerText
-          const linksInLine =
-            line
-              .match(splitLinksRegex)
-              ?.map((link) => link.slice(2, link.length - 2))
-              ?.map((innerText) => innerText.split("|")[0]) ?? [];
-
-          const typedLinkPrefix =
-            app.plugins.plugins.juggl?.settings.typedLinkPrefix ?? "-";
-
-          const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
-
-          const field = parsedLinks?.properties?.type ?? "";
-          if (field === "") return;
-          const { fieldDir } = getFieldInfo(userHiers, field) || {};
-          if (!fieldDir) return;
-
-          jugglLink.links.push({
-            dir: fieldDir,
-            field,
-            linksInLine,
-          });
-        });
-        return jugglLink;
-      })
-    );
-
-    const allFields = getFields(userHiers);
-
-    const filteredLinks = typedLinksArr.map((jugglLink) => {
-      // Filter out links whose type is not in allFields
-      jugglLink.links = jugglLink.links.filter((link) =>
-        allFields.includes(link.field)
-      );
-      return jugglLink;
-    });
-    db.end2G({ filteredLinks });
-    return filteredLinks;
-  }
-
-  addHNsToGraph(hnArr: HierarchyNoteItem[], mainG: MultiGraph) {
-    const { HNUpField, userHiers } = this.settings;
-    const upFields = getFields(userHiers, "up");
-
-    hnArr.forEach((hnItem, i) => {
-      const { note, field, parent } = hnItem;
-      const upField = field ?? (HNUpField || upFields[0]);
-      const downField =
-        getOppFields(userHiers, upField)[0] ?? fallbackOppField(upField, "up");
-
-      if (parent === null) {
-        const s = note;
-        const t = hnArr[i + 1]?.note;
-
-        addNodesIfNot(mainG, [s, t]);
-        addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
-      } else {
-        addNodesIfNot(mainG, [note, parent]);
-        addEdgeIfNot(mainG, note, parent, {
-          dir: "up",
-          field: upField,
-        });
-
-        // I don't think this needs to be done if the reverse is done above
-        addNodesIfNot(mainG, [parent, note]);
-        addEdgeIfNot(mainG, parent, note, {
-          dir: "down",
-          field: downField,
-        });
-      }
-    });
-  }
-
-  addJugglLinksToGraph(
-    jugglLinks: JugglLink[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    jugglLinks.forEach((jugglLink) => {
-      const { basename } = jugglLink.file;
-      jugglLink.links.forEach((link) => {
-        const { dir, field, linksInLine } = link;
-        if (dir === "") return;
-        const sourceOrder = this.getTargetOrder(frontms, basename);
-        linksInLine.forEach((linkInLine) => {
-          const targetsOrder = this.getTargetOrder(frontms, linkInLine);
-
-          this.populateMain(
-            mainG,
-            basename,
-            // dir,
-            field,
-            linkInLine,
-            sourceOrder,
-            targetsOrder
-          );
-        });
-      });
-    });
-  }
-
   /** Use Folder Notes Plugin's FNs as BC-folder-notes */
   addFolderNotePluginToGraph() {
     const api = getApi(this);
     api.getFolderNote;
   }
-
-  addFolderNotesToGraph(
-    eligableAlts: dvFrontmatterCache[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    const { userHiers } = this.settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-      const { file } = altFile;
-      const basename = getDVBasename(file);
-      const folder = getFolder(file);
-      const subfolders = altFile[BC_FOLDER_NOTE_SUBFOLDER];
-
-      const targets = frontms
-        .map((ff) => ff.file)
-        .filter(
-          (other) =>
-            (subfolders
-              ? getFolder(other).includes(folder)
-              : getFolder(other) === folder) && other.path !== file.path
-        )
-        .map(getDVBasename);
-
-      const field = altFile[BC_FOLDER_NOTE] as string;
-      if (typeof field !== "string" || !fields.includes(field)) return;
-
-      targets.forEach((target) => {
-        // This is getting the order of the folder note, not the source pointing up to it
-        const sourceOrder = this.getSourceOrder(altFile);
-        const targetOrder = this.getTargetOrder(frontms, basename);
-        this.populateMain(
-          mainG,
-          basename,
-          field,
-          target,
-          sourceOrder,
-          targetOrder,
-          true
-        );
-      });
-    });
-  }
-
-  getAllTags = (file: TFile, withHash = true): string[] => {
-    const { tags, frontmatter } = this.app.metadataCache.getFileCache(file);
-    const allTags: string[] = [];
-
-    tags?.forEach((t) => allTags.push(dropHash(t.tag)));
-
-    [frontmatter?.tags ?? []].flat().forEach((t: string) => {
-      splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-    [frontmatter?.tag ?? []].flat().forEach((t: string) => {
-      splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-
-    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
-  };
-
-  addTagNotesToGraph(
-    eligableAlts: dvFrontmatterCache[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    const { userHiers, tagNoteField } = this.settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-      const tagNoteFile = altFile.file;
-
-      const tagNoteBasename = getDVBasename(tagNoteFile);
-      const tag = (altFile[BC_TAG_NOTE] as string).trim().toLowerCase();
-      if (!tag.startsWith("#")) return;
-
-      const hasThisTag = (file: TFile): boolean => {
-        const allTags = this.getAllTags(file);
-        return altFile[BC_TAG_NOTE_EXACT] !== undefined
-          ? allTags.includes(tag)
-          : allTags.some((t) => t.includes(tag));
-      };
-
-      const targets = frontms
-        .map((ff) => ff.file)
-        .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
-        .map(getDVBasename);
-
-      let field = altFile[BC_TAG_NOTE_FIELD] as string;
-      if (typeof field !== "string" || !fields.includes(field))
-        field = tagNoteField || fields[0];
-
-      targets.forEach((target) => {
-        const sourceOrder = this.getSourceOrder(altFile);
-        const targetOrder = this.getTargetOrder(frontms, tagNoteBasename);
-        this.populateMain(
-          mainG,
-          tagNoteBasename,
-          field,
-          target,
-          sourceOrder,
-          targetOrder,
-          true
-        );
-      });
-    });
-  }
-
-  addLinkNotesToGraph(
-    eligableAlts: dvFrontmatterCache[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    const { userHiers } = this.settings;
-    eligableAlts.forEach((altFile) => {
-      const linkNoteFile = altFile.file;
-      const linkNoteBasename = getDVBasename(linkNoteFile);
-
-      let field = altFile[BC_LINK_NOTE] as string;
-      if (typeof field !== "string" || !getFields(userHiers).includes(field))
-        return;
-
-      const links = this.app.metadataCache
-        .getFileCache(linkNoteFile)
-        ?.links?.map((l) => l.link.match(/[^#|]+/)[0]);
-
-      const embeds = this.app.metadataCache
-        .getFileCache(linkNoteFile)
-        ?.embeds?.map((l) => l.link.match(/[^#|]+/)[0]);
-
-      const targets = [...(links ?? []), ...(embeds ?? [])];
-
-      for (const target of targets) {
-        const sourceOrder = this.getSourceOrder(altFile);
-        const targetOrder = this.getTargetOrder(frontms, linkNoteBasename);
-        this.populateMain(
-          mainG,
-          linkNoteBasename,
-          field,
-          target,
-          sourceOrder,
-          targetOrder,
-          true
-        );
-      }
-    });
-  }
-  addRegexNotesToGraph(
-    eligableAlts: dvFrontmatterCache[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    const { userHiers, regexNoteField } = this.settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-      const regexNoteFile = altFile.file;
-      const regexNoteBasename = getDVBasename(regexNoteFile);
-
-      const regex = strToRegex(altFile[BC_REGEX_NOTE] as string);
-      info({ regex });
-
-      let field = altFile[BC_REGEX_NOTE_FIELD] as string;
-      if (typeof field !== "string" || !fields.includes(field))
-        field = regexNoteField || fields[0];
-
-      const targets = [];
-      frontms.forEach((page) => {
-        const basename = getDVBasename(page.file);
-        if (basename !== regexNoteBasename && regex.test(basename))
-          targets.push(basename);
-      });
-
-      for (const target of targets) {
-        const sourceOrder = this.getSourceOrder(altFile);
-        const targetOrder = this.getTargetOrder(frontms, regexNoteBasename);
-        this.populateMain(
-          mainG,
-          regexNoteBasename,
-          field,
-          target,
-          sourceOrder,
-          targetOrder,
-          true
-        );
-      }
-    });
-  }
-
-  addNamingSystemNotesToGraph(
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph
-  ) {
-    const {
-      namingSystemRegex,
-      namingSystemSplit,
-      namingSystemField,
-      namingSystemEndsWithDelimiter,
-      userHiers,
-    } = this.settings;
-    const regex = strToRegex(namingSystemRegex);
-    if (!regex) return;
-
-    const field = namingSystemField || getFields(userHiers)[0];
-
-    // const visited: string[] = [];
-    // const deepestMatches = frontms.filter((page) => {
-    //   const basename = getDVBasename(page.file);
-    //   return regex.test(basename);
-    // });
-
-    function trimRegex(regex: RegExp, split: string) {
-      const { source } = regex;
-      const parts = source.split(split);
-      const sliced = parts
-        .slice(0, -1)
-        .map((p) => (p.endsWith("\\") ? p.slice(0, -1) : p));
-
-      let joined = sliced.join("\\" + split);
-      joined = joined.startsWith("^") ? joined : "^" + joined;
-      // joined =
-      //   joined +
-      //   (namingSystemEndsWithDelimiter ? "\\" + namingSystemSplit : "");
-
-      return sliced.length ? new RegExp(joined) : null;
-    }
-
-    function getUp(current: string) {
-      let currReg = trimRegex(regex, namingSystemSplit);
-      let up = current.match(currReg);
-      while (currReg || !up || up[0] === current) {
-        currReg = trimRegex(currReg, namingSystemSplit);
-        if (!currReg) break;
-        up = current.match(currReg);
-      }
-      console.log({ currReg });
-      return up?.[0] ?? null;
-    }
-
-    frontms.forEach((page) => {
-      const sourceBN = getDVBasename(page.file);
-      const upSystem = getUp(sourceBN);
-      console.log(sourceBN, "↑", upSystem);
-      if (!upSystem) return;
-
-      const upFm = frontms.find((fm) => {
-        const upBN = getDVBasename(fm.file);
-        const start =
-          upSystem + (namingSystemEndsWithDelimiter ? namingSystemSplit : "");
-        return (
-          upBN !== sourceBN && (upBN === start || upBN.startsWith(start + " "))
-        );
-      });
-
-      if (!upFm) return;
-      const upBN = getDVBasename(upFm.file);
-
-      if (upBN === sourceBN) return;
-
-      const sourceOrder = this.getSourceOrder(page);
-      const targetOrder = this.getTargetOrder(frontms, upBN);
-      this.populateMain(
-        mainG,
-        sourceBN,
-        field,
-        upBN,
-        sourceOrder,
-        targetOrder,
-        true
-      );
-    });
-
-    // deepestMatches.forEach((deepest) => {
-    //   console.log(deepest.file.name);
-    //   const basename = getDVBasename(deepest.file);
-    //   const allSplits: string[] = [];
-    //   let nextSplit = splitName(basename, namingSystemSplit);
-    //   while (nextSplit) {
-    //     allSplits.push(nextSplit);
-    //     nextSplit = splitName(nextSplit, namingSystemSplit);
-    //   }
-    //   console.log({ allSplits });
-
-    //   let current: dvFrontmatterCache = deepest;
-    //   for (const split of allSplits) {
-    //     const up = frontms.find((page) => {
-    //       const basename = getDVBasename(page.file);
-    //       return (
-    //         !visited.includes(basename) &&
-    //         // For the final split, the naming system part likely won't have any delimiters in it. This means that alot more false positives will match
-    //         // e.g. if system is `\d\.\d\.`, and the final split is `1`, then something like `1 of my favourites snacks` might match before `1 Index`.
-    //         // The setting `namingSystemEndsWithDelimiter` tries to account for this
-    //         basename.startsWith(
-    //           split + (namingSystemEndsWithDelimiter ? namingSystemSplit : "")
-    //         )
-    //       );
-    //     });
-    //     if (!up) continue;
-    //     const upName = getDVBasename(up.file);
-    //     visited.push(upName);
-    //     console.log("up:", upName);
-
-    //     const sourceOrder = this.getSourceOrder(current);
-    //     const targetOrder = this.getTargetOrder(frontms, upName);
-    //     this.populateMain(
-    //       mainG,
-    //       getDVBasename(current.file),
-    //       field,
-    //       upName,
-    //       sourceOrder,
-    //       targetOrder,
-    //       true
-    //     );
-
-    //     current = up;
-    //   }
-    // });
-  }
-
-  addTraverseNotesToGraph(
-    traverseNotes: dvFrontmatterCache[],
-    frontms: dvFrontmatterCache[],
-    mainG: MultiGraph,
-    obsG: MultiGraph
-  ) {
-    const { userHiers } = this.settings;
-    traverseNotes.forEach((altFile) => {
-      const { file } = altFile;
-      const basename = getDVBasename(file);
-      const noCycles = removeCycles(obsG, basename);
-
-      let field = altFile[BC_TRAVERSE_NOTE] as string;
-      if (typeof field !== "string" || !getFields(userHiers).includes(field))
-        return;
-
-      const allPaths = dfsAllPaths(noCycles, basename);
-      info(allPaths);
-      const reversed = [...allPaths].map((path) => path.reverse());
-      reversed.forEach((path) => {
-        path.forEach((node, i) => {
-          const next = path[i + 1];
-          if (next === undefined) return;
-          this.populateMain(
-            mainG,
-            node,
-            field as string,
-            next,
-            9999,
-            9999,
-            true
-          );
-        });
-      });
-    });
-  }
-
-  addDendronNotesToGraph(frontms: dvFrontmatterCache[], mainG: MultiGraph) {
-    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } =
-      this.settings;
-    if (!addDendronNotes) return;
-
-    for (const frontm of frontms) {
-      // Doesn't currently work yet
-      if (frontm[BC_IGNORE_DENDRON]) continue;
-      const { file } = frontm;
-      const basename = getDVBasename(file);
-
-      const splits = basename.split(dendronNoteDelimiter);
-      if (splits.length < 2) continue;
-
-      // Probably inefficient to reverse then unreverse it. I can probably just use slice(-i)
-      const reversed = splits.reverse();
-      reversed.forEach((split, i) => {
-        const currSlice = reversed
-          .slice(i)
-          .reverse()
-          .join(dendronNoteDelimiter);
-        const nextSlice = reversed
-          .slice(i + 1)
-          .reverse()
-          .join(dendronNoteDelimiter);
-        if (!nextSlice) return;
-
-        const sourceOrder = this.getSourceOrder(frontm);
-        const targetOrder = this.getTargetOrder(frontms, nextSlice);
-
-        this.populateMain(
-          mainG,
-          currSlice,
-          dendronNoteField,
-          nextSlice,
-          sourceOrder,
-          targetOrder,
-          true
-        );
-      });
-    }
-  }
-
-  getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
-    parseInt(
-      (frontms.find((arr) => arr.file.basename === target)?.[
-        BC_ORDER
-      ] as string) ?? "9999"
-    );
-
-  getSourceOrder = (frontm: dvFrontmatterCache) =>
-    parseInt((frontm[BC_ORDER] as string) ?? "9999");
 
   async initGraphs(): Promise<MultiGraph> {
     const mainG = new MultiGraph();
@@ -1144,7 +413,7 @@ export default class BCPlugin extends Plugin {
       }
 
       const useCSV = settings.CSVPaths !== "";
-      const CSVRows = useCSV ? await this.getCSVRows() : [];
+      const CSVRows = useCSV ? await getCSVRows(this) : [];
 
       const eligableAlts: { [altField: string]: dvFrontmatterCache[] } = {};
       BC_ALTS.forEach((alt) => (eligableAlts[alt] = []));
@@ -1203,19 +472,20 @@ export default class BCPlugin extends Plugin {
               targetOrder
             );
           });
-          if (useCSV) this.addCSVCrumbs(mainG, CSVRows, dir, field);
+          if (useCSV) addCSVCrumbs(mainG, CSVRows, dir, field);
         });
       });
+
       db.end2G();
 
       // SECTION  Juggl Links
       const jugglLinks =
         app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
-          ? await this.getJugglLinks(files)
+          ? await getJugglLinks(this, files)
           : [];
 
       if (jugglLinks.length)
-        this.addJugglLinksToGraph(jugglLinks, frontms, mainG);
+        addJugglLinksToGraph(settings, jugglLinks, frontms, mainG);
 
       // !SECTION  Juggl Links
 
@@ -1226,7 +496,11 @@ export default class BCPlugin extends Plugin {
         for (const note of settings.hierarchyNotes) {
           const file = app.metadataCache.getFirstLinkpathDest(note, "");
           if (file) {
-            this.addHNsToGraph(await getHierarchyNoteItems(this, file), mainG);
+            addHNsToGraph(
+              settings,
+              await getHierarchyNoteItems(this, file),
+              mainG
+            );
           } else {
             new Notice(
               `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
@@ -1239,18 +513,23 @@ export default class BCPlugin extends Plugin {
       // !SECTION  Hierarchy Notes
       db.start1G("Alternative Hierarchies");
 
-      this.addFolderNotesToGraph(eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
-      this.addTagNotesToGraph(eligableAlts[BC_TAG_NOTE], frontms, mainG);
-      this.addLinkNotesToGraph(eligableAlts[BC_LINK_NOTE], frontms, mainG);
-      this.addRegexNotesToGraph(eligableAlts[BC_REGEX_NOTE], frontms, mainG);
-      // this.addNamingSystemNotesToGraph(frontms, mainG);
-      this.addTraverseNotesToGraph(
-        eligableAlts[BC_TRAVERSE_NOTE],
+      addFolderNotesToGraph(
+        settings,
+        eligableAlts[BC_FOLDER_NOTE],
         frontms,
-        mainG,
-        this.buildObsGraph()
+        mainG
       );
-      this.addDendronNotesToGraph(frontms, mainG);
+      addTagNotesToGraph(this, eligableAlts[BC_TAG_NOTE], frontms, mainG);
+      addLinkNotesToGraph(this, eligableAlts[BC_LINK_NOTE], frontms, mainG);
+      addRegexNotesToGraph(this, eligableAlts[BC_REGEX_NOTE], frontms, mainG);
+      // this.addNamingSystemNotesToGraph(frontms, mainG);
+      addTraverseNotesToGraph(
+        this,
+        eligableAlts[BC_TRAVERSE_NOTE],
+        mainG,
+        buildObsGraph(app)
+      );
+      addDendronNotesToGraph(this, frontms, mainG);
 
       db.end1G();
 

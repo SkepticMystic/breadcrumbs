@@ -1,7 +1,7 @@
 import { App, FuzzyMatch, FuzzySuggestModal, Notice } from "obsidian";
 import { HierarchyNoteManipulator } from "./HierarchyNoteManipulator";
-import type { BCSettings } from "../interfaces";
-import type BCPlugin from "../main";
+import type { BCSettings } from "../../interfaces";
+import type BCPlugin from "../../main";
 
 export class HierarchyNoteSelectorModal extends FuzzySuggestModal<string> {
   app: App;
