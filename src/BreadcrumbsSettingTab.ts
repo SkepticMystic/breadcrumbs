@@ -476,7 +476,8 @@ export class BCSettingTab extends PluginSettingTab {
     new Setting(trailDetails)
       .setName("Views to show")
       .setDesc(
-        "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view."
+        "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
+          "Juggl requires having the Juggl plugin installed."
       )
       .addToggle((toggle) => {
         toggle

@@ -2888,7 +2888,7 @@
     "through" ">=2.2.7 <3"
 
 "juggl-api@github:HEmile/juggl-api":
-  "resolved" "git+ssh://git@github.com/HEmile/juggl-api.git#1716ba13ffc44df33e8efd248459a4e3b2746dec"
+  "resolved" "git+ssh://git@github.com/HEmile/juggl-api.git#d695772216a51281d02c69eceb0d4a390213602a"
   "version" "1.0.0"
   dependencies:
     "@types/cytoscape" "^3.14.11"

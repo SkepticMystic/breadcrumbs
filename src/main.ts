@@ -65,7 +65,7 @@ export default class BCPlugin extends Plugin {
 
   registerLayoutChangeEvent() {
     this.layoutChange = this.app.workspace.on("layout-change", async () => {
-      if (this.settings.showBCs) await drawTrail(this);
+      // if (this.settings.showBCs) await drawTrail(this);
     });
     this.registerEvent(this.layoutChange);
   }
