@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.36.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.36.0...2.36.1) (2022-01-15)
+
+
+### Bug Fixes
+
+* Only adds trails a single time ([4aeb3df](https://github.com/SkepticMystic/breadcrumbs/commit/4aeb3df421daef34cfe67edbf2679814956a214c))
+
 ## [2.36.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.35.0...2.36.0) (2022-01-15)
 
 
