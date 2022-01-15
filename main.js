@@ -3460,9 +3460,9 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDER, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
-    "BC-folder-note-subfolder",
+    "BC-folder-note-recursive",
     "BC-tag-note",
     "BC-tag-note-field",
     "BC-tag-note-exact",
@@ -3482,8 +3482,8 @@ const BC_FIELDS_INFO = [
         alt: true,
     },
     {
-        field: BC_FOLDER_NOTE_SUBFOLDER,
-        desc: "This folder note should take notes in the same folder as it, _and_ notes in subfolders of it.",
+        field: BC_FOLDER_NOTE_RECURSIVE,
+        desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
         after: ": true",
         alt: false,
     },
@@ -5012,7 +5012,7 @@ const getBaseFromMDPath = (path) => {
         return splitSlash;
 };
 const getDVBasename = (file) => file.basename || file.name;
-const getFolder = (file) => { var _a; 
+const getFolderName = (file) => { var _a; 
 //@ts-ignore
 return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
 const dropFolder = (path) => path.split("/").last().split(".").slice(0, -1).join(".");
@@ -24160,7 +24160,6 @@ class BCStore extends obsidian.Component {
         const edges = [];
         const nodesListS = new Set(allNodes.map((node) => this.asString(node)).filter((s) => s));
         newNodes.forEach((node) => {
-            console.log({ node });
             this.graph.forEachOutEdge(this.asString(node), (key, attr, source, target) => {
                 if (nodesListS.has(target)) {
                     edges.push({
@@ -25572,19 +25571,68 @@ function addDendronNotesToGraph(plugin, frontms, mainG) {
     }
 }
 
-function addFolderNotesToGraph(settings, eligableAlts, frontms, mainG) {
+const getSubsFromFolder = (folder) => {
+    const otherNotes = [], subFolders = [];
+    folder.children.forEach((tAbstract) => {
+        if (tAbstract instanceof obsidian.TFile) {
+            otherNotes.push(tAbstract);
+        }
+        else
+            subFolders.push(tAbstract);
+    });
+    return { otherNotes, subFolders };
+};
+// export function addFolderNotesToGraph(
+//   settings: BCSettings,
+//   folderNotes: dvFrontmatterCache[],
+//   frontms: dvFrontmatterCache[],
+//   mainG: MultiGraph
+// ) {
+//   const { userHiers } = settings;
+//   const fields = getFields(userHiers);
+//   folderNotes.forEach((altFile) => {
+//     const { file } = altFile;
+//     const basename = getDVBasename(file);
+//     const topFolder = getFolderName(file);
+//     const recursive = altFile[BC_FOLDER_NOTE_RECURSIVE];
+//     const targets = frontms
+//       .map((ff) => ff.file)
+//       .filter(
+//         (other) =>
+//           getFolderName(other) === topFolder && other.path !== file.path
+//       )
+//       .map(getDVBasename);
+//     const field = altFile[BC_FOLDER_NOTE] as string;
+//     if (typeof field !== "string" || !fields.includes(field)) return;
+//     targets.forEach((target) => {
+//       // This is getting the order of the folder note, not the source pointing up to it
+//       const sourceOrder = getSourceOrder(altFile);
+//       const targetOrder = getTargetOrder(frontms, basename);
+//       populateMain(
+//         settings,
+//         mainG,
+//         basename,
+//         field,
+//         target,
+//         sourceOrder,
+//         targetOrder,
+//         true
+//       );
+//     });
+//   });
+// }
+function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
+    const { settings, app } = plugin;
     const { userHiers } = settings;
     const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
+    folderNotes.forEach((altFile) => {
         const { file } = altFile;
         const basename = getDVBasename(file);
-        const folder = getFolder(file);
-        const subfolders = altFile[BC_FOLDER_NOTE_SUBFOLDER];
+        const topFolderName = getFolderName(file);
+        const topFolder = app.vault.getAbstractFileByPath(topFolderName);
         const targets = frontms
             .map((ff) => ff.file)
-            .filter((other) => (subfolders
-            ? getFolder(other).includes(folder)
-            : getFolder(other) === folder) && other.path !== file.path)
+            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
             .map(getDVBasename);
         const field = altFile[BC_FOLDER_NOTE];
         if (typeof field !== "string" || !fields.includes(field))
@@ -25595,6 +25643,35 @@ function addFolderNotesToGraph(settings, eligableAlts, frontms, mainG) {
             const targetOrder = getTargetOrder(frontms, basename);
             populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder, true);
         });
+        if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
+            const { subFolders } = getSubsFromFolder(topFolder);
+            const folderQueue = [...subFolders];
+            console.log({ startingQueue: folderQueue.slice() });
+            let prevFolderNote = topFolderName;
+            let currFolder = folderQueue.shift();
+            while (currFolder !== undefined) {
+                const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
+                const folderNote = currFolder.name;
+                const targets = otherNotes.map(getDVBasename);
+                // if (!isInVault(app, folderNote, folderNote)) continue;
+                const sourceOrder = 9999; // getSourceOrder(altFile);
+                const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                populateMain(settings, mainG, prevFolderNote, field, folderNote, sourceOrder, targetOrder, true);
+                targets.forEach((target) => {
+                    if (target === folderNote)
+                        return;
+                    console.log("adding", folderNote, "→", target);
+                    const sourceOrder = 9999; // getSourceOrder(altFile);
+                    const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                    populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
+                });
+                folderQueue.push(...subFolders);
+                currFolder = folderQueue.shift();
+                prevFolderNote = folderNote;
+            }
+        }
+        // First add otherNotes to graph
+        // Then iterate subFolders doing the same
     });
 }
 
@@ -26054,7 +26131,7 @@ async function initGraphs(plugin) {
         db.end2G();
         // !SECTION  Hierarchy Notes
         db.start1G("Alternative Hierarchies");
-        addFolderNotesToGraph(settings, eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
+        addFolderNotesToGraph(plugin, eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
         addTagNotesToGraph(plugin, eligableAlts[BC_TAG_NOTE], frontms, mainG);
         addLinkNotesToGraph(plugin, eligableAlts[BC_LINK_NOTE], frontms, mainG);
         addRegexNotesToGraph(plugin, eligableAlts[BC_REGEX_NOTE], frontms, mainG);

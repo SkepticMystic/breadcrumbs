@@ -59,7 +59,7 @@ export const getBaseFromMDPath = (path: string) => {
 };
 
 export const getDVBasename = (file: TFile) => file.basename || file.name;
-export const getFolder = (file: TFile): string =>
+export const getFolderName = (file: TFile): string =>
   //@ts-ignore
   file?.parent?.name || file.folder;
 

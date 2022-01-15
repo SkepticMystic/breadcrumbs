@@ -292,7 +292,6 @@ class BCStore extends Component implements ICoreDataStore {
       allNodes.map((node) => this.asString(node)).filter((s) => s)
     );
     newNodes.forEach((node) => {
-      console.log({ node });
       this.graph.forEachOutEdge(
         this.asString(node),
         (key, attr, source, target) => {

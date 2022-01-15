@@ -121,7 +121,7 @@ export const blankRealNImplied = () => {
 
 export const [
   BC_FOLDER_NOTE,
-  BC_FOLDER_NOTE_SUBFOLDER,
+  BC_FOLDER_NOTE_RECURSIVE,
   BC_TAG_NOTE,
   BC_TAG_NOTE_FIELD,
   BC_TAG_NOTE_EXACT,
@@ -134,7 +134,7 @@ export const [
   BC_ORDER,
 ] = [
   "BC-folder-note",
-  "BC-folder-note-subfolder",
+  "BC-folder-note-recursive",
   "BC-tag-note",
   "BC-tag-note-field",
   "BC-tag-note-exact",
@@ -155,8 +155,8 @@ export const BC_FIELDS_INFO = [
     alt: true,
   },
   {
-    field: BC_FOLDER_NOTE_SUBFOLDER,
-    desc: "This folder note should take notes in the same folder as it, _and_ notes in subfolders of it.",
+    field: BC_FOLDER_NOTE_RECURSIVE,
+    desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
     after: ": true",
     alt: false,
   },

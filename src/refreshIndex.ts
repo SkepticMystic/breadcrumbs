@@ -287,12 +287,7 @@ export async function initGraphs(plugin: BCPlugin): Promise<MultiGraph> {
     // !SECTION  Hierarchy Notes
     db.start1G("Alternative Hierarchies");
 
-    addFolderNotesToGraph(
-      settings,
-      eligableAlts[BC_FOLDER_NOTE],
-      frontms,
-      mainG
-    );
+    addFolderNotesToGraph(plugin, eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
     addTagNotesToGraph(plugin, eligableAlts[BC_TAG_NOTE], frontms, mainG);
     addLinkNotesToGraph(plugin, eligableAlts[BC_LINK_NOTE], frontms, mainG);
     addRegexNotesToGraph(plugin, eligableAlts[BC_REGEX_NOTE], frontms, mainG);
