@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
-import { getRealnImplied } from "./sharedFunctions";
-import type { Directions } from "./interfaces";
-import type BCPlugin from "./main";
+import { getRealnImplied } from "../sharedFunctions";
+import type { Directions } from "../interfaces";
+import type BCPlugin from "../main";
 
 export async function jumpToFirstDir(plugin: BCPlugin, dir: Directions) {
   const { limitJumpToFirstFields } = plugin.settings;

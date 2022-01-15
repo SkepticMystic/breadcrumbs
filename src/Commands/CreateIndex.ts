@@ -1,15 +1,15 @@
 import { cloneDeep } from "lodash";
 import { info } from "loglevel";
 import { copy } from "obsidian-community-lib/dist/utils";
-import { makeWiki } from "./sharedFunctions";
+import { makeWiki } from "../sharedFunctions";
 import {
   dfsAllPaths,
   getReflexiveClosure,
   getSinks,
   getSubCloseSub,
   getSubInDirs,
-} from "./graphUtils";
-import type BCPlugin from "./main";
+} from "../graphUtils";
+import type BCPlugin from "../main";
 
 /**
  * Returns a copy of `index`, doesn't mutate.
