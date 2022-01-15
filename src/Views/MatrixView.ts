@@ -1,24 +1,24 @@
 import { error, info } from "loglevel";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import { refreshIndex } from "./refreshIndex";
 import { Debugger } from "src/Debugger";
-import Lists from "./Components/Lists.svelte";
-import Matrix from "./Components/Matrix.svelte";
+import Lists from "../Components/Lists.svelte";
+import Matrix from "../Components/Matrix.svelte";
 import {
   ARROW_DIRECTIONS,
   blankRealNImplied,
   MATRIX_VIEW,
   TRAIL_ICON,
-} from "./constants";
-import { getOppDir, getReflexiveClosure, getSubInDirs } from "./graphUtils";
+} from "../constants";
+import { getOppDir, getReflexiveClosure, getSubInDirs } from "../graphUtils";
 import type {
   Directions,
   internalLinkObj,
   SquareProps,
   UserHier,
-} from "./interfaces";
-import type BCPlugin from "./main";
-import { getRealnImplied, linkClass, splitAndTrim } from "./sharedFunctions";
+} from "../interfaces";
+import type BCPlugin from "../main";
+import { refreshIndex } from "../refreshIndex";
+import { getRealnImplied, linkClass, splitAndTrim } from "../sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;

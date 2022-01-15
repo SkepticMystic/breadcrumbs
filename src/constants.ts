@@ -306,4 +306,12 @@ export const DEFAULT_SETTINGS: BCSettings = {
   visClosed: "Real",
   visAll: "All",
   wikilinkIndex: true,
+  impliedRelations: {
+    siblingIdentity: false,
+    sameParentIsSibling: false,
+    siblingsSiblingIsSibling: false,
+    parentsSiblingsIsParents: false,
+    parentsParentsIsParent: false,
+    cousinsIsSibling: false,
+  },
 };

@@ -14,7 +14,7 @@
   import type BCPlugin from "../main";
   import { refreshIndex } from "../refreshIndex";
   import { dropDendron } from "../sharedFunctions";
-  import type TreeView from "../TreeView";
+  import type TreeView from "../Views/TreeView";
 
   export let plugin: BCPlugin;
   export let view: TreeView;

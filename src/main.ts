@@ -1,5 +1,5 @@
 import type { MultiGraph } from "graphology";
-import { addIcon, EventRef, MarkdownView, Notice, Plugin } from "obsidian";
+import { addIcon, EventRef, MarkdownView, Plugin } from "obsidian";
 import {
   addFeatherIcon,
   openView,
@@ -25,15 +25,15 @@ import {
   TRAIL_ICON_SVG,
   TREE_VIEW,
 } from "./constants";
-import DucksView from "./DucksView";
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
-import MatrixView from "./MatrixView";
 import { initGraphs, refreshIndex } from "./refreshIndex";
 import { getFields } from "./sharedFunctions";
-import StatsView from "./StatsView";
-import TreeView from "./TreeView";
+import DucksView from "./Views/DucksView";
+import MatrixView from "./Views/MatrixView";
+import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
+import TreeView from "./Views/TreeView";
 import { VisModal } from "./VisModal";
 
 export default class BCPlugin extends Plugin {
@@ -92,12 +92,12 @@ export default class BCPlugin extends Plugin {
     const { settings } = this;
     this.addSettingTab(new BCSettingTab(this.app, this));
 
+    // Prevent breaking change
     if (typeof settings.debugMode === "boolean") {
       settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
       await this.saveSettings();
     }
 
-    // Prevent breaking change
     //@ts-ignore
     const { userHierarchies } = settings;
     if (userHierarchies !== undefined && userHierarchies.length > 0) {

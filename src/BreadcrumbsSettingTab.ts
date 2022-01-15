@@ -23,7 +23,7 @@ import {
 } from "./constants";
 import type { DebugLevel, Relations, visTypes } from "./interfaces";
 import type BCPlugin from "./main";
-import MatrixView from "./MatrixView";
+import MatrixView from "./Views/MatrixView";
 import { getFields, splitAndTrim, strToRegex } from "./sharedFunctions";
 import { drawTrail } from "./Views/TrailView";
 
