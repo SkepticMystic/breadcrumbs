@@ -33,6 +33,7 @@ import {
   BC_FOLDER_NOTE,
   BC_FOLDER_NOTE_SUBFOLDER,
   BC_HIDE_TRAIL,
+  BC_IGNORE_DENDRON,
   BC_LINK_NOTE,
   BC_ORDER,
   BC_REGEX_NOTE,
@@ -49,6 +50,7 @@ import {
   DUCK_ICON,
   DUCK_ICON_SVG,
   DUCK_VIEW,
+  JUGGL_TRAIL_DEFAULTS,
   MATRIX_VIEW,
   splitLinksRegex,
   STATS_VIEW,
@@ -89,6 +91,7 @@ import type {
 import MatrixView from "./MatrixView";
 import {
   createOrUpdateYaml,
+  dropFolder,
   dropHash,
   dropWikilinks,
   fallbackOppField,
@@ -106,6 +109,7 @@ import {
 import StatsView from "./StatsView";
 import TreeView from "./TreeView";
 import { VisModal } from "./VisModal";
+import { createdJugglCB, createJugglTrail } from "./Visualisations/CBJuggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -609,6 +613,58 @@ export default class BCPlugin extends Plugin {
           el.innerHTML = err;
           return;
         }
+        let min = 0,
+          max = Infinity;
+        let { depth, dir, from, implied, flat } = parsedSource;
+        if (depth !== undefined) {
+          const minNum = parseInt(depth[0]);
+          if (!isNaN(minNum)) min = minNum;
+          const maxNum = parseInt(depth[1]);
+          if (!isNaN(maxNum)) max = maxNum;
+        }
+
+        const currFile = this.app.metadataCache.getFirstLinkpathDest(
+          ctx.sourcePath,
+          ""
+        );
+        const { userHiers } = settings;
+        const { basename } = currFile;
+
+        let froms = undefined;
+        if (from !== undefined) {
+          try {
+            const api = this.app.plugins.plugins.dataview?.api;
+            if (api) {
+              const pages = api.pagePaths(from)?.values as string[];
+              froms = pages.map(dropFolder);
+            } else new Notice("Dataview must be enabled for `from` to work.");
+          } catch (e) {
+            new Notice(`The query "${from}" failed.`);
+          }
+        }
+
+        const oppDir = getOppDir(dir);
+        const sub =
+          implied === "false"
+            ? getSubInDirs(this.mainG, dir)
+            : getSubInDirs(this.mainG, dir, oppDir);
+        const closed = getReflexiveClosure(sub, userHiers);
+        const subClosed = getSubInDirs(closed, dir);
+
+        const allPaths = dfsAllPaths(subClosed, basename);
+        const index = this.createIndex(allPaths, false);
+        info({ allPaths, index });
+        console.log({ allPaths, index });
+        const lines = index
+          .split("\n")
+          .map((line) => {
+            const pair = line.split("- ");
+            return [
+              flat === "true" ? "" : pair[0],
+              pair.slice(1).join("- "),
+            ] as [string, string];
+          })
+          .filter((pair) => pair[1] !== "");
 
         switch (parsedSource.type) {
           case "tree":
@@ -616,11 +672,27 @@ export default class BCPlugin extends Plugin {
               target: el,
               props: {
                 plugin: this,
-                ctx,
                 el,
+                min,
+                max,
+                lines,
+                froms,
+                basename,
                 ...parsedSource,
               },
             });
+            break;
+          case "juggl":
+            createdJugglCB(
+              this,
+              el,
+              parsedSource,
+              lines,
+              froms,
+              basename,
+              min,
+              max
+            );
             break;
         }
       }
@@ -635,8 +707,17 @@ export default class BCPlugin extends Plugin {
         ?.split(":")?.[1]
         ?.trim();
 
-    const results: { [field in CodeblockFields]: string | string[] } = {};
-    CODEBLOCK_FIELDS.forEach((field) => (results[field] = getValue(field)));
+    const results: { [field in CodeblockFields]: string | boolean | string[] } =
+      {};
+    CODEBLOCK_FIELDS.forEach((field) => {
+      results[field] = getValue(field);
+      if (results[field] === "false") {
+        results[field] = false;
+      }
+      if (results[field] === "true") {
+        results[field] = true;
+      }
+    });
 
     results.field = results.field
       ? splitAndTrim(results.field as string)
@@ -1531,6 +1612,8 @@ export default class BCPlugin extends Plugin {
     if (!addDendronNotes) return;
 
     for (const frontm of frontms) {
+      // Doesn't currently work yet
+      if (frontm[BC_IGNORE_DENDRON]) continue;
       const { file } = frontm;
       const basename = getDVBasename(file);
 
@@ -1898,6 +1981,7 @@ export default class BCPlugin extends Plugin {
         respectReadableLineLength,
         showTrail,
         showGrid,
+        showJuggl,
         showPrevNext,
         showBCsInEditLPMode,
       } = settings;
@@ -2045,6 +2129,15 @@ export default class BCPlugin extends Plugin {
           target: trailDiv,
           props: { app: this.app, plugin: this, next, prev },
         });
+      }
+      if (showJuggl && sortedTrails.length) {
+        createJugglTrail(
+          this,
+          trailDiv,
+          props.sortedTrails,
+          basename,
+          JUGGL_TRAIL_DEFAULTS
+        );
       }
       db.end2G();
     } catch (err) {

@@ -5,6 +5,7 @@ import type {
   UserHier,
   visTypes,
 } from "./interfaces";
+import type { IJugglSettings } from "juggl-api";
 
 export const MATRIX_VIEW = "BC-matrix";
 export const STATS_VIEW = "BC-stats";
@@ -48,7 +49,7 @@ export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
 export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
-export const CODEBLOCK_TYPES = ["tree"];
+export const CODEBLOCK_TYPES = ["tree", "juggl"];
 export const CODEBLOCK_FIELDS = [
   "type",
   "dir",
@@ -60,6 +61,40 @@ export const CODEBLOCK_FIELDS = [
   "from",
   "implied",
 ];
+
+export const JUGGL_CB_DEFAULTS: IJugglSettings = {
+  autoAddNodes: false,
+  autoExpand: false,
+  autoZoom: false,
+  coreStore: "core",
+  expandInitial: false,
+  fdgdLayout: "d3-force",
+  filter: "",
+  height: "750px",
+  hoverEdges: false,
+  layout: "force-directed",
+  limit: 250,
+  mergeEdges: true,
+  metaKeyHover: true,
+  mode: "workspace",
+  navigator: true,
+  openWithShift: false,
+  styleGroups: [],
+  toolbar: true,
+  width: "100%",
+  zoomSpeed: 1,
+};
+
+export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign(
+  JUGGL_CB_DEFAULTS,
+  {
+    autoZoom: true,
+    fdgdLayout: "d3-force",
+    height: "400px",
+    toolbar: false,
+  }
+);
+CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 
 export const blankUserHier = (): UserHier => {
   return { up: [], same: [], down: [], next: [], prev: [] };
@@ -94,6 +129,7 @@ export const [
   BC_TRAVERSE_NOTE,
   BC_REGEX_NOTE,
   BC_REGEX_NOTE_FIELD,
+  BC_IGNORE_DENDRON,
   BC_HIDE_TRAIL,
   BC_ORDER,
 ] = [
@@ -106,6 +142,7 @@ export const [
   "BC-traverse-note",
   "BC-regex-note",
   "BC-regex-note-field",
+  "BC-ignore-dendron",
   "BC-hide-trail",
   "BC-order",
 ];
@@ -163,6 +200,12 @@ export const BC_FIELDS_INFO = [
     field: BC_REGEX_NOTE_FIELD,
     desc: "Manually choose the field for this regex-note to use",
     after: ": ",
+    alt: false,
+  },
+  {
+    field: BC_IGNORE_DENDRON,
+    desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
+    after: ": true",
     alt: false,
   },
   {
@@ -231,6 +274,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   showImpliedRelations: true,
   showTrail: true,
   showGrid: true,
+  showJuggl: false,
   showPrevNext: true,
   sortByNameShowAlias: false,
   squareDirectionsOrder: [0, 1, 2, 3, 4],

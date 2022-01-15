@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.35.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.33.0...2.35.0) (2022-01-14)
+
+
+### Features
+
+* Better default values, allow customizing juggl through code block ([5c4b876](https://github.com/SkepticMystic/breadcrumbs/commit/5c4b876b43d4e09df72a11dfb2b5f92f547b55ad))
+* Improved some constants, depth 0 for juggl ([90408d0](https://github.com/SkepticMystic/breadcrumbs/commit/90408d087234d0e9a4df9ddaffe4d1e6e98c05e4))
+* Initial work on juggl code blocks ([e92021d](https://github.com/SkepticMystic/breadcrumbs/commit/e92021d44476bd76c4329dfdd3e1ae798e0a77cb))
+* Juggl view showing hierarchy on top of note ([a5ebd95](https://github.com/SkepticMystic/breadcrumbs/commit/a5ebd95918878588dc941e3179b962f42eec94bf))
+* Juggl visualization now supports all BC hierarchy options ([d62b915](https://github.com/SkepticMystic/breadcrumbs/commit/d62b915e0559eee3753dd0295ebb9545129f2c54))
+
+## [2.34.0](https://github.com/HEmile/breadcrumbs/compare/2.33.0...2.34.0) (2022-01-12)
+
+
+### Features
+
+* Better default values, allow customizing juggl through code block ([5c4b876](https://github.com/HEmile/breadcrumbs/commit/5c4b876b43d4e09df72a11dfb2b5f92f547b55ad))
+* Initial work on juggl code blocks ([e92021d](https://github.com/HEmile/breadcrumbs/commit/e92021d44476bd76c4329dfdd3e1ae798e0a77cb))
+
 ## [2.33.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.32.1...2.33.0) (2022-01-11)
 
 
