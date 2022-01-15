@@ -21,6 +21,7 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
+import { writeBCsToAllFiles } from "./WriteBCsToAllFiles";
 import { Debugger } from "src/Debugger";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";
 import CBTree from "./Components/CBTree.svelte";
@@ -335,45 +336,7 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "Write-Breadcrumbs-to-All-Files",
       name: "Write Breadcrumbs to **ALL** Files",
-      callback: async () => {
-        if (!settings.showWriteAllBCsCmd) {
-          new Notice(
-            "You first need to enable this command in Breadcrumbs' settings."
-          );
-          return;
-        }
-        if (
-          window.confirm(
-            "This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**."
-          )
-        ) {
-          if (
-            window.confirm(
-              "Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs."
-            )
-          ) {
-            if (window.confirm("For real, please make a back up before.")) {
-              const notice = new Notice("Operation Started");
-              const problemFiles = [];
-              for (const file of this.app.vault.getMarkdownFiles()) {
-                try {
-                  await this.writeBCToFile(file);
-                } catch (e) {
-                  problemFiles.push(file.path);
-                }
-              }
-              notice.setMessage("Operation Complete");
-              if (problemFiles.length) {
-                new Notice(
-                  "Some files were not updated due to errors. Check the console to see which ones."
-                );
-                console.log({ problemFiles });
-              }
-            }
-          }
-        }
-      },
-      // checkCallback: () => settings.showWriteAllBCsCmd,
+      callback: async () => writeBCsToAllFiles(this),
     });
 
     this.addCommand({
