@@ -28765,27 +28765,27 @@ class MatrixView extends obsidian.ItemView {
         const realsnImplieds = getRealnImplied(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
+            const resultsFilter = (real, dir, oppDir, arrow) => hier[dir].includes(real.field) ||
+                (real.field.includes(`<${arrow}>`) &&
+                    hier[oppDir].includes(real.field.split(" <")[0]));
             for (const dir in realsnImplieds) {
                 const oppDir = getOppDir(dir);
                 const arrow = ARROW_DIRECTIONS[dir];
                 const { reals, implieds } = realsnImplieds[dir];
                 filteredRealNImplied[dir].reals = reals
-                    .filter((real) => hier[dir].includes(real.field) ||
-                    (real.field.includes(`<${arrow}>`) &&
-                        hier[oppDir].includes(real.field.split(" <")[0])))
+                    .filter((real) => resultsFilter(real, dir, oppDir, arrow))
                     .map((item) => this.toInternalLinkObj(item.to, true));
                 filteredRealNImplied[dir].implieds = implieds
-                    .filter((implied) => hier[dir].includes(implied.field) ||
-                    (implied.field.includes(`<${arrow}>`) &&
-                        hier[oppDir].includes(implied.field.split(" <")[0])))
+                    .filter((implied) => resultsFilter(implied, dir, oppDir, arrow))
                     .map((item) => this.toInternalLinkObj(item.to, false));
             }
             let { up: { reals: ru, implieds: iu }, same: { reals: rs, implieds: is }, down: { reals: rd, implieds: id }, next: { reals: rn, implieds: iN }, prev: { reals: rp, implieds: ip }, } = filteredRealNImplied;
             // SECTION Implied Siblings
             /// Notes with the same parents
-            const g = getSubInDirs(mainG, "up", "down");
-            const closed = getReflexiveClosure(g, userHiers);
-            const closedUp = getSubInDirs(closed, "up");
+            // const g = getSubInDirs(mainG, "up", "down");
+            // const closed = getReflexiveClosure(g, userHiers);
+            // const closedUp = getSubInDirs(closed, "up");
+            const closedUp = getSubInDirs(plugin.closedG, "up");
             const iSamesII = [];
             if (closedUp.hasNode(basename)) {
                 closedUp.forEachOutEdge(basename, (k, a, s, par) => {
@@ -28874,51 +28874,56 @@ class MatrixView extends obsidian.ItemView {
             return squareDirectionsOrder.map((order) => square[order]);
         });
     }
+    drawButtons(contentEl) {
+        const { plugin, matrixQ } = this;
+        const { settings } = plugin;
+        const { alphaSortAsc } = settings;
+        contentEl.createEl("button", {
+            text: matrixQ ? "List" : "Matrix",
+            attr: {
+                "aria-label": "Mode",
+                style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
+            },
+        }, (el) => {
+            el.onclick = async () => {
+                this.matrixQ = !matrixQ;
+                el.innerText = matrixQ ? "List" : "Matrix";
+                await this.draw();
+            };
+        });
+        contentEl.createEl("button", {
+            text: "↻",
+            attr: {
+                "aria-label": "Refresh Index",
+                style: "padding: 1px 6px 2px 6px;",
+            },
+        }, (el) => (el.onclick = async () => await refreshIndex(plugin)));
+        contentEl.createEl("button", {
+            text: alphaSortAsc ? "↗" : "↘",
+            attr: {
+                "aria-label": "Alphabetical sorting order",
+                style: "padding: 1px 6px 2px 6px;",
+            },
+        }, (el) => {
+            el.onclick = async () => {
+                plugin.settings.alphaSortAsc = !alphaSortAsc;
+                await this.plugin.saveSettings();
+                el.innerText = alphaSortAsc ? "↗" : "↘";
+                await this.draw();
+            };
+        });
+    }
     async draw() {
         try {
-            const { contentEl, db } = this;
+            const { contentEl, db, plugin } = this;
             db.start2G("Draw Matrix/List View");
             contentEl.empty();
-            const { settings } = this.plugin;
+            const { settings } = plugin;
             const { userHiers } = settings;
             const currFile = this.app.workspace.getActiveFile();
             if (!currFile)
                 return;
-            contentEl.createEl("button", {
-                text: this.matrixQ ? "List" : "Matrix",
-                attr: {
-                    "aria-label": "Mode",
-                    style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
-                },
-            }, (el) => {
-                el.onclick = async () => {
-                    this.matrixQ = !this.matrixQ;
-                    el.innerText = this.matrixQ ? "List" : "Matrix";
-                    await this.draw();
-                };
-            });
-            contentEl.createEl("button", {
-                text: "↻",
-                attr: {
-                    "aria-label": "Refresh Index",
-                    style: "padding: 1px 6px 2px 6px;",
-                },
-            }, (el) => (el.onclick = async () => await refreshIndex(this.plugin)));
-            contentEl.createEl("button", {
-                text: settings.alphaSortAsc ? "↗" : "↘",
-                attr: {
-                    "aria-label": "Alphabetical sorting order",
-                    style: "padding: 1px 6px 2px 6px;",
-                },
-            }, (el) => {
-                el.onclick = async () => {
-                    this.plugin.settings.alphaSortAsc =
-                        !this.plugin.settings.alphaSortAsc;
-                    await this.plugin.saveSettings();
-                    el.innerText = settings.alphaSortAsc ? "↗" : "↘";
-                    await this.draw();
-                };
-            });
+            this.drawButtons(contentEl);
             const hierSquares = this.getHierSquares(userHiers, currFile).filter((squareArr) => squareArr.some((sq) => sq.realItems.length + sq.impliedItems.length > 0));
             const compInput = {
                 target: contentEl,
