@@ -292,7 +292,6 @@ class BCStore extends Component implements ICoreDataStore {
       allNodes.map((node) => this.asString(node)).filter((s) => s)
     );
     newNodes.forEach((node) => {
-      console.log({ node });
       this.graph.forEachOutEdge(
         this.asString(node),
         (key, attr, source, target) => {
@@ -378,7 +377,7 @@ function createJuggl(
     console.log({ args }, { initialNodes });
     const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
     plugin.addChild(juggl);
-    juggl.load();
+    // juggl.load();
     console.log({ juggl });
   } catch (error) {
     console.log({ error });
