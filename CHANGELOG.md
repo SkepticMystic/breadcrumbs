@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.36.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.35.0...2.36.0) (2022-01-15)
+
+
+### Features
+
+* **FolderNote:** :sparkles: `BC-folder-note-recursive: true` traverses the folder structure, adding nodes along the way ([d1c3584](https://github.com/SkepticMystic/breadcrumbs/commit/d1c358454286c29af419eac7656cf2b95069361f))
+
 ## [2.35.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.33.0...2.35.0) (2022-01-14)
 
 
