@@ -5,21 +5,15 @@
     isInVault,
     openOrSwitch,
   } from "obsidian-community-lib";
-  import {
-    dfsAllPaths,
-    getOppDir,
-    getReflexiveClosure,
-    getSubCloseSub,
-    getSubInDirs,
-  } from "../graphUtils";
   import FaFire from "svelte-icons/fa/FaFire.svelte";
   import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
+  import { createIndex } from "../Commands/CreateIndex";
+  import { DIRECTIONS } from "../constants";
+  import { dfsAllPaths, getOppDir, getSubCloseSub } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { dropDendron } from "../sharedFunctions";
   import type TreeView from "../TreeView";
-  import { DIRECTIONS } from "../constants";
-  import { createIndex } from "../CreateIndex";
 
   export let plugin: BCPlugin;
   export let view: TreeView;
