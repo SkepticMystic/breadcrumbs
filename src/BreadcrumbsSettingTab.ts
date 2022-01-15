@@ -7,6 +7,7 @@ import {
   Setting,
 } from "obsidian";
 import { isInVault, openView } from "obsidian-community-lib";
+import { refreshIndex } from "./refreshIndex";
 import Checkboxes from "./Components/Checkboxes.svelte";
 import KoFi from "./Components/KoFi.svelte";
 import UserHierarchies from "./Components/UserHierarchies.svelte";
@@ -22,8 +23,9 @@ import {
 } from "./constants";
 import type { DebugLevel, Relations, visTypes } from "./interfaces";
 import type BCPlugin from "./main";
-import MatrixView from "./MatrixView";
+import MatrixView from "./Views/MatrixView";
 import { getFields, splitAndTrim, strToRegex } from "./sharedFunctions";
+import { drawTrail } from "./Views/TrailView";
 
 const fragWithHTML = (html: string) =>
   createFragment((frag) => (frag.createDiv().innerHTML = html));
@@ -163,7 +165,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(!settings.showAllAliases).onChange(async (value) => {
           settings.showAllAliases = !value;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         })
       );
 
@@ -176,7 +178,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
           settings.useAllMetadata = value;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         })
       );
 
@@ -305,7 +307,7 @@ export class BCSettingTab extends PluginSettingTab {
           ) {
             settings.squareDirectionsOrder = value
               .split("")
-              .map((order) => Number.parseInt(order));
+              .map((order) => Number.parseInt(order)) as (0 | 1 | 2 | 3 | 4)[];
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
           } else {
@@ -436,7 +438,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.showBCs).onChange(async (value) => {
           settings.showBCs = value;
           await plugin.saveSettings();
-          await plugin.drawTrail();
+          await drawTrail(plugin);
         })
       );
 
@@ -451,7 +453,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.showBCsInEditLPMode = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           })
       );
 
@@ -484,7 +486,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.showTrail = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           });
       })
       .addToggle((toggle) => {
@@ -494,19 +496,19 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.showGrid = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           });
       })
-    .addToggle((toggle) => {
+      .addToggle((toggle) => {
         toggle
-            .setTooltip("Show Juggl view")
-            .setValue(settings.showJuggl)
-            .onChange(async (value) => {
-                settings.showJuggl = value;
-                await plugin.saveSettings();
-                await plugin.drawTrail();
-            });
-    })
+          .setTooltip("Show Juggl view")
+          .setValue(settings.showJuggl)
+          .onChange(async (value) => {
+            settings.showJuggl = value;
+            await plugin.saveSettings();
+            await drawTrail(plugin);
+          });
+      })
       .addToggle((toggle) => {
         toggle
           .setTooltip("Show Next/Previous view")
@@ -514,7 +516,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.showPrevNext = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           });
       });
 
@@ -527,7 +529,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.gridDots).onChange(async (value) => {
           settings.gridDots = value;
           await plugin.saveSettings();
-          await plugin.drawTrail();
+          await drawTrail(plugin);
         })
       );
 
@@ -554,7 +556,7 @@ export class BCSettingTab extends PluginSettingTab {
         toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
           settings.gridHeatmap = value;
           await plugin.saveSettings();
-          await plugin.drawTrail();
+          await drawTrail(plugin);
         })
       );
 
@@ -610,7 +612,7 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showAllPathsIfNoneToIndexNote = value;
 
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           })
       );
 
@@ -624,7 +626,7 @@ export class BCSettingTab extends PluginSettingTab {
           settings.showAll = value;
 
           await plugin.saveSettings();
-          await plugin.drawTrail();
+          await drawTrail(plugin);
         })
       );
 
@@ -640,7 +642,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.trailSeperator = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           })
       );
 
@@ -656,7 +658,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.noPathMessage = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           })
       );
 
@@ -671,7 +673,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.respectReadableLineLength = value;
             await plugin.saveSettings();
-            await plugin.drawTrail();
+            await drawTrail(plugin);
           })
       );
 
@@ -782,7 +784,7 @@ export class BCSettingTab extends PluginSettingTab {
         dd.onChange(async (field) => {
           settings.tagNoteField = field;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         });
       });
 
@@ -807,7 +809,7 @@ export class BCSettingTab extends PluginSettingTab {
         dd.onChange(async (field) => {
           settings.regexNoteField = field;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         });
       });
 
@@ -830,7 +832,7 @@ export class BCSettingTab extends PluginSettingTab {
           if (value === "" || strToRegex(value)) {
             settings.namingSystemRegex = value;
             await plugin.saveSettings();
-            await plugin.refreshIndex();
+            await refreshIndex(plugin);
           } else {
             new Notice("Invalid Regex");
           }
@@ -849,7 +851,7 @@ export class BCSettingTab extends PluginSettingTab {
           const value = text.getValue();
           settings.namingSystemSplit = value;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         };
       });
 
@@ -864,7 +866,7 @@ export class BCSettingTab extends PluginSettingTab {
         dd.onChange(async (value) => {
           settings.namingSystemField = value;
           await plugin.saveSettings();
-          await plugin.refreshIndex();
+          await refreshIndex(plugin);
         });
       });
     new Setting(noSystemDetails)
@@ -880,7 +882,7 @@ export class BCSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             settings.namingSystemEndsWithDelimiter = value;
             await plugin.saveSettings();
-            await plugin.refreshIndex();
+            await refreshIndex(plugin);
           })
       );
 

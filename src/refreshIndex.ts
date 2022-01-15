@@ -1,18 +1,52 @@
-import type { MultiGraph } from "graphology";
-import { parseTypedLink } from "juggl-api";
-import { debug, error } from "loglevel";
-import type { Pos, TFile } from "obsidian";
-import { dropHeaderOrAlias, splitLinksRegex } from "./constants";
-import { getFieldInfo, getTargetOrder, populateMain } from "./graphUtils";
+import { MultiGraph } from "graphology";
+import { debug, error, warn } from "loglevel";
+import { Notice, Pos, TFile } from "obsidian";
+import { wait } from "obsidian-community-lib";
+import { drawTrail } from "./Views/TrailView";
+import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
+import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
+import { addFolderNotesToGraph } from "./AlternativeHierarchies/FolderNotes";
+import {
+  addHNsToGraph,
+  getHierarchyNoteItems,
+} from "./AlternativeHierarchies/HierarchyNotes/HierarchyNotes";
+import {
+  addJugglLinksToGraph,
+  getJugglLinks,
+} from "./AlternativeHierarchies/JugglLinks";
+import { addLinkNotesToGraph } from "./AlternativeHierarchies/LinkNotes";
+import { addRegexNotesToGraph } from "./AlternativeHierarchies/RegexNotes";
+import { addTagNotesToGraph } from "./AlternativeHierarchies/TagNotes";
+import { addTraverseNotesToGraph } from "./AlternativeHierarchies/TraverseNotes";
+import {
+  BC_ALTS,
+  BC_FOLDER_NOTE,
+  BC_LINK_NOTE,
+  BC_REGEX_NOTE,
+  BC_TAG_NOTE,
+  BC_TRAVERSE_NOTE,
+  dropHeaderOrAlias,
+  splitLinksRegex,
+} from "./constants";
+import {
+  addNodesIfNot,
+  buildObsGraph,
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "./graphUtils";
 import type {
   BCSettings,
   dvFrontmatterCache,
   dvLink,
-  JugglLink,
   RawValue,
 } from "./interfaces";
 import type BCPlugin from "./main";
-import { getBaseFromMDPath, getFields } from "./sharedFunctions";
+import {
+  getBaseFromMDPath,
+  getDVBasename,
+  iterateHiers,
+} from "./sharedFunctions";
 
 export function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
   const { app, db } = plugin;
@@ -125,98 +159,175 @@ export function parseFieldValue(
   }
 }
 
-// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
-// => {[note: string]: {type: string, linksInLine: string[]}[]}
-export async function getJugglLinks(
-  plugin: BCPlugin,
-  files: TFile[]
-): Promise<JugglLink[]> {
-  const { settings, app, db } = plugin;
-  db.start2G("getJugglLinks");
+export async function initGraphs(plugin: BCPlugin): Promise<MultiGraph> {
+  const mainG = new MultiGraph();
+  try {
+    const { settings, app, db } = plugin;
+    db.start2G("initGraphs");
+    const files = app.vault.getMarkdownFiles();
+    const dvQ = !!app.plugins.enabledPlugins.has("dataview");
 
-  const { userHiers } = settings;
+    let frontms: dvFrontmatterCache[] = dvQ
+      ? getDVMetadataCache(plugin, files)
+      : getObsMetadataCache(plugin, files);
 
-  // Add Juggl links
-  const typedLinksArr: JugglLink[] = await Promise.all(
-    files.map(async (file) => {
-      const jugglLink: JugglLink = { file, links: [] };
+    if (frontms.some((frontm) => frontm === undefined)) {
+      await wait(2000);
+      frontms = dvQ
+        ? getDVMetadataCache(plugin, files)
+        : getObsMetadataCache(plugin, files);
+    }
 
-      // Use Obs metadatacache to get the links in the current file
-      const links = app.metadataCache.getFileCache(file)?.links ?? [];
+    const { userHiers } = settings;
+    if (userHiers.length === 0) {
+      db.end2G();
+      new Notice("You do not have any Breadcrumbs hierarchies set up.");
+      return mainG;
+    }
 
-      const content = links.length ? await app.vault.cachedRead(file) : "";
-      const lines = content.split("\n");
+    const useCSV = settings.CSVPaths !== "";
+    const CSVRows = useCSV ? await getCSVRows(plugin) : [];
 
-      links.forEach((link) => {
-        const lineNo = link.position.start.line;
-        const line = lines[lineNo];
+    const eligableAlts: { [altField: string]: dvFrontmatterCache[] } = {};
+    BC_ALTS.forEach((alt) => (eligableAlts[alt] = []));
 
-        // Check the line for wikilinks, and return an array of link.innerText
-        const linksInLine =
-          line
-            .match(splitLinksRegex)
-            ?.map((link) => link.slice(2, link.length - 2))
-            ?.map((innerText) => innerText.split("|")[0]) ?? [];
+    function noticeIfBroken(frontm: dvFrontmatterCache): void {
+      const basename = getDVBasename(frontm.file);
+      // @ts-ignore
+      if (frontm[BC_FOLDER_NOTE] === true) {
+        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+        new Notice(msg);
+        warn(msg);
+      }
+      // @ts-ignore
+      if (frontm[BC_LINK_NOTE] === true) {
+        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
+        new Notice(msg);
+        warn(msg);
+      }
+      if (frontm["BC-folder-note-up"]) {
+        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note-up value. Instead of setting the fieldName here, it goes directly into 'BC-folder-note: fieldName'.`;
+        new Notice(msg);
+        warn(msg);
+      }
+    }
 
-        const typedLinkPrefix =
-          app.plugins.plugins.juggl?.settings.typedLinkPrefix ?? "-";
-
-        const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
-
-        const field = parsedLinks?.properties?.type ?? "";
-        if (field === "") return;
-        const { fieldDir } = getFieldInfo(userHiers, field) || {};
-        if (!fieldDir) return;
-
-        jugglLink.links.push({
-          dir: fieldDir,
-          field,
-          linksInLine,
-        });
+    db.start2G("addFrontmatterToGraph");
+    frontms.forEach((frontm) => {
+      BC_ALTS.forEach((alt) => {
+        if (frontm[alt]) {
+          eligableAlts[alt].push(frontm);
+        }
       });
-      return jugglLink;
-    })
-  );
 
-  const allFields = getFields(userHiers);
+      noticeIfBroken(frontm);
 
-  const filteredLinks = typedLinksArr.map((jugglLink) => {
-    // Filter out links whose type is not in allFields
-    jugglLink.links = jugglLink.links.filter((link) =>
-      allFields.includes(link.field)
-    );
-    return jugglLink;
-  });
-  db.end2G({ filteredLinks });
-  return filteredLinks;
-}
+      const basename = getDVBasename(frontm.file);
+      const sourceOrder = getSourceOrder(frontm);
 
-export function addJugglLinksToGraph(
-  settings: BCSettings,
-  jugglLinks: JugglLink[],
-  frontms: dvFrontmatterCache[],
-  mainG: MultiGraph
-) {
-  jugglLinks.forEach((jugglLink) => {
-    const { basename } = jugglLink.file;
-    jugglLink.links.forEach((link) => {
-      const { dir, field, linksInLine } = link;
-      if (dir === "") return;
-      const sourceOrder = getTargetOrder(frontms, basename);
-      linksInLine.forEach((linkInLine) => {
-        // Is this a bug? Why not `getSourceOrder`?
-        const targetsOrder = getTargetOrder(frontms, linkInLine);
+      iterateHiers(userHiers, (hier, dir, field) => {
+        const values = parseFieldValue(frontm[field]);
 
-        populateMain(
-          settings,
-          mainG,
-          basename,
-          field,
-          linkInLine,
-          sourceOrder,
-          targetsOrder
-        );
+        values.forEach((target) => {
+          if (
+            (target.startsWith("<%") && target.endsWith("%>")) ||
+            (target.startsWith("{{") && target.endsWith("}}"))
+          )
+            return;
+          const targetOrder = getTargetOrder(frontms, target);
+
+          populateMain(
+            settings,
+            mainG,
+            basename,
+            field,
+            target,
+            sourceOrder,
+            targetOrder
+          );
+        });
+        if (useCSV) addCSVCrumbs(mainG, CSVRows, dir, field);
       });
     });
-  });
+
+    db.end2G();
+
+    // SECTION  Juggl Links
+    const jugglLinks =
+      app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
+        ? await getJugglLinks(plugin, files)
+        : [];
+
+    if (jugglLinks.length)
+      addJugglLinksToGraph(settings, jugglLinks, frontms, mainG);
+
+    // !SECTION  Juggl Links
+
+    // SECTION  Hierarchy Notes
+    db.start2G("Hierarchy Notes");
+
+    if (settings.hierarchyNotes[0] !== "") {
+      for (const note of settings.hierarchyNotes) {
+        const file = app.metadataCache.getFirstLinkpathDest(note, "");
+        if (file) {
+          addHNsToGraph(
+            settings,
+            await getHierarchyNoteItems(plugin, file),
+            mainG
+          );
+        } else {
+          new Notice(
+            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
+          );
+        }
+      }
+    }
+
+    db.end2G();
+    // !SECTION  Hierarchy Notes
+    db.start1G("Alternative Hierarchies");
+
+    addFolderNotesToGraph(
+      settings,
+      eligableAlts[BC_FOLDER_NOTE],
+      frontms,
+      mainG
+    );
+    addTagNotesToGraph(plugin, eligableAlts[BC_TAG_NOTE], frontms, mainG);
+    addLinkNotesToGraph(plugin, eligableAlts[BC_LINK_NOTE], frontms, mainG);
+    addRegexNotesToGraph(plugin, eligableAlts[BC_REGEX_NOTE], frontms, mainG);
+    // plugin.addNamingSystemNotesToGraph(frontms, mainG);
+    addTraverseNotesToGraph(
+      plugin,
+      eligableAlts[BC_TRAVERSE_NOTE],
+      mainG,
+      buildObsGraph(app)
+    );
+    addDendronNotesToGraph(plugin, frontms, mainG);
+
+    db.end1G();
+
+    files.forEach((file) => {
+      const { basename } = file;
+      addNodesIfNot(mainG, [basename]);
+    });
+    db.end2G("graphs inited", { mainG });
+    return mainG;
+  } catch (err) {
+    error(err);
+    plugin.db.end2G();
+    return mainG;
+  }
+}
+
+export async function refreshIndex(plugin: BCPlugin) {
+  if (!plugin.activeLeafChange) plugin.registerActiveLeafChangeEvent();
+  if (!plugin.layoutChange) plugin.registerLayoutChangeEvent();
+
+  plugin.mainG = await initGraphs(plugin);
+  for (const { type } of plugin.VIEWS)
+    await plugin.getActiveTYPEView(type)?.draw();
+
+  if (plugin.settings.showBCs) await drawTrail(plugin);
+  if (plugin.settings.showRefreshNotice) new Notice("Index refreshed");
 }

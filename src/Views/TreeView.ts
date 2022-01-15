@@ -1,11 +1,12 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import Ducks from "./Components/Ducks.svelte";
-import { DUCK_ICON, DUCK_VIEW } from "./constants";
-import type BCPlugin from "./main";
+import { addFeatherIcon } from "obsidian-community-lib";
+import SideTree from "../Components/SideTree.svelte";
+import { TREE_VIEW } from "../constants";
+import type BCPlugin from "../../main";
 
-export default class DucksView extends ItemView {
+export default class TreeView extends ItemView {
   private plugin: BCPlugin;
-  private view: Ducks;
+  private view: SideTree;
 
   constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
     super(leaf);
@@ -14,21 +15,19 @@ export default class DucksView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    await this.plugin.saveSettings();
     this.app.workspace.onLayoutReady(async () => {
       await this.draw();
     });
   }
 
   getViewType() {
-    return DUCK_VIEW;
+    return TREE_VIEW;
   }
   getDisplayText() {
-    return "Breadcrumbs Ducks";
+    return "Breadcrumbs Down";
   }
 
-  // TODO Duck icon
-  icon = DUCK_ICON;
+  icon = addFeatherIcon("corner-right-down") as string;
 
   async onOpen(): Promise<void> {}
 
@@ -40,9 +39,9 @@ export default class DucksView extends ItemView {
   async draw(): Promise<void> {
     this.contentEl.empty();
 
-    this.view = new Ducks({
+    this.view = new SideTree({
       target: this.contentEl,
-      props: { plugin: this.plugin, app: this.app, ducksView: this },
+      props: { plugin: this.plugin, view: this },
     });
   }
 }

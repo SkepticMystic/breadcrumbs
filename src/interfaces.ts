@@ -1,15 +1,15 @@
 import type { MultiGraph } from "graphology";
 import type { LogLevel } from "loglevel";
 import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
-import type TreeView from "./TreeView";
+import type TreeView from "./Views/TreeView";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
   DIRECTIONS,
 } from "./constants";
-import type DucksView from "./DucksView";
-import type MatrixView from "./MatrixView";
-import type StatsView from "./StatsView";
+import type DucksView from "./Views/DucksView";
+import type MatrixView from "./Views/MatrixView";
+import type StatsView from "./Views/StatsView";
 import type { IJugglSettings } from "juggl-api";
 
 export type DebugLevel = keyof LogLevel;
@@ -35,6 +35,7 @@ export interface BCSettings {
   heatmapColour: string;
   hierarchyNotes: string[];
   HNUpField: string;
+  /** WARNING: The defaults for this feature are all `false`! */
   impliedRelations: {
     /** Has it's own toggle already */
     siblingIdentity: boolean;
@@ -313,4 +314,9 @@ export interface ParsedCodeblock extends IJugglSettings {
   content: string;
   from: string;
   implied: string;
+}
+
+export interface NodePath {
+  node: string;
+  path: string[];
 }

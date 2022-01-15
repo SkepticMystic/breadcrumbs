@@ -9,6 +9,7 @@ import type {
   BCSettings,
   Directions,
   dvFrontmatterCache,
+  NodePath,
   UserHier,
 } from "./interfaces";
 import { getBaseFromMDPath, getFields } from "./sharedFunctions";
@@ -181,10 +182,8 @@ export function getOppFields(userHiers: UserHier[], field: string) {
   return fieldHier[oppDir];
 }
 
-export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
-  const queue: { node: string; path: string[] }[] = [
-    { node: startNode, path: [] },
-  ];
+export function dfsAllPaths(g: MultiGraph, start: string): string[][] {
+  const queue: NodePath[] = [{ node: start, path: [] }];
   const visited: { [note: string]: number } = {};
   const allPaths: string[][] = [];
 
@@ -210,6 +209,36 @@ export function dfsAllPaths(g: MultiGraph, startNode: string): string[][] {
     if (!g.hasNode(node) || !g.outDegree(node)) allPaths.push(extPath);
   }
   return allPaths;
+}
+
+export function bfsAllPaths(g: MultiGraph, start: string): string[][] {
+  const pathsArr: string[][] = [];
+  const queue: NodePath[] = [{ node: start, path: [] }];
+
+  let i = 0;
+  while (queue.length !== 0 && i < 1000) {
+    i++;
+    const { node, path } = queue.shift();
+    const extPath = [node, ...path];
+
+    const succs = g.hasNode(node)
+      ? g.filterOutNeighbors(node, (n) => !path.includes(n))
+      : [];
+    for (const node of succs) {
+      queue.push({ node, path: extPath });
+    }
+
+    // terminal node
+    if (!g.hasNode(node) || succs.length === 0) {
+      pathsArr.push(extPath);
+    }
+  }
+  // Splice off the current note from the path
+  pathsArr.forEach((path) => {
+    if (path.length) path.splice(path.length - 1, 1);
+  });
+  info({ pathsArr });
+  return pathsArr;
 }
 
 export function removeCycles(g: Graph, startNode: string) {
