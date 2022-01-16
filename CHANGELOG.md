@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.38.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.37.0...2.38.0) (2022-01-16)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Hook closedG into m/l view (new relation types!). The new types are added as a class to the `li` ([4572689](https://github.com/SkepticMystic/breadcrumbs/commit/45726897060f93f8b0078af222719a7a50913ac4))
+
 ## [2.37.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.36.1...2.37.0) (2022-01-16)
 
 
