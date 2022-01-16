@@ -183,7 +183,10 @@ export function createJugglTrail(
 
     const sectDiv = document.createElement("div");
     sectDiv.addClass("cy-toolbar-section");
-    toolbarDiv.appendChild(sectDiv)
+    toolbarDiv.appendChild(sectDiv);
+
+    const amtChildren = target.children.length;
+
     let jugglUp: IJuggl = null;
     let jugglDown: IJuggl = null;
 
@@ -193,10 +196,10 @@ export function createJugglTrail(
             icon: "↑",
             onClick: () => {
                 if (jugglUp) {
-                    target.children[1].classList.remove("juggl-hide")
+                    target.children[amtChildren].classList.remove("juggl-hide")
                 }
                 if (jugglDown) {
-                    target.children[2].classList.add("juggl-hide");
+                    target.children[amtChildren + 1].classList.add("juggl-hide");
                 }
             },
             disabled: false,
@@ -209,9 +212,9 @@ export function createJugglTrail(
             icon: "↓",
             onClick: () => {
                 if (jugglDown) {
-                    target.children[2].classList.remove("juggl-hide");
+                    target.children[amtChildren + 1].classList.remove("juggl-hide");
                     if (jugglUp) {
-                        target.children[1].classList.add("juggl-hide");
+                        target.children[amtChildren].classList.add("juggl-hide");
                     }
                     return;
                 }
@@ -235,7 +238,7 @@ export function createJugglTrail(
                 jugglDown = createJuggl(plugin, target, nodes, args);
 
                 if (jugglUp) {
-                    target.children[1].addClass("juggl-hide")
+                    target.children[amtChildren].addClass("juggl-hide")
                 }
                 zoomToSource(jugglDown, source);
             },
