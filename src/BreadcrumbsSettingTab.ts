@@ -73,14 +73,14 @@ export class BCSettingTab extends PluginSettingTab {
     });
 
     const relationDetails = details("Relationships");
-    const mermtest = relationDetails.createDiv({ text: "test" });
+    // const mermtest = relationDetails.createDiv({ text: "test" });
 
-    MarkdownRenderer.renderMarkdown(
-      "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
-      containerEl,
-      "",
-      null
-    );
+    // MarkdownRenderer.renderMarkdown(
+    //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
+    //   mermtest,
+    //   "",
+    //   null
+    // );
 
     new Setting(relationDetails)
       .setName("Aunt/Uncle")
@@ -107,7 +107,7 @@ export class BCSettingTab extends PluginSettingTab {
           })
       );
     new Setting(relationDetails)
-      .setName("Siblings siblings")
+      .setName("Siblings' Siblings")
       .setDesc("Treat your siblings' siblings as your siblings")
       .addToggle((tg) =>
         tg

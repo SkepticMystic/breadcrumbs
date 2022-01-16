@@ -28440,8 +28440,13 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             props: { plugin },
         });
         const relationDetails = details("Relationships");
-        relationDetails.createDiv({ text: "test" });
-        obsidian.MarkdownRenderer.renderMarkdown("```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```", containerEl, "", null);
+        // const mermtest = relationDetails.createDiv({ text: "test" });
+        // MarkdownRenderer.renderMarkdown(
+        //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
+        //   mermtest,
+        //   "",
+        //   null
+        // );
         new obsidian.Setting(relationDetails)
             .setName("Aunt/Uncle")
             .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
@@ -28463,7 +28468,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             await refreshIndex(plugin);
         }));
         new obsidian.Setting(relationDetails)
-            .setName("Siblings siblings")
+            .setName("Siblings' Siblings")
             .setDesc("Treat your siblings' siblings as your siblings")
             .addToggle((tg) => tg
             .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
