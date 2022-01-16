@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.37.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.36.1...2.37.0) (2022-01-16)
+
+
+### Features
+
+* **DendronNote:** :sparkles: Add `BC-ignore-dendron: true` to not treat a dendron note as such (Fix [#277](https://github.com/SkepticMystic/breadcrumbs/issues/277)) ([f75653d](https://github.com/SkepticMystic/breadcrumbs/commit/f75653d8f7db264204fb5c96956222ba8acc10b0))
+
+
+### Bug Fixes
+
+* **FolderNote:** :bug: Point of to parentFolder, not previousFolder ([1b9b522](https://github.com/SkepticMystic/breadcrumbs/commit/1b9b522c26827aeb3ab4f308c8acd9719d790d3c))
+
 ### [2.36.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.36.0...2.36.1) (2022-01-15)
 
 
