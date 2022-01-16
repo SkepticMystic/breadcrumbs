@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import type Graph from "graphology";
 import type { App, TFile } from "obsidian";
 import { openOrSwitch } from "obsidian-community-lib";
-import { dfsFlatAdjList, VisModal } from "../VisModal";
+import { dfsFlatAdjList, VisModal } from "./VisModal";
 
 export const tidyTree = (
   graph: Graph,

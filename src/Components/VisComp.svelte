@@ -6,7 +6,7 @@
     getSubInDirs,
     removeUnlinkedNodes,
   } from "../graphUtils";
-  import type { VisModal } from "../VisModal";
+  import type { VisModal } from "../Visualisations/VisModal";
   import { arcDiagram } from "../Visualisations/ArcDiagram";
   import { circlePacking } from "../Visualisations/CirclePacking";
   import { edgeBundling } from "../Visualisations/EdgeBundling";

@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import type Graph from "graphology";
 import type { App, TFile } from "obsidian";
 import type { AdjListItem, d3Link, d3Node } from "../interfaces";
-import { bfsAdjList, dfsFlatAdjList, VisModal } from "../VisModal";
+import { bfsAdjList, dfsFlatAdjList, VisModal } from "./VisModal";
 import { openOrSwitch } from "obsidian-community-lib";
 
 export const circlePacking = (

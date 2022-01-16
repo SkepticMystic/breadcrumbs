@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import type Graph from "graphology";
 import { openOrSwitch } from "obsidian-community-lib";
 import type { d3Node } from "../interfaces";
-import { graphlibToD3, VisModal } from "../VisModal";
+import { graphlibToD3, VisModal } from "./VisModal";
 import type { App, TFile } from "obsidian";
 
 export const forceDirectedG = (

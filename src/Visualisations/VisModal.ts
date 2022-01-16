@@ -1,10 +1,10 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
 import { App, Modal, Notice } from "obsidian";
-import type { AdjListItem, d3Graph } from "./interfaces";
-import type BCPlugin from "./main";
-import { getInNeighbours, getOutNeighbours, getSinks } from "./graphUtils";
-import VisComp from "./Components/VisComp.svelte";
+import type { AdjListItem, d3Graph } from "../interfaces";
+import type BCPlugin from "../main";
+import { getInNeighbours, getOutNeighbours, getSinks } from "../graphUtils";
+import VisComp from "../Components/VisComp.svelte";
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };

@@ -433,10 +433,7 @@ export function buildClosedG(plugin: BCPlugin) {
   let closedG = getReflexiveClosure(mainG, userHiers);
 
   if (sameParentIsSibling) addSiblingsFromSameParent(closedG, settings);
-  if (parentsSiblingsIsParents) {
-    console.log("adding uncles");
-    addAuntsUncles(closedG);
-  }
+  if (parentsSiblingsIsParents) addAuntsUncles(closedG);
   if (cousinsIsSibling) addCousins(closedG);
   if (siblingsSiblingIsSibling) addStructuralEquivalenceSiblings(closedG);
 

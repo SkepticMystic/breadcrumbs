@@ -26207,10 +26207,8 @@ function buildClosedG(plugin) {
     let closedG = getReflexiveClosure(mainG, userHiers);
     if (sameParentIsSibling)
         addSiblingsFromSameParent(closedG, settings);
-    if (parentsSiblingsIsParents) {
-        console.log("adding uncles");
+    if (parentsSiblingsIsParents)
         addAuntsUncles(closedG);
-    }
     if (cousinsIsSibling)
         addCousins(closedG);
     if (siblingsSiblingIsSibling)

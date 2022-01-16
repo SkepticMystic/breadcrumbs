@@ -35,7 +35,7 @@ import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
-import { VisModal } from "./VisModal";
+import { VisModal } from "./Visualisations/VisModal";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
