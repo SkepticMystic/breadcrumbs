@@ -2,7 +2,6 @@ import type { MultiGraph } from "graphology";
 import { error, info } from "loglevel";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import type { BCSettings } from "../interfaces";
-import { createJugglTrail } from "../Codeblocks";
 import NextPrev from "../Components/NextPrev.svelte";
 import TrailGrid from "../Components/TrailGrid.svelte";
 import TrailPath from "../Components/TrailPath.svelte";
@@ -16,6 +15,7 @@ import {
 } from "../graphUtils";
 import type BCPlugin from "../main";
 import { getFields, getRealnImplied } from "../sharedFunctions";
+import {createJugglTrail} from "../Visualisations/Juggl";
 
 function getLimitedTrailSub(plugin: BCPlugin) {
   const { settings, mainG } = plugin;

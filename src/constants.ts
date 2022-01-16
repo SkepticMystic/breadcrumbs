@@ -91,7 +91,7 @@ export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign(
   JUGGL_CB_DEFAULTS,
   {
     animateLayout: true,
-    autoZoom: true,
+    autoZoom: false,
     fdgdLayout: "d3-force",
     height: "400px",
     readContent: false,
