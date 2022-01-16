@@ -33,7 +33,7 @@ import { getFields } from "./sharedFunctions";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
-import { drawTrail } from "./Views/TrailView";
+import {buildCMPlugin, drawTrail, UPDATE_LP_VIEW, updateLPView} from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { VisModal } from "./VisModal";
 
@@ -240,7 +240,7 @@ export default class BCPlugin extends Plugin {
       callback: async () => {
         settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
         await this.saveSettings();
-        await drawTrail(this);
+        updateLPView();
       },
     });
 
@@ -292,6 +292,9 @@ export default class BCPlugin extends Plugin {
       "Breadcrumbs Visualisation",
       () => new VisModal(this.app, this).open()
     );
+
+    this.registerEditorExtension(buildCMPlugin(this));
+    console.log("Registered editor extension");
 
     this.registerMarkdownCodeBlockProcessor(
       "breadcrumbs",
