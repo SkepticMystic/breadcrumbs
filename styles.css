@@ -103,3 +103,7 @@
   display: flex;
   flex-direction: column;
 }
+
+.juggl-hide {
+  display: none;
+}

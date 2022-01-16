@@ -1,23 +1,6 @@
-import type { EdgeDefinition, NodeSingular } from "cytoscape";
-import type { MultiGraph } from "graphology";
-import {
-  DataStoreEvents,
-  getPlugin,
-  ICoreDataStore,
-  IJuggl,
-  IJugglPlugin,
-  IJugglSettings,
-  IJugglStores,
-  nodeDangling,
-  nodeFromFile,
-  VizId,
-} from "juggl-api";
 import { info } from "loglevel";
 import {
-  Component,
-  Events,
   MarkdownPostProcessorContext,
-  MetadataCache,
   Notice,
   TFile,
 } from "obsidian";
@@ -26,7 +9,6 @@ import {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
   DIRECTIONS,
-  JUGGL_CB_DEFAULTS,
 } from "./constants";
 import { createIndex } from "./Commands/CreateIndex";
 import {

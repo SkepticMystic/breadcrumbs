@@ -14,6 +14,9 @@ import type {EdgeDefinition, NodeSingular} from "cytoscape";
 import type BCPlugin from "../main";
 import {JUGGL_CB_DEFAULTS} from "../constants";
 const STORE_ID = "core";
+import JugglButton from "../Components/JugglButton.svelte";
+import {dfsAllPaths, getReflexiveClosure, getSubInDirs} from "../graphUtils";
+import {createIndex} from "../Commands/CreateIndex";
 
 
 class BCStoreEvents extends Events implements DataStoreEvents {}
@@ -146,6 +149,27 @@ export function createJuggl(
     }
 }
 
+function zoomToSource(juggl: IJuggl, source: string) {
+    if (!juggl) {
+        return;
+    }
+    juggl.on("vizReady", (viz) => {
+        // After layout is done, center on source node
+        viz.one('layoutstop', e => {
+            const viz = e.cy;
+            const node = viz.$id(VizId.toId(source + ".md", STORE_ID));
+            viz.animate({
+                center: {
+                    eles: node,
+                },
+                duration: 250,
+                queue: false,
+                zoom: 1.7
+            });
+        })
+    });
+}
+
 export function createJugglTrail(
     plugin: BCPlugin,
     target: HTMLElement,
@@ -153,27 +177,94 @@ export function createJugglTrail(
     source: string,
     args: IJugglSettings
 ) {
+    const toolbarDiv = document.createElement('div');
+    toolbarDiv.addClass('cy-toolbar');
+    target.appendChild(toolbarDiv);
+
+    const sectDiv = document.createElement("div");
+    sectDiv.addClass("cy-toolbar-section");
+    toolbarDiv.appendChild(sectDiv)
+    let jugglUp: IJuggl = null;
+    let jugglDown: IJuggl = null;
+
+    new JugglButton({
+        target: sectDiv,
+        props: {
+            icon: "↑",
+            onClick: () => {
+                if (jugglUp) {
+                    target.children[1].classList.remove("juggl-hide")
+                }
+                if (jugglDown) {
+                    target.children[2].classList.add("juggl-hide");
+                }
+            },
+            disabled: false,
+            title: "Show up graph"
+        }
+    });
+    new JugglButton({
+        target: sectDiv,
+        props: {
+            icon: "↓",
+            onClick: () => {
+                if (jugglDown) {
+                    target.children[2].classList.remove("juggl-hide");
+                    if (jugglUp) {
+                        target.children[1].classList.add("juggl-hide");
+                    }
+                    return;
+                }
+                const sub = getSubInDirs(plugin.mainG, 'down', 'up')
+                const closed = getReflexiveClosure(sub, plugin.settings.userHiers);
+                const subClosed = getSubInDirs(closed, 'down');
+
+                const allPaths = dfsAllPaths(subClosed, source);
+                const index = createIndex(allPaths, false);
+                const lines = index
+                    .split("\n")
+                    .map((line) => {
+                        const pair = line.split("- ");
+                        console.log({pair})
+                        return pair[1];
+                    })
+                    .filter((pair) => pair && pair !== "");
+                let nodesS = new Set(lines);
+                nodesS.add(source);
+                const nodes = Array.from(nodesS).map(s => s + ".md");
+                console.log({nodes});
+
+                jugglDown = createJuggl(plugin, target, nodes, args);
+
+                if (jugglUp) {
+                    target.children[1].addClass("juggl-hide")
+                }
+                zoomToSource(jugglDown, source);
+            },
+            disabled: false,
+            title: "Show down graph"
+        }
+    });
+    // new JugglButton({
+    //     target: sectDiv,
+    //     props: {
+    //         icon: "⛶",
+    //         onClick: () => {
+    //             console.log("here")
+    //             target.children[1].addClass("juggl-full-screen")
+    //             target.children[1].setAttr("style", "");
+    //         },
+    //         disabled: false,
+    //         title: "Full height"
+    //     }
+    // });
     let nodes = Array.from(
         new Set(paths.reduce((prev, curr) => prev.concat(curr), []))
     );
     nodes.push(source);
     nodes = nodes.map((s) => s + ".md");
-    const juggl = createJuggl(plugin, target, nodes, args);
-    if (juggl) {
-        juggl.on("vizReady", (viz) => {
-            // After layout is done, center on source node
-            viz.one('layoutstop', e => {
-                const viz = e.cy;
-                const node = viz.$id(VizId.toId(source + ".md", STORE_ID));
-                viz.animate({
-                    center: {
-                        eles: node,
-                    },
-                    duration: 250,
-                    queue: false,
-                    zoom: 2
-                });
-            })
-        });
-    }
+
+    jugglUp = createJuggl(plugin, target, nodes, args);
+
+    zoomToSource(jugglUp, source);
 }
