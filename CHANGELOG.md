@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.39.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.38.1...2.39.0) (2022-01-16)
+
+
+### Features
+
+* Juggl view into source node after layout is finished ([5059693](https://github.com/SkepticMystic/breadcrumbs/commit/50596939636405ef93a5c6977af9232f8a0daafd))
+* Switch between up and down graph in juggl view ([748f433](https://github.com/SkepticMystic/breadcrumbs/commit/748f4336a3cb4d8867d93c7987f6173e6a3cf71f))
+
+
+### Bug Fixes
+
+* Down viz doesn't work if other trail views are active ([fe9505a](https://github.com/SkepticMystic/breadcrumbs/commit/fe9505ae540256d2728307386e0ec6fabf975248))
+* Juggl codeblocks ([9ff3c53](https://github.com/SkepticMystic/breadcrumbs/commit/9ff3c530daa8b711614efdb1bbfaddd7712b0619))
+* Switching to preview mode doesn't update trail ([3245a55](https://github.com/SkepticMystic/breadcrumbs/commit/3245a551272fff353de0f64e8583dd29b3dd3bec))
+* Syntax error oop ([afb0df6](https://github.com/SkepticMystic/breadcrumbs/commit/afb0df6294188a42a80a8c9d18b8a48c402d21a6))
+* Trail view in live preview doesn't scroll with the content ([52d2218](https://github.com/SkepticMystic/breadcrumbs/commit/52d22182abf2204222ee63443a36b25c48df8848))
+
 ### [2.38.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.38.0...2.38.1) (2022-01-16)
 
 ## [2.38.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.37.0...2.38.0) (2022-01-16)
