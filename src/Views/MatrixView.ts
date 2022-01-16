@@ -9,7 +9,7 @@ import {
   MATRIX_VIEW,
   TRAIL_ICON,
 } from "../constants";
-import { getOppDir, getReflexiveClosure, getSubInDirs } from "../graphUtils";
+import { getOppDir, getSubInDirs } from "../graphUtils";
 import type {
   Directions,
   internalLinkObj,
@@ -133,14 +133,14 @@ export default class MatrixView extends ItemView {
       } = blankRealNImplied();
 
       const resultsFilter = (
-        real: SquareItem,
+        item: SquareItem,
         dir: Directions,
         oppDir: Directions,
         arrow: string
       ) =>
-        hier[dir].includes(real.field) ||
-        (real.field.includes(`<${arrow}>`) &&
-          hier[oppDir].includes(real.field.split(" <")[0]));
+        hier[dir].includes(item.field) ||
+        (item.field.includes(`<${arrow}>`) &&
+          hier[oppDir].includes(item.field.split(" <")[0]));
 
       for (const dir in realsnImplieds) {
         const oppDir = getOppDir(dir as Directions);

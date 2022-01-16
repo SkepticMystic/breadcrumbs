@@ -6,7 +6,6 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
-import { getReflexiveClosure } from "./graphUtils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
 import { BCSettingTab } from "./BreadcrumbsSettingTab";

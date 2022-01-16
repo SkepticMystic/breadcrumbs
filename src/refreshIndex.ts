@@ -365,7 +365,6 @@ function addAuntsUncles(g: MultiGraph) {
       g.forEachOutEdge(parentNode, (k, a, s, uncle) => {
         if (a.dir !== "same") return;
 
-        console.log("aunt", currN, uncle);
         addEdgeIfNot(g, currN, uncle, {
           dir: "up",
           // Use the starting nodes parent field

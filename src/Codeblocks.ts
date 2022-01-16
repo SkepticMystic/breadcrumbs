@@ -96,7 +96,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
     const allPaths = dfsAllPaths(subClosed, basename);
     const index = createIndex(allPaths, false);
     info({ allPaths, index });
-    console.log({ allPaths, index });
+
     const lines = index
       .split("\n")
       .map((line) => {
@@ -342,7 +342,9 @@ class BCStore extends Component implements ICoreDataStore {
       console.log("returning empty cache", nodeId);
       return Promise.resolve(nodeDangling(nodeId.id));
     }
-    return Promise.resolve(nodeFromFile(file, this.plugin, view.settings, nodeId.toId()));
+    return Promise.resolve(
+      nodeFromFile(file, this.plugin, view.settings, nodeId.toId())
+    );
   }
 }
 
