@@ -58,7 +58,7 @@ export default class BCPlugin extends Plugin {
         } else {
           const activeView = this.getActiveTYPEView(MATRIX_VIEW);
           if (activeView) await activeView.draw();
-          if (this.settings.showBCs) await drawTrail(this);
+          // if (this.settings.showBCs) await drawTrail(this);
         }
       }
     );
@@ -67,7 +67,7 @@ export default class BCPlugin extends Plugin {
 
   registerLayoutChangeEvent() {
     this.layoutChange = this.app.workspace.on("layout-change", async () => {
-      // if (this.settings.showBCs) await drawTrail(this);
+      if (this.settings.showBCs) await drawTrail(this);
     });
     this.registerEvent(this.layoutChange);
   }
