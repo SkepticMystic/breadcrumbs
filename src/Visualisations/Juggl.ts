@@ -106,7 +106,7 @@ class BCStore extends Component implements ICoreDataStore {
     }
 }
 
-function createJuggl(
+export function createJuggl(
     plugin: BCPlugin,
     target: HTMLElement,
     initialNodes: string[],

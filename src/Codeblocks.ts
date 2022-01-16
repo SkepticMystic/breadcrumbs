@@ -39,6 +39,7 @@ import {
 import type { CodeblockFields, ParsedCodeblock } from "./interfaces";
 import type BCPlugin from "./main";
 import { dropFolder, getFields, splitAndTrim } from "./sharedFunctions";
+import {createJuggl} from "./Visualisations/Juggl";
 
 export function getCodeblockCB(plugin: BCPlugin) {
   const { settings } = plugin;
