@@ -174,6 +174,6 @@ export function createJugglTrail(
                     zoom: 2
                 });
             })
-        }
+        });
     }
 }
