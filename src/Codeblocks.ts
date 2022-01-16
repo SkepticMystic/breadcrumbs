@@ -1,8 +1,8 @@
 import { info } from "loglevel";
-import { MarkdownPostProcessorContext, Notice, TFile } from "obsidian";
+import { MarkdownPostProcessorContext, Notice } from "obsidian";
+import { createIndex } from "./Commands/CreateIndex";
 import CBTree from "./Components/CBTree.svelte";
 import { CODEBLOCK_FIELDS, CODEBLOCK_TYPES, DIRECTIONS } from "./constants";
-import { createIndex } from "./Commands/CreateIndex";
 import {
   dfsAllPaths,
   getFieldInfo,
