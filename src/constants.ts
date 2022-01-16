@@ -63,6 +63,7 @@ export const CODEBLOCK_FIELDS = [
 ];
 
 export const JUGGL_CB_DEFAULTS: IJugglSettings = {
+  animateLayout: true,
   autoAddNodes: false,
   autoExpand: false,
   autoZoom: false,
@@ -89,6 +90,7 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
 export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign(
   JUGGL_CB_DEFAULTS,
   {
+    animateLayout: true,
     autoZoom: true,
     fdgdLayout: "d3-force",
     height: "400px",

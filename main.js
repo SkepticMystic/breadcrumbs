@@ -4036,6 +4036,7 @@ const CODEBLOCK_FIELDS = [
     "implied",
 ];
 const JUGGL_CB_DEFAULTS = {
+    animateLayout: true,
     autoAddNodes: false,
     autoExpand: false,
     autoZoom: false,
@@ -4059,6 +4060,7 @@ const JUGGL_CB_DEFAULTS = {
     zoomSpeed: 1,
 };
 const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
+    animateLayout: true,
     autoZoom: true,
     fdgdLayout: "d3-force",
     height: "400px",
