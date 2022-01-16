@@ -54838,6 +54838,7 @@ class BCPlugin extends obsidian.Plugin {
             });
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
+        //@ts-ignore
         this.registerEditorExtension(buildCMPlugin(this));
         console.log("Registered editor extension");
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", getCodeblockCB(this));
