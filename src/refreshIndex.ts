@@ -2,7 +2,6 @@ import { MultiGraph } from "graphology";
 import { debug, error, warn } from "loglevel";
 import { Notice, Pos, TFile } from "obsidian";
 import { wait } from "obsidian-community-lib";
-import { drawTrail } from "./Views/TrailView";
 import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
 import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
 import { addFolderNotesToGraph } from "./AlternativeHierarchies/FolderNotes";
@@ -21,6 +20,10 @@ import { addTraverseNotesToGraph } from "./AlternativeHierarchies/TraverseNotes"
 import {
   BC_ALTS,
   BC_FOLDER_NOTE,
+  BC_I_AUNT,
+  BC_I_COUSIN,
+  BC_I_SIBLING_1,
+  BC_I_SIBLING_2,
   BC_LINK_NOTE,
   BC_REGEX_NOTE,
   BC_TAG_NOTE,
@@ -32,6 +35,7 @@ import {
   addEdgeIfNot,
   addNodesIfNot,
   buildObsGraph,
+  getFieldInfo,
   getReflexiveClosure,
   getSourceOrder,
   getTargetOrder,
@@ -45,10 +49,12 @@ import type {
 } from "./interfaces";
 import type BCPlugin from "./main";
 import {
+  fallbackField,
   getBaseFromMDPath,
   getDVBasename,
   iterateHiers,
 } from "./sharedFunctions";
+import { drawTrail } from "./Views/TrailView";
 
 export function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
   const { app, db } = plugin;
@@ -317,31 +323,124 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
   }
 }
 
-function addSiblingsFromSameParent(g: MultiGraph) {
-  g.forEachNode((n, a) => {
-    g.forEachOutEdge(n, (k, a, s, t) => {
-      if (a.dir !== "up") return;
+function addSiblingsFromSameParent(g: MultiGraph, settings: BCSettings) {
+  const { userHiers, treatCurrNodeAsImpliedSibling } = settings;
+  g.forEachNode((currN, a) => {
+    // Find parents of current node
+    g.forEachOutEdge(currN, (k, currNAttr, s, parentNode) => {
+      if (currNAttr.dir !== "up") return;
 
-      g.forEachOutEdge(t, (k, a, s, t) => {
-        if (a.dir !== "down" || s === n) return;
+      const { fieldDir, fieldHier } = getFieldInfo(userHiers, currNAttr.field);
+      const field =
+        fieldHier.same[0] ?? fallbackField(currNAttr.field, fieldDir);
 
-        addEdgeIfNot(g, n, t, {
+      // Find the children of those parents
+      g.forEachOutEdge(parentNode, (k, a, s, impliedSibling) => {
+        // Skip the current node if the settings say to
+        if (
+          a.dir !== "down" ||
+          (!treatCurrNodeAsImpliedSibling && impliedSibling === currN)
+        )
+          return;
+
+        addEdgeIfNot(g, currN, impliedSibling, {
           dir: "same",
-          // field: ...
+          field,
+          implied: BC_I_SIBLING_1,
         });
       });
     });
   });
 }
+
+// Transitive closure of siblings
 function addSiblingsFromSiblings(g: MultiGraph) {}
+
+function addAuntsUncles(g: MultiGraph) {
+  g.forEachNode((currN, a) => {
+    // Find parents of current node
+    g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+      if (currEAttr.dir !== "up") return;
+      // Find the siblings of those parents
+      g.forEachOutEdge(parentNode, (k, a, s, uncle) => {
+        if (a.dir !== "same") return;
+
+        console.log("aunt", currN, uncle);
+        addEdgeIfNot(g, currN, uncle, {
+          dir: "up",
+          // Use the starting nodes parent field
+          field: currEAttr.field,
+          implied: BC_I_AUNT,
+        });
+      });
+    });
+  });
+}
+function addCousins(g: MultiGraph) {
+  g.forEachNode((currN, a) => {
+    // Find parents of current node
+    g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+      if (currEAttr.dir !== "up") return;
+      // Find the siblings of those parents
+      g.forEachOutEdge(parentNode, (k, parentSiblingAttr, s, uncle) => {
+        if (parentSiblingAttr.dir !== "same") return;
+
+        g.forEachOutEdge(uncle, (k, a, s, cousin) => {
+          if (a.dir !== "down") return;
+
+          addEdgeIfNot(g, currN, cousin, {
+            dir: "same",
+            field: parentSiblingAttr.field,
+            implied: BC_I_COUSIN,
+          });
+        });
+      });
+    });
+  });
+}
+
+// Sis --> Me <-- Bro
+// Implies: Sis <--> Bro
+function addStructuralEquivalenceSiblings(g: MultiGraph) {
+  g.forEachNode((currN, a) => {
+    g.forEachInEdge(currN, (k, aSis, sis, _) => {
+      if (aSis.dir !== "same") return;
+      g.forEachInEdge(currN, (k, aBro, bro, _) => {
+        if (aBro.dir !== "same" || sis === bro) return;
+        if (aBro.field === aSis.field) {
+          addEdgeIfNot(g, sis, bro, {
+            dir: "same",
+            field: aBro.field,
+            implied: BC_I_SIBLING_2,
+          });
+        }
+      });
+    });
+  });
+}
 
 export function buildClosedG(plugin: BCPlugin) {
   const { mainG, settings } = plugin;
-  const { userHiers } = settings;
+  const {
+    userHiers,
+    impliedRelations: {
+      sameParentIsSibling,
+      parentsSiblingsIsParents,
+      cousinsIsSibling,
+      siblingsSiblingIsSibling,
+    },
+  } = settings;
+  let closedG = getReflexiveClosure(mainG, userHiers);
 
-  const reflexClosed = getReflexiveClosure(mainG, userHiers);
+  if (sameParentIsSibling) addSiblingsFromSameParent(closedG, settings);
+  if (parentsSiblingsIsParents) {
+    console.log("adding uncles");
+    addAuntsUncles(closedG);
+  }
+  if (cousinsIsSibling) addCousins(closedG);
+  if (siblingsSiblingIsSibling) addStructuralEquivalenceSiblings(closedG);
 
-  return reflexClosed;
+  return closedG;
 }
 
 export async function refreshIndex(plugin: BCPlugin) {

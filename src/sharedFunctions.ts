@@ -252,6 +252,8 @@ export const linkClass = (app: App, to: string, realQ = true) =>
     realQ ? "" : "BC-Implied"
   }`;
 
+export const fallbackField = (field: string, dir: Directions) =>
+  `${field} <${ARROW_DIRECTIONS[dir]}>`;
 export const fallbackOppField = (field: string, dir: Directions) =>
   `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
 

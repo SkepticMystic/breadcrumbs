@@ -4064,7 +4064,7 @@ const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
     height: "400px",
     readContent: false,
     toolbar: false,
-    navigator: false
+    navigator: false,
 });
 CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
 const blankUserHier = () => {
@@ -4079,6 +4079,12 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
+const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2] = [
+    "Aunt/Uncle",
+    "Cousin",
+    "Sibling 1",
+    "Sibling 2",
+];
 const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-recursive",
@@ -4413,6 +4419,7 @@ function swapItems(i, j, arr) {
     return arr;
 }
 const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+const fallbackField = (field, dir) => `${field} <${ARROW_DIRECTIONS[dir]}>`;
 const fallbackOppField = (field, dir) => `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
 /** Remember to filter by hierarchy in MatrixView! */
 function getRealnImplied(plugin, currNode, dir = null) {
@@ -5805,6 +5812,205 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
     }
 }
 
+async function getCSVRows(plugin) {
+    const { CSVPaths } = plugin.settings;
+    const CSVRows = [];
+    if (CSVPaths === "")
+        return CSVRows;
+    const fullPath = obsidian.normalizePath(CSVPaths);
+    const content = await plugin.app.vault.adapter.read(fullPath);
+    const lines = content.split("\n");
+    const headers = lines[0].split(",").map((head) => head.trim());
+    lines.slice(1).forEach((row) => {
+        const rowObj = {};
+        row
+            .split(",")
+            .map((head) => dropWikilinks(head.trim()))
+            .forEach((item, i) => {
+            rowObj[headers[i]] = item;
+        });
+        loglevel.debug({ rowObj });
+        CSVRows.push(rowObj);
+    });
+    return CSVRows;
+}
+function addCSVCrumbs(g, CSVRows, dir, field) {
+    CSVRows.forEach((row) => {
+        addNodesIfNot(g, [row.file]);
+        if (field === "" || !row[field])
+            return;
+        addNodesIfNot(g, [row[field]]);
+        addEdgeIfNot(g, row.file, row[field], { dir, field });
+    });
+}
+
+function addDendronNotesToGraph(plugin, frontms, mainG) {
+    const { settings } = plugin;
+    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = settings;
+    if (!addDendronNotes)
+        return;
+    for (const frontm of frontms) {
+        // Doesn't currently work yet
+        if (frontm[BC_IGNORE_DENDRON])
+            continue;
+        const basename = getDVBasename(frontm.file);
+        const splits = basename.split(dendronNoteDelimiter);
+        if (splits.length <= 1)
+            continue;
+        const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
+        if (!nextSlice)
+            continue;
+        const nextSliceFile = frontms.find((fm) => getDVBasename(fm.file) === nextSlice);
+        if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON])
+            continue;
+        const sourceOrder = getSourceOrder(frontm);
+        const targetOrder = getTargetOrder(frontms, nextSlice);
+        populateMain(settings, mainG, basename, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
+    }
+}
+
+const getSubsFromFolder = (folder) => {
+    const otherNotes = [], subFolders = [];
+    folder.children.forEach((tAbstract) => {
+        if (tAbstract instanceof obsidian.TFile) {
+            otherNotes.push(tAbstract);
+        }
+        else
+            subFolders.push(tAbstract);
+    });
+    return { otherNotes, subFolders };
+};
+function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
+    const { settings, app } = plugin;
+    const { userHiers } = settings;
+    const fields = getFields(userHiers);
+    folderNotes.forEach((altFile) => {
+        const { file } = altFile;
+        const basename = getDVBasename(file);
+        const topFolderName = getFolderName(file);
+        const topFolder = app.vault.getAbstractFileByPath(topFolderName);
+        const targets = frontms
+            .map((ff) => ff.file)
+            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
+            .map(getDVBasename);
+        const field = altFile[BC_FOLDER_NOTE];
+        if (typeof field !== "string" || !fields.includes(field))
+            return;
+        targets.forEach((target) => {
+            // This is getting the order of the folder note, not the source pointing up to it
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, basename);
+            populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder, true);
+        });
+        if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
+            const { subFolders } = getSubsFromFolder(topFolder);
+            const folderQueue = [...subFolders];
+            console.log({ startingQueue: folderQueue.slice() });
+            let currFolder = folderQueue.shift();
+            while (currFolder !== undefined) {
+                const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
+                const folderNote = currFolder.name;
+                const targets = otherNotes.map(getDVBasename);
+                // if (!isInVault(app, folderNote, folderNote)) continue;
+                const sourceOrder = 9999; // getSourceOrder(altFile);
+                const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                const parentFolderNote = currFolder.parent.name;
+                populateMain(settings, mainG, parentFolderNote, field, folderNote, sourceOrder, targetOrder, true);
+                targets.forEach((target) => {
+                    if (target === folderNote)
+                        return;
+                    console.log("adding", folderNote, "→", target);
+                    const sourceOrder = 9999; // getSourceOrder(altFile);
+                    const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                    populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
+                });
+                folderQueue.push(...subFolders);
+                currFolder = folderQueue.shift();
+            }
+        }
+        // First add otherNotes to graph
+        // Then iterate subFolders doing the same
+    });
+}
+
+async function getHierarchyNoteItems(plugin, file) {
+    const { userHiers } = plugin.settings;
+    const { listItems } = plugin.app.metadataCache.getFileCache(file);
+    if (!listItems)
+        return [];
+    const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
+    const hierarchyNoteItems = [];
+    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
+    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
+    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+    const problemFields = [];
+    const upFields = getFields(userHiers, "up");
+    for (const item of listItems) {
+        const currItem = lines[item.position.start.line];
+        const afterBulletCurr = afterBulletReg.exec(currItem)[1];
+        const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
+        let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
+        // Ensure fieldName is one of the existing up fields. `null` if not
+        if (field !== null && !upFields.includes(field)) {
+            problemFields.push(field);
+            field = null;
+        }
+        const { parent } = item;
+        if (parent >= 0) {
+            const parentNote = lines[parent];
+            const afterBulletParent = afterBulletReg.exec(parentNote)[1];
+            const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
+            hierarchyNoteItems.push({
+                note,
+                parent: dropWikiParent,
+                field,
+            });
+        }
+        else {
+            hierarchyNoteItems.push({
+                note,
+                parent: null,
+                field,
+            });
+        }
+    }
+    if (problemFields.length > 0) {
+        const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
+        new obsidian.Notice(msg);
+        console.log(msg, { problemFields });
+    }
+    return hierarchyNoteItems;
+}
+function addHNsToGraph(settings, hnArr, mainG) {
+    const { HNUpField, userHiers } = settings;
+    const upFields = getFields(userHiers, "up");
+    hnArr.forEach((hnItem, i) => {
+        var _a, _b;
+        const { note, field, parent } = hnItem;
+        const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
+        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
+        if (parent === null) {
+            const s = note;
+            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
+            addNodesIfNot(mainG, [s, t]);
+            addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+        }
+        else {
+            addNodesIfNot(mainG, [note, parent]);
+            addEdgeIfNot(mainG, note, parent, {
+                dir: "up",
+                field: upField,
+            });
+            // I don't think this needs to be done if the reverse is done above
+            addNodesIfNot(mainG, [parent, note]);
+            addEdgeIfNot(mainG, parent, note, {
+                dir: "down",
+                field: downField,
+            });
+        }
+    });
+}
+
 const CAT_DANGLING = 'dangling';
 const CORE_STORE_ID = 'core';
 class VizId {
@@ -6017,6 +6223,186 @@ const getPlugin = function (app) {
     }
     return null;
 };
+
+// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
+// => {[note: string]: {type: string, linksInLine: string[]}[]}
+async function getJugglLinks(plugin, files) {
+    const { settings, app, db } = plugin;
+    db.start2G("getJugglLinks");
+    const { userHiers } = settings;
+    // Add Juggl links
+    const typedLinksArr = await Promise.all(files.map(async (file) => {
+        var _a, _b;
+        const jugglLink = { file, links: [] };
+        // Use Obs metadatacache to get the links in the current file
+        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
+        const content = links.length ? await app.vault.cachedRead(file) : "";
+        const lines = content.split("\n");
+        links.forEach((link) => {
+            var _a, _b, _c, _d, _e, _f, _g;
+            const lineNo = link.position.start.line;
+            const line = lines[lineNo];
+            // Check the line for wikilinks, and return an array of link.innerText
+            const linksInLine = (_c = (_b = (_a = line
+                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
+            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
+            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
+            const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
+            if (field === "")
+                return;
+            const { fieldDir } = getFieldInfo(userHiers, field) || {};
+            if (!fieldDir)
+                return;
+            jugglLink.links.push({
+                dir: fieldDir,
+                field,
+                linksInLine,
+            });
+        });
+        return jugglLink;
+    }));
+    const allFields = getFields(userHiers);
+    const filteredLinks = typedLinksArr.map((jugglLink) => {
+        // Filter out links whose type is not in allFields
+        jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.field));
+        return jugglLink;
+    });
+    db.end2G({ filteredLinks });
+    return filteredLinks;
+}
+function addJugglLinksToGraph(settings, jugglLinks, frontms, mainG) {
+    jugglLinks.forEach((jugglLink) => {
+        const { basename } = jugglLink.file;
+        jugglLink.links.forEach((link) => {
+            const { dir, field, linksInLine } = link;
+            if (dir === "")
+                return;
+            const sourceOrder = getTargetOrder(frontms, basename);
+            linksInLine.forEach((linkInLine) => {
+                // Is this a bug? Why not `getSourceOrder`?
+                const targetsOrder = getTargetOrder(frontms, linkInLine);
+                populateMain(settings, mainG, basename, field, linkInLine, sourceOrder, targetsOrder);
+            });
+        });
+    });
+}
+
+function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { app, settings } = plugin;
+    const { userHiers } = settings;
+    eligableAlts.forEach((altFile) => {
+        var _a, _b, _c, _d;
+        const linkNoteFile = altFile.file;
+        const linkNoteBasename = getDVBasename(linkNoteFile);
+        let field = altFile[BC_LINK_NOTE];
+        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+            return;
+        const links = (_b = (_a = app.metadataCache
+            .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
+        const embeds = (_d = (_c = app.metadataCache
+            .getFileCache(linkNoteFile)) === null || _c === void 0 ? void 0 : _c.embeds) === null || _d === void 0 ? void 0 : _d.map((l) => l.link.match(/[^#|]+/)[0]);
+        const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
+        for (const target of targets) {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, linkNoteBasename);
+            populateMain(settings, mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
+        }
+    });
+}
+
+function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { app, settings } = plugin;
+    const { userHiers, regexNoteField } = settings;
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+        const regexNoteFile = altFile.file;
+        const regexNoteBasename = getDVBasename(regexNoteFile);
+        const regex = strToRegex(altFile[BC_REGEX_NOTE]);
+        loglevel.info({ regex });
+        let field = altFile[BC_REGEX_NOTE_FIELD];
+        if (typeof field !== "string" || !fields.includes(field))
+            field = regexNoteField || fields[0];
+        const targets = [];
+        frontms.forEach((page) => {
+            const basename = getDVBasename(page.file);
+            if (basename !== regexNoteBasename && regex.test(basename))
+                targets.push(basename);
+        });
+        for (const target of targets) {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, regexNoteBasename);
+            populateMain(settings, mainG, regexNoteBasename, field, target, sourceOrder, targetOrder, true);
+        }
+    });
+}
+
+const getAllTags = (app, file, withHash = true) => {
+    var _a, _b;
+    const { tags, frontmatter } = app.metadataCache.getFileCache(file);
+    const allTags = [];
+    tags === null || tags === void 0 ? void 0 : tags.forEach((t) => allTags.push(dropHash(t.tag)));
+    [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []].flat().forEach((t) => {
+        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
+    [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []].flat().forEach((t) => {
+        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
+    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
+};
+function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { settings, app } = plugin;
+    const { userHiers, tagNoteField } = settings;
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+        const tagNoteFile = altFile.file;
+        const tagNoteBasename = getDVBasename(tagNoteFile);
+        const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
+        if (!tag.startsWith("#"))
+            return;
+        const hasThisTag = (file) => {
+            const allTags = getAllTags(app, file);
+            return altFile[BC_TAG_NOTE_EXACT] !== undefined
+                ? allTags.includes(tag)
+                : allTags.some((t) => t.includes(tag));
+        };
+        const targets = frontms
+            .map((ff) => ff.file)
+            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
+            .map(getDVBasename);
+        let field = altFile[BC_TAG_NOTE_FIELD];
+        if (typeof field !== "string" || !fields.includes(field))
+            field = tagNoteField || fields[0];
+        targets.forEach((target) => {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, tagNoteBasename);
+            populateMain(settings, mainG, tagNoteBasename, field, target, sourceOrder, targetOrder, true);
+        });
+    });
+}
+
+function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
+    const { settings } = plugin;
+    const { userHiers } = settings;
+    traverseNotes.forEach((altFile) => {
+        const { file } = altFile;
+        const basename = getDVBasename(file);
+        const noCycles = removeCycles(obsG, basename);
+        let field = altFile[BC_TRAVERSE_NOTE];
+        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+            return;
+        const allPaths = dfsAllPaths(noCycles, basename);
+        loglevel.info(allPaths);
+        const reversed = [...allPaths].map((path) => path.reverse());
+        reversed.forEach((path) => {
+            path.forEach((node, i) => {
+                const next = path[i + 1];
+                if (next === undefined)
+                    return;
+                populateMain(settings, mainG, node, field, next, 9999, 9999, true);
+            });
+        });
+    });
+}
 
 /* src\Components\RenderMarkdown.svelte generated by Svelte v3.35.0 */
 
@@ -25504,385 +25890,6 @@ async function drawTrail(plugin) {
     }
 }
 
-async function getCSVRows(plugin) {
-    const { CSVPaths } = plugin.settings;
-    const CSVRows = [];
-    if (CSVPaths === "")
-        return CSVRows;
-    const fullPath = obsidian.normalizePath(CSVPaths);
-    const content = await plugin.app.vault.adapter.read(fullPath);
-    const lines = content.split("\n");
-    const headers = lines[0].split(",").map((head) => head.trim());
-    lines.slice(1).forEach((row) => {
-        const rowObj = {};
-        row
-            .split(",")
-            .map((head) => dropWikilinks(head.trim()))
-            .forEach((item, i) => {
-            rowObj[headers[i]] = item;
-        });
-        loglevel.debug({ rowObj });
-        CSVRows.push(rowObj);
-    });
-    return CSVRows;
-}
-function addCSVCrumbs(g, CSVRows, dir, field) {
-    CSVRows.forEach((row) => {
-        addNodesIfNot(g, [row.file]);
-        if (field === "" || !row[field])
-            return;
-        addNodesIfNot(g, [row[field]]);
-        addEdgeIfNot(g, row.file, row[field], { dir, field });
-    });
-}
-
-function addDendronNotesToGraph(plugin, frontms, mainG) {
-    const { settings } = plugin;
-    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = settings;
-    if (!addDendronNotes)
-        return;
-    for (const frontm of frontms) {
-        // Doesn't currently work yet
-        if (frontm[BC_IGNORE_DENDRON])
-            continue;
-        const basename = getDVBasename(frontm.file);
-        const splits = basename.split(dendronNoteDelimiter);
-        if (splits.length <= 1)
-            continue;
-        const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
-        if (!nextSlice)
-            continue;
-        const nextSliceFile = frontms.find((fm) => getDVBasename(fm.file) === nextSlice);
-        if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON])
-            continue;
-        const sourceOrder = getSourceOrder(frontm);
-        const targetOrder = getTargetOrder(frontms, nextSlice);
-        populateMain(settings, mainG, basename, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
-    }
-}
-
-const getSubsFromFolder = (folder) => {
-    const otherNotes = [], subFolders = [];
-    folder.children.forEach((tAbstract) => {
-        if (tAbstract instanceof obsidian.TFile) {
-            otherNotes.push(tAbstract);
-        }
-        else
-            subFolders.push(tAbstract);
-    });
-    return { otherNotes, subFolders };
-};
-function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
-    const { settings, app } = plugin;
-    const { userHiers } = settings;
-    const fields = getFields(userHiers);
-    folderNotes.forEach((altFile) => {
-        const { file } = altFile;
-        const basename = getDVBasename(file);
-        const topFolderName = getFolderName(file);
-        const topFolder = app.vault.getAbstractFileByPath(topFolderName);
-        const targets = frontms
-            .map((ff) => ff.file)
-            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
-            .map(getDVBasename);
-        const field = altFile[BC_FOLDER_NOTE];
-        if (typeof field !== "string" || !fields.includes(field))
-            return;
-        targets.forEach((target) => {
-            // This is getting the order of the folder note, not the source pointing up to it
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, basename);
-            populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder, true);
-        });
-        if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
-            const { subFolders } = getSubsFromFolder(topFolder);
-            const folderQueue = [...subFolders];
-            console.log({ startingQueue: folderQueue.slice() });
-            let currFolder = folderQueue.shift();
-            while (currFolder !== undefined) {
-                const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
-                const folderNote = currFolder.name;
-                const targets = otherNotes.map(getDVBasename);
-                // if (!isInVault(app, folderNote, folderNote)) continue;
-                const sourceOrder = 9999; // getSourceOrder(altFile);
-                const targetOrder = 9999; //  getTargetOrder(frontms, basename);
-                const parentFolderNote = currFolder.parent.name;
-                populateMain(settings, mainG, parentFolderNote, field, folderNote, sourceOrder, targetOrder, true);
-                targets.forEach((target) => {
-                    if (target === folderNote)
-                        return;
-                    console.log("adding", folderNote, "→", target);
-                    const sourceOrder = 9999; // getSourceOrder(altFile);
-                    const targetOrder = 9999; //  getTargetOrder(frontms, basename);
-                    populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
-                });
-                folderQueue.push(...subFolders);
-                currFolder = folderQueue.shift();
-            }
-        }
-        // First add otherNotes to graph
-        // Then iterate subFolders doing the same
-    });
-}
-
-async function getHierarchyNoteItems(plugin, file) {
-    const { userHiers } = plugin.settings;
-    const { listItems } = plugin.app.metadataCache.getFileCache(file);
-    if (!listItems)
-        return [];
-    const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
-    const hierarchyNoteItems = [];
-    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
-    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
-    const problemFields = [];
-    const upFields = getFields(userHiers, "up");
-    for (const item of listItems) {
-        const currItem = lines[item.position.start.line];
-        const afterBulletCurr = afterBulletReg.exec(currItem)[1];
-        const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
-        let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-        // Ensure fieldName is one of the existing up fields. `null` if not
-        if (field !== null && !upFields.includes(field)) {
-            problemFields.push(field);
-            field = null;
-        }
-        const { parent } = item;
-        if (parent >= 0) {
-            const parentNote = lines[parent];
-            const afterBulletParent = afterBulletReg.exec(parentNote)[1];
-            const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
-            hierarchyNoteItems.push({
-                note,
-                parent: dropWikiParent,
-                field,
-            });
-        }
-        else {
-            hierarchyNoteItems.push({
-                note,
-                parent: null,
-                field,
-            });
-        }
-    }
-    if (problemFields.length > 0) {
-        const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
-        new obsidian.Notice(msg);
-        console.log(msg, { problemFields });
-    }
-    return hierarchyNoteItems;
-}
-function addHNsToGraph(settings, hnArr, mainG) {
-    const { HNUpField, userHiers } = settings;
-    const upFields = getFields(userHiers, "up");
-    hnArr.forEach((hnItem, i) => {
-        var _a, _b;
-        const { note, field, parent } = hnItem;
-        const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
-        if (parent === null) {
-            const s = note;
-            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
-            addNodesIfNot(mainG, [s, t]);
-            addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
-        }
-        else {
-            addNodesIfNot(mainG, [note, parent]);
-            addEdgeIfNot(mainG, note, parent, {
-                dir: "up",
-                field: upField,
-            });
-            // I don't think this needs to be done if the reverse is done above
-            addNodesIfNot(mainG, [parent, note]);
-            addEdgeIfNot(mainG, parent, note, {
-                dir: "down",
-                field: downField,
-            });
-        }
-    });
-}
-
-// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
-// => {[note: string]: {type: string, linksInLine: string[]}[]}
-async function getJugglLinks(plugin, files) {
-    const { settings, app, db } = plugin;
-    db.start2G("getJugglLinks");
-    const { userHiers } = settings;
-    // Add Juggl links
-    const typedLinksArr = await Promise.all(files.map(async (file) => {
-        var _a, _b;
-        const jugglLink = { file, links: [] };
-        // Use Obs metadatacache to get the links in the current file
-        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
-        const content = links.length ? await app.vault.cachedRead(file) : "";
-        const lines = content.split("\n");
-        links.forEach((link) => {
-            var _a, _b, _c, _d, _e, _f, _g;
-            const lineNo = link.position.start.line;
-            const line = lines[lineNo];
-            // Check the line for wikilinks, and return an array of link.innerText
-            const linksInLine = (_c = (_b = (_a = line
-                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
-            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
-            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
-            const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
-            if (field === "")
-                return;
-            const { fieldDir } = getFieldInfo(userHiers, field) || {};
-            if (!fieldDir)
-                return;
-            jugglLink.links.push({
-                dir: fieldDir,
-                field,
-                linksInLine,
-            });
-        });
-        return jugglLink;
-    }));
-    const allFields = getFields(userHiers);
-    const filteredLinks = typedLinksArr.map((jugglLink) => {
-        // Filter out links whose type is not in allFields
-        jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.field));
-        return jugglLink;
-    });
-    db.end2G({ filteredLinks });
-    return filteredLinks;
-}
-function addJugglLinksToGraph(settings, jugglLinks, frontms, mainG) {
-    jugglLinks.forEach((jugglLink) => {
-        const { basename } = jugglLink.file;
-        jugglLink.links.forEach((link) => {
-            const { dir, field, linksInLine } = link;
-            if (dir === "")
-                return;
-            const sourceOrder = getTargetOrder(frontms, basename);
-            linksInLine.forEach((linkInLine) => {
-                // Is this a bug? Why not `getSourceOrder`?
-                const targetsOrder = getTargetOrder(frontms, linkInLine);
-                populateMain(settings, mainG, basename, field, linkInLine, sourceOrder, targetsOrder);
-            });
-        });
-    });
-}
-
-function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { app, settings } = plugin;
-    const { userHiers } = settings;
-    eligableAlts.forEach((altFile) => {
-        var _a, _b, _c, _d;
-        const linkNoteFile = altFile.file;
-        const linkNoteBasename = getDVBasename(linkNoteFile);
-        let field = altFile[BC_LINK_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
-            return;
-        const links = (_b = (_a = app.metadataCache
-            .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
-        const embeds = (_d = (_c = app.metadataCache
-            .getFileCache(linkNoteFile)) === null || _c === void 0 ? void 0 : _c.embeds) === null || _d === void 0 ? void 0 : _d.map((l) => l.link.match(/[^#|]+/)[0]);
-        const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
-        for (const target of targets) {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, linkNoteBasename);
-            populateMain(settings, mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
-        }
-    });
-}
-
-function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { app, settings } = plugin;
-    const { userHiers, regexNoteField } = settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-        const regexNoteFile = altFile.file;
-        const regexNoteBasename = getDVBasename(regexNoteFile);
-        const regex = strToRegex(altFile[BC_REGEX_NOTE]);
-        loglevel.info({ regex });
-        let field = altFile[BC_REGEX_NOTE_FIELD];
-        if (typeof field !== "string" || !fields.includes(field))
-            field = regexNoteField || fields[0];
-        const targets = [];
-        frontms.forEach((page) => {
-            const basename = getDVBasename(page.file);
-            if (basename !== regexNoteBasename && regex.test(basename))
-                targets.push(basename);
-        });
-        for (const target of targets) {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, regexNoteBasename);
-            populateMain(settings, mainG, regexNoteBasename, field, target, sourceOrder, targetOrder, true);
-        }
-    });
-}
-
-const getAllTags = (app, file, withHash = true) => {
-    var _a, _b;
-    const { tags, frontmatter } = app.metadataCache.getFileCache(file);
-    const allTags = [];
-    tags === null || tags === void 0 ? void 0 : tags.forEach((t) => allTags.push(dropHash(t.tag)));
-    [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []].flat().forEach((t) => {
-        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-    [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []].flat().forEach((t) => {
-        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
-};
-function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { settings, app } = plugin;
-    const { userHiers, tagNoteField } = settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-        const tagNoteFile = altFile.file;
-        const tagNoteBasename = getDVBasename(tagNoteFile);
-        const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
-        if (!tag.startsWith("#"))
-            return;
-        const hasThisTag = (file) => {
-            const allTags = getAllTags(app, file);
-            return altFile[BC_TAG_NOTE_EXACT] !== undefined
-                ? allTags.includes(tag)
-                : allTags.some((t) => t.includes(tag));
-        };
-        const targets = frontms
-            .map((ff) => ff.file)
-            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
-            .map(getDVBasename);
-        let field = altFile[BC_TAG_NOTE_FIELD];
-        if (typeof field !== "string" || !fields.includes(field))
-            field = tagNoteField || fields[0];
-        targets.forEach((target) => {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, tagNoteBasename);
-            populateMain(settings, mainG, tagNoteBasename, field, target, sourceOrder, targetOrder, true);
-        });
-    });
-}
-
-function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
-    const { settings } = plugin;
-    const { userHiers } = settings;
-    traverseNotes.forEach((altFile) => {
-        const { file } = altFile;
-        const basename = getDVBasename(file);
-        const noCycles = removeCycles(obsG, basename);
-        let field = altFile[BC_TRAVERSE_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
-            return;
-        const allPaths = dfsAllPaths(noCycles, basename);
-        loglevel.info(allPaths);
-        const reversed = [...allPaths].map((path) => path.reverse());
-        reversed.forEach((path) => {
-            path.forEach((node, i) => {
-                const next = path[i + 1];
-                if (next === undefined)
-                    return;
-                populateMain(settings, mainG, node, field, next, 9999, 9999, true);
-            });
-        });
-    });
-}
-
 function getDVMetadataCache(plugin, files) {
     const { app, db } = plugin;
     db.startGs("getDVMetadataCache", "dvCaches");
@@ -26102,11 +26109,111 @@ async function buildMainG(plugin) {
         return mainG;
     }
 }
+function addSiblingsFromSameParent(g, settings) {
+    const { userHiers, treatCurrNodeAsImpliedSibling } = settings;
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currNAttr, s, parentNode) => {
+            var _a;
+            if (currNAttr.dir !== "up")
+                return;
+            const { fieldDir, fieldHier } = getFieldInfo(userHiers, currNAttr.field);
+            const field = (_a = fieldHier.same[0]) !== null && _a !== void 0 ? _a : fallbackField(currNAttr.field, fieldDir);
+            // Find the children of those parents
+            g.forEachOutEdge(parentNode, (k, a, s, impliedSibling) => {
+                // Skip the current node if the settings say to
+                if (a.dir !== "down" ||
+                    (!treatCurrNodeAsImpliedSibling && impliedSibling === currN))
+                    return;
+                addEdgeIfNot(g, currN, impliedSibling, {
+                    dir: "same",
+                    field,
+                    implied: BC_I_SIBLING_1,
+                });
+            });
+        });
+    });
+}
+function addAuntsUncles(g) {
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+            if (currEAttr.dir !== "up")
+                return;
+            // Find the siblings of those parents
+            g.forEachOutEdge(parentNode, (k, a, s, uncle) => {
+                if (a.dir !== "same")
+                    return;
+                console.log("aunt", currN, uncle);
+                addEdgeIfNot(g, currN, uncle, {
+                    dir: "up",
+                    // Use the starting nodes parent field
+                    field: currEAttr.field,
+                    implied: BC_I_AUNT,
+                });
+            });
+        });
+    });
+}
+function addCousins(g) {
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+            if (currEAttr.dir !== "up")
+                return;
+            // Find the siblings of those parents
+            g.forEachOutEdge(parentNode, (k, parentSiblingAttr, s, uncle) => {
+                if (parentSiblingAttr.dir !== "same")
+                    return;
+                g.forEachOutEdge(uncle, (k, a, s, cousin) => {
+                    if (a.dir !== "down")
+                        return;
+                    addEdgeIfNot(g, currN, cousin, {
+                        dir: "same",
+                        field: parentSiblingAttr.field,
+                        implied: BC_I_COUSIN,
+                    });
+                });
+            });
+        });
+    });
+}
+// Sis --> Me <-- Bro
+// Implies: Sis <--> Bro
+function addStructuralEquivalenceSiblings(g) {
+    g.forEachNode((currN, a) => {
+        g.forEachInEdge(currN, (k, aSis, sis, _) => {
+            if (aSis.dir !== "same")
+                return;
+            g.forEachInEdge(currN, (k, aBro, bro, _) => {
+                if (aBro.dir !== "same" || sis === bro)
+                    return;
+                if (aBro.field === aSis.field) {
+                    addEdgeIfNot(g, sis, bro, {
+                        dir: "same",
+                        field: aBro.field,
+                        implied: BC_I_SIBLING_2,
+                    });
+                }
+            });
+        });
+    });
+}
 function buildClosedG(plugin) {
     const { mainG, settings } = plugin;
-    const { userHiers } = settings;
-    const reflexClosed = getReflexiveClosure(mainG, userHiers);
-    return reflexClosed;
+    const { userHiers, impliedRelations: { sameParentIsSibling, parentsSiblingsIsParents, cousinsIsSibling, siblingsSiblingIsSibling, }, } = settings;
+    let closedG = getReflexiveClosure(mainG, userHiers);
+    if (sameParentIsSibling)
+        addSiblingsFromSameParent(closedG, settings);
+    if (parentsSiblingsIsParents) {
+        console.log("adding uncles");
+        addAuntsUncles(closedG);
+    }
+    if (cousinsIsSibling)
+        addCousins(closedG);
+    if (siblingsSiblingIsSibling)
+        addStructuralEquivalenceSiblings(closedG);
+    return closedG;
 }
 async function refreshIndex(plugin) {
     var _a;
@@ -28941,7 +29048,49 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             target: fieldDetails,
             props: { plugin },
         });
-        details("Relationships");
+        const relationDetails = details("Relationships");
+        relationDetails.createDiv({ text: "test" });
+        obsidian.MarkdownRenderer.renderMarkdown("```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```", containerEl, "", null);
+        new obsidian.Setting(relationDetails)
+            .setName("Aunt/Uncle")
+            .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
+            .addToggle((tg) => tg
+            .setValue(settings.impliedRelations.parentsSiblingsIsParents)
+            .onChange(async (val) => {
+            settings.impliedRelations.parentsSiblingsIsParents = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
+        new obsidian.Setting(relationDetails)
+            .setName("Cousins")
+            .setDesc("Treat your cousins as siblings")
+            .addToggle((tg) => tg
+            .setValue(settings.impliedRelations.cousinsIsSibling)
+            .onChange(async (val) => {
+            settings.impliedRelations.cousinsIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
+        new obsidian.Setting(relationDetails)
+            .setName("Siblings siblings")
+            .setDesc("Treat your siblings' siblings as your siblings")
+            .addToggle((tg) => tg
+            .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
+            .onChange(async (val) => {
+            settings.impliedRelations.siblingsSiblingIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
+        new obsidian.Setting(relationDetails)
+            .setName("Make Current Note an Implied Sibling")
+            .setDesc("Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show.")
+            .addToggle((toggle) => toggle
+            .setValue(settings.treatCurrNodeAsImpliedSibling)
+            .onChange(async (value) => {
+            settings.treatCurrNodeAsImpliedSibling = value;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
         const generalDetails = details("General Options");
         new obsidian.Setting(generalDetails)
             .setName("Show Refresh Index Notice")
@@ -29148,16 +29297,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             .setValue(settings.sortByNameShowAlias)
             .onChange(async (value) => {
             settings.sortByNameShowAlias = value;
-            await plugin.saveSettings();
-            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-        }));
-        new obsidian.Setting(MLViewDetails)
-            .setName("Make Current Note an Implied Sibling")
-            .setDesc("Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show.")
-            .addToggle((toggle) => toggle
-            .setValue(settings.treatCurrNodeAsImpliedSibling)
-            .onChange(async (value) => {
-            settings.treatCurrNodeAsImpliedSibling = value;
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
         }));

@@ -2,6 +2,7 @@ import log from "loglevel";
 import {
   App,
   DropdownComponent,
+  MarkdownRenderer,
   Notice,
   PluginSettingTab,
   Setting,
@@ -72,6 +73,66 @@ export class BCSettingTab extends PluginSettingTab {
     });
 
     const relationDetails = details("Relationships");
+    const mermtest = relationDetails.createDiv({ text: "test" });
+
+    MarkdownRenderer.renderMarkdown(
+      "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
+      containerEl,
+      "",
+      null
+    );
+
+    new Setting(relationDetails)
+      .setName("Aunt/Uncle")
+      .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
+      .addToggle((tg) =>
+        tg
+          .setValue(settings.impliedRelations.parentsSiblingsIsParents)
+          .onChange(async (val) => {
+            settings.impliedRelations.parentsSiblingsIsParents = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
+    new Setting(relationDetails)
+      .setName("Cousins")
+      .setDesc("Treat your cousins as siblings")
+      .addToggle((tg) =>
+        tg
+          .setValue(settings.impliedRelations.cousinsIsSibling)
+          .onChange(async (val) => {
+            settings.impliedRelations.cousinsIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
+    new Setting(relationDetails)
+      .setName("Siblings siblings")
+      .setDesc("Treat your siblings' siblings as your siblings")
+      .addToggle((tg) =>
+        tg
+          .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
+          .onChange(async (val) => {
+            settings.impliedRelations.siblingsSiblingIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
+
+    new Setting(relationDetails)
+      .setName("Make Current Note an Implied Sibling")
+      .setDesc(
+        "Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show."
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.treatCurrNodeAsImpliedSibling)
+          .onChange(async (value) => {
+            settings.treatCurrNodeAsImpliedSibling = value;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
 
     const generalDetails = details("General Options");
 
@@ -355,21 +416,6 @@ export class BCSettingTab extends PluginSettingTab {
           .setValue(settings.sortByNameShowAlias)
           .onChange(async (value) => {
             settings.sortByNameShowAlias = value;
-            await plugin.saveSettings();
-            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-          })
-      );
-
-    new Setting(MLViewDetails)
-      .setName("Make Current Note an Implied Sibling")
-      .setDesc(
-        "Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show."
-      )
-      .addToggle((toggle) =>
-        toggle
-          .setValue(settings.treatCurrNodeAsImpliedSibling)
-          .onChange(async (value) => {
-            settings.treatCurrNodeAsImpliedSibling = value;
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
           })

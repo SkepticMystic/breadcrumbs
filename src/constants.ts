@@ -94,7 +94,7 @@ export const JUGGL_TRAIL_DEFAULTS: IJugglSettings = Object.assign(
     height: "400px",
     readContent: false,
     toolbar: false,
-    navigator: false
+    navigator: false,
   }
 );
 CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
@@ -121,6 +121,13 @@ export const blankRealNImplied = () => {
     prev: { reals: [], implieds: [] },
   };
 };
+
+export const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2] = [
+  "Aunt/Uncle",
+  "Cousin",
+  "Sibling 1",
+  "Sibling 2",
+];
 
 export const [
   BC_FOLDER_NOTE,

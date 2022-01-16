@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { App, MarkdownRenderer, TFile } from "obsidian";
+  import { App, MarkdownRenderer } from "obsidian";
   import { onMount } from "svelte";
 
   export let path: string;
