@@ -32,7 +32,7 @@ import { getFields } from "./sharedFunctions";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
-import {buildCMPlugin, drawTrail, UPDATE_LP_VIEW, updateLPView} from "./Views/TrailView";
+import { buildCMPlugin, drawTrail, updateLPView } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { VisModal } from "./Visualisations/VisModal";
 
@@ -292,6 +292,7 @@ export default class BCPlugin extends Plugin {
       () => new VisModal(this.app, this).open()
     );
 
+    //@ts-ignore
     this.registerEditorExtension(buildCMPlugin(this));
     console.log("Registered editor extension");
 
