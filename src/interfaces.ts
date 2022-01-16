@@ -185,6 +185,7 @@ export interface internalLinkObj {
   alt: string | null;
   order: number;
   parent?: string;
+  implied: string;
 }
 
 export interface SquareProps {
@@ -270,6 +271,7 @@ export type SquareItem = {
   to: string;
   real: boolean;
   field: string;
+  implied?: string;
 };
 
 export interface MetaeditApi {

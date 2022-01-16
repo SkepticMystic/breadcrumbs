@@ -41,7 +41,7 @@
             {#if square.realItems.length}
               <ol>
                 {#each square.realItems as realItem}
-                  <li>
+                  <li class={realItem.implied ?? ""}>
                     <div
                       class={realItem.cls}
                       on:click={async (e) => openOrSwitch(app, realItem.to, e)}
@@ -70,7 +70,7 @@
                     class="BC-Implied {treatCurrNodeAsImpliedSibling &&
                     impliedItem.to === currFile.basename
                       ? 'BC-active-note'
-                      : ''}"
+                      : ''} {impliedItem.implied ?? ''}"
                   >
                     <div
                       class={impliedItem.cls}

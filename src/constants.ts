@@ -125,10 +125,10 @@ export const blankRealNImplied = () => {
 };
 
 export const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2] = [
-  "Aunt/Uncle",
-  "Cousin",
-  "Sibling 1",
-  "Sibling 2",
+  "BC-Aunt",
+  "BC-Cousin",
+  "BC-Sibling-1",
+  "BC-Sibling-2",
 ];
 
 export const [

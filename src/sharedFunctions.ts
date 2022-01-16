@@ -264,12 +264,16 @@ export function getRealnImplied(
   dir: Directions = null
 ): RealNImplied {
   const realsnImplieds: RealNImplied = blankRealNImplied();
-  const { userHiers } = plugin.settings;
-  const { mainG } = plugin;
+  const { settings, closedG } = plugin;
+  const { userHiers } = settings;
 
-  if (!mainG.hasNode(currNode)) return realsnImplieds;
-  mainG.forEachEdge(currNode, (k, a, s, t) => {
-    const { field, dir: edgeDir } = a as { field: string; dir: Directions };
+  if (!closedG.hasNode(currNode)) return realsnImplieds;
+  closedG.forEachEdge(currNode, (k, a, s, t) => {
+    const {
+      field,
+      dir: edgeDir,
+      implied,
+    } = a as { field: string; dir: Directions; implied?: string };
     const oppField =
       getOppFields(userHiers, field)[0] ?? fallbackOppField(field, edgeDir);
 
@@ -279,7 +283,7 @@ export function getRealnImplied(
       if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
         const arr = realsnImplieds[edgeDir].reals;
         if (arr.findIndex((item) => item.to === t) === -1) {
-          arr.push({ to: t, real: true, field });
+          arr.push({ to: t, real: true, field, implied });
         }
       }
       // Implieds
@@ -291,6 +295,7 @@ export function getRealnImplied(
             to: s,
             real: false,
             field: oppField,
+            implied,
           });
         }
       }

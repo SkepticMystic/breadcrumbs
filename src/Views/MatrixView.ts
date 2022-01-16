@@ -85,7 +85,8 @@ export default class MatrixView extends ItemView {
   toInternalLinkObj = (
     to: string,
     realQ = true,
-    parent?: string
+    parent: string | null,
+    implied?: string
   ): internalLinkObj => {
     return {
       to,
@@ -93,6 +94,7 @@ export default class MatrixView extends ItemView {
       alt: this.getAlt(to),
       order: this.getOrder(to),
       parent,
+      implied,
     };
   };
 
@@ -149,11 +151,15 @@ export default class MatrixView extends ItemView {
 
         filteredRealNImplied[dir].reals = reals
           .filter((real) => resultsFilter(real, dir, oppDir, arrow))
-          .map((item) => this.toInternalLinkObj(item.to, true));
+          .map((item) =>
+            this.toInternalLinkObj(item.to, true, null, item.implied)
+          );
 
         filteredRealNImplied[dir].implieds = implieds
           .filter((implied) => resultsFilter(implied, dir, oppDir, arrow))
-          .map((item) => this.toInternalLinkObj(item.to, false));
+          .map((item) =>
+            this.toInternalLinkObj(item.to, false, null, item.implied)
+          );
       }
 
       let {
@@ -163,23 +169,6 @@ export default class MatrixView extends ItemView {
         next: { reals: rn, implieds: iN },
         prev: { reals: rp, implieds: ip },
       } = filteredRealNImplied;
-
-      // SECTION Implied Siblings
-      /// Notes with the same parents
-      const closedUp = getSubInDirs(plugin.closedG, "up");
-
-      const iSamesII: internalLinkObj[] = [];
-      if (closedUp.hasNode(basename)) {
-        closedUp.forEachOutEdge(basename, (k, a, s, par) => {
-          if (hier.up.includes(a.field)) {
-            closedUp.forEachInEdge(par, (k, a, s, t) => {
-              if (s === basename && !treatCurrNodeAsImpliedSibling) return;
-              iSamesII.push(this.toInternalLinkObj(s, false, t));
-            });
-          }
-        });
-      }
-      is.push(...iSamesII);
 
       // !SECTION
 
