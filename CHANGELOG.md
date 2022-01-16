@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.39.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.39.0...2.39.1) (2022-01-16)
+
+
+### Bug Fixes
+
+* :bug: Incorrect import ([40f1e24](https://github.com/SkepticMystic/breadcrumbs/commit/40f1e24cea66334abf5f7355e03e15b4eec82936))
+
 ## [2.39.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.38.1...2.39.0) (2022-01-16)
 
 
