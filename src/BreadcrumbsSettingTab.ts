@@ -26,7 +26,7 @@ import type { DebugLevel, Relations, visTypes } from "./interfaces";
 import type BCPlugin from "./main";
 import MatrixView from "./Views/MatrixView";
 import { getFields, splitAndTrim, strToRegex } from "./sharedFunctions";
-import {drawTrail, updateLPView} from "./Views/TrailView";
+import { drawTrail } from "./Views/TrailView";
 
 const fragWithHTML = (html: string) =>
   createFragment((frag) => (frag.createDiv().innerHTML = html));
@@ -485,7 +485,6 @@ export class BCSettingTab extends PluginSettingTab {
           settings.showBCs = value;
           await plugin.saveSettings();
           await drawTrail(plugin);
-          updateLPView();
         })
       );
 
@@ -501,7 +500,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showBCsInEditLPMode = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           })
       );
 
@@ -535,7 +533,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showTrail = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           });
       })
       .addToggle((toggle) => {
@@ -546,7 +543,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showGrid = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           });
       })
       .addToggle((toggle) => {
@@ -557,7 +553,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showJuggl = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           });
       })
       .addToggle((toggle) => {
@@ -568,7 +563,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.showPrevNext = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           });
       });
 
@@ -582,7 +576,6 @@ export class BCSettingTab extends PluginSettingTab {
           settings.gridDots = value;
           await plugin.saveSettings();
           await drawTrail(plugin);
-          updateLPView();
         })
       );
 
@@ -610,7 +603,6 @@ export class BCSettingTab extends PluginSettingTab {
           settings.gridHeatmap = value;
           await plugin.saveSettings();
           await drawTrail(plugin);
-          updateLPView();
         })
       );
 
@@ -667,7 +659,6 @@ export class BCSettingTab extends PluginSettingTab {
 
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           })
       );
 
@@ -682,7 +673,6 @@ export class BCSettingTab extends PluginSettingTab {
 
           await plugin.saveSettings();
           await drawTrail(plugin);
-          updateLPView();
         })
       );
 
@@ -699,7 +689,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.trailSeperator = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           })
       );
 
@@ -716,7 +705,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.noPathMessage = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           })
       );
 
@@ -732,7 +720,6 @@ export class BCSettingTab extends PluginSettingTab {
             settings.respectReadableLineLength = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
           })
       );
 
