@@ -163,12 +163,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
         : "";
 
     const elForMaxWidth =
-      selectorForMaxWidth !== ""
-        ? document.querySelector(selectorForMaxWidth)
-        : null;
+        selectorForMaxWidth !== ""
+            ? document.querySelector(selectorForMaxWidth)
+            : null;
     const max_width = elForMaxWidth
       ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
-      : "80%";
+      : "100%";
 
     const trailDiv = createDiv({
       cls: `BC-trail ${
@@ -178,8 +178,9 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       }`,
       attr: {
         style:
-          (mode !== "preview" ? `max-width: ${max_width};` : "") +
-          "margin: 0 auto",
+            (mode !== "preview" ? `max-width: ${max_width};` : "") +
+            "margin: 0 auto;",
+
       },
     });
 
@@ -188,10 +189,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     if (mode === "preview") {
       view.querySelector("div.markdown-preview-sizer").before(trailDiv);
     } else {
-      const cmEditor = view.querySelector("div.cm-editor");
-      const cmSizer = view.querySelector("div.CodeMirror-sizer");
-      if (cmEditor) cmEditor.firstChild?.before(trailDiv);
-      if (cmSizer) cmSizer.before(trailDiv);
+      const cmEditor = view.querySelector("div.cm-contentContainer");
+      // const cmSizer = view.querySelector("div.CodeMirror-sizer");
+      if (cmEditor) {
+        cmEditor.firstChild?.before(trailDiv);
+      }
+      // if (cmSizer) cmSizer.before(trailDiv);
     }
 
     trailDiv.empty();
