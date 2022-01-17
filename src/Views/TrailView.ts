@@ -1,6 +1,6 @@
 import type { MultiGraph } from "graphology";
 import { error, info } from "loglevel";
-import { MarkdownView, Notice, TFile, editorViewField } from "obsidian";
+import { MarkdownView, Notice, TFile } from "obsidian";
 import type { BCSettings } from "../interfaces";
 import NextPrev from "../Components/NextPrev.svelte";
 import TrailGrid from "../Components/TrailGrid.svelte";
@@ -16,70 +16,6 @@ import {
 import type BCPlugin from "../main";
 import { getFields, getRealnImplied } from "../sharedFunctions";
 import {createJugglTrail} from "../Visualisations/Juggl";
-import {Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType} from "@codemirror/view";
-import {RangeSet, RangeSetBuilder} from "@codemirror/rangeset";
-
-let UPDATE_LP_VIEW = false;
-
-export function updateLPView() {
-  UPDATE_LP_VIEW = true;
-}
-
-export function buildCMPlugin(plugin: BCPlugin) {
-  class TrailWidget extends WidgetType {
-    element: HTMLElement;
-    constructor(element: HTMLElement) {
-      super();
-      this.element = element;
-    }
-
-    toDOM(view: EditorView): HTMLElement {
-      console.log("TO the doM!");
-      this.element.detach();
-      return this.element;
-    }
-
-    ignoreEvent(_event: Event): boolean {
-      return true;
-    }
-  }
-
-  return ViewPlugin.fromClass(
-      class {
-        decorations: DecorationSet;
-
-        constructor(view: EditorView) {
-          this.decorations = new RangeSetBuilder<Decoration>().finish();
-          this.buildDecorations(view).then(value => {this.decorations = value;});
-        }
-
-        update(update: ViewUpdate) {
-          if (UPDATE_LP_VIEW) {
-            this.buildDecorations(update.view).then(value => {this.decorations = value;});
-            UPDATE_LP_VIEW = false;
-          }
-        }
-
-        destroy() {}
-
-        async buildDecorations(view: EditorView) {
-          let builder = new RangeSetBuilder<Decoration>();
-          if (plugin.settings.showBCsInEditLPMode) {
-            let mdView: MarkdownView = view.state.field(editorViewField);
-            let element = await _drawTrail(plugin, mdView);
-            let widget = Decoration.widget({
-              widget: new TrailWidget(element)
-            });
-            builder.add(0, 0, widget);
-          }
-          return builder.finish();
-        }
-      },
-      {
-        decorations: v => v.decorations
-      }
-  )
-}
 
 function getLimitedTrailSub(plugin: BCPlugin) {
   const { settings, mainG } = plugin;
@@ -134,15 +70,6 @@ function getBreadcrumbs(
 }
 
 export async function drawTrail(plugin: BCPlugin): Promise<void> {
-  const activeMDView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-  console.log(activeMDView.getMode());
-  if (activeMDView.getMode() !== "preview") {
-    return;
-  }
-  await _drawTrail(plugin, activeMDView);
-}
-
-async function _drawTrail(plugin: BCPlugin, activeMDView: MarkdownView): Promise<HTMLElement> {
   try {
     const { settings, db, app } = plugin;
     const {
@@ -156,7 +83,7 @@ async function _drawTrail(plugin: BCPlugin, activeMDView: MarkdownView): Promise
       showBCsInEditLPMode,
     } = settings;
     db.start2G("drawTrail");
-
+    const activeMDView = app.workspace.getActiveViewOfType(MarkdownView);
     const mode = activeMDView?.getMode();
     if (
       !showBCs ||
@@ -189,16 +116,14 @@ async function _drawTrail(plugin: BCPlugin, activeMDView: MarkdownView): Promise
       view = activeMDView.previewMode.containerEl.querySelector(
         "div.markdown-preview-view"
       );
-      activeMDView.containerEl
-          .querySelectorAll(".BC-trail")
-          ?.forEach((trail) => trail.remove());
-    }
-    else {
+    } else {
       view = activeMDView.contentEl.querySelector("div.markdown-source-view");
       if (view.hasClass("is-live-preview")) livePreview = true;
     }
 
-
+    activeMDView.containerEl
+      .querySelectorAll(".BC-trail")
+      ?.forEach((trail) => trail.remove());
 
     const closedUp = getLimitedTrailSub(plugin);
     const sortedTrails = getBreadcrumbs(settings, closedUp, file);
@@ -269,7 +194,6 @@ async function _drawTrail(plugin: BCPlugin, activeMDView: MarkdownView): Promise
       if (cmSizer) cmSizer.before(trailDiv);
     }
 
-
     trailDiv.empty();
     if (settings.indexNotes.includes(basename)) {
       trailDiv.innerText = "Index Note";
@@ -313,7 +237,6 @@ async function _drawTrail(plugin: BCPlugin, activeMDView: MarkdownView): Promise
       );
     }
     db.end2G();
-    return trailDiv;
   } catch (err) {
     error(err);
     plugin.db.end2G();

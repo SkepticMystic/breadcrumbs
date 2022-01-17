@@ -228,12 +228,14 @@ export function createJugglTrail(
                     .split("\n")
                     .map((line) => {
                         const pair = line.split("- ");
-                        return pair.slice(1).join("- ");
+                        console.log({pair})
+                        return pair[1];
                     })
                     .filter((pair) => pair && pair !== "");
                 let nodesS = new Set(lines);
                 nodesS.add(source);
                 const nodes = Array.from(nodesS).map(s => s + ".md");
+                console.log({nodes});
 
                 jugglDown = createJuggl(plugin, target, nodes, args);
 
