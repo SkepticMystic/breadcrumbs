@@ -321,7 +321,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   wikilinkIndex: true,
   impliedRelations: {
     siblingIdentity: false,
-    sameParentIsSibling: false,
+    sameParentIsSibling: true,
     siblingsSiblingIsSibling: false,
     parentsSiblingsIsParents: false,
     parentsParentsIsParent: false,
