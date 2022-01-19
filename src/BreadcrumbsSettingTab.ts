@@ -73,14 +73,42 @@ export class BCSettingTab extends PluginSettingTab {
     });
 
     const relationDetails = details("Relationships");
-    // const mermtest = relationDetails.createDiv({ text: "test" });
 
     // MarkdownRenderer.renderMarkdown(
     //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
-    //   mermtest,
+    //   containerEl,
     //   "",
     //   null
     // );
+
+    relationDetails.createEl("p", {text: 'Here you can toggle on/off different ypes of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.'})
+
+    new Setting(relationDetails)
+      .setName("Same Parent is Siblings")
+      .setDesc(
+        "If one note shares a parent with another, treat them as siblings"
+      )
+      .addToggle((tg) =>
+        tg
+          .setValue(settings.impliedRelations.sameParentIsSibling)
+          .onChange(async (val) => {
+            settings.impliedRelations.sameParentIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
+    new Setting(relationDetails)
+      .setName("Siblings' Siblings")
+      .setDesc("Treat your siblings' siblings as your siblings")
+      .addToggle((tg) =>
+        tg
+          .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
+          .onChange(async (val) => {
+            settings.impliedRelations.siblingsSiblingIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+          })
+      );
 
     new Setting(relationDetails)
       .setName("Aunt/Uncle")
@@ -96,24 +124,14 @@ export class BCSettingTab extends PluginSettingTab {
       );
     new Setting(relationDetails)
       .setName("Cousins")
-      .setDesc("Treat your cousins as siblings")
+      .setDesc(
+        "Treat the cousins of a note as siblings (parents' siblings' children are cousins)"
+      )
       .addToggle((tg) =>
         tg
           .setValue(settings.impliedRelations.cousinsIsSibling)
           .onChange(async (val) => {
             settings.impliedRelations.cousinsIsSibling = val;
-            await plugin.saveSettings();
-            await refreshIndex(plugin);
-          })
-      );
-    new Setting(relationDetails)
-      .setName("Siblings' Siblings")
-      .setDesc("Treat your siblings' siblings as your siblings")
-      .addToggle((tg) =>
-        tg
-          .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
-          .onChange(async (val) => {
-            settings.impliedRelations.siblingsSiblingIsSibling = val;
             await plugin.saveSettings();
             await refreshIndex(plugin);
           })

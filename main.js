@@ -2,8 +2,6 @@
 
 var obsidian = require('obsidian');
 var console$1 = require('console');
-var view = require('@codemirror/view');
-var rangeset = require('@codemirror/rangeset');
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -3467,12 +3465,7 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2] = [
-    "BC-Aunt",
-    "BC-Cousin",
-    "BC-Sibling-1",
-    "BC-Sibling-2",
-];
+const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE,] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
 const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-recursive",
@@ -4821,7 +4814,7 @@ function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
             //@ts-ignore
             dir: closeAsOpposite ? oppDir : dir,
             field: closeAsOpposite ? oppField : field,
-            implied: true,
+            implied: BC_I_REFLEXIVE,
         });
     });
     return copy;
@@ -5191,6 +5184,28 @@ function getRealnImplied(plugin, currNode, dir = null) {
         });
     });
     return realsnImplieds;
+}
+function getMatrixNeighbours(plugin, currNode) {
+    const { closedG } = plugin;
+    const { userHiers } = plugin.settings;
+    const neighbours = blankRealNImplied();
+    if (!closedG)
+        return neighbours;
+    closedG.forEachEdge(currNode, (k, a, s, t) => {
+        var _a;
+        const { field, dir, implied } = a;
+        if (s === currNode) {
+            neighbours[dir].reals.push({ to: t, field, implied });
+        }
+        else {
+            neighbours[getOppDir(dir)].implieds.push({
+                to: s,
+                field: (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir),
+                implied,
+            });
+        }
+    });
+    return neighbours;
 }
 function iterateHiers(userHiers, fn) {
     userHiers.forEach((hier) => {
@@ -25027,12 +25042,14 @@ function createJugglTrail(plugin, target, paths, source, args) {
                     .split("\n")
                     .map((line) => {
                     const pair = line.split("- ");
-                    return pair.slice(1).join("- ");
+                    console.log({ pair });
+                    return pair[1];
                 })
                     .filter((pair) => pair && pair !== "");
                 let nodesS = new Set(lines);
                 nodesS.add(source);
                 const nodes = Array.from(nodesS).map(s => s + ".md");
+                console.log({ nodes });
                 jugglDown = createJuggl(plugin, target, nodes, args);
                 if (jugglUp) {
                     target.children[amtChildren].addClass("juggl-hide");
@@ -25063,53 +25080,6 @@ function createJugglTrail(plugin, target, paths, source, args) {
     zoomToSource(jugglUp, source);
 }
 
-let UPDATE_LP_VIEW = false;
-function updateLPView() {
-    UPDATE_LP_VIEW = true;
-}
-function buildCMPlugin(plugin) {
-    class TrailWidget extends view.WidgetType {
-        constructor(element) {
-            super();
-            this.element = element;
-        }
-        toDOM(view) {
-            console.log("TO the doM!");
-            this.element.detach();
-            return this.element;
-        }
-        ignoreEvent(_event) {
-            return true;
-        }
-    }
-    return view.ViewPlugin.fromClass(class {
-        constructor(view) {
-            this.decorations = new rangeset.RangeSetBuilder().finish();
-            this.buildDecorations(view).then(value => { this.decorations = value; });
-        }
-        update(update) {
-            if (UPDATE_LP_VIEW) {
-                this.buildDecorations(update.view).then(value => { this.decorations = value; });
-                UPDATE_LP_VIEW = false;
-            }
-        }
-        destroy() { }
-        async buildDecorations(view$1) {
-            let builder = new rangeset.RangeSetBuilder();
-            if (plugin.settings.showBCsInEditLPMode) {
-                let mdView = view$1.state.field(obsidian.editorViewField);
-                let element = await _drawTrail(plugin, mdView);
-                let widget = view.Decoration.widget({
-                    widget: new TrailWidget(element)
-                });
-                builder.add(0, 0, widget);
-            }
-            return builder.finish();
-        }
-    }, {
-        decorations: v => v.decorations
-    });
-}
 function getLimitedTrailSub(plugin) {
     const { settings, mainG } = plugin;
     const { limitTrailCheckboxes, userHiers } = settings;
@@ -25148,19 +25118,12 @@ function getBreadcrumbs(settings, g, currFile) {
     return sortedTrails;
 }
 async function drawTrail(plugin) {
-    const activeMDView = plugin.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
-    console.log(activeMDView.getMode());
-    if (activeMDView.getMode() !== "preview") {
-        return;
-    }
-    await _drawTrail(plugin, activeMDView);
-}
-async function _drawTrail(plugin, activeMDView) {
     var _a, _b, _c, _d;
     try {
         const { settings, db, app } = plugin;
         const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showJuggl, showPrevNext, showBCsInEditLPMode, } = settings;
         db.start2G("drawTrail");
+        const activeMDView = app.workspace.getActiveViewOfType(obsidian.MarkdownView);
         const mode = activeMDView === null || activeMDView === void 0 ? void 0 : activeMDView.getMode();
         if (!showBCs ||
             !activeMDView ||
@@ -25184,14 +25147,14 @@ async function _drawTrail(plugin, activeMDView) {
         let livePreview = false;
         if (mode === "preview") {
             view = activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view");
-            (_c = activeMDView.containerEl
-                .querySelectorAll(".BC-trail")) === null || _c === void 0 ? void 0 : _c.forEach((trail) => trail.remove());
         }
         else {
             view = activeMDView.contentEl.querySelector("div.markdown-source-view");
             if (view.hasClass("is-live-preview"))
                 livePreview = true;
         }
+        (_c = activeMDView.containerEl
+            .querySelectorAll(".BC-trail")) === null || _c === void 0 ? void 0 : _c.forEach((trail) => trail.remove());
         const closedUp = getLimitedTrailSub(plugin);
         const sortedTrails = getBreadcrumbs(settings, closedUp, file);
         loglevel.info({ sortedTrails });
@@ -25223,14 +25186,14 @@ async function _drawTrail(plugin, activeMDView) {
             : null;
         const max_width = elForMaxWidth
             ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
-            : "80%";
+            : "100%";
         const trailDiv = createDiv({
             cls: `BC-trail ${respectReadableLineLength
                 ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
                 : ""}`,
             attr: {
                 style: (mode !== "preview" ? `max-width: ${max_width};` : "") +
-                    "margin: 0 auto",
+                    "margin: 0 auto;",
             },
         });
         plugin.visited.push([file.path, trailDiv]);
@@ -25238,12 +25201,12 @@ async function _drawTrail(plugin, activeMDView) {
             view.querySelector("div.markdown-preview-sizer").before(trailDiv);
         }
         else {
-            const cmEditor = view.querySelector("div.cm-editor");
-            const cmSizer = view.querySelector("div.CodeMirror-sizer");
-            if (cmEditor)
+            const cmEditor = view.querySelector("div.cm-contentContainer");
+            // const cmSizer = view.querySelector("div.CodeMirror-sizer");
+            if (cmEditor) {
                 (_d = cmEditor.firstChild) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
-            if (cmSizer)
-                cmSizer.before(trailDiv);
+            }
+            // if (cmSizer) cmSizer.before(trailDiv);
         }
         trailDiv.empty();
         if (settings.indexNotes.includes(basename)) {
@@ -25279,7 +25242,6 @@ async function _drawTrail(plugin, activeMDView) {
             createJugglTrail(plugin, trailDiv, props.sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
         }
         db.end2G();
-        return trailDiv;
     }
     catch (err) {
         loglevel.error(err);
@@ -25543,7 +25505,7 @@ function addAuntsUncles(g) {
                     return;
                 addEdgeIfNot(g, currN, uncle, {
                     dir: "up",
-                    // Use the starting nodes parent field
+                    // Use the starting node's parent field
                     field: currEAttr.field,
                     implied: BC_I_AUNT,
                 });
@@ -25562,7 +25524,7 @@ function addCousins(g) {
                 if (parentSiblingAttr.dir !== "same")
                     return;
                 g.forEachOutEdge(uncle, (k, a, s, cousin) => {
-                    if (a.dir !== "down")
+                    if (a.dir !== "down" || currN === cousin)
                         return;
                     addEdgeIfNot(g, currN, cousin, {
                         dir: "same",
@@ -27007,7 +26969,6 @@ function create_each_block_3$2(ctx) {
 	let t0;
 	let div_class_value;
 	let t1;
-	let li_class_value;
 	let mounted;
 	let dispose;
 
@@ -27025,8 +26986,7 @@ function create_each_block_3$2(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-1dlhare"));
-			attr(li, "class", li_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"));
+			attr(div, "class", div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -27047,12 +27007,8 @@ function create_each_block_3$2(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-1dlhare"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
-			}
-
-			if (dirty & /*filteredSquaresArr*/ 1 && li_class_value !== (li_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"))) {
-				attr(li, "class", li_class_value);
 			}
 		},
 		d(detaching) {
@@ -27179,13 +27135,13 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-1dlhare"));
+			attr(div, "class", div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare"));
 			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent ?? "");
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
 			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare");
+			: ""));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -27205,7 +27161,7 @@ function create_each_block_2$2(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-1dlhare"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare"))) {
 				attr(div, "class", div_class_value);
 			}
 
@@ -27215,7 +27171,7 @@ function create_each_block_2$2(ctx) {
 
 			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare")) {
+			: ""))) {
 				attr(li, "class", li_class_value);
 			}
 		},
@@ -27667,7 +27623,6 @@ function create_each_block_3$1(ctx) {
 	let t0;
 	let div_class_value;
 	let t1;
-	let li_class_value;
 	let mounted;
 	let dispose;
 
@@ -27685,8 +27640,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-sp0k97"));
-			attr(li, "class", li_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"));
+			attr(div, "class", div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -27707,12 +27661,8 @@ function create_each_block_3$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].cls) + " svelte-sp0k97"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
-			}
-
-			if (dirty & /*filteredSquaresArr*/ 1 && li_class_value !== (li_class_value = "" + (null_to_empty(/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"))) {
-				attr(li, "class", li_class_value);
 			}
 		},
 		d(detaching) {
@@ -27898,7 +27848,7 @@ function create_each_block_2$1(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-sp0k97"));
+			attr(div, "class", div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97"));
 
 			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent
 			? "↑ " + /*impliedItem*/ ctx[19].parent
@@ -27908,7 +27858,7 @@ function create_each_block_2$1(ctx) {
 
 			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97");
+			: ""));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -27928,7 +27878,7 @@ function create_each_block_2$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (null_to_empty(/*impliedItem*/ ctx[19].cls) + " svelte-sp0k97"))) {
+			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97"))) {
 				attr(div, "class", div_class_value);
 			}
 
@@ -27940,7 +27890,7 @@ function create_each_block_2$1(ctx) {
 
 			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97")) {
+			: ""))) {
 				attr(li, "class", li_class_value);
 			}
 		},
@@ -28243,7 +28193,8 @@ class MatrixView extends obsidian.ItemView {
         if (!mainG)
             return [];
         const { basename } = currFile;
-        const realsnImplieds = getRealnImplied(plugin, basename);
+        // const realsnImplieds = getRealnImplied(plugin, basename);
+        const realsnImplieds = getMatrixNeighbours(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
             const resultsFilter = (item, dir, oppDir, arrow) => hier[dir].includes(item.field) ||
@@ -28440,13 +28391,33 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             props: { plugin },
         });
         const relationDetails = details("Relationships");
-        // const mermtest = relationDetails.createDiv({ text: "test" });
         // MarkdownRenderer.renderMarkdown(
         //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
-        //   mermtest,
+        //   containerEl,
         //   "",
         //   null
         // );
+        relationDetails.createEl("p", { text: 'Here you can toggle on/off different ypes of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.' });
+        new obsidian.Setting(relationDetails)
+            .setName("Same Parent is Siblings")
+            .setDesc("If one note shares a parent with another, treat them as siblings")
+            .addToggle((tg) => tg
+            .setValue(settings.impliedRelations.sameParentIsSibling)
+            .onChange(async (val) => {
+            settings.impliedRelations.sameParentIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
+        new obsidian.Setting(relationDetails)
+            .setName("Siblings' Siblings")
+            .setDesc("Treat your siblings' siblings as your siblings")
+            .addToggle((tg) => tg
+            .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
+            .onChange(async (val) => {
+            settings.impliedRelations.siblingsSiblingIsSibling = val;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        }));
         new obsidian.Setting(relationDetails)
             .setName("Aunt/Uncle")
             .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
@@ -28459,21 +28430,11 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         }));
         new obsidian.Setting(relationDetails)
             .setName("Cousins")
-            .setDesc("Treat your cousins as siblings")
+            .setDesc("Treat the cousins of a note as siblings (parents' siblings' children are cousins)")
             .addToggle((tg) => tg
             .setValue(settings.impliedRelations.cousinsIsSibling)
             .onChange(async (val) => {
             settings.impliedRelations.cousinsIsSibling = val;
-            await plugin.saveSettings();
-            await refreshIndex(plugin);
-        }));
-        new obsidian.Setting(relationDetails)
-            .setName("Siblings' Siblings")
-            .setDesc("Treat your siblings' siblings as your siblings")
-            .addToggle((tg) => tg
-            .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
-            .onChange(async (val) => {
-            settings.impliedRelations.siblingsSiblingIsSibling = val;
             await plugin.saveSettings();
             await refreshIndex(plugin);
         }));
@@ -28738,7 +28699,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.showBCs = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         new obsidian.Setting(trailDetails)
             .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
@@ -28749,7 +28709,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.showBCsInEditLPMode = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         const limitTrailFieldsDiv = trailDetails.createDiv({
             cls: "limit-ML-fields",
@@ -28777,7 +28736,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 settings.showTrail = value;
                 await plugin.saveSettings();
                 await drawTrail(plugin);
-                updateLPView();
             });
         })
             .addToggle((toggle) => {
@@ -28788,7 +28746,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 settings.showGrid = value;
                 await plugin.saveSettings();
                 await drawTrail(plugin);
-                updateLPView();
             });
         })
             .addToggle((toggle) => {
@@ -28799,7 +28756,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 settings.showJuggl = value;
                 await plugin.saveSettings();
                 await drawTrail(plugin);
-                updateLPView();
             });
         })
             .addToggle((toggle) => {
@@ -28810,7 +28766,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
                 settings.showPrevNext = value;
                 await plugin.saveSettings();
                 await drawTrail(plugin);
-                updateLPView();
             });
         });
         new obsidian.Setting(trailDetails)
@@ -28820,7 +28775,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.gridDots = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         const dotsColour = trailDetails.createDiv();
         dotsColour.createEl("h4", {
@@ -28841,7 +28795,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.gridHeatmap = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         const heatmapColour = trailDetails.createDiv();
         heatmapColour.createEl("h4", {
@@ -28883,7 +28836,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.showAllPathsIfNoneToIndexNote = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         new obsidian.Setting(trailDetails)
             .setName("Default: All or Shortest")
@@ -28892,7 +28844,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.showAll = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         new obsidian.Setting(trailDetails)
             .setName("Breadcrumb trail seperator")
@@ -28904,7 +28855,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.trailSeperator = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         new obsidian.Setting(trailDetails)
             .setName("No path found message")
@@ -28916,7 +28866,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.noPathMessage = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         new obsidian.Setting(trailDetails)
             .setName("Respect Readable Line Length")
@@ -28927,7 +28876,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
             settings.respectReadableLineLength = value;
             await plugin.saveSettings();
             await drawTrail(plugin);
-            updateLPView();
         }));
         const treeViewDetails = subDetails("Tree View", viewDetails);
         new obsidian.Setting(treeViewDetails)
@@ -54802,7 +54750,7 @@ class BCPlugin extends obsidian.Plugin {
             callback: async () => {
                 settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
                 await this.saveSettings();
-                updateLPView();
+                await drawTrail(this);
             },
         });
         this.addCommand({
@@ -54843,9 +54791,6 @@ class BCPlugin extends obsidian.Plugin {
             });
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
-        //@ts-ignore
-        this.registerEditorExtension(buildCMPlugin(this));
-        console.log("Registered editor extension");
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", getCodeblockCB(this));
     }
     getActiveTYPEView(type) {

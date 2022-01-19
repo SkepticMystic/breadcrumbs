@@ -367,7 +367,7 @@ function addAuntsUncles(g: MultiGraph) {
 
         addEdgeIfNot(g, currN, uncle, {
           dir: "up",
-          // Use the starting nodes parent field
+          // Use the starting node's parent field
           field: currEAttr.field,
           implied: BC_I_AUNT,
         });
@@ -385,7 +385,7 @@ function addCousins(g: MultiGraph) {
         if (parentSiblingAttr.dir !== "same") return;
 
         g.forEachOutEdge(uncle, (k, a, s, cousin) => {
-          if (a.dir !== "down") return;
+          if (a.dir !== "down" || currN === cousin) return;
 
           addEdgeIfNot(g, currN, cousin, {
             dir: "same",

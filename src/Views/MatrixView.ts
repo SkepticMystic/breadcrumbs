@@ -19,7 +19,12 @@ import type {
 } from "../interfaces";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
-import { getRealnImplied, linkClass, splitAndTrim } from "../sharedFunctions";
+import {
+  getMatrixNeighbours,
+  getRealnImplied,
+  linkClass,
+  splitAndTrim,
+} from "../sharedFunctions";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -124,7 +129,8 @@ export default class MatrixView extends ItemView {
     if (!mainG) return [];
 
     const { basename } = currFile;
-    const realsnImplieds = getRealnImplied(plugin, basename);
+    // const realsnImplieds = getRealnImplied(plugin, basename);
+    const realsnImplieds = getMatrixNeighbours(plugin, basename);
 
     return userHiers.map((hier) => {
       const filteredRealNImplied: {

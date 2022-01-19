@@ -3,7 +3,7 @@ import { dfsFromNode } from "graphology-traversal";
 import type { Attributes } from "graphology-types";
 import { info } from "loglevel";
 import type { App } from "obsidian";
-import { BC_ORDER } from "./constants";
+import { BC_I_REFLEXIVE, BC_ORDER } from "./constants";
 // import { DIRECTIONS } from "./constants";
 import type {
   BCSettings,
@@ -101,7 +101,7 @@ export function getReflexiveClosure(
       //@ts-ignore
       dir: closeAsOpposite ? oppDir : dir,
       field: closeAsOpposite ? oppField : field,
-      implied: true,
+      implied: BC_I_REFLEXIVE,
     });
   });
   return copy;

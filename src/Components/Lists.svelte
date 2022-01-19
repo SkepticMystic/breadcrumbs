@@ -41,9 +41,9 @@
 
               <ol>
                 {#each square.realItems as realItem}
-                  <li class={realItem.implied ?? ""}>
+                  <li>
                     <div
-                      class={realItem.cls}
+                      class="{realItem.cls} {realItem.implied ?? ''}"
                       on:click={async (e) => openOrSwitch(app, realItem.to, e)}
                       on:mouseover={(e) =>
                         hoverPreview(e, matrixView, realItem.to)}
@@ -66,10 +66,10 @@
                     class="BC-Implied {treatCurrNodeAsImpliedSibling &&
                     impliedItem.to === currFile.basename
                       ? 'BC-active-note'
-                      : ''} {impliedItem.implied ?? ''}"
+                      : ''}"
                   >
                     <div
-                      class={impliedItem.cls}
+                      class="{impliedItem.cls} {impliedItem.implied ?? ''}"
                       on:click={async (e) =>
                         openOrSwitch(app, impliedItem.to, e)}
                       on:mouseover={(e) =>

@@ -304,6 +304,34 @@ export function getRealnImplied(
   return realsnImplieds;
 }
 
+export function getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
+  const { closedG } = plugin;
+  const { userHiers } = plugin.settings;
+  const neighbours = blankRealNImplied();
+  if (!closedG) return neighbours;
+
+  closedG.forEachEdge(currNode, (k, a, s, t) => {
+    const { field, dir, implied } = a as {
+      field: string;
+      dir: Directions;
+      implied?: string;
+    };
+
+    if (s === currNode) {
+      neighbours[dir].reals.push({ to: t, field, implied });
+    } else {
+      neighbours[getOppDir(dir)].implieds.push({
+        to: s,
+        field:
+          getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir),
+        implied,
+      });
+    }
+  });
+
+  return neighbours;
+}
+
 export function iterateHiers(
   userHiers: UserHier[],
   fn: (hier: UserHier, dir: Directions, field: string) => void
