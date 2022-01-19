@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.40.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.0...2.40.1) (2022-01-19)
+
+
+### Bug Fixes
+
+* **impliedRelations:** :bug: Default settings should be the same as current BC behaviour ([6fe275a](https://github.com/SkepticMystic/breadcrumbs/commit/6fe275a1e1212c0461932cb44df449df1e9e2522))
+
 ## [2.40.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.39.3...2.40.0) (2022-01-19)
 
 
