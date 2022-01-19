@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.40.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.39.3...2.40.0) (2022-01-19)
+
+
+### Features
+
+* **impliedRelations:** :sparkles: Multiple new implied relationship types, each with their own toggle ([43260b3](https://github.com/SkepticMystic/breadcrumbs/commit/43260b3dea594f20aab8a6f4e045de72ad723e80))
+
+
+### Bug Fixes
+
+* Trail view in lp doesn't scroll with element, simpler solution ([2cb4378](https://github.com/SkepticMystic/breadcrumbs/commit/2cb437864973594e61ee045a0e37652fae0ae088))
+
 ### [2.39.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.39.2...2.39.3) (2022-01-16)
 
 ### [2.39.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.39.1...2.39.2) (2022-01-16)
