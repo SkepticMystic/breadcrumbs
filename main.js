@@ -6337,7 +6337,7 @@ function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
 }
 
 function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { app, settings } = plugin;
+    const { settings } = plugin;
     const { userHiers, regexNoteField } = settings;
     const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
@@ -28189,17 +28189,32 @@ class MatrixView extends obsidian.ItemView {
         return Promise.resolve();
     }
     getAlt(node) {
-        var _a;
+        var _a, _b;
         const { altLinkFields, showAllAliases } = this.plugin.settings;
         if (altLinkFields.length) {
-            const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
-            if (file) {
-                const metadata = this.app.metadataCache.getFileCache(file);
-                for (const altField of altLinkFields) {
-                    const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
+            // dv First
+            const dv = (_a = this.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
+            if (dv) {
+                const page = dv.page(node);
+                if (!page)
+                    return null;
+                for (const alt of altLinkFields) {
+                    const value = page[alt];
                     const arr = typeof value === "string" ? splitAndTrim(value) : value;
                     if (value)
                         return showAllAliases ? arr.join(", ") : arr[0];
+                }
+            }
+            else {
+                const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
+                if (file) {
+                    const metadata = this.app.metadataCache.getFileCache(file);
+                    for (const altField of altLinkFields) {
+                        const value = (_b = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _b === void 0 ? void 0 : _b[altField];
+                        const arr = typeof value === "string" ? splitAndTrim(value) : value;
+                        if (value)
+                            return showAllAliases ? arr.join(", ") : arr[0];
+                    }
                 }
             }
         }

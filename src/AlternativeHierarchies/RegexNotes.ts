@@ -12,9 +12,10 @@ export function addRegexNotesToGraph(
   frontms: dvFrontmatterCache[],
   mainG: MultiGraph
 ) {
-  const { app, settings } = plugin;
+  const { settings } = plugin;
   const { userHiers, regexNoteField } = settings;
   const fields = getFields(userHiers);
+
   eligableAlts.forEach((altFile) => {
     const regexNoteFile = altFile.file;
     const regexNoteBasename = getDVBasename(regexNoteFile);

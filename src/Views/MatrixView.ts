@@ -9,7 +9,7 @@ import {
   MATRIX_VIEW,
   TRAIL_ICON,
 } from "../constants";
-import { getOppDir, getSubInDirs } from "../graphUtils";
+import { getOppDir } from "../graphUtils";
 import type {
   Directions,
   internalLinkObj,
@@ -21,7 +21,6 @@ import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
 import {
   getMatrixNeighbours,
-  getRealnImplied,
   linkClass,
   splitAndTrim,
 } from "../sharedFunctions";
@@ -73,15 +72,29 @@ export default class MatrixView extends ItemView {
   getAlt(node: string): string | null {
     const { altLinkFields, showAllAliases } = this.plugin.settings;
     if (altLinkFields.length) {
-      const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
-      if (file) {
-        const metadata = this.app.metadataCache.getFileCache(file);
-        for (const altField of altLinkFields) {
-          const value = metadata?.frontmatter?.[altField];
+      // dv First
+      const dv = this.app.plugins.plugins.dataview?.api;
+      if (dv) {
+        const page = dv.page(node);
+        if (!page) return null;
+        for (const alt of altLinkFields) {
+          const value = page[alt] as string;
 
           const arr: string[] =
             typeof value === "string" ? splitAndTrim(value) : value;
           if (value) return showAllAliases ? arr.join(", ") : arr[0];
+        }
+      } else {
+        const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
+        if (file) {
+          const metadata = this.app.metadataCache.getFileCache(file);
+          for (const altField of altLinkFields) {
+            const value = metadata?.frontmatter?.[altField];
+
+            const arr: string[] =
+              typeof value === "string" ? splitAndTrim(value) : value;
+            if (value) return showAllAliases ? arr.join(", ") : arr[0];
+          }
         }
       }
     } else return null;
