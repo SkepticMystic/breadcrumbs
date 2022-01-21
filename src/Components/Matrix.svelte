@@ -25,7 +25,7 @@
     : 'BC-empty-view'}"
 >
   {#each filteredSquaresArr as squares}
-    <div>
+    <div class="BC-matrix-hier">
       {#each squares as square}
         {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
           <div class="BC-Matrix-square">
