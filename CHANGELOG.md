@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.40.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.1...2.40.2) (2022-01-21)
+
+
+### Bug Fixes
+
+* **impliedRelations:** :bug: A fallback field already is the opp field ([a584da5](https://github.com/SkepticMystic/breadcrumbs/commit/a584da56c5b7505e8e0c07e2124d6bd585e7619b))
+* **impliedRelations:** :bug: GetOppFallback if needed inside reflexiveClosure ([0ee790f](https://github.com/SkepticMystic/breadcrumbs/commit/0ee790f70e234c8ce3dcd6edcdc60ee9f1470c19))
+
 ### [2.40.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.0...2.40.1) (2022-01-19)
 
 
