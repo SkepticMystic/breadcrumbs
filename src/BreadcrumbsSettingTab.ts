@@ -81,7 +81,9 @@ export class BCSettingTab extends PluginSettingTab {
     //   null
     // );
 
-    relationDetails.createEl("p", {text: 'Here you can toggle on/off different ypes of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.'})
+    relationDetails.createEl("p", {
+      text: "Here you can toggle on/off different ypes of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.",
+    });
 
     new Setting(relationDetails)
       .setName("Same Parent is Siblings")
@@ -369,24 +371,21 @@ export class BCSettingTab extends PluginSettingTab {
             <li>3 = next</li>
             <li>4 = prev</li>
           </ul>
-          <strong>Note:</strong> You can only change the order of the directions. You can't add or remove directions.`
+          <strong>Note:</strong> You can remove numbers to hide those directions in the Matrix View. For example, <code>02</code> will only show up and down, in that order.`
         )
       )
       .addText((text) => {
         text.setValue(settings.squareDirectionsOrder.join(""));
         text.inputEl.onblur = async () => {
           const value = text.getValue();
+          const values = value.split("");
           if (
-            value.length === 5 &&
-            value.includes("0") &&
-            value.includes("1") &&
-            value.includes("2") &&
-            value.includes("3") &&
-            value.includes("4")
+            value.length <= 5 &&
+            values.every((value) => ["0", "1", "2", "3", "4"].includes(value))
           ) {
-            settings.squareDirectionsOrder = value
-              .split("")
-              .map((order) => Number.parseInt(order)) as (0 | 1 | 2 | 3 | 4)[];
+            settings.squareDirectionsOrder = values.map((order) =>
+              Number.parseInt(order)
+            ) as (0 | 1 | 2 | 3 | 4)[];
             await plugin.saveSettings();
             await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
           } else {
