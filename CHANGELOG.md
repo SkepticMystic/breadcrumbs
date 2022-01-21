@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.41.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.4...2.41.0) (2022-01-21)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: Hide directions from the matrix view using the `Directions Order` setting ([cede96a](https://github.com/SkepticMystic/breadcrumbs/commit/cede96adeb741dfcfa26fb4787afb27592925ddd))
+
 ### [2.40.4](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.3...2.40.4) (2022-01-21)
 
 
