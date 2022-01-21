@@ -4871,6 +4871,8 @@ function getOppFields(userHiers, field) {
     if (field.endsWith(">"))
         return field.slice(0, -4);
     const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
+    if (!fieldHier || !fieldDir)
+        return undefined;
     const oppDir = getOppDir(fieldDir);
     return fieldHier[oppDir];
 }
@@ -25173,16 +25175,9 @@ async function drawTrail(plugin) {
             db.end2G();
             return;
         }
-        let view;
-        let livePreview = false;
-        if (mode === "preview") {
-            view = activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view");
-        }
-        else {
-            view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-            if (view.hasClass("is-live-preview"))
-                livePreview = true;
-        }
+        const view = mode === "preview"
+            ? activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view")
+            : activeMDView.contentEl.querySelector("div.markdown-source-view");
         (_c = activeMDView.containerEl
             .querySelectorAll(".BC-trail")) === null || _c === void 0 ? void 0 : _c.forEach((trail) => trail.remove());
         const closedUp = getLimitedTrailSub(plugin);

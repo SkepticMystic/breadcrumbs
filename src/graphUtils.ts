@@ -186,6 +186,7 @@ export function getOppFields(userHiers: UserHier[], field: string) {
   // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
   if (field.endsWith(">")) return field.slice(0, -4);
   const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
+  if (!fieldHier || !fieldDir) return undefined;
   const oppDir = getOppDir(fieldDir);
   return fieldHier[oppDir];
 }

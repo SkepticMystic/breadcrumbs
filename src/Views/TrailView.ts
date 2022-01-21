@@ -42,6 +42,13 @@ function getLimitedTrailSub(plugin: BCPlugin) {
   return getSubInDirs(closed, "up");
 }
 
+function getGraphForTrail(plugin: BCPlugin) {
+  const { closedG } = plugin;
+  const { userHiers, limitTrailCheckboxes } = plugin.settings;
+
+  closedG;
+}
+
 function getBreadcrumbs(
   settings: BCSettings,
   g: MultiGraph,
@@ -140,16 +147,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       return;
     }
 
-    let view: HTMLElement;
-    let livePreview: boolean = false;
-    if (mode === "preview") {
-      view = activeMDView.previewMode.containerEl.querySelector(
-        "div.markdown-preview-view"
-      );
-    } else {
-      view = activeMDView.contentEl.querySelector("div.markdown-source-view");
-      if (view.hasClass("is-live-preview")) livePreview = true;
-    }
+    const view =
+      mode === "preview"
+        ? activeMDView.previewMode.containerEl.querySelector(
+            "div.markdown-preview-view"
+          )
+        : activeMDView.contentEl.querySelector("div.markdown-source-view");
 
     activeMDView.containerEl
       .querySelectorAll(".BC-trail")
