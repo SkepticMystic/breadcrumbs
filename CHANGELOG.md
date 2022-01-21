@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.41.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.0...2.41.1) (2022-01-21)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Look for aliases in dv fields, too (fix [#256](https://github.com/SkepticMystic/breadcrumbs/issues/256)) ([baf99aa](https://github.com/SkepticMystic/breadcrumbs/commit/baf99aa37d90db368a6977870944b2868ac07f1b))
+
 ## [2.41.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.4...2.41.0) (2022-01-21)
 
 
