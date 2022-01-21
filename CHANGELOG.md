@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.40.4](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.3...2.40.4) (2022-01-21)
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Remember to getOppFallback when limiting trail sub ([5f5e345](https://github.com/SkepticMystic/breadcrumbs/commit/5f5e3451285b835dd8db8c1651959c20a23ca44a))
+
 ### [2.40.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.2...2.40.3) (2022-01-21)
 
 
