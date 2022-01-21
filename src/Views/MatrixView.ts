@@ -169,13 +169,17 @@ export default class MatrixView extends ItemView {
         const { reals, implieds } = realsnImplieds[dir];
 
         filteredRealNImplied[dir].reals = reals
-          .filter((real) => resultsFilter(real, dir, oppDir, arrow))
+          .filter((real) =>
+            resultsFilter(real, dir as Directions, oppDir, arrow)
+          )
           .map((item) =>
             this.toInternalLinkObj(item.to, true, null, item.implied)
           );
 
         filteredRealNImplied[dir].implieds = implieds
-          .filter((implied) => resultsFilter(implied, dir, oppDir, arrow))
+          .filter((implied) =>
+            resultsFilter(implied, dir as Directions, oppDir, arrow)
+          )
           .map((item) =>
             this.toInternalLinkObj(item.to, false, null, item.implied)
           );

@@ -8,7 +8,7 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
-import { BCSettingTab } from "./BreadcrumbsSettingTab";
+import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getCodeblockCB } from "./Codeblocks";
 import { copyGlobalIndex, copyLocalIndex } from "./Commands/CreateIndex";
 import { jumpToFirstDir } from "./Commands/jumpToFirstDir";
