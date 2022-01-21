@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.40.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.2...2.40.3) (2022-01-21)
+
+
+### Bug Fixes
+
+* :bug: return undefined if a corresponding dir opr hier can't be found for a field ([013e161](https://github.com/SkepticMystic/breadcrumbs/commit/013e16116c4e46927565256a058d302428317ac2))
+
 ### [2.40.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.40.1...2.40.2) (2022-01-21)
 
 
