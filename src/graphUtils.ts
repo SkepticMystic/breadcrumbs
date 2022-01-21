@@ -12,7 +12,11 @@ import type {
   NodePath,
   UserHier,
 } from "./interfaces";
-import { getBaseFromMDPath, getFields } from "./sharedFunctions";
+import {
+  fallbackOppField,
+  getBaseFromMDPath,
+  getFields,
+} from "./sharedFunctions";
 
 // TODO - this is a hack to get the graph to work with the approvals
 // I shouldn't need
@@ -90,7 +94,8 @@ export function getReflexiveClosure(
     const { dir, field } = a;
     if (field === undefined) return;
     const oppDir = getOppDir(dir);
-    const oppField = getOppFields(userHiers, field)[0];
+    const oppField =
+      getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
 
     addNodesIfNot(copy, [s, t], {
       //@ts-ignore

@@ -4800,11 +4800,12 @@ function getSubForFields(main, fields) {
 function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
     const copy = g.copy();
     copy.forEachEdge((k, a, s, t) => {
+        var _a;
         const { dir, field } = a;
         if (field === undefined)
             return;
         const oppDir = getOppDir(dir);
-        const oppField = getOppFields(userHiers, field)[0];
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
         addNodesIfNot(copy, [s, t], {
             //@ts-ignore
             dir: closeAsOpposite ? oppDir : dir,
@@ -4866,6 +4867,9 @@ function getFieldInfo(userHiers, field) {
     return { fieldHier, fieldDir };
 }
 function getOppFields(userHiers, field) {
+    // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
+    if (field.endsWith(">"))
+        return field.slice(0, -4);
     const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
     const oppDir = getOppDir(fieldDir);
     return fieldHier[oppDir];
@@ -27957,7 +27961,7 @@ function create_each_block$5(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "svelte-sp0k97");
+			attr(div, "class", "BC-matrix-hier svelte-sp0k97");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
