@@ -322,3 +322,9 @@ export interface NodePath {
   node: string;
   path: string[];
 }
+
+export interface EdgeAttr {
+  dir: Directions;
+  field: string;
+  implied?: string;
+}

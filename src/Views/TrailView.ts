@@ -1,21 +1,26 @@
 import type { MultiGraph } from "graphology";
 import { error, info } from "loglevel";
 import { MarkdownView, Notice, TFile } from "obsidian";
-import type { BCSettings } from "../interfaces";
 import NextPrev from "../Components/NextPrev.svelte";
 import TrailGrid from "../Components/TrailGrid.svelte";
 import TrailPath from "../Components/TrailPath.svelte";
-import { BC_HIDE_TRAIL, JUGGL_TRAIL_DEFAULTS } from "../constants";
+import {
+  BC_HIDE_TRAIL,
+  blankRealNImplied,
+  JUGGL_TRAIL_DEFAULTS,
+} from "../constants";
 import {
   bfsAllPaths,
+  getOppDir,
   getOppFields,
   getReflexiveClosure,
   getSubForFields,
   getSubInDirs,
 } from "../graphUtils";
+import type { BCSettings, EdgeAttr, RealNImplied } from "../interfaces";
 import type BCPlugin from "../main";
-import { getFields, getRealnImplied } from "../sharedFunctions";
-import {createJugglTrail} from "../Visualisations/Juggl";
+import { fallbackOppField, getFields } from "../sharedFunctions";
+import { createJugglTrail } from "../Visualisations/Juggl";
 
 function getLimitedTrailSub(plugin: BCPlugin) {
   const { settings, mainG } = plugin;
@@ -67,6 +72,31 @@ function getBreadcrumbs(
     .sort((a, b) => a.length - b.length);
 
   return sortedTrails;
+}
+
+function getNextNPrev(plugin: BCPlugin, currNode: string) {
+  const { mainG } = plugin;
+  const { userHiers } = plugin.settings;
+  if (!mainG) return null;
+  const nextNPrev: RealNImplied = blankRealNImplied();
+
+  mainG.forEachEdge(currNode, (k, a, s, t) => {
+    const { dir, field, implied } = a as EdgeAttr;
+    if (dir !== "next" && dir !== "prev") return;
+    if (s === currNode) {
+      nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
+    } else {
+      const oppField =
+        getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
+      nextNPrev[getOppDir(dir)].implieds.push({
+        field: oppField,
+        to: s,
+        real: false,
+        implied,
+      });
+    }
+  });
+  return nextNPrev;
 }
 
 export async function drawTrail(plugin: BCPlugin): Promise<void> {
@@ -134,7 +164,7 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     const {
       next: { reals: rNext, implieds: iNext },
       prev: { reals: rPrev, implieds: iPrev },
-    } = getRealnImplied(plugin, basename, "next");
+    } = getNextNPrev(plugin, basename);
 
     // Remove duplicate implied
     const next = [...rNext];
@@ -163,9 +193,9 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
         : "";
 
     const elForMaxWidth =
-        selectorForMaxWidth !== ""
-            ? document.querySelector(selectorForMaxWidth)
-            : null;
+      selectorForMaxWidth !== ""
+        ? document.querySelector(selectorForMaxWidth)
+        : null;
     const max_width = elForMaxWidth
       ? getComputedStyle(elForMaxWidth).getPropertyValue("max-width")
       : "100%";
@@ -178,9 +208,8 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       }`,
       attr: {
         style:
-            (mode !== "preview" ? `max-width: ${max_width};` : "") +
-            "margin: 0 auto;",
-
+          (mode !== "preview" ? `max-width: ${max_width};` : "") +
+          "margin: 0 auto;",
       },
     });
 

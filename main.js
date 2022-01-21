@@ -25121,6 +25121,32 @@ function getBreadcrumbs(settings, g, currFile) {
         .sort((a, b) => a.length - b.length);
     return sortedTrails;
 }
+function getNextNPrev(plugin, currNode) {
+    const { mainG } = plugin;
+    const { userHiers } = plugin.settings;
+    if (!mainG)
+        return null;
+    const nextNPrev = blankRealNImplied();
+    mainG.forEachEdge(currNode, (k, a, s, t) => {
+        var _a;
+        const { dir, field, implied } = a;
+        if (dir !== "next" && dir !== "prev")
+            return;
+        if (s === currNode) {
+            nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
+        }
+        else {
+            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+            nextNPrev[getOppDir(dir)].implieds.push({
+                field: oppField,
+                to: s,
+                real: false,
+                implied,
+            });
+        }
+    });
+    return nextNPrev;
+}
 async function drawTrail(plugin) {
     var _a, _b, _c, _d;
     try {
@@ -25163,7 +25189,7 @@ async function drawTrail(plugin) {
         const sortedTrails = getBreadcrumbs(settings, closedUp, file);
         loglevel.info({ sortedTrails });
         const { basename } = file;
-        const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getRealnImplied(plugin, basename, "next");
+        const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getNextNPrev(plugin, basename);
         // Remove duplicate implied
         const next = [...rNext];
         iNext.forEach((i) => {
