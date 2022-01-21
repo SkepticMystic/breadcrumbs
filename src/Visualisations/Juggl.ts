@@ -16,8 +16,12 @@ import { Component, Events, MetadataCache, TFile } from "obsidian";
 import { createIndex } from "../Commands/CreateIndex";
 import JugglButton from "../Components/JugglButton.svelte";
 import { JUGGL_CB_DEFAULTS } from "../constants";
-import { dfsAllPaths, getReflexiveClosure, getSubInDirs } from "../graphUtils";
 import type BCPlugin from "../main";
+import {
+  dfsAllPaths,
+  getReflexiveClosure,
+  getSubInDirs,
+} from "../Utils/graphUtils";
 const STORE_ID = "core";
 
 class BCStoreEvents extends Events implements DataStoreEvents {}

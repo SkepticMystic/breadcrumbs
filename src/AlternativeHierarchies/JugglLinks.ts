@@ -2,10 +2,10 @@ import type { MultiGraph } from "graphology";
 import { parseTypedLink } from "juggl-api";
 import type { TFile } from "obsidian";
 import { splitLinksRegex } from "../constants";
-import { getFieldInfo, getTargetOrder, populateMain } from "../graphUtils";
 import type { BCSettings, dvFrontmatterCache, JugglLink } from "../interfaces";
 import type BCPlugin from "../main";
-import { getFields } from "../sharedFunctions";
+import { getTargetOrder, populateMain } from "../Utils/graphUtils";
+import { getFieldInfo, getFields } from "../Utils/HierUtils";
 
 // TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
 // => {[note: string]: {type: string, linksInLine: string[]}[]}

@@ -2,8 +2,8 @@
   import type { App, TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import type { BCSettings, SquareProps } from "../interfaces";
+  import { dropPathNDendron } from "../Utils/generalUtils";
   import type MatrixView from "../Views/MatrixView";
-  import { dropPathNDendron } from "../sharedFunctions";
 
   export let filteredSquaresArr: SquareProps[][];
   export let currFile: TFile;

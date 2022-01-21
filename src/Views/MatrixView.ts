@@ -9,7 +9,6 @@ import {
   MATRIX_VIEW,
   TRAIL_ICON,
 } from "../constants";
-import { getOppDir } from "../graphUtils";
 import type {
   Directions,
   internalLinkObj,
@@ -19,11 +18,8 @@ import type {
 } from "../interfaces";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
-import {
-  getMatrixNeighbours,
-  linkClass,
-  splitAndTrim,
-} from "../sharedFunctions";
+import { linkClass, splitAndTrim } from "../Utils/generalUtils";
+import { fallbackOppField, getOppDir, getOppFields } from "../Utils/HierUtils";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -129,6 +125,34 @@ export default class MatrixView extends ItemView {
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
+  getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
+    const { closedG } = plugin;
+    const { userHiers } = plugin.settings;
+    const neighbours = blankRealNImplied();
+    if (!closedG) return neighbours;
+
+    closedG.forEachEdge(currNode, (k, a, s, t) => {
+      const { field, dir, implied } = a as {
+        field: string;
+        dir: Directions;
+        implied?: string;
+      };
+
+      if (s === currNode) {
+        neighbours[dir].reals.push({ to: t, field, implied });
+      } else {
+        neighbours[getOppDir(dir)].implieds.push({
+          to: s,
+          field:
+            getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir),
+          implied,
+        });
+      }
+    });
+
+    return neighbours;
+  }
+
   getHierSquares(userHiers: UserHier[], currFile: TFile): SquareProps[][] {
     const { plugin } = this;
     const { mainG, settings } = plugin;
@@ -143,7 +167,7 @@ export default class MatrixView extends ItemView {
 
     const { basename } = currFile;
     // const realsnImplieds = getRealnImplied(plugin, basename);
-    const realsnImplieds = getMatrixNeighbours(plugin, basename);
+    const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
 
     return userHiers.map((hier) => {
       const filteredRealNImplied: {

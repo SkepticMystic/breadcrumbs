@@ -3,7 +3,7 @@
   import { openOrSwitch } from "obsidian-community-lib";
   import type { SquareItem } from "../interfaces";
   import type BCPlugin from "../main";
-  import { linkClass } from "../sharedFunctions";
+  import { linkClass } from "../Utils/generalUtils";
 
   export let app: App;
   export let plugin: BCPlugin;

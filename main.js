@@ -2945,6 +2945,460 @@ class Debugger {
     }
 }
 
+const MATRIX_VIEW = "BC-matrix";
+const STATS_VIEW = "BC-stats";
+const DUCK_VIEW = "BC-ducks";
+const TREE_VIEW = "BC-tree";
+const TRAIL_ICON = "BC-trail-icon";
+const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
+const DUCK_ICON = "BC-duck-icon";
+const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
+const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
+const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
+/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
+const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
+const VISTYPES = [
+    "Force Directed Graph",
+    "Tidy Tree",
+    "Circle Packing",
+    "Edge Bundling",
+    "Arc Diagram",
+    "Sunburst",
+    "Tree Map",
+    "Icicle",
+    "Radial Tree",
+];
+const DIRECTIONS$1 = ["up", "same", "down", "next", "prev"];
+const ARROW_DIRECTIONS = {
+    up: "↑",
+    same: "↔",
+    down: "↓",
+    next: "→",
+    prev: "←",
+};
+const RELATIONS = ["Parent", "Sibling", "Child"];
+const REAlCLOSED = ["Real", "Closed"];
+const ALLUNLINKED = ["All", "No Unlinked"];
+const CODEBLOCK_TYPES = ["tree", "juggl"];
+const CODEBLOCK_FIELDS = [
+    "type",
+    "dir",
+    "fields",
+    "depth",
+    "title",
+    "flat",
+    "content",
+    "from",
+    "implied",
+];
+const JUGGL_CB_DEFAULTS = {
+    animateLayout: true,
+    autoAddNodes: false,
+    autoExpand: false,
+    autoZoom: false,
+    coreStore: "core",
+    expandInitial: false,
+    fdgdLayout: "d3-force",
+    filter: "",
+    height: "750px",
+    hoverEdges: false,
+    layout: "force-directed",
+    limit: 250,
+    mergeEdges: true,
+    metaKeyHover: true,
+    mode: "workspace",
+    navigator: true,
+    openWithShift: false,
+    readContent: true,
+    styleGroups: [],
+    toolbar: true,
+    width: "100%",
+    zoomSpeed: 1,
+};
+const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
+    animateLayout: true,
+    autoZoom: false,
+    fdgdLayout: "d3-force",
+    height: "400px",
+    readContent: false,
+    toolbar: false,
+    navigator: false,
+});
+CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
+const blankUserHier = () => {
+    return { up: [], same: [], down: [], next: [], prev: [] };
+};
+const blankRealNImplied = () => {
+    return {
+        up: { reals: [], implieds: [] },
+        down: { reals: [], implieds: [] },
+        same: { reals: [], implieds: [] },
+        next: { reals: [], implieds: [] },
+        prev: { reals: [], implieds: [] },
+    };
+};
+const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE,] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
+    "BC-folder-note",
+    "BC-folder-note-recursive",
+    "BC-tag-note",
+    "BC-tag-note-field",
+    "BC-tag-note-exact",
+    "BC-link-note",
+    "BC-traverse-note",
+    "BC-regex-note",
+    "BC-regex-note-field",
+    "BC-ignore-dendron",
+    "BC-hide-trail",
+    "BC-order",
+];
+const BC_FIELDS_INFO = [
+    {
+        field: BC_FOLDER_NOTE,
+        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_FOLDER_NOTE_RECURSIVE,
+        desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_TAG_NOTE,
+        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
+        after: ": '#",
+        alt: true,
+    },
+    {
+        field: BC_TAG_NOTE_FIELD,
+        desc: "Manually choose the field for this tag-note to use",
+        after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_TAG_NOTE_EXACT,
+        desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_LINK_NOTE,
+        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_TRAVERSE_NOTE,
+        desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
+        after: ": ",
+        alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE,
+        desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
+        after: ": '/",
+        alt: true,
+    },
+    {
+        field: BC_REGEX_NOTE_FIELD,
+        desc: "Manually choose the field for this regex-note to use",
+        after: ": ",
+        alt: false,
+    },
+    {
+        field: BC_IGNORE_DENDRON,
+        desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_HIDE_TRAIL,
+        desc: "Don't show the trail in this note",
+        after: ": true",
+        alt: false,
+    },
+    {
+        field: BC_ORDER,
+        desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+        after: ": ",
+        alt: false,
+    },
+];
+const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
+const DEFAULT_SETTINGS = {
+    addDendronNotes: false,
+    aliasesInIndex: false,
+    alphaSortAsc: true,
+    altLinkFields: [],
+    CSVPaths: "",
+    dateFormat: "YYYY-MM-DD",
+    debugMode: "WARN",
+    defaultView: true,
+    dendronNoteDelimiter: ".",
+    dendronNoteField: "up",
+    downViewWrap: false,
+    dotsColour: "#000000",
+    dvWaitTime: 5000,
+    enableAlphaSort: true,
+    fieldSuggestor: true,
+    filterImpliedSiblingsOfDifferentTypes: false,
+    limitWriteBCCheckboxes: [],
+    CHECKBOX_STATES_OVERWRITTEN: false,
+    gridDots: false,
+    gridHeatmap: false,
+    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
+    hierarchyNotes: [""],
+    HNUpField: "",
+    indexNotes: [""],
+    namingSystemField: "",
+    namingSystemRegex: "",
+    namingSystemSplit: ".",
+    namingSystemEndsWithDelimiter: false,
+    refreshOnNoteChange: false,
+    useAllMetadata: true,
+    openMatrixOnLoad: true,
+    openStatsOnLoad: true,
+    openDuckOnLoad: false,
+    openDownOnLoad: true,
+    parseJugglLinksWithoutJuggl: false,
+    showNameOrType: true,
+    showRelationType: true,
+    regexNoteField: "",
+    rlLeaf: true,
+    showAllPathsIfNoneToIndexNote: false,
+    showAllAliases: true,
+    showBCs: true,
+    showBCsInEditLPMode: false,
+    showRefreshNotice: true,
+    showImpliedRelations: true,
+    showTrail: true,
+    showGrid: true,
+    showJuggl: false,
+    showPrevNext: true,
+    sortByNameShowAlias: false,
+    squareDirectionsOrder: [0, 1, 2, 3, 4],
+    limitTrailCheckboxes: [],
+    limitJumpToFirstFields: [],
+    showAll: false,
+    noPathMessage: `This note has no real or implied parents`,
+    tagNoteField: "",
+    threadIntoNewPane: false,
+    threadingTemplate: "{{field}} of {{current}}",
+    threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
+    trailSeperator: "→",
+    treatCurrNodeAsImpliedSibling: false,
+    trimDendronNotes: false,
+    respectReadableLineLength: true,
+    userHiers: [
+        {
+            up: ["up"],
+            same: ["same"],
+            down: ["down"],
+            next: ["next"],
+            prev: ["prev"],
+        },
+    ],
+    writeBCsInline: false,
+    showWriteAllBCsCmd: false,
+    visGraph: "Force Directed Graph",
+    visRelation: "Parent",
+    visClosed: "Real",
+    visAll: "All",
+    wikilinkIndex: true,
+    impliedRelations: {
+        siblingIdentity: false,
+        sameParentIsSibling: true,
+        siblingsSiblingIsSibling: false,
+        parentsSiblingsIsParents: false,
+        parentsParentsIsParent: false,
+        cousinsIsSibling: false,
+    },
+};
+
+function normalise(arr) {
+    const max = Math.max(...arr);
+    return arr.map((item) => item / max);
+}
+const dropPath = (path) => path.replace(/^.*\//, "");
+const dropDendron = (path, settings) => settings.trimDendronNotes
+    ? path.split(settings.dendronNoteDelimiter).last()
+    : path;
+const dropPathNDendron = (path, settings) => dropDendron(dropPath(path), settings);
+const dropFolder = (path) => path.split("/").last().split(".").slice(0, -1).join(".");
+const splitAndTrim = (fields) => {
+    if (!fields || fields === "")
+        return [];
+    else
+        return fields.split(",").map((str) => str.trim());
+};
+function padArray(arr, finalLength, filler = "") {
+    const copy = [...arr];
+    const currLength = copy.length;
+    if (currLength > finalLength) {
+        throw new Error("Current length is greater than final length");
+    }
+    else if (currLength === finalLength) {
+        return copy;
+    }
+    else {
+        for (let i = currLength; i < finalLength; i++) {
+            copy.push(filler);
+        }
+        return copy;
+    }
+}
+function transpose(A) {
+    const cols = A[0].length;
+    const AT = [];
+    // For each column
+    for (let j = 0; j < cols; j++) {
+        // Add a new row to AT
+        AT.push([]);
+        // And fill it with the values in the jth column of A
+        A.forEach((row) => AT[j].push(row[j]));
+    }
+    return AT;
+}
+/**
+ * Given an array of strings, return an array of objects that represent the runs of consecutive strings
+ * in the array.
+ * @param {string} arr
+ * @returns An array of objects with the following properties:
+ *
+ *   `value`: the value of the run
+ *
+ *   `first`: the index of the first element in the run
+ *
+ *   `last`: the index of the last element in the run
+ */
+function runs(arr) {
+    const runs = [];
+    let i = 0;
+    while (i < arr.length) {
+        const currValue = arr[i];
+        runs.push({ value: currValue, first: i, last: undefined });
+        while (currValue === arr[i]) {
+            i++;
+        }
+        runs.last().last = i - 1;
+    }
+    return runs;
+}
+function swapItems(i, j, arr) {
+    const max = arr.length - 1;
+    if (i < 0 || i > max || j < 0 || j > max)
+        return arr;
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+    return arr;
+}
+const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+function strToRegex(input) {
+    const match = input.match(regNFlags);
+    if (!match)
+        return null;
+    const [, innerRegex, flags] = match;
+    try {
+        const regex = new RegExp(innerRegex, flags);
+        return regex;
+    }
+    catch (e) {
+        console.log(e);
+        return null;
+    }
+}
+
+/**
+ * Get basename from a **Markdown** `path`
+ * @param  {string} path
+ */
+const getBaseFromMDPath = (path) => {
+    const splitSlash = path.split("/").last();
+    if (splitSlash.endsWith(".md")) {
+        return splitSlash.split(".md").slice(0, -1).join(".");
+    }
+    else
+        return splitSlash;
+};
+const getDVBasename = (file) => file.basename || file.name;
+const getFolderName = (file) => { var _a; 
+//@ts-ignore
+return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
+function makeWiki(str, wikiQ = true) {
+    let copy = str.slice();
+    if (wikiQ) {
+        copy = "[[" + copy;
+        copy += "]]";
+    }
+    return copy;
+}
+function dropWikilinks(str) {
+    let copy = str.slice();
+    if (copy.startsWith("[[") && copy.endsWith("]]"))
+        copy = copy.slice(2, -2);
+    return copy;
+}
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {MetaeditApi} api
+ */
+const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
+    const valueStr = value.toString();
+    if (!frontmatter || frontmatter[key] === undefined) {
+        console.log(`Creating: ${key}: ${valueStr}`);
+        await api.createYamlProperty(key, `['${valueStr}']`, file);
+    }
+    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+        console.log("Already Exists!");
+        return;
+    }
+    else {
+        const oldValueFlat = [...[frontmatter[key]]].flat(4);
+        const newValue = [...oldValueFlat, `'${valueStr}'`];
+        console.log(`Updating: ${key}: ${newValue}`);
+        await api.update(key, `[${newValue.join(", ")}]`, file);
+    }
+};
+function splitAtYaml(content) {
+    const startsWithYaml = content.startsWith("---");
+    if (!startsWithYaml)
+        return ["", content];
+    else {
+        const splits = content.split("---");
+        return [
+            splits.slice(0, 2).join("---") + "---",
+            splits.slice(2).join("---"),
+        ];
+    }
+}
+const dropHash = (tag) => tag.startsWith("#") ? tag.slice(1) : tag;
+function getAlt(node, plugin) {
+    var _a;
+    const { app } = plugin;
+    const { altLinkFields, showAllAliases } = plugin.settings;
+    if (altLinkFields.length) {
+        const file = app.metadataCache.getFirstLinkpathDest(node, "");
+        if (file) {
+            const metadata = app.metadataCache.getFileCache(file);
+            for (const altField of altLinkFields) {
+                const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
+                const arr = typeof value === "string" ? splitAndTrim(value) : value;
+                if (value)
+                    return showAllAliases ? arr.join(", ") : arr[0];
+            }
+        }
+    }
+    else
+        return null;
+}
+
 function noop() { }
 function assign(tar, src) {
     // @ts-ignore
@@ -3371,1890 +3825,6 @@ class SvelteComponent {
             this.$$.skip_bound = false;
         }
     }
-}
-
-const MATRIX_VIEW = "BC-matrix";
-const STATS_VIEW = "BC-stats";
-const DUCK_VIEW = "BC-ducks";
-const TREE_VIEW = "BC-tree";
-const TRAIL_ICON = "BC-trail-icon";
-const TRAIL_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M48.8,4c-6,0-13.5,0.5-19.7,3.3S17.9,15.9,17.9,25c0,5,2.6,9.7,6.1,13.9s8.1,8.3,12.6,12.3s9,7.8,12.2,11.5 c3.2,3.7,5.1,7.1,5.1,10.2c0,14.4-13.4,19.3-13.4,19.3c-0.7,0.2-1.2,0.8-1.3,1.5s0.1,1.4,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3 c0,0,16.1-6.1,16.1-23c0-4.6-2.6-8.8-6.1-12.8c-3.5-4-8.1-7.9-12.6-11.8c-4.5-3.9-8.9-7.9-12.2-11.8c-3.2-3.9-5.2-7.7-5.2-11.4 c0-7.8,3.6-11.6,8.8-14S43,8,48.8,8c4.6,0,9.3,0,11,0c0.7,0,1.4-0.4,1.7-1c0.3-0.6,0.3-1.4,0-2s-1-1-1.7-1C58.3,4,53.4,4,48.8,4 L48.8,4z M78.1,4c-0.6,0-1.2,0.2-1.6,0.7l-8.9,9.9c-0.5,0.6-0.7,1.4-0.3,2.2c0.3,0.7,1,1.2,1.8,1.2h0.1l-2.8,2.6 c-0.6,0.6-0.8,1.4-0.5,2.2c0.3,0.8,1,1.3,1.9,1.3h1.3l-4.5,4.6c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h10v4 c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8v-4h10c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L86.9,24h1.3 c0.8,0,1.6-0.5,1.9-1.3c0.3-0.8,0.1-1.6-0.5-2.2l-2.8-2.6h0.1c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.3-2.2l-8.9-9.9 C79.1,4.3,78.6,4,78.1,4L78.1,4z M78,9l4.4,4.9h-0.7c-0.8,0-1.6,0.5-1.9,1.3c-0.3,0.8-0.1,1.6,0.5,2.2l2.8,2.6h-1.1 c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l4.5,4.6H70.8l4.5-4.6c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-1.1 l2.8-2.6c0.6-0.6,0.8-1.4,0.5-2.2c-0.3-0.8-1-1.3-1.9-1.3h-0.7L78,9z M52.4,12c-4.1,0-7.1,0.5-9.4,1.5c-2.3,1-3.8,2.5-4.5,4.3 c-0.7,1.8-0.5,3.6,0.1,5.2c0.6,1.5,1.5,2.9,2.5,3.9c5.4,5.4,18.1,12.6,29.6,21c5.8,4.2,11.2,8.6,15.1,13c3.9,4.4,6.2,8.7,6.2,12.4 c0,14.5-12.9,18.7-12.9,18.7c-0.7,0.2-1.2,0.8-1.4,1.5s0.1,1.5,0.7,1.9c0.6,0.5,1.3,0.6,2,0.3c0,0,15.6-5.6,15.6-22.5 c0-5.3-2.9-10.3-7.2-15.1C84.6,53.6,79,49,73.1,44.7c-11.8-8.6-24.8-16.3-29.2-20.6c-0.6-0.6-1.2-1.5-1.6-2.4 c-0.3-0.9-0.4-1.7-0.1-2.4c0.3-0.7,0.8-1.4,2.3-2c1.5-0.7,4.1-1.2,7.8-1.2c4.9,0,9.4,0.1,9.4,0.1c0.7,0,1.4-0.3,1.8-1 c0.4-0.6,0.4-1.4,0-2.1c-0.4-0.6-1.1-1-1.8-1C61.9,12.1,57.3,12,52.4,12L52.4,12z M24,46c-0.5,0-1.1,0.2-1.4,0.6L9.2,60.5 c-0.6,0.6-0.7,1.4-0.4,2.2c0.3,0.7,1,1.2,1.8,1.2h3l-6.5,6.8c-0.6,0.6-0.7,1.4-0.4,2.2s1,1.2,1.8,1.2H13l-8.5,8.6 C4,83.2,3.8,84,4.2,84.8C4.5,85.5,5.2,86,6,86h16v5.4c0,0.7,0.4,1.4,1,1.8c0.6,0.4,1.4,0.4,2,0c0.6-0.4,1-1,1-1.8V86h16 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.1-1.6-0.4-2.2L35,74h4.4c0.8,0,1.5-0.5,1.8-1.2s0.2-1.6-0.4-2.2l-6.5-6.8h3 c0.8,0,1.5-0.5,1.8-1.2c0.3-0.7,0.2-1.6-0.4-2.2L25.4,46.6C25.1,46.2,24.5,46,24,46L24,46z M24,50.9l8.7,9h-3 c-0.8,0-1.5,0.5-1.8,1.2s-0.2,1.6,0.4,2.2l6.5,6.8h-4.5c-0.8,0-1.5,0.5-1.8,1.2c-0.3,0.7-0.1,1.6,0.4,2.2l8.5,8.6H10.8l8.5-8.6 c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-4.5l6.5-6.8c0.6-0.6,0.7-1.4,0.4-2.2c-0.3-0.7-1-1.2-1.8-1.2h-3L24,50.9z"/>';
-const DUCK_ICON = "BC-duck-icon";
-const DUCK_ICON_SVG = '<path fill="currentColor" stroke="currentColor" d="M72,31c0-1.5-1.2-2.8-2.8-2.8c-1.5,0-2.8,1.2-2.8,2.8s1.2,2.8,2.8,2.8C70.8,33.8,72,32.6,72,31z M80.4,47.7c10.7,0,19.4-8.7,19.4-19.4H88.4c-0.1-0.6-0.1-1.1-0.2-1.7c-1.6-7.1-7.3-12.8-14.3-144c-1.6-0.4-3.1-0.5-4.6-0.5c-10.7,0-19.4,8.7-19.4,19.4v13.9h-9.4c-6.8,0-13.6-2.4-18.2-7.3c-0.7-0.7-1.6-1.1-2.4-11c-1.7,0-3.3,1.3-3.3,3.3c0,16.4,12.5,31,28.6,32.6c1.6,0.2,3.1-1.1,3.1-2.8v-2.8c0-1.4-1-2.6-2.4-2.7c-7.9-09-14.8-6.2-18.4-13.5c4.1,1.6,8.5,2.5,13.1,2.5l17.7,0.1V31c0-6.1,5-11.1,11.1-11.1c0.9,0,1.8,0.1,2.7,0.3c3.9,0.9,7.2,4.2,8.1,8.1C814,34.4,78,39.1,74,41l-4.7,2.3v12.4l2.1,2.4c1.5,1.8,3.4,4.7,3.5,8.8c0.1,3.4-1.3,6.7-3.9,9.4c-3,3-7,4.8-11.2,4.8H43.9c-1,0-2.1-01-3.2-0.2C25.2,79.5,12.3,68.1,8.7,53.2h5.1c-1.2-2.7-2-5.5-2.5-8.3H5.4c-3.3,0-6,3-5.5,6.3c2.9,20.3,19.4,36.1,40,38c1.3,0.1,2.6,02,4,0.2h15.8c12.5,0,23.7-10.2,23.4-22.7c-0.1-5.4-2.2-10.3-5.6-14.1v-4.9H80.4L80.4,47.7z"/>';
-const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
-const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
-/** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
-const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
-const VISTYPES = [
-    "Force Directed Graph",
-    "Tidy Tree",
-    "Circle Packing",
-    "Edge Bundling",
-    "Arc Diagram",
-    "Sunburst",
-    "Tree Map",
-    "Icicle",
-    "Radial Tree",
-];
-const DIRECTIONS$1 = ["up", "same", "down", "next", "prev"];
-const ARROW_DIRECTIONS = {
-    up: "↑",
-    same: "↔",
-    down: "↓",
-    next: "→",
-    prev: "←",
-};
-const RELATIONS = ["Parent", "Sibling", "Child"];
-const REAlCLOSED = ["Real", "Closed"];
-const ALLUNLINKED = ["All", "No Unlinked"];
-const CODEBLOCK_TYPES = ["tree", "juggl"];
-const CODEBLOCK_FIELDS = [
-    "type",
-    "dir",
-    "fields",
-    "depth",
-    "title",
-    "flat",
-    "content",
-    "from",
-    "implied",
-];
-const JUGGL_CB_DEFAULTS = {
-    animateLayout: true,
-    autoAddNodes: false,
-    autoExpand: false,
-    autoZoom: false,
-    coreStore: "core",
-    expandInitial: false,
-    fdgdLayout: "d3-force",
-    filter: "",
-    height: "750px",
-    hoverEdges: false,
-    layout: "force-directed",
-    limit: 250,
-    mergeEdges: true,
-    metaKeyHover: true,
-    mode: "workspace",
-    navigator: true,
-    openWithShift: false,
-    readContent: true,
-    styleGroups: [],
-    toolbar: true,
-    width: "100%",
-    zoomSpeed: 1,
-};
-const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
-    animateLayout: true,
-    autoZoom: false,
-    fdgdLayout: "d3-force",
-    height: "400px",
-    readContent: false,
-    toolbar: false,
-    navigator: false,
-});
-CODEBLOCK_FIELDS.push(...Object.keys(JUGGL_CB_DEFAULTS));
-const blankUserHier = () => {
-    return { up: [], same: [], down: [], next: [], prev: [] };
-};
-const blankRealNImplied = () => {
-    return {
-        up: { reals: [], implieds: [] },
-        down: { reals: [], implieds: [] },
-        same: { reals: [], implieds: [] },
-        next: { reals: [], implieds: [] },
-        prev: { reals: [], implieds: [] },
-    };
-};
-const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE,] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
-    "BC-folder-note",
-    "BC-folder-note-recursive",
-    "BC-tag-note",
-    "BC-tag-note-field",
-    "BC-tag-note-exact",
-    "BC-link-note",
-    "BC-traverse-note",
-    "BC-regex-note",
-    "BC-regex-note-field",
-    "BC-ignore-dendron",
-    "BC-hide-trail",
-    "BC-order",
-];
-const BC_FIELDS_INFO = [
-    {
-        field: BC_FOLDER_NOTE,
-        desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_FOLDER_NOTE_RECURSIVE,
-        desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_TAG_NOTE,
-        desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
-        after: ": '#",
-        alt: true,
-    },
-    {
-        field: BC_TAG_NOTE_FIELD,
-        desc: "Manually choose the field for this tag-note to use",
-        after: ": ",
-        alt: false,
-    },
-    {
-        field: BC_TAG_NOTE_EXACT,
-        desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_LINK_NOTE,
-        desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_TRAVERSE_NOTE,
-        desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
-        after: ": ",
-        alt: true,
-    },
-    {
-        field: BC_REGEX_NOTE,
-        desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
-        after: ": '/",
-        alt: true,
-    },
-    {
-        field: BC_REGEX_NOTE_FIELD,
-        desc: "Manually choose the field for this regex-note to use",
-        after: ": ",
-        alt: false,
-    },
-    {
-        field: BC_IGNORE_DENDRON,
-        desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_HIDE_TRAIL,
-        desc: "Don't show the trail in this note",
-        after: ": true",
-        alt: false,
-    },
-    {
-        field: BC_ORDER,
-        desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
-        after: ": ",
-        alt: false,
-    },
-];
-const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
-const DEFAULT_SETTINGS = {
-    addDendronNotes: false,
-    aliasesInIndex: false,
-    alphaSortAsc: true,
-    altLinkFields: [],
-    CSVPaths: "",
-    dateFormat: "YYYY-MM-DD",
-    debugMode: "WARN",
-    defaultView: true,
-    dendronNoteDelimiter: ".",
-    dendronNoteField: "up",
-    downViewWrap: false,
-    dotsColour: "#000000",
-    dvWaitTime: 5000,
-    enableAlphaSort: true,
-    fieldSuggestor: true,
-    filterImpliedSiblingsOfDifferentTypes: false,
-    limitWriteBCCheckboxes: [],
-    CHECKBOX_STATES_OVERWRITTEN: false,
-    gridDots: false,
-    gridHeatmap: false,
-    heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
-    hierarchyNotes: [""],
-    HNUpField: "",
-    indexNotes: [""],
-    namingSystemField: "",
-    namingSystemRegex: "",
-    namingSystemSplit: ".",
-    namingSystemEndsWithDelimiter: false,
-    refreshOnNoteChange: false,
-    useAllMetadata: true,
-    openMatrixOnLoad: true,
-    openStatsOnLoad: true,
-    openDuckOnLoad: false,
-    openDownOnLoad: true,
-    parseJugglLinksWithoutJuggl: false,
-    showNameOrType: true,
-    showRelationType: true,
-    regexNoteField: "",
-    rlLeaf: true,
-    showAllPathsIfNoneToIndexNote: false,
-    showAllAliases: true,
-    showBCs: true,
-    showBCsInEditLPMode: false,
-    showRefreshNotice: true,
-    showImpliedRelations: true,
-    showTrail: true,
-    showGrid: true,
-    showJuggl: false,
-    showPrevNext: true,
-    sortByNameShowAlias: false,
-    squareDirectionsOrder: [0, 1, 2, 3, 4],
-    limitTrailCheckboxes: [],
-    limitJumpToFirstFields: [],
-    showAll: false,
-    noPathMessage: `This note has no real or implied parents`,
-    tagNoteField: "",
-    threadIntoNewPane: false,
-    threadingTemplate: "{{field}} of {{current}}",
-    threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
-    trailSeperator: "→",
-    treatCurrNodeAsImpliedSibling: false,
-    trimDendronNotes: false,
-    respectReadableLineLength: true,
-    userHiers: [
-        {
-            up: ["up"],
-            same: ["same"],
-            down: ["down"],
-            next: ["next"],
-            prev: ["prev"],
-        },
-    ],
-    writeBCsInline: false,
-    showWriteAllBCsCmd: false,
-    visGraph: "Force Directed Graph",
-    visRelation: "Parent",
-    visClosed: "Real",
-    visAll: "All",
-    wikilinkIndex: true,
-    impliedRelations: {
-        siblingIdentity: false,
-        sameParentIsSibling: true,
-        siblingsSiblingIsSibling: false,
-        parentsSiblingsIsParents: false,
-        parentsParentsIsParent: false,
-        cousinsIsSibling: false,
-    },
-};
-
-var graphology_umd_min = createCommonjsModule(function (module, exports) {
-!function(t,e){module.exports=e();}(commonjsGlobal,(function(){function t(e){return t="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t},t(e)}function e(t,e){t.prototype=Object.create(e.prototype),t.prototype.constructor=t,r(t,e);}function n(t){return n=Object.setPrototypeOf?Object.getPrototypeOf:function(t){return t.__proto__||Object.getPrototypeOf(t)},n(t)}function r(t,e){return r=Object.setPrototypeOf||function(t,e){return t.__proto__=e,t},r(t,e)}function i(){if("undefined"==typeof Reflect||!Reflect.construct)return !1;if(Reflect.construct.sham)return !1;if("function"==typeof Proxy)return !0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(t){return !1}}function o(t,e,n){return o=i()?Reflect.construct:function(t,e,n){var i=[null];i.push.apply(i,e);var o=new(Function.bind.apply(t,i));return n&&r(o,n.prototype),o},o.apply(null,arguments)}function a(t){var e="function"==typeof Map?new Map:void 0;return a=function(t){if(null===t||(i=t,-1===Function.toString.call(i).indexOf("[native code]")))return t;var i;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==e){if(e.has(t))return e.get(t);e.set(t,a);}function a(){return o(t,arguments,n(this).constructor)}return a.prototype=Object.create(t.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),r(a,t)},a(t)}function u(t){if(void 0===t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return t}var c=function(){for(var t=arguments[0],e=1,n=arguments.length;e<n;e++)if(arguments[e])for(var r in arguments[e])t[r]=arguments[e][r];return t};function d(t,e,n,r){var i=t._nodes.get(e),o=null;return i?o="mixed"===r?i.out&&i.out[n]||i.undirected&&i.undirected[n]:"directed"===r?i.out&&i.out[n]:i.undirected&&i.undirected[n]:o}function s(e){return null!==e&&"object"===t(e)&&"function"==typeof e.addUndirectedEdgeWithKey&&"function"==typeof e.dropNode}function h(e){return "object"===t(e)&&null!==e&&e.constructor===Object}function f(t){var e;for(e in t)return !1;return !0}function p(t,e,n){Object.defineProperty(t,e,{enumerable:!1,configurable:!1,writable:!0,value:n});}function l(t,e,n){var r={enumerable:!0,configurable:!0};"function"==typeof n?r.get=n:(r.value=n,r.writable=!1),Object.defineProperty(t,e,r);}function g(t){return !!h(t)&&!(t.attributes&&!Array.isArray(t.attributes))}"function"==typeof Object.assign&&(c=Object.assign);var y,v={exports:{}},b="object"==typeof Reflect?Reflect:null,w=b&&"function"==typeof b.apply?b.apply:function(t,e,n){return Function.prototype.apply.call(t,e,n)};y=b&&"function"==typeof b.ownKeys?b.ownKeys:Object.getOwnPropertySymbols?function(t){return Object.getOwnPropertyNames(t).concat(Object.getOwnPropertySymbols(t))}:function(t){return Object.getOwnPropertyNames(t)};var m=Number.isNaN||function(t){return t!=t};function _(){_.init.call(this);}v.exports=_,v.exports.once=function(t,e){return new Promise((function(n,r){function i(n){t.removeListener(e,o),r(n);}function o(){"function"==typeof t.removeListener&&t.removeListener("error",i),n([].slice.call(arguments));}U(t,e,o,{once:!0}),"error"!==e&&function(t,e,n){"function"==typeof t.on&&U(t,"error",e,n);}(t,i,{once:!0});}))},_.EventEmitter=_,_.prototype._events=void 0,_.prototype._eventsCount=0,_.prototype._maxListeners=void 0;var k=10;function G(t){if("function"!=typeof t)throw new TypeError('The "listener" argument must be of type Function. Received type '+typeof t)}function x(t){return void 0===t._maxListeners?_.defaultMaxListeners:t._maxListeners}function E(t,e,n,r){var i,o,a,u;if(G(n),void 0===(o=t._events)?(o=t._events=Object.create(null),t._eventsCount=0):(void 0!==o.newListener&&(t.emit("newListener",e,n.listener?n.listener:n),o=t._events),a=o[e]),void 0===a)a=o[e]=n,++t._eventsCount;else if("function"==typeof a?a=o[e]=r?[n,a]:[a,n]:r?a.unshift(n):a.push(n),(i=x(t))>0&&a.length>i&&!a.warned){a.warned=!0;var c=new Error("Possible EventEmitter memory leak detected. "+a.length+" "+String(e)+" listeners added. Use emitter.setMaxListeners() to increase limit");c.name="MaxListenersExceededWarning",c.emitter=t,c.type=e,c.count=a.length,u=c,console&&console.warn&&console.warn(u);}return t}function S(){if(!this.fired)return this.target.removeListener(this.type,this.wrapFn),this.fired=!0,0===arguments.length?this.listener.call(this.target):this.listener.apply(this.target,arguments)}function A(t,e,n){var r={fired:!1,wrapFn:void 0,target:t,type:e,listener:n},i=S.bind(r);return i.listener=n,r.wrapFn=i,i}function L(t,e,n){var r=t._events;if(void 0===r)return [];var i=r[e];return void 0===i?[]:"function"==typeof i?n?[i.listener||i]:[i]:n?function(t){for(var e=new Array(t.length),n=0;n<e.length;++n)e[n]=t[n].listener||t[n];return e}(i):N(i,i.length)}function D(t){var e=this._events;if(void 0!==e){var n=e[t];if("function"==typeof n)return 1;if(void 0!==n)return n.length}return 0}function N(t,e){for(var n=new Array(e),r=0;r<e;++r)n[r]=t[r];return n}function U(t,e,n,r){if("function"==typeof t.on)r.once?t.once(e,n):t.on(e,n);else {if("function"!=typeof t.addEventListener)throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type '+typeof t);t.addEventListener(e,(function i(o){r.once&&t.removeEventListener(e,i),n(o);}));}}function j(t){if("function"!=typeof t)throw new Error("obliterator/iterator: expecting a function!");this.next=t;}Object.defineProperty(_,"defaultMaxListeners",{enumerable:!0,get:function(){return k},set:function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received '+t+".");k=t;}}),_.init=function(){void 0!==this._events&&this._events!==Object.getPrototypeOf(this)._events||(this._events=Object.create(null),this._eventsCount=0),this._maxListeners=this._maxListeners||void 0;},_.prototype.setMaxListeners=function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received '+t+".");return this._maxListeners=t,this},_.prototype.getMaxListeners=function(){return x(this)},_.prototype.emit=function(t){for(var e=[],n=1;n<arguments.length;n++)e.push(arguments[n]);var r="error"===t,i=this._events;if(void 0!==i)r=r&&void 0===i.error;else if(!r)return !1;if(r){var o;if(e.length>0&&(o=e[0]),o instanceof Error)throw o;var a=new Error("Unhandled error."+(o?" ("+o.message+")":""));throw a.context=o,a}var u=i[t];if(void 0===u)return !1;if("function"==typeof u)w(u,this,e);else {var c=u.length,d=N(u,c);for(n=0;n<c;++n)w(d[n],this,e);}return !0},_.prototype.addListener=function(t,e){return E(this,t,e,!1)},_.prototype.on=_.prototype.addListener,_.prototype.prependListener=function(t,e){return E(this,t,e,!0)},_.prototype.once=function(t,e){return G(e),this.on(t,A(this,t,e)),this},_.prototype.prependOnceListener=function(t,e){return G(e),this.prependListener(t,A(this,t,e)),this},_.prototype.removeListener=function(t,e){var n,r,i,o,a;if(G(e),void 0===(r=this._events))return this;if(void 0===(n=r[t]))return this;if(n===e||n.listener===e)0==--this._eventsCount?this._events=Object.create(null):(delete r[t],r.removeListener&&this.emit("removeListener",t,n.listener||e));else if("function"!=typeof n){for(i=-1,o=n.length-1;o>=0;o--)if(n[o]===e||n[o].listener===e){a=n[o].listener,i=o;break}if(i<0)return this;0===i?n.shift():function(t,e){for(;e+1<t.length;e++)t[e]=t[e+1];t.pop();}(n,i),1===n.length&&(r[t]=n[0]),void 0!==r.removeListener&&this.emit("removeListener",t,a||e);}return this},_.prototype.off=_.prototype.removeListener,_.prototype.removeAllListeners=function(t){var e,n,r;if(void 0===(n=this._events))return this;if(void 0===n.removeListener)return 0===arguments.length?(this._events=Object.create(null),this._eventsCount=0):void 0!==n[t]&&(0==--this._eventsCount?this._events=Object.create(null):delete n[t]),this;if(0===arguments.length){var i,o=Object.keys(n);for(r=0;r<o.length;++r)"removeListener"!==(i=o[r])&&this.removeAllListeners(i);return this.removeAllListeners("removeListener"),this._events=Object.create(null),this._eventsCount=0,this}if("function"==typeof(e=n[t]))this.removeListener(t,e);else if(void 0!==e)for(r=e.length-1;r>=0;r--)this.removeListener(t,e[r]);return this},_.prototype.listeners=function(t){return L(this,t,!0)},_.prototype.rawListeners=function(t){return L(this,t,!1)},_.listenerCount=function(t,e){return "function"==typeof t.listenerCount?t.listenerCount(e):D.call(t,e)},_.prototype.listenerCount=D,_.prototype.eventNames=function(){return this._eventsCount>0?y(this._events):[]},"undefined"!=typeof Symbol&&(j.prototype[Symbol.iterator]=function(){return this}),j.of=function(){var t=arguments,e=t.length,n=0;return new j((function(){return n>=e?{done:!0}:{done:!1,value:t[n++]}}))},j.empty=function(){return new j((function(){return {done:!0}}))},j.fromSequence=function(t){var e=0,n=t.length;return new j((function(){return e>=n?{done:!0}:{done:!1,value:t[e++]}}))},j.is=function(t){return t instanceof j||"object"==typeof t&&null!==t&&"function"==typeof t.next};var O=j,C={};C.ARRAY_BUFFER_SUPPORT="undefined"!=typeof ArrayBuffer,C.SYMBOL_SUPPORT="undefined"!=typeof Symbol;var z=O,M=C,P=M.ARRAY_BUFFER_SUPPORT,T=M.SYMBOL_SUPPORT;var R=function(t){var e=function(t){return "string"==typeof t||Array.isArray(t)||P&&ArrayBuffer.isView(t)?z.fromSequence(t):"object"!=typeof t||null===t?null:T&&"function"==typeof t[Symbol.iterator]?t[Symbol.iterator]():"function"==typeof t.next?t:null}(t);if(!e)throw new Error("obliterator: target is not iterable nor a valid iterator.");return e},W=R,K=function(t,e){for(var n,r=arguments.length>1?e:1/0,i=r!==1/0?new Array(r):[],o=0,a=W(t);;){if(o===r)return i;if((n=a.next()).done)return o!==e&&(i.length=o),i;i[o++]=n.value;}},I=function(t){function n(e){var n;return (n=t.call(this)||this).name="GraphError",n.message=e,n}return e(n,t),n}(a(Error)),F=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="InvalidArgumentsGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),Y=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="NotFoundGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),B=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="UsageGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I);function q(t,e){this.key=t,this.attributes=e,this.clear();}function J(t,e){this.key=t,this.attributes=e,this.clear();}function V(t,e){this.key=t,this.attributes=e,this.clear();}function H(t,e,n,r,i){this.key=e,this.attributes=i,this.undirected=t,this.source=n,this.target=r;}function Q(t,e,n,r,i,o,a){var u,c,d="out",s="in";if(e&&(d=s="undirected"),t.multi){if(void 0===(c=(u=o[d])[i])&&(c=new Set,u[i]=c),c.add(n),r===i&&e)return;void 0===(u=a[s])[r]&&(u[r]=c);}else {if(o[d][i]=n,r===i&&e)return;a[s][r]=n;}}function X(t,e,n){var r=t.multi,i=n.source,o=n.target,a=i.key,u=o.key,c=i[e?"undirected":"out"],d=e?"undirected":"in";if(u in c)if(r){var s=c[u];1===s.size?(delete c[u],delete o[d][a]):s.delete(n);}else delete c[u];r||delete o[d][a];}q.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.undirectedDegree=0,this.directedSelfLoops=0,this.undirectedSelfLoops=0,this.in={},this.out={},this.undirected={};},J.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};},J.prototype.upgradeToMixed=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.clear=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.upgradeToMixed=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};};function Z(t,e,n,r,i,o,a){var u,c,d,s;if(r=""+r,0===n){if(!(u=t._nodes.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" node in the graph.'));d=i,s=o;}else if(3===n){if(i=""+i,!(c=t._edges.get(i)))throw new Y("Graph.".concat(e,': could not find the "').concat(i,'" edge in the graph.'));var h=c.source.key,f=c.target.key;if(r===h)u=c.target;else {if(r!==f)throw new Y("Graph.".concat(e,': the "').concat(r,'" node is not attached to the "').concat(i,'" edge (').concat(h,", ").concat(f,")."));u=c.source;}d=o,s=a;}else {if(!(c=t._edges.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" edge in the graph.'));u=1===n?c.source:c.target,d=i,s=o;}return [u,d,s]}var $=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes[u]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){return Z(this,e,n,t,r)[0].attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes.hasOwnProperty(u)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];return u.attributes[c]=d,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];if("function"!=typeof d)throw new F("Graph.".concat(e,": updater should be a function."));var s=u.attributes,h=d(s[c]);return s[c]=h,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return delete a.attributes[u],this.emit("nodeAttributesUpdated",{key:a.key,type:"remove",attributes:a.attributes,name:u}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return a.attributes=u,this.emit("nodeAttributesUpdated",{key:a.key,type:"replace",attributes:a.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return c(a.attributes,u),this.emit("nodeAttributesUpdated",{key:a.key,type:"merge",attributes:a.attributes,data:u}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if("function"!=typeof u)throw new F("Graph.".concat(e,": provided updater is not a function."));return a.attributes=u(a.attributes),this.emit("nodeAttributesUpdated",{key:a.key,type:"update",attributes:a.attributes}),this};}}];var tt=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes[r]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t){var r;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>1){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var i=""+t,o=""+arguments[1];if(!(r=d(this,i,o,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(i,'" - "').concat(o,'").'))}else if(t=""+t,!(r=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&r.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return r.attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes.hasOwnProperty(r)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i,this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof i)throw new F("Graph.".concat(e,": updater should be a function."));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i(o.attributes[r]),this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return delete i.attributes[r],this.emit("edgeAttributesUpdated",{key:i.key,type:"remove",attributes:i.attributes,name:r}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r,this.emit("edgeAttributesUpdated",{key:i.key,type:"replace",attributes:i.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return c(i.attributes,r),this.emit("edgeAttributesUpdated",{key:i.key,type:"merge",attributes:i.attributes,data:r}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof r)throw new F("Graph.".concat(e,": provided updater is not a function."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r(i.attributes),this.emit("edgeAttributesUpdated",{key:i.key,type:"update",attributes:i.attributes}),this};}}];var et=O,nt=R,rt=function(){var t,e=arguments,n=-1;return new et((function r(){if(!t){if(++n>=e.length)return {done:!0};t=nt(e[n]);}var i=t.next();return i.done?(t=null,r()):i}))},it=[{name:"edges",type:"mixed"},{name:"inEdges",type:"directed",direction:"in"},{name:"outEdges",type:"directed",direction:"out"},{name:"inboundEdges",type:"mixed",direction:"in"},{name:"outboundEdges",type:"mixed",direction:"out"},{name:"directedEdges",type:"directed"},{name:"undirectedEdges",type:"undirected"}];function ot(t,e){for(var n in e)t.push(e[n].key);}function at(t,e){for(var n in e)e[n].forEach((function(e){return t.push(e.key)}));}function ut(t,e,n){for(var r in t)if(r!==n){var i=t[r];e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected);}}function ct(t,e,n){for(var r in t)r!==n&&t[r].forEach((function(t){return e(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function dt(t,e,n){for(var r in t)if(r!==n){var i=t[r];if(e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected))return i.key}}function st(t,e,n){var r,i,o,a,u;for(var c in t)if(c!==n)for(r=t[c].values();!0!==(i=r.next()).done;)if(a=(o=i.value).source,u=o.target,e(o.key,o.attributes,a.key,u.key,a.attributes,u.attributes,o.undirected))return o.key}function ht(t,e){var n=Object.keys(t),r=n.length,i=null,o=0;return new O((function a(){var u;if(i){var c=i.next();if(c.done)return i=null,o++,a();u=c.value;}else {if(o>=r)return {done:!0};var d=n[o];if(d===e)return o++,a();if((u=t[d])instanceof Set)return i=u.values(),a();o++;}return {done:!1,value:{edge:u.key,attributes:u.attributes,source:u.source.key,target:u.target.key,sourceAttributes:u.source.attributes,targetAttributes:u.target.attributes,undirected:u.undirected}}}))}function ft(t,e,n){var r=e[n];r&&t.push(r.key);}function pt(t,e,n){var r=e[n];r&&r.forEach((function(e){return t.push(e.key)}));}function lt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);}}function gt(t,e,n){var r=t[e];r&&r.forEach((function(t){return n(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function yt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;return n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected)?r.key:void 0}}function vt(t,e,n){var r=t[e];if(r)for(var i,o,a=r.values();!0!==(i=a.next()).done;)if(n((o=i.value).key,o.attributes,o.source.key,o.target.key,o.source.attributes,o.target.attributes,o.undirected))return o.key}function bt(t,e){var n=t[e];if(n instanceof Set){var r=n.values();return new O((function(){var t=r.next();if(t.done)return t;var e=t.value;return {done:!1,value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected}}}))}return O.of([n.key,n.attributes,n.source.key,n.target.key,n.source.attributes,n.target.attributes])}function wt(t,e){if(0===t.size)return [];if("mixed"===e||e===t.type)return "function"==typeof Array.from?Array.from(t._edges.keys()):K(t._edges.keys(),t._edges.size);for(var n,r,i="undirected"===e?t.undirectedSize:t.directedSize,o=new Array(i),a="undirected"===e,u=t._edges.values(),c=0;!0!==(n=u.next()).done;)(r=n.value).undirected===a&&(o[c++]=r.key);return o}function mt(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected);}}function _t(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;if(n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected))return d}}function kt(t,e){if(0===t.size)return O.empty();var n="mixed"!==e&&e!==t.type,r="undirected"===e,i=t._edges.values();return new O((function(){for(var t,e;;){if((t=i.next()).done)return t;if(e=t.value,!n||e.undirected===r)break}return {value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected},done:!1}}))}function Gt(t,e,n,r){var i=[],o=t?at:ot;return "undirected"!==e&&("out"!==n&&o(i,r.in),"in"!==n&&o(i,r.out),!n&&r.directedSelfLoops>0&&i.splice(i.lastIndexOf(r.key),1)),"directed"!==e&&o(i,r.undirected),i}function xt(t,e,n,r,i){var o=t?ct:ut;"undirected"!==e&&("out"!==n&&o(r.in,i),"in"!==n&&o(r.out,i,n?null:r.key)),"directed"!==e&&o(r.undirected,i);}function Et(t,e,n,r,i){var o,a=t?st:dt;if("undirected"!==e){if("out"!==n&&(o=a(r.in,i)))return o;if("in"!==n&&(o=a(r.out,i,n?null:r.key)))return o}if("directed"!==e&&(o=a(r.undirected,i)))return o}function St(t,e,n){var r=O.empty();return "undirected"!==t&&("out"!==e&&void 0!==n.in&&(r=rt(r,ht(n.in))),"in"!==e&&void 0!==n.out&&(r=rt(r,ht(n.out,e?null:n.key)))),"directed"!==t&&void 0!==n.undirected&&(r=rt(r,ht(n.undirected))),r}function At(t,e,n,r,i){var o=e?pt:ft,a=[];return "undirected"!==t&&(void 0!==r.in&&"out"!==n&&o(a,r.in,i),void 0!==r.out&&"in"!==n&&o(a,r.out,i),!n&&r.directedSelfLoops>0&&a.splice(a.lastIndexOf(r.key),1)),"directed"!==t&&void 0!==r.undirected&&o(a,r.undirected,i),a}function Lt(t,e,n,r,i,o){var a=e?gt:lt;"undirected"!==t&&(void 0!==r.in&&"out"!==n&&a(r.in,i,o),r.key!==i&&void 0!==r.out&&"in"!==n&&a(r.out,i,o)),"directed"!==t&&void 0!==r.undirected&&a(r.undirected,i,o);}function Dt(t,e,n,r,i,o){var a,u=e?vt:yt;if("undirected"!==t){if(void 0!==r.in&&"out"!==n&&(a=u(r.in,i,o)))return a;if(r.key!==i&&void 0!==r.out&&"in"!==n&&(a=u(r.out,i,o,n?null:r.key)))return a}if("directed"!==t&&void 0!==r.undirected&&(a=u(r.undirected,i,o)))return a}function Nt(t,e,n,r){var i=O.empty();return "undirected"!==t&&(void 0!==n.in&&"out"!==e&&r in n.in&&(i=rt(i,bt(n.in,r))),void 0!==n.out&&"in"!==e&&r in n.out&&(i=rt(i,bt(n.out,r)))),"directed"!==t&&void 0!==n.undirected&&r in n.undirected&&(i=rt(i,bt(n.undirected,r))),i}var Ut=[{name:"neighbors",type:"mixed"},{name:"inNeighbors",type:"directed",direction:"in"},{name:"outNeighbors",type:"directed",direction:"out"},{name:"inboundNeighbors",type:"mixed",direction:"in"},{name:"outboundNeighbors",type:"mixed",direction:"out"},{name:"directedNeighbors",type:"directed"},{name:"undirectedNeighbors",type:"undirected"}];function jt(t,e){if(void 0!==e)for(var n in e)t.add(n);}function Ot(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;n(u.key,u.attributes);}}function Ct(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;t.has(c.key)||(t.add(c.key),r(c.key,c.attributes));}}function zt(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;if(n(u.key,u.attributes))return u.key}}function Mt(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;if(!t.has(c.key))if(t.add(c.key),r(c.key,c.attributes))return c.key}}function Pt(t,e){var n=Object.keys(e),r=n.length,i=0;return new O((function(){if(i>=r)return {done:!0};var o=e[n[i++]];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===t?u:a;return {done:!1,value:{neighbor:c.key,attributes:c.attributes}}}))}function Tt(t,e,n){var r=Object.keys(n),i=r.length,o=0;return new O((function a(){if(o>=i)return {done:!0};var u=n[r[o++]];u instanceof Set&&(u=u.values().next().value);var c=u.source,d=u.target,s=c===e?d:c;return t.has(s.key)?a():(t.add(s.key),{done:!1,value:{neighbor:s.key,attributes:s.attributes}})}))}function Rt(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Object.keys(n.undirected);if("string"==typeof e)return Object.keys(n[e])}var r=new Set;return "undirected"!==t&&("out"!==e&&jt(r,n.in),"in"!==e&&jt(r,n.out)),"directed"!==t&&jt(r,n.undirected),K(r.values(),r.size)}("mixed"===r?this.type:r,i,e)};}function Wt(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));!function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return Ot(n,n.undirected,r);if("string"==typeof e)return Ot(n,n[e],r)}var i=new Set;"undirected"!==t&&("out"!==e&&Ct(i,n,n.in,r),"in"!==e&&Ct(i,n,n.out,r)),"directed"!==t&&Ct(i,n,n.undirected,r);}("mixed"===r?this.type:r,i,n,e);}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(t,e){var n=[];return this[o](t,(function(t,r){n.push(e(t,r));})),n};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(t,e){var n=[];return this[o](t,(function(t,r){e(t,r)&&n.push(t);})),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(t,e,n){if(arguments.length<3)throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));var r=n;return this[o](t,(function(t,n){r=e(r,t,n);})),r};}function Kt(t,e){var n=e.name,r=e.type,i=e.direction,o=n[0].toUpperCase()+n.slice(1,-1),a="find"+o;t.prototype[a]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(a,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return zt(n,n.undirected,r);if("string"==typeof e)return zt(n,n[e],r)}var i,o=new Set;if("undirected"!==t){if("out"!==e&&(i=Mt(o,n,n.in,r)))return i;if("in"!==e&&(i=Mt(o,n,n.out,r)))return i}if("directed"!==t&&(i=Mt(o,n,n.undirected,r)))return i}("mixed"===r?this.type:r,i,n,e)}};var u="some"+o;t.prototype[u]=function(t,e){return !!this[a](t,e)};var c="every"+o;t.prototype[c]=function(t,e){return !this[a](t,(function(t,n){return !e(t,n)}))};}function It(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Pt(n,n.undirected);if("string"==typeof e)return Pt(n,n[e])}var r=O.empty(),i=new Set;return "undirected"!==t&&("out"!==e&&(r=rt(r,Tt(i,n,n.in))),"in"!==e&&(r=rt(r,Tt(i,n,n.out)))),"directed"!==t&&(r=rt(r,Tt(i,n,n.undirected))),r}("mixed"===r?this.type:r,i,e)};}function Ft(t,e,n,r,i){for(var o,a,u,c,d,s,h,f=r._nodes.values(),p=r.type;!0!==(o=f.next()).done;){var l=!1;if(a=o.value,"undirected"!==p)for(u in c=a.out)if(s=(d=c[u]).target,l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h)return d;if("directed"!==p)for(u in c=a.undirected)if(!(e&&a.key>u)&&((s=(d=c[u]).target).key!==u&&(s=d.source),l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h))return d;if(n&&!l&&(h=i(a.key,null,a.attributes,null,null,null,null),t&&h))return null}}function Yt(t,e,n,r,i){for(var o,a,u,c,d,s,h,f,p,l=r._nodes.values(),g=r.type;!0!==(o=l.next()).done;){var y=!1;if(a=o.value,"undirected"!==g)for(u in s=a.out)for(c=s[u].values();!0!==(d=c.next()).done;)if(f=(h=d.value).target,y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if("directed"!==g)for(u in s=a.undirected)if(!(e&&a.key>u))for(c=s[u].values();!0!==(d=c.next()).done;)if((f=(h=d.value).target).key!==u&&(f=h.source),y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if(n&&!y&&(p=i(a.key,null,a.attributes,null,null,null,null),t&&p))return null}}function Bt(t,e){var n={key:t};return f(e.attributes)||(n.attributes=c({},e.attributes)),n}function qt(t,e){var n={key:t,source:e.source.key,target:e.target.key};return f(e.attributes)||(n.attributes=c({},e.attributes)),e.undirected&&(n.undirected=!0),n}function Jt(t){return h(t)?"key"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?null:"invalid-attributes":"no-key":"not-object"}function Vt(t){return h(t)?"source"in t?"target"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?"undirected"in t&&"boolean"!=typeof t.undirected?"invalid-undirected":null:"invalid-attributes":"no-target":"no-source":"not-object"}var Ht,Qt=(Ht=255&Math.floor(256*Math.random()),function(){return Ht++}),Xt=new Set(["directed","undirected","mixed"]),Zt=new Set(["domain","_events","_eventsCount","_maxListeners"]),$t={allowSelfLoops:!0,multi:!1,type:"mixed"};function te(t,e,n){var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}function ee(t,e,n,r,i,o,a,u){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot add a directed edge to an undirected graph. Use the #.addEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot add an undirected edge to a directed graph. Use the #.addEdge or #.addDirectedEdge instead."));if(u&&!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));if(o=""+o,a=""+a,u=u||{},!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var c=t._nodes.get(o),d=t._nodes.get(a);if(!c)throw new Y("Graph.".concat(e,': source node "').concat(o,'" not found.'));if(!d)throw new Y("Graph.".concat(e,': target node "').concat(a,'" not found.'));var s={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));if(!t.multi&&(r?void 0!==c.undirected[a]:void 0!==c.out[a]))throw new B("Graph.".concat(e,': an edge linking "').concat(o,'" to "').concat(a,"\" already exists. If you really want to add multiple edges linking those nodes, you should create a multi graph by using the 'multi' option."));var f=new H(r,i,c,d,u);return t._edges.set(i,f),o===a?r?(c.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(c.directedSelfLoops++,t._directedSelfLoopCount++):r?(c.undirectedDegree++,d.undirectedDegree++):(c.outDegree++,d.inDegree++),Q(t,r,f,o,a,c,d),r?t._undirectedSize++:t._directedSize++,s.key=i,t.emit("edgeAdded",s),i}function ne(t,e,n,r,i,o,a,u,d){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update a directed edge to an undirected graph. Use the #.mergeEdge/#.updateEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update an undirected edge to a directed graph. Use the #.mergeEdge/#.updateEdge or #.addDirectedEdge instead."));if(u)if(d){if("function"!=typeof u)throw new F("Graph.".concat(e,': invalid updater function. Expecting a function but got "').concat(u,'"'))}else if(!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));var s;if(o=""+o,a=""+a,d&&(s=u,u=void 0),!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var f,p,l=t._nodes.get(o),g=t._nodes.get(a);if(!n&&(f=t._edges.get(i))){if(f.source.key!==o||f.target.key!==a||r&&(f.source.key!==a||f.target.key!==o))throw new B("Graph.".concat(e,': inconsistency detected when attempting to merge the "').concat(i,'" edge with "').concat(o,'" source & "').concat(a,'" target vs. ("').concat(f.source.key,'", "').concat(f.target.key,'").'));p=f;}if(p||t.multi||!l||(p=r?l.undirected[a]:l.out[a]),p){var y=[p.key,!1,!1,!1];if(d?!s:!u)return y;if(d){var v=p.attributes;p.attributes=s(v),t.emit("edgeAttributesUpdated",{type:"replace",key:p.key,attributes:p.attributes});}else c(p.attributes,u),t.emit("edgeAttributesUpdated",{type:"merge",key:p.key,attributes:p.attributes,data:u});return y}u=u||{},d&&s&&(u=s(u));var b={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));var w=!1,m=!1;return l||(l=te(t,o,{}),w=!0,o===a&&(g=l,m=!0)),g||(g=te(t,a,{}),m=!0),f=new H(r,i,l,g,u),t._edges.set(i,f),o===a?r?(l.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(l.directedSelfLoops++,t._directedSelfLoopCount++):r?(l.undirectedDegree++,g.undirectedDegree++):(l.outDegree++,g.inDegree++),Q(t,r,f,o,a,l,g),r?t._undirectedSize++:t._directedSize++,b.key=i,t.emit("edgeAdded",b),[i,!0,w,m]}var re=function(n){function r(t){var e;if(e=n.call(this)||this,"boolean"!=typeof(t=c({},$t,t)).multi)throw new F("Graph.constructor: invalid 'multi' option. Expecting a boolean but got \"".concat(t.multi,'".'));if(!Xt.has(t.type))throw new F('Graph.constructor: invalid \'type\' option. Should be one of "mixed", "directed" or "undirected" but got "'.concat(t.type,'".'));if("boolean"!=typeof t.allowSelfLoops)throw new F("Graph.constructor: invalid 'allowSelfLoops' option. Expecting a boolean but got \"".concat(t.allowSelfLoops,'".'));var r="mixed"===t.type?q:"directed"===t.type?J:V;p(u(e),"NodeDataClass",r);var i=Qt(),o=0;return p(u(e),"_attributes",{}),p(u(e),"_nodes",new Map),p(u(e),"_edges",new Map),p(u(e),"_directedSize",0),p(u(e),"_undirectedSize",0),p(u(e),"_directedSelfLoopCount",0),p(u(e),"_undirectedSelfLoopCount",0),p(u(e),"_edgeKeyGenerator",(function(){var t;do{t="geid_"+i+"_"+o++;}while(e._edges.has(t));return t})),p(u(e),"_options",t),Zt.forEach((function(t){return p(u(e),t,e[t])})),l(u(e),"order",(function(){return e._nodes.size})),l(u(e),"size",(function(){return e._edges.size})),l(u(e),"directedSize",(function(){return e._directedSize})),l(u(e),"undirectedSize",(function(){return e._undirectedSize})),l(u(e),"selfLoopCount",(function(){return e._directedSelfLoopCount+e._undirectedSelfLoopCount})),l(u(e),"directedSelfLoopCount",(function(){return e._directedSelfLoopCount})),l(u(e),"undirectedSelfLoopCount",(function(){return e._undirectedSelfLoopCount})),l(u(e),"multi",e._options.multi),l(u(e),"type",e._options.type),l(u(e),"allowSelfLoops",e._options.allowSelfLoops),l(u(e),"implementation",(function(){return "graphology"})),e}e(r,n);var i=r.prototype;return i._resetInstanceCounters=function(){this._directedSize=0,this._undirectedSize=0,this._directedSelfLoopCount=0,this._undirectedSelfLoopCount=0;},i.hasNode=function(t){return this._nodes.has(""+t)},i.hasDirectedEdge=function(t,e){if("undirected"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&!r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.out[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasUndirectedEdge=function(t,e){if("directed"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.undirected[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasEdge=function(t,e){if(1===arguments.length){var n=""+t;return this._edges.has(n)}if(2===arguments.length){t=""+t,e=""+e;var r=this._nodes.get(t);if(!r)return !1;var i=void 0!==r.out&&r.out[e];return i||(i=void 0!==r.undirected&&r.undirected[e]),!!i&&(!this.multi||!!i.size)}throw new F("Graph.hasEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.directedEdge=function(t,e){if("undirected"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.directedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.directedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.directedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.directedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||void 0;return r?r.key:void 0}},i.undirectedEdge=function(t,e){if("directed"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.undirectedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.undirectedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.undirectedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.undirectedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.undirected&&n.undirected[e]||void 0;return r?r.key:void 0}},i.edge=function(t,e){if(this.multi)throw new B("Graph.edge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.edges instead.");t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.edge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.edge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||n.undirected&&n.undirected[e]||void 0;if(r)return r.key},i.areDirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areDirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)},i.areOutNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out},i.areInNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in},i.areUndirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areUndirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "directed"!==this.type&&e in n.undirected},i.areNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)||"directed"!==this.type&&e in n.undirected},i.areInboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in||"directed"!==this.type&&e in n.undirected},i.areOutboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out||"directed"!==this.type&&e in n.undirected},i.inDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.directedSelfLoops},i.outDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree+e.directedSelfLoops},i.directedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegree: could not find the "'.concat(t,'" node in the graph.'));if("undirected"===this.type)return 0;var n=e.directedSelfLoops;return e.inDegree+n+(e.outDegree+n)},i.undirectedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegree: could not find the "'.concat(t,'" node in the graph.'));if("directed"===this.type)return 0;var n=e.undirectedSelfLoops;return e.undirectedDegree+2*n},i.degree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degree: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree+2*e.undirectedSelfLoops),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree+2*e.directedSelfLoops),n},i.inDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree},i.outDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree},i.directedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.outDegree},i.undirectedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "directed"===this.type?0:e.undirectedDegree},i.degreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree),n},i.source=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.source: could not find the "'.concat(t,'" edge in the graph.'));return e.source.key},i.target=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.target: could not find the "'.concat(t,'" edge in the graph.'));return e.target.key},i.extremities=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.extremities: could not find the "'.concat(t,'" edge in the graph.'));return [e.source.key,e.target.key]},i.opposite=function(t,e){t=""+t,e=""+e;var n=this._edges.get(e);if(!n)throw new Y('Graph.opposite: could not find the "'.concat(e,'" edge in the graph.'));var r=n.source.key,i=n.target.key;if(t===r)return i;if(t===i)return r;throw new Y('Graph.opposite: the "'.concat(t,'" node is not attached to the "').concat(e,'" edge (').concat(r,", ").concat(i,")."))},i.hasExtremity=function(t,e){t=""+t,e=""+e;var n=this._edges.get(t);if(!n)throw new Y('Graph.hasExtremity: could not find the "'.concat(t,'" edge in the graph.'));return n.source.key===e||n.target.key===e},i.isUndirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isUndirected: could not find the "'.concat(t,'" edge in the graph.'));return e.undirected},i.isDirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isDirected: could not find the "'.concat(t,'" edge in the graph.'));return !e.undirected},i.isSelfLoop=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isSelfLoop: could not find the "'.concat(t,'" edge in the graph.'));return e.source===e.target},i.addNode=function(t,e){var n=function(t,e,n){if(n&&!h(n))throw new F('Graph.addNode: invalid attributes. Expecting an object but got "'.concat(n,'"'));if(e=""+e,n=n||{},t._nodes.has(e))throw new B('Graph.addNode: the "'.concat(e,'" node already exist in the graph.'));var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}(this,t,e);return n.key},i.mergeNode=function(t,e){if(e&&!h(e))throw new F('Graph.mergeNode: invalid attributes. Expecting an object but got "'.concat(e,'"'));t=""+t,e=e||{};var n=this._nodes.get(t);return n?(e&&(c(n.attributes,e),this.emit("nodeAttributesUpdated",{type:"merge",key:t,attributes:n.attributes,data:e})),[t,!1]):(n=new this.NodeDataClass(t,e),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:e}),[t,!0])},i.updateNode=function(t,e){if(e&&"function"!=typeof e)throw new F('Graph.updateNode: invalid updater function. Expecting a function but got "'.concat(e,'"'));t=""+t;var n=this._nodes.get(t);if(n){if(e){var r=n.attributes;n.attributes=e(r),this.emit("nodeAttributesUpdated",{type:"replace",key:t,attributes:n.attributes});}return [t,!1]}var i=e?e({}):{};return n=new this.NodeDataClass(t,i),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:i}),[t,!0]},i.dropNode=function(t){var e=this;t=""+t;var n=this._nodes.get(t);if(!n)throw new Y('Graph.dropNode: could not find the "'.concat(t,'" node in the graph.'));this.forEachEdge(t,(function(t){e.dropEdge(t);})),this._nodes.delete(t),this.emit("nodeDropped",{key:t,attributes:n.attributes});},i.dropEdge=function(t){var e;if(arguments.length>1){var n=""+arguments[0],r=""+arguments[1];if(!(e=d(this,n,r,this.type)))throw new Y('Graph.dropEdge: could not find the "'.concat(n,'" -> "').concat(r,'" edge in the graph.'))}else if(t=""+t,!(e=this._edges.get(t)))throw new Y('Graph.dropEdge: could not find the "'.concat(t,'" edge in the graph.'));this._edges.delete(e.key);var i=e,o=i.source,a=i.target,u=i.attributes,c=e.undirected;return o===a?c?(o.undirectedSelfLoops--,this._undirectedSelfLoopCount--):(o.directedSelfLoops--,this._directedSelfLoopCount--):c?(o.undirectedDegree--,a.undirectedDegree--):(o.outDegree--,a.inDegree--),X(this,c,e),c?this._undirectedSize--:this._directedSize--,this.emit("edgeDropped",{key:t,attributes:u,source:o.key,target:a.key,undirected:c}),this},i.clear=function(){this._edges.clear(),this._nodes.clear(),this._resetInstanceCounters(),this.emit("cleared");},i.clearEdges=function(){!function(t){for(var e,n=t._nodes.values();!0!==(e=n.next()).done;)e.value.clear();}(this),this._edges.clear(),this._resetInstanceCounters(),this.emit("edgesCleared");},i.getAttribute=function(t){return this._attributes[t]},i.getAttributes=function(){return this._attributes},i.hasAttribute=function(t){return this._attributes.hasOwnProperty(t)},i.setAttribute=function(t,e){return this._attributes[t]=e,this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.updateAttribute=function(t,e){if("function"!=typeof e)throw new F("Graph.updateAttribute: updater should be a function.");var n=this._attributes[t];return this._attributes[t]=e(n),this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.removeAttribute=function(t){return delete this._attributes[t],this.emit("attributesUpdated",{type:"remove",attributes:this._attributes,name:t}),this},i.replaceAttributes=function(t){if(!h(t))throw new F("Graph.replaceAttributes: provided attributes are not a plain object.");return this._attributes=t,this.emit("attributesUpdated",{type:"replace",attributes:this._attributes}),this},i.mergeAttributes=function(t){if(!h(t))throw new F("Graph.mergeAttributes: provided attributes are not a plain object.");return c(this._attributes,t),this.emit("attributesUpdated",{type:"merge",attributes:this._attributes,data:t}),this},i.updateAttributes=function(t){if("function"!=typeof t)throw new F("Graph.updateAttributes: provided updater is not a function.");return this._attributes=t(this._attributes),this.emit("attributesUpdated",{type:"update",attributes:this._attributes}),this},i.updateEachNodeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachNodeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachNodeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i=this._nodes.values();!0!==(n=i.next()).done;)(r=n.value).attributes=t(r.key,r.attributes);this.emit("eachNodeAttributesUpdated",{hints:e||null});},i.updateEachEdgeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachEdgeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachEdgeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i,o,a=this._edges.values();!0!==(n=a.next()).done;)i=(r=n.value).source,o=r.target,r.attributes=t(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);this.emit("eachEdgeAttributesUpdated",{hints:e||null});},i.forEachAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!1,!1,this,t):Ft(!1,!1,!1,this,t);},i.forEachAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!1,!0,this,t):Ft(!1,!1,!0,this,t);},i.forEachAssymetricAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!0,!1,this,t):Ft(!1,!0,!1,this,t);},i.forEachAssymetricAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!0,!0,this,t):Ft(!1,!0,!0,this,t);},i.nodes=function(){return "function"==typeof Array.from?Array.from(this._nodes.keys()):K(this._nodes.keys(),this._nodes.size)},i.forEachNode=function(t){if("function"!=typeof t)throw new F("Graph.forEachNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes);},i.findNode=function(t){if("function"!=typeof t)throw new F("Graph.findNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return n.key},i.mapNodes=function(t){if("function"!=typeof t)throw new F("Graph.mapNode: expecting a callback.");for(var e,n,r=this._nodes.values(),i=new Array(this.order),o=0;!0!==(e=r.next()).done;)n=e.value,i[o++]=t(n.key,n.attributes);return i},i.someNode=function(t){if("function"!=typeof t)throw new F("Graph.someNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return !0;return !1},i.everyNode=function(t){if("function"!=typeof t)throw new F("Graph.everyNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(!t((n=e.value).key,n.attributes))return !1;return !0},i.filterNodes=function(t){if("function"!=typeof t)throw new F("Graph.filterNodes: expecting a callback.");for(var e,n,r=this._nodes.values(),i=[];!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes)&&i.push(n.key);return i},i.reduceNodes=function(t,e){if("function"!=typeof t)throw new F("Graph.reduceNodes: expecting a callback.");if(arguments.length<2)throw new F("Graph.reduceNodes: missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array.");for(var n,r,i=e,o=this._nodes.values();!0!==(n=o.next()).done;)i=t(i,(r=n.value).key,r.attributes);return i},i.nodeEntries=function(){var t=this._nodes.values();return new O((function(){var e=t.next();if(e.done)return e;var n=e.value;return {value:{node:n.key,attributes:n.attributes},done:!1}}))},i.exportNode=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.exportNode: could not find the "'.concat(t,'" node in the graph.'));return Bt(t,e)},i.exportEdge=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.exportEdge: could not find the "'.concat(t,'" edge in the graph.'));return qt(t,e)},i.export=function(){var t=new Array(this._nodes.size),e=0;this._nodes.forEach((function(n,r){t[e++]=Bt(r,n);}));var n=new Array(this._edges.size);return e=0,this._edges.forEach((function(t,r){n[e++]=qt(r,t);})),{attributes:this.getAttributes(),nodes:t,edges:n,options:{type:this.type,multi:this.multi,allowSelfLoops:this.allowSelfLoops}}},i.importNode=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Jt(t);if(n){if("not-object"===n)throw new F('Graph.importNode: invalid serialized node. A serialized node should be a plain object with at least a "key" property.');if("no-key"===n)throw new F("Graph.importNode: no key provided.");if("invalid-attributes"===n)throw new F("Graph.importNode: invalid attributes. Attributes should be a plain object, null or omitted.")}var r=t.key,i=t.attributes,o=void 0===i?{}:i;return e?this.mergeNode(r,o):this.addNode(r,o),this},i.importEdge=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Vt(t);if(n){if("not-object"===n)throw new F('Graph.importEdge: invalid serialized edge. A serialized edge should be a plain object with at least a "source" & "target" property.');if("no-source"===n)throw new F("Graph.importEdge: missing souce.");if("no-target"===n)throw new F("Graph.importEdge: missing target.");if("invalid-attributes"===n)throw new F("Graph.importEdge: invalid attributes. Attributes should be a plain object, null or omitted.");if("invalid-undirected"===n)throw new F("Graph.importEdge: invalid undirected. Undirected should be boolean or omitted.")}var r=t.source,i=t.target,o=t.attributes,a=void 0===o?{}:o,u=t.undirected,c=void 0!==u&&u;return "key"in t?(e?c?this.mergeUndirectedEdgeWithKey:this.mergeDirectedEdgeWithKey:c?this.addUndirectedEdgeWithKey:this.addDirectedEdgeWithKey).call(this,t.key,r,i,a):(e?c?this.mergeUndirectedEdge:this.mergeDirectedEdge:c?this.addUndirectedEdge:this.addDirectedEdge).call(this,r,i,a),this},i.import=function(t){var e,n,r,i=arguments.length>1&&void 0!==arguments[1]&&arguments[1];if(s(t))return this.import(t.export(),i),this;if(!h(t))throw new F("Graph.import: invalid argument. Expecting a serialized graph or, alternatively, a Graph instance.");if(t.attributes){if(!h(t.attributes))throw new F("Graph.import: invalid attributes. Expecting a plain object.");i?this.mergeAttributes(t.attributes):this.replaceAttributes(t.attributes);}if(t.nodes){if(r=t.nodes,!Array.isArray(r))throw new F("Graph.import: invalid nodes. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importNode(r[e],i);}if(t.edges){if(r=t.edges,!Array.isArray(r))throw new F("Graph.import: invalid edges. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importEdge(r[e],i);}return this},i.nullCopy=function(t){var e=new r(c({},this._options,t));return e.replaceAttributes(c({},this.getAttributes())),e},i.emptyCopy=function(t){var e=this.nullCopy(t);return this._nodes.forEach((function(t,n){var r=c({},t.attributes);t=new e.NodeDataClass(n,r),e._nodes.set(n,t);})),e},i.copy=function(){for(var t,e,n=this.emptyCopy(),r=this._edges.values();!0!==(t=r.next()).done;)ee(n,"copy",!1,(e=t.value).undirected,e.key,e.source.key,e.target.key,c({},e.attributes));return n},i.upgradeToMixed=function(){return "mixed"===this.type||(this._nodes.forEach((function(t){return t.upgradeToMixed()})),this._options.type="mixed",l(this,"type",this._options.type),p(this,"NodeDataClass",q)),this},i.upgradeToMulti=function(){return this.multi||(this._options.multi=!0,l(this,"multi",!0),(t=this)._nodes.forEach((function(e,n){if(e.out)for(var r in e.out){var i=new Set;i.add(e.out[r]),e.out[r]=i,t._nodes.get(r).in[n]=i;}if(e.undirected)for(var o in e.undirected)if(!(o>n)){var a=new Set;a.add(e.undirected[o]),e.undirected[o]=a,t._nodes.get(o).undirected[n]=a;}}))),this;var t;},i.toJSON=function(){return this.export()},i.toString=function(){return "[object Graph]"},i.inspect=function(){var e=this,n={};this._nodes.forEach((function(t,e){n[e]=t.attributes;}));var r={},i={};this._edges.forEach((function(t,n){var o,a=t.undirected?"--":"->",u="",c=t.source.key,d=t.target.key;t.undirected&&c>d&&(o=c,c=d,d=o);var s="(".concat(c,")").concat(a,"(").concat(d,")");n.startsWith("geid_")?e.multi&&(void 0===i[s]?i[s]=0:i[s]++,u+="".concat(i[s],". ")):u+="[".concat(n,"]: "),r[u+=s]=t.attributes;}));var o={};for(var a in this)this.hasOwnProperty(a)&&!Zt.has(a)&&"function"!=typeof this[a]&&"symbol"!==t(a)&&(o[a]=this[a]);return o.attributes=this._attributes,o.nodes=n,o.edges=r,p(o,"constructor",this.constructor),o},r}(v.exports.EventEmitter);"undefined"!=typeof Symbol&&(re.prototype[Symbol.for("nodejs.util.inspect.custom")]=re.prototype.inspect),[{name:function(t){return "".concat(t,"Edge")},generateKey:!0},{name:function(t){return "".concat(t,"DirectedEdge")},generateKey:!0,type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdge")},generateKey:!0,type:"undirected"},{name:function(t){return "".concat(t,"EdgeWithKey")}},{name:function(t){return "".concat(t,"DirectedEdgeWithKey")},type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdgeWithKey")},type:"undirected"}].forEach((function(t){["add","merge","update"].forEach((function(e){var n=t.name(e),r="add"===e?ee:ne;t.generateKey?re.prototype[n]=function(i,o,a){return r(this,n,!0,"undirected"===(t.type||this.type),null,i,o,a,"update"===e)}:re.prototype[n]=function(i,o,a,u){return r(this,n,!1,"undirected"===(t.type||this.type),i,o,a,u,"update"===e)};}));})),function(t){$.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Node"),0),r(t,n("Source"),1),r(t,n("Target"),2),r(t,n("Opposite"),3);}));}(re),function(t){tt.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Edge"),"mixed"),r(t,n("DirectedEdge"),"directed"),r(t,n("UndirectedEdge"),"undirected");}));}(re),function(t){it.forEach((function(e){!function(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];if(!arguments.length)return wt(this,r);if(1===arguments.length){t=""+t;var o=this._nodes.get(t);if(void 0===o)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return Gt(this.multi,"mixed"===r?this.type:r,i,o)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(n,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(n,':  could not find the "').concat(e,'" target node in the graph.'));return At(r,this.multi,i,a,e)}throw new F("Graph.".concat(n,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"===r||"mixed"===this.type||r===this.type){if(1===arguments.length)return mt(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return xt(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Lt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(){var t,e=Array.prototype.slice.call(arguments),n=e.pop();if(0===e.length){var i=0;"directed"!==r&&(i+=this.undirectedSize),"undirected"!==r&&(i+=this.directedSize),t=new Array(i);var a=0;e.push((function(e,r,i,o,u,c,d){t[a++]=n(e,r,i,o,u,c,d);}));}else t=[],e.push((function(e,r,i,o,a,u,c){t.push(n(e,r,i,o,a,u,c));}));return this[o].apply(this,e),t};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop(),n=[];return t.push((function(t,r,i,o,a,u,c){e(t,r,i,o,a,u,c)&&n.push(t);})),this[o].apply(this,t),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(){var t,e,n=Array.prototype.slice.call(arguments);if(n.length<2||n.length>4)throw new F("Graph.".concat(c,": invalid number of arguments (expecting 2, 3 or 4 and got ").concat(n.length,")."));if("function"==typeof n[n.length-1]&&"function"!=typeof n[n.length-2])throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));2===n.length?(t=n[0],e=n[1],n=[]):3===n.length?(t=n[1],e=n[2],n=[n[0]]):4===n.length&&(t=n[2],e=n[3],n=[n[0],n[1]]);var r=e;return n.push((function(e,n,i,o,a,u,c){r=t(r,e,n,i,o,a,u,c);})),this[o].apply(this,n),r};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="find"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return !1;if(1===arguments.length)return _t(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return Et(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Dt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))};var a="some"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[a]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return e(t,n,r,i,o,a,u)})),!!this[o].apply(this,t)};var u="every"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return !e(t,n,r,i,o,a,u)})),!this[o].apply(this,t)};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();if(!arguments.length)return kt(this,r);if(1===arguments.length){t=""+t;var n=this._nodes.get(t);if(!n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return St(r,i,n)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Nt(r,i,a,e)}throw new F("Graph.".concat(o,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e);}));}(re),function(t){Ut.forEach((function(e){Rt(t,e),Wt(t,e),Kt(t,e),It(t,e);}));}(re);var ie=function(t){function n(e){var n=c({type:"directed"},e);if("multi"in n&&!1!==n.multi)throw new F("DirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("directed"!==n.type)throw new F('DirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),oe=function(t){function n(e){var n=c({type:"undirected"},e);if("multi"in n&&!1!==n.multi)throw new F("UndirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("undirected"!==n.type)throw new F('UndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ae=function(t){function n(e){var n=c({multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiGraph.from: inconsistent indication that the graph should be simple in given options!");return t.call(this,n)||this}return e(n,t),n}(re),ue=function(t){function n(e){var n=c({type:"directed",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiDirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("directed"!==n.type)throw new F('MultiDirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ce=function(t){function n(e){var n=c({type:"undirected",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiUndirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("undirected"!==n.type)throw new F('MultiUndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re);function de(t){t.from=function(e,n){var r=c({},e.options,n),i=new t(r);return i.import(e),i};}return de(re),de(ie),de(oe),de(ae),de(ue),de(ce),re.Graph=re,re.DirectedGraph=ie,re.UndirectedGraph=oe,re.MultiGraph=ae,re.MultiDirectedGraph=ue,re.MultiUndirectedGraph=ce,re.InvalidArgumentsGraphError=F,re.NotFoundGraphError=Y,re.UsageGraphError=B,re}));
-
-});
-
-/**
- * Graphology isGraph
- * ===================
- *
- * Very simple function aiming at ensuring the given variable is a
- * graphology instance.
- */
-/**
- * Checking the value is a graphology instance.
- *
- * @param  {any}     value - Target value.
- * @return {boolean}
- */
-var isGraph = function isGraph(value) {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof value.addUndirectedEdgeWithKey === 'function' &&
-    typeof value.dropNode === 'function' &&
-    typeof value.multi === 'boolean'
-  );
-};
-
-var ARRAY_BUFFER_SUPPORT$1 = typeof ArrayBuffer !== 'undefined';
-var SYMBOL_SUPPORT$1 = typeof Symbol !== 'undefined';
-
-var support = {
-	ARRAY_BUFFER_SUPPORT: ARRAY_BUFFER_SUPPORT$1,
-	SYMBOL_SUPPORT: SYMBOL_SUPPORT$1
-};
-
-/**
- * Obliterator ForEach Function
- * =============================
- *
- * Helper function used to easily iterate over mixed values.
- */
-
-var ARRAY_BUFFER_SUPPORT = support.ARRAY_BUFFER_SUPPORT;
-var SYMBOL_SUPPORT = support.SYMBOL_SUPPORT;
-
-/**
- * Function able to iterate over almost any iterable JS value.
- *
- * @param  {any}      iterable - Iterable value.
- * @param  {function} callback - Callback function.
- */
-var foreach = function forEach(iterable, callback) {
-  var iterator, k, i, l, s;
-
-  if (!iterable) throw new Error('obliterator/forEach: invalid iterable.');
-
-  if (typeof callback !== 'function')
-    throw new Error('obliterator/forEach: expecting a callback.');
-
-  // The target is an array or a string or function arguments
-  if (
-    Array.isArray(iterable) ||
-    (ARRAY_BUFFER_SUPPORT && ArrayBuffer.isView(iterable)) ||
-    typeof iterable === 'string' ||
-    iterable.toString() === '[object Arguments]'
-  ) {
-    for (i = 0, l = iterable.length; i < l; i++) callback(iterable[i], i);
-    return;
-  }
-
-  // The target has a #.forEach method
-  if (typeof iterable.forEach === 'function') {
-    iterable.forEach(callback);
-    return;
-  }
-
-  // The target is iterable
-  if (
-    SYMBOL_SUPPORT &&
-    Symbol.iterator in iterable &&
-    typeof iterable.next !== 'function'
-  ) {
-    iterable = iterable[Symbol.iterator]();
-  }
-
-  // The target is an iterator
-  if (typeof iterable.next === 'function') {
-    iterator = iterable;
-    i = 0;
-
-    while (((s = iterator.next()), s.done !== true)) {
-      callback(s.value, i);
-      i++;
-    }
-
-    return;
-  }
-
-  // The target is a plain object
-  for (k in iterable) {
-    if (iterable.hasOwnProperty(k)) {
-      callback(iterable[k], k);
-    }
-  }
-
-  return;
-};
-
-/**
- * Mnemonist Typed Array Helpers
- * ==============================
- *
- * Miscellaneous helpers related to typed arrays.
- */
-
-var typedArrays = createCommonjsModule(function (module, exports) {
-/**
- * When using an unsigned integer array to store pointers, one might want to
- * choose the optimal word size in regards to the actual numbers of pointers
- * to store.
- *
- * This helpers does just that.
- *
- * @param  {number} size - Expected size of the array to map.
- * @return {TypedArray}
- */
-var MAX_8BIT_INTEGER = Math.pow(2, 8) - 1,
-    MAX_16BIT_INTEGER = Math.pow(2, 16) - 1,
-    MAX_32BIT_INTEGER = Math.pow(2, 32) - 1;
-
-var MAX_SIGNED_8BIT_INTEGER = Math.pow(2, 7) - 1,
-    MAX_SIGNED_16BIT_INTEGER = Math.pow(2, 15) - 1,
-    MAX_SIGNED_32BIT_INTEGER = Math.pow(2, 31) - 1;
-
-exports.getPointerArray = function(size) {
-  var maxIndex = size - 1;
-
-  if (maxIndex <= MAX_8BIT_INTEGER)
-    return Uint8Array;
-
-  if (maxIndex <= MAX_16BIT_INTEGER)
-    return Uint16Array;
-
-  if (maxIndex <= MAX_32BIT_INTEGER)
-    return Uint32Array;
-
-  throw new Error('mnemonist: Pointer Array of size > 4294967295 is not supported.');
-};
-
-exports.getSignedPointerArray = function(size) {
-  var maxIndex = size - 1;
-
-  if (maxIndex <= MAX_SIGNED_8BIT_INTEGER)
-    return Int8Array;
-
-  if (maxIndex <= MAX_SIGNED_16BIT_INTEGER)
-    return Int16Array;
-
-  if (maxIndex <= MAX_SIGNED_32BIT_INTEGER)
-    return Int32Array;
-
-  return Float64Array;
-};
-
-/**
- * Function returning the minimal type able to represent the given number.
- *
- * @param  {number} value - Value to test.
- * @return {TypedArrayClass}
- */
-exports.getNumberType = function(value) {
-
-  // <= 32 bits itnteger?
-  if (value === (value | 0)) {
-
-    // Negative
-    if (Math.sign(value) === -1) {
-      if (value <= 127 && value >= -128)
-        return Int8Array;
-
-      if (value <= 32767 && value >= -32768)
-        return Int16Array;
-
-      return Int32Array;
-    }
-    else {
-
-      if (value <= 255)
-        return Uint8Array;
-
-      if (value <= 65535)
-        return Uint16Array;
-
-      return Uint32Array;
-    }
-  }
-
-  // 53 bits integer & floats
-  // NOTE: it's kinda hard to tell whether we could use 32bits or not...
-  return Float64Array;
-};
-
-/**
- * Function returning the minimal type able to represent the given array
- * of JavaScript numbers.
- *
- * @param  {array}    array  - Array to represent.
- * @param  {function} getter - Optional getter.
- * @return {TypedArrayClass}
- */
-var TYPE_PRIORITY = {
-  Uint8Array: 1,
-  Int8Array: 2,
-  Uint16Array: 3,
-  Int16Array: 4,
-  Uint32Array: 5,
-  Int32Array: 6,
-  Float32Array: 7,
-  Float64Array: 8
-};
-
-// TODO: make this a one-shot for one value
-exports.getMinimalRepresentation = function(array, getter) {
-  var maxType = null,
-      maxPriority = 0,
-      p,
-      t,
-      v,
-      i,
-      l;
-
-  for (i = 0, l = array.length; i < l; i++) {
-    v = getter ? getter(array[i]) : array[i];
-    t = exports.getNumberType(v);
-    p = TYPE_PRIORITY[t.name];
-
-    if (p > maxPriority) {
-      maxPriority = p;
-      maxType = t;
-    }
-  }
-
-  return maxType;
-};
-
-/**
- * Function returning whether the given value is a typed array.
- *
- * @param  {any} value - Value to test.
- * @return {boolean}
- */
-exports.isTypedArray = function(value) {
-  return typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(value);
-};
-
-/**
- * Function used to concat byte arrays.
- *
- * @param  {...ByteArray}
- * @return {ByteArray}
- */
-exports.concat = function() {
-  var length = 0,
-      i,
-      o,
-      l;
-
-  for (i = 0, l = arguments.length; i < l; i++)
-    length += arguments[i].length;
-
-  var array = new (arguments[0].constructor)(length);
-
-  for (i = 0, o = 0; i < l; i++) {
-    array.set(arguments[i], o);
-    o += arguments[i].length;
-  }
-
-  return array;
-};
-
-/**
- * Function used to initialize a byte array of indices.
- *
- * @param  {number}    length - Length of target.
- * @return {ByteArray}
- */
-exports.indices = function(length) {
-  var PointerArray = exports.getPointerArray(length);
-
-  var array = new PointerArray(length);
-
-  for (var i = 0; i < length; i++)
-    array[i] = i;
-
-  return array;
-};
-});
-
-/**
- * Mnemonist Iterable Function
- * ============================
- *
- * Harmonized iteration helpers over mixed iterable targets.
- */
-
-/**
- * Function used to determine whether the given object supports array-like
- * random access.
- *
- * @param  {any} target - Target object.
- * @return {boolean}
- */
-function isArrayLike(target) {
-  return Array.isArray(target) || typedArrays.isTypedArray(target);
-}
-
-/**
- * Function used to guess the length of the structure over which we are going
- * to iterate.
- *
- * @param  {any} target - Target object.
- * @return {number|undefined}
- */
-function guessLength(target) {
-  if (typeof target.length === 'number')
-    return target.length;
-
-  if (typeof target.size === 'number')
-    return target.size;
-
-  return;
-}
-
-/**
- * Function used to convert an iterable to an array.
- *
- * @param  {any}   target - Iteration target.
- * @return {array}
- */
-function toArray(target) {
-  var l = guessLength(target);
-
-  var array = typeof l === 'number' ? new Array(l) : [];
-
-  var i = 0;
-
-  // TODO: we could optimize when given target is array like
-  foreach(target, function(value) {
-    array[i++] = value;
-  });
-
-  return array;
-}
-
-/**
- * Same as above but returns a supplementary indices array.
- *
- * @param  {any}   target - Iteration target.
- * @return {array}
- */
-function toArrayWithIndices(target) {
-  var l = guessLength(target);
-
-  var IndexArray = typeof l === 'number' ?
-    typedArrays.getPointerArray(l) :
-    Array;
-
-  var array = typeof l === 'number' ? new Array(l) : [];
-  var indices = typeof l === 'number' ? new IndexArray(l) : [];
-
-  var i = 0;
-
-  // TODO: we could optimize when given target is array like
-  foreach(target, function(value) {
-    array[i] = value;
-    indices[i] = i++;
-  });
-
-  return [array, indices];
-}
-
-/**
- * Exporting.
- */
-var isArrayLike_1 = isArrayLike;
-var guessLength_1 = guessLength;
-var toArray_1 = toArray;
-var toArrayWithIndices_1 = toArrayWithIndices;
-
-var iterables = {
-	isArrayLike: isArrayLike_1,
-	guessLength: guessLength_1,
-	toArray: toArray_1,
-	toArrayWithIndices: toArrayWithIndices_1
-};
-
-/**
- * Obliterator Iterator Class
- * ===========================
- *
- * Simple class representing the library's iterators.
- */
-/**
- * Iterator class.
- *
- * @constructor
- * @param {function} next - Next function.
- */
-function Iterator(next) {
-  if (typeof next !== 'function')
-    throw new Error('obliterator/iterator: expecting a function!');
-
-  this.next = next;
-}
-
-/**
- * If symbols are supported, we add `next` to `Symbol.iterator`.
- */
-if (typeof Symbol !== 'undefined')
-  Iterator.prototype[Symbol.iterator] = function () {
-    return this;
-  };
-
-/**
- * Returning an iterator of the given values.
- *
- * @param  {any...} values - Values.
- * @return {Iterator}
- */
-Iterator.of = function () {
-  var args = arguments,
-    l = args.length,
-    i = 0;
-
-  return new Iterator(function () {
-    if (i >= l) return {done: true};
-
-    return {done: false, value: args[i++]};
-  });
-};
-
-/**
- * Returning an empty iterator.
- *
- * @return {Iterator}
- */
-Iterator.empty = function () {
-  var iterator = new Iterator(function () {
-    return {done: true};
-  });
-
-  return iterator;
-};
-
-/**
- * Returning an iterator over the given indexed sequence.
- *
- * @param  {string|Array} sequence - Target sequence.
- * @return {Iterator}
- */
-Iterator.fromSequence = function (sequence) {
-  var i = 0,
-    l = sequence.length;
-
-  return new Iterator(function () {
-    if (i >= l) return {done: true};
-
-    return {done: false, value: sequence[i++]};
-  });
-};
-
-/**
- * Returning whether the given value is an iterator.
- *
- * @param  {any} value - Value.
- * @return {boolean}
- */
-Iterator.is = function (value) {
-  if (value instanceof Iterator) return true;
-
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.next === 'function'
-  );
-};
-
-/**
- * Exporting.
- */
-var iterator = Iterator;
-
-/**
- * Mnemonist FixedDeque
- * =====================
- *
- * Fixed capacity double-ended queue implemented as ring deque.
- */
-
-/**
- * FixedDeque.
- *
- * @constructor
- */
-function FixedDeque(ArrayClass, capacity) {
-
-  if (arguments.length < 2)
-    throw new Error('mnemonist/fixed-deque: expecting an Array class and a capacity.');
-
-  if (typeof capacity !== 'number' || capacity <= 0)
-    throw new Error('mnemonist/fixed-deque: `capacity` should be a positive number.');
-
-  this.ArrayClass = ArrayClass;
-  this.capacity = capacity;
-  this.items = new ArrayClass(this.capacity);
-  this.clear();
-}
-
-/**
- * Method used to clear the structure.
- *
- * @return {undefined}
- */
-FixedDeque.prototype.clear = function() {
-
-  // Properties
-  this.start = 0;
-  this.size = 0;
-};
-
-/**
- * Method used to append a value to the deque.
- *
- * @param  {any}    item - Item to append.
- * @return {number}      - Returns the new size of the deque.
- */
-FixedDeque.prototype.push = function(item) {
-  if (this.size === this.capacity)
-    throw new Error('mnemonist/fixed-deque.push: deque capacity (' + this.capacity + ') exceeded!');
-
-  var index = (this.start + this.size) % this.capacity;
-
-  this.items[index] = item;
-
-  return ++this.size;
-};
-
-/**
- * Method used to prepend a value to the deque.
- *
- * @param  {any}    item - Item to prepend.
- * @return {number}      - Returns the new size of the deque.
- */
-FixedDeque.prototype.unshift = function(item) {
-  if (this.size === this.capacity)
-    throw new Error('mnemonist/fixed-deque.unshift: deque capacity (' + this.capacity + ') exceeded!');
-
-  var index = this.start - 1;
-
-  if (this.start === 0)
-    index = this.capacity - 1;
-
-  this.items[index] = item;
-  this.start = index;
-
-  return ++this.size;
-};
-
-/**
- * Method used to pop the deque.
- *
- * @return {any} - Returns the popped item.
- */
-FixedDeque.prototype.pop = function() {
-  if (this.size === 0)
-    return;
-
-  const index = (this.start + this.size - 1) % this.capacity;
-
-  this.size--;
-
-  return this.items[index];
-};
-
-/**
- * Method used to shift the deque.
- *
- * @return {any} - Returns the shifted item.
- */
-FixedDeque.prototype.shift = function() {
-  if (this.size === 0)
-    return;
-
-  var index = this.start;
-
-  this.size--;
-  this.start++;
-
-  if (this.start === this.capacity)
-    this.start = 0;
-
-  return this.items[index];
-};
-
-/**
- * Method used to peek the first value of the deque.
- *
- * @return {any}
- */
-FixedDeque.prototype.peekFirst = function() {
-  if (this.size === 0)
-    return;
-
-  return this.items[this.start];
-};
-
-/**
- * Method used to peek the last value of the deque.
- *
- * @return {any}
- */
-FixedDeque.prototype.peekLast = function() {
-  if (this.size === 0)
-    return;
-
-  var index = this.start + this.size - 1;
-
-  if (index > this.capacity)
-    index -= this.capacity;
-
-  return this.items[index];
-};
-
-/**
- * Method used to get the desired value of the deque.
- *
- * @param  {number} index
- * @return {any}
- */
-FixedDeque.prototype.get = function(index) {
-  if (this.size === 0)
-    return;
-
-  index = this.start + index;
-
-  if (index > this.capacity)
-    index -= this.capacity;
-
-  return this.items[index];
-};
-
-/**
- * Method used to iterate over the deque.
- *
- * @param  {function}  callback - Function to call for each item.
- * @param  {object}    scope    - Optional scope.
- * @return {undefined}
- */
-FixedDeque.prototype.forEach = function(callback, scope) {
-  scope = arguments.length > 1 ? scope : this;
-
-  var c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  while (j < l) {
-    callback.call(scope, this.items[i], j, this);
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-  }
-};
-
-/**
- * Method used to convert the deque to a JavaScript array.
- *
- * @return {array}
- */
-// TODO: optional array class as argument?
-FixedDeque.prototype.toArray = function() {
-
-  // Optimization
-  var offset = this.start + this.size;
-
-  if (offset < this.capacity)
-    return this.items.slice(this.start, offset);
-
-  var array = new this.ArrayClass(this.size),
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  while (j < l) {
-    array[j] = this.items[i];
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-  }
-
-  return array;
-};
-
-/**
- * Method used to create an iterator over the deque's values.
- *
- * @return {Iterator}
- */
-FixedDeque.prototype.values = function() {
-  var items = this.items,
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  return new iterator(function() {
-    if (j >= l)
-      return {
-        done: true
-      };
-
-    var value = items[i];
-
-    i++;
-    j++;
-
-    if (i === c)
-      i = 0;
-
-    return {
-      value: value,
-      done: false
-    };
-  });
-};
-
-/**
- * Method used to create an iterator over the deque's entries.
- *
- * @return {Iterator}
- */
-FixedDeque.prototype.entries = function() {
-  var items = this.items,
-      c = this.capacity,
-      l = this.size,
-      i = this.start,
-      j = 0;
-
-  return new iterator(function() {
-    if (j >= l)
-      return {
-        done: true
-      };
-
-    var value = items[i];
-
-    i++;
-
-    if (i === c)
-      i = 0;
-
-    return {
-      value: [j++, value],
-      done: false
-    };
-  });
-};
-
-/**
- * Attaching the #.values method to Symbol.iterator if possible.
- */
-if (typeof Symbol !== 'undefined')
-  FixedDeque.prototype[Symbol.iterator] = FixedDeque.prototype.values;
-
-/**
- * Convenience known methods.
- */
-FixedDeque.prototype.inspect = function() {
-  var array = this.toArray();
-
-  array.type = this.ArrayClass.name;
-  array.capacity = this.capacity;
-
-  // Trick so that node displays the name of the constructor
-  Object.defineProperty(array, 'constructor', {
-    value: FixedDeque,
-    enumerable: false
-  });
-
-  return array;
-};
-
-if (typeof Symbol !== 'undefined')
-  FixedDeque.prototype[Symbol.for('nodejs.util.inspect.custom')] = FixedDeque.prototype.inspect;
-
-/**
- * Static @.from function taking an arbitrary iterable & converting it into
- * a deque.
- *
- * @param  {Iterable} iterable   - Target iterable.
- * @param  {function} ArrayClass - Array class to use.
- * @param  {number}   capacity   - Desired capacity.
- * @return {FiniteStack}
- */
-FixedDeque.from = function(iterable, ArrayClass, capacity) {
-  if (arguments.length < 3) {
-    capacity = iterables.guessLength(iterable);
-
-    if (typeof capacity !== 'number')
-      throw new Error('mnemonist/fixed-deque.from: could not guess iterable length. Please provide desired capacity as last argument.');
-  }
-
-  var deque = new FixedDeque(ArrayClass, capacity);
-
-  if (iterables.isArrayLike(iterable)) {
-    var i, l;
-
-    for (i = 0, l = iterable.length; i < l; i++)
-      deque.items[i] = iterable[i];
-
-    deque.size = l;
-
-    return deque;
-  }
-
-  iterables.forEach(iterable, function(value) {
-    deque.push(value);
-  });
-
-  return deque;
-};
-
-/**
- * Exporting.
- */
-var fixedDeque = FixedDeque;
-
-/**
- * Graphology Traversal Utils
- * ===========================
- *
- * Miscellaneous utils used throughout the library.
- */
-function TraversalRecord$2(node, attr, depth) {
-  this.node = node;
-  this.attributes = attr;
-  this.depth = depth;
-}
-
-var TraversalRecord_1 = TraversalRecord$2;
-
-var utils = {
-	TraversalRecord: TraversalRecord_1
-};
-
-/**
- * Graphology Traversal BFS
- * =========================
- *
- * Breadth-First Search traversal function.
- */
-
-var TraversalRecord$1 = utils.TraversalRecord;
-
-/**
- * BFS traversal in the given graph using a callback function
- *
- * @param {Graph}    graph    - Target graph.
- * @param {function} callback - Iteration callback.
- */
-function bfs(graph, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/bfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/bfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  var seen = new Set();
-  var queue = new fixedDeque(Array, graph.order);
-  var record, depth;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
-  }
-
-  graph.forEachNode(function(node, attr) {
-    if (seen.has(node))
-      return;
-
-    seen.add(node);
-    queue.push(new TraversalRecord$1(node, attr, 0));
-
-    while (queue.size !== 0) {
-      record = queue.shift();
-      depth = record.depth;
-
-      callback(record.node, record.attributes, depth);
-
-      graph.forEachOutboundNeighbor(record.node, neighborCallback);
-    }
-  });
-}
-
-/**
- * BFS traversal in the given graph, starting from the given node, using a
- * callback function.
- *
- * @param {Graph}    graph    - Target graph.
- * @param {string}   node     - Starting node.
- * @param {function} callback - Iteration callback.
- */
-function bfsFromNode(graph, node, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  node = '' + node;
-
-  var seen = new Set();
-  var queue = new fixedDeque(Array, graph.order);
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
-  }
-
-  seen.add(node);
-  queue.push(new TraversalRecord$1(node, graph.getNodeAttributes(node), 0));
-
-  while (queue.size !== 0) {
-    record = queue.shift();
-    depth = record.depth;
-
-    callback(record.node, record.attributes, depth);
-
-    graph.forEachOutboundNeighbor(record.node, neighborCallback);
-  }
-}
-
-var bfs_2 = bfs;
-var bfsFromNode_1 = bfsFromNode;
-
-var bfs_1 = {
-	bfs: bfs_2,
-	bfsFromNode: bfsFromNode_1
-};
-
-/**
- * Graphology Traversal DFS
- * =========================
- *
- * Depth-First Search traversal function.
- */
-
-var TraversalRecord = utils.TraversalRecord;
-
-/**
- * DFS traversal in the given graph using a callback function
- *
- * @param {Graph}    graph    - Target graph.
- * @param {function} callback - Iteration callback.
- */
-function dfs(graph, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  var seen = new Set();
-  var stack = [];
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
-  }
-
-  graph.forEachNode(function(node, attr) {
-    if (seen.has(node))
-      return;
-
-    seen.add(node);
-    stack.push(new TraversalRecord(node, attr, 0));
-
-    while (stack.length !== 0) {
-      record = stack.pop();
-      depth = record.depth;
-
-      callback(record.node, record.attributes, depth);
-
-      graph.forEachOutboundNeighbor(record.node, neighborCallback);
-    }
-  });
-}
-
-/**
- * DFS traversal in the given graph, starting from the given node, using a
- * callback function.
- *
- * @param {Graph}    graph    - Target graph.
- * @param {string}   node     - Starting node.
- * @param {function} callback - Iteration callback.
- */
-function dfsFromNode(graph, node, callback) {
-  if (!isGraph(graph))
-    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
-
-  if (typeof callback !== 'function')
-    throw new Error('graphology-traversal/dfs: given callback is not a function.');
-
-  // Early termination
-  if (graph.order === 0)
-    return;
-
-  node = '' + node;
-
-  var seen = new Set();
-  var stack = [];
-  var depth, record;
-
-  function neighborCallback(neighbor, attr) {
-    if (seen.has(neighbor))
-      return;
-
-    seen.add(neighbor);
-    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
-  }
-
-  seen.add(node);
-  stack.push(new TraversalRecord(node, graph.getNodeAttributes(node), 0));
-
-  while (stack.length !== 0) {
-    record = stack.pop();
-    depth = record.depth;
-
-    callback(record.node, record.attributes, depth);
-
-    graph.forEachOutboundNeighbor(record.node, neighborCallback);
-  }
-}
-
-var dfs_2 = dfs;
-var dfsFromNode_1 = dfsFromNode;
-
-var dfs_1 = {
-	dfs: dfs_2,
-	dfsFromNode: dfsFromNode_1
-};
-
-var graphologyTraversal = createCommonjsModule(function (module, exports) {
-var k;
-
-for (k in bfs_1)
-  exports[k] = bfs_1[k];
-
-for (k in dfs_1)
-  exports[k] = dfs_1[k];
-});
-
-// TODO - this is a hack to get the graph to work with the approvals
-// I shouldn't need
-const DIRECTIONS = ["up", "same", "down", "next", "prev"];
-// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
-// It makes implied relations real
-// TODO use reflexiveClosure instead
-function closeImpliedLinks(real, implied) {
-    const closedG = real.copy();
-    implied.forEachEdge((key, a, s, t) => {
-        closedG.mergeEdge(t, s, a);
-    });
-    return closedG;
-}
-function removeUnlinkedNodes(g) {
-    const copy = g.copy();
-    copy.forEachNode((node) => {
-        if (!copy.degree(node))
-            copy.dropNode(node);
-    });
-    return copy;
-}
-/**
- * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
- * @param  {MultiGraph} main
- * @param  {Directions} dir
- */
-function getSubInDirs(main, ...dirs) {
-    const sub = new graphology_umd_min.MultiGraph();
-    main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
-        if (dirs.includes(a.dir)) {
-            //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
-            sub.addEdge(s, t, a);
-        }
-    });
-    return sub;
-}
-/**
- * Return a subgraph of all nodes & edges with `files.includes(a.field)`
- * @param  {MultiGraph} main
- * @param  {string[]} fields
- */
-function getSubForFields(main, fields) {
-    const sub = new graphology_umd_min.MultiGraph();
-    main.forEachEdge((k, a, s, t) => {
-        if (fields.includes(a.field)) {
-            //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
-            sub.addEdge(s, t, a);
-        }
-    });
-    return sub;
-}
-/**
- * For every edge in `g`, add the reverse of the edge to a copy of `g`.
- *
- * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
- * @param  {MultiGraph} g
- * @param  {UserHier[]} userHiers
- * @param  {boolean} closeAsOpposite
- */
-function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
-    const copy = g.copy();
-    copy.forEachEdge((k, a, s, t) => {
-        var _a;
-        const { dir, field } = a;
-        if (field === undefined)
-            return;
-        const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-        addNodesIfNot(copy, [s, t], {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-        });
-        addEdgeIfNot(copy, t, s, {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-            implied: BC_I_REFLEXIVE,
-        });
-    });
-    return copy;
-}
-function addNodesIfNot(g, nodes, attr = { order: 9999 }) {
-    for (const node of nodes) {
-        g.updateNode(node, (exstantAttrs) => {
-            const extantOrder = exstantAttrs.order;
-            return Object.assign(Object.assign({}, exstantAttrs), { order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order });
-        });
-    }
-}
-function addEdgeIfNot(g, source, target, attr) {
-    if (!g.hasEdge(source, target))
-        g.addEdge(source, target, attr);
-}
-const getSinks = (g) => g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
-const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
-const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
-const getOppDir = (dir) => {
-    switch (dir) {
-        case "up":
-            return "down";
-        case "down":
-            return "up";
-        case "same":
-            return "same";
-        case "next":
-            return "prev";
-        case "prev":
-            return "next";
-    }
-};
-/**
- *  Get the hierarchy and direction that `field` is in
- * */
-function getFieldInfo(userHiers, field) {
-    let fieldDir;
-    let fieldHier;
-    DIRECTIONS.forEach((dir) => {
-        userHiers.forEach((hier) => {
-            if (hier[dir].includes(field)) {
-                fieldDir = dir;
-                fieldHier = hier;
-                return;
-            }
-        });
-    });
-    return { fieldHier, fieldDir };
-}
-function getOppFields(userHiers, field) {
-    // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
-    if (field.endsWith(">"))
-        return field.slice(0, -4);
-    const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
-    if (!fieldHier || !fieldDir)
-        return undefined;
-    const oppDir = getOppDir(fieldDir);
-    return fieldHier[oppDir];
-}
-function dfsAllPaths(g, start) {
-    const queue = [{ node: start, path: [] }];
-    const visited = {};
-    const allPaths = [];
-    let i = 0;
-    while (queue.length > 0 && i < 1000) {
-        i++;
-        const { node, path } = queue.shift();
-        const extPath = [node, ...path];
-        const succsNotVisited = g.hasNode(node)
-            ? g.filterOutNeighbors(node, (succ) => !visited[succ] || visited[succ] < 5)
-            : [];
-        const newItems = succsNotVisited.map((succ) => {
-            visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
-            return { node: succ, path: extPath };
-        });
-        queue.unshift(...newItems);
-        if (!g.hasNode(node) || !g.outDegree(node))
-            allPaths.push(extPath);
-    }
-    return allPaths;
-}
-function bfsAllPaths(g, start) {
-    const pathsArr = [];
-    const queue = [{ node: start, path: [] }];
-    let i = 0;
-    while (queue.length !== 0 && i < 1000) {
-        i++;
-        const { node, path } = queue.shift();
-        const extPath = [node, ...path];
-        const succs = g.hasNode(node)
-            ? g.filterOutNeighbors(node, (n) => !path.includes(n))
-            : [];
-        for (const node of succs) {
-            queue.push({ node, path: extPath });
-        }
-        // terminal node
-        if (!g.hasNode(node) || succs.length === 0) {
-            pathsArr.push(extPath);
-        }
-    }
-    // Splice off the current note from the path
-    pathsArr.forEach((path) => {
-        if (path.length)
-            path.splice(path.length - 1, 1);
-    });
-    loglevel.info({ pathsArr });
-    return pathsArr;
-}
-function removeCycles(g, startNode) {
-    const copy = g.copy();
-    let prevNode = null;
-    graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
-        copy.forEachOutNeighbor(n, (t) => {
-            if (t === prevNode && copy.hasEdge(t, prevNode)) {
-                copy.dropEdge(t, prevNode);
-            }
-        });
-        prevNode = n;
-    });
-    return copy;
-}
-function buildObsGraph(app) {
-    const ObsG = new graphology_umd_min.MultiGraph();
-    const { resolvedLinks, unresolvedLinks } = app.metadataCache;
-    for (const source in resolvedLinks) {
-        if (!source.endsWith(".md"))
-            continue;
-        const sourceBase = getBaseFromMDPath(source);
-        addNodesIfNot(ObsG, [sourceBase]);
-        for (const dest in resolvedLinks[source]) {
-            if (!dest.endsWith(".md"))
-                continue;
-            const destBase = getBaseFromMDPath(dest);
-            addNodesIfNot(ObsG, [destBase]);
-            ObsG.addEdge(sourceBase, destBase, { resolved: true });
-        }
-    }
-    for (const source in unresolvedLinks) {
-        const sourceBase = getBaseFromMDPath(source);
-        addNodesIfNot(ObsG, [sourceBase]);
-        for (const dest in unresolvedLinks[source]) {
-            const destBase = getBaseFromMDPath(dest);
-            addNodesIfNot(ObsG, [destBase]);
-            if (sourceBase === destBase)
-                continue;
-            ObsG.addEdge(sourceBase, destBase, { resolved: false });
-        }
-    }
-    loglevel.info({ ObsG });
-    return ObsG;
-}
-function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
-    var _a;
-    const { userHiers } = settings;
-    const dir = getFieldInfo(userHiers, field).fieldDir;
-    addNodesIfNot(mainG, [source], {
-        order: sourceOrder,
-    });
-    addNodesIfNot(mainG, [target], {
-        order: targetOrder,
-    });
-    addEdgeIfNot(mainG, source, target, {
-        dir,
-        field,
-    });
-    if (fillOpp) {
-        const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
-        addEdgeIfNot(mainG, target, source, {
-            dir: oppDir,
-            field: oppField,
-        });
-    }
-}
-const getTargetOrder = (frontms, target) => {
-    var _a, _b;
-    return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
-};
-const getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
-
-function normalise(arr) {
-    const max = Math.max(...arr);
-    return arr.map((item) => item / max);
-}
-const dropPath = (path) => path.replace(/^.*\//, "");
-const dropDendron = (path, settings) => settings.trimDendronNotes
-    ? path.split(settings.dendronNoteDelimiter).last()
-    : path;
-const dropPathNDendron = (path, settings) => dropDendron(dropPath(path), settings);
-/**
- * Get basename from a **Markdown** `path`
- * @param  {string} path
- */
-const getBaseFromMDPath = (path) => {
-    const splitSlash = path.split("/").last();
-    if (splitSlash.endsWith(".md")) {
-        return splitSlash.split(".md").slice(0, -1).join(".");
-    }
-    else
-        return splitSlash;
-};
-const getDVBasename = (file) => file.basename || file.name;
-const getFolderName = (file) => { var _a; 
-//@ts-ignore
-return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
-const dropFolder = (path) => path.split("/").last().split(".").slice(0, -1).join(".");
-const splitAndTrim = (fields) => {
-    if (!fields || fields === "")
-        return [];
-    else
-        return fields.split(",").map((str) => str.trim());
-};
-function padArray(arr, finalLength, filler = "") {
-    const copy = [...arr];
-    const currLength = copy.length;
-    if (currLength > finalLength) {
-        throw new Error("Current length is greater than final length");
-    }
-    else if (currLength === finalLength) {
-        return copy;
-    }
-    else {
-        for (let i = currLength; i < finalLength; i++) {
-            copy.push(filler);
-        }
-        return copy;
-    }
-}
-function transpose(A) {
-    const cols = A[0].length;
-    const AT = [];
-    // For each column
-    for (let j = 0; j < cols; j++) {
-        // Add a new row to AT
-        AT.push([]);
-        // And fill it with the values in the jth column of A
-        A.forEach((row) => AT[j].push(row[j]));
-    }
-    return AT;
-}
-function runs(arr) {
-    const runs = [];
-    let i = 0;
-    while (i < arr.length) {
-        const currValue = arr[i];
-        runs.push({ value: currValue, first: i, last: undefined });
-        while (currValue === arr[i]) {
-            i++;
-        }
-        runs.last().last = i - 1;
-    }
-    return runs;
-}
-function makeWiki(str, wikiQ = true) {
-    let copy = str.slice();
-    if (wikiQ) {
-        copy = "[[" + copy;
-        copy += "]]";
-    }
-    return copy;
-}
-function dropWikilinks(str) {
-    let copy = str.slice();
-    if (copy.startsWith("[[") && copy.endsWith("]]"))
-        copy = copy.slice(2, -2);
-    return copy;
-}
-/**
- * Get all the fields in `dir`.
- * Returns all fields if `dir === 'all'`
- * @param  {UserHier[]} userHiers
- * @param  {Directions|"all"} dir
- */
-function getFields(userHiers, dir = "all") {
-    const fields = [];
-    userHiers.forEach((hier) => {
-        if (dir === "all") {
-            DIRECTIONS$1.forEach((eachDir) => {
-                fields.push(...hier[eachDir]);
-            });
-        }
-        else {
-            fields.push(...hier[dir]);
-        }
-    });
-    return fields;
-}
-const hierToStr = (hier) => DIRECTIONS$1.map((dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`).join("\n");
-/**
- * Adds or updates the given yaml `key` to `value` in the given TFile
- * @param  {string} key
- * @param  {string} value
- * @param  {TFile} file
- * @param  {FrontMatterCache|undefined} frontmatter
- * @param  {MetaeditApi} api
- */
-const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    const valueStr = value.toString();
-    if (!frontmatter || frontmatter[key] === undefined) {
-        console.log(`Creating: ${key}: ${valueStr}`);
-        await api.createYamlProperty(key, `['${valueStr}']`, file);
-    }
-    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-        console.log("Already Exists!");
-        return;
-    }
-    else {
-        const oldValueFlat = [...[frontmatter[key]]].flat(4);
-        const newValue = [...oldValueFlat, `'${valueStr}'`];
-        console.log(`Updating: ${key}: ${newValue}`);
-        await api.update(key, `[${newValue.join(", ")}]`, file);
-    }
-};
-function splitAtYaml(content) {
-    const startsWithYaml = content.startsWith("---");
-    if (!startsWithYaml)
-        return ["", content];
-    else {
-        const splits = content.split("---");
-        return [
-            splits.slice(0, 2).join("---") + "---",
-            splits.slice(2).join("---"),
-        ];
-    }
-}
-function swapItems(i, j, arr) {
-    const max = arr.length - 1;
-    if (i < 0 || i > max || j < 0 || j > max)
-        return arr;
-    const tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
-    return arr;
-}
-const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
-const fallbackField = (field, dir) => `${field} <${ARROW_DIRECTIONS[dir]}>`;
-const fallbackOppField = (field, dir) => `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
-/** Remember to filter by hierarchy in MatrixView! */
-function getRealnImplied(plugin, currNode, dir = null) {
-    const realsnImplieds = blankRealNImplied();
-    const { settings, closedG } = plugin;
-    const { userHiers } = settings;
-    if (!closedG.hasNode(currNode))
-        return realsnImplieds;
-    closedG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
-        const { field, dir: edgeDir, implied, } = a;
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
-        (dir ? [dir, getOppDir(dir)] : DIRECTIONS$1).forEach((currDir) => {
-            const oppDir = getOppDir(currDir);
-            // Reals
-            if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
-                const arr = realsnImplieds[edgeDir].reals;
-                if (arr.findIndex((item) => item.to === t) === -1) {
-                    arr.push({ to: t, real: true, field, implied });
-                }
-            }
-            // Implieds
-            // If `s !== currNode` then `t` must be
-            else if (edgeDir === currDir || edgeDir === oppDir) {
-                const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
-                if (arr.findIndex((item) => item.to === s) === -1) {
-                    arr.push({
-                        to: s,
-                        real: false,
-                        field: oppField,
-                        implied,
-                    });
-                }
-            }
-        });
-    });
-    return realsnImplieds;
-}
-function getMatrixNeighbours(plugin, currNode) {
-    const { closedG } = plugin;
-    const { userHiers } = plugin.settings;
-    const neighbours = blankRealNImplied();
-    if (!closedG)
-        return neighbours;
-    closedG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
-        const { field, dir, implied } = a;
-        if (s === currNode) {
-            neighbours[dir].reals.push({ to: t, field, implied });
-        }
-        else {
-            neighbours[getOppDir(dir)].implieds.push({
-                to: s,
-                field: (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir),
-                implied,
-            });
-        }
-    });
-    return neighbours;
-}
-function iterateHiers(userHiers, fn) {
-    userHiers.forEach((hier) => {
-        DIRECTIONS$1.forEach((dir) => {
-            hier[dir].forEach((field) => {
-                fn(hier, dir, field);
-            });
-        });
-    });
-}
-function strToRegex(input) {
-    const match = input.match(regNFlags);
-    if (!match)
-        return null;
-    const [, innerRegex, flags] = match;
-    try {
-        const regex = new RegExp(innerRegex, flags);
-        return regex;
-    }
-    catch (e) {
-        console.log(e);
-        return null;
-    }
-}
-const dropHash = (tag) => tag.startsWith("#") ? tag.slice(1) : tag;
-function getAlt(node, plugin) {
-    var _a;
-    const { app } = plugin;
-    const { altLinkFields, showAllAliases } = plugin.settings;
-    if (altLinkFields.length) {
-        const file = app.metadataCache.getFirstLinkpathDest(node, "");
-        if (file) {
-            const metadata = app.metadataCache.getFileCache(file);
-            for (const altField of altLinkFields) {
-                const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
-                const arr = typeof value === "string" ? splitAndTrim(value) : value;
-                if (value)
-                    return showAllAliases ? arr.join(", ") : arr[0];
-            }
-        }
-    }
-    else
-        return null;
 }
 
 /* src\Components\ModifyHNItemComp.svelte generated by Svelte v3.35.0 */
@@ -5836,1055 +4406,6 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
         new HierarchyNoteManipulator(this.app, this.plugin, item).open();
         this.close();
     }
-}
-
-/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
-
-function create_fragment$l(ctx) {
-	let script;
-	let script_src_value;
-	let t;
-	let div;
-	let mounted;
-	let dispose;
-
-	return {
-		c() {
-			script = element("script");
-			t = space();
-			div = element("div");
-			attr(script, "type", "text/javascript");
-			if (script.src !== (script_src_value = "https://ko-fi.com/widgets/widget_2.js")) attr(script, "src", script_src_value);
-		},
-		m(target, anchor) {
-			append(document.head, script);
-			insert(target, t, anchor);
-			insert(target, div, anchor);
-			/*div_binding*/ ctx[2](div);
-
-			if (!mounted) {
-				dispose = listen(script, "load", /*initializeKofi*/ ctx[1]);
-				mounted = true;
-			}
-		},
-		p: noop,
-		i: noop,
-		o: noop,
-		d(detaching) {
-			detach(script);
-			if (detaching) detach(t);
-			if (detaching) detach(div);
-			/*div_binding*/ ctx[2](null);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-function instance$l($$self, $$props, $$invalidate) {
-	let button;
-
-	var initializeKofi = () => {
-		kofiwidget2.init("Support Breadcrumbs development!", "#29abe0", "G2G454TZF");
-		$$invalidate(0, button.innerHTML = kofiwidget2.getHTML(), button);
-	};
-
-	function div_binding($$value) {
-		binding_callbacks[$$value ? "unshift" : "push"](() => {
-			button = $$value;
-			$$invalidate(0, button);
-		});
-	}
-
-	return [button, initializeKofi, div_binding];
-}
-
-class KoFi extends SvelteComponent {
-	constructor(options) {
-		super();
-		init(this, options, instance$l, create_fragment$l, safe_not_equal, {});
-	}
-}
-
-function addCreateIndexSettings(plugin, cmdsDetails) {
-    const { settings } = plugin;
-    const createIndexDetails = subDetails("Create Index", cmdsDetails);
-    new obsidian.Setting(createIndexDetails)
-        .setName("Add wiklink brackets")
-        .setDesc(fragWithHTML("When creating an index, should it wrap the note name in wikilinks <code>[[]]</code> or not.\n✅ = yes, ❌ = no."))
-        .addToggle((toggle) => toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
-        settings.wikilinkIndex = value;
-        await plugin.saveSettings();
-    }));
-    new obsidian.Setting(createIndexDetails)
-        .setName("Show aliases of notes in index")
-        .setDesc("Show the aliases of each note in brackets.\n✅ = yes, ❌ = no.")
-        .addToggle((toggle) => toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
-        settings.aliasesInIndex = value;
-        await plugin.saveSettings();
-    }));
-}
-
-function addCSVSettings(plugin, alternativeHierarchyDetails) {
-    const { settings } = plugin;
-    const csvDetails = subDetails("CSV Notes", alternativeHierarchyDetails);
-    new obsidian.Setting(csvDetails)
-        .setName("CSV Breadcrumb Paths")
-        .setDesc("The file path of a csv files with breadcrumbs information.")
-        .addText((text) => {
-        text.setValue(settings.CSVPaths);
-        text.inputEl.onblur = async () => {
-            settings.CSVPaths = text.inputEl.value;
-            await plugin.saveSettings();
-        };
-    });
-}
-
-function addDebuggingsSettings(plugin, containerEl) {
-    const { settings } = plugin;
-    const debugDetails = details("Debugging", containerEl);
-    new obsidian.Setting(debugDetails)
-        .setName("Debug Mode")
-        .setDesc(fragWithHTML("Set the minimum level of debug messages to console log. If you choose <code>TRACE</code>, then everything will be logged. If you choose <code>ERROR</code>, then only the most necessary issues will be logged. <code>SILENT</code> will turn off all logs."))
-        .addDropdown((dd) => {
-        Object.keys(loglevel.levels).forEach((key) => dd.addOption(key, key));
-        dd.setValue(settings.debugMode).onChange(async (value) => {
-            loglevel.setLevel(value);
-            settings.debugMode = value;
-            await plugin.saveSettings();
-        });
-    });
-    debugDetails.createEl("button", { text: "Console log settings" }, (el) => {
-        el.addEventListener("click", () => console.log(settings));
-    });
-}
-
-function addDendronSettings(plugin, alternativeHierarchyDetails) {
-    const { settings } = plugin;
-    const { userHiers } = settings;
-    const fields = getFields(userHiers);
-    const dendronDetails = subDetails("Dendron Notes", alternativeHierarchyDetails);
-    new obsidian.Setting(dendronDetails)
-        .setName("Add Dendron notes to graph")
-        .setDesc(fragWithHTML("Dendron notes create a hierarchy using note names.</br><code>nmath.algebra</code> is a note about algebra, whose parent is <code>math</code>.</br><code>nmath.calculus.limits</code> is a note about limits whose parent is the note <code>math.calculus</code>, the parent of which is <code>math</code>."))
-        .addToggle((toggle) => toggle.setValue(settings.addDendronNotes).onChange(async (value) => {
-        settings.addDendronNotes = value;
-        await plugin.saveSettings();
-    }));
-    new obsidian.Setting(dendronDetails)
-        .setName("Dendron note delimiter")
-        .setDesc(fragWithHTML("If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is <code>.</code>."))
-        .addText((text) => {
-        text.setPlaceholder("Delimiter").setValue(settings.dendronNoteDelimiter);
-        text.inputEl.onblur = async () => {
-            const value = text.getValue();
-            if (value) {
-                settings.dendronNoteDelimiter = value;
-                await plugin.saveSettings();
-            }
-            else {
-                new obsidian.Notice(`The delimiter can't be blank`);
-                settings.dendronNoteDelimiter = DEFAULT_SETTINGS.dendronNoteDelimiter;
-                await plugin.saveSettings();
-            }
-        };
-    });
-    new obsidian.Setting(dendronDetails)
-        .setName("Trim Dendron Note Names")
-        .setDesc(fragWithHTML("When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> would be trimmed to only display <code>C</code>."))
-        .addToggle((toggle) => toggle.setValue(settings.trimDendronNotes).onChange(async (value) => {
-        settings.trimDendronNotes = value;
-        await plugin.saveSettings();
-        await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-    }));
-    new obsidian.Setting(dendronDetails)
-        .setName("Dendron Note Field")
-        .setDesc("Which field should Breadcrumbs use for Dendron notes?")
-        .addDropdown((cb) => {
-        fields.forEach((field) => {
-            cb.addOption(field, field);
-        });
-        cb.setValue(settings.dendronNoteField);
-        cb.onChange(async (value) => {
-            settings.dendronNoteField = value;
-            await plugin.saveSettings();
-        });
-    });
-}
-
-async function getCSVRows(plugin) {
-    const { CSVPaths } = plugin.settings;
-    const CSVRows = [];
-    if (CSVPaths === "")
-        return CSVRows;
-    const fullPath = obsidian.normalizePath(CSVPaths);
-    const content = await plugin.app.vault.adapter.read(fullPath);
-    const lines = content.split("\n");
-    const headers = lines[0].split(",").map((head) => head.trim());
-    lines.slice(1).forEach((row) => {
-        const rowObj = {};
-        row
-            .split(",")
-            .map((head) => dropWikilinks(head.trim()))
-            .forEach((item, i) => {
-            rowObj[headers[i]] = item;
-        });
-        loglevel.debug({ rowObj });
-        CSVRows.push(rowObj);
-    });
-    return CSVRows;
-}
-function addCSVCrumbs(g, CSVRows, dir, field) {
-    CSVRows.forEach((row) => {
-        addNodesIfNot(g, [row.file]);
-        if (field === "" || !row[field])
-            return;
-        addNodesIfNot(g, [row[field]]);
-        addEdgeIfNot(g, row.file, row[field], { dir, field });
-    });
-}
-
-function addDendronNotesToGraph(plugin, frontms, mainG) {
-    const { settings } = plugin;
-    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = settings;
-    if (!addDendronNotes)
-        return;
-    for (const frontm of frontms) {
-        // Doesn't currently work yet
-        if (frontm[BC_IGNORE_DENDRON])
-            continue;
-        const basename = getDVBasename(frontm.file);
-        const splits = basename.split(dendronNoteDelimiter);
-        if (splits.length <= 1)
-            continue;
-        const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
-        if (!nextSlice)
-            continue;
-        const nextSliceFile = frontms.find((fm) => getDVBasename(fm.file) === nextSlice);
-        if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON])
-            continue;
-        const sourceOrder = getSourceOrder(frontm);
-        const targetOrder = getTargetOrder(frontms, nextSlice);
-        populateMain(settings, mainG, basename, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
-    }
-}
-
-const getSubsFromFolder = (folder) => {
-    const otherNotes = [], subFolders = [];
-    folder.children.forEach((tAbstract) => {
-        if (tAbstract instanceof obsidian.TFile) {
-            otherNotes.push(tAbstract);
-        }
-        else
-            subFolders.push(tAbstract);
-    });
-    return { otherNotes, subFolders };
-};
-function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
-    const { settings, app } = plugin;
-    const { userHiers } = settings;
-    const fields = getFields(userHiers);
-    folderNotes.forEach((altFile) => {
-        const { file } = altFile;
-        const basename = getDVBasename(file);
-        const topFolderName = getFolderName(file);
-        const topFolder = app.vault.getAbstractFileByPath(topFolderName);
-        const targets = frontms
-            .map((ff) => ff.file)
-            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
-            .map(getDVBasename);
-        const field = altFile[BC_FOLDER_NOTE];
-        if (typeof field !== "string" || !fields.includes(field))
-            return;
-        targets.forEach((target) => {
-            // This is getting the order of the folder note, not the source pointing up to it
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, basename);
-            populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder, true);
-        });
-        if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
-            const { subFolders } = getSubsFromFolder(topFolder);
-            const folderQueue = [...subFolders];
-            console.log({ startingQueue: folderQueue.slice() });
-            let currFolder = folderQueue.shift();
-            while (currFolder !== undefined) {
-                const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
-                const folderNote = currFolder.name;
-                const targets = otherNotes.map(getDVBasename);
-                // if (!isInVault(app, folderNote, folderNote)) continue;
-                const sourceOrder = 9999; // getSourceOrder(altFile);
-                const targetOrder = 9999; //  getTargetOrder(frontms, basename);
-                const parentFolderNote = currFolder.parent.name;
-                populateMain(settings, mainG, parentFolderNote, field, folderNote, sourceOrder, targetOrder, true);
-                targets.forEach((target) => {
-                    if (target === folderNote)
-                        return;
-                    console.log("adding", folderNote, "→", target);
-                    const sourceOrder = 9999; // getSourceOrder(altFile);
-                    const targetOrder = 9999; //  getTargetOrder(frontms, basename);
-                    populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
-                });
-                folderQueue.push(...subFolders);
-                currFolder = folderQueue.shift();
-            }
-        }
-        // First add otherNotes to graph
-        // Then iterate subFolders doing the same
-    });
-}
-
-async function getHierarchyNoteItems(plugin, file) {
-    const { userHiers } = plugin.settings;
-    const { listItems } = plugin.app.metadataCache.getFileCache(file);
-    if (!listItems)
-        return [];
-    const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
-    const hierarchyNoteItems = [];
-    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
-    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
-    const problemFields = [];
-    const upFields = getFields(userHiers, "up");
-    for (const item of listItems) {
-        const currItem = lines[item.position.start.line];
-        const afterBulletCurr = afterBulletReg.exec(currItem)[1];
-        const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
-        let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-        // Ensure fieldName is one of the existing up fields. `null` if not
-        if (field !== null && !upFields.includes(field)) {
-            problemFields.push(field);
-            field = null;
-        }
-        const { parent } = item;
-        if (parent >= 0) {
-            const parentNote = lines[parent];
-            const afterBulletParent = afterBulletReg.exec(parentNote)[1];
-            const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
-            hierarchyNoteItems.push({
-                note,
-                parent: dropWikiParent,
-                field,
-            });
-        }
-        else {
-            hierarchyNoteItems.push({
-                note,
-                parent: null,
-                field,
-            });
-        }
-    }
-    if (problemFields.length > 0) {
-        const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
-        new obsidian.Notice(msg);
-        console.log(msg, { problemFields });
-    }
-    return hierarchyNoteItems;
-}
-function addHNsToGraph(settings, hnArr, mainG) {
-    const { HNUpField, userHiers } = settings;
-    const upFields = getFields(userHiers, "up");
-    hnArr.forEach((hnItem, i) => {
-        var _a, _b;
-        const { note, field, parent } = hnItem;
-        const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
-        if (parent === null) {
-            const s = note;
-            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
-            addNodesIfNot(mainG, [s, t]);
-            addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
-        }
-        else {
-            addNodesIfNot(mainG, [note, parent]);
-            addEdgeIfNot(mainG, note, parent, {
-                dir: "up",
-                field: upField,
-            });
-            // I don't think this needs to be done if the reverse is done above
-            addNodesIfNot(mainG, [parent, note]);
-            addEdgeIfNot(mainG, parent, note, {
-                dir: "down",
-                field: downField,
-            });
-        }
-    });
-}
-
-const CAT_DANGLING = 'dangling';
-const CORE_STORE_ID = 'core';
-class VizId {
-    constructor(id, storeId) {
-        this.id = id;
-        this.storeId = storeId;
-    }
-    toString() {
-        return `${this.storeId}:${this.id}`;
-    }
-    toId() {
-        return this.toString();
-    }
-    static fromId(id) {
-        const split = id.split(':');
-        const storeId = split[0];
-        const _id = split.slice(1).join(':');
-        return new VizId(_id, storeId);
-    }
-    static fromNode(node) {
-        return VizId.fromId(node.id());
-    }
-    static fromNodes(nodes) {
-        return nodes.map((n) => VizId.fromNode(n));
-    }
-    static fromFile(file) {
-        return new VizId(file.name, 'core');
-    }
-    static toId(id, storeId) {
-        return new VizId(id, storeId).toId();
-    }
-}
-const _parseTags = function (tags) {
-    return [].concat(...tags
-        .map((tag) => {
-        tag = tag.slice(1);
-        const hSplit = tag.split('/');
-        const tags = [];
-        for (const i in hSplit) {
-            const hTag = hSplit.slice(0, parseInt(i) + 1).join('-');
-            tags.push(`tag-${hTag}`);
-        }
-        return tags;
-    }));
-};
-const getClasses = function (file, metadataCache) {
-    if (file) {
-        const classes = [];
-        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
-            classes.push('image');
-        }
-        else if (['mp3', 'webm', 'wav', 'm4a', 'ogg', '3gp', 'flac'].contains(file.extension)) {
-            classes.push('audio');
-        }
-        else if (['mp4', 'webm', 'ogv'].contains(file.extension)) {
-            classes.push('video');
-        }
-        else if (file.extension === 'pdf') {
-            classes.push('pdf');
-        }
-        // This is replaced by the 'path' data attribute.
-        // if (!(file.parent.name === '/' || file.parent.name === '')) {
-        //   classes.push(`folder-${file.parent.name
-        //       .replace(' ', '_')}`);
-        // } else {
-        //   classes.push('root');
-        // }
-        if (file.extension === 'md') {
-            classes.push('note');
-            const cache = metadataCache.getFileCache(file);
-            if (cache?.frontmatter) {
-                if ('image' in cache.frontmatter) {
-                    classes.push('image');
-                }
-                if ('tags' in cache.frontmatter) {
-                    const tags = obsidian.parseFrontMatterTags(cache.frontmatter);
-                    if (tags) {
-                        classes.push(..._parseTags(tags));
-                    }
-                }
-                if ('cssclass' in cache.frontmatter) {
-                    const clazzes = obsidian.parseFrontMatterStringArray(cache.frontmatter, 'cssclass');
-                    if (clazzes) {
-                        classes.push(...clazzes);
-                    }
-                }
-            }
-            if (cache?.tags) {
-                classes.push(..._parseTags(cache.tags.map((t) => t.tag)));
-            }
-        }
-        else {
-            classes.push('file');
-        }
-        return classes;
-    }
-    return [CAT_DANGLING];
-};
-const nodeFromFile = async function (file, plugin, settings, id) {
-    if (!id) {
-        id = VizId.toId(file.name, CORE_STORE_ID);
-    }
-    const cache = plugin.app.metadataCache.getFileCache(file);
-    const name = file.extension === 'md' ? file.basename : file.name;
-    const classes = getClasses(file, plugin.app.metadataCache).join(' ');
-    const data = {
-        id,
-        name,
-        path: file.path,
-    };
-    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
-        try {
-            // @ts-ignore
-            data['resource_url'] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(file.path)}`;
-        }
-        catch { }
-    }
-    if (settings.readContent && file.extension == 'md') {
-        data['content'] = await plugin.app.vault.cachedRead(file);
-    }
-    const frontmatter = cache?.frontmatter;
-    if (frontmatter) {
-        Object.keys(frontmatter).forEach((k) => {
-            if (!(k === 'position')) {
-                if (k === 'image') {
-                    const imageField = frontmatter[k];
-                    try {
-                        // Check if url. throws error otherwise
-                        new URL(imageField);
-                        data[k] = imageField;
-                    }
-                    catch {
-                        try {
-                            // @ts-ignore
-                            data[k] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(imageField)}`;
-                        }
-                        catch { }
-                    }
-                }
-                else {
-                    data[k] = frontmatter[k];
-                }
-            }
-        });
-    }
-    return {
-        group: 'nodes',
-        data: data,
-        classes: classes,
-    };
-};
-const nodeDangling = function (path) {
-    return {
-        group: 'nodes',
-        data: {
-            id: VizId.toId(path, CORE_STORE_ID),
-            name: path,
-        },
-        classes: 'dangling',
-    };
-};
-const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
-const nameRegex = '[^\\W\\d]\\w*';
-const regexEscape = function (str) {
-    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-const parseTypedLink = function (link, line, typedLinkPrefix) {
-    // TODO: This is something specific I use, but shouldn't keep being in this repo.
-    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
-    const matchPI = regexPublishedIn.exec(line);
-    if (!(matchPI === null)) {
-        return {
-            class: 'type-publishedIn',
-            isInline: false,
-            properties: {
-                year: matchPI[2],
-                context: '',
-                type: 'publishedIn',
-            },
-        };
-    }
-    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
-    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
-    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
-    const match = regex.exec(line);
-    const splitLink = link.original.split('|');
-    let alias = null;
-    if (splitLink.length > 1) {
-        alias = splitLink.slice(1).join().slice(0, -2);
-    }
-    if (!(match === null)) {
-        return {
-            class: `type-${match[1]}`,
-            isInline: false,
-            properties: {
-                alias: alias,
-                context: '',
-                type: match[1],
-            },
-        };
-    }
-    return null;
-};
-
-const getPlugin = function (app) {
-    // @ts-ignore
-    if ('juggl' in app.plugins.plugins) {
-        // @ts-ignore
-        return app.plugins.plugins['juggl'];
-    }
-    return null;
-};
-
-// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
-// => {[note: string]: {type: string, linksInLine: string[]}[]}
-async function getJugglLinks(plugin, files) {
-    const { settings, app, db } = plugin;
-    db.start2G("getJugglLinks");
-    const { userHiers } = settings;
-    // Add Juggl links
-    const typedLinksArr = await Promise.all(files.map(async (file) => {
-        var _a, _b;
-        const jugglLink = { file, links: [] };
-        // Use Obs metadatacache to get the links in the current file
-        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
-        const content = links.length ? await app.vault.cachedRead(file) : "";
-        const lines = content.split("\n");
-        links.forEach((link) => {
-            var _a, _b, _c, _d, _e, _f, _g;
-            const lineNo = link.position.start.line;
-            const line = lines[lineNo];
-            // Check the line for wikilinks, and return an array of link.innerText
-            const linksInLine = (_c = (_b = (_a = line
-                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
-            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
-            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
-            const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
-            if (field === "")
-                return;
-            const { fieldDir } = getFieldInfo(userHiers, field) || {};
-            if (!fieldDir)
-                return;
-            jugglLink.links.push({
-                dir: fieldDir,
-                field,
-                linksInLine,
-            });
-        });
-        return jugglLink;
-    }));
-    const allFields = getFields(userHiers);
-    const filteredLinks = typedLinksArr.map((jugglLink) => {
-        // Filter out links whose type is not in allFields
-        jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.field));
-        return jugglLink;
-    });
-    db.end2G({ filteredLinks });
-    return filteredLinks;
-}
-function addJugglLinksToGraph(settings, jugglLinks, frontms, mainG) {
-    jugglLinks.forEach((jugglLink) => {
-        const { basename } = jugglLink.file;
-        jugglLink.links.forEach((link) => {
-            const { dir, field, linksInLine } = link;
-            if (dir === "")
-                return;
-            const sourceOrder = getTargetOrder(frontms, basename);
-            linksInLine.forEach((linkInLine) => {
-                // Is this a bug? Why not `getSourceOrder`?
-                const targetsOrder = getTargetOrder(frontms, linkInLine);
-                populateMain(settings, mainG, basename, field, linkInLine, sourceOrder, targetsOrder);
-            });
-        });
-    });
-}
-
-function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { app, settings } = plugin;
-    const { userHiers } = settings;
-    eligableAlts.forEach((altFile) => {
-        var _a, _b, _c, _d;
-        const linkNoteFile = altFile.file;
-        const linkNoteBasename = getDVBasename(linkNoteFile);
-        let field = altFile[BC_LINK_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
-            return;
-        const links = (_b = (_a = app.metadataCache
-            .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
-        const embeds = (_d = (_c = app.metadataCache
-            .getFileCache(linkNoteFile)) === null || _c === void 0 ? void 0 : _c.embeds) === null || _d === void 0 ? void 0 : _d.map((l) => l.link.match(/[^#|]+/)[0]);
-        const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
-        for (const target of targets) {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, linkNoteBasename);
-            populateMain(settings, mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
-        }
-    });
-}
-
-function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { settings } = plugin;
-    const { userHiers, regexNoteField } = settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-        const regexNoteFile = altFile.file;
-        const regexNoteBasename = getDVBasename(regexNoteFile);
-        const regex = strToRegex(altFile[BC_REGEX_NOTE]);
-        loglevel.info({ regex });
-        let field = altFile[BC_REGEX_NOTE_FIELD];
-        if (typeof field !== "string" || !fields.includes(field))
-            field = regexNoteField || fields[0];
-        const targets = [];
-        frontms.forEach((page) => {
-            const basename = getDVBasename(page.file);
-            if (basename !== regexNoteBasename && regex.test(basename))
-                targets.push(basename);
-        });
-        for (const target of targets) {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, regexNoteBasename);
-            populateMain(settings, mainG, regexNoteBasename, field, target, sourceOrder, targetOrder, true);
-        }
-    });
-}
-
-const getAllTags = (app, file, withHash = true) => {
-    var _a, _b;
-    const { tags, frontmatter } = app.metadataCache.getFileCache(file);
-    const allTags = [];
-    tags === null || tags === void 0 ? void 0 : tags.forEach((t) => allTags.push(dropHash(t.tag)));
-    [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []].flat().forEach((t) => {
-        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-    [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []].flat().forEach((t) => {
-        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
-    });
-    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
-};
-function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
-    const { settings, app } = plugin;
-    const { userHiers, tagNoteField } = settings;
-    const fields = getFields(userHiers);
-    eligableAlts.forEach((altFile) => {
-        const tagNoteFile = altFile.file;
-        const tagNoteBasename = getDVBasename(tagNoteFile);
-        const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
-        if (!tag.startsWith("#"))
-            return;
-        const hasThisTag = (file) => {
-            const allTags = getAllTags(app, file);
-            return altFile[BC_TAG_NOTE_EXACT] !== undefined
-                ? allTags.includes(tag)
-                : allTags.some((t) => t.includes(tag));
-        };
-        const targets = frontms
-            .map((ff) => ff.file)
-            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
-            .map(getDVBasename);
-        let field = altFile[BC_TAG_NOTE_FIELD];
-        if (typeof field !== "string" || !fields.includes(field))
-            field = tagNoteField || fields[0];
-        targets.forEach((target) => {
-            const sourceOrder = getSourceOrder(altFile);
-            const targetOrder = getTargetOrder(frontms, tagNoteBasename);
-            populateMain(settings, mainG, tagNoteBasename, field, target, sourceOrder, targetOrder, true);
-        });
-    });
-}
-
-function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
-    const { settings } = plugin;
-    const { userHiers } = settings;
-    traverseNotes.forEach((altFile) => {
-        const { file } = altFile;
-        const basename = getDVBasename(file);
-        const noCycles = removeCycles(obsG, basename);
-        let field = altFile[BC_TRAVERSE_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
-            return;
-        const allPaths = dfsAllPaths(noCycles, basename);
-        loglevel.info(allPaths);
-        const reversed = [...allPaths].map((path) => path.reverse());
-        reversed.forEach((path) => {
-            path.forEach((node, i) => {
-                const next = path[i + 1];
-                if (next === undefined)
-                    return;
-                populateMain(settings, mainG, node, field, next, 9999, 9999, true);
-            });
-        });
-    });
-}
-
-/* src\Components\NextPrev.svelte generated by Svelte v3.35.0 */
-
-function add_css$c() {
-	var style = element("style");
-	style.id = "svelte-1cqb0v5-style";
-	style.textContent = ".BC-nexts.svelte-1cqb0v5 div.svelte-1cqb0v5{text-align:right}.BC-right-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-left:5px;float:right}.BC-left-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-right:5px;float:left}.BC-nexts.svelte-1cqb0v5.svelte-1cqb0v5{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-1cqb0v5.svelte-1cqb0v5{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-1cqb0v5.svelte-1cqb0v5{display:grid;grid-template-columns:1fr 1fr}";
-	append(document.head, style);
-}
-
-function get_each_context$b(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[6] = list[i];
-	return child_ctx;
-}
-
-function get_each_context_1$8(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[9] = list[i];
-	return child_ctx;
-}
-
-// (15:6) {#each prev as p}
-function create_each_block_1$8(ctx) {
-	let div;
-	let strong;
-	let t0_value = /*p*/ ctx[9].field + "";
-	let t0;
-	let t1;
-	let t2_value = /*p*/ ctx[9].to + "";
-	let t2;
-	let t3;
-	let div_class_value;
-	let mounted;
-	let dispose;
-
-	function click_handler(...args) {
-		return /*click_handler*/ ctx[4](/*p*/ ctx[9], ...args);
-	}
-
-	return {
-		c() {
-			div = element("div");
-			strong = element("strong");
-			t0 = text(t0_value);
-			t1 = space();
-			t2 = text(t2_value);
-			t3 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"));
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, strong);
-			append(strong, t0);
-			append(div, t1);
-			append(div, t2);
-			append(div, t3);
-
-			if (!mounted) {
-				dispose = listen(div, "click", click_handler);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].field + "")) set_data(t0, t0_value);
-			if (dirty & /*prev*/ 4 && t2_value !== (t2_value = /*p*/ ctx[9].to + "")) set_data(t2, t2_value);
-
-			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
-				attr(div, "class", div_class_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-// (28:6) {#each next as n}
-function create_each_block$b(ctx) {
-	let div;
-	let t0_value = /*n*/ ctx[6].to + "";
-	let t0;
-	let t1;
-	let strong;
-	let t2_value = /*n*/ ctx[6].field + "";
-	let t2;
-	let t3;
-	let div_class_value;
-	let mounted;
-	let dispose;
-
-	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[5](/*n*/ ctx[6], ...args);
-	}
-
-	return {
-		c() {
-			div = element("div");
-			t0 = text(t0_value);
-			t1 = space();
-			strong = element("strong");
-			t2 = text(t2_value);
-			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"));
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, t0);
-			append(div, t1);
-			append(div, strong);
-			append(strong, t2);
-			append(div, t3);
-
-			if (!mounted) {
-				dispose = listen(div, "click", click_handler_1);
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
-			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].field + "")) set_data(t2, t2_value);
-
-			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
-				attr(div, "class", div_class_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			mounted = false;
-			dispose();
-		}
-	};
-}
-
-function create_fragment$k(ctx) {
-	let div2;
-	let div0;
-	let span0;
-	let t;
-	let div1;
-	let span1;
-	let each_value_1 = /*prev*/ ctx[2];
-	let each_blocks_1 = [];
-
-	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks_1[i] = create_each_block_1$8(get_each_context_1$8(ctx, each_value_1, i));
-	}
-
-	let each_value = /*next*/ ctx[1];
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$b(get_each_context$b(ctx, each_value, i));
-	}
-
-	return {
-		c() {
-			div2 = element("div");
-			div0 = element("div");
-			span0 = element("span");
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].c();
-			}
-
-			t = space();
-			div1 = element("div");
-			span1 = element("span");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(div0, "class", "BC-prevs svelte-1cqb0v5");
-			attr(div1, "class", "BC-nexts svelte-1cqb0v5");
-			attr(div2, "class", "BC-NextPrev-Container svelte-1cqb0v5");
-		},
-		m(target, anchor) {
-			insert(target, div2, anchor);
-			append(div2, div0);
-			append(div0, span0);
-
-			for (let i = 0; i < each_blocks_1.length; i += 1) {
-				each_blocks_1[i].m(span0, null);
-			}
-
-			append(div2, t);
-			append(div2, div1);
-			append(div1, span1);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(span1, null);
-			}
-		},
-		p(ctx, [dirty]) {
-			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 5) {
-				each_value_1 = /*prev*/ ctx[2];
-				let i;
-
-				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$8(ctx, each_value_1, i);
-
-					if (each_blocks_1[i]) {
-						each_blocks_1[i].p(child_ctx, dirty);
-					} else {
-						each_blocks_1[i] = create_each_block_1$8(child_ctx);
-						each_blocks_1[i].c();
-						each_blocks_1[i].m(span0, null);
-					}
-				}
-
-				for (; i < each_blocks_1.length; i += 1) {
-					each_blocks_1[i].d(1);
-				}
-
-				each_blocks_1.length = each_value_1.length;
-			}
-
-			if (dirty & /*linkClass, app, next, openOrSwitch*/ 3) {
-				each_value = /*next*/ ctx[1];
-				let i;
-
-				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$b(ctx, each_value, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block$b(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(span1, null);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value.length;
-			}
-		},
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(div2);
-			destroy_each(each_blocks_1, detaching);
-			destroy_each(each_blocks, detaching);
-		}
-	};
-}
-
-function instance$k($$self, $$props, $$invalidate) {
-	
-	
-	
-	let { app } = $$props;
-	let { plugin } = $$props;
-	let { next } = $$props;
-	let { prev } = $$props;
-	const click_handler = async (p, e) => openOrSwitch(app, p.to, e);
-	const click_handler_1 = async (n, e) => openOrSwitch(app, n.to, e);
-
-	$$self.$$set = $$props => {
-		if ("app" in $$props) $$invalidate(0, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
-		if ("next" in $$props) $$invalidate(1, next = $$props.next);
-		if ("prev" in $$props) $$invalidate(2, prev = $$props.prev);
-	};
-
-	return [app, next, prev, plugin, click_handler, click_handler_1];
-}
-
-class NextPrev extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-1cqb0v5-style")) add_css$c();
-		init(this, options, instance$k, create_fragment$k, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
-	}
 }
 
 /**
@@ -24086,811 +21607,1426 @@ var lodash = createCommonjsModule(function (module, exports) {
 }.call(commonjsGlobal));
 });
 
-/* src\Components\TrailGrid.svelte generated by Svelte v3.35.0 */
+var graphology_umd_min = createCommonjsModule(function (module, exports) {
+!function(t,e){module.exports=e();}(commonjsGlobal,(function(){function t(e){return t="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t},t(e)}function e(t,e){t.prototype=Object.create(e.prototype),t.prototype.constructor=t,r(t,e);}function n(t){return n=Object.setPrototypeOf?Object.getPrototypeOf:function(t){return t.__proto__||Object.getPrototypeOf(t)},n(t)}function r(t,e){return r=Object.setPrototypeOf||function(t,e){return t.__proto__=e,t},r(t,e)}function i(){if("undefined"==typeof Reflect||!Reflect.construct)return !1;if(Reflect.construct.sham)return !1;if("function"==typeof Proxy)return !0;try{return Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],(function(){}))),!0}catch(t){return !1}}function o(t,e,n){return o=i()?Reflect.construct:function(t,e,n){var i=[null];i.push.apply(i,e);var o=new(Function.bind.apply(t,i));return n&&r(o,n.prototype),o},o.apply(null,arguments)}function a(t){var e="function"==typeof Map?new Map:void 0;return a=function(t){if(null===t||(i=t,-1===Function.toString.call(i).indexOf("[native code]")))return t;var i;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==e){if(e.has(t))return e.get(t);e.set(t,a);}function a(){return o(t,arguments,n(this).constructor)}return a.prototype=Object.create(t.prototype,{constructor:{value:a,enumerable:!1,writable:!0,configurable:!0}}),r(a,t)},a(t)}function u(t){if(void 0===t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return t}var c=function(){for(var t=arguments[0],e=1,n=arguments.length;e<n;e++)if(arguments[e])for(var r in arguments[e])t[r]=arguments[e][r];return t};function d(t,e,n,r){var i=t._nodes.get(e),o=null;return i?o="mixed"===r?i.out&&i.out[n]||i.undirected&&i.undirected[n]:"directed"===r?i.out&&i.out[n]:i.undirected&&i.undirected[n]:o}function s(e){return null!==e&&"object"===t(e)&&"function"==typeof e.addUndirectedEdgeWithKey&&"function"==typeof e.dropNode}function h(e){return "object"===t(e)&&null!==e&&e.constructor===Object}function f(t){var e;for(e in t)return !1;return !0}function p(t,e,n){Object.defineProperty(t,e,{enumerable:!1,configurable:!1,writable:!0,value:n});}function l(t,e,n){var r={enumerable:!0,configurable:!0};"function"==typeof n?r.get=n:(r.value=n,r.writable=!1),Object.defineProperty(t,e,r);}function g(t){return !!h(t)&&!(t.attributes&&!Array.isArray(t.attributes))}"function"==typeof Object.assign&&(c=Object.assign);var y,v={exports:{}},b="object"==typeof Reflect?Reflect:null,w=b&&"function"==typeof b.apply?b.apply:function(t,e,n){return Function.prototype.apply.call(t,e,n)};y=b&&"function"==typeof b.ownKeys?b.ownKeys:Object.getOwnPropertySymbols?function(t){return Object.getOwnPropertyNames(t).concat(Object.getOwnPropertySymbols(t))}:function(t){return Object.getOwnPropertyNames(t)};var m=Number.isNaN||function(t){return t!=t};function _(){_.init.call(this);}v.exports=_,v.exports.once=function(t,e){return new Promise((function(n,r){function i(n){t.removeListener(e,o),r(n);}function o(){"function"==typeof t.removeListener&&t.removeListener("error",i),n([].slice.call(arguments));}U(t,e,o,{once:!0}),"error"!==e&&function(t,e,n){"function"==typeof t.on&&U(t,"error",e,n);}(t,i,{once:!0});}))},_.EventEmitter=_,_.prototype._events=void 0,_.prototype._eventsCount=0,_.prototype._maxListeners=void 0;var k=10;function G(t){if("function"!=typeof t)throw new TypeError('The "listener" argument must be of type Function. Received type '+typeof t)}function x(t){return void 0===t._maxListeners?_.defaultMaxListeners:t._maxListeners}function E(t,e,n,r){var i,o,a,u;if(G(n),void 0===(o=t._events)?(o=t._events=Object.create(null),t._eventsCount=0):(void 0!==o.newListener&&(t.emit("newListener",e,n.listener?n.listener:n),o=t._events),a=o[e]),void 0===a)a=o[e]=n,++t._eventsCount;else if("function"==typeof a?a=o[e]=r?[n,a]:[a,n]:r?a.unshift(n):a.push(n),(i=x(t))>0&&a.length>i&&!a.warned){a.warned=!0;var c=new Error("Possible EventEmitter memory leak detected. "+a.length+" "+String(e)+" listeners added. Use emitter.setMaxListeners() to increase limit");c.name="MaxListenersExceededWarning",c.emitter=t,c.type=e,c.count=a.length,u=c,console&&console.warn&&console.warn(u);}return t}function S(){if(!this.fired)return this.target.removeListener(this.type,this.wrapFn),this.fired=!0,0===arguments.length?this.listener.call(this.target):this.listener.apply(this.target,arguments)}function A(t,e,n){var r={fired:!1,wrapFn:void 0,target:t,type:e,listener:n},i=S.bind(r);return i.listener=n,r.wrapFn=i,i}function L(t,e,n){var r=t._events;if(void 0===r)return [];var i=r[e];return void 0===i?[]:"function"==typeof i?n?[i.listener||i]:[i]:n?function(t){for(var e=new Array(t.length),n=0;n<e.length;++n)e[n]=t[n].listener||t[n];return e}(i):N(i,i.length)}function D(t){var e=this._events;if(void 0!==e){var n=e[t];if("function"==typeof n)return 1;if(void 0!==n)return n.length}return 0}function N(t,e){for(var n=new Array(e),r=0;r<e;++r)n[r]=t[r];return n}function U(t,e,n,r){if("function"==typeof t.on)r.once?t.once(e,n):t.on(e,n);else {if("function"!=typeof t.addEventListener)throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type '+typeof t);t.addEventListener(e,(function i(o){r.once&&t.removeEventListener(e,i),n(o);}));}}function j(t){if("function"!=typeof t)throw new Error("obliterator/iterator: expecting a function!");this.next=t;}Object.defineProperty(_,"defaultMaxListeners",{enumerable:!0,get:function(){return k},set:function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received '+t+".");k=t;}}),_.init=function(){void 0!==this._events&&this._events!==Object.getPrototypeOf(this)._events||(this._events=Object.create(null),this._eventsCount=0),this._maxListeners=this._maxListeners||void 0;},_.prototype.setMaxListeners=function(t){if("number"!=typeof t||t<0||m(t))throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received '+t+".");return this._maxListeners=t,this},_.prototype.getMaxListeners=function(){return x(this)},_.prototype.emit=function(t){for(var e=[],n=1;n<arguments.length;n++)e.push(arguments[n]);var r="error"===t,i=this._events;if(void 0!==i)r=r&&void 0===i.error;else if(!r)return !1;if(r){var o;if(e.length>0&&(o=e[0]),o instanceof Error)throw o;var a=new Error("Unhandled error."+(o?" ("+o.message+")":""));throw a.context=o,a}var u=i[t];if(void 0===u)return !1;if("function"==typeof u)w(u,this,e);else {var c=u.length,d=N(u,c);for(n=0;n<c;++n)w(d[n],this,e);}return !0},_.prototype.addListener=function(t,e){return E(this,t,e,!1)},_.prototype.on=_.prototype.addListener,_.prototype.prependListener=function(t,e){return E(this,t,e,!0)},_.prototype.once=function(t,e){return G(e),this.on(t,A(this,t,e)),this},_.prototype.prependOnceListener=function(t,e){return G(e),this.prependListener(t,A(this,t,e)),this},_.prototype.removeListener=function(t,e){var n,r,i,o,a;if(G(e),void 0===(r=this._events))return this;if(void 0===(n=r[t]))return this;if(n===e||n.listener===e)0==--this._eventsCount?this._events=Object.create(null):(delete r[t],r.removeListener&&this.emit("removeListener",t,n.listener||e));else if("function"!=typeof n){for(i=-1,o=n.length-1;o>=0;o--)if(n[o]===e||n[o].listener===e){a=n[o].listener,i=o;break}if(i<0)return this;0===i?n.shift():function(t,e){for(;e+1<t.length;e++)t[e]=t[e+1];t.pop();}(n,i),1===n.length&&(r[t]=n[0]),void 0!==r.removeListener&&this.emit("removeListener",t,a||e);}return this},_.prototype.off=_.prototype.removeListener,_.prototype.removeAllListeners=function(t){var e,n,r;if(void 0===(n=this._events))return this;if(void 0===n.removeListener)return 0===arguments.length?(this._events=Object.create(null),this._eventsCount=0):void 0!==n[t]&&(0==--this._eventsCount?this._events=Object.create(null):delete n[t]),this;if(0===arguments.length){var i,o=Object.keys(n);for(r=0;r<o.length;++r)"removeListener"!==(i=o[r])&&this.removeAllListeners(i);return this.removeAllListeners("removeListener"),this._events=Object.create(null),this._eventsCount=0,this}if("function"==typeof(e=n[t]))this.removeListener(t,e);else if(void 0!==e)for(r=e.length-1;r>=0;r--)this.removeListener(t,e[r]);return this},_.prototype.listeners=function(t){return L(this,t,!0)},_.prototype.rawListeners=function(t){return L(this,t,!1)},_.listenerCount=function(t,e){return "function"==typeof t.listenerCount?t.listenerCount(e):D.call(t,e)},_.prototype.listenerCount=D,_.prototype.eventNames=function(){return this._eventsCount>0?y(this._events):[]},"undefined"!=typeof Symbol&&(j.prototype[Symbol.iterator]=function(){return this}),j.of=function(){var t=arguments,e=t.length,n=0;return new j((function(){return n>=e?{done:!0}:{done:!1,value:t[n++]}}))},j.empty=function(){return new j((function(){return {done:!0}}))},j.fromSequence=function(t){var e=0,n=t.length;return new j((function(){return e>=n?{done:!0}:{done:!1,value:t[e++]}}))},j.is=function(t){return t instanceof j||"object"==typeof t&&null!==t&&"function"==typeof t.next};var O=j,C={};C.ARRAY_BUFFER_SUPPORT="undefined"!=typeof ArrayBuffer,C.SYMBOL_SUPPORT="undefined"!=typeof Symbol;var z=O,M=C,P=M.ARRAY_BUFFER_SUPPORT,T=M.SYMBOL_SUPPORT;var R=function(t){var e=function(t){return "string"==typeof t||Array.isArray(t)||P&&ArrayBuffer.isView(t)?z.fromSequence(t):"object"!=typeof t||null===t?null:T&&"function"==typeof t[Symbol.iterator]?t[Symbol.iterator]():"function"==typeof t.next?t:null}(t);if(!e)throw new Error("obliterator: target is not iterable nor a valid iterator.");return e},W=R,K=function(t,e){for(var n,r=arguments.length>1?e:1/0,i=r!==1/0?new Array(r):[],o=0,a=W(t);;){if(o===r)return i;if((n=a.next()).done)return o!==e&&(i.length=o),i;i[o++]=n.value;}},I=function(t){function n(e){var n;return (n=t.call(this)||this).name="GraphError",n.message=e,n}return e(n,t),n}(a(Error)),F=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="InvalidArgumentsGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),Y=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="NotFoundGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I),B=function(t){function n(e){var r;return (r=t.call(this,e)||this).name="UsageGraphError","function"==typeof Error.captureStackTrace&&Error.captureStackTrace(u(r),n.prototype.constructor),r}return e(n,t),n}(I);function q(t,e){this.key=t,this.attributes=e,this.clear();}function J(t,e){this.key=t,this.attributes=e,this.clear();}function V(t,e){this.key=t,this.attributes=e,this.clear();}function H(t,e,n,r,i){this.key=e,this.attributes=i,this.undirected=t,this.source=n,this.target=r;}function Q(t,e,n,r,i,o,a){var u,c,d="out",s="in";if(e&&(d=s="undirected"),t.multi){if(void 0===(c=(u=o[d])[i])&&(c=new Set,u[i]=c),c.add(n),r===i&&e)return;void 0===(u=a[s])[r]&&(u[r]=c);}else {if(o[d][i]=n,r===i&&e)return;a[s][r]=n;}}function X(t,e,n){var r=t.multi,i=n.source,o=n.target,a=i.key,u=o.key,c=i[e?"undirected":"out"],d=e?"undirected":"in";if(u in c)if(r){var s=c[u];1===s.size?(delete c[u],delete o[d][a]):s.delete(n);}else delete c[u];r||delete o[d][a];}q.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.undirectedDegree=0,this.directedSelfLoops=0,this.undirectedSelfLoops=0,this.in={},this.out={},this.undirected={};},J.prototype.clear=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};},J.prototype.upgradeToMixed=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.clear=function(){this.undirectedDegree=0,this.undirectedSelfLoops=0,this.undirected={};},V.prototype.upgradeToMixed=function(){this.inDegree=0,this.outDegree=0,this.directedSelfLoops=0,this.in={},this.out={};};function Z(t,e,n,r,i,o,a){var u,c,d,s;if(r=""+r,0===n){if(!(u=t._nodes.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" node in the graph.'));d=i,s=o;}else if(3===n){if(i=""+i,!(c=t._edges.get(i)))throw new Y("Graph.".concat(e,': could not find the "').concat(i,'" edge in the graph.'));var h=c.source.key,f=c.target.key;if(r===h)u=c.target;else {if(r!==f)throw new Y("Graph.".concat(e,': the "').concat(r,'" node is not attached to the "').concat(i,'" edge (').concat(h,", ").concat(f,")."));u=c.source;}d=o,s=a;}else {if(!(c=t._edges.get(r)))throw new Y("Graph.".concat(e,': could not find the "').concat(r,'" edge in the graph.'));u=1===n?c.source:c.target,d=i,s=o;}return [u,d,s]}var $=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes[u]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){return Z(this,e,n,t,r)[0].attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return a.attributes.hasOwnProperty(u)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];return u.attributes[c]=d,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i,o){var a=Z(this,e,n,t,r,i,o),u=a[0],c=a[1],d=a[2];if("function"!=typeof d)throw new F("Graph.".concat(e,": updater should be a function."));var s=u.attributes,h=d(s[c]);return s[c]=h,this.emit("nodeAttributesUpdated",{key:u.key,type:"set",attributes:u.attributes,name:c}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];return delete a.attributes[u],this.emit("nodeAttributesUpdated",{key:a.key,type:"remove",attributes:a.attributes,name:u}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return a.attributes=u,this.emit("nodeAttributesUpdated",{key:a.key,type:"replace",attributes:a.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if(!h(u))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));return c(a.attributes,u),this.emit("nodeAttributesUpdated",{key:a.key,type:"merge",attributes:a.attributes,data:u}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o=Z(this,e,n,t,r,i),a=o[0],u=o[1];if("function"!=typeof u)throw new F("Graph.".concat(e,": provided updater is not a function."));return a.attributes=u(a.attributes),this.emit("nodeAttributesUpdated",{key:a.key,type:"update",attributes:a.attributes}),this};}}];var tt=[{name:function(t){return "get".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes[r]};}},{name:function(t){return "get".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t){var r;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>1){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var i=""+t,o=""+arguments[1];if(!(r=d(this,i,o,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(i,'" - "').concat(o,'").'))}else if(t=""+t,!(r=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&r.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return r.attributes};}},{name:function(t){return "has".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes.hasOwnProperty(r)};}},{name:function(t){return "set".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i,this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "update".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r,i){var o;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>3){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var a=""+t,u=""+r;if(r=arguments[2],i=arguments[3],!(o=d(this,a,u,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(a,'" - "').concat(u,'").'))}else if(t=""+t,!(o=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof i)throw new F("Graph.".concat(e,": updater should be a function."));if("mixed"!==n&&o.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return o.attributes[r]=i(o.attributes[r]),this.emit("edgeAttributesUpdated",{key:o.key,type:"set",attributes:o.attributes,name:r}),this};}},{name:function(t){return "remove".concat(t,"Attribute")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return delete i.attributes[r],this.emit("edgeAttributesUpdated",{key:i.key,type:"remove",attributes:i.attributes,name:r}),this};}},{name:function(t){return "replace".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r,this.emit("edgeAttributesUpdated",{key:i.key,type:"replace",attributes:i.attributes}),this};}},{name:function(t){return "merge".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if(!h(r))throw new F("Graph.".concat(e,": provided attributes are not a plain object."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return c(i.attributes,r),this.emit("edgeAttributesUpdated",{key:i.key,type:"merge",attributes:i.attributes,data:r}),this};}},{name:function(t){return "update".concat(t,"Attributes")},attacher:function(t,e,n){t.prototype[e]=function(t,r){var i;if("mixed"!==this.type&&"mixed"!==n&&n!==this.type)throw new B("Graph.".concat(e,": cannot find this type of edges in your ").concat(this.type," graph."));if(arguments.length>2){if(this.multi)throw new B("Graph.".concat(e,": cannot use a {source,target} combo when asking about an edge's attributes in a MultiGraph since we cannot infer the one you want information about."));var o=""+t,a=""+r;if(r=arguments[2],!(i=d(this,o,a,n)))throw new Y("Graph.".concat(e,': could not find an edge for the given path ("').concat(o,'" - "').concat(a,'").'))}else if(t=""+t,!(i=this._edges.get(t)))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" edge in the graph.'));if("function"!=typeof r)throw new F("Graph.".concat(e,": provided updater is not a function."));if("mixed"!==n&&i.undirected!==("undirected"===n))throw new Y("Graph.".concat(e,': could not find the "').concat(t,'" ').concat(n," edge in the graph."));return i.attributes=r(i.attributes),this.emit("edgeAttributesUpdated",{key:i.key,type:"update",attributes:i.attributes}),this};}}];var et=O,nt=R,rt=function(){var t,e=arguments,n=-1;return new et((function r(){if(!t){if(++n>=e.length)return {done:!0};t=nt(e[n]);}var i=t.next();return i.done?(t=null,r()):i}))},it=[{name:"edges",type:"mixed"},{name:"inEdges",type:"directed",direction:"in"},{name:"outEdges",type:"directed",direction:"out"},{name:"inboundEdges",type:"mixed",direction:"in"},{name:"outboundEdges",type:"mixed",direction:"out"},{name:"directedEdges",type:"directed"},{name:"undirectedEdges",type:"undirected"}];function ot(t,e){for(var n in e)t.push(e[n].key);}function at(t,e){for(var n in e)e[n].forEach((function(e){return t.push(e.key)}));}function ut(t,e,n){for(var r in t)if(r!==n){var i=t[r];e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected);}}function ct(t,e,n){for(var r in t)r!==n&&t[r].forEach((function(t){return e(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function dt(t,e,n){for(var r in t)if(r!==n){var i=t[r];if(e(i.key,i.attributes,i.source.key,i.target.key,i.source.attributes,i.target.attributes,i.undirected))return i.key}}function st(t,e,n){var r,i,o,a,u;for(var c in t)if(c!==n)for(r=t[c].values();!0!==(i=r.next()).done;)if(a=(o=i.value).source,u=o.target,e(o.key,o.attributes,a.key,u.key,a.attributes,u.attributes,o.undirected))return o.key}function ht(t,e){var n=Object.keys(t),r=n.length,i=null,o=0;return new O((function a(){var u;if(i){var c=i.next();if(c.done)return i=null,o++,a();u=c.value;}else {if(o>=r)return {done:!0};var d=n[o];if(d===e)return o++,a();if((u=t[d])instanceof Set)return i=u.values(),a();o++;}return {done:!1,value:{edge:u.key,attributes:u.attributes,source:u.source.key,target:u.target.key,sourceAttributes:u.source.attributes,targetAttributes:u.target.attributes,undirected:u.undirected}}}))}function ft(t,e,n){var r=e[n];r&&t.push(r.key);}function pt(t,e,n){var r=e[n];r&&r.forEach((function(e){return t.push(e.key)}));}function lt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);}}function gt(t,e,n){var r=t[e];r&&r.forEach((function(t){return n(t.key,t.attributes,t.source.key,t.target.key,t.source.attributes,t.target.attributes,t.undirected)}));}function yt(t,e,n){var r=t[e];if(r){var i=r.source,o=r.target;return n(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected)?r.key:void 0}}function vt(t,e,n){var r=t[e];if(r)for(var i,o,a=r.values();!0!==(i=a.next()).done;)if(n((o=i.value).key,o.attributes,o.source.key,o.target.key,o.source.attributes,o.target.attributes,o.undirected))return o.key}function bt(t,e){var n=t[e];if(n instanceof Set){var r=n.values();return new O((function(){var t=r.next();if(t.done)return t;var e=t.value;return {done:!1,value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected}}}))}return O.of([n.key,n.attributes,n.source.key,n.target.key,n.source.attributes,n.target.attributes])}function wt(t,e){if(0===t.size)return [];if("mixed"===e||e===t.type)return "function"==typeof Array.from?Array.from(t._edges.keys()):K(t._edges.keys(),t._edges.size);for(var n,r,i="undirected"===e?t.undirectedSize:t.directedSize,o=new Array(i),a="undirected"===e,u=t._edges.values(),c=0;!0!==(n=u.next()).done;)(r=n.value).undirected===a&&(o[c++]=r.key);return o}function mt(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected);}}function _t(t,e,n){if(0!==t.size)for(var r,i,o="mixed"!==e&&e!==t.type,a="undirected"===e,u=t._edges.values();!0!==(r=u.next()).done;)if(i=r.value,!o||i.undirected===a){var c=i,d=c.key,s=c.attributes,h=c.source,f=c.target;if(n(d,s,h.key,f.key,h.attributes,f.attributes,i.undirected))return d}}function kt(t,e){if(0===t.size)return O.empty();var n="mixed"!==e&&e!==t.type,r="undirected"===e,i=t._edges.values();return new O((function(){for(var t,e;;){if((t=i.next()).done)return t;if(e=t.value,!n||e.undirected===r)break}return {value:{edge:e.key,attributes:e.attributes,source:e.source.key,target:e.target.key,sourceAttributes:e.source.attributes,targetAttributes:e.target.attributes,undirected:e.undirected},done:!1}}))}function Gt(t,e,n,r){var i=[],o=t?at:ot;return "undirected"!==e&&("out"!==n&&o(i,r.in),"in"!==n&&o(i,r.out),!n&&r.directedSelfLoops>0&&i.splice(i.lastIndexOf(r.key),1)),"directed"!==e&&o(i,r.undirected),i}function xt(t,e,n,r,i){var o=t?ct:ut;"undirected"!==e&&("out"!==n&&o(r.in,i),"in"!==n&&o(r.out,i,n?null:r.key)),"directed"!==e&&o(r.undirected,i);}function Et(t,e,n,r,i){var o,a=t?st:dt;if("undirected"!==e){if("out"!==n&&(o=a(r.in,i)))return o;if("in"!==n&&(o=a(r.out,i,n?null:r.key)))return o}if("directed"!==e&&(o=a(r.undirected,i)))return o}function St(t,e,n){var r=O.empty();return "undirected"!==t&&("out"!==e&&void 0!==n.in&&(r=rt(r,ht(n.in))),"in"!==e&&void 0!==n.out&&(r=rt(r,ht(n.out,e?null:n.key)))),"directed"!==t&&void 0!==n.undirected&&(r=rt(r,ht(n.undirected))),r}function At(t,e,n,r,i){var o=e?pt:ft,a=[];return "undirected"!==t&&(void 0!==r.in&&"out"!==n&&o(a,r.in,i),void 0!==r.out&&"in"!==n&&o(a,r.out,i),!n&&r.directedSelfLoops>0&&a.splice(a.lastIndexOf(r.key),1)),"directed"!==t&&void 0!==r.undirected&&o(a,r.undirected,i),a}function Lt(t,e,n,r,i,o){var a=e?gt:lt;"undirected"!==t&&(void 0!==r.in&&"out"!==n&&a(r.in,i,o),r.key!==i&&void 0!==r.out&&"in"!==n&&a(r.out,i,o)),"directed"!==t&&void 0!==r.undirected&&a(r.undirected,i,o);}function Dt(t,e,n,r,i,o){var a,u=e?vt:yt;if("undirected"!==t){if(void 0!==r.in&&"out"!==n&&(a=u(r.in,i,o)))return a;if(r.key!==i&&void 0!==r.out&&"in"!==n&&(a=u(r.out,i,o,n?null:r.key)))return a}if("directed"!==t&&void 0!==r.undirected&&(a=u(r.undirected,i,o)))return a}function Nt(t,e,n,r){var i=O.empty();return "undirected"!==t&&(void 0!==n.in&&"out"!==e&&r in n.in&&(i=rt(i,bt(n.in,r))),void 0!==n.out&&"in"!==e&&r in n.out&&(i=rt(i,bt(n.out,r)))),"directed"!==t&&void 0!==n.undirected&&r in n.undirected&&(i=rt(i,bt(n.undirected,r))),i}var Ut=[{name:"neighbors",type:"mixed"},{name:"inNeighbors",type:"directed",direction:"in"},{name:"outNeighbors",type:"directed",direction:"out"},{name:"inboundNeighbors",type:"mixed",direction:"in"},{name:"outboundNeighbors",type:"mixed",direction:"out"},{name:"directedNeighbors",type:"directed"},{name:"undirectedNeighbors",type:"undirected"}];function jt(t,e){if(void 0!==e)for(var n in e)t.add(n);}function Ot(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;n(u.key,u.attributes);}}function Ct(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;t.has(c.key)||(t.add(c.key),r(c.key,c.attributes));}}function zt(t,e,n){for(var r in e){var i=e[r];i instanceof Set&&(i=i.values().next().value);var o=i.source,a=i.target,u=o===t?a:o;if(n(u.key,u.attributes))return u.key}}function Mt(t,e,n,r){for(var i in n){var o=n[i];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===e?u:a;if(!t.has(c.key))if(t.add(c.key),r(c.key,c.attributes))return c.key}}function Pt(t,e){var n=Object.keys(e),r=n.length,i=0;return new O((function(){if(i>=r)return {done:!0};var o=e[n[i++]];o instanceof Set&&(o=o.values().next().value);var a=o.source,u=o.target,c=a===t?u:a;return {done:!1,value:{neighbor:c.key,attributes:c.attributes}}}))}function Tt(t,e,n){var r=Object.keys(n),i=r.length,o=0;return new O((function a(){if(o>=i)return {done:!0};var u=n[r[o++]];u instanceof Set&&(u=u.values().next().value);var c=u.source,d=u.target,s=c===e?d:c;return t.has(s.key)?a():(t.add(s.key),{done:!1,value:{neighbor:s.key,attributes:s.attributes}})}))}function Rt(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Object.keys(n.undirected);if("string"==typeof e)return Object.keys(n[e])}var r=new Set;return "undirected"!==t&&("out"!==e&&jt(r,n.in),"in"!==e&&jt(r,n.out)),"directed"!==t&&jt(r,n.undirected),K(r.values(),r.size)}("mixed"===r?this.type:r,i,e)};}function Wt(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));!function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return Ot(n,n.undirected,r);if("string"==typeof e)return Ot(n,n[e],r)}var i=new Set;"undirected"!==t&&("out"!==e&&Ct(i,n,n.in,r),"in"!==e&&Ct(i,n,n.out,r)),"directed"!==t&&Ct(i,n,n.undirected,r);}("mixed"===r?this.type:r,i,n,e);}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(t,e){var n=[];return this[o](t,(function(t,r){n.push(e(t,r));})),n};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(t,e){var n=[];return this[o](t,(function(t,r){e(t,r)&&n.push(t);})),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(t,e,n){if(arguments.length<3)throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));var r=n;return this[o](t,(function(t,n){r=e(r,t,n);})),r};}function Kt(t,e){var n=e.name,r=e.type,i=e.direction,o=n[0].toUpperCase()+n.slice(1,-1),a="find"+o;t.prototype[a]=function(t,e){if("mixed"===r||"mixed"===this.type||r===this.type){t=""+t;var n=this._nodes.get(t);if(void 0===n)throw new Y("Graph.".concat(a,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n,r){if("mixed"!==t){if("undirected"===t)return zt(n,n.undirected,r);if("string"==typeof e)return zt(n,n[e],r)}var i,o=new Set;if("undirected"!==t){if("out"!==e&&(i=Mt(o,n,n.in,r)))return i;if("in"!==e&&(i=Mt(o,n,n.out,r)))return i}if("directed"!==t&&(i=Mt(o,n,n.undirected,r)))return i}("mixed"===r?this.type:r,i,n,e)}};var u="some"+o;t.prototype[u]=function(t,e){return !!this[a](t,e)};var c="every"+o;t.prototype[c]=function(t,e){return !this[a](t,(function(t,n){return !e(t,n)}))};}function It(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();t=""+t;var e=this._nodes.get(t);if(void 0===e)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return function(t,e,n){if("mixed"!==t){if("undirected"===t)return Pt(n,n.undirected);if("string"==typeof e)return Pt(n,n[e])}var r=O.empty(),i=new Set;return "undirected"!==t&&("out"!==e&&(r=rt(r,Tt(i,n,n.in))),"in"!==e&&(r=rt(r,Tt(i,n,n.out)))),"directed"!==t&&(r=rt(r,Tt(i,n,n.undirected))),r}("mixed"===r?this.type:r,i,e)};}function Ft(t,e,n,r,i){for(var o,a,u,c,d,s,h,f=r._nodes.values(),p=r.type;!0!==(o=f.next()).done;){var l=!1;if(a=o.value,"undirected"!==p)for(u in c=a.out)if(s=(d=c[u]).target,l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h)return d;if("directed"!==p)for(u in c=a.undirected)if(!(e&&a.key>u)&&((s=(d=c[u]).target).key!==u&&(s=d.source),l=!0,h=i(a.key,s.key,a.attributes,s.attributes,d.key,d.attributes,d.undirected),t&&h))return d;if(n&&!l&&(h=i(a.key,null,a.attributes,null,null,null,null),t&&h))return null}}function Yt(t,e,n,r,i){for(var o,a,u,c,d,s,h,f,p,l=r._nodes.values(),g=r.type;!0!==(o=l.next()).done;){var y=!1;if(a=o.value,"undirected"!==g)for(u in s=a.out)for(c=s[u].values();!0!==(d=c.next()).done;)if(f=(h=d.value).target,y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if("directed"!==g)for(u in s=a.undirected)if(!(e&&a.key>u))for(c=s[u].values();!0!==(d=c.next()).done;)if((f=(h=d.value).target).key!==u&&(f=h.source),y=!0,p=i(a.key,f.key,a.attributes,f.attributes,h.key,h.attributes,h.undirected),t&&p)return h;if(n&&!y&&(p=i(a.key,null,a.attributes,null,null,null,null),t&&p))return null}}function Bt(t,e){var n={key:t};return f(e.attributes)||(n.attributes=c({},e.attributes)),n}function qt(t,e){var n={key:t,source:e.source.key,target:e.target.key};return f(e.attributes)||(n.attributes=c({},e.attributes)),e.undirected&&(n.undirected=!0),n}function Jt(t){return h(t)?"key"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?null:"invalid-attributes":"no-key":"not-object"}function Vt(t){return h(t)?"source"in t?"target"in t?!("attributes"in t)||h(t.attributes)&&null!==t.attributes?"undirected"in t&&"boolean"!=typeof t.undirected?"invalid-undirected":null:"invalid-attributes":"no-target":"no-source":"not-object"}var Ht,Qt=(Ht=255&Math.floor(256*Math.random()),function(){return Ht++}),Xt=new Set(["directed","undirected","mixed"]),Zt=new Set(["domain","_events","_eventsCount","_maxListeners"]),$t={allowSelfLoops:!0,multi:!1,type:"mixed"};function te(t,e,n){var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}function ee(t,e,n,r,i,o,a,u){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot add a directed edge to an undirected graph. Use the #.addEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot add an undirected edge to a directed graph. Use the #.addEdge or #.addDirectedEdge instead."));if(u&&!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));if(o=""+o,a=""+a,u=u||{},!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var c=t._nodes.get(o),d=t._nodes.get(a);if(!c)throw new Y("Graph.".concat(e,': source node "').concat(o,'" not found.'));if(!d)throw new Y("Graph.".concat(e,': target node "').concat(a,'" not found.'));var s={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));if(!t.multi&&(r?void 0!==c.undirected[a]:void 0!==c.out[a]))throw new B("Graph.".concat(e,': an edge linking "').concat(o,'" to "').concat(a,"\" already exists. If you really want to add multiple edges linking those nodes, you should create a multi graph by using the 'multi' option."));var f=new H(r,i,c,d,u);return t._edges.set(i,f),o===a?r?(c.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(c.directedSelfLoops++,t._directedSelfLoopCount++):r?(c.undirectedDegree++,d.undirectedDegree++):(c.outDegree++,d.inDegree++),Q(t,r,f,o,a,c,d),r?t._undirectedSize++:t._directedSize++,s.key=i,t.emit("edgeAdded",s),i}function ne(t,e,n,r,i,o,a,u,d){if(!r&&"undirected"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update a directed edge to an undirected graph. Use the #.mergeEdge/#.updateEdge or #.addUndirectedEdge instead."));if(r&&"directed"===t.type)throw new B("Graph.".concat(e,": you cannot merge/update an undirected edge to a directed graph. Use the #.mergeEdge/#.updateEdge or #.addDirectedEdge instead."));if(u)if(d){if("function"!=typeof u)throw new F("Graph.".concat(e,': invalid updater function. Expecting a function but got "').concat(u,'"'))}else if(!h(u))throw new F("Graph.".concat(e,': invalid attributes. Expecting an object but got "').concat(u,'"'));var s;if(o=""+o,a=""+a,d&&(s=u,u=void 0),!t.allowSelfLoops&&o===a)throw new B("Graph.".concat(e,': source & target are the same ("').concat(o,"\"), thus creating a loop explicitly forbidden by this graph 'allowSelfLoops' option set to false."));var f,p,l=t._nodes.get(o),g=t._nodes.get(a);if(!n&&(f=t._edges.get(i))){if(f.source.key!==o||f.target.key!==a||r&&(f.source.key!==a||f.target.key!==o))throw new B("Graph.".concat(e,': inconsistency detected when attempting to merge the "').concat(i,'" edge with "').concat(o,'" source & "').concat(a,'" target vs. ("').concat(f.source.key,'", "').concat(f.target.key,'").'));p=f;}if(p||t.multi||!l||(p=r?l.undirected[a]:l.out[a]),p){var y=[p.key,!1,!1,!1];if(d?!s:!u)return y;if(d){var v=p.attributes;p.attributes=s(v),t.emit("edgeAttributesUpdated",{type:"replace",key:p.key,attributes:p.attributes});}else c(p.attributes,u),t.emit("edgeAttributesUpdated",{type:"merge",key:p.key,attributes:p.attributes,data:u});return y}u=u||{},d&&s&&(u=s(u));var b={key:null,undirected:r,source:o,target:a,attributes:u};if(n)i=t._edgeKeyGenerator();else if(i=""+i,t._edges.has(i))throw new B("Graph.".concat(e,': the "').concat(i,'" edge already exists in the graph.'));var w=!1,m=!1;return l||(l=te(t,o,{}),w=!0,o===a&&(g=l,m=!0)),g||(g=te(t,a,{}),m=!0),f=new H(r,i,l,g,u),t._edges.set(i,f),o===a?r?(l.undirectedSelfLoops++,t._undirectedSelfLoopCount++):(l.directedSelfLoops++,t._directedSelfLoopCount++):r?(l.undirectedDegree++,g.undirectedDegree++):(l.outDegree++,g.inDegree++),Q(t,r,f,o,a,l,g),r?t._undirectedSize++:t._directedSize++,b.key=i,t.emit("edgeAdded",b),[i,!0,w,m]}var re=function(n){function r(t){var e;if(e=n.call(this)||this,"boolean"!=typeof(t=c({},$t,t)).multi)throw new F("Graph.constructor: invalid 'multi' option. Expecting a boolean but got \"".concat(t.multi,'".'));if(!Xt.has(t.type))throw new F('Graph.constructor: invalid \'type\' option. Should be one of "mixed", "directed" or "undirected" but got "'.concat(t.type,'".'));if("boolean"!=typeof t.allowSelfLoops)throw new F("Graph.constructor: invalid 'allowSelfLoops' option. Expecting a boolean but got \"".concat(t.allowSelfLoops,'".'));var r="mixed"===t.type?q:"directed"===t.type?J:V;p(u(e),"NodeDataClass",r);var i=Qt(),o=0;return p(u(e),"_attributes",{}),p(u(e),"_nodes",new Map),p(u(e),"_edges",new Map),p(u(e),"_directedSize",0),p(u(e),"_undirectedSize",0),p(u(e),"_directedSelfLoopCount",0),p(u(e),"_undirectedSelfLoopCount",0),p(u(e),"_edgeKeyGenerator",(function(){var t;do{t="geid_"+i+"_"+o++;}while(e._edges.has(t));return t})),p(u(e),"_options",t),Zt.forEach((function(t){return p(u(e),t,e[t])})),l(u(e),"order",(function(){return e._nodes.size})),l(u(e),"size",(function(){return e._edges.size})),l(u(e),"directedSize",(function(){return e._directedSize})),l(u(e),"undirectedSize",(function(){return e._undirectedSize})),l(u(e),"selfLoopCount",(function(){return e._directedSelfLoopCount+e._undirectedSelfLoopCount})),l(u(e),"directedSelfLoopCount",(function(){return e._directedSelfLoopCount})),l(u(e),"undirectedSelfLoopCount",(function(){return e._undirectedSelfLoopCount})),l(u(e),"multi",e._options.multi),l(u(e),"type",e._options.type),l(u(e),"allowSelfLoops",e._options.allowSelfLoops),l(u(e),"implementation",(function(){return "graphology"})),e}e(r,n);var i=r.prototype;return i._resetInstanceCounters=function(){this._directedSize=0,this._undirectedSize=0,this._directedSelfLoopCount=0,this._undirectedSelfLoopCount=0;},i.hasNode=function(t){return this._nodes.has(""+t)},i.hasDirectedEdge=function(t,e){if("undirected"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&!r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.out[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasUndirectedEdge=function(t,e){if("directed"===this.type)return !1;if(1===arguments.length){var n=""+t,r=this._edges.get(n);return !!r&&r.undirected}if(2===arguments.length){t=""+t,e=""+e;var i=this._nodes.get(t);if(!i)return !1;var o=i.undirected[e];return !!o&&(!this.multi||!!o.size)}throw new F("Graph.hasDirectedEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.hasEdge=function(t,e){if(1===arguments.length){var n=""+t;return this._edges.has(n)}if(2===arguments.length){t=""+t,e=""+e;var r=this._nodes.get(t);if(!r)return !1;var i=void 0!==r.out&&r.out[e];return i||(i=void 0!==r.undirected&&r.undirected[e]),!!i&&(!this.multi||!!i.size)}throw new F("Graph.hasEdge: invalid arity (".concat(arguments.length,", instead of 1 or 2). You can either ask for an edge id or for the existence of an edge between a source & a target."))},i.directedEdge=function(t,e){if("undirected"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.directedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.directedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.directedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.directedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||void 0;return r?r.key:void 0}},i.undirectedEdge=function(t,e){if("directed"!==this.type){if(t=""+t,e=""+e,this.multi)throw new B("Graph.undirectedEdge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.undirectedEdges instead.");var n=this._nodes.get(t);if(!n)throw new Y('Graph.undirectedEdge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.undirectedEdge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.undirected&&n.undirected[e]||void 0;return r?r.key:void 0}},i.edge=function(t,e){if(this.multi)throw new B("Graph.edge: this method is irrelevant with multigraphs since there might be multiple edges between source & target. See #.edges instead.");t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.edge: could not find the "'.concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y('Graph.edge: could not find the "'.concat(e,'" target node in the graph.'));var r=n.out&&n.out[e]||n.undirected&&n.undirected[e]||void 0;if(r)return r.key},i.areDirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areDirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)},i.areOutNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out},i.areInNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in},i.areUndirectedNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areUndirectedNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "directed"!==this.type&&e in n.undirected},i.areNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&(e in n.in||e in n.out)||"directed"!==this.type&&e in n.undirected},i.areInboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areInboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.in||"directed"!==this.type&&e in n.undirected},i.areOutboundNeighbors=function(t,e){t=""+t,e=""+e;var n=this._nodes.get(t);if(!n)throw new Y('Graph.areOutboundNeighbors: could not find the "'.concat(t,'" node in the graph.'));return "undirected"!==this.type&&e in n.out||"directed"!==this.type&&e in n.undirected},i.inDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.directedSelfLoops},i.outDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegree: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree+e.directedSelfLoops},i.directedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegree: could not find the "'.concat(t,'" node in the graph.'));if("undirected"===this.type)return 0;var n=e.directedSelfLoops;return e.inDegree+n+(e.outDegree+n)},i.undirectedDegree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegree: could not find the "'.concat(t,'" node in the graph.'));if("directed"===this.type)return 0;var n=e.undirectedSelfLoops;return e.undirectedDegree+2*n},i.degree=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degree: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree+2*e.undirectedSelfLoops),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree+2*e.directedSelfLoops),n},i.inDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.inDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree},i.outDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.outDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.outDegree},i.directedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.directedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "undirected"===this.type?0:e.inDegree+e.outDegree},i.undirectedDegreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.undirectedDegreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));return "directed"===this.type?0:e.undirectedDegree},i.degreeWithoutSelfLoops=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.degreeWithoutSelfLoops: could not find the "'.concat(t,'" node in the graph.'));var n=0;return "directed"!==this.type&&(n+=e.undirectedDegree),"undirected"!==this.type&&(n+=e.inDegree+e.outDegree),n},i.source=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.source: could not find the "'.concat(t,'" edge in the graph.'));return e.source.key},i.target=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.target: could not find the "'.concat(t,'" edge in the graph.'));return e.target.key},i.extremities=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.extremities: could not find the "'.concat(t,'" edge in the graph.'));return [e.source.key,e.target.key]},i.opposite=function(t,e){t=""+t,e=""+e;var n=this._edges.get(e);if(!n)throw new Y('Graph.opposite: could not find the "'.concat(e,'" edge in the graph.'));var r=n.source.key,i=n.target.key;if(t===r)return i;if(t===i)return r;throw new Y('Graph.opposite: the "'.concat(t,'" node is not attached to the "').concat(e,'" edge (').concat(r,", ").concat(i,")."))},i.hasExtremity=function(t,e){t=""+t,e=""+e;var n=this._edges.get(t);if(!n)throw new Y('Graph.hasExtremity: could not find the "'.concat(t,'" edge in the graph.'));return n.source.key===e||n.target.key===e},i.isUndirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isUndirected: could not find the "'.concat(t,'" edge in the graph.'));return e.undirected},i.isDirected=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isDirected: could not find the "'.concat(t,'" edge in the graph.'));return !e.undirected},i.isSelfLoop=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.isSelfLoop: could not find the "'.concat(t,'" edge in the graph.'));return e.source===e.target},i.addNode=function(t,e){var n=function(t,e,n){if(n&&!h(n))throw new F('Graph.addNode: invalid attributes. Expecting an object but got "'.concat(n,'"'));if(e=""+e,n=n||{},t._nodes.has(e))throw new B('Graph.addNode: the "'.concat(e,'" node already exist in the graph.'));var r=new t.NodeDataClass(e,n);return t._nodes.set(e,r),t.emit("nodeAdded",{key:e,attributes:n}),r}(this,t,e);return n.key},i.mergeNode=function(t,e){if(e&&!h(e))throw new F('Graph.mergeNode: invalid attributes. Expecting an object but got "'.concat(e,'"'));t=""+t,e=e||{};var n=this._nodes.get(t);return n?(e&&(c(n.attributes,e),this.emit("nodeAttributesUpdated",{type:"merge",key:t,attributes:n.attributes,data:e})),[t,!1]):(n=new this.NodeDataClass(t,e),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:e}),[t,!0])},i.updateNode=function(t,e){if(e&&"function"!=typeof e)throw new F('Graph.updateNode: invalid updater function. Expecting a function but got "'.concat(e,'"'));t=""+t;var n=this._nodes.get(t);if(n){if(e){var r=n.attributes;n.attributes=e(r),this.emit("nodeAttributesUpdated",{type:"replace",key:t,attributes:n.attributes});}return [t,!1]}var i=e?e({}):{};return n=new this.NodeDataClass(t,i),this._nodes.set(t,n),this.emit("nodeAdded",{key:t,attributes:i}),[t,!0]},i.dropNode=function(t){var e=this;t=""+t;var n=this._nodes.get(t);if(!n)throw new Y('Graph.dropNode: could not find the "'.concat(t,'" node in the graph.'));this.forEachEdge(t,(function(t){e.dropEdge(t);})),this._nodes.delete(t),this.emit("nodeDropped",{key:t,attributes:n.attributes});},i.dropEdge=function(t){var e;if(arguments.length>1){var n=""+arguments[0],r=""+arguments[1];if(!(e=d(this,n,r,this.type)))throw new Y('Graph.dropEdge: could not find the "'.concat(n,'" -> "').concat(r,'" edge in the graph.'))}else if(t=""+t,!(e=this._edges.get(t)))throw new Y('Graph.dropEdge: could not find the "'.concat(t,'" edge in the graph.'));this._edges.delete(e.key);var i=e,o=i.source,a=i.target,u=i.attributes,c=e.undirected;return o===a?c?(o.undirectedSelfLoops--,this._undirectedSelfLoopCount--):(o.directedSelfLoops--,this._directedSelfLoopCount--):c?(o.undirectedDegree--,a.undirectedDegree--):(o.outDegree--,a.inDegree--),X(this,c,e),c?this._undirectedSize--:this._directedSize--,this.emit("edgeDropped",{key:t,attributes:u,source:o.key,target:a.key,undirected:c}),this},i.clear=function(){this._edges.clear(),this._nodes.clear(),this._resetInstanceCounters(),this.emit("cleared");},i.clearEdges=function(){!function(t){for(var e,n=t._nodes.values();!0!==(e=n.next()).done;)e.value.clear();}(this),this._edges.clear(),this._resetInstanceCounters(),this.emit("edgesCleared");},i.getAttribute=function(t){return this._attributes[t]},i.getAttributes=function(){return this._attributes},i.hasAttribute=function(t){return this._attributes.hasOwnProperty(t)},i.setAttribute=function(t,e){return this._attributes[t]=e,this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.updateAttribute=function(t,e){if("function"!=typeof e)throw new F("Graph.updateAttribute: updater should be a function.");var n=this._attributes[t];return this._attributes[t]=e(n),this.emit("attributesUpdated",{type:"set",attributes:this._attributes,name:t}),this},i.removeAttribute=function(t){return delete this._attributes[t],this.emit("attributesUpdated",{type:"remove",attributes:this._attributes,name:t}),this},i.replaceAttributes=function(t){if(!h(t))throw new F("Graph.replaceAttributes: provided attributes are not a plain object.");return this._attributes=t,this.emit("attributesUpdated",{type:"replace",attributes:this._attributes}),this},i.mergeAttributes=function(t){if(!h(t))throw new F("Graph.mergeAttributes: provided attributes are not a plain object.");return c(this._attributes,t),this.emit("attributesUpdated",{type:"merge",attributes:this._attributes,data:t}),this},i.updateAttributes=function(t){if("function"!=typeof t)throw new F("Graph.updateAttributes: provided updater is not a function.");return this._attributes=t(this._attributes),this.emit("attributesUpdated",{type:"update",attributes:this._attributes}),this},i.updateEachNodeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachNodeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachNodeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i=this._nodes.values();!0!==(n=i.next()).done;)(r=n.value).attributes=t(r.key,r.attributes);this.emit("eachNodeAttributesUpdated",{hints:e||null});},i.updateEachEdgeAttributes=function(t,e){if("function"!=typeof t)throw new F("Graph.updateEachEdgeAttributes: expecting an updater function.");if(e&&!g(e))throw new F("Graph.updateEachEdgeAttributes: invalid hints. Expecting an object having the following shape: {attributes?: [string]}");for(var n,r,i,o,a=this._edges.values();!0!==(n=a.next()).done;)i=(r=n.value).source,o=r.target,r.attributes=t(r.key,r.attributes,i.key,o.key,i.attributes,o.attributes,r.undirected);this.emit("eachEdgeAttributesUpdated",{hints:e||null});},i.forEachAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!1,!1,this,t):Ft(!1,!1,!1,this,t);},i.forEachAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!1,!0,this,t):Ft(!1,!1,!0,this,t);},i.forEachAssymetricAdjacencyEntry=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntry: expecting a callback.");this.multi?Yt(!1,!0,!1,this,t):Ft(!1,!0,!1,this,t);},i.forEachAssymetricAdjacencyEntryWithOrphans=function(t){if("function"!=typeof t)throw new F("Graph.forEachAssymetricAdjacencyEntryWithOrphans: expecting a callback.");this.multi?Yt(!1,!0,!0,this,t):Ft(!1,!0,!0,this,t);},i.nodes=function(){return "function"==typeof Array.from?Array.from(this._nodes.keys()):K(this._nodes.keys(),this._nodes.size)},i.forEachNode=function(t){if("function"!=typeof t)throw new F("Graph.forEachNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes);},i.findNode=function(t){if("function"!=typeof t)throw new F("Graph.findNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return n.key},i.mapNodes=function(t){if("function"!=typeof t)throw new F("Graph.mapNode: expecting a callback.");for(var e,n,r=this._nodes.values(),i=new Array(this.order),o=0;!0!==(e=r.next()).done;)n=e.value,i[o++]=t(n.key,n.attributes);return i},i.someNode=function(t){if("function"!=typeof t)throw new F("Graph.someNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(t((n=e.value).key,n.attributes))return !0;return !1},i.everyNode=function(t){if("function"!=typeof t)throw new F("Graph.everyNode: expecting a callback.");for(var e,n,r=this._nodes.values();!0!==(e=r.next()).done;)if(!t((n=e.value).key,n.attributes))return !1;return !0},i.filterNodes=function(t){if("function"!=typeof t)throw new F("Graph.filterNodes: expecting a callback.");for(var e,n,r=this._nodes.values(),i=[];!0!==(e=r.next()).done;)t((n=e.value).key,n.attributes)&&i.push(n.key);return i},i.reduceNodes=function(t,e){if("function"!=typeof t)throw new F("Graph.reduceNodes: expecting a callback.");if(arguments.length<2)throw new F("Graph.reduceNodes: missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array.");for(var n,r,i=e,o=this._nodes.values();!0!==(n=o.next()).done;)i=t(i,(r=n.value).key,r.attributes);return i},i.nodeEntries=function(){var t=this._nodes.values();return new O((function(){var e=t.next();if(e.done)return e;var n=e.value;return {value:{node:n.key,attributes:n.attributes},done:!1}}))},i.exportNode=function(t){t=""+t;var e=this._nodes.get(t);if(!e)throw new Y('Graph.exportNode: could not find the "'.concat(t,'" node in the graph.'));return Bt(t,e)},i.exportEdge=function(t){t=""+t;var e=this._edges.get(t);if(!e)throw new Y('Graph.exportEdge: could not find the "'.concat(t,'" edge in the graph.'));return qt(t,e)},i.export=function(){var t=new Array(this._nodes.size),e=0;this._nodes.forEach((function(n,r){t[e++]=Bt(r,n);}));var n=new Array(this._edges.size);return e=0,this._edges.forEach((function(t,r){n[e++]=qt(r,t);})),{attributes:this.getAttributes(),nodes:t,edges:n,options:{type:this.type,multi:this.multi,allowSelfLoops:this.allowSelfLoops}}},i.importNode=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Jt(t);if(n){if("not-object"===n)throw new F('Graph.importNode: invalid serialized node. A serialized node should be a plain object with at least a "key" property.');if("no-key"===n)throw new F("Graph.importNode: no key provided.");if("invalid-attributes"===n)throw new F("Graph.importNode: invalid attributes. Attributes should be a plain object, null or omitted.")}var r=t.key,i=t.attributes,o=void 0===i?{}:i;return e?this.mergeNode(r,o):this.addNode(r,o),this},i.importEdge=function(t){var e=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=Vt(t);if(n){if("not-object"===n)throw new F('Graph.importEdge: invalid serialized edge. A serialized edge should be a plain object with at least a "source" & "target" property.');if("no-source"===n)throw new F("Graph.importEdge: missing souce.");if("no-target"===n)throw new F("Graph.importEdge: missing target.");if("invalid-attributes"===n)throw new F("Graph.importEdge: invalid attributes. Attributes should be a plain object, null or omitted.");if("invalid-undirected"===n)throw new F("Graph.importEdge: invalid undirected. Undirected should be boolean or omitted.")}var r=t.source,i=t.target,o=t.attributes,a=void 0===o?{}:o,u=t.undirected,c=void 0!==u&&u;return "key"in t?(e?c?this.mergeUndirectedEdgeWithKey:this.mergeDirectedEdgeWithKey:c?this.addUndirectedEdgeWithKey:this.addDirectedEdgeWithKey).call(this,t.key,r,i,a):(e?c?this.mergeUndirectedEdge:this.mergeDirectedEdge:c?this.addUndirectedEdge:this.addDirectedEdge).call(this,r,i,a),this},i.import=function(t){var e,n,r,i=arguments.length>1&&void 0!==arguments[1]&&arguments[1];if(s(t))return this.import(t.export(),i),this;if(!h(t))throw new F("Graph.import: invalid argument. Expecting a serialized graph or, alternatively, a Graph instance.");if(t.attributes){if(!h(t.attributes))throw new F("Graph.import: invalid attributes. Expecting a plain object.");i?this.mergeAttributes(t.attributes):this.replaceAttributes(t.attributes);}if(t.nodes){if(r=t.nodes,!Array.isArray(r))throw new F("Graph.import: invalid nodes. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importNode(r[e],i);}if(t.edges){if(r=t.edges,!Array.isArray(r))throw new F("Graph.import: invalid edges. Expecting an array.");for(e=0,n=r.length;e<n;e++)this.importEdge(r[e],i);}return this},i.nullCopy=function(t){var e=new r(c({},this._options,t));return e.replaceAttributes(c({},this.getAttributes())),e},i.emptyCopy=function(t){var e=this.nullCopy(t);return this._nodes.forEach((function(t,n){var r=c({},t.attributes);t=new e.NodeDataClass(n,r),e._nodes.set(n,t);})),e},i.copy=function(){for(var t,e,n=this.emptyCopy(),r=this._edges.values();!0!==(t=r.next()).done;)ee(n,"copy",!1,(e=t.value).undirected,e.key,e.source.key,e.target.key,c({},e.attributes));return n},i.upgradeToMixed=function(){return "mixed"===this.type||(this._nodes.forEach((function(t){return t.upgradeToMixed()})),this._options.type="mixed",l(this,"type",this._options.type),p(this,"NodeDataClass",q)),this},i.upgradeToMulti=function(){return this.multi||(this._options.multi=!0,l(this,"multi",!0),(t=this)._nodes.forEach((function(e,n){if(e.out)for(var r in e.out){var i=new Set;i.add(e.out[r]),e.out[r]=i,t._nodes.get(r).in[n]=i;}if(e.undirected)for(var o in e.undirected)if(!(o>n)){var a=new Set;a.add(e.undirected[o]),e.undirected[o]=a,t._nodes.get(o).undirected[n]=a;}}))),this;var t;},i.toJSON=function(){return this.export()},i.toString=function(){return "[object Graph]"},i.inspect=function(){var e=this,n={};this._nodes.forEach((function(t,e){n[e]=t.attributes;}));var r={},i={};this._edges.forEach((function(t,n){var o,a=t.undirected?"--":"->",u="",c=t.source.key,d=t.target.key;t.undirected&&c>d&&(o=c,c=d,d=o);var s="(".concat(c,")").concat(a,"(").concat(d,")");n.startsWith("geid_")?e.multi&&(void 0===i[s]?i[s]=0:i[s]++,u+="".concat(i[s],". ")):u+="[".concat(n,"]: "),r[u+=s]=t.attributes;}));var o={};for(var a in this)this.hasOwnProperty(a)&&!Zt.has(a)&&"function"!=typeof this[a]&&"symbol"!==t(a)&&(o[a]=this[a]);return o.attributes=this._attributes,o.nodes=n,o.edges=r,p(o,"constructor",this.constructor),o},r}(v.exports.EventEmitter);"undefined"!=typeof Symbol&&(re.prototype[Symbol.for("nodejs.util.inspect.custom")]=re.prototype.inspect),[{name:function(t){return "".concat(t,"Edge")},generateKey:!0},{name:function(t){return "".concat(t,"DirectedEdge")},generateKey:!0,type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdge")},generateKey:!0,type:"undirected"},{name:function(t){return "".concat(t,"EdgeWithKey")}},{name:function(t){return "".concat(t,"DirectedEdgeWithKey")},type:"directed"},{name:function(t){return "".concat(t,"UndirectedEdgeWithKey")},type:"undirected"}].forEach((function(t){["add","merge","update"].forEach((function(e){var n=t.name(e),r="add"===e?ee:ne;t.generateKey?re.prototype[n]=function(i,o,a){return r(this,n,!0,"undirected"===(t.type||this.type),null,i,o,a,"update"===e)}:re.prototype[n]=function(i,o,a,u){return r(this,n,!1,"undirected"===(t.type||this.type),i,o,a,u,"update"===e)};}));})),function(t){$.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Node"),0),r(t,n("Source"),1),r(t,n("Target"),2),r(t,n("Opposite"),3);}));}(re),function(t){tt.forEach((function(e){var n=e.name,r=e.attacher;r(t,n("Edge"),"mixed"),r(t,n("DirectedEdge"),"directed"),r(t,n("UndirectedEdge"),"undirected");}));}(re),function(t){it.forEach((function(e){!function(t,e){var n=e.name,r=e.type,i=e.direction;t.prototype[n]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return [];if(!arguments.length)return wt(this,r);if(1===arguments.length){t=""+t;var o=this._nodes.get(t);if(void 0===o)throw new Y("Graph.".concat(n,': could not find the "').concat(t,'" node in the graph.'));return Gt(this.multi,"mixed"===r?this.type:r,i,o)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(n,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(n,':  could not find the "').concat(e,'" target node in the graph.'));return At(r,this.multi,i,a,e)}throw new F("Graph.".concat(n,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="forEach"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"===r||"mixed"===this.type||r===this.type){if(1===arguments.length)return mt(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return xt(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Lt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))}};var a="map"+n[0].toUpperCase()+n.slice(1);t.prototype[a]=function(){var t,e=Array.prototype.slice.call(arguments),n=e.pop();if(0===e.length){var i=0;"directed"!==r&&(i+=this.undirectedSize),"undirected"!==r&&(i+=this.directedSize),t=new Array(i);var a=0;e.push((function(e,r,i,o,u,c,d){t[a++]=n(e,r,i,o,u,c,d);}));}else t=[],e.push((function(e,r,i,o,a,u,c){t.push(n(e,r,i,o,a,u,c));}));return this[o].apply(this,e),t};var u="filter"+n[0].toUpperCase()+n.slice(1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop(),n=[];return t.push((function(t,r,i,o,a,u,c){e(t,r,i,o,a,u,c)&&n.push(t);})),this[o].apply(this,t),n};var c="reduce"+n[0].toUpperCase()+n.slice(1);t.prototype[c]=function(){var t,e,n=Array.prototype.slice.call(arguments);if(n.length<2||n.length>4)throw new F("Graph.".concat(c,": invalid number of arguments (expecting 2, 3 or 4 and got ").concat(n.length,")."));if("function"==typeof n[n.length-1]&&"function"!=typeof n[n.length-2])throw new F("Graph.".concat(c,": missing initial value. You must provide it because the callback takes more than one argument and we cannot infer the initial value from the first iteration, as you could with a simple array."));2===n.length?(t=n[0],e=n[1],n=[]):3===n.length?(t=n[1],e=n[2],n=[n[0]]):4===n.length&&(t=n[2],e=n[3],n=[n[0],n[1]]);var r=e;return n.push((function(e,n,i,o,a,u,c){r=t(r,e,n,i,o,a,u,c);})),this[o].apply(this,n),r};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o="find"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[o]=function(t,e,n){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return !1;if(1===arguments.length)return _t(this,r,n=t);if(2===arguments.length){t=""+t,n=e;var a=this._nodes.get(t);if(void 0===a)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return Et(this.multi,"mixed"===r?this.type:r,i,a,n)}if(3===arguments.length){t=""+t,e=""+e;var u=this._nodes.get(t);if(!u)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Dt(r,this.multi,i,u,e,n)}throw new F("Graph.".concat(o,": too many arguments (expecting 1, 2 or 3 and got ").concat(arguments.length,")."))};var a="some"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[a]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return e(t,n,r,i,o,a,u)})),!!this[o].apply(this,t)};var u="every"+n[0].toUpperCase()+n.slice(1,-1);t.prototype[u]=function(){var t=Array.prototype.slice.call(arguments),e=t.pop();return t.push((function(t,n,r,i,o,a,u){return !e(t,n,r,i,o,a,u)})),!this[o].apply(this,t)};}(t,e),function(t,e){var n=e.name,r=e.type,i=e.direction,o=n.slice(0,-1)+"Entries";t.prototype[o]=function(t,e){if("mixed"!==r&&"mixed"!==this.type&&r!==this.type)return O.empty();if(!arguments.length)return kt(this,r);if(1===arguments.length){t=""+t;var n=this._nodes.get(t);if(!n)throw new Y("Graph.".concat(o,': could not find the "').concat(t,'" node in the graph.'));return St(r,i,n)}if(2===arguments.length){t=""+t,e=""+e;var a=this._nodes.get(t);if(!a)throw new Y("Graph.".concat(o,':  could not find the "').concat(t,'" source node in the graph.'));if(!this._nodes.has(e))throw new Y("Graph.".concat(o,':  could not find the "').concat(e,'" target node in the graph.'));return Nt(r,i,a,e)}throw new F("Graph.".concat(o,": too many arguments (expecting 0, 1 or 2 and got ").concat(arguments.length,")."))};}(t,e);}));}(re),function(t){Ut.forEach((function(e){Rt(t,e),Wt(t,e),Kt(t,e),It(t,e);}));}(re);var ie=function(t){function n(e){var n=c({type:"directed"},e);if("multi"in n&&!1!==n.multi)throw new F("DirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("directed"!==n.type)throw new F('DirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),oe=function(t){function n(e){var n=c({type:"undirected"},e);if("multi"in n&&!1!==n.multi)throw new F("UndirectedGraph.from: inconsistent indication that the graph should be multi in given options!");if("undirected"!==n.type)throw new F('UndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ae=function(t){function n(e){var n=c({multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiGraph.from: inconsistent indication that the graph should be simple in given options!");return t.call(this,n)||this}return e(n,t),n}(re),ue=function(t){function n(e){var n=c({type:"directed",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiDirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("directed"!==n.type)throw new F('MultiDirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re),ce=function(t){function n(e){var n=c({type:"undirected",multi:!0},e);if("multi"in n&&!0!==n.multi)throw new F("MultiUndirectedGraph.from: inconsistent indication that the graph should be simple in given options!");if("undirected"!==n.type)throw new F('MultiUndirectedGraph.from: inconsistent "'+n.type+'" type in given options!');return t.call(this,n)||this}return e(n,t),n}(re);function de(t){t.from=function(e,n){var r=c({},e.options,n),i=new t(r);return i.import(e),i};}return de(re),de(ie),de(oe),de(ae),de(ue),de(ce),re.Graph=re,re.DirectedGraph=ie,re.UndirectedGraph=oe,re.MultiGraph=ae,re.MultiDirectedGraph=ue,re.MultiUndirectedGraph=ce,re.InvalidArgumentsGraphError=F,re.NotFoundGraphError=Y,re.UsageGraphError=B,re}));
 
-function add_css$b() {
-	var style = element("style");
-	style.id = "svelte-ybyqyo-style";
-	style.textContent = "div.BC-trail-grid.svelte-ybyqyo{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-ybyqyo{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-ybyqyo{opacity:0.7}.dot.svelte-ybyqyo{height:5px;width:5px;border-radius:50%;display:inline-block}";
-	append(document.head, style);
+});
+
+/**
+ * Graphology isGraph
+ * ===================
+ *
+ * Very simple function aiming at ensuring the given variable is a
+ * graphology instance.
+ */
+/**
+ * Checking the value is a graphology instance.
+ *
+ * @param  {any}     value - Target value.
+ * @return {boolean}
+ */
+var isGraph = function isGraph(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    typeof value.addUndirectedEdgeWithKey === 'function' &&
+    typeof value.dropNode === 'function' &&
+    typeof value.multi === 'boolean'
+  );
+};
+
+var ARRAY_BUFFER_SUPPORT$1 = typeof ArrayBuffer !== 'undefined';
+var SYMBOL_SUPPORT$1 = typeof Symbol !== 'undefined';
+
+var support = {
+	ARRAY_BUFFER_SUPPORT: ARRAY_BUFFER_SUPPORT$1,
+	SYMBOL_SUPPORT: SYMBOL_SUPPORT$1
+};
+
+/**
+ * Obliterator ForEach Function
+ * =============================
+ *
+ * Helper function used to easily iterate over mixed values.
+ */
+
+var ARRAY_BUFFER_SUPPORT = support.ARRAY_BUFFER_SUPPORT;
+var SYMBOL_SUPPORT = support.SYMBOL_SUPPORT;
+
+/**
+ * Function able to iterate over almost any iterable JS value.
+ *
+ * @param  {any}      iterable - Iterable value.
+ * @param  {function} callback - Callback function.
+ */
+var foreach = function forEach(iterable, callback) {
+  var iterator, k, i, l, s;
+
+  if (!iterable) throw new Error('obliterator/forEach: invalid iterable.');
+
+  if (typeof callback !== 'function')
+    throw new Error('obliterator/forEach: expecting a callback.');
+
+  // The target is an array or a string or function arguments
+  if (
+    Array.isArray(iterable) ||
+    (ARRAY_BUFFER_SUPPORT && ArrayBuffer.isView(iterable)) ||
+    typeof iterable === 'string' ||
+    iterable.toString() === '[object Arguments]'
+  ) {
+    for (i = 0, l = iterable.length; i < l; i++) callback(iterable[i], i);
+    return;
+  }
+
+  // The target has a #.forEach method
+  if (typeof iterable.forEach === 'function') {
+    iterable.forEach(callback);
+    return;
+  }
+
+  // The target is iterable
+  if (
+    SYMBOL_SUPPORT &&
+    Symbol.iterator in iterable &&
+    typeof iterable.next !== 'function'
+  ) {
+    iterable = iterable[Symbol.iterator]();
+  }
+
+  // The target is an iterator
+  if (typeof iterable.next === 'function') {
+    iterator = iterable;
+    i = 0;
+
+    while (((s = iterator.next()), s.done !== true)) {
+      callback(s.value, i);
+      i++;
+    }
+
+    return;
+  }
+
+  // The target is a plain object
+  for (k in iterable) {
+    if (iterable.hasOwnProperty(k)) {
+      callback(iterable[k], k);
+    }
+  }
+
+  return;
+};
+
+/**
+ * Mnemonist Typed Array Helpers
+ * ==============================
+ *
+ * Miscellaneous helpers related to typed arrays.
+ */
+
+var typedArrays = createCommonjsModule(function (module, exports) {
+/**
+ * When using an unsigned integer array to store pointers, one might want to
+ * choose the optimal word size in regards to the actual numbers of pointers
+ * to store.
+ *
+ * This helpers does just that.
+ *
+ * @param  {number} size - Expected size of the array to map.
+ * @return {TypedArray}
+ */
+var MAX_8BIT_INTEGER = Math.pow(2, 8) - 1,
+    MAX_16BIT_INTEGER = Math.pow(2, 16) - 1,
+    MAX_32BIT_INTEGER = Math.pow(2, 32) - 1;
+
+var MAX_SIGNED_8BIT_INTEGER = Math.pow(2, 7) - 1,
+    MAX_SIGNED_16BIT_INTEGER = Math.pow(2, 15) - 1,
+    MAX_SIGNED_32BIT_INTEGER = Math.pow(2, 31) - 1;
+
+exports.getPointerArray = function(size) {
+  var maxIndex = size - 1;
+
+  if (maxIndex <= MAX_8BIT_INTEGER)
+    return Uint8Array;
+
+  if (maxIndex <= MAX_16BIT_INTEGER)
+    return Uint16Array;
+
+  if (maxIndex <= MAX_32BIT_INTEGER)
+    return Uint32Array;
+
+  throw new Error('mnemonist: Pointer Array of size > 4294967295 is not supported.');
+};
+
+exports.getSignedPointerArray = function(size) {
+  var maxIndex = size - 1;
+
+  if (maxIndex <= MAX_SIGNED_8BIT_INTEGER)
+    return Int8Array;
+
+  if (maxIndex <= MAX_SIGNED_16BIT_INTEGER)
+    return Int16Array;
+
+  if (maxIndex <= MAX_SIGNED_32BIT_INTEGER)
+    return Int32Array;
+
+  return Float64Array;
+};
+
+/**
+ * Function returning the minimal type able to represent the given number.
+ *
+ * @param  {number} value - Value to test.
+ * @return {TypedArrayClass}
+ */
+exports.getNumberType = function(value) {
+
+  // <= 32 bits itnteger?
+  if (value === (value | 0)) {
+
+    // Negative
+    if (Math.sign(value) === -1) {
+      if (value <= 127 && value >= -128)
+        return Int8Array;
+
+      if (value <= 32767 && value >= -32768)
+        return Int16Array;
+
+      return Int32Array;
+    }
+    else {
+
+      if (value <= 255)
+        return Uint8Array;
+
+      if (value <= 65535)
+        return Uint16Array;
+
+      return Uint32Array;
+    }
+  }
+
+  // 53 bits integer & floats
+  // NOTE: it's kinda hard to tell whether we could use 32bits or not...
+  return Float64Array;
+};
+
+/**
+ * Function returning the minimal type able to represent the given array
+ * of JavaScript numbers.
+ *
+ * @param  {array}    array  - Array to represent.
+ * @param  {function} getter - Optional getter.
+ * @return {TypedArrayClass}
+ */
+var TYPE_PRIORITY = {
+  Uint8Array: 1,
+  Int8Array: 2,
+  Uint16Array: 3,
+  Int16Array: 4,
+  Uint32Array: 5,
+  Int32Array: 6,
+  Float32Array: 7,
+  Float64Array: 8
+};
+
+// TODO: make this a one-shot for one value
+exports.getMinimalRepresentation = function(array, getter) {
+  var maxType = null,
+      maxPriority = 0,
+      p,
+      t,
+      v,
+      i,
+      l;
+
+  for (i = 0, l = array.length; i < l; i++) {
+    v = getter ? getter(array[i]) : array[i];
+    t = exports.getNumberType(v);
+    p = TYPE_PRIORITY[t.name];
+
+    if (p > maxPriority) {
+      maxPriority = p;
+      maxType = t;
+    }
+  }
+
+  return maxType;
+};
+
+/**
+ * Function returning whether the given value is a typed array.
+ *
+ * @param  {any} value - Value to test.
+ * @return {boolean}
+ */
+exports.isTypedArray = function(value) {
+  return typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(value);
+};
+
+/**
+ * Function used to concat byte arrays.
+ *
+ * @param  {...ByteArray}
+ * @return {ByteArray}
+ */
+exports.concat = function() {
+  var length = 0,
+      i,
+      o,
+      l;
+
+  for (i = 0, l = arguments.length; i < l; i++)
+    length += arguments[i].length;
+
+  var array = new (arguments[0].constructor)(length);
+
+  for (i = 0, o = 0; i < l; i++) {
+    array.set(arguments[i], o);
+    o += arguments[i].length;
+  }
+
+  return array;
+};
+
+/**
+ * Function used to initialize a byte array of indices.
+ *
+ * @param  {number}    length - Length of target.
+ * @return {ByteArray}
+ */
+exports.indices = function(length) {
+  var PointerArray = exports.getPointerArray(length);
+
+  var array = new PointerArray(length);
+
+  for (var i = 0; i < length; i++)
+    array[i] = i;
+
+  return array;
+};
+});
+
+/**
+ * Mnemonist Iterable Function
+ * ============================
+ *
+ * Harmonized iteration helpers over mixed iterable targets.
+ */
+
+/**
+ * Function used to determine whether the given object supports array-like
+ * random access.
+ *
+ * @param  {any} target - Target object.
+ * @return {boolean}
+ */
+function isArrayLike(target) {
+  return Array.isArray(target) || typedArrays.isTypedArray(target);
 }
 
-function get_each_context$a(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
-	child_ctx[22] = i;
-	return child_ctx;
+/**
+ * Function used to guess the length of the structure over which we are going
+ * to iterate.
+ *
+ * @param  {any} target - Target object.
+ * @return {number|undefined}
+ */
+function guessLength(target) {
+  if (typeof target.length === 'number')
+    return target.length;
+
+  if (typeof target.size === 'number')
+    return target.size;
+
+  return;
 }
 
-function get_each_context_1$7(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
-	return child_ctx;
+/**
+ * Function used to convert an iterable to an array.
+ *
+ * @param  {any}   target - Iteration target.
+ * @return {array}
+ */
+function toArray(target) {
+  var l = guessLength(target);
+
+  var array = typeof l === 'number' ? new Array(l) : [];
+
+  var i = 0;
+
+  // TODO: we could optimize when given target is array like
+  foreach(target, function(value) {
+    array[i++] = value;
+  });
+
+  return array;
 }
 
-function get_each_context_2$3(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
-	return child_ctx;
+/**
+ * Same as above but returns a supplementary indices array.
+ *
+ * @param  {any}   target - Iteration target.
+ * @return {array}
+ */
+function toArrayWithIndices(target) {
+  var l = guessLength(target);
+
+  var IndexArray = typeof l === 'number' ?
+    typedArrays.getPointerArray(l) :
+    Array;
+
+  var array = typeof l === 'number' ? new Array(l) : [];
+  var indices = typeof l === 'number' ? new IndexArray(l) : [];
+
+  var i = 0;
+
+  // TODO: we could optimize when given target is array like
+  foreach(target, function(value) {
+    array[i] = value;
+    indices[i] = i++;
+  });
+
+  return [array, indices];
 }
 
-// (83:8) {#if step.value && settings.gridDots}
-function create_if_block$6(ctx) {
-	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
-	let each_blocks = [];
+/**
+ * Exporting.
+ */
+var isArrayLike_1 = isArrayLike;
+var guessLength_1 = guessLength;
+var toArray_1 = toArray;
+var toArrayWithIndices_1 = toArrayWithIndices;
 
-	for (let i = 0; i < each_value_2.length; i += 1) {
-		each_blocks[i] = create_each_block_2$3(get_each_context_2$3(ctx, each_value_2, i));
-	}
+var iterables = {
+	isArrayLike: isArrayLike_1,
+	guessLength: guessLength_1,
+	toArray: toArray_1,
+	toArrayWithIndices: toArrayWithIndices_1
+};
 
-	return {
-		c() {
-			div = element("div");
+/**
+ * Obliterator Iterator Class
+ * ===========================
+ *
+ * Simple class representing the library's iterators.
+ */
+/**
+ * Iterator class.
+ *
+ * @constructor
+ * @param {function} next - Next function.
+ */
+function Iterator(next) {
+  if (typeof next !== 'function')
+    throw new Error('obliterator/iterator: expecting a function!');
 
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(div, "class", "dots");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
-		},
-		p(ctx, dirty) {
-			if (dirty & /*settings, wordCounts*/ 40) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
-				let i;
-
-				for (i = 0; i < each_value_2.length; i += 1) {
-					const child_ctx = get_each_context_2$3(ctx, each_value_2, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block_2$3(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(div, null);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value_2.length;
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			destroy_each(each_blocks, detaching);
-		}
-	};
+  this.next = next;
 }
 
-// (85:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
-function create_each_block_2$3(ctx) {
-	let span;
+/**
+ * If symbols are supported, we add `next` to `Symbol.iterator`.
+ */
+if (typeof Symbol !== 'undefined')
+  Iterator.prototype[Symbol.iterator] = function () {
+    return this;
+  };
 
-	return {
-		c() {
-			span = element("span");
-			attr(span, "class", "dot svelte-ybyqyo");
-			set_style(span, "background-color", /*settings*/ ctx[5].dotsColour);
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		p: noop,
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
+/**
+ * Returning an iterator of the given values.
+ *
+ * @param  {any...} values - Values.
+ * @return {Iterator}
+ */
+Iterator.of = function () {
+  var args = arguments,
+    l = args.length,
+    i = 0;
+
+  return new Iterator(function () {
+    if (i >= l) return {done: true};
+
+    return {done: false, value: args[i++]};
+  });
+};
+
+/**
+ * Returning an empty iterator.
+ *
+ * @return {Iterator}
+ */
+Iterator.empty = function () {
+  var iterator = new Iterator(function () {
+    return {done: true};
+  });
+
+  return iterator;
+};
+
+/**
+ * Returning an iterator over the given indexed sequence.
+ *
+ * @param  {string|Array} sequence - Target sequence.
+ * @return {Iterator}
+ */
+Iterator.fromSequence = function (sequence) {
+  var i = 0,
+    l = sequence.length;
+
+  return new Iterator(function () {
+    if (i >= l) return {done: true};
+
+    return {done: false, value: sequence[i++]};
+  });
+};
+
+/**
+ * Returning whether the given value is an iterator.
+ *
+ * @param  {any} value - Value.
+ * @return {boolean}
+ */
+Iterator.is = function (value) {
+  if (value instanceof Iterator) return true;
+
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.next === 'function'
+  );
+};
+
+/**
+ * Exporting.
+ */
+var iterator = Iterator;
+
+/**
+ * Mnemonist FixedDeque
+ * =====================
+ *
+ * Fixed capacity double-ended queue implemented as ring deque.
+ */
+
+/**
+ * FixedDeque.
+ *
+ * @constructor
+ */
+function FixedDeque(ArrayClass, capacity) {
+
+  if (arguments.length < 2)
+    throw new Error('mnemonist/fixed-deque: expecting an Array class and a capacity.');
+
+  if (typeof capacity !== 'number' || capacity <= 0)
+    throw new Error('mnemonist/fixed-deque: `capacity` should be a positive number.');
+
+  this.ArrayClass = ArrayClass;
+  this.capacity = capacity;
+  this.items = new ArrayClass(this.capacity);
+  this.clear();
 }
 
-// (66:4) {#each allRuns[i] as step}
-function create_each_block_1$7(ctx) {
-	let div1;
-	let div0;
-	let t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "";
-	let t0;
-	let div0_class_value;
-	let t1;
-	let t2;
-	let div1_class_value;
-	let div1_style_value;
-	let mounted;
-	let dispose;
-	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots && create_if_block$6(ctx);
+/**
+ * Method used to clear the structure.
+ *
+ * @return {undefined}
+ */
+FixedDeque.prototype.clear = function() {
 
-	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*step*/ ctx[23], ...args);
-	}
+  // Properties
+  this.start = 0;
+  this.size = 0;
+};
 
-	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*step*/ ctx[23], ...args);
-	}
+/**
+ * Method used to append a value to the deque.
+ *
+ * @param  {any}    item - Item to append.
+ * @return {number}      - Returns the new size of the deque.
+ */
+FixedDeque.prototype.push = function(item) {
+  if (this.size === this.capacity)
+    throw new Error('mnemonist/fixed-deque.push: deque capacity (' + this.capacity + ') exceeded!');
 
-	return {
-		c() {
-			div1 = element("div");
-			div0 = element("div");
-			t0 = text(t0_value);
-			t1 = space();
-			if (if_block) if_block.c();
-			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-ybyqyo");
+  var index = (this.start + this.size) % this.capacity;
 
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
-			: ""));
-		},
-		m(target, anchor) {
-			insert(target, div1, anchor);
-			append(div1, div0);
-			append(div0, t0);
-			append(div1, t1);
-			if (if_block) if_block.m(div1, null);
-			append(div1, t2);
+  this.items[index] = item;
 
-			if (!mounted) {
-				dispose = [
-					listen(div1, "click", click_handler),
-					listen(div1, "mouseover", mouseover_handler)
-				];
+  return ++this.size;
+};
 
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty & /*plugin*/ 4 && t0_value !== (t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
+/**
+ * Method used to prepend a value to the deque.
+ *
+ * @param  {any}    item - Item to prepend.
+ * @return {number}      - Returns the new size of the deque.
+ */
+FixedDeque.prototype.unshift = function(item) {
+  if (this.size === this.capacity)
+    throw new Error('mnemonist/fixed-deque.unshift: deque capacity (' + this.capacity + ') exceeded!');
 
-			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"))) {
-				attr(div0, "class", div0_class_value);
-			}
+  var index = this.start - 1;
 
-			if (/*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots) if_block.p(ctx, dirty);
+  if (this.start === 0)
+    index = this.capacity - 1;
 
-			if (dirty & /*children*/ 16 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
-			: ""))) {
-				attr(div1, "style", div1_style_value);
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div1);
-			if (if_block) if_block.d();
-			mounted = false;
-			run_all(dispose);
-		}
-	};
+  this.items[index] = item;
+  this.start = index;
+
+  return ++this.size;
+};
+
+/**
+ * Method used to pop the deque.
+ *
+ * @return {any} - Returns the popped item.
+ */
+FixedDeque.prototype.pop = function() {
+  if (this.size === 0)
+    return;
+
+  const index = (this.start + this.size - 1) % this.capacity;
+
+  this.size--;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to shift the deque.
+ *
+ * @return {any} - Returns the shifted item.
+ */
+FixedDeque.prototype.shift = function() {
+  if (this.size === 0)
+    return;
+
+  var index = this.start;
+
+  this.size--;
+  this.start++;
+
+  if (this.start === this.capacity)
+    this.start = 0;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to peek the first value of the deque.
+ *
+ * @return {any}
+ */
+FixedDeque.prototype.peekFirst = function() {
+  if (this.size === 0)
+    return;
+
+  return this.items[this.start];
+};
+
+/**
+ * Method used to peek the last value of the deque.
+ *
+ * @return {any}
+ */
+FixedDeque.prototype.peekLast = function() {
+  if (this.size === 0)
+    return;
+
+  var index = this.start + this.size - 1;
+
+  if (index > this.capacity)
+    index -= this.capacity;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to get the desired value of the deque.
+ *
+ * @param  {number} index
+ * @return {any}
+ */
+FixedDeque.prototype.get = function(index) {
+  if (this.size === 0)
+    return;
+
+  index = this.start + index;
+
+  if (index > this.capacity)
+    index -= this.capacity;
+
+  return this.items[index];
+};
+
+/**
+ * Method used to iterate over the deque.
+ *
+ * @param  {function}  callback - Function to call for each item.
+ * @param  {object}    scope    - Optional scope.
+ * @return {undefined}
+ */
+FixedDeque.prototype.forEach = function(callback, scope) {
+  scope = arguments.length > 1 ? scope : this;
+
+  var c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  while (j < l) {
+    callback.call(scope, this.items[i], j, this);
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+  }
+};
+
+/**
+ * Method used to convert the deque to a JavaScript array.
+ *
+ * @return {array}
+ */
+// TODO: optional array class as argument?
+FixedDeque.prototype.toArray = function() {
+
+  // Optimization
+  var offset = this.start + this.size;
+
+  if (offset < this.capacity)
+    return this.items.slice(this.start, offset);
+
+  var array = new this.ArrayClass(this.size),
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  while (j < l) {
+    array[j] = this.items[i];
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+  }
+
+  return array;
+};
+
+/**
+ * Method used to create an iterator over the deque's values.
+ *
+ * @return {Iterator}
+ */
+FixedDeque.prototype.values = function() {
+  var items = this.items,
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  return new iterator(function() {
+    if (j >= l)
+      return {
+        done: true
+      };
+
+    var value = items[i];
+
+    i++;
+    j++;
+
+    if (i === c)
+      i = 0;
+
+    return {
+      value: value,
+      done: false
+    };
+  });
+};
+
+/**
+ * Method used to create an iterator over the deque's entries.
+ *
+ * @return {Iterator}
+ */
+FixedDeque.prototype.entries = function() {
+  var items = this.items,
+      c = this.capacity,
+      l = this.size,
+      i = this.start,
+      j = 0;
+
+  return new iterator(function() {
+    if (j >= l)
+      return {
+        done: true
+      };
+
+    var value = items[i];
+
+    i++;
+
+    if (i === c)
+      i = 0;
+
+    return {
+      value: [j++, value],
+      done: false
+    };
+  });
+};
+
+/**
+ * Attaching the #.values method to Symbol.iterator if possible.
+ */
+if (typeof Symbol !== 'undefined')
+  FixedDeque.prototype[Symbol.iterator] = FixedDeque.prototype.values;
+
+/**
+ * Convenience known methods.
+ */
+FixedDeque.prototype.inspect = function() {
+  var array = this.toArray();
+
+  array.type = this.ArrayClass.name;
+  array.capacity = this.capacity;
+
+  // Trick so that node displays the name of the constructor
+  Object.defineProperty(array, 'constructor', {
+    value: FixedDeque,
+    enumerable: false
+  });
+
+  return array;
+};
+
+if (typeof Symbol !== 'undefined')
+  FixedDeque.prototype[Symbol.for('nodejs.util.inspect.custom')] = FixedDeque.prototype.inspect;
+
+/**
+ * Static @.from function taking an arbitrary iterable & converting it into
+ * a deque.
+ *
+ * @param  {Iterable} iterable   - Target iterable.
+ * @param  {function} ArrayClass - Array class to use.
+ * @param  {number}   capacity   - Desired capacity.
+ * @return {FiniteStack}
+ */
+FixedDeque.from = function(iterable, ArrayClass, capacity) {
+  if (arguments.length < 3) {
+    capacity = iterables.guessLength(iterable);
+
+    if (typeof capacity !== 'number')
+      throw new Error('mnemonist/fixed-deque.from: could not guess iterable length. Please provide desired capacity as last argument.');
+  }
+
+  var deque = new FixedDeque(ArrayClass, capacity);
+
+  if (iterables.isArrayLike(iterable)) {
+    var i, l;
+
+    for (i = 0, l = iterable.length; i < l; i++)
+      deque.items[i] = iterable[i];
+
+    deque.size = l;
+
+    return deque;
+  }
+
+  iterables.forEach(iterable, function(value) {
+    deque.push(value);
+  });
+
+  return deque;
+};
+
+/**
+ * Exporting.
+ */
+var fixedDeque = FixedDeque;
+
+/**
+ * Graphology Traversal Utils
+ * ===========================
+ *
+ * Miscellaneous utils used throughout the library.
+ */
+function TraversalRecord$2(node, attr, depth) {
+  this.node = node;
+  this.attributes = attr;
+  this.depth = depth;
 }
 
-// (65:2) {#each transposedTrails as col, i}
-function create_each_block$a(ctx) {
-	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
-	let each_blocks = [];
+var TraversalRecord_1 = TraversalRecord$2;
 
-	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$7(get_each_context_1$7(ctx, each_value_1, i));
-	}
+var utils = {
+	TraversalRecord: TraversalRecord_1
+};
 
-	return {
-		c() {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
+/**
+ * Graphology Traversal BFS
+ * =========================
+ *
+ * Breadth-First Search traversal function.
+ */
 
-			each_1_anchor = empty();
-		},
-		m(target, anchor) {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
-			}
+var TraversalRecord$1 = utils.TraversalRecord;
 
-			insert(target, each_1_anchor, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
-				let i;
+/**
+ * BFS traversal in the given graph using a callback function
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {function} callback - Iteration callback.
+ */
+function bfs(graph, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/bfs: expecting a graphology instance.');
 
-				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$7(ctx, each_value_1, i);
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/bfs: given callback is not a function.');
 
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block_1$7(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-					}
-				}
+  // Early termination
+  if (graph.order === 0)
+    return;
 
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
+  var seen = new Set();
+  var queue = new fixedDeque(Array, graph.order);
+  var record, depth;
 
-				each_blocks.length = each_value_1.length;
-			}
-		},
-		d(detaching) {
-			destroy_each(each_blocks, detaching);
-			if (detaching) detach(each_1_anchor);
-		}
-	};
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
+  }
+
+  graph.forEachNode(function(node, attr) {
+    if (seen.has(node))
+      return;
+
+    seen.add(node);
+    queue.push(new TraversalRecord$1(node, attr, 0));
+
+    while (queue.size !== 0) {
+      record = queue.shift();
+      depth = record.depth;
+
+      callback(record.node, record.attributes, depth);
+
+      graph.forEachOutboundNeighbor(record.node, neighborCallback);
+    }
+  });
 }
 
-function create_fragment$j(ctx) {
-	let div;
-	let each_value = /*transposedTrails*/ ctx[7];
-	let each_blocks = [];
+/**
+ * BFS traversal in the given graph, starting from the given node, using a
+ * callback function.
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {string}   node     - Starting node.
+ * @param {function} callback - Iteration callback.
+ */
+function bfsFromNode(graph, node, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
 
-	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$a(get_each_context$a(ctx, each_value, i));
-	}
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
 
-	return {
-		c() {
-			div = element("div");
+  // Early termination
+  if (graph.order === 0)
+    return;
 
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
+  node = '' + node;
 
-			attr(div, "class", "BC-trail-grid svelte-ybyqyo");
-			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
-			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
+  var seen = new Set();
+  var queue = new fixedDeque(Array, graph.order);
+  var depth, record;
 
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
-		},
-		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value = /*transposedTrails*/ ctx[7];
-				let i;
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
 
-				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$a(ctx, each_value, i);
+    seen.add(neighbor);
+    queue.push(new TraversalRecord$1(neighbor, attr, depth + 1));
+  }
 
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block$a(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(div, null);
-					}
-				}
+  seen.add(node);
+  queue.push(new TraversalRecord$1(node, graph.getNodeAttributes(node), 0));
 
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
+  while (queue.size !== 0) {
+    record = queue.shift();
+    depth = record.depth;
 
-				each_blocks.length = each_value.length;
-			}
+    callback(record.node, record.attributes, depth);
 
-			if (dirty & /*sortedTrails*/ 1) {
-				set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
-			}
-		},
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(div);
-			destroy_each(each_blocks, detaching);
-		}
-	};
+    graph.forEachOutboundNeighbor(record.node, neighborCallback);
+  }
 }
 
-function instance$j($$self, $$props, $$invalidate) {
-	
-	
-	let { sortedTrails } = $$props;
-	let { app } = $$props;
-	let { plugin } = $$props;
-	const { settings } = plugin;
-	const { userHiers } = settings;
-	const currFile = app.workspace.getActiveFile();
-	const activeLeafView = app.workspace.activeLeaf.view;
-	const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
-	const wordCounts = {};
+var bfs_2 = bfs;
+var bfsFromNode_1 = bfsFromNode;
 
-	allCells.forEach(cell => {
-		var _a;
+var bfs_1 = {
+	bfs: bfs_2,
+	bfsFromNode: bfsFromNode_1
+};
 
-		try {
-			$$invalidate(
-				3,
-				wordCounts[cell] = (_a = app.metadataCache.getFirstLinkpathDest(cell, "")) === null || _a === void 0
-				? void 0
-				: _a.stat.size,
-				wordCounts
-			);
-		} catch(error) {
-			console.log(error, { currFile });
-			$$invalidate(3, wordCounts[cell] = 0, wordCounts);
-		}
-	});
+/**
+ * Graphology Traversal DFS
+ * =========================
+ *
+ * Depth-First Search traversal function.
+ */
 
-	// const data: {[cell: string]: number} = {}
-	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
-	const { mainG } = plugin;
+var TraversalRecord = utils.TraversalRecord;
 
-	// const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
-	// const closedParents = closeImpliedLinks(up, down);
-	const closedParents = getReflexiveClosure(getSubInDirs(mainG, "up", "down"), userHiers);
+/**
+ * DFS traversal in the given graph using a callback function
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {function} callback - Iteration callback.
+ */
+function dfs(graph, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
 
-	const children = {};
-	allCells.forEach(cell => $$invalidate(4, children[cell] = getOutNeighbours(closedParents, cell).length, children));
-	const normalisedData = normalise(Object.values(children));
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
 
-	allCells.forEach((cell, i) => {
-		$$invalidate(4, children[cell] = normalisedData[i], children);
-	});
+  // Early termination
+  if (graph.order === 0)
+    return;
 
-	// const normalisedData = allCells.forEach(cell => {
-	// })
-	// const links: {[cell: string]: number}[] = []
-	// data.forEach(cell => links[Object.keys(cell)[0]] = (Object.values(cell)[0]?.links.length ?? 0))
-	// console.log(data)
-	const maxLength = Math.max(...sortedTrails.map(trail => trail.length));
+  var seen = new Set();
+  var stack = [];
+  var depth, record;
 
-	const paddedTrails = sortedTrails.map(trail => padArray(trail, maxLength));
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
 
-	// const permutations: string[][][] = permute(paddedTrails.map(trail => [trail[0]]))
-	// //  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
-	// const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
-	// const runsPerRun = ALLRuns.map(runs => runs[0].length)
-	// const minRunLength = Math.min(...runsPerRun);
-	// const indexOfMinRun = runsPerRun.indexOf(minRunLength);
-	// const minRun = ALLRuns[indexOfMinRun]
-	const transposedTrails = transpose(paddedTrails);
+    seen.add(neighbor);
+    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
+  }
 
-	const allRuns = transposedTrails.map(runs);
-	const click_handler = (step, e) => openOrSwitch(app, step.value, e);
-	const mouseover_handler = (step, e) => hoverPreview(e, activeLeafView, step.value);
+  graph.forEachNode(function(node, attr) {
+    if (seen.has(node))
+      return;
 
-	$$self.$$set = $$props => {
-		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
-		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
-	};
+    seen.add(node);
+    stack.push(new TraversalRecord(node, attr, 0));
 
-	return [
-		sortedTrails,
-		app,
-		plugin,
-		wordCounts,
-		children,
-		settings,
-		activeLeafView,
-		transposedTrails,
-		allRuns,
-		click_handler,
-		mouseover_handler
-	];
+    while (stack.length !== 0) {
+      record = stack.pop();
+      depth = record.depth;
+
+      callback(record.node, record.attributes, depth);
+
+      graph.forEachOutboundNeighbor(record.node, neighborCallback);
+    }
+  });
 }
 
-class TrailGrid extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-ybyqyo-style")) add_css$b();
-		init(this, options, instance$j, create_fragment$j, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
-	}
+/**
+ * DFS traversal in the given graph, starting from the given node, using a
+ * callback function.
+ *
+ * @param {Graph}    graph    - Target graph.
+ * @param {string}   node     - Starting node.
+ * @param {function} callback - Iteration callback.
+ */
+function dfsFromNode(graph, node, callback) {
+  if (!isGraph(graph))
+    throw new Error('graphology-traversal/dfs: expecting a graphology instance.');
+
+  if (typeof callback !== 'function')
+    throw new Error('graphology-traversal/dfs: given callback is not a function.');
+
+  // Early termination
+  if (graph.order === 0)
+    return;
+
+  node = '' + node;
+
+  var seen = new Set();
+  var stack = [];
+  var depth, record;
+
+  function neighborCallback(neighbor, attr) {
+    if (seen.has(neighbor))
+      return;
+
+    seen.add(neighbor);
+    stack.push(new TraversalRecord(neighbor, attr, depth + 1));
+  }
+
+  seen.add(node);
+  stack.push(new TraversalRecord(node, graph.getNodeAttributes(node), 0));
+
+  while (stack.length !== 0) {
+    record = stack.pop();
+    depth = record.depth;
+
+    callback(record.node, record.attributes, depth);
+
+    graph.forEachOutboundNeighbor(record.node, neighborCallback);
+  }
 }
 
-/* src\Components\TrailPath.svelte generated by Svelte v3.35.0 */
+var dfs_2 = dfs;
+var dfsFromNode_1 = dfsFromNode;
 
-function add_css$a() {
-	var style = element("style");
-	style.id = "svelte-3c1frp-style";
-	style.textContent = "span.BC-trail-path-container.svelte-3c1frp{display:flex;justify-content:space-between}";
-	append(document.head, style);
+var dfs_1 = {
+	dfs: dfs_2,
+	dfsFromNode: dfsFromNode_1
+};
+
+var graphologyTraversal = createCommonjsModule(function (module, exports) {
+var k;
+
+for (k in bfs_1)
+  exports[k] = bfs_1[k];
+
+for (k in dfs_1)
+  exports[k] = dfs_1[k];
+});
+
+/**
+ * Get all the fields in `dir`.
+ * Returns all fields if `dir === 'all'`
+ * @param  {UserHier[]} userHiers
+ * @param  {Directions|"all"} dir
+ */
+function getFields(userHiers, dir = "all") {
+    const fields = [];
+    userHiers.forEach((hier) => {
+        if (dir === "all") {
+            DIRECTIONS$1.forEach((eachDir) => {
+                fields.push(...hier[eachDir]);
+            });
+        }
+        else {
+            fields.push(...hier[dir]);
+        }
+    });
+    return fields;
+}
+const getOppDir = (dir) => {
+    switch (dir) {
+        case "up":
+            return "down";
+        case "down":
+            return "up";
+        case "same":
+            return "same";
+        case "next":
+            return "prev";
+        case "prev":
+            return "next";
+    }
+};
+function getFieldInfo(userHiers, field) {
+    let fieldDir;
+    let fieldHier;
+    DIRECTIONS$1.forEach((dir) => {
+        userHiers.forEach((hier) => {
+            if (hier[dir].includes(field)) {
+                fieldDir = dir;
+                fieldHier = hier;
+                return;
+            }
+        });
+    });
+    return { fieldHier, fieldDir };
+}
+function getOppFields(userHiers, field) {
+    // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
+    if (field.endsWith(">"))
+        return field.slice(0, -4);
+    const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
+    if (!fieldHier || !fieldDir)
+        return undefined;
+    const oppDir = getOppDir(fieldDir);
+    return fieldHier[oppDir];
+}
+const hierToStr = (hier) => DIRECTIONS$1.map((dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`).join("\n");
+const fallbackField = (field, dir) => `${field} <${ARROW_DIRECTIONS[dir]}>`;
+const fallbackOppField = (field, dir) => `${field} <${ARROW_DIRECTIONS[getOppDir(dir)]}>`;
+function iterateHiers(userHiers, fn) {
+    userHiers.forEach((hier) => {
+        DIRECTIONS$1.forEach((dir) => {
+            hier[dir].forEach((field) => {
+                fn(hier, dir, field);
+            });
+        });
+    });
 }
 
-function get_each_context$9(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[10] = list[i];
-	return child_ctx;
+// TODO - this is a hack to get the graph to work with the approvals
+// I shouldn't need
+const DIRECTIONS = ["up", "same", "down", "next", "prev"];
+// This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
+// It makes implied relations real
+// TODO use reflexiveClosure instead
+function closeImpliedLinks(real, implied) {
+    const closedG = real.copy();
+    implied.forEachEdge((key, a, s, t) => {
+        closedG.mergeEdge(t, s, a);
+    });
+    return closedG;
 }
-
-function get_each_context_1$6(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
-	child_ctx[15] = i;
-	return child_ctx;
+function removeUnlinkedNodes(g) {
+    const copy = g.copy();
+    copy.forEachNode((node) => {
+        if (!copy.degree(node))
+            copy.dropNode(node);
+    });
+    return copy;
 }
-
-// (20:8) {:else}
-function create_else_block$2(ctx) {
-	let each_1_anchor;
-	let each_value_1 = /*trail*/ ctx[10];
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value_1.length; i += 1) {
-		each_blocks[i] = create_each_block_1$6(get_each_context_1$6(ctx, each_value_1, i));
-	}
-
-	return {
-		c() {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			each_1_anchor = empty();
-		},
-		m(target, anchor) {
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(target, anchor);
-			}
-
-			insert(target, each_1_anchor, anchor);
-		},
-		p(ctx, dirty) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
-				each_value_1 = /*trail*/ ctx[10];
-				let i;
-
-				for (i = 0; i < each_value_1.length; i += 1) {
-					const child_ctx = get_each_context_1$6(ctx, each_value_1, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block_1$6(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value_1.length;
-			}
-		},
-		d(detaching) {
-			destroy_each(each_blocks, detaching);
-			if (detaching) detach(each_1_anchor);
-		}
-	};
+/**
+ * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
+ * @param  {MultiGraph} main
+ * @param  {Directions} dir
+ */
+function getSubInDirs(main, ...dirs) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
+        if (dirs.includes(a.dir)) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
+        }
+    });
+    return sub;
 }
-
-// (18:8) {#if trail.length === 0}
-function create_if_block_1$4(ctx) {
-	let span;
-
-	return {
-		c() {
-			span = element("span");
-			span.textContent = `${/*settings*/ ctx[5].noPathMessage}`;
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		p: noop,
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
+/**
+ * Return a subgraph of all nodes & edges with `files.includes(a.field)`
+ * @param  {MultiGraph} main
+ * @param  {string[]} fields
+ */
+function getSubForFields(main, fields) {
+    const sub = new graphology_umd_min.MultiGraph();
+    main.forEachEdge((k, a, s, t) => {
+        if (fields.includes(a.field)) {
+            //@ts-ignore
+            addNodesIfNot(sub, [s, t], a);
+            sub.addEdge(s, t, a);
+        }
+    });
+    return sub;
 }
-
-// (29:12) {#if i < trail.length - 1}
-function create_if_block_2$3(ctx) {
-	let span;
-
-	return {
-		c() {
-			span = element("span");
-			span.textContent = `${" " + /*settings*/ ctx[5].trailSeperator + " "}`;
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		p: noop,
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
+/**
+ * For every edge in `g`, add the reverse of the edge to a copy of `g`.
+ *
+ * It also sets the attrs of the reverse edges to `oppDir` and `oppFields[0]`
+ * @param  {MultiGraph} g
+ * @param  {UserHier[]} userHiers
+ * @param  {boolean} closeAsOpposite
+ */
+function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
+    const copy = g.copy();
+    copy.forEachEdge((k, a, s, t) => {
+        var _a;
+        const { dir, field } = a;
+        if (field === undefined)
+            return;
+        const oppDir = getOppDir(dir);
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+        addNodesIfNot(copy, [s, t], {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+        });
+        addEdgeIfNot(copy, t, s, {
+            //@ts-ignore
+            dir: closeAsOpposite ? oppDir : dir,
+            field: closeAsOpposite ? oppField : field,
+            implied: BC_I_REFLEXIVE,
+        });
+    });
+    return copy;
 }
-
-// (21:10) {#each trail as crumb, i}
-function create_each_block_1$6(ctx) {
-	let span;
-	let t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "";
-	let t0;
-	let t1;
-	let if_block_anchor;
-	let mounted;
-	let dispose;
-
-	function click_handler(...args) {
-		return /*click_handler*/ ctx[7](/*crumb*/ ctx[13], ...args);
-	}
-
-	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[8](/*crumb*/ ctx[13], ...args);
-	}
-
-	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2$3(ctx);
-
-	return {
-		c() {
-			span = element("span");
-			t0 = text(t0_value);
-			t1 = space();
-			if (if_block) if_block.c();
-			if_block_anchor = empty();
-			attr(span, "class", "internal-link BC-Link");
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-			append(span, t0);
-			insert(target, t1, anchor);
-			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
-
-			if (!mounted) {
-				dispose = [
-					listen(span, "click", click_handler),
-					listen(span, "mouseover", mouseover_handler)
-				];
-
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty & /*trailsToShow, plugin*/ 20 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
-
-			if (/*i*/ ctx[15] < /*trail*/ ctx[10].length - 1) {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-				} else {
-					if_block = create_if_block_2$3(ctx);
-					if_block.c();
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(span);
-			if (detaching) detach(t1);
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(if_block_anchor);
-			mounted = false;
-			run_all(dispose);
-		}
-	};
+function addNodesIfNot(g, nodes, attr = { order: 9999 }) {
+    for (const node of nodes) {
+        g.updateNode(node, (exstantAttrs) => {
+            const extantOrder = exstantAttrs.order;
+            return Object.assign(Object.assign({}, exstantAttrs), { order: extantOrder && extantOrder < 9999 ? extantOrder : attr.order });
+        });
+    }
 }
-
-// (16:4) {#each trailsToShow as trail}
-function create_each_block$9(ctx) {
-	let div;
-	let t;
-
-	function select_block_type(ctx, dirty) {
-		if (/*trail*/ ctx[10].length === 0) return create_if_block_1$4;
-		return create_else_block$2;
-	}
-
-	let current_block_type = select_block_type(ctx);
-	let if_block = current_block_type(ctx);
-
-	return {
-		c() {
-			div = element("div");
-			if_block.c();
-			t = space();
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			if_block.m(div, null);
-			append(div, t);
-		},
-		p(ctx, dirty) {
-			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block) {
-				if_block.p(ctx, dirty);
-			} else {
-				if_block.d(1);
-				if_block = current_block_type(ctx);
-
-				if (if_block) {
-					if_block.c();
-					if_block.m(div, t);
-				}
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			if_block.d();
-		}
-	};
+function addEdgeIfNot(g, source, target, attr) {
+    if (!g.hasEdge(source, target))
+        g.addEdge(source, target, attr);
 }
-
-// (38:2) {#if sortedTrails.length > 1}
-function create_if_block$5(ctx) {
-	let div;
-	let button;
-	let t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "";
-	let t;
-	let mounted;
-	let dispose;
-
-	return {
-		c() {
-			div = element("div");
-			button = element("button");
-			t = text(t_value);
-			attr(button, "class", "button-div");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, button);
-			append(button, t);
-
-			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler_1*/ ctx[9]);
-				mounted = true;
-			}
-		},
-		p(ctx, dirty) {
-			if (dirty & /*showAll*/ 8 && t_value !== (t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "")) set_data(t, t_value);
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			mounted = false;
-			dispose();
-		}
-	};
+const getSinks = (g) => g.filterNodes((node) => g.hasNode(node) && !g.outDegree(node));
+const getOutNeighbours = (g, node) => g.hasNode(node) ? g.outNeighbors(node) : [];
+const getInNeighbours = (g, node) => g.hasNode(node) ? g.inNeighbors(node) : [];
+/**
+ *  Get the hierarchy and direction that `field` is in
+ * */
+function dfsAllPaths(g, start) {
+    const queue = [{ node: start, path: [] }];
+    const visited = {};
+    const allPaths = [];
+    let i = 0;
+    while (queue.length > 0 && i < 1000) {
+        i++;
+        const { node, path } = queue.shift();
+        const extPath = [node, ...path];
+        const succsNotVisited = g.hasNode(node)
+            ? g.filterOutNeighbors(node, (succ) => !visited[succ] || visited[succ] < 5)
+            : [];
+        const newItems = succsNotVisited.map((succ) => {
+            visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
+            return { node: succ, path: extPath };
+        });
+        queue.unshift(...newItems);
+        if (!g.hasNode(node) || !g.outDegree(node))
+            allPaths.push(extPath);
+    }
+    return allPaths;
 }
-
-function create_fragment$i(ctx) {
-	let span;
-	let div;
-	let t;
-	let each_value = /*trailsToShow*/ ctx[4];
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$9(get_each_context$9(ctx, each_value, i));
-	}
-
-	let if_block = /*sortedTrails*/ ctx[0].length > 1 && create_if_block$5(ctx);
-
-	return {
-		c() {
-			span = element("span");
-			div = element("div");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			t = space();
-			if (if_block) if_block.c();
-			attr(div, "class", "trails-div");
-			attr(span, "class", "BC-trail-path-container svelte-3c1frp");
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-			append(span, div);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
-
-			append(span, t);
-			if (if_block) if_block.m(span, null);
-		},
-		p(ctx, [dirty]) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
-				each_value = /*trailsToShow*/ ctx[4];
-				let i;
-
-				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$9(ctx, each_value, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block$9(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(div, null);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value.length;
-			}
-
-			if (/*sortedTrails*/ ctx[0].length > 1) {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-				} else {
-					if_block = create_if_block$5(ctx);
-					if_block.c();
-					if_block.m(span, null);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-		},
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(span);
-			destroy_each(each_blocks, detaching);
-			if (if_block) if_block.d();
-		}
-	};
+function bfsAllPaths(g, start) {
+    const pathsArr = [];
+    const queue = [{ node: start, path: [] }];
+    let i = 0;
+    while (queue.length !== 0 && i < 1000) {
+        i++;
+        const { node, path } = queue.shift();
+        const extPath = [node, ...path];
+        const succs = g.hasNode(node)
+            ? g.filterOutNeighbors(node, (n) => !path.includes(n))
+            : [];
+        for (const node of succs) {
+            queue.push({ node, path: extPath });
+        }
+        // terminal node
+        if (!g.hasNode(node) || succs.length === 0) {
+            pathsArr.push(extPath);
+        }
+    }
+    // Splice off the current note from the path
+    pathsArr.forEach((path) => {
+        if (path.length)
+            path.splice(path.length - 1, 1);
+    });
+    loglevel.info({ pathsArr });
+    return pathsArr;
 }
-
-function instance$i($$self, $$props, $$invalidate) {
-	let trailsToShow;
-	
-	
-	let { sortedTrails } = $$props;
-	let { app } = $$props;
-	let { plugin } = $$props;
-	const { settings } = plugin;
-	const { view } = app.workspace.activeLeaf;
-	let showAll = settings.showAll;
-	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
-	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
-	const click_handler_1 = () => $$invalidate(3, showAll = !showAll);
-
-	$$self.$$set = $$props => {
-		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
-		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
-	};
-
-	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 9) {
-			$$invalidate(4, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
-		}
-	};
-
-	return [
-		sortedTrails,
-		app,
-		plugin,
-		showAll,
-		trailsToShow,
-		settings,
-		view,
-		click_handler,
-		mouseover_handler,
-		click_handler_1
-	];
+function removeCycles(g, startNode) {
+    const copy = g.copy();
+    let prevNode = null;
+    graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
+        copy.forEachOutNeighbor(n, (t) => {
+            if (t === prevNode && copy.hasEdge(t, prevNode)) {
+                copy.dropEdge(t, prevNode);
+            }
+        });
+        prevNode = n;
+    });
+    return copy;
 }
-
-class TrailPath extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-3c1frp-style")) add_css$a();
-		init(this, options, instance$i, create_fragment$i, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
-	}
+function buildObsGraph(app) {
+    const ObsG = new graphology_umd_min.MultiGraph();
+    const { resolvedLinks, unresolvedLinks } = app.metadataCache;
+    for (const source in resolvedLinks) {
+        if (!source.endsWith(".md"))
+            continue;
+        const sourceBase = getBaseFromMDPath(source);
+        addNodesIfNot(ObsG, [sourceBase]);
+        for (const dest in resolvedLinks[source]) {
+            if (!dest.endsWith(".md"))
+                continue;
+            const destBase = getBaseFromMDPath(dest);
+            addNodesIfNot(ObsG, [destBase]);
+            ObsG.addEdge(sourceBase, destBase, { resolved: true });
+        }
+    }
+    for (const source in unresolvedLinks) {
+        const sourceBase = getBaseFromMDPath(source);
+        addNodesIfNot(ObsG, [sourceBase]);
+        for (const dest in unresolvedLinks[source]) {
+            const destBase = getBaseFromMDPath(dest);
+            addNodesIfNot(ObsG, [destBase]);
+            if (sourceBase === destBase)
+                continue;
+            ObsG.addEdge(sourceBase, destBase, { resolved: false });
+        }
+    }
+    loglevel.info({ ObsG });
+    return ObsG;
+}
+function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
+    var _a;
+    const { userHiers } = settings;
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    addNodesIfNot(mainG, [source], {
+        order: sourceOrder,
+    });
+    addNodesIfNot(mainG, [target], {
+        order: targetOrder,
+    });
+    addEdgeIfNot(mainG, source, target, {
+        dir,
+        field,
+    });
+    if (fillOpp) {
+        const oppDir = getOppDir(dir);
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
+        addEdgeIfNot(mainG, target, source, {
+            dir: oppDir,
+            field: oppField,
+        });
+    }
+}
+const getTargetOrder = (frontms, target) => {
+    var _a, _b;
+    return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
+};
+const getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
+/** Remember to filter by hierarchy in MatrixView! */
+function getRealnImplied(plugin, currNode, dir = null) {
+    const realsnImplieds = blankRealNImplied();
+    const { settings, closedG } = plugin;
+    const { userHiers } = settings;
+    if (!closedG.hasNode(currNode))
+        return realsnImplieds;
+    closedG.forEachEdge(currNode, (k, a, s, t) => {
+        var _a;
+        const { field, dir: edgeDir, implied, } = a;
+        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
+        (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
+            const oppDir = getOppDir(currDir);
+            // Reals
+            if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+                const arr = realsnImplieds[edgeDir].reals;
+                if (arr.findIndex((item) => item.to === t) === -1) {
+                    arr.push({ to: t, real: true, field, implied });
+                }
+            }
+            // Implieds
+            // If `s !== currNode` then `t` must be
+            else if (edgeDir === currDir || edgeDir === oppDir) {
+                const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
+                if (arr.findIndex((item) => item.to === s) === -1) {
+                    arr.push({
+                        to: s,
+                        real: false,
+                        field: oppField,
+                        implied,
+                    });
+                }
+            }
+        });
+    });
+    return realsnImplieds;
 }
 
 /**
@@ -24980,9 +23116,897 @@ async function copyGlobalIndex(plugin) {
     await copy(globalIndex);
 }
 
+/* src\Components\RenderMarkdown.svelte generated by Svelte v3.35.0 */
+
+function add_css$c() {
+	var style = element("style");
+	style.id = "svelte-7e9i10-style";
+	style.textContent = "div.BC-note-content.svelte-7e9i10{padding-left:20px}";
+	append(document.head, style);
+}
+
+function create_fragment$l(ctx) {
+	let div;
+
+	return {
+		c() {
+			div = element("div");
+			attr(div, "class", "BC-note-content svelte-7e9i10");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			/*div_binding*/ ctx[3](div);
+		},
+		p: noop,
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(div);
+			/*div_binding*/ ctx[3](null);
+		}
+	};
+}
+
+function instance$l($$self, $$props, $$invalidate) {
+	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+		function adopt(value) {
+			return value instanceof P
+			? value
+			: new P(function (resolve) {
+						resolve(value);
+					});
+		}
+
+		return new (P || (P = Promise))(function (resolve, reject) {
+				function fulfilled(value) {
+					try {
+						step(generator.next(value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function rejected(value) {
+					try {
+						step(generator["throw"](value));
+					} catch(e) {
+						reject(e);
+					}
+				}
+
+				function step(result) {
+					result.done
+					? resolve(result.value)
+					: adopt(result.value).then(fulfilled, rejected);
+				}
+
+				step((generator = generator.apply(thisArg, _arguments || [])).next());
+			});
+	};
+
+	let { path } = $$props;
+	let { app } = $$props;
+
+	function getContent(note) {
+		return __awaiter(this, void 0, void 0, function* () {
+			const file = app.metadataCache.getFirstLinkpathDest(note, "");
+			return yield app.vault.cachedRead(file);
+		});
+	}
+
+	let el;
+
+	onMount(() => __awaiter(void 0, void 0, void 0, function* () {
+		obsidian.MarkdownRenderer.renderMarkdown(yield getContent(path), el, path, null);
+	}));
+
+	function div_binding($$value) {
+		binding_callbacks[$$value ? "unshift" : "push"](() => {
+			el = $$value;
+			$$invalidate(0, el);
+		});
+	}
+
+	$$self.$$set = $$props => {
+		if ("path" in $$props) $$invalidate(1, path = $$props.path);
+		if ("app" in $$props) $$invalidate(2, app = $$props.app);
+	};
+
+	return [el, path, app, div_binding];
+}
+
+class RenderMarkdown extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-7e9i10-style")) add_css$c();
+		init(this, options, instance$l, create_fragment$l, safe_not_equal, { path: 1, app: 2 });
+	}
+}
+
+/* src\Components\CBTree.svelte generated by Svelte v3.35.0 */
+
+function add_css$b() {
+	var style = element("style");
+	style.id = "svelte-yt7jmz-style";
+	style.textContent = ".BC-tree.svelte-yt7jmz{padding-left:5px}pre.indent.svelte-yt7jmz{display:inline;background-color:transparent;position:top}details.svelte-yt7jmz{display:inline-block}.is-unresolved.svelte-yt7jmz{color:var(--text-muted)}";
+	append(document.head, style);
+}
+
+function get_each_context$b(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[17] = list[i][0];
+	child_ctx[18] = list[i][1];
+	return child_ctx;
+}
+
+// (27:0) {#if title !== "false"}
+function create_if_block_2$3(ctx) {
+	let h3;
+	let t0;
+	let t1;
+	let t2;
+
+	return {
+		c() {
+			h3 = element("h3");
+			t0 = text(/*dir*/ ctx[1]);
+			t1 = text(" of ");
+			t2 = text(/*basename*/ ctx[5]);
+		},
+		m(target, anchor) {
+			insert(target, h3, anchor);
+			append(h3, t0);
+			append(h3, t1);
+			append(h3, t2);
+		},
+		p(ctx, dirty) {
+			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
+			if (dirty & /*basename*/ 32) set_data(t2, /*basename*/ ctx[5]);
+		},
+		d(detaching) {
+			if (detaching) detach(h3);
+		}
+	};
+}
+
+// (32:4) {#if meetsConditions(indent, link)}
+function create_if_block$6(ctx) {
+	let current_block_type_index;
+	let if_block;
+	let if_block_anchor;
+	let current;
+	const if_block_creators = [create_if_block_1$4, create_else_block$2];
+	const if_blocks = [];
+
+	function select_block_type(ctx, dirty) {
+		if (/*content*/ ctx[3] === "open" || /*content*/ ctx[3] === "closed") return 0;
+		return 1;
+	}
+
+	current_block_type_index = select_block_type(ctx);
+	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+	return {
+		c() {
+			if_block.c();
+			if_block_anchor = empty();
+		},
+		m(target, anchor) {
+			if_blocks[current_block_type_index].m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+			current = true;
+		},
+		p(ctx, dirty) {
+			let previous_block_index = current_block_type_index;
+			current_block_type_index = select_block_type(ctx);
+
+			if (current_block_type_index === previous_block_index) {
+				if_blocks[current_block_type_index].p(ctx, dirty);
+			} else {
+				group_outros();
+
+				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+					if_blocks[previous_block_index] = null;
+				});
+
+				check_outros();
+				if_block = if_blocks[current_block_type_index];
+
+				if (!if_block) {
+					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+					if_block.c();
+				} else {
+					if_block.p(ctx, dirty);
+				}
+
+				transition_in(if_block, 1);
+				if_block.m(if_block_anchor.parentNode, if_block_anchor);
+			}
+		},
+		i(local) {
+			if (current) return;
+			transition_in(if_block);
+			current = true;
+		},
+		o(local) {
+			transition_out(if_block);
+			current = false;
+		},
+		d(detaching) {
+			if_blocks[current_block_type_index].d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+// (57:6) {:else}
+function create_else_block$2(ctx) {
+	let div;
+	let pre;
+	let t0_value = /*indent*/ ctx[17] + "-" + "";
+	let t0;
+	let t1;
+	let span;
+	let a;
+	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
+	let t2;
+	let a_class_value;
+	let t3;
+	let mounted;
+	let dispose;
+
+	function click_handler_1(...args) {
+		return /*click_handler_1*/ ctx[15](/*link*/ ctx[18], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			pre = element("pre");
+			t0 = text(t0_value);
+			t1 = space();
+			span = element("span");
+			a = element("a");
+			t2 = text(t2_value);
+			t3 = space();
+			attr(pre, "class", "indent svelte-yt7jmz");
+
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz");
+
+			attr(span, "class", "internal-link");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, pre);
+			append(pre, t0);
+			append(div, t1);
+			append(div, span);
+			append(span, a);
+			append(a, t2);
+			append(div, t3);
+
+			if (!mounted) {
+				dispose = [
+					listen(span, "click", click_handler_1),
+					listen(span, "mouseover", mouseover_handler_1)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*indent*/ ctx[17] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+
+			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz")) {
+				attr(a, "class", a_class_value);
+			}
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (33:6) {#if content === "open" || content === "closed"}
+function create_if_block_1$4(ctx) {
+	let div;
+	let pre;
+	let t0_value = /*indent*/ ctx[17] + "";
+	let t0;
+	let t1;
+	let details;
+	let summary;
+	let span;
+	let a;
+	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
+	let t2;
+	let a_class_value;
+	let t3;
+	let rendermarkdown;
+	let details_open_value;
+	let t4;
+	let current;
+	let mounted;
+	let dispose;
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[14](/*link*/ ctx[18], ...args);
+	}
+
+	rendermarkdown = new RenderMarkdown({
+			props: {
+				app: /*app*/ ctx[7],
+				path: /*link*/ ctx[18]
+			}
+		});
+
+	return {
+		c() {
+			div = element("div");
+			pre = element("pre");
+			t0 = text(t0_value);
+			t1 = space();
+			details = element("details");
+			summary = element("summary");
+			span = element("span");
+			a = element("a");
+			t2 = text(t2_value);
+			t3 = space();
+			create_component(rendermarkdown.$$.fragment);
+			t4 = space();
+			attr(pre, "class", "indent svelte-yt7jmz");
+
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz");
+
+			attr(span, "class", "internal-link");
+			details.open = details_open_value = /*content*/ ctx[3] === "open";
+			attr(details, "class", "svelte-yt7jmz");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, pre);
+			append(pre, t0);
+			append(div, t1);
+			append(div, details);
+			append(details, summary);
+			append(summary, span);
+			append(span, a);
+			append(a, t2);
+			append(details, t3);
+			mount_component(rendermarkdown, details, null);
+			append(div, t4);
+			current = true;
+
+			if (!mounted) {
+				dispose = [
+					listen(span, "click", click_handler),
+					listen(span, "mouseover", mouseover_handler)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if ((!current || dirty & /*lines*/ 16) && t0_value !== (t0_value = /*indent*/ ctx[17] + "")) set_data(t0, t0_value);
+			if ((!current || dirty & /*lines*/ 16) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+
+			if (!current || dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			? ""
+			: "is-unresolved") + " svelte-yt7jmz")) {
+				attr(a, "class", a_class_value);
+			}
+
+			const rendermarkdown_changes = {};
+			if (dirty & /*lines*/ 16) rendermarkdown_changes.path = /*link*/ ctx[18];
+			rendermarkdown.$set(rendermarkdown_changes);
+
+			if (!current || dirty & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
+				details.open = details_open_value;
+			}
+		},
+		i(local) {
+			if (current) return;
+			transition_in(rendermarkdown.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(rendermarkdown.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_component(rendermarkdown);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (31:2) {#each lines as [indent, link]}
+function create_each_block$b(ctx) {
+	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
+	let if_block_anchor;
+	let current;
+	let if_block = show_if && create_if_block$6(ctx);
+
+	return {
+		c() {
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
+		},
+		m(target, anchor) {
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+			current = true;
+		},
+		p(ctx, dirty) {
+			if (dirty & /*lines*/ 16) show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
+
+			if (show_if) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+
+					if (dirty & /*lines*/ 16) {
+						transition_in(if_block, 1);
+					}
+				} else {
+					if_block = create_if_block$6(ctx);
+					if_block.c();
+					transition_in(if_block, 1);
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				group_outros();
+
+				transition_out(if_block, 1, 1, () => {
+					if_block = null;
+				});
+
+				check_outros();
+			}
+		},
+		i(local) {
+			if (current) return;
+			transition_in(if_block);
+			current = true;
+		},
+		o(local) {
+			transition_out(if_block);
+			current = false;
+		},
+		d(detaching) {
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+function create_fragment$k(ctx) {
+	let t;
+	let div;
+	let current;
+	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2$3(ctx);
+	let each_value = /*lines*/ ctx[4];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$b(get_each_context$b(ctx, each_value, i));
+	}
+
+	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+		each_blocks[i] = null;
+	});
+
+	return {
+		c() {
+			if (if_block) if_block.c();
+			t = space();
+			div = element("div");
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(div, "class", "BC-tree svelte-yt7jmz");
+		},
+		m(target, anchor) {
+			if (if_block) if_block.m(target, anchor);
+			insert(target, t, anchor);
+			insert(target, div, anchor);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			if (/*title*/ ctx[2] !== "false") {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+				} else {
+					if_block = create_if_block_2$3(ctx);
+					if_block.c();
+					if_block.m(t.parentNode, t);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
+
+			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, meetsConditions*/ 473) {
+				each_value = /*lines*/ ctx[4];
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$b(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+						transition_in(each_blocks[i], 1);
+					} else {
+						each_blocks[i] = create_each_block$b(child_ctx);
+						each_blocks[i].c();
+						transition_in(each_blocks[i], 1);
+						each_blocks[i].m(div, null);
+					}
+				}
+
+				group_outros();
+
+				for (i = each_value.length; i < each_blocks.length; i += 1) {
+					out(i);
+				}
+
+				check_outros();
+			}
+		},
+		i(local) {
+			if (current) return;
+
+			for (let i = 0; i < each_value.length; i += 1) {
+				transition_in(each_blocks[i]);
+			}
+
+			current = true;
+		},
+		o(local) {
+			each_blocks = each_blocks.filter(Boolean);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				transition_out(each_blocks[i]);
+			}
+
+			current = false;
+		},
+		d(detaching) {
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(t);
+			if (detaching) detach(div);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+const mouseover_handler = e => {
+	
+}; //   hoverPreview needs an itemView so it can access `app`...
+//   hoverPreview(e, el, link)
+
+const mouseover_handler_1 = e => {
+	
+}; //   hoverPreview needs an itemView so it can access `app`...
+//   hoverPreview(e, el, link)
+
+function instance$k($$self, $$props, $$invalidate) {
+	
+	
+	let { plugin } = $$props;
+	let { el } = $$props;
+	let { dir } = $$props;
+	let { fields } = $$props;
+	let { title } = $$props;
+	let { content } = $$props;
+	let { lines } = $$props;
+	let { froms } = $$props;
+	let { min } = $$props;
+	let { max } = $$props;
+	let { basename } = $$props;
+	const { settings, app } = plugin;
+	const indentToDepth = indent => indent.length / 2 + 1;
+
+	const meetsConditions = (indent, node) => {
+		const depth = indentToDepth(indent);
+		return depth >= min && depth <= max && (froms === undefined || froms.includes(node));
+	};
+
+	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
+	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
+
+	$$self.$$set = $$props => {
+		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
+		if ("el" in $$props) $$invalidate(9, el = $$props.el);
+		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
+		if ("fields" in $$props) $$invalidate(10, fields = $$props.fields);
+		if ("title" in $$props) $$invalidate(2, title = $$props.title);
+		if ("content" in $$props) $$invalidate(3, content = $$props.content);
+		if ("lines" in $$props) $$invalidate(4, lines = $$props.lines);
+		if ("froms" in $$props) $$invalidate(11, froms = $$props.froms);
+		if ("min" in $$props) $$invalidate(12, min = $$props.min);
+		if ("max" in $$props) $$invalidate(13, max = $$props.max);
+		if ("basename" in $$props) $$invalidate(5, basename = $$props.basename);
+	};
+
+	return [
+		plugin,
+		dir,
+		title,
+		content,
+		lines,
+		basename,
+		settings,
+		app,
+		meetsConditions,
+		el,
+		fields,
+		froms,
+		min,
+		max,
+		click_handler,
+		click_handler_1
+	];
+}
+
+class CBTree extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-yt7jmz-style")) add_css$b();
+
+		init(this, options, instance$k, create_fragment$k, safe_not_equal, {
+			plugin: 0,
+			el: 9,
+			dir: 1,
+			fields: 10,
+			title: 2,
+			content: 3,
+			lines: 4,
+			froms: 11,
+			min: 12,
+			max: 13,
+			basename: 5
+		});
+	}
+}
+
+const CAT_DANGLING = 'dangling';
+const CORE_STORE_ID = 'core';
+class VizId {
+    constructor(id, storeId) {
+        this.id = id;
+        this.storeId = storeId;
+    }
+    toString() {
+        return `${this.storeId}:${this.id}`;
+    }
+    toId() {
+        return this.toString();
+    }
+    static fromId(id) {
+        const split = id.split(':');
+        const storeId = split[0];
+        const _id = split.slice(1).join(':');
+        return new VizId(_id, storeId);
+    }
+    static fromNode(node) {
+        return VizId.fromId(node.id());
+    }
+    static fromNodes(nodes) {
+        return nodes.map((n) => VizId.fromNode(n));
+    }
+    static fromFile(file) {
+        return new VizId(file.name, 'core');
+    }
+    static toId(id, storeId) {
+        return new VizId(id, storeId).toId();
+    }
+}
+const _parseTags = function (tags) {
+    return [].concat(...tags
+        .map((tag) => {
+        tag = tag.slice(1);
+        const hSplit = tag.split('/');
+        const tags = [];
+        for (const i in hSplit) {
+            const hTag = hSplit.slice(0, parseInt(i) + 1).join('-');
+            tags.push(`tag-${hTag}`);
+        }
+        return tags;
+    }));
+};
+const getClasses = function (file, metadataCache) {
+    if (file) {
+        const classes = [];
+        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+            classes.push('image');
+        }
+        else if (['mp3', 'webm', 'wav', 'm4a', 'ogg', '3gp', 'flac'].contains(file.extension)) {
+            classes.push('audio');
+        }
+        else if (['mp4', 'webm', 'ogv'].contains(file.extension)) {
+            classes.push('video');
+        }
+        else if (file.extension === 'pdf') {
+            classes.push('pdf');
+        }
+        // This is replaced by the 'path' data attribute.
+        // if (!(file.parent.name === '/' || file.parent.name === '')) {
+        //   classes.push(`folder-${file.parent.name
+        //       .replace(' ', '_')}`);
+        // } else {
+        //   classes.push('root');
+        // }
+        if (file.extension === 'md') {
+            classes.push('note');
+            const cache = metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                if ('image' in cache.frontmatter) {
+                    classes.push('image');
+                }
+                if ('tags' in cache.frontmatter) {
+                    const tags = obsidian.parseFrontMatterTags(cache.frontmatter);
+                    if (tags) {
+                        classes.push(..._parseTags(tags));
+                    }
+                }
+                if ('cssclass' in cache.frontmatter) {
+                    const clazzes = obsidian.parseFrontMatterStringArray(cache.frontmatter, 'cssclass');
+                    if (clazzes) {
+                        classes.push(...clazzes);
+                    }
+                }
+            }
+            if (cache?.tags) {
+                classes.push(..._parseTags(cache.tags.map((t) => t.tag)));
+            }
+        }
+        else {
+            classes.push('file');
+        }
+        return classes;
+    }
+    return [CAT_DANGLING];
+};
+const nodeFromFile = async function (file, plugin, settings, id) {
+    if (!id) {
+        id = VizId.toId(file.name, CORE_STORE_ID);
+    }
+    const cache = plugin.app.metadataCache.getFileCache(file);
+    const name = file.extension === 'md' ? file.basename : file.name;
+    const classes = getClasses(file, plugin.app.metadataCache).join(' ');
+    const data = {
+        id,
+        name,
+        path: file.path,
+    };
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+        try {
+            // @ts-ignore
+            data['resource_url'] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(file.path)}`;
+        }
+        catch { }
+    }
+    if (settings.readContent && file.extension == 'md') {
+        data['content'] = await plugin.app.vault.cachedRead(file);
+    }
+    const frontmatter = cache?.frontmatter;
+    if (frontmatter) {
+        Object.keys(frontmatter).forEach((k) => {
+            if (!(k === 'position')) {
+                if (k === 'image') {
+                    const imageField = frontmatter[k];
+                    try {
+                        // Check if url. throws error otherwise
+                        new URL(imageField);
+                        data[k] = imageField;
+                    }
+                    catch {
+                        try {
+                            // @ts-ignore
+                            data[k] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(imageField)}`;
+                        }
+                        catch { }
+                    }
+                }
+                else {
+                    data[k] = frontmatter[k];
+                }
+            }
+        });
+    }
+    return {
+        group: 'nodes',
+        data: data,
+        classes: classes,
+    };
+};
+const nodeDangling = function (path) {
+    return {
+        group: 'nodes',
+        data: {
+            id: VizId.toId(path, CORE_STORE_ID),
+            name: path,
+        },
+        classes: 'dangling',
+    };
+};
+const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
+const nameRegex = '[^\\W\\d]\\w*';
+const regexEscape = function (str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+const parseTypedLink = function (link, line, typedLinkPrefix) {
+    // TODO: This is something specific I use, but shouldn't keep being in this repo.
+    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
+    const matchPI = regexPublishedIn.exec(line);
+    if (!(matchPI === null)) {
+        return {
+            class: 'type-publishedIn',
+            isInline: false,
+            properties: {
+                year: matchPI[2],
+                context: '',
+                type: 'publishedIn',
+            },
+        };
+    }
+    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
+    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
+    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
+    const match = regex.exec(line);
+    const splitLink = link.original.split('|');
+    let alias = null;
+    if (splitLink.length > 1) {
+        alias = splitLink.slice(1).join().slice(0, -2);
+    }
+    if (!(match === null)) {
+        return {
+            class: `type-${match[1]}`,
+            isInline: false,
+            properties: {
+                alias: alias,
+                context: '',
+                type: match[1],
+            },
+        };
+    }
+    return null;
+};
+
+const getPlugin = function (app) {
+    // @ts-ignore
+    if ('juggl' in app.plugins.plugins) {
+        // @ts-ignore
+        return app.plugins.plugins['juggl'];
+    }
+    return null;
+};
+
 /* src\Components\JugglButton.svelte generated by Svelte v3.35.0 */
 
-function create_fragment$h(ctx) {
+function create_fragment$j(ctx) {
 	let button;
 	let t;
 	let mounted;
@@ -25031,7 +24055,7 @@ function create_fragment$h(ctx) {
 	};
 }
 
-function instance$h($$self, $$props, $$invalidate) {
+function instance$j($$self, $$props, $$invalidate) {
 	let { icon } = $$props;
 	let { onClick } = $$props;
 	let { disabled = false } = $$props;
@@ -25051,7 +24075,7 @@ class JugglButton extends SvelteComponent {
 	constructor(options) {
 		super();
 
-		init(this, options, instance$h, create_fragment$h, safe_not_equal, {
+		init(this, options, instance$j, create_fragment$j, safe_not_equal, {
 			icon: 0,
 			onClick: 1,
 			disabled: 2,
@@ -25258,6 +24282,1860 @@ function createJugglTrail(plugin, target, paths, source, args) {
     nodes = nodes.map((s) => s + ".md");
     jugglUp = createJuggl(plugin, target, nodes, args);
     zoomToSource(jugglUp, source);
+}
+
+function getCodeblockCB(plugin) {
+    const { settings } = plugin;
+    return (source, el, ctx) => {
+        var _a, _b;
+        const parsedSource = parseCodeBlockSource(source);
+        console.log(parsedSource);
+        const err = codeblockError(plugin, parsedSource);
+        if (err !== "") {
+            el.innerHTML = err;
+            return;
+        }
+        let min = 0, max = Infinity;
+        let { depth, dir, from, implied, flat } = parsedSource;
+        if (depth !== undefined) {
+            const minNum = parseInt(depth[0]);
+            if (!isNaN(minNum))
+                min = minNum;
+            const maxNum = parseInt(depth[1]);
+            if (!isNaN(maxNum))
+                max = maxNum;
+        }
+        const currFile = plugin.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
+        const { userHiers } = settings;
+        const { basename } = currFile;
+        let froms = undefined;
+        if (from !== undefined) {
+            try {
+                const api = (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
+                if (api) {
+                    const pages = (_b = api.pagePaths(from)) === null || _b === void 0 ? void 0 : _b.values;
+                    froms = pages.map(dropFolder);
+                }
+                else
+                    new obsidian.Notice("Dataview must be enabled for `from` to work.");
+            }
+            catch (e) {
+                new obsidian.Notice(`The query "${from}" failed.`);
+            }
+        }
+        const oppDir = getOppDir(dir);
+        const sub = implied === "false"
+            ? getSubInDirs(plugin.mainG, dir)
+            : getSubInDirs(plugin.mainG, dir, oppDir);
+        const closed = getReflexiveClosure(sub, userHiers);
+        const subClosed = getSubInDirs(closed, dir);
+        const allPaths = dfsAllPaths(subClosed, basename);
+        const index = createIndex(allPaths, false);
+        loglevel.info({ allPaths, index });
+        const lines = index
+            .split("\n")
+            .map((line) => {
+            const pair = line.split("- ");
+            return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
+        })
+            .filter((pair) => pair[1] !== "");
+        switch (parsedSource.type) {
+            case "tree":
+                new CBTree({
+                    target: el,
+                    props: Object.assign({ plugin,
+                        el,
+                        min,
+                        max,
+                        lines,
+                        froms,
+                        basename }, parsedSource),
+                });
+                break;
+            case "juggl":
+                createdJugglCB(plugin, el, parsedSource, lines, froms, basename, min, max);
+                break;
+        }
+    };
+}
+function parseCodeBlockSource(source) {
+    const lines = source.split("\n");
+    const getValue = (type) => {
+        var _a, _b, _c;
+        return (_c = (_b = (_a = lines
+            .find((l) => l.startsWith(`${type}:`))) === null || _a === void 0 ? void 0 : _a.split(":")) === null || _b === void 0 ? void 0 : _b[1]) === null || _c === void 0 ? void 0 : _c.trim();
+    };
+    const results = {};
+    CODEBLOCK_FIELDS.forEach((field) => {
+        results[field] = getValue(field);
+        if (results[field] === "false") {
+            results[field] = false;
+        }
+        if (results[field] === "true") {
+            results[field] = true;
+        }
+    });
+    results.field = results.field
+        ? splitAndTrim(results.field)
+        : undefined;
+    if (results.depth) {
+        const match = results.depth.match(/(\d*)-?(\d*)/);
+        results.depth = [match[1], match[2]];
+    }
+    return results;
+}
+function codeblockError(plugin, parsedSource) {
+    var _a;
+    const { dir, fields, type, title, depth, flat, content, from, implied } = parsedSource;
+    const { userHiers } = plugin.settings;
+    let err = "";
+    if (!CODEBLOCK_TYPES.includes(type))
+        err += `<code>type: ${type}</code> is not a valid type. It must be one of: ${CODEBLOCK_TYPES.map((type) => `<code>${type}</code>`).join(", ")}.</br>`;
+    const validDir = DIRECTIONS$1.includes(dir);
+    if (!validDir)
+        err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
+    const allFields = getFields(userHiers);
+    (_a = [fields].flat()) === null || _a === void 0 ? void 0 : _a.forEach((f) => {
+        if (f !== undefined && !allFields.includes(f))
+            err += `<code>fields: ${f}</code> is not a field in your hierarchies.</br>`;
+    });
+    if (title !== undefined && title !== "false")
+        err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
+    if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
+        err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
+    if (flat !== undefined && flat !== "true")
+        err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
+    if (content !== undefined && content !== "open" && content !== "closed")
+        err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
+    if (from !== undefined &&
+        !plugin.app.plugins.enabledPlugins.has("dataview")) {
+        err += `Dataview must be enabled to use <code>from</code>.</br>`;
+    }
+    if (implied !== undefined && implied !== "false")
+        err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
+    return err === ""
+        ? ""
+        : `${err}</br>
+    A valid example would be:
+    <pre><code>
+      type: tree
+      dir: ${validDir ? dir : "down"}
+      fields: ${allFields
+            .map((f) => {
+            return { f, dir: getFieldInfo(userHiers, f).fieldDir };
+        })
+            .filter((info) => info.dir === dir)
+            .map((info) => info.f)
+            .join(", ") || "child"}
+      depth: 3
+      </code></pre>`;
+}
+function indentToDepth(indent) {
+    return indent.length / 2 + 1;
+}
+function meetsConditions(indent, node, froms, min, max) {
+    const depth = indentToDepth(indent);
+    return (depth >= min &&
+        depth <= max &&
+        (froms === undefined || froms.includes(node)));
+}
+function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
+    const nodes = lines
+        .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
+        .map(([_, node]) => node + ".md");
+    if (min <= 0) {
+        nodes.push(source + ".md");
+    }
+    console.log({ lines, nodes });
+    createJuggl(plugin, target, nodes, args);
+}
+
+async function jumpToFirstDir(plugin, dir) {
+    var _a;
+    const { limitJumpToFirstFields } = plugin.settings;
+    const file = plugin.app.workspace.getActiveFile();
+    if (!file) {
+        new obsidian.Notice("You need to be focussed on a Markdown file");
+        return;
+    }
+    const { basename } = file;
+    const realsNImplieds = getRealnImplied(plugin, basename, dir)[dir];
+    const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
+    if (allBCs.length === 0) {
+        new obsidian.Notice(`No ${dir} found`);
+        return;
+    }
+    const toNode = (_a = allBCs.find((bc) => limitJumpToFirstFields.includes(bc.field))) === null || _a === void 0 ? void 0 : _a.to;
+    if (!toNode) {
+        new obsidian.Notice(`No note was found in ${dir} given the limited fields allowed: ${limitJumpToFirstFields.join(", ")}`);
+        return;
+    }
+    const toFile = plugin.app.metadataCache.getFirstLinkpathDest(toNode, "");
+    await plugin.app.workspace.activeLeaf.openFile(toFile);
+}
+
+async function thread(plugin, field) {
+    var _a, _b;
+    const { app, settings } = plugin;
+    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
+    const currFile = app.workspace.getActiveFile();
+    if (!currFile)
+        return;
+    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+    let newBasename = threadingTemplate
+        ? threadingTemplate
+            .replace("{{current}}", currFile.basename)
+            .replace("{{field}}", field)
+            .replace("{{dir}}", dir)
+            //@ts-ignore
+            .replace("{{date}}", moment().format(dateFormat))
+        : "Untitled";
+    let i = 1;
+    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
+        if (i === 1)
+            newBasename += ` ${i}`;
+        else
+            newBasename = newBasename.slice(0, -2) + ` ${i}`;
+        i++;
+    }
+    const crumb = writeBCsInline
+        ? `${oppField}:: [[${currFile.basename}]]`
+        : `---\n${oppField}: ['${currFile.basename}']\n---`;
+    const templatePath = threadingDirTemplates[dir];
+    let newContent = crumb;
+    if (templatePath) {
+        const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
+        const template = await app.vault.cachedRead(templateFile);
+        newContent = template.replace(/\{\{BC-thread-crumb\}\}/i, writeBCsInline
+            ? `${oppField}:: [[${currFile.basename}]]`
+            : `${oppField}: ['${currFile.basename}']`);
+    }
+    const newFile = await app.vault.create(obsidian.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
+    if (!writeBCsInline) {
+        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
+        if (!api) {
+            new obsidian.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
+            return;
+        }
+        await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
+    }
+    else {
+        // TODO Check if this note already has this field
+        let content = await app.vault.read(currFile);
+        const splits = splitAtYaml(content);
+        content =
+            splits[0] +
+                (splits[0].length ? "\n" : "") +
+                `${field}:: [[${newFile.basename}]]` +
+                (splits[1].length ? "\n" : "") +
+                splits[1];
+        await app.vault.modify(currFile, content);
+    }
+    const leaf = threadIntoNewPane
+        ? app.workspace.splitActiveLeaf()
+        : app.workspace.activeLeaf;
+    await leaf.openFile(newFile, { active: true, mode: "source" });
+    if (templatePath) {
+        if (app.plugins.plugins["templater-obsidian"]) {
+            app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
+        }
+        else {
+            new obsidian.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
+        }
+    }
+    if (threadingTemplate) {
+        // @ts-ignore
+        const editor = leaf.view.editor;
+        editor.setCursor(editor.getValue().length);
+    }
+    else {
+        const noteNameInputs = document.getElementsByClassName("view-header-title");
+        const newNoteInputEl = Array.from(noteNameInputs).find((input) => input.innerText === newBasename);
+        newNoteInputEl.innerText = "";
+        newNoteInputEl.focus();
+    }
+}
+
+async function writeBCToFile(plugin, file) {
+    var _a;
+    const { app, settings, mainG } = plugin;
+    const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
+    const { frontmatter } = app.metadataCache.getFileCache(file);
+    const api = (_a = app.plugins.plugins.metaedit) === null || _a === void 0 ? void 0 : _a.api;
+    if (!api) {
+        new obsidian.Notice("Metaedit must be enabled for this function to work");
+        return;
+    }
+    const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
+        var _a;
+        const oppField = (_a = getOppFields(userHiers, a.field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(a.field, a.dir);
+        return { succ: s, field: oppField };
+    });
+    for (const { succ, field } of succInfo) {
+        if (!limitWriteBCCheckboxes.includes(field))
+            return;
+        if (!writeBCsInline) {
+            await createOrUpdateYaml(field, succ, file, frontmatter, api);
+        }
+        else {
+            // TODO Check if this note already has this field
+            let content = await app.vault.read(file);
+            const splits = splitAtYaml(content);
+            content =
+                splits[0] +
+                    (splits[0].length ? "\n" : "") +
+                    `${field}:: [[${succ}]]` +
+                    (splits[1].length ? "\n" : "") +
+                    splits[1];
+            await app.vault.modify(file, content);
+        }
+    }
+}
+async function writeBCsToAllFiles(plugin) {
+    if (!plugin.settings.showWriteAllBCsCmd) {
+        new obsidian.Notice("You first need to enable this command in Breadcrumbs' settings.");
+        return;
+    }
+    if (window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.")) {
+        if (window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.")) {
+            if (window.confirm("For real, please make a back up before.")) {
+                const notice = new obsidian.Notice("Operation Started");
+                const problemFiles = [];
+                for (const file of plugin.app.vault.getMarkdownFiles()) {
+                    try {
+                        await writeBCToFile(plugin, file);
+                    }
+                    catch (e) {
+                        problemFiles.push(file.path);
+                    }
+                }
+                notice.setMessage("Operation Complete");
+                if (problemFiles.length) {
+                    new obsidian.Notice("Some files were not updated due to errors. Check the console to see which ones.");
+                    console.log({ problemFiles });
+                }
+            }
+        }
+    }
+}
+
+class FieldSuggestor extends obsidian.EditorSuggest {
+    constructor(plugin) {
+        super(plugin.app);
+        this.getSuggestions = (context) => {
+            const { query } = context;
+            return BC_FIELDS_INFO.map((sug) => sug.field).filter((sug) => sug.includes(query));
+        };
+        this.plugin = plugin;
+    }
+    onTrigger(cursor, editor, _) {
+        var _a;
+        if (this.plugin.settings.fieldSuggestor) {
+            const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
+            const match = (_a = sub.match(/^BC-(.*)$/)) === null || _a === void 0 ? void 0 : _a[1];
+            if (match !== undefined) {
+                return {
+                    end: cursor,
+                    start: {
+                        ch: sub.lastIndexOf(match),
+                        line: cursor.line,
+                    },
+                    query: match,
+                };
+            }
+        }
+        return null;
+    }
+    renderSuggestion(suggestion, el) {
+        var _a;
+        el.createDiv({
+            text: suggestion.replace("BC-", ""),
+            cls: "BC-suggester-container",
+            attr: {
+                "aria-label": (_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.desc,
+                "aria-label-position": "right",
+            },
+        });
+    }
+    selectSuggestion(suggestion) {
+        var _a;
+        const { context } = this;
+        if (context) {
+            const replacement = `${suggestion}${(_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
+            context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
+        }
+    }
+}
+
+async function getCSVRows(plugin) {
+    const { CSVPaths } = plugin.settings;
+    const CSVRows = [];
+    if (CSVPaths === "")
+        return CSVRows;
+    const fullPath = obsidian.normalizePath(CSVPaths);
+    const content = await plugin.app.vault.adapter.read(fullPath);
+    const lines = content.split("\n");
+    const headers = lines[0].split(",").map((head) => head.trim());
+    lines.slice(1).forEach((row) => {
+        const rowObj = {};
+        row
+            .split(",")
+            .map((head) => dropWikilinks(head.trim()))
+            .forEach((item, i) => {
+            rowObj[headers[i]] = item;
+        });
+        loglevel.debug({ rowObj });
+        CSVRows.push(rowObj);
+    });
+    return CSVRows;
+}
+function addCSVCrumbs(g, CSVRows, dir, field) {
+    CSVRows.forEach((row) => {
+        addNodesIfNot(g, [row.file]);
+        if (field === "" || !row[field])
+            return;
+        addNodesIfNot(g, [row[field]]);
+        addEdgeIfNot(g, row.file, row[field], { dir, field });
+    });
+}
+
+function addDendronNotesToGraph(plugin, frontms, mainG) {
+    const { settings } = plugin;
+    const { addDendronNotes, dendronNoteDelimiter, dendronNoteField } = settings;
+    if (!addDendronNotes)
+        return;
+    for (const frontm of frontms) {
+        // Doesn't currently work yet
+        if (frontm[BC_IGNORE_DENDRON])
+            continue;
+        const basename = getDVBasename(frontm.file);
+        const splits = basename.split(dendronNoteDelimiter);
+        if (splits.length <= 1)
+            continue;
+        const nextSlice = splits.slice(0, -1).join(dendronNoteDelimiter);
+        if (!nextSlice)
+            continue;
+        const nextSliceFile = frontms.find((fm) => getDVBasename(fm.file) === nextSlice);
+        if (!nextSliceFile || nextSliceFile[BC_IGNORE_DENDRON])
+            continue;
+        const sourceOrder = getSourceOrder(frontm);
+        const targetOrder = getTargetOrder(frontms, nextSlice);
+        populateMain(settings, mainG, basename, dendronNoteField, nextSlice, sourceOrder, targetOrder, true);
+    }
+}
+
+const getSubsFromFolder = (folder) => {
+    const otherNotes = [], subFolders = [];
+    folder.children.forEach((tAbstract) => {
+        if (tAbstract instanceof obsidian.TFile) {
+            otherNotes.push(tAbstract);
+        }
+        else
+            subFolders.push(tAbstract);
+    });
+    return { otherNotes, subFolders };
+};
+function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
+    const { settings, app } = plugin;
+    const { userHiers } = settings;
+    const fields = getFields(userHiers);
+    folderNotes.forEach((altFile) => {
+        const { file } = altFile;
+        const basename = getDVBasename(file);
+        const topFolderName = getFolderName(file);
+        const topFolder = app.vault.getAbstractFileByPath(topFolderName);
+        const targets = frontms
+            .map((ff) => ff.file)
+            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
+            .map(getDVBasename);
+        const field = altFile[BC_FOLDER_NOTE];
+        if (typeof field !== "string" || !fields.includes(field))
+            return;
+        targets.forEach((target) => {
+            // This is getting the order of the folder note, not the source pointing up to it
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, basename);
+            populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder, true);
+        });
+        if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
+            const { subFolders } = getSubsFromFolder(topFolder);
+            const folderQueue = [...subFolders];
+            console.log({ startingQueue: folderQueue.slice() });
+            let currFolder = folderQueue.shift();
+            while (currFolder !== undefined) {
+                const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
+                const folderNote = currFolder.name;
+                const targets = otherNotes.map(getDVBasename);
+                // if (!isInVault(app, folderNote, folderNote)) continue;
+                const sourceOrder = 9999; // getSourceOrder(altFile);
+                const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                const parentFolderNote = currFolder.parent.name;
+                populateMain(settings, mainG, parentFolderNote, field, folderNote, sourceOrder, targetOrder, true);
+                targets.forEach((target) => {
+                    if (target === folderNote)
+                        return;
+                    console.log("adding", folderNote, "→", target);
+                    const sourceOrder = 9999; // getSourceOrder(altFile);
+                    const targetOrder = 9999; //  getTargetOrder(frontms, basename);
+                    populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
+                });
+                folderQueue.push(...subFolders);
+                currFolder = folderQueue.shift();
+            }
+        }
+        // First add otherNotes to graph
+        // Then iterate subFolders doing the same
+    });
+}
+
+async function getHierarchyNoteItems(plugin, file) {
+    const { userHiers } = plugin.settings;
+    const { listItems } = plugin.app.metadataCache.getFileCache(file);
+    if (!listItems)
+        return [];
+    const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
+    const hierarchyNoteItems = [];
+    const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
+    const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
+    const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+    const problemFields = [];
+    const upFields = getFields(userHiers, "up");
+    for (const item of listItems) {
+        const currItem = lines[item.position.start.line];
+        const afterBulletCurr = afterBulletReg.exec(currItem)[1];
+        const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
+        let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
+        // Ensure fieldName is one of the existing up fields. `null` if not
+        if (field !== null && !upFields.includes(field)) {
+            problemFields.push(field);
+            field = null;
+        }
+        const { parent } = item;
+        if (parent >= 0) {
+            const parentNote = lines[parent];
+            const afterBulletParent = afterBulletReg.exec(parentNote)[1];
+            const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
+            hierarchyNoteItems.push({
+                note,
+                parent: dropWikiParent,
+                field,
+            });
+        }
+        else {
+            hierarchyNoteItems.push({
+                note,
+                parent: null,
+                field,
+            });
+        }
+    }
+    if (problemFields.length > 0) {
+        const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
+        new obsidian.Notice(msg);
+        console.log(msg, { problemFields });
+    }
+    return hierarchyNoteItems;
+}
+function addHNsToGraph(settings, hnArr, mainG) {
+    const { HNUpField, userHiers } = settings;
+    const upFields = getFields(userHiers, "up");
+    hnArr.forEach((hnItem, i) => {
+        var _a, _b;
+        const { note, field, parent } = hnItem;
+        const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
+        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
+        if (parent === null) {
+            const s = note;
+            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
+            addNodesIfNot(mainG, [s, t]);
+            addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+        }
+        else {
+            addNodesIfNot(mainG, [note, parent]);
+            addEdgeIfNot(mainG, note, parent, {
+                dir: "up",
+                field: upField,
+            });
+            // I don't think this needs to be done if the reverse is done above
+            addNodesIfNot(mainG, [parent, note]);
+            addEdgeIfNot(mainG, parent, note, {
+                dir: "down",
+                field: downField,
+            });
+        }
+    });
+}
+
+// TODO I think it'd be better to do this whole thing as an obj instead of JugglLink[]
+// => {[note: string]: {type: string, linksInLine: string[]}[]}
+async function getJugglLinks(plugin, files) {
+    const { settings, app, db } = plugin;
+    db.start2G("getJugglLinks");
+    const { userHiers } = settings;
+    // Add Juggl links
+    const typedLinksArr = await Promise.all(files.map(async (file) => {
+        var _a, _b;
+        const jugglLink = { file, links: [] };
+        // Use Obs metadatacache to get the links in the current file
+        const links = (_b = (_a = app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.links) !== null && _b !== void 0 ? _b : [];
+        const content = links.length ? await app.vault.cachedRead(file) : "";
+        const lines = content.split("\n");
+        links.forEach((link) => {
+            var _a, _b, _c, _d, _e, _f, _g;
+            const lineNo = link.position.start.line;
+            const line = lines[lineNo];
+            // Check the line for wikilinks, and return an array of link.innerText
+            const linksInLine = (_c = (_b = (_a = line
+                .match(splitLinksRegex)) === null || _a === void 0 ? void 0 : _a.map((link) => link.slice(2, link.length - 2))) === null || _b === void 0 ? void 0 : _b.map((innerText) => innerText.split("|")[0])) !== null && _c !== void 0 ? _c : [];
+            const typedLinkPrefix = (_e = (_d = app.plugins.plugins.juggl) === null || _d === void 0 ? void 0 : _d.settings.typedLinkPrefix) !== null && _e !== void 0 ? _e : "-";
+            const parsedLinks = parseTypedLink(link, line, typedLinkPrefix);
+            const field = (_g = (_f = parsedLinks === null || parsedLinks === void 0 ? void 0 : parsedLinks.properties) === null || _f === void 0 ? void 0 : _f.type) !== null && _g !== void 0 ? _g : "";
+            if (field === "")
+                return;
+            const { fieldDir } = getFieldInfo(userHiers, field) || {};
+            if (!fieldDir)
+                return;
+            jugglLink.links.push({
+                dir: fieldDir,
+                field,
+                linksInLine,
+            });
+        });
+        return jugglLink;
+    }));
+    const allFields = getFields(userHiers);
+    const filteredLinks = typedLinksArr.map((jugglLink) => {
+        // Filter out links whose type is not in allFields
+        jugglLink.links = jugglLink.links.filter((link) => allFields.includes(link.field));
+        return jugglLink;
+    });
+    db.end2G({ filteredLinks });
+    return filteredLinks;
+}
+function addJugglLinksToGraph(settings, jugglLinks, frontms, mainG) {
+    jugglLinks.forEach((jugglLink) => {
+        const { basename } = jugglLink.file;
+        jugglLink.links.forEach((link) => {
+            const { dir, field, linksInLine } = link;
+            if (dir === "")
+                return;
+            const sourceOrder = getTargetOrder(frontms, basename);
+            linksInLine.forEach((linkInLine) => {
+                // Is this a bug? Why not `getSourceOrder`?
+                const targetsOrder = getTargetOrder(frontms, linkInLine);
+                populateMain(settings, mainG, basename, field, linkInLine, sourceOrder, targetsOrder);
+            });
+        });
+    });
+}
+
+function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { app, settings } = plugin;
+    const { userHiers } = settings;
+    eligableAlts.forEach((altFile) => {
+        var _a, _b, _c, _d;
+        const linkNoteFile = altFile.file;
+        const linkNoteBasename = getDVBasename(linkNoteFile);
+        let field = altFile[BC_LINK_NOTE];
+        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+            return;
+        const links = (_b = (_a = app.metadataCache
+            .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
+        const embeds = (_d = (_c = app.metadataCache
+            .getFileCache(linkNoteFile)) === null || _c === void 0 ? void 0 : _c.embeds) === null || _d === void 0 ? void 0 : _d.map((l) => l.link.match(/[^#|]+/)[0]);
+        const targets = [...(links !== null && links !== void 0 ? links : []), ...(embeds !== null && embeds !== void 0 ? embeds : [])];
+        for (const target of targets) {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, linkNoteBasename);
+            populateMain(settings, mainG, linkNoteBasename, field, target, sourceOrder, targetOrder, true);
+        }
+    });
+}
+
+function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { settings } = plugin;
+    const { userHiers, regexNoteField } = settings;
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+        const regexNoteFile = altFile.file;
+        const regexNoteBasename = getDVBasename(regexNoteFile);
+        const regex = strToRegex(altFile[BC_REGEX_NOTE]);
+        loglevel.info({ regex });
+        let field = altFile[BC_REGEX_NOTE_FIELD];
+        if (typeof field !== "string" || !fields.includes(field))
+            field = regexNoteField || fields[0];
+        const targets = [];
+        frontms.forEach((page) => {
+            const basename = getDVBasename(page.file);
+            if (basename !== regexNoteBasename && regex.test(basename))
+                targets.push(basename);
+        });
+        for (const target of targets) {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, regexNoteBasename);
+            populateMain(settings, mainG, regexNoteBasename, field, target, sourceOrder, targetOrder, true);
+        }
+    });
+}
+
+const getAllTags = (app, file, withHash = true) => {
+    var _a, _b;
+    const { tags, frontmatter } = app.metadataCache.getFileCache(file);
+    const allTags = [];
+    tags === null || tags === void 0 ? void 0 : tags.forEach((t) => allTags.push(dropHash(t.tag)));
+    [(_a = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tags) !== null && _a !== void 0 ? _a : []].flat().forEach((t) => {
+        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
+    [(_b = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter.tag) !== null && _b !== void 0 ? _b : []].flat().forEach((t) => {
+        splitAndTrim(t).forEach((innerT) => allTags.push(dropHash(innerT)));
+    });
+    return allTags.map((t) => (withHash ? "#" : "") + t.toLowerCase());
+};
+function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { settings, app } = plugin;
+    const { userHiers, tagNoteField } = settings;
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+        const tagNoteFile = altFile.file;
+        const tagNoteBasename = getDVBasename(tagNoteFile);
+        const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
+        if (!tag.startsWith("#"))
+            return;
+        const hasThisTag = (file) => {
+            const allTags = getAllTags(app, file);
+            return altFile[BC_TAG_NOTE_EXACT] !== undefined
+                ? allTags.includes(tag)
+                : allTags.some((t) => t.includes(tag));
+        };
+        const targets = frontms
+            .map((ff) => ff.file)
+            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
+            .map(getDVBasename);
+        let field = altFile[BC_TAG_NOTE_FIELD];
+        if (typeof field !== "string" || !fields.includes(field))
+            field = tagNoteField || fields[0];
+        targets.forEach((target) => {
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, tagNoteBasename);
+            populateMain(settings, mainG, tagNoteBasename, field, target, sourceOrder, targetOrder, true);
+        });
+    });
+}
+
+function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
+    const { settings } = plugin;
+    const { userHiers } = settings;
+    traverseNotes.forEach((altFile) => {
+        const { file } = altFile;
+        const basename = getDVBasename(file);
+        const noCycles = removeCycles(obsG, basename);
+        let field = altFile[BC_TRAVERSE_NOTE];
+        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+            return;
+        const allPaths = dfsAllPaths(noCycles, basename);
+        loglevel.info(allPaths);
+        const reversed = [...allPaths].map((path) => path.reverse());
+        reversed.forEach((path) => {
+            path.forEach((node, i) => {
+                const next = path[i + 1];
+                if (next === undefined)
+                    return;
+                populateMain(settings, mainG, node, field, next, 9999, 9999, true);
+            });
+        });
+    });
+}
+
+/* src\Components\NextPrev.svelte generated by Svelte v3.35.0 */
+
+function add_css$a() {
+	var style = element("style");
+	style.id = "svelte-1cqb0v5-style";
+	style.textContent = ".BC-nexts.svelte-1cqb0v5 div.svelte-1cqb0v5{text-align:right}.BC-right-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-left:5px;float:right}.BC-left-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-right:5px;float:left}.BC-nexts.svelte-1cqb0v5.svelte-1cqb0v5{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-1cqb0v5.svelte-1cqb0v5{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-1cqb0v5.svelte-1cqb0v5{display:grid;grid-template-columns:1fr 1fr}";
+	append(document.head, style);
+}
+
+function get_each_context$a(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[6] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_1$8(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[9] = list[i];
+	return child_ctx;
+}
+
+// (15:6) {#each prev as p}
+function create_each_block_1$8(ctx) {
+	let div;
+	let strong;
+	let t0_value = /*p*/ ctx[9].field + "";
+	let t0;
+	let t1;
+	let t2_value = /*p*/ ctx[9].to + "";
+	let t2;
+	let t3;
+	let div_class_value;
+	let mounted;
+	let dispose;
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[4](/*p*/ ctx[9], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			strong = element("strong");
+			t0 = text(t0_value);
+			t1 = space();
+			t2 = text(t2_value);
+			t3 = space();
+			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"));
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, strong);
+			append(strong, t0);
+			append(div, t1);
+			append(div, t2);
+			append(div, t3);
+
+			if (!mounted) {
+				dispose = listen(div, "click", click_handler);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].field + "")) set_data(t0, t0_value);
+			if (dirty & /*prev*/ 4 && t2_value !== (t2_value = /*p*/ ctx[9].to + "")) set_data(t2, t2_value);
+
+			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
+				attr(div, "class", div_class_value);
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (28:6) {#each next as n}
+function create_each_block$a(ctx) {
+	let div;
+	let t0_value = /*n*/ ctx[6].to + "";
+	let t0;
+	let t1;
+	let strong;
+	let t2_value = /*n*/ ctx[6].field + "";
+	let t2;
+	let t3;
+	let div_class_value;
+	let mounted;
+	let dispose;
+
+	function click_handler_1(...args) {
+		return /*click_handler_1*/ ctx[5](/*n*/ ctx[6], ...args);
+	}
+
+	return {
+		c() {
+			div = element("div");
+			t0 = text(t0_value);
+			t1 = space();
+			strong = element("strong");
+			t2 = text(t2_value);
+			t3 = space();
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"));
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, t0);
+			append(div, t1);
+			append(div, strong);
+			append(strong, t2);
+			append(div, t3);
+
+			if (!mounted) {
+				dispose = listen(div, "click", click_handler_1);
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
+			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].field + "")) set_data(t2, t2_value);
+
+			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
+				attr(div, "class", div_class_value);
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function create_fragment$i(ctx) {
+	let div2;
+	let div0;
+	let span0;
+	let t;
+	let div1;
+	let span1;
+	let each_value_1 = /*prev*/ ctx[2];
+	let each_blocks_1 = [];
+
+	for (let i = 0; i < each_value_1.length; i += 1) {
+		each_blocks_1[i] = create_each_block_1$8(get_each_context_1$8(ctx, each_value_1, i));
+	}
+
+	let each_value = /*next*/ ctx[1];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$a(get_each_context$a(ctx, each_value, i));
+	}
+
+	return {
+		c() {
+			div2 = element("div");
+			div0 = element("div");
+			span0 = element("span");
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].c();
+			}
+
+			t = space();
+			div1 = element("div");
+			span1 = element("span");
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(div0, "class", "BC-prevs svelte-1cqb0v5");
+			attr(div1, "class", "BC-nexts svelte-1cqb0v5");
+			attr(div2, "class", "BC-NextPrev-Container svelte-1cqb0v5");
+		},
+		m(target, anchor) {
+			insert(target, div2, anchor);
+			append(div2, div0);
+			append(div0, span0);
+
+			for (let i = 0; i < each_blocks_1.length; i += 1) {
+				each_blocks_1[i].m(span0, null);
+			}
+
+			append(div2, t);
+			append(div2, div1);
+			append(div1, span1);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(span1, null);
+			}
+		},
+		p(ctx, [dirty]) {
+			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 5) {
+				each_value_1 = /*prev*/ ctx[2];
+				let i;
+
+				for (i = 0; i < each_value_1.length; i += 1) {
+					const child_ctx = get_each_context_1$8(ctx, each_value_1, i);
+
+					if (each_blocks_1[i]) {
+						each_blocks_1[i].p(child_ctx, dirty);
+					} else {
+						each_blocks_1[i] = create_each_block_1$8(child_ctx);
+						each_blocks_1[i].c();
+						each_blocks_1[i].m(span0, null);
+					}
+				}
+
+				for (; i < each_blocks_1.length; i += 1) {
+					each_blocks_1[i].d(1);
+				}
+
+				each_blocks_1.length = each_value_1.length;
+			}
+
+			if (dirty & /*linkClass, app, next, openOrSwitch*/ 3) {
+				each_value = /*next*/ ctx[1];
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$a(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block$a(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(span1, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value.length;
+			}
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(div2);
+			destroy_each(each_blocks_1, detaching);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+function instance$i($$self, $$props, $$invalidate) {
+	
+	
+	
+	let { app } = $$props;
+	let { plugin } = $$props;
+	let { next } = $$props;
+	let { prev } = $$props;
+	const click_handler = async (p, e) => openOrSwitch(app, p.to, e);
+	const click_handler_1 = async (n, e) => openOrSwitch(app, n.to, e);
+
+	$$self.$$set = $$props => {
+		if ("app" in $$props) $$invalidate(0, app = $$props.app);
+		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
+		if ("next" in $$props) $$invalidate(1, next = $$props.next);
+		if ("prev" in $$props) $$invalidate(2, prev = $$props.prev);
+	};
+
+	return [app, next, prev, plugin, click_handler, click_handler_1];
+}
+
+class NextPrev extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-1cqb0v5-style")) add_css$a();
+		init(this, options, instance$i, create_fragment$i, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
+	}
+}
+
+/* src\Components\TrailGrid.svelte generated by Svelte v3.35.0 */
+
+function add_css$9() {
+	var style = element("style");
+	style.id = "svelte-ybyqyo-style";
+	style.textContent = "div.BC-trail-grid.svelte-ybyqyo{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-ybyqyo{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-ybyqyo{opacity:0.7}.dot.svelte-ybyqyo{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	append(document.head, style);
+}
+
+function get_each_context$9(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[20] = list[i];
+	child_ctx[22] = i;
+	return child_ctx;
+}
+
+function get_each_context_1$7(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[23] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_2$3(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[22] = list[i];
+	return child_ctx;
+}
+
+// (84:8) {#if step.value && settings.gridDots}
+function create_if_block$5(ctx) {
+	let div;
+	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value_2.length; i += 1) {
+		each_blocks[i] = create_each_block_2$3(get_each_context_2$3(ctx, each_value_2, i));
+	}
+
+	return {
+		c() {
+			div = element("div");
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(div, "class", "dots");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+		},
+		p(ctx, dirty) {
+			if (dirty & /*settings, wordCounts*/ 40) {
+				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+				let i;
+
+				for (i = 0; i < each_value_2.length; i += 1) {
+					const child_ctx = get_each_context_2$3(ctx, each_value_2, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block_2$3(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(div, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value_2.length;
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+// (86:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+function create_each_block_2$3(ctx) {
+	let span;
+
+	return {
+		c() {
+			span = element("span");
+			attr(span, "class", "dot svelte-ybyqyo");
+			set_style(span, "background-color", /*settings*/ ctx[5].dotsColour);
+		},
+		m(target, anchor) {
+			insert(target, span, anchor);
+		},
+		p: noop,
+		d(detaching) {
+			if (detaching) detach(span);
+		}
+	};
+}
+
+// (67:4) {#each allRuns[i] as step}
+function create_each_block_1$7(ctx) {
+	let div1;
+	let div0;
+	let t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "";
+	let t0;
+	let div0_class_value;
+	let t1;
+	let t2;
+	let div1_class_value;
+	let div1_style_value;
+	let mounted;
+	let dispose;
+	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots && create_if_block$5(ctx);
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[9](/*step*/ ctx[23], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[10](/*step*/ ctx[23], ...args);
+	}
+
+	return {
+		c() {
+			div1 = element("div");
+			div0 = element("div");
+			t0 = text(t0_value);
+			t1 = space();
+			if (if_block) if_block.c();
+			t2 = space();
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-ybyqyo");
+
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			: ""));
+		},
+		m(target, anchor) {
+			insert(target, div1, anchor);
+			append(div1, div0);
+			append(div0, t0);
+			append(div1, t1);
+			if (if_block) if_block.m(div1, null);
+			append(div1, t2);
+
+			if (!mounted) {
+				dispose = [
+					listen(div1, "click", click_handler),
+					listen(div1, "mouseover", mouseover_handler)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*plugin*/ 4 && t0_value !== (t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
+
+			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"))) {
+				attr(div0, "class", div0_class_value);
+			}
+
+			if (/*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots) if_block.p(ctx, dirty);
+
+			if (dirty & /*children*/ 16 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
+			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			: ""))) {
+				attr(div1, "style", div1_style_value);
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div1);
+			if (if_block) if_block.d();
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (66:2) {#each transposedTrails as col, i}
+function create_each_block$9(ctx) {
+	let each_1_anchor;
+	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value_1.length; i += 1) {
+		each_blocks[i] = create_each_block_1$7(get_each_context_1$7(ctx, each_value_1, i));
+	}
+
+	return {
+		c() {
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			each_1_anchor = empty();
+		},
+		m(target, anchor) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(target, anchor);
+			}
+
+			insert(target, each_1_anchor, anchor);
+		},
+		p(ctx, dirty) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
+				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+				let i;
+
+				for (i = 0; i < each_value_1.length; i += 1) {
+					const child_ctx = get_each_context_1$7(ctx, each_value_1, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block_1$7(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value_1.length;
+			}
+		},
+		d(detaching) {
+			destroy_each(each_blocks, detaching);
+			if (detaching) detach(each_1_anchor);
+		}
+	};
+}
+
+function create_fragment$h(ctx) {
+	let div;
+	let each_value = /*transposedTrails*/ ctx[7];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$9(get_each_context$9(ctx, each_value, i));
+	}
+
+	return {
+		c() {
+			div = element("div");
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			attr(div, "class", "BC-trail-grid svelte-ybyqyo");
+			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
+			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+		},
+		p(ctx, [dirty]) {
+			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
+				each_value = /*transposedTrails*/ ctx[7];
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$9(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block$9(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(div, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value.length;
+			}
+
+			if (dirty & /*sortedTrails*/ 1) {
+				set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
+			}
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_each(each_blocks, detaching);
+		}
+	};
+}
+
+function instance$h($$self, $$props, $$invalidate) {
+	
+	
+	let { sortedTrails } = $$props;
+	let { app } = $$props;
+	let { plugin } = $$props;
+	const { settings } = plugin;
+	const { userHiers } = settings;
+	const currFile = app.workspace.getActiveFile();
+	const activeLeafView = app.workspace.activeLeaf.view;
+	const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
+	const wordCounts = {};
+
+	allCells.forEach(cell => {
+		var _a;
+
+		try {
+			$$invalidate(
+				3,
+				wordCounts[cell] = (_a = app.metadataCache.getFirstLinkpathDest(cell, "")) === null || _a === void 0
+				? void 0
+				: _a.stat.size,
+				wordCounts
+			);
+		} catch(error) {
+			console.log(error, { currFile });
+			$$invalidate(3, wordCounts[cell] = 0, wordCounts);
+		}
+	});
+
+	// const data: {[cell: string]: number} = {}
+	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
+	const { mainG } = plugin;
+
+	// const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
+	// const closedParents = closeImpliedLinks(up, down);
+	const closedParents = getReflexiveClosure(getSubInDirs(mainG, "up", "down"), userHiers);
+
+	const children = {};
+	allCells.forEach(cell => $$invalidate(4, children[cell] = getOutNeighbours(closedParents, cell).length, children));
+	const normalisedData = normalise(Object.values(children));
+
+	allCells.forEach((cell, i) => {
+		$$invalidate(4, children[cell] = normalisedData[i], children);
+	});
+
+	// const normalisedData = allCells.forEach(cell => {
+	// })
+	// const links: {[cell: string]: number}[] = []
+	// data.forEach(cell => links[Object.keys(cell)[0]] = (Object.values(cell)[0]?.links.length ?? 0))
+	// console.log(data)
+	const maxLength = Math.max(...sortedTrails.map(trail => trail.length));
+
+	const paddedTrails = sortedTrails.map(trail => padArray(trail, maxLength));
+
+	// const permutations: string[][][] = permute(paddedTrails.map(trail => [trail[0]]))
+	// //  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
+	// const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
+	// const runsPerRun = ALLRuns.map(runs => runs[0].length)
+	// const minRunLength = Math.min(...runsPerRun);
+	// const indexOfMinRun = runsPerRun.indexOf(minRunLength);
+	// const minRun = ALLRuns[indexOfMinRun]
+	const transposedTrails = transpose(paddedTrails);
+
+	const allRuns = transposedTrails.map(runs);
+	const click_handler = (step, e) => openOrSwitch(app, step.value, e);
+	const mouseover_handler = (step, e) => hoverPreview(e, activeLeafView, step.value);
+
+	$$self.$$set = $$props => {
+		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
+		if ("app" in $$props) $$invalidate(1, app = $$props.app);
+		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
+	};
+
+	return [
+		sortedTrails,
+		app,
+		plugin,
+		wordCounts,
+		children,
+		settings,
+		activeLeafView,
+		transposedTrails,
+		allRuns,
+		click_handler,
+		mouseover_handler
+	];
+}
+
+class TrailGrid extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-ybyqyo-style")) add_css$9();
+		init(this, options, instance$h, create_fragment$h, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
+	}
+}
+
+/* src\Components\TrailPath.svelte generated by Svelte v3.35.0 */
+
+function add_css$8() {
+	var style = element("style");
+	style.id = "svelte-3c1frp-style";
+	style.textContent = "span.BC-trail-path-container.svelte-3c1frp{display:flex;justify-content:space-between}";
+	append(document.head, style);
+}
+
+function get_each_context$8(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[10] = list[i];
+	return child_ctx;
+}
+
+function get_each_context_1$6(ctx, list, i) {
+	const child_ctx = ctx.slice();
+	child_ctx[13] = list[i];
+	child_ctx[15] = i;
+	return child_ctx;
+}
+
+// (21:8) {:else}
+function create_else_block$1(ctx) {
+	let each_1_anchor;
+	let each_value_1 = /*trail*/ ctx[10];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value_1.length; i += 1) {
+		each_blocks[i] = create_each_block_1$6(get_each_context_1$6(ctx, each_value_1, i));
+	}
+
+	return {
+		c() {
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			each_1_anchor = empty();
+		},
+		m(target, anchor) {
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(target, anchor);
+			}
+
+			insert(target, each_1_anchor, anchor);
+		},
+		p(ctx, dirty) {
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
+				each_value_1 = /*trail*/ ctx[10];
+				let i;
+
+				for (i = 0; i < each_value_1.length; i += 1) {
+					const child_ctx = get_each_context_1$6(ctx, each_value_1, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block_1$6(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value_1.length;
+			}
+		},
+		d(detaching) {
+			destroy_each(each_blocks, detaching);
+			if (detaching) detach(each_1_anchor);
+		}
+	};
+}
+
+// (19:8) {#if trail.length === 0}
+function create_if_block_1$3(ctx) {
+	let span;
+
+	return {
+		c() {
+			span = element("span");
+			span.textContent = `${/*settings*/ ctx[5].noPathMessage}`;
+		},
+		m(target, anchor) {
+			insert(target, span, anchor);
+		},
+		p: noop,
+		d(detaching) {
+			if (detaching) detach(span);
+		}
+	};
+}
+
+// (30:12) {#if i < trail.length - 1}
+function create_if_block_2$2(ctx) {
+	let span;
+
+	return {
+		c() {
+			span = element("span");
+			span.textContent = `${" " + /*settings*/ ctx[5].trailSeperator + " "}`;
+		},
+		m(target, anchor) {
+			insert(target, span, anchor);
+		},
+		p: noop,
+		d(detaching) {
+			if (detaching) detach(span);
+		}
+	};
+}
+
+// (22:10) {#each trail as crumb, i}
+function create_each_block_1$6(ctx) {
+	let span;
+	let t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "";
+	let t0;
+	let t1;
+	let if_block_anchor;
+	let mounted;
+	let dispose;
+
+	function click_handler(...args) {
+		return /*click_handler*/ ctx[7](/*crumb*/ ctx[13], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[8](/*crumb*/ ctx[13], ...args);
+	}
+
+	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2$2(ctx);
+
+	return {
+		c() {
+			span = element("span");
+			t0 = text(t0_value);
+			t1 = space();
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
+			attr(span, "class", "internal-link BC-Link");
+		},
+		m(target, anchor) {
+			insert(target, span, anchor);
+			append(span, t0);
+			insert(target, t1, anchor);
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+
+			if (!mounted) {
+				dispose = [
+					listen(span, "click", click_handler),
+					listen(span, "mouseover", mouseover_handler)
+				];
+
+				mounted = true;
+			}
+		},
+		p(new_ctx, dirty) {
+			ctx = new_ctx;
+			if (dirty & /*trailsToShow, plugin*/ 20 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
+
+			if (/*i*/ ctx[15] < /*trail*/ ctx[10].length - 1) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+				} else {
+					if_block = create_if_block_2$2(ctx);
+					if_block.c();
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(span);
+			if (detaching) detach(t1);
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+// (17:4) {#each trailsToShow as trail}
+function create_each_block$8(ctx) {
+	let div;
+	let t;
+
+	function select_block_type(ctx, dirty) {
+		if (/*trail*/ ctx[10].length === 0) return create_if_block_1$3;
+		return create_else_block$1;
+	}
+
+	let current_block_type = select_block_type(ctx);
+	let if_block = current_block_type(ctx);
+
+	return {
+		c() {
+			div = element("div");
+			if_block.c();
+			t = space();
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			if_block.m(div, null);
+			append(div, t);
+		},
+		p(ctx, dirty) {
+			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block) {
+				if_block.p(ctx, dirty);
+			} else {
+				if_block.d(1);
+				if_block = current_block_type(ctx);
+
+				if (if_block) {
+					if_block.c();
+					if_block.m(div, t);
+				}
+			}
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			if_block.d();
+		}
+	};
+}
+
+// (39:2) {#if sortedTrails.length > 1}
+function create_if_block$4(ctx) {
+	let div;
+	let button;
+	let t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "";
+	let t;
+	let mounted;
+	let dispose;
+
+	return {
+		c() {
+			div = element("div");
+			button = element("button");
+			t = text(t_value);
+			attr(button, "class", "button-div");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			append(div, button);
+			append(button, t);
+
+			if (!mounted) {
+				dispose = listen(button, "click", /*click_handler_1*/ ctx[9]);
+				mounted = true;
+			}
+		},
+		p(ctx, dirty) {
+			if (dirty & /*showAll*/ 8 && t_value !== (t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "")) set_data(t, t_value);
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function create_fragment$g(ctx) {
+	let span;
+	let div;
+	let t;
+	let each_value = /*trailsToShow*/ ctx[4];
+	let each_blocks = [];
+
+	for (let i = 0; i < each_value.length; i += 1) {
+		each_blocks[i] = create_each_block$8(get_each_context$8(ctx, each_value, i));
+	}
+
+	let if_block = /*sortedTrails*/ ctx[0].length > 1 && create_if_block$4(ctx);
+
+	return {
+		c() {
+			span = element("span");
+			div = element("div");
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].c();
+			}
+
+			t = space();
+			if (if_block) if_block.c();
+			attr(div, "class", "trails-div");
+			attr(span, "class", "BC-trail-path-container svelte-3c1frp");
+		},
+		m(target, anchor) {
+			insert(target, span, anchor);
+			append(span, div);
+
+			for (let i = 0; i < each_blocks.length; i += 1) {
+				each_blocks[i].m(div, null);
+			}
+
+			append(span, t);
+			if (if_block) if_block.m(span, null);
+		},
+		p(ctx, [dirty]) {
+			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
+				each_value = /*trailsToShow*/ ctx[4];
+				let i;
+
+				for (i = 0; i < each_value.length; i += 1) {
+					const child_ctx = get_each_context$8(ctx, each_value, i);
+
+					if (each_blocks[i]) {
+						each_blocks[i].p(child_ctx, dirty);
+					} else {
+						each_blocks[i] = create_each_block$8(child_ctx);
+						each_blocks[i].c();
+						each_blocks[i].m(div, null);
+					}
+				}
+
+				for (; i < each_blocks.length; i += 1) {
+					each_blocks[i].d(1);
+				}
+
+				each_blocks.length = each_value.length;
+			}
+
+			if (/*sortedTrails*/ ctx[0].length > 1) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+				} else {
+					if_block = create_if_block$4(ctx);
+					if_block.c();
+					if_block.m(span, null);
+				}
+			} else if (if_block) {
+				if_block.d(1);
+				if_block = null;
+			}
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(span);
+			destroy_each(each_blocks, detaching);
+			if (if_block) if_block.d();
+		}
+	};
+}
+
+function instance$g($$self, $$props, $$invalidate) {
+	let trailsToShow;
+	
+	
+	let { sortedTrails } = $$props;
+	let { app } = $$props;
+	let { plugin } = $$props;
+	const { settings } = plugin;
+	const { view } = app.workspace.activeLeaf;
+	let showAll = settings.showAll;
+	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
+	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
+	const click_handler_1 = () => $$invalidate(3, showAll = !showAll);
+
+	$$self.$$set = $$props => {
+		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
+		if ("app" in $$props) $$invalidate(1, app = $$props.app);
+		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
+	};
+
+	$$self.$$.update = () => {
+		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 9) {
+			$$invalidate(4, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
+		}
+	};
+
+	return [
+		sortedTrails,
+		app,
+		plugin,
+		showAll,
+		trailsToShow,
+		settings,
+		view,
+		click_handler,
+		mouseover_handler,
+		click_handler_1
+	];
+}
+
+class TrailPath extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-3c1frp-style")) add_css$8();
+		init(this, options, instance$g, create_fragment$g, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
+	}
 }
 
 function getLimitedTrailSub(plugin) {
@@ -25786,23 +26664,197 @@ async function refreshIndex(plugin) {
         new obsidian.Notice("Index refreshed");
 }
 
+/* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
+
+function create_fragment$f(ctx) {
+	let script;
+	let script_src_value;
+	let t;
+	let div;
+	let mounted;
+	let dispose;
+
+	return {
+		c() {
+			script = element("script");
+			t = space();
+			div = element("div");
+			attr(script, "type", "text/javascript");
+			if (script.src !== (script_src_value = "https://ko-fi.com/widgets/widget_2.js")) attr(script, "src", script_src_value);
+		},
+		m(target, anchor) {
+			append(document.head, script);
+			insert(target, t, anchor);
+			insert(target, div, anchor);
+			/*div_binding*/ ctx[2](div);
+
+			if (!mounted) {
+				dispose = listen(script, "load", /*initializeKofi*/ ctx[1]);
+				mounted = true;
+			}
+		},
+		p: noop,
+		i: noop,
+		o: noop,
+		d(detaching) {
+			detach(script);
+			if (detaching) detach(t);
+			if (detaching) detach(div);
+			/*div_binding*/ ctx[2](null);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function instance$f($$self, $$props, $$invalidate) {
+	let button;
+
+	var initializeKofi = () => {
+		kofiwidget2.init("Support Breadcrumbs development!", "#29abe0", "G2G454TZF");
+		$$invalidate(0, button.innerHTML = kofiwidget2.getHTML(), button);
+	};
+
+	function div_binding($$value) {
+		binding_callbacks[$$value ? "unshift" : "push"](() => {
+			button = $$value;
+			$$invalidate(0, button);
+		});
+	}
+
+	return [button, initializeKofi, div_binding];
+}
+
+class KoFi extends SvelteComponent {
+	constructor(options) {
+		super();
+		init(this, options, instance$f, create_fragment$f, safe_not_equal, {});
+	}
+}
+
+function addCreateIndexSettings(plugin, cmdsDetails) {
+    const { settings } = plugin;
+    const createIndexDetails = subDetails("Create Index", cmdsDetails);
+    new obsidian.Setting(createIndexDetails)
+        .setName("Add wiklink brackets")
+        .setDesc(fragWithHTML("When creating an index, should it wrap the note name in wikilinks <code>[[]]</code> or not.\n✅ = yes, ❌ = no."))
+        .addToggle((toggle) => toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
+        settings.wikilinkIndex = value;
+        await plugin.saveSettings();
+    }));
+    new obsidian.Setting(createIndexDetails)
+        .setName("Show aliases of notes in index")
+        .setDesc("Show the aliases of each note in brackets.\n✅ = yes, ❌ = no.")
+        .addToggle((toggle) => toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
+        settings.aliasesInIndex = value;
+        await plugin.saveSettings();
+    }));
+}
+
+function addCSVSettings(plugin, alternativeHierarchyDetails) {
+    const { settings } = plugin;
+    const csvDetails = subDetails("CSV Notes", alternativeHierarchyDetails);
+    new obsidian.Setting(csvDetails)
+        .setName("CSV Breadcrumb Paths")
+        .setDesc("The file path of a csv files with breadcrumbs information.")
+        .addText((text) => {
+        text.setValue(settings.CSVPaths);
+        text.inputEl.onblur = async () => {
+            settings.CSVPaths = text.inputEl.value;
+            await plugin.saveSettings();
+        };
+    });
+}
+
+function addDebuggingsSettings(plugin, containerEl) {
+    const { settings } = plugin;
+    const debugDetails = details("Debugging", containerEl);
+    new obsidian.Setting(debugDetails)
+        .setName("Debug Mode")
+        .setDesc(fragWithHTML("Set the minimum level of debug messages to console log. If you choose <code>TRACE</code>, then everything will be logged. If you choose <code>ERROR</code>, then only the most necessary issues will be logged. <code>SILENT</code> will turn off all logs."))
+        .addDropdown((dd) => {
+        Object.keys(loglevel.levels).forEach((key) => dd.addOption(key, key));
+        dd.setValue(settings.debugMode).onChange(async (value) => {
+            loglevel.setLevel(value);
+            settings.debugMode = value;
+            await plugin.saveSettings();
+        });
+    });
+    debugDetails.createEl("button", { text: "Console log settings" }, (el) => {
+        el.addEventListener("click", () => console.log(settings));
+    });
+}
+
+function addDendronSettings(plugin, alternativeHierarchyDetails) {
+    const { settings } = plugin;
+    const { userHiers } = settings;
+    const fields = getFields(userHiers);
+    const dendronDetails = subDetails("Dendron Notes", alternativeHierarchyDetails);
+    new obsidian.Setting(dendronDetails)
+        .setName("Add Dendron notes to graph")
+        .setDesc(fragWithHTML("Dendron notes create a hierarchy using note names.</br><code>nmath.algebra</code> is a note about algebra, whose parent is <code>math</code>.</br><code>nmath.calculus.limits</code> is a note about limits whose parent is the note <code>math.calculus</code>, the parent of which is <code>math</code>."))
+        .addToggle((toggle) => toggle.setValue(settings.addDendronNotes).onChange(async (value) => {
+        settings.addDendronNotes = value;
+        await plugin.saveSettings();
+    }));
+    new obsidian.Setting(dendronDetails)
+        .setName("Dendron note delimiter")
+        .setDesc(fragWithHTML("If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is <code>.</code>."))
+        .addText((text) => {
+        text.setPlaceholder("Delimiter").setValue(settings.dendronNoteDelimiter);
+        text.inputEl.onblur = async () => {
+            const value = text.getValue();
+            if (value) {
+                settings.dendronNoteDelimiter = value;
+                await plugin.saveSettings();
+            }
+            else {
+                new obsidian.Notice(`The delimiter can't be blank`);
+                settings.dendronNoteDelimiter = DEFAULT_SETTINGS.dendronNoteDelimiter;
+                await plugin.saveSettings();
+            }
+        };
+    });
+    new obsidian.Setting(dendronDetails)
+        .setName("Trim Dendron Note Names")
+        .setDesc(fragWithHTML("When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> would be trimmed to only display <code>C</code>."))
+        .addToggle((toggle) => toggle.setValue(settings.trimDendronNotes).onChange(async (value) => {
+        settings.trimDendronNotes = value;
+        await plugin.saveSettings();
+        await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+    }));
+    new obsidian.Setting(dendronDetails)
+        .setName("Dendron Note Field")
+        .setDesc("Which field should Breadcrumbs use for Dendron notes?")
+        .addDropdown((cb) => {
+        fields.forEach((field) => {
+            cb.addOption(field, field);
+        });
+        cb.setValue(settings.dendronNoteField);
+        cb.onChange(async (value) => {
+            settings.dendronNoteField = value;
+            await plugin.saveSettings();
+        });
+    });
+}
+
 /* src\Components\Checkboxes.svelte generated by Svelte v3.35.0 */
 
-function add_css$9() {
+function add_css$7() {
 	var style = element("style");
 	style.id = "svelte-t4gbbx-style";
 	style.textContent = ".grid.svelte-t4gbbx{display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr))}";
 	append(document.head, style);
 }
 
-function get_each_context$8(ctx, list, i) {
+function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[11] = list[i];
 	return child_ctx;
 }
 
 // (43:2) {#each options as option}
-function create_each_block$8(ctx) {
+function create_each_block$7(ctx) {
 	let div;
 	let label;
 	let input;
@@ -25866,7 +26918,7 @@ function create_each_block$8(ctx) {
 	};
 }
 
-function create_fragment$g(ctx) {
+function create_fragment$e(ctx) {
 	let div0;
 	let button;
 	let t0;
@@ -25880,7 +26932,7 @@ function create_fragment$g(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$8(get_each_context$8(ctx, each_value, i));
+		each_blocks[i] = create_each_block$7(get_each_context$7(ctx, each_value, i));
 	}
 
 	return {
@@ -25923,12 +26975,12 @@ function create_fragment$g(ctx) {
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$8(ctx, each_value, i);
+					const child_ctx = get_each_context$7(ctx, each_value, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block$8(child_ctx);
+						each_blocks[i] = create_each_block$7(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div1, null);
 					}
@@ -25954,7 +27006,7 @@ function create_fragment$g(ctx) {
 	};
 }
 
-function instance$g($$self, $$props, $$invalidate) {
+function instance$e($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -26053,8 +27105,8 @@ function instance$g($$self, $$props, $$invalidate) {
 class Checkboxes extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-t4gbbx-style")) add_css$9();
-		init(this, options, instance$g, create_fragment$g, safe_not_equal, { plugin: 4, settingName: 5, options: 0 });
+		if (!document.getElementById("svelte-t4gbbx-style")) add_css$7();
+		init(this, options, instance$e, create_fragment$e, safe_not_equal, { plugin: 4, settingName: 5, options: 0 });
 	}
 }
 
@@ -26233,7 +27285,7 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
 
 /* node_modules\svelte-icons\components\IconBase.svelte generated by Svelte v3.35.0 */
 
-function add_css$8() {
+function add_css$6() {
 	var style = element("style");
 	style.id = "svelte-c8tyih-style";
 	style.textContent = "svg.svelte-c8tyih{stroke:currentColor;fill:currentColor;stroke-width:0;width:100%;height:auto;max-height:100%}";
@@ -26241,7 +27293,7 @@ function add_css$8() {
 }
 
 // (18:2) {#if title}
-function create_if_block$4(ctx) {
+function create_if_block$3(ctx) {
 	let title_1;
 	let t;
 
@@ -26263,11 +27315,11 @@ function create_if_block$4(ctx) {
 	};
 }
 
-function create_fragment$f(ctx) {
+function create_fragment$d(ctx) {
 	let svg;
 	let if_block_anchor;
 	let current;
-	let if_block = /*title*/ ctx[0] && create_if_block$4(ctx);
+	let if_block = /*title*/ ctx[0] && create_if_block$3(ctx);
 	const default_slot_template = /*#slots*/ ctx[3].default;
 	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[2], null);
 
@@ -26297,7 +27349,7 @@ function create_fragment$f(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$4(ctx);
+					if_block = create_if_block$3(ctx);
 					if_block.c();
 					if_block.m(svg, if_block_anchor);
 				}
@@ -26333,7 +27385,7 @@ function create_fragment$f(ctx) {
 	};
 }
 
-function instance$f($$self, $$props, $$invalidate) {
+function instance$d($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
 	let { title = null } = $$props;
 	let { viewBox } = $$props;
@@ -26350,8 +27402,8 @@ function instance$f($$self, $$props, $$invalidate) {
 class IconBase extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-c8tyih-style")) add_css$8();
-		init(this, options, instance$f, create_fragment$f, safe_not_equal, { title: 0, viewBox: 1 });
+		if (!document.getElementById("svelte-c8tyih-style")) add_css$6();
+		init(this, options, instance$d, create_fragment$d, safe_not_equal, { title: 0, viewBox: 1 });
 	}
 }
 
@@ -26374,183 +27426,13 @@ function create_default_slot$5(ctx) {
 	};
 }
 
-function create_fragment$e(ctx) {
+function create_fragment$c(ctx) {
 	let iconbase;
 	let current;
 	const iconbase_spread_levels = [{ viewBox: "0 0 512 512" }, /*$$props*/ ctx[0]];
 
 	let iconbase_props = {
 		$$slots: { default: [create_default_slot$5] },
-		$$scope: { ctx }
-	};
-
-	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
-		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
-	}
-
-	iconbase = new IconBase({ props: iconbase_props });
-
-	return {
-		c() {
-			create_component(iconbase.$$.fragment);
-		},
-		m(target, anchor) {
-			mount_component(iconbase, target, anchor);
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			const iconbase_changes = (dirty & /*$$props*/ 1)
-			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
-			: {};
-
-			if (dirty & /*$$scope*/ 2) {
-				iconbase_changes.$$scope = { dirty, ctx };
-			}
-
-			iconbase.$set(iconbase_changes);
-		},
-		i(local) {
-			if (current) return;
-			transition_in(iconbase.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(iconbase.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			destroy_component(iconbase, detaching);
-		}
-	};
-}
-
-function instance$e($$self, $$props, $$invalidate) {
-	$$self.$$set = $$new_props => {
-		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-	};
-
-	$$props = exclude_internal_props($$props);
-	return [$$props];
-}
-
-class FaListUl extends SvelteComponent {
-	constructor(options) {
-		super();
-		init(this, options, instance$e, create_fragment$e, safe_not_equal, {});
-	}
-}
-
-/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
-
-function create_default_slot$4(ctx) {
-	let path;
-
-	return {
-		c() {
-			path = svg_element("path");
-			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
-		},
-		m(target, anchor) {
-			insert(target, path, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(path);
-		}
-	};
-}
-
-function create_fragment$d(ctx) {
-	let iconbase;
-	let current;
-	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
-
-	let iconbase_props = {
-		$$slots: { default: [create_default_slot$4] },
-		$$scope: { ctx }
-	};
-
-	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
-		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
-	}
-
-	iconbase = new IconBase({ props: iconbase_props });
-
-	return {
-		c() {
-			create_component(iconbase.$$.fragment);
-		},
-		m(target, anchor) {
-			mount_component(iconbase, target, anchor);
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			const iconbase_changes = (dirty & /*$$props*/ 1)
-			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
-			: {};
-
-			if (dirty & /*$$scope*/ 2) {
-				iconbase_changes.$$scope = { dirty, ctx };
-			}
-
-			iconbase.$set(iconbase_changes);
-		},
-		i(local) {
-			if (current) return;
-			transition_in(iconbase.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(iconbase.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			destroy_component(iconbase, detaching);
-		}
-	};
-}
-
-function instance$d($$self, $$props, $$invalidate) {
-	$$self.$$set = $$new_props => {
-		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-	};
-
-	$$props = exclude_internal_props($$props);
-	return [$$props];
-}
-
-class FaPlus extends SvelteComponent {
-	constructor(options) {
-		super();
-		init(this, options, instance$d, create_fragment$d, safe_not_equal, {});
-	}
-}
-
-/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
-
-function create_default_slot$3(ctx) {
-	let path;
-
-	return {
-		c() {
-			path = svg_element("path");
-			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
-		},
-		m(target, anchor) {
-			insert(target, path, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(path);
-		}
-	};
-}
-
-function create_fragment$c(ctx) {
-	let iconbase;
-	let current;
-	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
-
-	let iconbase_props = {
-		$$slots: { default: [create_default_slot$3] },
 		$$scope: { ctx }
 	};
 
@@ -26603,23 +27485,193 @@ function instance$c($$self, $$props, $$invalidate) {
 	return [$$props];
 }
 
-class FaRegTrashAlt extends SvelteComponent {
+class FaListUl extends SvelteComponent {
 	constructor(options) {
 		super();
 		init(this, options, instance$c, create_fragment$c, safe_not_equal, {});
 	}
 }
 
+/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
+
+function create_default_slot$4(ctx) {
+	let path;
+
+	return {
+		c() {
+			path = svg_element("path");
+			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
+		},
+		m(target, anchor) {
+			insert(target, path, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(path);
+		}
+	};
+}
+
+function create_fragment$b(ctx) {
+	let iconbase;
+	let current;
+	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
+
+	let iconbase_props = {
+		$$slots: { default: [create_default_slot$4] },
+		$$scope: { ctx }
+	};
+
+	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
+		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
+	}
+
+	iconbase = new IconBase({ props: iconbase_props });
+
+	return {
+		c() {
+			create_component(iconbase.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(iconbase, target, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const iconbase_changes = (dirty & /*$$props*/ 1)
+			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
+			: {};
+
+			if (dirty & /*$$scope*/ 2) {
+				iconbase_changes.$$scope = { dirty, ctx };
+			}
+
+			iconbase.$set(iconbase_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(iconbase.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(iconbase.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(iconbase, detaching);
+		}
+	};
+}
+
+function instance$b($$self, $$props, $$invalidate) {
+	$$self.$$set = $$new_props => {
+		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+	};
+
+	$$props = exclude_internal_props($$props);
+	return [$$props];
+}
+
+class FaPlus extends SvelteComponent {
+	constructor(options) {
+		super();
+		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
+	}
+}
+
+/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
+
+function create_default_slot$3(ctx) {
+	let path;
+
+	return {
+		c() {
+			path = svg_element("path");
+			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
+		},
+		m(target, anchor) {
+			insert(target, path, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(path);
+		}
+	};
+}
+
+function create_fragment$a(ctx) {
+	let iconbase;
+	let current;
+	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
+
+	let iconbase_props = {
+		$$slots: { default: [create_default_slot$3] },
+		$$scope: { ctx }
+	};
+
+	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
+		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
+	}
+
+	iconbase = new IconBase({ props: iconbase_props });
+
+	return {
+		c() {
+			create_component(iconbase.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(iconbase, target, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const iconbase_changes = (dirty & /*$$props*/ 1)
+			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
+			: {};
+
+			if (dirty & /*$$scope*/ 2) {
+				iconbase_changes.$$scope = { dirty, ctx };
+			}
+
+			iconbase.$set(iconbase_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(iconbase.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(iconbase.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(iconbase, detaching);
+		}
+	};
+}
+
+function instance$a($$self, $$props, $$invalidate) {
+	$$self.$$set = $$new_props => {
+		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+	};
+
+	$$props = exclude_internal_props($$props);
+	return [$$props];
+}
+
+class FaRegTrashAlt extends SvelteComponent {
+	constructor(options) {
+		super();
+		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
+	}
+}
+
 /* src\Components\UserHierarchies.svelte generated by Svelte v3.35.0 */
 
-function add_css$7() {
+function add_css$5() {
 	var style = element("style");
 	style.id = "svelte-5y4abu-style";
 	style.textContent = "label.BC-Arrow-Label.svelte-5y4abu.svelte-5y4abu{display:inline-block;width:20px !important}div.GA-Buttons.svelte-5y4abu.svelte-5y4abu{padding-bottom:5px}details.BC-Hier-Details.svelte-5y4abu.svelte-5y4abu{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-5y4abu summary.svelte-5y4abu::marker{font-size:10px}.BC-Hier-Details.svelte-5y4abu summary button.svelte-5y4abu{float:right}.icon.svelte-5y4abu.svelte-5y4abu{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
-function get_each_context$7(ctx, list, i) {
+function get_each_context$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[12] = list[i];
 	child_ctx[14] = i;
@@ -26632,7 +27684,7 @@ function get_each_context_1$5(ctx, list, i) {
 	return child_ctx;
 }
 
-// (93:6) {#each DIRECTIONS as dir}
+// (94:6) {#each DIRECTIONS as dir}
 function create_each_block_1$5(ctx) {
 	let div;
 	let label;
@@ -26691,8 +27743,8 @@ function create_each_block_1$5(ctx) {
 	};
 }
 
-// (61:2) {#each currHiers as hier, i}
-function create_each_block$7(ctx) {
+// (62:2) {#each currHiers as hier, i}
+function create_each_block$6(ctx) {
 	let details;
 	let summary;
 	let t0_value = DIRECTIONS$1.map(func).map(func_1).join(" ") + "";
@@ -26829,7 +27881,7 @@ function create_each_block$7(ctx) {
 	};
 }
 
-function create_fragment$b(ctx) {
+function create_fragment$9(ctx) {
 	let div4;
 	let div3;
 	let button0;
@@ -26854,7 +27906,7 @@ function create_fragment$b(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$7(get_each_context$7(ctx, each_value, i));
+		each_blocks[i] = create_each_block$6(get_each_context$6(ctx, each_value, i));
 	}
 
 	return {
@@ -26924,12 +27976,12 @@ function create_fragment$b(ctx) {
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$7(ctx, each_value, i);
+					const child_ctx = get_each_context$6(ctx, each_value, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block$7(child_ctx);
+						each_blocks[i] = create_each_block$6(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div4, null);
 					}
@@ -26969,7 +28021,7 @@ function create_fragment$b(ctx) {
 
 const func_1 = dirFields => `(${dirFields})`;
 
-function instance$b($$self, $$props, $$invalidate) {
+function instance$9($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -27074,8 +28126,8 @@ function instance$b($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-5y4abu-style")) add_css$7();
-		init(this, options, instance$b, create_fragment$b, safe_not_equal, { plugin: 2 });
+		if (!document.getElementById("svelte-5y4abu-style")) add_css$5();
+		init(this, options, instance$9, create_fragment$9, safe_not_equal, { plugin: 2 });
 	}
 }
 
@@ -27095,14 +28147,14 @@ function addHierarchySettings(plugin, containerEl) {
 
 /* src\Components\Lists.svelte generated by Svelte v3.35.0 */
 
-function add_css$6() {
+function add_css$4() {
 	var style = element("style");
 	style.id = "svelte-1dlhare-style";
 	style.textContent = "summary.hier-summary.svelte-1dlhare{color:var(--text-title-h2);font-size:larger}summary.svelte-1dlhare{color:var(--text-title-h3)}h5.BC-header.svelte-1dlhare{color:var(--text-title-h5)}.markdown-preview-view.svelte-1dlhare{padding-left:10px}.internal-link.is-unresolved.svelte-1dlhare{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
-function get_each_context$6(ctx, list, i) {
+function get_each_context$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[13] = list[i];
 	return child_ctx;
@@ -27127,7 +28179,7 @@ function get_each_context_3$2(ctx, list, i) {
 }
 
 // (26:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
-function create_if_block$3(ctx) {
+function create_if_block$2(ctx) {
 	let details;
 	let summary;
 	let t0_value = /*square*/ ctx[16].field + "";
@@ -27135,7 +28187,7 @@ function create_if_block$3(ctx) {
 	let t1;
 	let t2;
 	let if_block0 = /*square*/ ctx[16].realItems.length && create_if_block_3$1(ctx);
-	let if_block1 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$3(ctx);
+	let if_block1 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$2(ctx);
 
 	return {
 		c() {
@@ -27179,7 +28231,7 @@ function create_if_block$3(ctx) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
-					if_block1 = create_if_block_1$3(ctx);
+					if_block1 = create_if_block_1$2(ctx);
 					if_block1.c();
 					if_block1.m(details, null);
 				}
@@ -27338,11 +28390,11 @@ function create_each_block_3$2(ctx) {
 }
 
 // (50:12) {#if showImpliedRelations && square.impliedItems.length}
-function create_if_block_1$3(ctx) {
+function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
-	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$2();
+	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$1();
 	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
@@ -27409,7 +28461,7 @@ function create_if_block_1$3(ctx) {
 }
 
 // (51:14) {#if showRelationType}
-function create_if_block_2$2(ctx) {
+function create_if_block_2$1(ctx) {
 	let h5;
 
 	return {
@@ -27504,7 +28556,7 @@ function create_each_block_2$2(ctx) {
 // (25:6) {#each squares as square}
 function create_each_block_1$4(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$3(ctx);
+	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$2(ctx);
 
 	return {
 		c() {
@@ -27520,7 +28572,7 @@ function create_each_block_1$4(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$3(ctx);
+					if_block = create_if_block$2(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -27537,7 +28589,7 @@ function create_each_block_1$4(ctx) {
 }
 
 // (19:2) {#each filteredSquaresArr as squares}
-function create_each_block$6(ctx) {
+function create_each_block$5(ctx) {
 	let details;
 	let summary;
 	let t0_value = /*squares*/ ctx[13].map(func).join(", ") + "";
@@ -27611,14 +28663,14 @@ function create_each_block$6(ctx) {
 	};
 }
 
-function create_fragment$a(ctx) {
+function create_fragment$8(ctx) {
 	let div;
 	let div_class_value;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$6(get_each_context$6(ctx, each_value, i));
+		each_blocks[i] = create_each_block$5(get_each_context$5(ctx, each_value, i));
 	}
 
 	return {
@@ -27646,12 +28698,12 @@ function create_fragment$a(ctx) {
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$6(ctx, each_value, i);
+					const child_ctx = get_each_context$5(ctx, each_value, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block$6(child_ctx);
+						each_blocks[i] = create_each_block$5(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div, null);
 					}
@@ -27681,7 +28733,7 @@ function create_fragment$a(ctx) {
 
 const func = square => square.field;
 
-function instance$a($$self, $$props, $$invalidate) {
+function instance$8($$self, $$props, $$invalidate) {
 	
 	
 	
@@ -27724,9 +28776,9 @@ function instance$a($$self, $$props, $$invalidate) {
 class Lists extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1dlhare-style")) add_css$6();
+		if (!document.getElementById("svelte-1dlhare-style")) add_css$4();
 
-		init(this, options, instance$a, create_fragment$a, safe_not_equal, {
+		init(this, options, instance$8, create_fragment$8, safe_not_equal, {
 			filteredSquaresArr: 0,
 			currFile: 1,
 			settings: 2,
@@ -27738,14 +28790,14 @@ class Lists extends SvelteComponent {
 
 /* src\Components\Matrix.svelte generated by Svelte v3.35.0 */
 
-function add_css$5() {
+function add_css$3() {
 	var style = element("style");
 	style.id = "svelte-sp0k97-style";
 	style.textContent = "div.BC-Matrix.svelte-sp0k97.svelte-sp0k97{padding:5px}div.BC-Matrix.svelte-sp0k97>div.svelte-sp0k97{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-sp0k97.svelte-sp0k97{border:1px solid var(--background-modifier-border)}div.BC-Matrix-headers.svelte-sp0k97.svelte-sp0k97{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-sp0k97.svelte-sp0k97{margin:2px;padding:0px 10px}ol.svelte-sp0k97.svelte-sp0k97{margin:3px;padding-left:30px}";
 	append(document.head, style);
 }
 
-function get_each_context$5(ctx, list, i) {
+function get_each_context$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[13] = list[i];
 	return child_ctx;
@@ -27770,7 +28822,7 @@ function get_each_context_3$1(ctx, list, i) {
 }
 
 // (22:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
-function create_if_block$2(ctx) {
+function create_if_block$1(ctx) {
 	let div1;
 	let div0;
 	let h4;
@@ -27781,7 +28833,7 @@ function create_if_block$2(ctx) {
 	let t3;
 	let if_block0 = /*showRelationType*/ ctx[8] && create_if_block_5(ctx);
 	let if_block1 = /*square*/ ctx[16].realItems.length && create_if_block_4(ctx);
-	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$2(ctx);
+	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$1(ctx);
 
 	return {
 		c() {
@@ -27832,7 +28884,7 @@ function create_if_block$2(ctx) {
 				if (if_block2) {
 					if_block2.p(ctx, dirty);
 				} else {
-					if_block2 = create_if_block_1$2(ctx);
+					if_block2 = create_if_block_1$1(ctx);
 					if_block2.c();
 					if_block2.m(div1, null);
 				}
@@ -27992,14 +29044,14 @@ function create_each_block_3$1(ctx) {
 }
 
 // (50:12) {#if showImpliedRelations && square.impliedItems.length}
-function create_if_block_1$2(ctx) {
+function create_if_block_1$1(ctx) {
 	let div;
 	let h4;
 	let t0;
 	let t1;
 	let ol;
 	let ol_start_value;
-	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2$1(ctx);
+	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2(ctx);
 	let each_value_2 = /*square*/ ctx[16].impliedItems;
 	let each_blocks = [];
 
@@ -28042,7 +29094,7 @@ function create_if_block_1$2(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block_2$1(ctx);
+					if_block = create_if_block_2(ctx);
 					if_block.c();
 					if_block.m(div, null);
 				}
@@ -28089,7 +29141,7 @@ function create_if_block_1$2(ctx) {
 }
 
 // (53:16) {#if square.impliedItems.length}
-function create_if_block_2$1(ctx) {
+function create_if_block_2(ctx) {
 	let if_block_anchor;
 	let if_block = /*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length && create_if_block_3();
 
@@ -28223,7 +29275,7 @@ function create_each_block_2$1(ctx) {
 // (21:6) {#each squares as square}
 function create_each_block_1$3(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$2(ctx);
+	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$1(ctx);
 
 	return {
 		c() {
@@ -28239,7 +29291,7 @@ function create_each_block_1$3(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$2(ctx);
+					if_block = create_if_block$1(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -28256,7 +29308,7 @@ function create_each_block_1$3(ctx) {
 }
 
 // (19:2) {#each filteredSquaresArr as squares}
-function create_each_block$5(ctx) {
+function create_each_block$4(ctx) {
 	let div;
 	let t;
 	let each_value_1 = /*squares*/ ctx[13];
@@ -28317,14 +29369,14 @@ function create_each_block$5(ctx) {
 	};
 }
 
-function create_fragment$9(ctx) {
+function create_fragment$7(ctx) {
 	let div;
 	let div_class_value;
 	let each_value = /*filteredSquaresArr*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$5(get_each_context$5(ctx, each_value, i));
+		each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
 	}
 
 	return {
@@ -28352,12 +29404,12 @@ function create_fragment$9(ctx) {
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$5(ctx, each_value, i);
+					const child_ctx = get_each_context$4(ctx, each_value, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block$5(child_ctx);
+						each_blocks[i] = create_each_block$4(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(div, null);
 					}
@@ -28385,7 +29437,7 @@ function create_fragment$9(ctx) {
 	};
 }
 
-function instance$9($$self, $$props, $$invalidate) {
+function instance$7($$self, $$props, $$invalidate) {
 	
 	
 	
@@ -28428,9 +29480,9 @@ function instance$9($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-sp0k97-style")) add_css$5();
+		if (!document.getElementById("svelte-sp0k97-style")) add_css$3();
 
-		init(this, options, instance$9, create_fragment$9, safe_not_equal, {
+		init(this, options, instance$7, create_fragment$7, safe_not_equal, {
 			filteredSquaresArr: 0,
 			currFile: 1,
 			settings: 2,
@@ -28519,6 +29571,28 @@ class MatrixView extends obsidian.ItemView {
         const realTos = reals.map((real) => real.to);
         return implieds.filter((implied) => !realTos.includes(implied.to));
     }
+    getMatrixNeighbours(plugin, currNode) {
+        const { closedG } = plugin;
+        const { userHiers } = plugin.settings;
+        const neighbours = blankRealNImplied();
+        if (!closedG)
+            return neighbours;
+        closedG.forEachEdge(currNode, (k, a, s, t) => {
+            var _a;
+            const { field, dir, implied } = a;
+            if (s === currNode) {
+                neighbours[dir].reals.push({ to: t, field, implied });
+            }
+            else {
+                neighbours[getOppDir(dir)].implieds.push({
+                    to: s,
+                    field: (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir),
+                    implied,
+                });
+            }
+        });
+        return neighbours;
+    }
     getHierSquares(userHiers, currFile) {
         const { plugin } = this;
         const { mainG, settings } = plugin;
@@ -28527,7 +29601,7 @@ class MatrixView extends obsidian.ItemView {
             return [];
         const { basename } = currFile;
         // const realsnImplieds = getRealnImplied(plugin, basename);
-        const realsnImplieds = getMatrixNeighbours(plugin, basename);
+        const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
             const resultsFilter = (item, dir, oppDir, arrow) => hier[dir].includes(item.field) ||
@@ -29367,1066 +30441,6 @@ class BCSettingTab extends obsidian.PluginSettingTab {
     }
 }
 
-/* src\Components\RenderMarkdown.svelte generated by Svelte v3.35.0 */
-
-function add_css$4() {
-	var style = element("style");
-	style.id = "svelte-7e9i10-style";
-	style.textContent = "div.BC-note-content.svelte-7e9i10{padding-left:20px}";
-	append(document.head, style);
-}
-
-function create_fragment$8(ctx) {
-	let div;
-
-	return {
-		c() {
-			div = element("div");
-			attr(div, "class", "BC-note-content svelte-7e9i10");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			/*div_binding*/ ctx[3](div);
-		},
-		p: noop,
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(div);
-			/*div_binding*/ ctx[3](null);
-		}
-	};
-}
-
-function instance$8($$self, $$props, $$invalidate) {
-	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
-			return value instanceof P
-			? value
-			: new P(function (resolve) {
-						resolve(value);
-					});
-		}
-
-		return new (P || (P = Promise))(function (resolve, reject) {
-				function fulfilled(value) {
-					try {
-						step(generator.next(value));
-					} catch(e) {
-						reject(e);
-					}
-				}
-
-				function rejected(value) {
-					try {
-						step(generator["throw"](value));
-					} catch(e) {
-						reject(e);
-					}
-				}
-
-				function step(result) {
-					result.done
-					? resolve(result.value)
-					: adopt(result.value).then(fulfilled, rejected);
-				}
-
-				step((generator = generator.apply(thisArg, _arguments || [])).next());
-			});
-	};
-
-	let { path } = $$props;
-	let { app } = $$props;
-
-	function getContent(note) {
-		return __awaiter(this, void 0, void 0, function* () {
-			const file = app.metadataCache.getFirstLinkpathDest(note, "");
-			return yield app.vault.cachedRead(file);
-		});
-	}
-
-	let el;
-
-	onMount(() => __awaiter(void 0, void 0, void 0, function* () {
-		obsidian.MarkdownRenderer.renderMarkdown(yield getContent(path), el, path, null);
-	}));
-
-	function div_binding($$value) {
-		binding_callbacks[$$value ? "unshift" : "push"](() => {
-			el = $$value;
-			$$invalidate(0, el);
-		});
-	}
-
-	$$self.$$set = $$props => {
-		if ("path" in $$props) $$invalidate(1, path = $$props.path);
-		if ("app" in $$props) $$invalidate(2, app = $$props.app);
-	};
-
-	return [el, path, app, div_binding];
-}
-
-class RenderMarkdown extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-7e9i10-style")) add_css$4();
-		init(this, options, instance$8, create_fragment$8, safe_not_equal, { path: 1, app: 2 });
-	}
-}
-
-/* src\Components\CBTree.svelte generated by Svelte v3.35.0 */
-
-function add_css$3() {
-	var style = element("style");
-	style.id = "svelte-yt7jmz-style";
-	style.textContent = ".BC-tree.svelte-yt7jmz{padding-left:5px}pre.indent.svelte-yt7jmz{display:inline;background-color:transparent;position:top}details.svelte-yt7jmz{display:inline-block}.is-unresolved.svelte-yt7jmz{color:var(--text-muted)}";
-	append(document.head, style);
-}
-
-function get_each_context$4(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[17] = list[i][0];
-	child_ctx[18] = list[i][1];
-	return child_ctx;
-}
-
-// (27:0) {#if title !== "false"}
-function create_if_block_2(ctx) {
-	let h3;
-	let t0;
-	let t1;
-	let t2;
-
-	return {
-		c() {
-			h3 = element("h3");
-			t0 = text(/*dir*/ ctx[1]);
-			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[5]);
-		},
-		m(target, anchor) {
-			insert(target, h3, anchor);
-			append(h3, t0);
-			append(h3, t1);
-			append(h3, t2);
-		},
-		p(ctx, dirty) {
-			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
-			if (dirty & /*basename*/ 32) set_data(t2, /*basename*/ ctx[5]);
-		},
-		d(detaching) {
-			if (detaching) detach(h3);
-		}
-	};
-}
-
-// (32:4) {#if meetsConditions(indent, link)}
-function create_if_block$1(ctx) {
-	let current_block_type_index;
-	let if_block;
-	let if_block_anchor;
-	let current;
-	const if_block_creators = [create_if_block_1$1, create_else_block$1];
-	const if_blocks = [];
-
-	function select_block_type(ctx, dirty) {
-		if (/*content*/ ctx[3] === "open" || /*content*/ ctx[3] === "closed") return 0;
-		return 1;
-	}
-
-	current_block_type_index = select_block_type(ctx);
-	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-
-	return {
-		c() {
-			if_block.c();
-			if_block_anchor = empty();
-		},
-		m(target, anchor) {
-			if_blocks[current_block_type_index].m(target, anchor);
-			insert(target, if_block_anchor, anchor);
-			current = true;
-		},
-		p(ctx, dirty) {
-			let previous_block_index = current_block_type_index;
-			current_block_type_index = select_block_type(ctx);
-
-			if (current_block_type_index === previous_block_index) {
-				if_blocks[current_block_type_index].p(ctx, dirty);
-			} else {
-				group_outros();
-
-				transition_out(if_blocks[previous_block_index], 1, 1, () => {
-					if_blocks[previous_block_index] = null;
-				});
-
-				check_outros();
-				if_block = if_blocks[current_block_type_index];
-
-				if (!if_block) {
-					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-					if_block.c();
-				} else {
-					if_block.p(ctx, dirty);
-				}
-
-				transition_in(if_block, 1);
-				if_block.m(if_block_anchor.parentNode, if_block_anchor);
-			}
-		},
-		i(local) {
-			if (current) return;
-			transition_in(if_block);
-			current = true;
-		},
-		o(local) {
-			transition_out(if_block);
-			current = false;
-		},
-		d(detaching) {
-			if_blocks[current_block_type_index].d(detaching);
-			if (detaching) detach(if_block_anchor);
-		}
-	};
-}
-
-// (57:6) {:else}
-function create_else_block$1(ctx) {
-	let div;
-	let pre;
-	let t0_value = /*indent*/ ctx[17] + "-" + "";
-	let t0;
-	let t1;
-	let span;
-	let a;
-	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
-	let t2;
-	let a_class_value;
-	let t3;
-	let mounted;
-	let dispose;
-
-	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[15](/*link*/ ctx[18], ...args);
-	}
-
-	return {
-		c() {
-			div = element("div");
-			pre = element("pre");
-			t0 = text(t0_value);
-			t1 = space();
-			span = element("span");
-			a = element("a");
-			t2 = text(t2_value);
-			t3 = space();
-			attr(pre, "class", "indent svelte-yt7jmz");
-
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
-			? ""
-			: "is-unresolved") + " svelte-yt7jmz");
-
-			attr(span, "class", "internal-link");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, pre);
-			append(pre, t0);
-			append(div, t1);
-			append(div, span);
-			append(span, a);
-			append(a, t2);
-			append(div, t3);
-
-			if (!mounted) {
-				dispose = [
-					listen(span, "click", click_handler_1),
-					listen(span, "mouseover", mouseover_handler_1)
-				];
-
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*indent*/ ctx[17] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
-
-			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
-			? ""
-			: "is-unresolved") + " svelte-yt7jmz")) {
-				attr(a, "class", a_class_value);
-			}
-		},
-		i: noop,
-		o: noop,
-		d(detaching) {
-			if (detaching) detach(div);
-			mounted = false;
-			run_all(dispose);
-		}
-	};
-}
-
-// (33:6) {#if content === "open" || content === "closed"}
-function create_if_block_1$1(ctx) {
-	let div;
-	let pre;
-	let t0_value = /*indent*/ ctx[17] + "";
-	let t0;
-	let t1;
-	let details;
-	let summary;
-	let span;
-	let a;
-	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
-	let t2;
-	let a_class_value;
-	let t3;
-	let rendermarkdown;
-	let details_open_value;
-	let t4;
-	let current;
-	let mounted;
-	let dispose;
-
-	function click_handler(...args) {
-		return /*click_handler*/ ctx[14](/*link*/ ctx[18], ...args);
-	}
-
-	rendermarkdown = new RenderMarkdown({
-			props: {
-				app: /*app*/ ctx[7],
-				path: /*link*/ ctx[18]
-			}
-		});
-
-	return {
-		c() {
-			div = element("div");
-			pre = element("pre");
-			t0 = text(t0_value);
-			t1 = space();
-			details = element("details");
-			summary = element("summary");
-			span = element("span");
-			a = element("a");
-			t2 = text(t2_value);
-			t3 = space();
-			create_component(rendermarkdown.$$.fragment);
-			t4 = space();
-			attr(pre, "class", "indent svelte-yt7jmz");
-
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
-			? ""
-			: "is-unresolved") + " svelte-yt7jmz");
-
-			attr(span, "class", "internal-link");
-			details.open = details_open_value = /*content*/ ctx[3] === "open";
-			attr(details, "class", "svelte-yt7jmz");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-			append(div, pre);
-			append(pre, t0);
-			append(div, t1);
-			append(div, details);
-			append(details, summary);
-			append(summary, span);
-			append(span, a);
-			append(a, t2);
-			append(details, t3);
-			mount_component(rendermarkdown, details, null);
-			append(div, t4);
-			current = true;
-
-			if (!mounted) {
-				dispose = [
-					listen(span, "click", click_handler),
-					listen(span, "mouseover", mouseover_handler)
-				];
-
-				mounted = true;
-			}
-		},
-		p(new_ctx, dirty) {
-			ctx = new_ctx;
-			if ((!current || dirty & /*lines*/ 16) && t0_value !== (t0_value = /*indent*/ ctx[17] + "")) set_data(t0, t0_value);
-			if ((!current || dirty & /*lines*/ 16) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
-
-			if (!current || dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
-			? ""
-			: "is-unresolved") + " svelte-yt7jmz")) {
-				attr(a, "class", a_class_value);
-			}
-
-			const rendermarkdown_changes = {};
-			if (dirty & /*lines*/ 16) rendermarkdown_changes.path = /*link*/ ctx[18];
-			rendermarkdown.$set(rendermarkdown_changes);
-
-			if (!current || dirty & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
-				details.open = details_open_value;
-			}
-		},
-		i(local) {
-			if (current) return;
-			transition_in(rendermarkdown.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(rendermarkdown.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			destroy_component(rendermarkdown);
-			mounted = false;
-			run_all(dispose);
-		}
-	};
-}
-
-// (31:2) {#each lines as [indent, link]}
-function create_each_block$4(ctx) {
-	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
-	let if_block_anchor;
-	let current;
-	let if_block = show_if && create_if_block$1(ctx);
-
-	return {
-		c() {
-			if (if_block) if_block.c();
-			if_block_anchor = empty();
-		},
-		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, if_block_anchor, anchor);
-			current = true;
-		},
-		p(ctx, dirty) {
-			if (dirty & /*lines*/ 16) show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
-
-			if (show_if) {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-
-					if (dirty & /*lines*/ 16) {
-						transition_in(if_block, 1);
-					}
-				} else {
-					if_block = create_if_block$1(ctx);
-					if_block.c();
-					transition_in(if_block, 1);
-					if_block.m(if_block_anchor.parentNode, if_block_anchor);
-				}
-			} else if (if_block) {
-				group_outros();
-
-				transition_out(if_block, 1, 1, () => {
-					if_block = null;
-				});
-
-				check_outros();
-			}
-		},
-		i(local) {
-			if (current) return;
-			transition_in(if_block);
-			current = true;
-		},
-		o(local) {
-			transition_out(if_block);
-			current = false;
-		},
-		d(detaching) {
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(if_block_anchor);
-		}
-	};
-}
-
-function create_fragment$7(ctx) {
-	let t;
-	let div;
-	let current;
-	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2(ctx);
-	let each_value = /*lines*/ ctx[4];
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value.length; i += 1) {
-		each_blocks[i] = create_each_block$4(get_each_context$4(ctx, each_value, i));
-	}
-
-	const out = i => transition_out(each_blocks[i], 1, 1, () => {
-		each_blocks[i] = null;
-	});
-
-	return {
-		c() {
-			if (if_block) if_block.c();
-			t = space();
-			div = element("div");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(div, "class", "BC-tree svelte-yt7jmz");
-		},
-		m(target, anchor) {
-			if (if_block) if_block.m(target, anchor);
-			insert(target, t, anchor);
-			insert(target, div, anchor);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
-
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			if (/*title*/ ctx[2] !== "false") {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-				} else {
-					if_block = create_if_block_2(ctx);
-					if_block.c();
-					if_block.m(t.parentNode, t);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
-
-			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, meetsConditions*/ 473) {
-				each_value = /*lines*/ ctx[4];
-				let i;
-
-				for (i = 0; i < each_value.length; i += 1) {
-					const child_ctx = get_each_context$4(ctx, each_value, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-						transition_in(each_blocks[i], 1);
-					} else {
-						each_blocks[i] = create_each_block$4(child_ctx);
-						each_blocks[i].c();
-						transition_in(each_blocks[i], 1);
-						each_blocks[i].m(div, null);
-					}
-				}
-
-				group_outros();
-
-				for (i = each_value.length; i < each_blocks.length; i += 1) {
-					out(i);
-				}
-
-				check_outros();
-			}
-		},
-		i(local) {
-			if (current) return;
-
-			for (let i = 0; i < each_value.length; i += 1) {
-				transition_in(each_blocks[i]);
-			}
-
-			current = true;
-		},
-		o(local) {
-			each_blocks = each_blocks.filter(Boolean);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				transition_out(each_blocks[i]);
-			}
-
-			current = false;
-		},
-		d(detaching) {
-			if (if_block) if_block.d(detaching);
-			if (detaching) detach(t);
-			if (detaching) detach(div);
-			destroy_each(each_blocks, detaching);
-		}
-	};
-}
-
-const mouseover_handler = e => {
-	
-}; //   hoverPreview needs an itemView so it can access `app`...
-//   hoverPreview(e, el, link)
-
-const mouseover_handler_1 = e => {
-	
-}; //   hoverPreview needs an itemView so it can access `app`...
-//   hoverPreview(e, el, link)
-
-function instance$7($$self, $$props, $$invalidate) {
-	
-	
-	let { plugin } = $$props;
-	let { el } = $$props;
-	let { dir } = $$props;
-	let { fields } = $$props;
-	let { title } = $$props;
-	let { content } = $$props;
-	let { lines } = $$props;
-	let { froms } = $$props;
-	let { min } = $$props;
-	let { max } = $$props;
-	let { basename } = $$props;
-	const { settings, app } = plugin;
-	const indentToDepth = indent => indent.length / 2 + 1;
-
-	const meetsConditions = (indent, node) => {
-		const depth = indentToDepth(indent);
-		return depth >= min && depth <= max && (froms === undefined || froms.includes(node));
-	};
-
-	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
-	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
-
-	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("el" in $$props) $$invalidate(9, el = $$props.el);
-		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(10, fields = $$props.fields);
-		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("content" in $$props) $$invalidate(3, content = $$props.content);
-		if ("lines" in $$props) $$invalidate(4, lines = $$props.lines);
-		if ("froms" in $$props) $$invalidate(11, froms = $$props.froms);
-		if ("min" in $$props) $$invalidate(12, min = $$props.min);
-		if ("max" in $$props) $$invalidate(13, max = $$props.max);
-		if ("basename" in $$props) $$invalidate(5, basename = $$props.basename);
-	};
-
-	return [
-		plugin,
-		dir,
-		title,
-		content,
-		lines,
-		basename,
-		settings,
-		app,
-		meetsConditions,
-		el,
-		fields,
-		froms,
-		min,
-		max,
-		click_handler,
-		click_handler_1
-	];
-}
-
-class CBTree extends SvelteComponent {
-	constructor(options) {
-		super();
-		if (!document.getElementById("svelte-yt7jmz-style")) add_css$3();
-
-		init(this, options, instance$7, create_fragment$7, safe_not_equal, {
-			plugin: 0,
-			el: 9,
-			dir: 1,
-			fields: 10,
-			title: 2,
-			content: 3,
-			lines: 4,
-			froms: 11,
-			min: 12,
-			max: 13,
-			basename: 5
-		});
-	}
-}
-
-function getCodeblockCB(plugin) {
-    const { settings } = plugin;
-    return (source, el, ctx) => {
-        var _a, _b;
-        const parsedSource = parseCodeBlockSource(source);
-        console.log(parsedSource);
-        const err = codeblockError(plugin, parsedSource);
-        if (err !== "") {
-            el.innerHTML = err;
-            return;
-        }
-        let min = 0, max = Infinity;
-        let { depth, dir, from, implied, flat } = parsedSource;
-        if (depth !== undefined) {
-            const minNum = parseInt(depth[0]);
-            if (!isNaN(minNum))
-                min = minNum;
-            const maxNum = parseInt(depth[1]);
-            if (!isNaN(maxNum))
-                max = maxNum;
-        }
-        const currFile = plugin.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
-        const { userHiers } = settings;
-        const { basename } = currFile;
-        let froms = undefined;
-        if (from !== undefined) {
-            try {
-                const api = (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
-                if (api) {
-                    const pages = (_b = api.pagePaths(from)) === null || _b === void 0 ? void 0 : _b.values;
-                    froms = pages.map(dropFolder);
-                }
-                else
-                    new obsidian.Notice("Dataview must be enabled for `from` to work.");
-            }
-            catch (e) {
-                new obsidian.Notice(`The query "${from}" failed.`);
-            }
-        }
-        const oppDir = getOppDir(dir);
-        const sub = implied === "false"
-            ? getSubInDirs(plugin.mainG, dir)
-            : getSubInDirs(plugin.mainG, dir, oppDir);
-        const closed = getReflexiveClosure(sub, userHiers);
-        const subClosed = getSubInDirs(closed, dir);
-        const allPaths = dfsAllPaths(subClosed, basename);
-        const index = createIndex(allPaths, false);
-        loglevel.info({ allPaths, index });
-        const lines = index
-            .split("\n")
-            .map((line) => {
-            const pair = line.split("- ");
-            return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
-        })
-            .filter((pair) => pair[1] !== "");
-        switch (parsedSource.type) {
-            case "tree":
-                new CBTree({
-                    target: el,
-                    props: Object.assign({ plugin,
-                        el,
-                        min,
-                        max,
-                        lines,
-                        froms,
-                        basename }, parsedSource),
-                });
-                break;
-            case "juggl":
-                createdJugglCB(plugin, el, parsedSource, lines, froms, basename, min, max);
-                break;
-        }
-    };
-}
-function parseCodeBlockSource(source) {
-    const lines = source.split("\n");
-    const getValue = (type) => {
-        var _a, _b, _c;
-        return (_c = (_b = (_a = lines
-            .find((l) => l.startsWith(`${type}:`))) === null || _a === void 0 ? void 0 : _a.split(":")) === null || _b === void 0 ? void 0 : _b[1]) === null || _c === void 0 ? void 0 : _c.trim();
-    };
-    const results = {};
-    CODEBLOCK_FIELDS.forEach((field) => {
-        results[field] = getValue(field);
-        if (results[field] === "false") {
-            results[field] = false;
-        }
-        if (results[field] === "true") {
-            results[field] = true;
-        }
-    });
-    results.field = results.field
-        ? splitAndTrim(results.field)
-        : undefined;
-    if (results.depth) {
-        const match = results.depth.match(/(\d*)-?(\d*)/);
-        results.depth = [match[1], match[2]];
-    }
-    return results;
-}
-function codeblockError(plugin, parsedSource) {
-    var _a;
-    const { dir, fields, type, title, depth, flat, content, from, implied } = parsedSource;
-    const { userHiers } = plugin.settings;
-    let err = "";
-    if (!CODEBLOCK_TYPES.includes(type))
-        err += `<code>type: ${type}</code> is not a valid type. It must be one of: ${CODEBLOCK_TYPES.map((type) => `<code>${type}</code>`).join(", ")}.</br>`;
-    const validDir = DIRECTIONS$1.includes(dir);
-    if (!validDir)
-        err += `<code>dir: ${dir}</code> is not a valid direction.</br>`;
-    const allFields = getFields(userHiers);
-    (_a = [fields].flat()) === null || _a === void 0 ? void 0 : _a.forEach((f) => {
-        if (f !== undefined && !allFields.includes(f))
-            err += `<code>fields: ${f}</code> is not a field in your hierarchies.</br>`;
-    });
-    if (title !== undefined && title !== "false")
-        err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
-    if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
-        err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
-    if (flat !== undefined && flat !== "true")
-        err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
-    if (content !== undefined && content !== "open" && content !== "closed")
-        err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
-    if (from !== undefined &&
-        !plugin.app.plugins.enabledPlugins.has("dataview")) {
-        err += `Dataview must be enabled to use <code>from</code>.</br>`;
-    }
-    if (implied !== undefined && implied !== "false")
-        err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
-    return err === ""
-        ? ""
-        : `${err}</br>
-    A valid example would be:
-    <pre><code>
-      type: tree
-      dir: ${validDir ? dir : "down"}
-      fields: ${allFields
-            .map((f) => {
-            return { f, dir: getFieldInfo(userHiers, f).fieldDir };
-        })
-            .filter((info) => info.dir === dir)
-            .map((info) => info.f)
-            .join(", ") || "child"}
-      depth: 3
-      </code></pre>`;
-}
-function indentToDepth(indent) {
-    return indent.length / 2 + 1;
-}
-function meetsConditions(indent, node, froms, min, max) {
-    const depth = indentToDepth(indent);
-    return (depth >= min &&
-        depth <= max &&
-        (froms === undefined || froms.includes(node)));
-}
-function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
-    const nodes = lines
-        .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
-        .map(([_, node]) => node + ".md");
-    if (min <= 0) {
-        nodes.push(source + ".md");
-    }
-    console.log({ lines, nodes });
-    createJuggl(plugin, target, nodes, args);
-}
-
-async function jumpToFirstDir(plugin, dir) {
-    var _a;
-    const { limitJumpToFirstFields } = plugin.settings;
-    const file = plugin.app.workspace.getActiveFile();
-    if (!file) {
-        new obsidian.Notice("You need to be focussed on a Markdown file");
-        return;
-    }
-    const { basename } = file;
-    const realsNImplieds = getRealnImplied(plugin, basename, dir)[dir];
-    const allBCs = [...realsNImplieds.reals, ...realsNImplieds.implieds];
-    if (allBCs.length === 0) {
-        new obsidian.Notice(`No ${dir} found`);
-        return;
-    }
-    const toNode = (_a = allBCs.find((bc) => limitJumpToFirstFields.includes(bc.field))) === null || _a === void 0 ? void 0 : _a.to;
-    if (!toNode) {
-        new obsidian.Notice(`No note was found in ${dir} given the limited fields allowed: ${limitJumpToFirstFields.join(", ")}`);
-        return;
-    }
-    const toFile = plugin.app.metadataCache.getFirstLinkpathDest(toNode, "");
-    await plugin.app.workspace.activeLeaf.openFile(toFile);
-}
-
-async function thread(plugin, field) {
-    var _a, _b;
-    const { app, settings } = plugin;
-    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
-    const currFile = app.workspace.getActiveFile();
-    if (!currFile)
-        return;
-    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
-    const dir = getFieldInfo(userHiers, field).fieldDir;
-    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-    let newBasename = threadingTemplate
-        ? threadingTemplate
-            .replace("{{current}}", currFile.basename)
-            .replace("{{field}}", field)
-            .replace("{{dir}}", dir)
-            //@ts-ignore
-            .replace("{{date}}", moment().format(dateFormat))
-        : "Untitled";
-    let i = 1;
-    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
-        if (i === 1)
-            newBasename += ` ${i}`;
-        else
-            newBasename = newBasename.slice(0, -2) + ` ${i}`;
-        i++;
-    }
-    const crumb = writeBCsInline
-        ? `${oppField}:: [[${currFile.basename}]]`
-        : `---\n${oppField}: ['${currFile.basename}']\n---`;
-    const templatePath = threadingDirTemplates[dir];
-    let newContent = crumb;
-    if (templatePath) {
-        const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
-        const template = await app.vault.cachedRead(templateFile);
-        newContent = template.replace(/\{\{BC-thread-crumb\}\}/i, writeBCsInline
-            ? `${oppField}:: [[${currFile.basename}]]`
-            : `${oppField}: ['${currFile.basename}']`);
-    }
-    const newFile = await app.vault.create(obsidian.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
-    if (!writeBCsInline) {
-        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
-        if (!api) {
-            new obsidian.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
-            return;
-        }
-        await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
-    }
-    else {
-        // TODO Check if this note already has this field
-        let content = await app.vault.read(currFile);
-        const splits = splitAtYaml(content);
-        content =
-            splits[0] +
-                (splits[0].length ? "\n" : "") +
-                `${field}:: [[${newFile.basename}]]` +
-                (splits[1].length ? "\n" : "") +
-                splits[1];
-        await app.vault.modify(currFile, content);
-    }
-    const leaf = threadIntoNewPane
-        ? app.workspace.splitActiveLeaf()
-        : app.workspace.activeLeaf;
-    await leaf.openFile(newFile, { active: true, mode: "source" });
-    if (templatePath) {
-        if (app.plugins.plugins["templater-obsidian"]) {
-            app.commands.executeCommandById("templater-obsidian:replace-in-file-templater");
-        }
-        else {
-            new obsidian.Notice("The Templater plugin must be enabled to resolve the templates in the new note");
-        }
-    }
-    if (threadingTemplate) {
-        // @ts-ignore
-        const editor = leaf.view.editor;
-        editor.setCursor(editor.getValue().length);
-    }
-    else {
-        const noteNameInputs = document.getElementsByClassName("view-header-title");
-        const newNoteInputEl = Array.from(noteNameInputs).find((input) => input.innerText === newBasename);
-        newNoteInputEl.innerText = "";
-        newNoteInputEl.focus();
-    }
-}
-
-async function writeBCToFile(plugin, file) {
-    var _a;
-    const { app, settings, mainG } = plugin;
-    const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
-    const { frontmatter } = app.metadataCache.getFileCache(file);
-    const api = (_a = app.plugins.plugins.metaedit) === null || _a === void 0 ? void 0 : _a.api;
-    if (!api) {
-        new obsidian.Notice("Metaedit must be enabled for this function to work");
-        return;
-    }
-    const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-        var _a;
-        const oppField = (_a = getOppFields(userHiers, a.field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(a.field, a.dir);
-        return { succ: s, field: oppField };
-    });
-    for (const { succ, field } of succInfo) {
-        if (!limitWriteBCCheckboxes.includes(field))
-            return;
-        if (!writeBCsInline) {
-            await createOrUpdateYaml(field, succ, file, frontmatter, api);
-        }
-        else {
-            // TODO Check if this note already has this field
-            let content = await app.vault.read(file);
-            const splits = splitAtYaml(content);
-            content =
-                splits[0] +
-                    (splits[0].length ? "\n" : "") +
-                    `${field}:: [[${succ}]]` +
-                    (splits[1].length ? "\n" : "") +
-                    splits[1];
-            await app.vault.modify(file, content);
-        }
-    }
-}
-async function writeBCsToAllFiles(plugin) {
-    if (!plugin.settings.showWriteAllBCsCmd) {
-        new obsidian.Notice("You first need to enable this command in Breadcrumbs' settings.");
-        return;
-    }
-    if (window.confirm("This action will write the implied Breadcrumbs of each file to that file.\nIt uses the MetaEdit plugins API to update the YAML, so it should only affect that frontmatter of your note.\nI can't promise that nothing bad will happen. **This operation cannot be undone**.")) {
-        if (window.confirm("Are you sure? You have been warned that this operation will attempt to update all files with implied breadcrumbs.")) {
-            if (window.confirm("For real, please make a back up before.")) {
-                const notice = new obsidian.Notice("Operation Started");
-                const problemFiles = [];
-                for (const file of plugin.app.vault.getMarkdownFiles()) {
-                    try {
-                        await writeBCToFile(plugin, file);
-                    }
-                    catch (e) {
-                        problemFiles.push(file.path);
-                    }
-                }
-                notice.setMessage("Operation Complete");
-                if (problemFiles.length) {
-                    new obsidian.Notice("Some files were not updated due to errors. Check the console to see which ones.");
-                    console.log({ problemFiles });
-                }
-            }
-        }
-    }
-}
-
-class FieldSuggestor extends obsidian.EditorSuggest {
-    constructor(plugin) {
-        super(plugin.app);
-        this.getSuggestions = (context) => {
-            const { query } = context;
-            return BC_FIELDS_INFO.map((sug) => sug.field).filter((sug) => sug.includes(query));
-        };
-        this.plugin = plugin;
-    }
-    onTrigger(cursor, editor, _) {
-        var _a;
-        if (this.plugin.settings.fieldSuggestor) {
-            const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
-            const match = (_a = sub.match(/^BC-(.*)$/)) === null || _a === void 0 ? void 0 : _a[1];
-            if (match !== undefined) {
-                return {
-                    end: cursor,
-                    start: {
-                        ch: sub.lastIndexOf(match),
-                        line: cursor.line,
-                    },
-                    query: match,
-                };
-            }
-        }
-        return null;
-    }
-    renderSuggestion(suggestion, el) {
-        var _a;
-        el.createDiv({
-            text: suggestion.replace("BC-", ""),
-            cls: "BC-suggester-container",
-            attr: {
-                "aria-label": (_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.desc,
-                "aria-label-position": "right",
-            },
-        });
-    }
-    selectSuggestion(suggestion) {
-        var _a;
-        const { context } = this;
-        if (context) {
-            const replacement = `${suggestion}${(_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
-            context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
-        }
-    }
-}
-
 /* node_modules\svelte-icons\fa\FaInfo.svelte generated by Svelte v3.35.0 */
 
 function create_default_slot$2(ctx) {
@@ -30873,7 +30887,7 @@ function get_each_context_7(ctx, list, i) {
 	return child_ctx;
 }
 
-// (95:4) {#each DIRECTIONS as dir}
+// (96:4) {#each DIRECTIONS as dir}
 function create_each_block_7(ctx) {
 	let td;
 	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[28]] + "";
@@ -30896,7 +30910,7 @@ function create_each_block_7(ctx) {
 	};
 }
 
-// (107:6) {#each DIRECTIONS as dir}
+// (108:6) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodes.length + "";
@@ -30940,7 +30954,7 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (128:6) {#each DIRECTIONS as dir}
+// (129:6) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edges.length + "";
@@ -30984,7 +30998,7 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (149:6) {#each DIRECTIONS as dir}
+// (150:6) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
 	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edges.length + "";
@@ -31028,7 +31042,7 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (101:2) {#each userHiers as hier, i}
+// (102:2) {#each userHiers as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
@@ -31302,7 +31316,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (172:4) {#each DIRECTIONS as dir}
+// (173:4) {#each DIRECTIONS as dir}
 function create_each_block_2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_3)) + "";
@@ -31354,7 +31368,7 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (214:4) {#each DIRECTIONS as dir}
+// (215:4) {#each DIRECTIONS as dir}
 function create_each_block_1$2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_5)) + "";
@@ -31406,7 +31420,7 @@ function create_each_block_1$2(ctx) {
 	};
 }
 
-// (252:4) {#each DIRECTIONS as dir}
+// (253:4) {#each DIRECTIONS as dir}
 function create_each_block$2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_7)) + "";

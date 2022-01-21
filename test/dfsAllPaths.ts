@@ -1,5 +1,5 @@
 import { MultiGraph } from "graphology";
-import { dfsAllPaths } from "../src/graphUtils";
+import { dfsAllPaths } from "../src/Utils/graphUtils";
 import { testGraph, verify } from "./testUtils";
 
 require("approvals").mocha();

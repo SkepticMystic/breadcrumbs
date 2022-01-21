@@ -2,7 +2,7 @@
   import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
-  import { dropDendron, dropFolder } from "../sharedFunctions";
+  import { dropDendron } from "../Utils/generalUtils";
   import RenderMarkdown from "./RenderMarkdown.svelte";
 
   export let plugin: BCPlugin;
@@ -17,8 +17,7 @@
   export let max: number;
   export let basename: string;
 
-  const {settings, app} = plugin;
-
+  const { settings, app } = plugin;
 
   const indentToDepth = (indent: string) => indent.length / 2 + 1;
 

@@ -1,10 +1,10 @@
 import type { MultiGraph } from "graphology";
-import { normalizePath } from "obsidian";
-import { dropWikilinks } from "../sharedFunctions";
-import type { Directions } from "../interfaces";
-import { addEdgeIfNot, addNodesIfNot } from "../graphUtils";
 import { debug } from "loglevel";
+import { normalizePath } from "obsidian";
+import { dropWikilinks } from "../Utils/ObsidianUtils";
+import type { Directions } from "../interfaces";
 import type BCPlugin from "../main";
+import { addEdgeIfNot, addNodesIfNot } from "../Utils/graphUtils";
 
 export async function getCSVRows(plugin: BCPlugin) {
   const { CSVPaths } = plugin.settings;

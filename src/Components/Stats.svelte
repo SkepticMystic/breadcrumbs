@@ -2,13 +2,14 @@
   import { sum } from "lodash";
   import { debug } from "loglevel";
   import { copy } from "obsidian-community-lib";
-  import { refreshIndex } from "../refreshIndex";
-  import { Debugger } from "../Debugger";
   import { ARROW_DIRECTIONS, DIRECTIONS, STATS_VIEW } from "../constants";
-  import { closeImpliedLinks, getOppDir, getSubForFields } from "../graphUtils";
+  import { Debugger } from "../Debugger";
   import type { Directions, HierData } from "../interfaces";
   import type BCPlugin from "../main";
-  import { hierToStr, makeWiki } from "../sharedFunctions";
+  import { refreshIndex } from "../refreshIndex";
+  import { closeImpliedLinks, getSubForFields } from "../Utils/graphUtils";
+  import { getOppDir, hierToStr } from "../Utils/HierUtils";
+  import { makeWiki } from "../Utils/ObsidianUtils";
 
   export let plugin: BCPlugin;
 

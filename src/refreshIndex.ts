@@ -31,16 +31,6 @@ import {
   dropHeaderOrAlias,
   splitLinksRegex,
 } from "./constants";
-import {
-  addEdgeIfNot,
-  addNodesIfNot,
-  buildObsGraph,
-  getFieldInfo,
-  getReflexiveClosure,
-  getSourceOrder,
-  getTargetOrder,
-  populateMain,
-} from "./graphUtils";
 import type {
   BCSettings,
   dvFrontmatterCache,
@@ -49,11 +39,16 @@ import type {
 } from "./interfaces";
 import type BCPlugin from "./main";
 import {
-  fallbackField,
-  getBaseFromMDPath,
-  getDVBasename,
-  iterateHiers,
-} from "./sharedFunctions";
+  addEdgeIfNot,
+  addNodesIfNot,
+  buildObsGraph,
+  getReflexiveClosure,
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "./Utils/graphUtils";
+import { fallbackField, getFieldInfo, iterateHiers } from "./Utils/HierUtils";
+import { getBaseFromMDPath, getDVBasename } from "./Utils/ObsidianUtils";
 import { drawTrail } from "./Views/TrailView";
 
 export function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {

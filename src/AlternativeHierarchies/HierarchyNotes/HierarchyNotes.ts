@@ -1,9 +1,13 @@
 import type { MultiGraph } from "graphology";
 import { Notice, TFile } from "obsidian";
-import { addEdgeIfNot, addNodesIfNot, getOppFields } from "../../graphUtils";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import type BCPlugin from "../../main";
-import { fallbackOppField, getFields } from "../../sharedFunctions";
+import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
+import {
+  fallbackOppField,
+  getFields,
+  getOppFields,
+} from "../../Utils/HierUtils";
 
 export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
   const { userHiers } = plugin.settings;

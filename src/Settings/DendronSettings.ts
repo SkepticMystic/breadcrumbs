@@ -1,7 +1,7 @@
 import { DropdownComponent, Notice, Setting } from "obsidian";
-import { getFields } from "../sharedFunctions";
 import { DEFAULT_SETTINGS, MATRIX_VIEW } from "../constants";
 import type BCPlugin from "../main";
+import { getFields } from "../Utils/HierUtils";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
 
 export function addDendronSettings(

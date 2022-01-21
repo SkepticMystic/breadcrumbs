@@ -2,10 +2,10 @@
   import { error } from "console";
   import { Notice, TFile } from "obsidian";
   import { onMount } from "svelte";
-  import { ARROW_DIRECTIONS } from "../constants";
   import type { ModifyHierItemModal } from "../AlternativeHierarchies/HierarchyNotes/ModifyHierItemModal";
+  import { ARROW_DIRECTIONS } from "../constants";
   import type { BCSettings } from "../interfaces";
-  import { dropWikilinks, makeWiki } from "../sharedFunctions";
+  import { dropWikilinks, makeWiki } from "../Utils/ObsidianUtils";
 
   export let modal: ModifyHierItemModal;
   export let settings: BCSettings;

@@ -1,11 +1,11 @@
 import { normalizePath, Notice } from "obsidian";
-import { getFieldInfo, getOppFields } from "../graphUtils";
 import type BCPlugin from "../main";
 import {
-  createOrUpdateYaml,
   fallbackOppField,
-  splitAtYaml,
-} from "../sharedFunctions";
+  getFieldInfo,
+  getOppFields,
+} from "../Utils/HierUtils";
+import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
 export async function thread(plugin: BCPlugin, field: string) {
   const { app, settings } = plugin;

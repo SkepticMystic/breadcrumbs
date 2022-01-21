@@ -1,9 +1,14 @@
 import type { MultiGraph } from "graphology";
 import { BC_LINK_NOTE } from "../constants";
-import { getSourceOrder, getTargetOrder, populateMain } from "../graphUtils";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
-import { getDVBasename, getFields } from "../sharedFunctions";
+import {
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "../Utils/graphUtils";
+import { getFields } from "../Utils/HierUtils";
+import { getDVBasename } from "../Utils/ObsidianUtils";
 
 export function addLinkNotesToGraph(
   plugin: BCPlugin,

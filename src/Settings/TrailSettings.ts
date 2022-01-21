@@ -1,10 +1,11 @@
 import { Notice, Setting } from "obsidian";
 import { isInVault } from "obsidian-community-lib/dist/utils";
+import Checkboxes from "../Components/Checkboxes.svelte";
 import type BCPlugin from "../main";
-import { getFields, splitAndTrim } from "../sharedFunctions";
+import { splitAndTrim } from "../Utils/generalUtils";
+import { getFields } from "../Utils/HierUtils";
 import { drawTrail } from "../Views/TrailView";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
-import Checkboxes from "../Components/Checkboxes.svelte";
 
 export function addTrailViewSettings(
   plugin: BCPlugin,

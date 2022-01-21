@@ -8,10 +8,10 @@ import {
   Notice,
   TFile,
 } from "obsidian";
-import { ModifyHierItemModal } from "./ModifyHierItemModal";
 import type { BCSettings } from "../../interfaces";
 import type BCPlugin from "../../main";
-import { dropWikilinks } from "../../sharedFunctions";
+import { dropWikilinks } from "../../Utils/ObsidianUtils";
+import { ModifyHierItemModal } from "./ModifyHierItemModal";
 
 interface HNItem {
   depth: number;

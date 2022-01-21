@@ -1,7 +1,8 @@
 import { Notice, Setting } from "obsidian";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
-import { getFields, strToRegex } from "../sharedFunctions";
+import { strToRegex } from "../Utils/generalUtils";
+import { getFields } from "../Utils/HierUtils";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
 
 export function addNoSystemSettings(

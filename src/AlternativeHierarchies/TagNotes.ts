@@ -5,15 +5,16 @@ import {
   BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
 } from "../constants";
-import { getSourceOrder, getTargetOrder, populateMain } from "../graphUtils";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
+import { splitAndTrim } from "../Utils/generalUtils";
 import {
-  dropHash,
-  getDVBasename,
-  getFields,
-  splitAndTrim,
-} from "../sharedFunctions";
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "../Utils/graphUtils";
+import { getFields } from "../Utils/HierUtils";
+import { dropHash, getDVBasename } from "../Utils/ObsidianUtils";
 
 const getAllTags = (app: App, file: TFile, withHash = true): string[] => {
   const { tags, frontmatter } = app.metadataCache.getFileCache(file);

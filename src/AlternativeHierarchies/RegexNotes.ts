@@ -1,10 +1,16 @@
 import type { MultiGraph } from "graphology";
 import { info } from "loglevel";
-import type BCPlugin from "../main";
 import { BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD } from "../constants";
-import { getSourceOrder, getTargetOrder, populateMain } from "../graphUtils";
 import type { dvFrontmatterCache } from "../interfaces";
-import { getDVBasename, getFields, strToRegex } from "../sharedFunctions";
+import type BCPlugin from "../main";
+import { strToRegex } from "../Utils/generalUtils";
+import {
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "../Utils/graphUtils";
+import { getFields } from "../Utils/HierUtils";
+import { getDVBasename } from "../Utils/ObsidianUtils";
 
 export function addRegexNotesToGraph(
   plugin: BCPlugin,

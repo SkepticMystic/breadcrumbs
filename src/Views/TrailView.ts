@@ -9,17 +9,20 @@ import {
   blankRealNImplied,
   JUGGL_TRAIL_DEFAULTS,
 } from "../constants";
+import type { BCSettings, EdgeAttr, RealNImplied } from "../interfaces";
+import type BCPlugin from "../main";
 import {
   bfsAllPaths,
-  getOppDir,
-  getOppFields,
   getReflexiveClosure,
   getSubForFields,
   getSubInDirs,
-} from "../graphUtils";
-import type { BCSettings, EdgeAttr, RealNImplied } from "../interfaces";
-import type BCPlugin from "../main";
-import { fallbackOppField, getFields } from "../sharedFunctions";
+} from "../Utils/graphUtils";
+import {
+  fallbackOppField,
+  getFields,
+  getOppDir,
+  getOppFields,
+} from "../Utils/HierUtils";
 import { createJugglTrail } from "../Visualisations/Juggl";
 
 function getLimitedTrailSub(plugin: BCPlugin) {

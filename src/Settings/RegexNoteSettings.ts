@@ -1,7 +1,7 @@
 import { DropdownComponent, Setting } from "obsidian";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
-import { getFields } from "../sharedFunctions";
+import { getFields } from "../Utils/HierUtils";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
 
 export function addRegexNoteSettings(

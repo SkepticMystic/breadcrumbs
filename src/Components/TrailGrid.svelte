@@ -5,21 +5,21 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import {
-    getOutNeighbours,
-    getReflexiveClosure,
-    getSubInDirs,
-  } from "../graphUtils";
   import type BCPlugin from "../main";
   import {
     dropDendron,
-    getAlt,
     linkClass,
     normalise,
     padArray,
     runs,
     transpose,
-  } from "../sharedFunctions";
+  } from "../Utils/generalUtils";
+  import {
+    getOutNeighbours,
+    getReflexiveClosure,
+    getSubInDirs,
+  } from "../Utils/graphUtils";
+  import { getAlt } from "../Utils/ObsidianUtils";
   export let sortedTrails: string[][];
   export let app: App;
   export let plugin: BCPlugin;

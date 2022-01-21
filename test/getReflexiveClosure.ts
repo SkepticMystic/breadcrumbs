@@ -1,5 +1,5 @@
 import { MultiGraph } from "graphology";
-import { getReflexiveClosure } from "../src/graphUtils";
+import { getReflexiveClosure } from "../src/Utils/graphUtils";
 import { testHiers, verify } from "./testUtils";
 
 require("approvals").mocha();

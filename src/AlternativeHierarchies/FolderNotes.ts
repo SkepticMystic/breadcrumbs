@@ -1,10 +1,15 @@
 import type { MultiGraph } from "graphology";
 import { TFile, TFolder } from "obsidian";
 import { BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE } from "../constants";
-import { getSourceOrder, getTargetOrder, populateMain } from "../graphUtils";
-import type { BCSettings, dvFrontmatterCache } from "../interfaces";
+import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
-import { getDVBasename, getFields, getFolderName } from "../sharedFunctions";
+import {
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "../Utils/graphUtils";
+import { getFields } from "../Utils/HierUtils";
+import { getDVBasename, getFolderName } from "../Utils/ObsidianUtils";
 
 const getSubsFromFolder = (folder: TFolder) => {
   const otherNotes: TFile[] = [],

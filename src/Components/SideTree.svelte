@@ -9,11 +9,11 @@
   import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
   import { createIndex } from "../Commands/CreateIndex";
   import { DIRECTIONS } from "../constants";
-  import { dfsAllPaths, getOppDir, getSubInDirs } from "../graphUtils";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
   import { refreshIndex } from "../refreshIndex";
-  import { dropDendron } from "../sharedFunctions";
+  import { dropDendron } from "../Utils/generalUtils";
+  import { dfsAllPaths, getSubInDirs } from "../Utils/graphUtils";
   import type TreeView from "../Views/TreeView";
 
   export let plugin: BCPlugin;

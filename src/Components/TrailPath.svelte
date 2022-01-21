@@ -4,8 +4,9 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import { dropDendron, getAlt, splitAndTrim } from "../sharedFunctions";
   import type BCPlugin from "../main";
+  import { dropDendron } from "../Utils/generalUtils";
+  import { getAlt } from "../Utils/ObsidianUtils";
 
   export let sortedTrails: string[][];
   export let app: App;

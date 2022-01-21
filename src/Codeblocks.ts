@@ -3,16 +3,15 @@ import { MarkdownPostProcessorContext, Notice } from "obsidian";
 import { createIndex } from "./Commands/CreateIndex";
 import CBTree from "./Components/CBTree.svelte";
 import { CODEBLOCK_FIELDS, CODEBLOCK_TYPES, DIRECTIONS } from "./constants";
-import {
-  dfsAllPaths,
-  getFieldInfo,
-  getOppDir,
-  getReflexiveClosure,
-  getSubInDirs,
-} from "./graphUtils";
 import type { CodeblockFields, ParsedCodeblock } from "./interfaces";
 import type BCPlugin from "./main";
-import { dropFolder, getFields, splitAndTrim } from "./sharedFunctions";
+import { dropFolder, splitAndTrim } from "./Utils/generalUtils";
+import {
+  dfsAllPaths,
+  getReflexiveClosure,
+  getSubInDirs,
+} from "./Utils/graphUtils";
+import { getFieldInfo, getFields, getOppDir } from "./Utils/HierUtils";
 import { createJuggl } from "./Visualisations/Juggl";
 
 export function getCodeblockCB(plugin: BCPlugin) {

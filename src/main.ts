@@ -8,7 +8,6 @@ import {
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
-import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getCodeblockCB } from "./Codeblocks";
 import { copyGlobalIndex, copyLocalIndex } from "./Commands/CreateIndex";
 import { jumpToFirstDir } from "./Commands/jumpToFirstDir";
@@ -28,7 +27,8 @@ import {
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
 import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
-import { getFields } from "./sharedFunctions";
+import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
+import { getFields } from "./Utils/HierUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";

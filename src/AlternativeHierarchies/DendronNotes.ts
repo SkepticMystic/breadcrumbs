@@ -1,9 +1,13 @@
 import type { MultiGraph } from "graphology";
 import { BC_IGNORE_DENDRON } from "../constants";
-import { getSourceOrder, getTargetOrder, populateMain } from "../graphUtils";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
-import { getDVBasename } from "../sharedFunctions";
+import {
+  getSourceOrder,
+  getTargetOrder,
+  populateMain,
+} from "../Utils/graphUtils";
+import { getDVBasename } from "../Utils/ObsidianUtils";
 
 export function addDendronNotesToGraph(
   plugin: BCPlugin,

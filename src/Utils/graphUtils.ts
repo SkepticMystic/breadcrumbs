@@ -3,20 +3,25 @@ import { dfsFromNode } from "graphology-traversal";
 import type { Attributes } from "graphology-types";
 import { info } from "loglevel";
 import type { App } from "obsidian";
-import { BC_I_REFLEXIVE, BC_ORDER } from "./constants";
+import type BCPlugin from "../../main";
+import { BC_I_REFLEXIVE, BC_ORDER, blankRealNImplied } from "../constants";
 // import { DIRECTIONS } from "./constants";
 import type {
   BCSettings,
   Directions,
   dvFrontmatterCache,
   NodePath,
+  RealNImplied,
   UserHier,
-} from "./interfaces";
+} from "../interfaces";
 import {
   fallbackOppField,
-  getBaseFromMDPath,
+  getFieldInfo,
   getFields,
-} from "./sharedFunctions";
+  getOppDir,
+  getOppFields,
+} from "./HierUtils";
+import { getBaseFromMDPath } from "./ObsidianUtils";
 
 // TODO - this is a hack to get the graph to work with the approvals
 // I shouldn't need
@@ -148,48 +153,9 @@ export const getOutNeighbours = (g: MultiGraph, node: string) =>
 export const getInNeighbours = (g: MultiGraph, node: string) =>
   g.hasNode(node) ? g.inNeighbors(node) : [];
 
-export const getOppDir = (dir: Directions): Directions => {
-  switch (dir) {
-    case "up":
-      return "down";
-    case "down":
-      return "up";
-    case "same":
-      return "same";
-    case "next":
-      return "prev";
-    case "prev":
-      return "next";
-  }
-};
-
 /**
  *  Get the hierarchy and direction that `field` is in
  * */
-export function getFieldInfo(userHiers: UserHier[], field: string) {
-  let fieldDir: Directions;
-  let fieldHier: UserHier;
-
-  DIRECTIONS.forEach((dir: Directions) => {
-    userHiers.forEach((hier) => {
-      if (hier[dir].includes(field)) {
-        fieldDir = dir;
-        fieldHier = hier;
-        return;
-      }
-    });
-  });
-  return { fieldHier, fieldDir };
-}
-
-export function getOppFields(userHiers: UserHier[], field: string) {
-  // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
-  if (field.endsWith(">")) return field.slice(0, -4);
-  const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
-  if (!fieldHier || !fieldDir) return undefined;
-  const oppDir = getOppDir(fieldDir);
-  return fieldHier[oppDir];
-}
 
 export function dfsAllPaths(g: MultiGraph, start: string): string[][] {
   const queue: NodePath[] = [{ node: start, path: [] }];
@@ -354,3 +320,52 @@ export const getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
 
 export const getSourceOrder = (frontm: dvFrontmatterCache) =>
   parseInt((frontm[BC_ORDER] as string) ?? "9999");
+
+/** Remember to filter by hierarchy in MatrixView! */
+export function getRealnImplied(
+  plugin: BCPlugin,
+  currNode: string,
+  dir: Directions = null
+): RealNImplied {
+  const realsnImplieds: RealNImplied = blankRealNImplied();
+  const { settings, closedG } = plugin;
+  const { userHiers } = settings;
+
+  if (!closedG.hasNode(currNode)) return realsnImplieds;
+  closedG.forEachEdge(currNode, (k, a, s, t) => {
+    const {
+      field,
+      dir: edgeDir,
+      implied,
+    } = a as { field: string; dir: Directions; implied?: string };
+    const oppField =
+      getOppFields(userHiers, field)[0] ?? fallbackOppField(field, edgeDir);
+
+    (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach(
+      (currDir: Directions) => {
+        const oppDir = getOppDir(currDir);
+        // Reals
+        if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
+          const arr = realsnImplieds[edgeDir].reals;
+          if (arr.findIndex((item) => item.to === t) === -1) {
+            arr.push({ to: t, real: true, field, implied });
+          }
+        }
+        // Implieds
+        // If `s !== currNode` then `t` must be
+        else if (edgeDir === currDir || edgeDir === oppDir) {
+          const arr = realsnImplieds[getOppDir(edgeDir)].implieds;
+          if (arr.findIndex((item) => item.to === s) === -1) {
+            arr.push({
+              to: s,
+              real: false,
+              field: oppField,
+              implied,
+            });
+          }
+        }
+      }
+    );
+  });
+  return realsnImplieds;
+}

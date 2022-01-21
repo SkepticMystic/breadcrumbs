@@ -1,11 +1,7 @@
 import { Notice, TFile } from "obsidian";
-import {
-  createOrUpdateYaml,
-  fallbackOppField,
-  splitAtYaml,
-} from "../sharedFunctions";
 import type BCPlugin from "../main";
-import { getOppFields } from "../graphUtils";
+import { fallbackOppField, getOppFields } from "../Utils/HierUtils";
+import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
 export async function writeBCToFile(plugin: BCPlugin, file: TFile) {
   const { app, settings, mainG } = plugin;

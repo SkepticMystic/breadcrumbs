@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
-  import type { BCSettings, VisGraphs, visTypes } from "../interfaces";
+  import { ALLUNLINKED,REAlCLOSED,RELATIONS,VISTYPES } from "../constants";
+  import type { BCSettings,VisGraphs,visTypes } from "../interfaces";
   import {
-    closeImpliedLinks,
-    getSubInDirs,
-    removeUnlinkedNodes,
-  } from "../graphUtils";
-  import type { VisModal } from "../Visualisations/VisModal";
+  closeImpliedLinks,
+  getSubInDirs,
+  removeUnlinkedNodes
+  } from "../Utils/graphUtils";
   import { arcDiagram } from "../Visualisations/ArcDiagram";
   import { circlePacking } from "../Visualisations/CirclePacking";
   import { edgeBundling } from "../Visualisations/EdgeBundling";
@@ -16,6 +15,7 @@
   import { sunburst } from "../Visualisations/Sunburst";
   import { tidyTree } from "../Visualisations/TidyTree";
   import { treeMap } from "../Visualisations/TreeMap";
+  import type { VisModal } from "../Visualisations/VisModal";
 
   export let modal: VisModal;
   export let settings: BCSettings;

@@ -1,12 +1,13 @@
 <script lang="ts">
   import { Notice } from "obsidian";
-  import type { UserHier } from "../interfaces";
-  import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "../constants";
-  import type BCPlugin from "../main";
-  import { hierToStr, splitAndTrim, swapItems } from "../sharedFunctions";
   import FaListUl from "svelte-icons/fa/FaListUl.svelte";
   import FaPlus from "svelte-icons/fa/FaPlus.svelte";
   import FaRegTrashAlt from "svelte-icons/fa/FaRegTrashAlt.svelte";
+  import { ARROW_DIRECTIONS, blankUserHier, DIRECTIONS } from "../constants";
+  import type { UserHier } from "../interfaces";
+  import type BCPlugin from "../main";
+  import { splitAndTrim, swapItems } from "../Utils/generalUtils";
+  import { hierToStr } from "../Utils/HierUtils";
 
   export let plugin: BCPlugin;
 

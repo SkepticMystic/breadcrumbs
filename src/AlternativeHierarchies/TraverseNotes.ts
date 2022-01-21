@@ -1,10 +1,11 @@
 import type { MultiGraph } from "graphology";
 import { info } from "loglevel";
 import { BC_TRAVERSE_NOTE } from "../constants";
-import { dfsAllPaths, populateMain, removeCycles } from "../graphUtils";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
-import { getDVBasename, getFields } from "../sharedFunctions";
+import { dfsAllPaths, populateMain, removeCycles } from "../Utils/graphUtils";
+import { getFields } from "../Utils/HierUtils";
+import { getDVBasename } from "../Utils/ObsidianUtils";
 
 export function addTraverseNotesToGraph(
   plugin: BCPlugin,
@@ -14,7 +15,7 @@ export function addTraverseNotesToGraph(
 ) {
   const { settings } = plugin;
   const { userHiers } = settings;
-  
+
   traverseNotes.forEach((altFile) => {
     const { file } = altFile;
     const basename = getDVBasename(file);
