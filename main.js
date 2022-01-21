@@ -25095,7 +25095,7 @@ function getLimitedTrailSub(plugin) {
     }
     else {
         const oppFields = limitTrailCheckboxes
-            .map((field) => getOppFields(userHiers, field)[0])
+            .map((field) => { var _a, _b; return (_b = (_a = getOppFields(userHiers, field)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : fallbackOppField(field, "up"); })
             .filter((field) => field !== undefined);
         subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
     }

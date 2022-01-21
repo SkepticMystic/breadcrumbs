@@ -33,20 +33,16 @@ function getLimitedTrailSub(plugin: BCPlugin) {
     subGraph = getSubInDirs(mainG, "up", "down");
   } else {
     const oppFields = limitTrailCheckboxes
-      .map((field) => getOppFields(userHiers, field)[0])
+      .map(
+        (field) =>
+          getOppFields(userHiers, field)?.[0] ?? fallbackOppField(field, "up")
+      )
       .filter((field) => field !== undefined);
     subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
   }
 
   const closed = getReflexiveClosure(subGraph, userHiers);
   return getSubInDirs(closed, "up");
-}
-
-function getGraphForTrail(plugin: BCPlugin) {
-  const { closedG } = plugin;
-  const { userHiers, limitTrailCheckboxes } = plugin.settings;
-
-  closedG;
 }
 
 function getBreadcrumbs(
