@@ -89,9 +89,16 @@ class BCStore extends Component implements ICoreDataStore {
     return new BCStoreEvents();
   }
 
-  getNeighbourhood(nodeId: VizId[]): Promise<cytoscape.NodeDefinition[]> {
+  async getNeighbourhood(nodeIds: VizId[], view: IJuggl): Promise<cytoscape.NodeDefinition[]> {
     // TODO
-    return Promise.resolve([]);
+    const new_nodes = [];
+    for (const nodeId of nodeIds) {
+      const name = nodeId.id.slice(0, -3);
+      for (const new_node of this.graph.neighbors(name)) {
+        new_nodes.push(await this.get(new VizId(new_node + ".md", STORE_ID), view))
+      }
+    }
+    return new_nodes;
   }
 
   refreshNode(id: VizId, view: IJuggl): void | Promise<void> {
