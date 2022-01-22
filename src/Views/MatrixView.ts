@@ -18,8 +18,9 @@ import type {
 } from "../interfaces";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
-import { linkClass, splitAndTrim } from "../Utils/generalUtils";
-import { fallbackOppField, getOppDir, getOppFields } from "../Utils/HierUtils";
+import { splitAndTrim } from "../Utils/generalUtils";
+import { getOppDir, getOppFields } from "../Utils/HierUtils";
+import { linkClass } from "../Utils/ObsidianUtils";
 
 export default class MatrixView extends ItemView {
   private plugin: BCPlugin;
@@ -143,8 +144,7 @@ export default class MatrixView extends ItemView {
       } else {
         neighbours[getOppDir(dir)].implieds.push({
           to: s,
-          field:
-            getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir),
+          field: getOppFields(userHiers, field, dir)[0],
           implied,
         });
       }

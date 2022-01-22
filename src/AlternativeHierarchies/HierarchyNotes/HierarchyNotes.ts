@@ -4,9 +4,8 @@ import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import type BCPlugin from "../../main";
 import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
 import {
-  fallbackOppField,
   getFields,
-  getOppFields,
+  getOppFields
 } from "../../Utils/HierUtils";
 
 export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
@@ -80,8 +79,7 @@ export function addHNsToGraph(
   hnArr.forEach((hnItem, i) => {
     const { note, field, parent } = hnItem;
     const upField = field ?? (HNUpField || upFields[0]);
-    const downField =
-      getOppFields(userHiers, upField)[0] ?? fallbackOppField(upField, "up");
+    const downField = getOppFields(userHiers, upField, "up")[0];
 
     if (parent === null) {
       const s = note;

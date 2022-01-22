@@ -51,7 +51,7 @@ import { fallbackField, getFieldInfo, iterateHiers } from "./Utils/HierUtils";
 import { getBaseFromMDPath, getDVBasename } from "./Utils/ObsidianUtils";
 import { drawTrail } from "./Views/TrailView";
 
-export function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
+function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
   const { app, db } = plugin;
   db.startGs("getDVMetadataCache", "dvCaches");
 
@@ -67,7 +67,7 @@ export function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
   return frontms;
 }
 
-export function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
+function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
   const { app, db } = plugin;
   db.startGs("getObsMetadataCache", "obsCaches");
 
@@ -87,7 +87,7 @@ export function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
  * Keep unwrapping a proxied item until it isn't one anymore
  * @param  {RawValue} item
  */
-export function unproxy(item: RawValue) {
+function unproxy(item: RawValue) {
   const unproxied = [];
 
   const queue = [item];
@@ -111,7 +111,7 @@ export function unproxy(item: RawValue) {
  * @param  {string|string[]|string[][]|dvLink|dvLink[]|Pos|TFile} value
  * @param  {BCSettings} settings
  */
-export function parseFieldValue(
+function parseFieldValue(
   value: string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile
 ) {
   if (value === undefined) return [];

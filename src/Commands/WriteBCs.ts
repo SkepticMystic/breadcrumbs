@@ -1,10 +1,12 @@
 import { Notice, TFile } from "obsidian";
 import type BCPlugin from "../main";
-import { fallbackOppField, getOppFields } from "../Utils/HierUtils";
+import { getOppFields } from "../Utils/HierUtils";
 import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
-export async function writeBCToFile(plugin: BCPlugin, file: TFile) {
+export async function writeBCToFile(plugin: BCPlugin, currFile?: TFile) {
   const { app, settings, mainG } = plugin;
+  const file = currFile ?? app.workspace.getActiveFile();
+
   const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
 
   const { frontmatter } = app.metadataCache.getFileCache(file);
@@ -16,8 +18,8 @@ export async function writeBCToFile(plugin: BCPlugin, file: TFile) {
   }
 
   const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-    const oppField =
-      getOppFields(userHiers, a.field)[0] ?? fallbackOppField(a.field, a.dir);
+    const { field, dir } = a;
+    const oppField = getOppFields(userHiers, field, dir)[0];
     return { succ: s, field: oppField };
   });
 

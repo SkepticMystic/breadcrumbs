@@ -1,10 +1,6 @@
 import { normalizePath, Notice } from "obsidian";
 import type BCPlugin from "../main";
-import {
-  fallbackOppField,
-  getFieldInfo,
-  getOppFields,
-} from "../Utils/HierUtils";
+import { getFieldInfo, getOppFields } from "../Utils/HierUtils";
 import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
 export async function thread(plugin: BCPlugin, field: string) {
@@ -24,8 +20,7 @@ export async function thread(plugin: BCPlugin, field: string) {
   const newFileParent = app.fileManager.getNewFileParent(currFile.path);
 
   const dir = getFieldInfo(userHiers, field).fieldDir;
-  const oppField =
-    getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
+  const oppField = getOppFields(userHiers, field, dir)[0];
 
   let newBasename = threadingTemplate
     ? threadingTemplate

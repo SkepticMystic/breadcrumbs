@@ -3233,32 +3233,36 @@ const splitAndTrim = (fields) => {
     else
         return fields.split(",").map((str) => str.trim());
 };
+/**
+ * Pad an array with a filler value to a specified length.
+ * @param {T[]} arr - The array to pad.
+ * @param {number} finalLength - The final length of the array
+ * @param {string} [filler=""] - The filler to use if the array is too short.
+ * @returns {(T | string)[]} The array with the new values.
+ */
 function padArray(arr, finalLength, filler = "") {
     const copy = [...arr];
     const currLength = copy.length;
-    if (currLength > finalLength) {
+    if (currLength > finalLength)
         throw new Error("Current length is greater than final length");
-    }
-    else if (currLength === finalLength) {
+    else if (currLength === finalLength)
         return copy;
-    }
     else {
-        for (let i = currLength; i < finalLength; i++) {
+        for (let i = currLength; i < finalLength; i++)
             copy.push(filler);
-        }
         return copy;
     }
 }
+/**
+ * transpose(A) returns the transpose of A.
+ * @param {T[][]} A - The matrix to transpose.
+ * @returns {T[][]} A 2D array of the transposed matrix.
+ */
 function transpose(A) {
     const cols = A[0].length;
     const AT = [];
-    // For each column
-    for (let j = 0; j < cols; j++) {
-        // Add a new row to AT
-        AT.push([]);
-        // And fill it with the values in the jth column of A
-        A.forEach((row) => AT[j].push(row[j]));
-    }
+    for (let j = 0; j < cols; j++)
+        AT.push(A.map((row) => row[j]));
     return AT;
 }
 /**
@@ -3295,7 +3299,6 @@ function swapItems(i, j, arr) {
     arr[j] = tmp;
     return arr;
 }
-const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 function strToRegex(input) {
     const match = input.match(regNFlags);
     if (!match)
@@ -3398,6 +3401,21 @@ function getAlt(node, plugin) {
     else
         return null;
 }
+async function waitForCache(plugin) {
+    var _a, _b;
+    const { app } = plugin;
+    if (app.plugins.enabledPlugins.has("dataview")) {
+        let basename;
+        while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
+            await wait(100);
+            basename = (_b = (_a = app === null || app === void 0 ? void 0 : app.workspace) === null || _a === void 0 ? void 0 : _a.getActiveFile()) === null || _b === void 0 ? void 0 : _b.basename;
+        }
+    }
+    else {
+        await waitForResolvedLinks(app);
+    }
+}
+const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 
 function noop() { }
 function assign(tar, src) {
@@ -22746,15 +22764,17 @@ function getFieldInfo(userHiers, field) {
     });
     return { fieldHier, fieldDir };
 }
-function getOppFields(userHiers, field) {
-    // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
+function getOppFields(userHiers, field, dir) {
+    // If the field ends with `>`, it is already the opposite field we need (coming from `getOppFallback`)
     if (field.endsWith(">"))
         return field.slice(0, -4);
+    const oppFields = [fallbackOppField(field, dir)];
     const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
     if (!fieldHier || !fieldDir)
-        return undefined;
+        return oppFields;
     const oppDir = getOppDir(fieldDir);
-    return fieldHier[oppDir];
+    oppFields.unshift(...fieldHier[oppDir]);
+    return oppFields;
 }
 const hierToStr = (hier) => DIRECTIONS$1.map((dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`).join("\n");
 const fallbackField = (field, dir) => `${field} <${ARROW_DIRECTIONS[dir]}>`;
@@ -22800,7 +22820,7 @@ function getSubInDirs(main, ...dirs) {
     main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
         if (dirs.includes(a.dir)) {
             //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
+            addNodesIfNot(sub, [s, t], { order: a.order });
             sub.addEdge(s, t, a);
         }
     });
@@ -22816,7 +22836,7 @@ function getSubForFields(main, fields) {
     main.forEachEdge((k, a, s, t) => {
         if (fields.includes(a.field)) {
             //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
+            addNodesIfNot(sub, [s, t], { order: a.order });
             sub.addEdge(s, t, a);
         }
     });
@@ -22830,24 +22850,18 @@ function getSubForFields(main, fields) {
  * @param  {UserHier[]} userHiers
  * @param  {boolean} closeAsOpposite
  */
-function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
+function getReflexiveClosure(g, userHiers) {
     const copy = g.copy();
     copy.forEachEdge((k, a, s, t) => {
-        var _a;
         const { dir, field } = a;
         if (field === undefined)
             return;
         const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-        addNodesIfNot(copy, [s, t], {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-        });
+        const oppField = dir === "same" ? field : getOppFields(userHiers, field, dir)[0];
+        addNodesIfNot(copy, [s, t], { order: 9999 });
         addEdgeIfNot(copy, t, s, {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
+            dir: oppDir,
+            field: oppField,
             implied: BC_I_REFLEXIVE,
         });
     });
@@ -22964,7 +22978,6 @@ function buildObsGraph(app) {
     return ObsG;
 }
 function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
-    var _a;
     const { userHiers } = settings;
     const dir = getFieldInfo(userHiers, field).fieldDir;
     addNodesIfNot(mainG, [source], {
@@ -22979,7 +22992,7 @@ function populateMain(settings, mainG, source, field, target, sourceOrder, targe
     });
     if (fillOpp) {
         const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
+        const oppField = getOppFields(userHiers, field, dir)[0];
         addEdgeIfNot(mainG, target, source, {
             dir: oppDir,
             field: oppField,
@@ -22999,9 +23012,8 @@ function getRealnImplied(plugin, currNode, dir = null) {
     if (!closedG.hasNode(currNode))
         return realsnImplieds;
     closedG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
         const { field, dir: edgeDir, implied, } = a;
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
+        const oppField = getOppFields(userHiers, field, edgeDir)[0];
         (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
             const oppDir = getOppDir(currDir);
             // Reals
@@ -24158,9 +24170,8 @@ function createJuggl(plugin, target, initialNodes, args) {
             return;
         }
         for (let key in JUGGL_CB_DEFAULTS) {
-            if (key in args && args[key] === undefined) {
+            if (key in args && args[key] === undefined)
                 args[key] = JUGGL_CB_DEFAULTS[key];
-            }
         }
         const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin);
         const stores = {
@@ -24358,6 +24369,12 @@ function getCodeblockCB(plugin) {
         }
     };
 }
+/**
+ * Parse a string as a boolean value.
+ * @param {string} value - string
+ * @returns {string | boolean}
+ */
+const parseAsBool = (value) => value === "true" ? true : value === "false" ? false : value;
 function parseCodeBlockSource(source) {
     const lines = source.split("\n");
     const getValue = (type) => {
@@ -24367,13 +24384,8 @@ function parseCodeBlockSource(source) {
     };
     const results = {};
     CODEBLOCK_FIELDS.forEach((field) => {
-        results[field] = getValue(field);
-        if (results[field] === "false") {
-            results[field] = false;
-        }
-        if (results[field] === "true") {
-            results[field] = true;
-        }
+        const value = getValue(field);
+        results[field] = parseAsBool(value);
     });
     results.field = results.field
         ? splitAndTrim(results.field)
@@ -24430,9 +24442,7 @@ function codeblockError(plugin, parsedSource) {
       depth: 3
       </code></pre>`;
 }
-function indentToDepth(indent) {
-    return indent.length / 2 + 1;
-}
+const indentToDepth = (indent) => indent.length / 2 + 1;
 function meetsConditions(indent, node, froms, min, max) {
     const depth = indentToDepth(indent);
     return (depth >= min &&
@@ -24443,9 +24453,8 @@ function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
     const nodes = lines
         .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
         .map(([_, node]) => node + ".md");
-    if (min <= 0) {
+    if (min <= 0)
         nodes.push(source + ".md");
-    }
     console.log({ lines, nodes });
     createJuggl(plugin, target, nodes, args);
 }
@@ -24475,7 +24484,7 @@ async function jumpToFirstDir(plugin, dir) {
 }
 
 async function thread(plugin, field) {
-    var _a, _b;
+    var _a;
     const { app, settings } = plugin;
     const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
     const currFile = app.workspace.getActiveFile();
@@ -24483,7 +24492,7 @@ async function thread(plugin, field) {
         return;
     const newFileParent = app.fileManager.getNewFileParent(currFile.path);
     const dir = getFieldInfo(userHiers, field).fieldDir;
-    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+    const oppField = getOppFields(userHiers, field, dir)[0];
     let newBasename = threadingTemplate
         ? threadingTemplate
             .replace("{{current}}", currFile.basename)
@@ -24514,7 +24523,7 @@ async function thread(plugin, field) {
     }
     const newFile = await app.vault.create(obsidian.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
     if (!writeBCsInline) {
-        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
+        const { api } = (_a = app.plugins.plugins.metaedit) !== null && _a !== void 0 ? _a : {};
         if (!api) {
             new obsidian.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
             return;
@@ -24558,9 +24567,10 @@ async function thread(plugin, field) {
     }
 }
 
-async function writeBCToFile(plugin, file) {
+async function writeBCToFile(plugin, currFile) {
     var _a;
     const { app, settings, mainG } = plugin;
+    const file = currFile !== null && currFile !== void 0 ? currFile : app.workspace.getActiveFile();
     const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
     const { frontmatter } = app.metadataCache.getFileCache(file);
     const api = (_a = app.plugins.plugins.metaedit) === null || _a === void 0 ? void 0 : _a.api;
@@ -24569,8 +24579,8 @@ async function writeBCToFile(plugin, file) {
         return;
     }
     const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-        var _a;
-        const oppField = (_a = getOppFields(userHiers, a.field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(a.field, a.dir);
+        const { field, dir } = a;
+        const oppField = getOppFields(userHiers, field, dir)[0];
         return { succ: s, field: oppField };
     });
     for (const { succ, field } of succInfo) {
@@ -24842,13 +24852,13 @@ function addHNsToGraph(settings, hnArr, mainG) {
     const { HNUpField, userHiers } = settings;
     const upFields = getFields(userHiers, "up");
     hnArr.forEach((hnItem, i) => {
-        var _a, _b;
+        var _a;
         const { note, field, parent } = hnItem;
         const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
+        const downField = getOppFields(userHiers, upField, "up")[0];
         if (parent === null) {
             const s = note;
-            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
+            const t = (_a = hnArr[i + 1]) === null || _a === void 0 ? void 0 : _a.note;
             addNodesIfNot(mainG, [s, t]);
             addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
         }
@@ -25052,8 +25062,8 @@ function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
 
 function add_css$a() {
 	var style = element("style");
-	style.id = "svelte-1cqb0v5-style";
-	style.textContent = ".BC-nexts.svelte-1cqb0v5 div.svelte-1cqb0v5{text-align:right}.BC-right-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-left:5px;float:right}.BC-left-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-right:5px;float:left}.BC-nexts.svelte-1cqb0v5.svelte-1cqb0v5{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-1cqb0v5.svelte-1cqb0v5{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-1cqb0v5.svelte-1cqb0v5{display:grid;grid-template-columns:1fr 1fr}";
+	style.id = "svelte-444d0g-style";
+	style.textContent = ".BC-nexts.svelte-444d0g div.svelte-444d0g{text-align:right}.BC-right-arrow.svelte-444d0g.svelte-444d0g{padding-left:5px;float:right}.BC-left-arrow.svelte-444d0g.svelte-444d0g{padding-right:5px;float:left}.BC-nexts.svelte-444d0g.svelte-444d0g{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-444d0g.svelte-444d0g{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-444d0g.svelte-444d0g{display:grid;grid-template-columns:1fr 1fr}";
 	append(document.head, style);
 }
 
@@ -25095,7 +25105,7 @@ function create_each_block_1$8(ctx) {
 			t1 = space();
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"));
+			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-444d0g"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -25115,7 +25125,7 @@ function create_each_block_1$8(ctx) {
 			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].field + "")) set_data(t0, t0_value);
 			if (dirty & /*prev*/ 4 && t2_value !== (t2_value = /*p*/ ctx[9].to + "")) set_data(t2, t2_value);
 
-			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
+			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-444d0g"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -25153,7 +25163,7 @@ function create_each_block$a(ctx) {
 			strong = element("strong");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-444d0g"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -25173,7 +25183,7 @@ function create_each_block$a(ctx) {
 			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
 			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].field + "")) set_data(t2, t2_value);
 
-			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
+			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-444d0g"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -25224,9 +25234,9 @@ function create_fragment$i(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "BC-prevs svelte-1cqb0v5");
-			attr(div1, "class", "BC-nexts svelte-1cqb0v5");
-			attr(div2, "class", "BC-NextPrev-Container svelte-1cqb0v5");
+			attr(div0, "class", "BC-prevs svelte-444d0g");
+			attr(div1, "class", "BC-nexts svelte-444d0g");
+			attr(div2, "class", "BC-NextPrev-Container svelte-444d0g");
 		},
 		m(target, anchor) {
 			insert(target, div2, anchor);
@@ -25326,7 +25336,7 @@ function instance$i($$self, $$props, $$invalidate) {
 class NextPrev extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1cqb0v5-style")) add_css$a();
+		if (!document.getElementById("svelte-444d0g-style")) add_css$a();
 		init(this, options, instance$i, create_fragment$i, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
 	}
 }
@@ -25335,34 +25345,36 @@ class NextPrev extends SvelteComponent {
 
 function add_css$9() {
 	var style = element("style");
-	style.id = "svelte-ybyqyo-style";
-	style.textContent = "div.BC-trail-grid.svelte-ybyqyo{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-ybyqyo{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-ybyqyo{opacity:0.7}.dot.svelte-ybyqyo{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	style.id = "svelte-1a33qd9-style";
+	style.textContent = "div.BC-trail-grid.svelte-1a33qd9{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-1a33qd9{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-1a33qd9{opacity:0.7}.dot.svelte-1a33qd9{height:5px;width:5px;border-radius:50%;display:inline-block}";
 	append(document.head, style);
 }
 
 function get_each_context$9(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
-	child_ctx[22] = i;
+	child_ctx[24] = list[i];
+	child_ctx[26] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i].value;
+	child_ctx[28] = list[i].first;
+	child_ctx[29] = list[i].last;
 	return child_ctx;
 }
 
 function get_each_context_2$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[26] = list[i];
 	return child_ctx;
 }
 
-// (84:8) {#if step.value && settings.gridDots}
+// (62:8) {#if value && gridDots}
 function create_if_block$5(ctx) {
 	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*value*/ ctx[27]] / 1000));
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -25387,8 +25399,8 @@ function create_if_block$5(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*settings, wordCounts*/ 40) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+			if (dirty[0] & /*dotsColour, wordCounts*/ 136) {
+				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*value*/ ctx[27]] / 1000));
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -25417,15 +25429,15 @@ function create_if_block$5(ctx) {
 	};
 }
 
-// (86:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (64:12) {#each range(Math.floor(wordCounts[value] / 1000)) as i}
 function create_each_block_2$3(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			attr(span, "class", "dot svelte-ybyqyo");
-			set_style(span, "background-color", /*settings*/ ctx[5].dotsColour);
+			attr(span, "class", "dot svelte-1a33qd9");
+			set_style(span, "background-color", /*dotsColour*/ ctx[7]);
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -25437,11 +25449,11 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (67:4) {#each allRuns[i] as step}
+// (49:4) {#each allRuns[i] as { value, first, last }}
 function create_each_block_1$7(ctx) {
 	let div1;
 	let div0;
-	let t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "";
+	let t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[2]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[4])) + "";
 	let t0;
 	let div0_class_value;
 	let t1;
@@ -25450,14 +25462,14 @@ function create_each_block_1$7(ctx) {
 	let div1_style_value;
 	let mounted;
 	let dispose;
-	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots && create_if_block$5(ctx);
+	let if_block = /*value*/ ctx[27] && /*gridDots*/ ctx[6] && create_if_block$5(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*step*/ ctx[23], ...args);
+		return /*click_handler*/ ctx[12](/*value*/ ctx[27], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*step*/ ctx[23], ...args);
+		return /*mouseover_handler*/ ctx[13](/*value*/ ctx[27], ...args);
 	}
 
 	return {
@@ -25468,11 +25480,11 @@ function create_each_block_1$7(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-ybyqyo");
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*value*/ ctx[27])) + " svelte-1a33qd9"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-1a33qd9");
 
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*first*/ ctx[28] + 1) + " / " + (/*i*/ ctx[26] + 1) + " / \r\n                " + (/*last*/ ctx[29] + 2) + " / " + (/*i*/ ctx[26] + 2) + ";\r\n            " + (/*gridHeatmap*/ ctx[5]
+			? `background-color: ${/*toColour*/ ctx[11](/*value*/ ctx[27])}`
 			: ""));
 		},
 		m(target, anchor) {
@@ -25494,19 +25506,13 @@ function create_each_block_1$7(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*plugin*/ 4 && t0_value !== (t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
+			if (dirty[0] & /*plugin*/ 4 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[2]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"))) {
+			if (dirty[0] & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*value*/ ctx[27])) + " svelte-1a33qd9"))) {
 				attr(div0, "class", div0_class_value);
 			}
 
-			if (/*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots) if_block.p(ctx, dirty);
-
-			if (dirty & /*children*/ 16 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
-			: ""))) {
-				attr(div1, "style", div1_style_value);
-			}
+			if (/*value*/ ctx[27] && /*gridDots*/ ctx[6]) if_block.p(ctx, dirty);
 		},
 		d(detaching) {
 			if (detaching) detach(div1);
@@ -25517,10 +25523,10 @@ function create_each_block_1$7(ctx) {
 	};
 }
 
-// (66:2) {#each transposedTrails as col, i}
+// (48:2) {#each transposedTrails as col, i}
 function create_each_block$9(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+	let each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -25543,8 +25549,8 @@ function create_each_block$9(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
+				each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -25575,7 +25581,7 @@ function create_each_block$9(ctx) {
 
 function create_fragment$h(ctx) {
 	let div;
-	let each_value = /*transposedTrails*/ ctx[7];
+	let each_value = /*transposedTrails*/ ctx[9];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -25590,8 +25596,8 @@ function create_fragment$h(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-trail-grid svelte-ybyqyo");
-			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
+			attr(div, "class", "BC-trail-grid svelte-1a33qd9");
+			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[9].length));
 			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 		},
 		m(target, anchor) {
@@ -25601,9 +25607,9 @@ function create_fragment$h(ctx) {
 				each_blocks[i].m(div, null);
 			}
 		},
-		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value = /*transposedTrails*/ ctx[7];
+		p(ctx, dirty) {
+			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
+				each_value = /*transposedTrails*/ ctx[9];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -25625,7 +25631,7 @@ function create_fragment$h(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*sortedTrails*/ 1) {
+			if (dirty[0] & /*sortedTrails*/ 1) {
 				set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 			}
 		},
@@ -25645,7 +25651,7 @@ function instance$h($$self, $$props, $$invalidate) {
 	let { app } = $$props;
 	let { plugin } = $$props;
 	const { settings } = plugin;
-	const { userHiers } = settings;
+	const { userHiers, gridHeatmap, heatmapColour, gridDots, dotsColour } = settings;
 	const currFile = app.workspace.getActiveFile();
 	const activeLeafView = app.workspace.activeLeaf.view;
 	const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
@@ -25668,43 +25674,23 @@ function instance$h($$self, $$props, $$invalidate) {
 		}
 	});
 
-	// const data: {[cell: string]: number} = {}
-	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 	const { mainG } = plugin;
-
-	// const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
-	// const closedParents = closeImpliedLinks(up, down);
 	const closedParents = getReflexiveClosure(getSubInDirs(mainG, "up", "down"), userHiers);
-
 	const children = {};
-	allCells.forEach(cell => $$invalidate(4, children[cell] = getOutNeighbours(closedParents, cell).length, children));
+	allCells.forEach(cell => children[cell] = getOutNeighbours(closedParents, cell).length);
 	const normalisedData = normalise(Object.values(children));
 
 	allCells.forEach((cell, i) => {
-		$$invalidate(4, children[cell] = normalisedData[i], children);
+		children[cell] = normalisedData[i];
 	});
 
-	// const normalisedData = allCells.forEach(cell => {
-	// })
-	// const links: {[cell: string]: number}[] = []
-	// data.forEach(cell => links[Object.keys(cell)[0]] = (Object.values(cell)[0]?.links.length ?? 0))
-	// console.log(data)
 	const maxLength = Math.max(...sortedTrails.map(trail => trail.length));
-
 	const paddedTrails = sortedTrails.map(trail => padArray(trail, maxLength));
-
-	// const permutations: string[][][] = permute(paddedTrails.map(trail => [trail[0]]))
-	// //  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
-	// const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
-	// const runsPerRun = ALLRuns.map(runs => runs[0].length)
-	// const minRunLength = Math.min(...runsPerRun);
-	// const indexOfMinRun = runsPerRun.indexOf(minRunLength);
-	// const minRun = ALLRuns[indexOfMinRun]
 	const transposedTrails = transpose(paddedTrails);
-
 	const allRuns = transposedTrails.map(runs);
-	const click_handler = (step, e) => openOrSwitch(app, step.value, e);
-	const mouseover_handler = (step, e) => hoverPreview(e, activeLeafView, step.value);
+	const toColour = value => heatmapColour + Math.round(children[value] * 200 + 55).toString(16);
+	const click_handler = async (value, e) => await openOrSwitch(app, value, e);
+	const mouseover_handler = (value, e) => hoverPreview(e, activeLeafView, value);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -25717,11 +25703,14 @@ function instance$h($$self, $$props, $$invalidate) {
 		app,
 		plugin,
 		wordCounts,
-		children,
 		settings,
+		gridHeatmap,
+		gridDots,
+		dotsColour,
 		activeLeafView,
 		transposedTrails,
 		allRuns,
+		toColour,
 		click_handler,
 		mouseover_handler
 	];
@@ -25730,8 +25719,8 @@ function instance$h($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-ybyqyo-style")) add_css$9();
-		init(this, options, instance$h, create_fragment$h, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
+		if (!document.getElementById("svelte-1a33qd9-style")) add_css$9();
+		init(this, options, instance$h, create_fragment$h, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 }, [-1, -1]);
 	}
 }
 
@@ -26147,7 +26136,7 @@ function getLimitedTrailSub(plugin) {
     }
     else {
         const oppFields = limitTrailCheckboxes
-            .map((field) => { var _a, _b; return (_b = (_a = getOppFields(userHiers, field)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : fallbackOppField(field, "up"); })
+            .map((field) => { var _a; return (_a = getOppFields(userHiers, field, "up")) === null || _a === void 0 ? void 0 : _a[0]; })
             .filter((field) => field !== undefined);
         subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
     }
@@ -26182,7 +26171,6 @@ function getNextNPrev(plugin, currNode) {
         return null;
     const nextNPrev = blankRealNImplied();
     mainG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
         const { dir, field, implied } = a;
         if (dir !== "next" && dir !== "prev")
             return;
@@ -26190,7 +26178,7 @@ function getNextNPrev(plugin, currNode) {
             nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
         }
         else {
-            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+            const oppField = getOppFields(userHiers, field, dir)[0];
             nextNPrev[getOppDir(dir)].implieds.push({
                 field: oppField,
                 to: s,
@@ -29578,7 +29566,6 @@ class MatrixView extends obsidian.ItemView {
         if (!closedG)
             return neighbours;
         closedG.forEachEdge(currNode, (k, a, s, t) => {
-            var _a;
             const { field, dir, implied } = a;
             if (s === currNode) {
                 neighbours[dir].reals.push({ to: t, field, implied });
@@ -29586,7 +29573,7 @@ class MatrixView extends obsidian.ItemView {
             else {
                 neighbours[getOppDir(dir)].implieds.push({
                     to: s,
-                    field: (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir),
+                    field: getOppFields(userHiers, field, dir)[0],
                     implied,
                 });
             }
@@ -54709,7 +54696,6 @@ class BCPlugin extends obsidian.Plugin {
                 const activeView = this.getActiveTYPEView(MATRIX_VIEW);
                 if (activeView)
                     await activeView.draw();
-                // if (this.settings.showBCs) await drawTrail(this);
             }
         });
         this.registerEvent(this.activeLeafChange);
@@ -54721,102 +54707,52 @@ class BCPlugin extends obsidian.Plugin {
         });
         this.registerEvent(this.layoutChange);
     }
-    async waitForCache() {
-        var _a, _b, _c;
-        if (this.app.plugins.enabledPlugins.has("dataview")) {
-            let basename;
-            while (!basename ||
-                !this.app.plugins.plugins.dataview.api.page(basename)) {
-                await wait(100);
-                basename = (_c = (_b = (_a = this.app) === null || _a === void 0 ? void 0 : _a.workspace) === null || _b === void 0 ? void 0 : _b.getActiveFile()) === null || _c === void 0 ? void 0 : _c.basename;
-            }
-        }
-        else {
-            await waitForResolvedLinks(this.app);
-        }
-    }
     async onload() {
         console.log("loading breadcrumbs plugin");
+        const { app } = this;
         await this.loadSettings();
         const { settings } = this;
-        this.addSettingTab(new BCSettingTab(this.app, this));
-        // Prevent breaking change
-        if (typeof settings.debugMode === "boolean") {
-            settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
-            await this.saveSettings();
-        }
-        //@ts-ignore
-        const { userHierarchies } = settings;
-        if (userHierarchies !== undefined && userHierarchies.length > 0) {
-            settings.userHiers = userHierarchies;
-            //@ts-ignore
-            delete settings.userHierarchies;
-            await this.saveSettings();
-        }
-        ["prev", "next"].forEach((dir) => {
-            settings.userHiers.forEach(async (hier, i) => {
-                if (hier[dir] === undefined)
-                    settings.userHiers[i][dir] = [];
-                await this.saveSettings();
-            });
-        });
-        if (settings.hasOwnProperty("limitTrailCheckboxStates")) {
-            //@ts-ignore
-            delete settings.limitTrailCheckboxStates;
-            await this.saveSettings();
-        }
-        if (settings.hasOwnProperty("limitWriteBCCheckboxStates")) {
-            //@ts-ignore
-            delete settings.limitWriteBCCheckboxStates;
-            await this.saveSettings();
-        }
-        if (!settings.CHECKBOX_STATES_OVERWRITTEN) {
-            const fields = getFields(settings.userHiers);
-            settings.limitWriteBCCheckboxes = fields;
-            settings.limitJumpToFirstFields = fields;
-            settings.limitTrailCheckboxes = getFields(settings.userHiers, "up");
-            settings.CHECKBOX_STATES_OVERWRITTEN = true;
-            await this.saveSettings();
-        }
+        this.addSettingTab(new BCSettingTab(app, this));
+        this.db = new Debugger(this);
+        this.registerEditorSuggest(new FieldSuggestor(this));
+        const { openMatrixOnLoad, openStatsOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, showBCsInEditLPMode, userHiers, } = settings;
         this.VIEWS = [
             {
                 plain: "Matrix",
                 type: MATRIX_VIEW,
                 constructor: MatrixView,
-                openOnLoad: settings.openMatrixOnLoad,
+                openOnLoad: openMatrixOnLoad,
             },
             {
                 plain: "Stats",
                 type: STATS_VIEW,
                 constructor: StatsView,
-                openOnLoad: settings.openStatsOnLoad,
+                openOnLoad: openStatsOnLoad,
             },
             {
                 plain: "Duck",
                 type: DUCK_VIEW,
                 constructor: DucksView,
-                openOnLoad: settings.openDuckOnLoad,
+                openOnLoad: openDuckOnLoad,
             },
             {
                 plain: "Down",
                 type: TREE_VIEW,
                 constructor: TreeView,
-                openOnLoad: settings.openDownOnLoad,
+                openOnLoad: openDownOnLoad,
             },
         ];
-        this.db = new Debugger(this);
-        this.registerEditorSuggest(new FieldSuggestor(this));
         for (const { constructor, type } of this.VIEWS) {
             this.registerView(type, (leaf) => new constructor(leaf, this));
         }
         obsidian.addIcon(DUCK_ICON, DUCK_ICON_SVG);
         obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
-        await this.waitForCache();
+        await waitForCache(this);
         this.mainG = await buildMainG(this);
         this.closedG = buildClosedG(this);
-        this.app.workspace.onLayoutReady(async () => {
+        app.workspace.onLayoutReady(async () => {
             var _a;
-            const noFiles = this.app.vault.getMarkdownFiles().length;
+            const noFiles = app.vault.getMarkdownFiles().length;
             if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes().length) < noFiles) {
                 await wait(3000);
                 this.mainG = await buildMainG(this);
@@ -54824,17 +54760,16 @@ class BCPlugin extends obsidian.Plugin {
             }
             for (const { openOnLoad, type, constructor } of this.VIEWS) {
                 if (openOnLoad)
-                    await openView(this.app, type, constructor);
+                    await openView(app, type, constructor);
             }
-            if (settings.showBCs)
+            if (showBCs)
                 await drawTrail(this);
             this.registerActiveLeafChangeEvent();
             this.registerLayoutChangeEvent();
-            this.app.workspace.iterateAllLeaves((leaf) => {
-                if (leaf instanceof obsidian.MarkdownView) {
+            app.workspace.iterateAllLeaves((leaf) => {
+                if (leaf instanceof obsidian.MarkdownView)
                     //@ts-ignore
                     leaf.view.previewMode.rerender(true);
-                }
             });
         });
         for (const { type, plain, constructor } of this.VIEWS) {
@@ -54843,24 +54778,21 @@ class BCPlugin extends obsidian.Plugin {
                 name: `Open ${plain} View`,
                 //@ts-ignore
                 checkCallback: async (checking) => {
-                    if (checking) {
-                        return this.app.workspace.getLeavesOfType(type).length === 0;
-                    }
-                    await openView(this.app, type, constructor);
+                    if (checking)
+                        return app.workspace.getLeavesOfType(type).length === 0;
+                    await openView(app, type, constructor);
                 },
             });
         }
         this.addCommand({
             id: "open-vis-modal",
             name: "Open Visualisation Modal",
-            callback: () => {
-                new VisModal(this.app, this).open();
-            },
+            callback: () => new VisModal(app, this).open(),
         });
         this.addCommand({
             id: "manipulate-hierarchy-notes",
             name: "Adjust Hierarchy Notes",
-            callback: () => new HierarchyNoteSelectorModal(this.app, this).open(),
+            callback: () => new HierarchyNoteSelectorModal(app, this).open(),
         });
         this.addCommand({
             id: "Refresh-Breadcrumbs-Index",
@@ -54871,7 +54803,7 @@ class BCPlugin extends obsidian.Plugin {
             id: "Toggle-trail-in-Edit&LP",
             name: "Toggle: Show Trail/Grid in Edit & LP mode",
             callback: async () => {
-                settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
+                settings.showBCsInEditLPMode = !showBCsInEditLPMode;
                 await this.saveSettings();
                 await drawTrail(this);
             },
@@ -54879,10 +54811,7 @@ class BCPlugin extends obsidian.Plugin {
         this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
             name: "Write Breadcrumbs to Current File",
-            callback: async () => {
-                const currFile = this.app.workspace.getActiveFile();
-                await writeBCToFile(this, currFile);
-            },
+            callback: async () => await writeBCToFile(this),
         });
         this.addCommand({
             id: "Write-Breadcrumbs-to-All-Files",
@@ -54906,14 +54835,14 @@ class BCPlugin extends obsidian.Plugin {
                 callback: async () => jumpToFirstDir(this, dir),
             });
         });
-        getFields(settings.userHiers).forEach((field) => {
+        getFields(userHiers).forEach((field) => {
             this.addCommand({
                 id: `new-file-with-curr-as-${field}`,
                 name: `Create a new '${field}' from the current note`,
                 callback: async () => thread(this, field),
             });
         });
-        this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
+        this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", getCodeblockCB(this));
     }
     getActiveTYPEView(type) {
@@ -54935,7 +54864,6 @@ class BCPlugin extends obsidian.Plugin {
     onunload() {
         console.log("unloading");
         this.VIEWS.forEach(async (view) => {
-            // await this.getActiveTYPEView(view.type)?.close();
             this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
                 leaf.detach();
             });

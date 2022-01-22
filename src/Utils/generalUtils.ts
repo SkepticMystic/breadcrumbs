@@ -40,31 +40,40 @@ export const splitAndTrim = (fields: string): string[] => {
   else return fields.split(",").map((str) => str.trim());
 };
 
-export function padArray(arr: any[], finalLength: number, filler = ""): any[] {
-  const copy = [...arr];
+/**
+ * Pad an array with a filler value to a specified length.
+ * @param {T[]} arr - The array to pad.
+ * @param {number} finalLength - The final length of the array
+ * @param {string} [filler=""] - The filler to use if the array is too short.
+ * @returns {(T | string)[]} The array with the new values.
+ */
+export function padArray<T>(
+  arr: T[],
+  finalLength: number,
+  filler: string = ""
+): (T | string)[] {
+  const copy: (T | string)[] = [...arr];
   const currLength = copy.length;
-  if (currLength > finalLength) {
+  if (currLength > finalLength)
     throw new Error("Current length is greater than final length");
-  } else if (currLength === finalLength) {
-    return copy;
-  } else {
-    for (let i = currLength; i < finalLength; i++) {
-      copy.push(filler);
-    }
+  else if (currLength === finalLength) return copy;
+  else {
+    for (let i = currLength; i < finalLength; i++) copy.push(filler);
     return copy;
   }
 }
 
-export function transpose(A: any[][]): any[][] {
+/**
+ * transpose(A) returns the transpose of A.
+ * @param {T[][]} A - The matrix to transpose.
+ * @returns {T[][]} A 2D array of the transposed matrix.
+ */
+export function transpose<T>(A: T[][]): T[][] {
   const cols = A[0].length;
-  const AT: any[][] = [];
-  // For each column
-  for (let j = 0; j < cols; j++) {
-    // Add a new row to AT
-    AT.push([]);
-    // And fill it with the values in the jth column of A
-    A.forEach((row) => AT[j].push(row[j]));
-  }
+  const AT: T[][] = [];
+
+  for (let j = 0; j < cols; j++) AT.push(A.map((row) => row[j]));
+
   return AT;
 }
 
@@ -130,9 +139,14 @@ export function permute(permutation: any[]): any[][] {
 
 export const range = (n: number) => [...Array(n).keys()];
 
-export function complement<T>(A: T[], B: T[]) {
-  return A.filter((a) => !B.includes(a));
-}
+/**
+ * "Given two arrays, return the elements in the first array that are not in the second array."
+ * @param {T[]} A - the array of items to be filtered
+ * @param {T[]} B - the array of items that are not in A
+ * @returns {T[]} None
+ */
+export const complement = <T>(A: T[], B: T[]) =>
+  A.filter((a) => !B.includes(a));
 
 export function swapItems<T>(i: number, j: number, arr: T[]) {
   const max = arr.length - 1;
@@ -143,14 +157,12 @@ export function swapItems<T>(i: number, j: number, arr: T[]) {
   return arr;
 }
 
-export const linkClass = (app: App, to: string, realQ = true) =>
-  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
-    realQ ? "" : "BC-Implied"
-  }`;
-
-export function removeDuplicates<T>(arr: T[]) {
-  return [...new Set(arr)];
-}
+/**
+ * Remove duplicates from an array.
+ * @param {T[]} arr - The array to be filtered.
+ * @returns {T[]} The array with duplicates removed.
+ */
+export const removeDuplicates = <T>(arr: T[]) => [...new Set(arr)];
 
 export function strToRegex(input: string) {
   const match = input.match(regNFlags);

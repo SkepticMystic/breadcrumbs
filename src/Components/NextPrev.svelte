@@ -3,7 +3,7 @@
   import { openOrSwitch } from "obsidian-community-lib";
   import type { SquareItem } from "../interfaces";
   import type BCPlugin from "../main";
-  import { linkClass } from "../Utils/generalUtils";
+  import { linkClass } from "../Utils/ObsidianUtils";
 
   export let app: App;
   export let plugin: BCPlugin;
@@ -72,8 +72,5 @@
   .BC-NextPrev-Container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-  }
-
-  .BC-NextPrev-Container div {
   }
 </style>

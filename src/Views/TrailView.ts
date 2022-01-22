@@ -17,12 +17,7 @@ import {
   getSubForFields,
   getSubInDirs,
 } from "../Utils/graphUtils";
-import {
-  fallbackOppField,
-  getFields,
-  getOppDir,
-  getOppFields,
-} from "../Utils/HierUtils";
+import { getFields, getOppDir, getOppFields } from "../Utils/HierUtils";
 import { createJugglTrail } from "../Visualisations/Juggl";
 
 function getLimitedTrailSub(plugin: BCPlugin) {
@@ -36,10 +31,7 @@ function getLimitedTrailSub(plugin: BCPlugin) {
     subGraph = getSubInDirs(mainG, "up", "down");
   } else {
     const oppFields = limitTrailCheckboxes
-      .map(
-        (field) =>
-          getOppFields(userHiers, field)?.[0] ?? fallbackOppField(field, "up")
-      )
+      .map((field) => getOppFields(userHiers, field, "up")?.[0])
       .filter((field) => field !== undefined);
     subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
   }
@@ -92,8 +84,7 @@ function getNextNPrev(plugin: BCPlugin, currNode: string) {
     if (s === currNode) {
       nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
     } else {
-      const oppField =
-        getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
+      const oppField = getOppFields(userHiers, field, dir)[0];
       nextNPrev[getOppDir(dir)].implieds.push({
         field: oppField,
         to: s,

@@ -114,6 +114,14 @@ export function getCodeblockCB(plugin: BCPlugin) {
   };
 }
 
+/**
+ * Parse a string as a boolean value.
+ * @param {string} value - string
+ * @returns {string | boolean}
+ */
+const parseAsBool = (value: string): string | boolean =>
+  value === "true" ? true : value === "false" ? false : value;
+
 function parseCodeBlockSource(source: string): ParsedCodeblock {
   const lines = source.split("\n");
   const getValue = (type: string) =>
@@ -125,13 +133,8 @@ function parseCodeBlockSource(source: string): ParsedCodeblock {
   const results: { [field in CodeblockFields]: string | boolean | string[] } =
     {};
   CODEBLOCK_FIELDS.forEach((field) => {
-    results[field] = getValue(field);
-    if (results[field] === "false") {
-      results[field] = false;
-    }
-    if (results[field] === "true") {
-      results[field] = true;
-    }
+    const value = getValue(field);
+    results[field] = parseAsBool(value);
   });
 
   results.field = results.field
@@ -209,9 +212,7 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
       </code></pre>`;
 }
 
-function indentToDepth(indent: string) {
-  return indent.length / 2 + 1;
-}
+const indentToDepth = (indent: string) => indent.length / 2 + 1;
 
 function meetsConditions(
   indent: string,
@@ -241,9 +242,8 @@ export function createdJugglCB(
   const nodes = lines
     .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
     .map(([_, node]) => node + ".md");
-  if (min <= 0) {
-    nodes.push(source + ".md");
-  }
+  if (min <= 0) nodes.push(source + ".md");
+
   console.log({ lines, nodes });
   createJuggl(plugin, target, nodes, args);
 }

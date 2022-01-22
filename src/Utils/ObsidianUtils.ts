@@ -1,4 +1,9 @@
-import type { FrontMatterCache, TFile } from "obsidian";
+import type { App, FrontMatterCache, TFile } from "obsidian";
+import {
+  isInVault,
+  wait,
+  waitForResolvedLinks,
+} from "obsidian-community-lib/dist/utils";
 import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
@@ -99,3 +104,21 @@ export function getAlt(node: string, plugin: BCPlugin): string | null {
     }
   } else return null;
 }
+
+export async function waitForCache(plugin: BCPlugin) {
+  const { app } = plugin;
+  if (app.plugins.enabledPlugins.has("dataview")) {
+    let basename: string;
+    while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
+      await wait(100);
+      basename = app?.workspace?.getActiveFile()?.basename;
+    }
+  } else {
+    await waitForResolvedLinks(app);
+  }
+}
+
+export const linkClass = (app: App, to: string, realQ = true) =>
+  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
+    realQ ? "" : "BC-Implied"
+  }`;

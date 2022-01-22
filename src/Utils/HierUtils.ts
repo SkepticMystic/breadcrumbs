@@ -55,13 +55,21 @@ export function getFieldInfo(userHiers: UserHier[], field: string) {
   return { fieldHier, fieldDir };
 }
 
-export function getOppFields(userHiers: UserHier[], field: string) {
-  // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
+export function getOppFields(
+  userHiers: UserHier[],
+  field: string,
+  dir: Directions
+) {
+  // If the field ends with `>`, it is already the opposite field we need (coming from `getOppFallback`)
   if (field.endsWith(">")) return field.slice(0, -4);
+
+  const oppFields = [fallbackOppField(field, dir)];
   const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
-  if (!fieldHier || !fieldDir) return undefined;
+  if (!fieldHier || !fieldDir) return oppFields;
+
   const oppDir = getOppDir(fieldDir);
-  return fieldHier[oppDir];
+  oppFields.unshift(...fieldHier[oppDir]);
+  return oppFields;
 }
 
 export const hierToStr = (hier: UserHier) =>
