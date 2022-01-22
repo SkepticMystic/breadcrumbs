@@ -4,6 +4,7 @@ import {
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
+import { parse, stringify } from "yaml";
 import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
@@ -70,9 +71,30 @@ export const createOrUpdateYaml = async (
   }
 };
 
+export function changeYaml(yaml: string, key: string, newVal: string): string {
+  if (yaml === "") {
+    return `${key}: ['${newVal}']`;
+  } else {
+    const parsed: { [key: string]: any } = parse(yaml);
+    const value = parsed[key];
+    if (value === undefined) {
+      parsed[key] = newVal;
+    } else if (typeof value === "string" && value !== newVal) {
+      parsed[key] = [value, newVal];
+    } else if (
+      typeof value?.[0] === "string" &&
+      value.includes &&
+      !value.includes(newVal)
+    ) {
+      parsed[key] = [...value, newVal];
+    }
+    // else if (other types of values...)
+    return stringify(parsed);
+  }
+}
+
 export function splitAtYaml(content: string): [string, string] {
-  const startsWithYaml = content.startsWith("---");
-  if (!startsWithYaml) return ["", content];
+  if (!content.startsWith("---\n")) return ["", content];
   else {
     const splits = content.split("---");
     return [

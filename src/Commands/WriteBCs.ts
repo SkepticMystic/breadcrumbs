@@ -1,21 +1,13 @@
 import { Notice, TFile } from "obsidian";
 import type BCPlugin from "../main";
 import { getOppFields } from "../Utils/HierUtils";
-import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
+import { changeYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
 export async function writeBCToFile(plugin: BCPlugin, currFile?: TFile) {
   const { app, settings, mainG } = plugin;
   const file = currFile ?? app.workspace.getActiveFile();
 
   const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
-
-  const { frontmatter } = app.metadataCache.getFileCache(file);
-  const api = app.plugins.plugins.metaedit?.api;
-
-  if (!api) {
-    new Notice("Metaedit must be enabled for this function to work");
-    return;
-  }
 
   const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
     const { field, dir } = a;
@@ -26,20 +18,24 @@ export async function writeBCToFile(plugin: BCPlugin, currFile?: TFile) {
   for (const { succ, field } of succInfo) {
     if (!limitWriteBCCheckboxes.includes(field)) return;
 
+    const content = await app.vault.read(file);
+    const [yaml, afterYaml] = splitAtYaml(content);
+
     if (!writeBCsInline) {
-      await createOrUpdateYaml(field, succ, file, frontmatter, api);
+      const inner = yaml === "" ? yaml : yaml.slice(4, -4);
+      const newYaml = changeYaml(inner, field, succ);
+      const newContent = `---\n${newYaml}\n---${afterYaml}`;
+      await app.vault.modify(file, newContent);
     } else {
       // TODO Check if this note already has this field
-      let content = await app.vault.read(file);
-      const splits = splitAtYaml(content);
-      content =
-        splits[0] +
-        (splits[0].length ? "\n" : "") +
+      const newContent =
+        yaml +
+        (yaml.length ? "\n" : "") +
         `${field}:: [[${succ}]]` +
-        (splits[1].length ? "\n" : "") +
-        splits[1];
+        (afterYaml.length ? "\n" : "") +
+        afterYaml;
 
-      await app.vault.modify(file, content);
+      await app.vault.modify(file, newContent);
     }
   }
 }

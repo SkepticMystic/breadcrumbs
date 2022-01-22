@@ -3,7 +3,7 @@ import { addIcon, EventRef, MarkdownView, Plugin } from "obsidian";
 import {
   addFeatherIcon,
   openView,
-  wait
+  wait,
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
@@ -21,7 +21,7 @@ import {
   STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
-  TREE_VIEW
+  TREE_VIEW,
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
