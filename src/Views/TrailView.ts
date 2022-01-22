@@ -232,31 +232,24 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       return;
     }
 
-    const props = { sortedTrails, app, plugin };
+    const targetProps = {
+      target: trailDiv,
+      props: { sortedTrails, plugin },
+    };
 
-    if (showTrail && sortedTrails.length) {
-      new TrailPath({
-        target: trailDiv,
-        props,
-      });
-    }
-    if (showGrid && sortedTrails.length) {
-      new TrailGrid({
-        target: trailDiv,
-        props,
-      });
-    }
+    if (showTrail && sortedTrails.length) new TrailPath(targetProps);
+    if (showGrid && sortedTrails.length) new TrailGrid(targetProps);
     if (showPrevNext && (next.length || prev.length)) {
       new NextPrev({
         target: trailDiv,
-        props: { app, plugin, next, prev },
+        props: { plugin, next, prev },
       });
     }
     if (showJuggl && sortedTrails.length) {
       createJugglTrail(
         plugin,
         trailDiv,
-        props.sortedTrails,
+        sortedTrails,
         basename,
         JUGGL_TRAIL_DEFAULTS
       );

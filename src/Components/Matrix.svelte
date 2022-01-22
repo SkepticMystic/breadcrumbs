@@ -26,65 +26,60 @@
 >
   {#each filteredSquaresArr as squares}
     <div class="BC-matrix-hier">
-      {#each squares as square}
-        {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
+      {#each squares as { field, impliedItems, realItems }}
+        {#if realItems.length || (showImpliedRelations && impliedItems.length)}
           <div class="BC-Matrix-square">
             <div class="BC-Matrix-headers">
-              <h4 class="BC-Matrix-header">{square.field}</h4>
+              <h4 class="BC-Matrix-header">{field}</h4>
 
               {#if showRelationType}
                 <h6 class="BC-Matrix-header">
-                  {square.realItems.length ? "Real" : "Implied"}
+                  {realItems.length ? "Real" : "Implied"}
                 </h6>
               {/if}
             </div>
-            {#if square.realItems.length}
+            {#if realItems.length}
               <ol>
-                {#each square.realItems as realItem}
+                {#each realItems as { alt, cls, implied, to }}
                   <li>
                     <div
-                      class="{realItem.cls} {realItem.implied ?? ''}"
-                      on:click={async (e) => openOrSwitch(app, realItem.to, e)}
+                      class="{cls} {implied ?? ''}"
+                      on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(event) =>
-                        hoverPreview(event, matrixView, realItem.to)}
+                        hoverPreview(event, matrixView, to)}
                     >
-                      {realItem.alt ?? dropPathNDendron(realItem.to, settings)}
+                      {alt ?? dropPathNDendron(to, settings)}
                     </div>
                   </li>
                 {/each}
               </ol>
             {/if}
 
-            {#if showImpliedRelations && square.impliedItems.length}
+            {#if showImpliedRelations && impliedItems.length}
               <div class="BC-Matrix-headers">
                 <h4 class="BC-Matrix-header" />
-                {#if square.impliedItems.length}
-                  {#if showRelationType && square.realItems.length}
+                {#if impliedItems.length}
+                  {#if showRelationType && realItems.length}
                     <h6 class="BC-Matrix-header">Implied</h6>
                   {/if}
                 {/if}
               </div>
-              <ol start={square.realItems.length + 1}>
-                {#each square.impliedItems as impliedItem}
+              <ol start={realItems.length + 1}>
+                {#each impliedItems as { alt, cls, implied, to, parent }}
                   <li
                     class="BC-Implied {treatCurrNodeAsImpliedSibling &&
-                    impliedItem.to === currFile.basename
+                    to === currFile.basename
                       ? 'BC-active-note'
                       : ''}"
                   >
                     <div
-                      class="{impliedItem.cls} {impliedItem.implied ?? ''}"
-                      on:click={async (e) =>
-                        openOrSwitch(app, impliedItem.to, e)}
-                      on:mouseover={(e) =>
-                        hoverPreview(e, matrixView, impliedItem.to)}
-                      aria-label={impliedItem.parent
-                        ? "↑ " + impliedItem.parent
-                        : ""}
+                      class="{cls} {implied ?? ''}"
+                      on:click={async (e) => await openOrSwitch(app, to, e)}
+                      on:mouseover={(e) => hoverPreview(e, matrixView, to)}
+                      aria-label={parent ? "↑ " + parent : ""}
                       aria-label-position={rlLeaf ? "left" : "right"}
                     >
-                      {impliedItem.alt ??
-                        dropPathNDendron(impliedItem.to, settings)}
+                      {alt ?? dropPathNDendron(to, settings)}
                     </div>
                   </li>
                 {/each}
@@ -105,9 +100,6 @@
     border: 3px solid var(--background-modifier-border);
     border-radius: 3px;
     text-align: center;
-    /* padding: 5px; */
-    /* padding: 1em; */
-    /* max-width: 240px; */
     margin: 3px;
     position: relative;
     height: fit-content;
@@ -115,7 +107,6 @@
 
   div.BC-Matrix-square {
     border: 1px solid var(--background-modifier-border);
-    /* border-radius: 3px; */
   }
 
   div.BC-Matrix-headers {
@@ -127,13 +118,6 @@
     margin: 2px;
     padding: 0px 10px;
   }
-
-  /* h4.BC-Matrix-header {
-    color: var(--text-title-h4);
-  }
-  h6.BC-Matrix-header {
-    color: var(--text-title-h6);
-  } */
 
   ol {
     margin: 3px;

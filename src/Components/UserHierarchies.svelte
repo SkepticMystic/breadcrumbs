@@ -19,7 +19,7 @@
 </script>
 
 <div>
-  <div class="GA-Buttons">
+  <div class="BC-Buttons">
     <button
       aria-label="Add New Hierarchy"
       on:click={async () => (currHiers = [...currHiers, blankUserHier()])}
@@ -58,36 +58,42 @@
           .map((dirFields) => `(${dirFields})`)
           .join(" ")}
 
-        <span class="GA-Buttons">
+        <span class="BC-Buttons">
           <button
             aria-label="Swap with Hierarchy Above"
             on:click={async () => {
               currHiers = swapItems(i, i - 1, currHiers);
               await update(currHiers);
-            }}>↑</button
+            }}
           >
+            ↑
+          </button>
           <button
             aria-label="Swap with Hierarchy Below"
             on:click={async () => {
               currHiers = swapItems(i, i + 1, currHiers);
               await update(currHiers);
-            }}>↓</button
+            }}
           >
+            ↓
+          </button>
           <button
             aria-label="Remove Hierarchy"
             on:click={async () => {
               currHiers.splice(i, 1);
               currHiers = currHiers;
               await update(currHiers);
-            }}>X</button
+            }}
           >
+            X
+          </button>
         </span>
       </summary>
       {#each DIRECTIONS as dir}
         <div>
           <label class="BC-Arrow-Label" for={dir}>
-            {ARROW_DIRECTIONS[dir]}</label
-          >
+            {ARROW_DIRECTIONS[dir]}
+          </label>
           <input
             type="text"
             size="20"
@@ -110,7 +116,7 @@
     display: inline-block;
     width: 20px !important;
   }
-  div.GA-Buttons {
+  div.BC-Buttons {
     padding-bottom: 5px;
   }
 

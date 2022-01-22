@@ -311,7 +311,7 @@ export interface ParsedCodeblock extends IJugglSettings {
   fields: string[];
   title: string;
   depth: string[];
-  flat: string;
+  flat: boolean;
   type: CodeblockType;
   content: string;
   from: string;

@@ -30,55 +30,51 @@
         >{squares.map((square) => square.field).join(", ")}</summary
       >
 
-      {#each squares as square}
-        {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
+      {#each squares as { field, impliedItems, realItems }}
+        {#if realItems.length || (showImpliedRelations && impliedItems.length)}
           <details open class="BC-details">
-            <summary>{square.field}</summary>
-            {#if square.realItems.length}
+            <summary>{field}</summary>
+            {#if realItems.length}
               {#if showRelationType}
                 <h5 class="BC-header">Real</h5>
               {/if}
 
               <ol>
-                {#each square.realItems as realItem}
+                {#each realItems as { alt, cls, implied, to }}
                   <li>
                     <div
-                      class="{realItem.cls} {realItem.implied ?? ''}"
-                      on:click={async (e) => openOrSwitch(app, realItem.to, e)}
-                      on:mouseover={(e) =>
-                        hoverPreview(e, matrixView, realItem.to)}
+                      class="{cls} {implied ?? ''}"
+                      on:click={async (e) => await openOrSwitch(app, to, e)}
+                      on:mouseover={(e) => hoverPreview(e, matrixView, to)}
                     >
-                      {realItem.alt ?? dropPathNDendron(realItem.to, settings)}
+                      {alt ?? dropPathNDendron(to, settings)}
                     </div>
                   </li>
                 {/each}
               </ol>
             {/if}
 
-            {#if showImpliedRelations && square.impliedItems.length}
+            {#if showImpliedRelations && impliedItems.length}
               {#if showRelationType}
                 <h5 class="BC-header">Implied</h5>
               {/if}
 
-              <ol start={square.realItems.length + 1}>
-                {#each square.impliedItems as impliedItem}
+              <ol start={realItems.length + 1}>
+                {#each impliedItems as { alt, cls, implied, to, parent }}
                   <li
                     class="BC-Implied {treatCurrNodeAsImpliedSibling &&
-                    impliedItem.to === currFile.basename
+                    to === currFile.basename
                       ? 'BC-active-note'
                       : ''}"
                   >
                     <div
-                      class="{impliedItem.cls} {impliedItem.implied ?? ''}"
-                      on:click={async (e) =>
-                        openOrSwitch(app, impliedItem.to, e)}
-                      on:mouseover={(e) =>
-                        hoverPreview(e, matrixView, impliedItem.to)}
-                      aria-label={impliedItem.parent ?? ""}
+                      class="{cls} {implied ?? ''}"
+                      on:click={async (e) => await openOrSwitch(app, to, e)}
+                      on:mouseover={(e) => hoverPreview(e, matrixView, to)}
+                      aria-label={parent ?? ""}
                       aria-label-position={rlLeaf ? "left" : "right"}
                     >
-                      {impliedItem.alt ??
-                        dropPathNDendron(impliedItem.to, settings)}
+                      {alt ?? dropPathNDendron(to, settings)}
                     </div>
                   </li>
                 {/each}
@@ -97,11 +93,9 @@
     font-size: larger;
   }
   summary {
-    /* margin: 3px; */
     color: var(--text-title-h3);
   }
   h5.BC-header {
-    /* margin: 3px; */
     color: var(--text-title-h5);
   }
 

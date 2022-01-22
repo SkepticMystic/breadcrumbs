@@ -47,6 +47,7 @@ export class BCSettingTab extends PluginSettingTab {
     const { settings } = plugin;
     containerEl.empty();
     containerEl.createEl("h2", { text: "Breadcrumbs Settings" });
+    containerEl.addClass("BC-settings-tab");
 
     addHierarchySettings(plugin, containerEl);
     addRelationSettings(plugin, containerEl);

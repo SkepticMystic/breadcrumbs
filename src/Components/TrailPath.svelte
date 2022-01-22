@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { App } from "obsidian";
   import {
     hoverPreview,
     openOrSwitch,
@@ -9,13 +8,11 @@
   import { getAlt } from "../Utils/ObsidianUtils";
 
   export let sortedTrails: string[][];
-  export let app: App;
   export let plugin: BCPlugin;
 
-  const { settings } = plugin;
+  const { settings, app } = plugin;
   const { view } = app.workspace.activeLeaf;
-
-  let showAll = settings.showAll;
+  let { showAll, noPathMessage, trailSeperator } = settings;
 
   $: trailsToShow = showAll ? sortedTrails : [sortedTrails[0]];
 </script>
@@ -24,8 +21,8 @@
   <div class="trails-div">
     {#each trailsToShow as trail}
       <div>
-        {#if trail.length === 0}
-          <span>{settings.noPathMessage}</span>
+        {#if !trail.length}
+          <span class="BC-empty-trail">{noPathMessage}</span>
         {:else}
           {#each trail as crumb, i}
             <span
@@ -36,7 +33,7 @@
               {getAlt(crumb, plugin) ?? dropDendron(crumb, settings)}
             </span>
             {#if i < trail.length - 1}
-              <span>{" " + settings.trailSeperator + " "}</span>
+              <span class="BC-trail-sep">{" " + trailSeperator + " "}</span>
             {/if}
           {/each}
         {/if}

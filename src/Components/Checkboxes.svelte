@@ -6,17 +6,18 @@
   export let settingName: string;
   export let options: string[];
 
-  let selected = plugin.settings[settingName];
+  const { settings } = plugin;
+
+  let selected = settings[settingName];
 
   let toNone = selected.length === 0 ? false : true;
   $: toNone = selected.length === 0 ? false : true;
 
   async function save() {
-    if (plugin.settings[settingName] === undefined) {
+    if (settings[settingName] === undefined)
       return console.log(settingName + " not found in BC settings");
-    }
 
-    plugin.settings[settingName] = selected;
+    settings[settingName] = selected;
     await plugin.saveSettings();
     await refreshIndex(plugin);
   }
@@ -42,7 +43,7 @@
           type="checkbox"
           value={option}
           bind:group={selected}
-          on:change={async () => save()}
+          on:change={async () => await save()}
         />
         {option}
       </label>
@@ -54,6 +55,5 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    /* grid-gap: 10px; */
   }
 </style>

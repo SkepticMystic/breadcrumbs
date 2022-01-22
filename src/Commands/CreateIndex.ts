@@ -114,3 +114,18 @@ export async function copyGlobalIndex(plugin: BCPlugin) {
   info({ globalIndex });
   await copy(globalIndex);
 }
+
+export const indexToLinePairs = (
+  index: string,
+  flat = false
+): [string, string][] =>
+  index
+    .split("\n")
+    .map((line) => {
+      const pair = line.split("- ");
+      return [flat ? "" : pair[0], pair.slice(1).join("- ")] as [
+        string,
+        string
+      ];
+    })
+    .filter((pair) => pair[1] !== "");

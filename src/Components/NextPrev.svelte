@@ -1,38 +1,38 @@
 <script lang="ts">
-  import type { App } from "obsidian";
   import { openOrSwitch } from "obsidian-community-lib";
   import type { SquareItem } from "../interfaces";
   import type BCPlugin from "../main";
   import { linkClass } from "../Utils/ObsidianUtils";
 
-  export let app: App;
   export let plugin: BCPlugin;
   export let next: SquareItem[];
   export let prev: SquareItem[];
+
+  const { app } = plugin;
 </script>
 
 <div class="BC-NextPrev-Container">
   <div class="BC-prevs">
     <span>
-      {#each prev as p}
+      {#each prev as { field, real, to }}
         <div
-          on:click={async (e) => openOrSwitch(app, p.to, e)}
-          class={linkClass(app, p.to, p.real)}
+          class="{linkClass(app, to, real)} BC-prev"
+          on:click={async (e) => await openOrSwitch(app, to, e)}
         >
-          <strong>{p.field}</strong>
-          {p.to}
+          <strong>{field}</strong>
+          {to}
         </div>
       {/each}
     </span>
   </div>
   <div class="BC-nexts">
     <span>
-      {#each next as n}
+      {#each next as { field, real, to }}
         <div
-          on:click={async (e) => openOrSwitch(app, n.to, e)}
-          class="{linkClass(app, n.to, n.real)} BC-next"
+          class="{linkClass(app, to, real)} BC-next"
+          on:click={async (e) => await openOrSwitch(app, to, e)}
         >
-          {n.to} <strong>{n.field}</strong>
+          {to} <strong>{field}</strong>
         </div>
       {/each}
     </span>
@@ -40,26 +40,8 @@
 </div>
 
 <style>
-  /* span {
-    border: 1px solid white;
-    padding: 2px;
-  }
-  .BC-prevs span {
-    color: red;
-  }
-  */
   .BC-nexts div {
     text-align: right;
-  }
-
-  .BC-right-arrow {
-    padding-left: 5px;
-    float: right;
-  }
-
-  .BC-left-arrow {
-    padding-right: 5px;
-    float: left;
   }
 
   .BC-nexts {

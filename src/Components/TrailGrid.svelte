@@ -21,17 +21,16 @@
   import { getAlt, linkClass } from "../Utils/ObsidianUtils";
 
   export let sortedTrails: string[][];
-  export let app: App;
   export let plugin: BCPlugin;
 
-  const { settings } = plugin;
+  const { settings, app } = plugin;
   const { userHiers, gridHeatmap, heatmapColour, gridDots, dotsColour } =
     settings;
 
   const currFile = app.workspace.getActiveFile();
   const activeLeafView = app.workspace.activeLeaf.view;
 
-  const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
+  const allCells = [...new Set(sortedTrails.flat())];
 
   const wordCounts: { [cell: string]: number } = {};
   allCells.forEach((cell) => {
@@ -97,7 +96,7 @@
         </div>
         {#if value && gridDots}
           <div class="dots">
-            {#each range(Math.floor(wordCounts[value] / 1000)) as i}
+            {#each range(Math.floor(wordCounts[value] / 1000)) as _}
               <span class="dot" style="background-color: {dotsColour}" />
             {/each}
           </div>

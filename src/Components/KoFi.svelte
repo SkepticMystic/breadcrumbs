@@ -1,7 +1,7 @@
 <!-- Source: https://github.com/HEmile/juggl/blob/main/juggl/ui/KoFi.svelte -->
 <script>
   let button;
-  var initializeKofi = () => {
+  const initializeKofi = () => {
     kofiwidget2.init(
       "Support Breadcrumbs development!",
       "#29abe0",
