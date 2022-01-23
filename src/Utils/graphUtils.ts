@@ -5,22 +5,16 @@ import { info } from "loglevel";
 import type { App } from "obsidian";
 import type BCPlugin from "../../main";
 import { BC_I_REFLEXIVE, BC_ORDER, blankRealNImplied } from "../constants";
-// import { DIRECTIONS } from "./constants";
 import type {
   BCSettings,
   Directions,
   dvFrontmatterCache,
+  EdgeAttr,
   NodePath,
   RealNImplied,
   UserHier,
 } from "../interfaces";
-import {
-  fallbackOppField,
-  getFieldInfo,
-  getFields,
-  getOppDir,
-  getOppFields,
-} from "./HierUtils";
+import { getFieldInfo, getOppDir, getOppFields } from "./HierUtils";
 import { getBaseFromMDPath } from "./ObsidianUtils";
 
 // TODO - this is a hack to get the graph to work with the approvals
@@ -47,6 +41,7 @@ export function removeUnlinkedNodes(g: MultiGraph) {
   });
   return copy;
 }
+
 /**
  * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
  * @param  {MultiGraph} main
@@ -57,7 +52,7 @@ export function getSubInDirs(main: MultiGraph, ...dirs: Directions[]) {
   main?.forEachEdge((k, a, s, t) => {
     if (dirs.includes(a.dir)) {
       //@ts-ignore
-      addNodesIfNot(sub, [s, t], a);
+      addNodesIfNot(sub, [s, t], { order: a.order });
       sub.addEdge(s, t, a);
     }
   });
@@ -74,7 +69,7 @@ export function getSubForFields(main: MultiGraph, fields: string[]) {
   main.forEachEdge((k, a, s, t) => {
     if (fields.includes(a.field)) {
       //@ts-ignore
-      addNodesIfNot(sub, [s, t], a);
+      addNodesIfNot(sub, [s, t], { order: a.order });
       sub.addEdge(s, t, a);
     }
   });
@@ -91,8 +86,7 @@ export function getSubForFields(main: MultiGraph, fields: string[]) {
  */
 export function getReflexiveClosure(
   g: MultiGraph,
-  userHiers: UserHier[],
-  closeAsOpposite: boolean = true
+  userHiers: UserHier[]
 ): MultiGraph {
   const copy = g.copy();
   copy.forEachEdge((k, a, s, t) => {
@@ -100,17 +94,12 @@ export function getReflexiveClosure(
     if (field === undefined) return;
     const oppDir = getOppDir(dir);
     const oppField =
-      getOppFields(userHiers, field)[0] ?? fallbackOppField(field, dir);
+      dir === "same" ? field : getOppFields(userHiers, field, dir)[0];
 
-    addNodesIfNot(copy, [s, t], {
-      //@ts-ignore
-      dir: closeAsOpposite ? oppDir : dir,
-      field: closeAsOpposite ? oppField : field,
-    });
+    addNodesIfNot(copy, [s, t], { order: 9999 });
     addEdgeIfNot(copy, t, s, {
-      //@ts-ignore
-      dir: closeAsOpposite ? oppDir : dir,
-      field: closeAsOpposite ? oppField : field,
+      dir: oppDir,
+      field: oppField,
       implied: BC_I_REFLEXIVE,
     });
   });
@@ -302,8 +291,7 @@ export function populateMain(
   });
   if (fillOpp) {
     const oppDir = getOppDir(dir);
-    const oppField =
-      getOppFields(userHiers, field)[0] ?? getFields(userHiers, oppDir)[0];
+    const oppField = getOppFields(userHiers, field, dir)[0];
     addEdgeIfNot(mainG, target, source, {
       dir: oppDir,
       field: oppField,
@@ -333,13 +321,8 @@ export function getRealnImplied(
 
   if (!closedG.hasNode(currNode)) return realsnImplieds;
   closedG.forEachEdge(currNode, (k, a, s, t) => {
-    const {
-      field,
-      dir: edgeDir,
-      implied,
-    } = a as { field: string; dir: Directions; implied?: string };
-    const oppField =
-      getOppFields(userHiers, field)[0] ?? fallbackOppField(field, edgeDir);
+    const { field, dir: edgeDir, implied } = a as EdgeAttr;
+    const oppField = getOppFields(userHiers, field, edgeDir)[0];
 
     (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach(
       (currDir: Directions) => {

@@ -12,16 +12,16 @@ import {
 
 export function graphlibToD3(g: Graph): d3Graph {
   const d3Graph: d3Graph = { nodes: [], links: [] };
-  const edgeIDs = {};
+  const nodeIDs = {};
 
   g.nodes().forEach((node, i) => {
     d3Graph.nodes.push({ id: i, name: node });
-    edgeIDs[node] = i;
+    nodeIDs[node] = i;
   });
   g.forEachEdge((k, a, s, t) => {
     d3Graph.links.push({
-      source: edgeIDs[s],
-      target: edgeIDs[t],
+      source: nodeIDs[s],
+      target: nodeIDs[t],
     });
   });
   return d3Graph;
@@ -228,7 +228,6 @@ export class VisModal extends Modal {
       target: contentEl,
       props: {
         modal: this,
-        settings: this.plugin.settings,
       },
     });
   }

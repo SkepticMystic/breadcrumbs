@@ -7,7 +7,7 @@
   } from "obsidian-community-lib";
   import FaFire from "svelte-icons/fa/FaFire.svelte";
   import FaRegSnowflake from "svelte-icons/fa/FaRegSnowflake.svelte";
-  import { createIndex } from "../Commands/CreateIndex";
+  import { createIndex, indexToLinePairs } from "../Commands/CreateIndex";
   import { DIRECTIONS } from "../constants";
   import type { Directions } from "../interfaces";
   import type BCPlugin from "../main";
@@ -19,32 +19,27 @@
   export let plugin: BCPlugin;
   export let view: TreeView;
 
-  const { settings } = plugin;
+  const { settings, app, closedG } = plugin;
 
   let dir: Directions = "down";
   let frozen = false;
-  let { basename } = plugin.app.workspace.getActiveFile();
+  let { basename } = app.workspace.getActiveFile();
 
-  plugin.app.workspace.on("active-leaf-change", () => {
-    if (frozen) return;
-    basename = plugin.app.workspace.getActiveFile().basename;
-  });
+  plugin.registerEvent(
+    app.workspace.on("active-leaf-change", () => {
+      if (frozen) return;
+      basename = app.workspace.getActiveFile().basename;
+    })
+  );
 
   let lines: [string, string][];
   $: {
-    const { closedG } = plugin;
     const downG = getSubInDirs(closedG, dir);
     const allPaths = dfsAllPaths(downG, basename);
     const index = createIndex(allPaths, false);
     info({ allPaths, index });
 
-    lines = index
-      .split("\n")
-      .map((line) => {
-        const pair = line.split("- ");
-        return [pair[0], pair.slice(1).join("- ")] as [string, string];
-      })
-      .filter((pair) => pair[1] !== "");
+    lines = indexToLinePairs(index);
   }
 </script>
 
@@ -55,7 +50,7 @@
   aria-label-position="left"
   on:click={() => {
     frozen = !frozen;
-    if (!frozen) basename = plugin.app.workspace.getActiveFile().basename;
+    if (!frozen) basename = app.workspace.getActiveFile().basename;
   }}
 >
   {#if frozen}
@@ -88,12 +83,12 @@
         <pre>{line[0] + "-"}</pre>
         <span
           class="internal-link"
-          on:click={async (e) => await openOrSwitch(plugin.app, line[1], e)}
+          on:click={async (e) => await openOrSwitch(app, line[1], e)}
           on:mouseover={(e) => hoverPreview(e, view, line[1])}
         >
           <!-- svelte-ignore a11y-missing-attribute -->
           <a
-            class="internal-link {isInVault(plugin.app, line[1])
+            class="internal-link {isInVault(app, line[1])
               ? ''
               : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
           >
@@ -112,9 +107,6 @@
   .BC-downs {
     padding-left: 5px;
   }
-  /* .BC-downs > div {
-    white-space: nowrap;
-  } */
   pre {
     display: inline;
   }

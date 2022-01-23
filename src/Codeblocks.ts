@@ -1,6 +1,6 @@
 import { info } from "loglevel";
 import { MarkdownPostProcessorContext, Notice } from "obsidian";
-import { createIndex } from "./Commands/CreateIndex";
+import { createIndex, indexToLinePairs } from "./Commands/CreateIndex";
 import CBTree from "./Components/CBTree.svelte";
 import { CODEBLOCK_FIELDS, CODEBLOCK_TYPES, DIRECTIONS } from "./constants";
 import type { CodeblockFields, ParsedCodeblock } from "./interfaces";
@@ -32,6 +32,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
     let min = 0,
       max = Infinity;
     let { depth, dir, from, implied, flat } = parsedSource;
+    console.log({ flat });
     if (depth !== undefined) {
       const minNum = parseInt(depth[0]);
       if (!isNaN(minNum)) min = minNum;
@@ -71,16 +72,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
     const index = createIndex(allPaths, false);
     info({ allPaths, index });
 
-    const lines = index
-      .split("\n")
-      .map((line) => {
-        const pair = line.split("- ");
-        return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")] as [
-          string,
-          string
-        ];
-      })
-      .filter((pair) => pair[1] !== "");
+    const lines = indexToLinePairs(index, flat);
 
     switch (parsedSource.type) {
       case "tree":
@@ -114,6 +106,14 @@ export function getCodeblockCB(plugin: BCPlugin) {
   };
 }
 
+/**
+ * Parse a string as a boolean value.
+ * @param {string} value - string
+ * @returns {string | boolean}
+ */
+const parseAsBool = (value: string): string | boolean =>
+  value === "true" ? true : value === "false" ? false : value;
+
 function parseCodeBlockSource(source: string): ParsedCodeblock {
   const lines = source.split("\n");
   const getValue = (type: string) =>
@@ -125,13 +125,8 @@ function parseCodeBlockSource(source: string): ParsedCodeblock {
   const results: { [field in CodeblockFields]: string | boolean | string[] } =
     {};
   CODEBLOCK_FIELDS.forEach((field) => {
-    results[field] = getValue(field);
-    if (results[field] === "false") {
-      results[field] = false;
-    }
-    if (results[field] === "true") {
-      results[field] = true;
-    }
+    const value = getValue(field);
+    results[field] = parseAsBool(value);
   });
 
   results.field = results.field
@@ -173,7 +168,7 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
   if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
     err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
 
-  if (flat !== undefined && flat !== "true")
+  if (flat !== undefined && flat !== true && flat !== false)
     err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
 
   if (content !== undefined && content !== "open" && content !== "closed")
@@ -209,11 +204,9 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
       </code></pre>`;
 }
 
-function indentToDepth(indent: string) {
-  return indent.length / 2 + 1;
-}
+const indentToDepth = (indent: string) => indent.length / 2 + 1;
 
-function meetsConditions(
+export function meetsConditions(
   indent: string,
   node: string,
   froms: string[],
@@ -241,9 +234,8 @@ export function createdJugglCB(
   const nodes = lines
     .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
     .map(([_, node]) => node + ".md");
-  if (min <= 0) {
-    nodes.push(source + ".md");
-  }
+  if (min <= 0) nodes.push(source + ".md");
+
   console.log({ lines, nodes });
   createJuggl(plugin, target, nodes, args);
 }

@@ -156,27 +156,14 @@ export interface JugglLink {
   }[];
 }
 
-export interface neighbourObj {
-  current: TFile;
-  /** DV only recognises it if it's a string? */
-  order: string;
-  hierarchies: HierarchyFields[];
-}
-
 export type RealNImplied = {
   [dir: string]: { reals: SquareItem[]; implieds: SquareItem[] };
 };
-export type relObj = { [key: string]: string[] } | { current: TFile };
 
 export interface HierarchyNoteItem {
   parent: string;
   field: string;
   note: string;
-}
-
-export interface fileFrontmatter {
-  file: TFile;
-  frontmatter: FrontMatterCache;
 }
 
 export interface internalLinkObj {
@@ -259,14 +246,6 @@ export type HierData = {
   };
 };
 
-export type HierarchyFields = {
-  [dir in Directions]: { [field: string]: string[] };
-};
-
-export type HierarchyGraphs = {
-  [dir in Directions]: { [field: string]: MultiGraph };
-};
-
 export type SquareItem = {
   to: string;
   real: boolean;
@@ -311,7 +290,7 @@ export interface ParsedCodeblock extends IJugglSettings {
   fields: string[];
   title: string;
   depth: string[];
-  flat: string;
+  flat: boolean;
   type: CodeblockType;
   content: string;
   from: string;

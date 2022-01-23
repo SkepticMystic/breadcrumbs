@@ -4,7 +4,6 @@ import {
   addFeatherIcon,
   openView,
   wait,
-  waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
@@ -29,6 +28,7 @@ import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
 import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
 import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getFields } from "./Utils/HierUtils";
+import { waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
@@ -39,12 +39,10 @@ import { VisModal } from "./Visualisations/VisModal";
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
   visited: [string, HTMLDivElement][] = [];
-  refreshIntervalID: number;
   mainG: MultiGraph;
   closedG: MultiGraph;
   activeLeafChange: EventRef = undefined;
   layoutChange: EventRef = undefined;
-  statusBatItemEl: HTMLElement = undefined;
   db: Debugger;
   VIEWS: ViewInfo[];
 
@@ -57,7 +55,6 @@ export default class BCPlugin extends Plugin {
         } else {
           const activeView = this.getActiveTYPEView(MATRIX_VIEW);
           if (activeView) await activeView.draw();
-          // if (this.settings.showBCs) await drawTrail(this);
         }
       }
     );
@@ -71,112 +68,67 @@ export default class BCPlugin extends Plugin {
     this.registerEvent(this.layoutChange);
   }
 
-  async waitForCache() {
-    if (this.app.plugins.enabledPlugins.has("dataview")) {
-      let basename: string;
-      while (
-        !basename ||
-        !this.app.plugins.plugins.dataview.api.page(basename)
-      ) {
-        await wait(100);
-        basename = this.app?.workspace?.getActiveFile()?.basename;
-      }
-    } else {
-      await waitForResolvedLinks(this.app);
-    }
-  }
-
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
+    const { app } = this;
 
     await this.loadSettings();
     const { settings } = this;
-    this.addSettingTab(new BCSettingTab(this.app, this));
+    this.addSettingTab(new BCSettingTab(app, this));
 
-    // Prevent breaking change
-    if (typeof settings.debugMode === "boolean") {
-      settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
-      await this.saveSettings();
-    }
+    this.db = new Debugger(this);
+    this.registerEditorSuggest(new FieldSuggestor(this));
 
-    //@ts-ignore
-    const { userHierarchies } = settings;
-    if (userHierarchies !== undefined && userHierarchies.length > 0) {
-      settings.userHiers = userHierarchies;
-      //@ts-ignore
-      delete settings.userHierarchies;
-      await this.saveSettings();
-    }
-
-    ["prev", "next"].forEach((dir) => {
-      settings.userHiers.forEach(async (hier, i) => {
-        if (hier[dir] === undefined) settings.userHiers[i][dir] = [];
-        await this.saveSettings();
-      });
-    });
-
-    if (settings.hasOwnProperty("limitTrailCheckboxStates")) {
-      //@ts-ignore
-      delete settings.limitTrailCheckboxStates;
-      await this.saveSettings();
-    }
-    if (settings.hasOwnProperty("limitWriteBCCheckboxStates")) {
-      //@ts-ignore
-      delete settings.limitWriteBCCheckboxStates;
-      await this.saveSettings();
-    }
-
-    if (!settings.CHECKBOX_STATES_OVERWRITTEN) {
-      const fields = getFields(settings.userHiers);
-      settings.limitWriteBCCheckboxes = fields;
-      settings.limitJumpToFirstFields = fields;
-      settings.limitTrailCheckboxes = getFields(settings.userHiers, "up");
-      settings.CHECKBOX_STATES_OVERWRITTEN = true;
-      await this.saveSettings();
-    }
+    const {
+      openMatrixOnLoad,
+      openStatsOnLoad,
+      openDuckOnLoad,
+      openDownOnLoad,
+      showBCs,
+      showBCsInEditLPMode,
+      userHiers,
+    } = settings;
 
     this.VIEWS = [
       {
         plain: "Matrix",
         type: MATRIX_VIEW,
         constructor: MatrixView,
-        openOnLoad: settings.openMatrixOnLoad,
+        openOnLoad: openMatrixOnLoad,
       },
       {
         plain: "Stats",
         type: STATS_VIEW,
         constructor: StatsView,
-        openOnLoad: settings.openStatsOnLoad,
+        openOnLoad: openStatsOnLoad,
       },
       {
         plain: "Duck",
         type: DUCK_VIEW,
         constructor: DucksView,
-        openOnLoad: settings.openDuckOnLoad,
+        openOnLoad: openDuckOnLoad,
       },
       {
         plain: "Down",
         type: TREE_VIEW,
         constructor: TreeView,
-        openOnLoad: settings.openDownOnLoad,
+        openOnLoad: openDownOnLoad,
       },
     ];
-
-    this.db = new Debugger(this);
-    this.registerEditorSuggest(new FieldSuggestor(this));
 
     for (const { constructor, type } of this.VIEWS) {
       this.registerView(type, (leaf) => new constructor(leaf, this));
     }
+
     addIcon(DUCK_ICON, DUCK_ICON_SVG);
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
 
-    await this.waitForCache();
+    await waitForCache(this);
     this.mainG = await buildMainG(this);
     this.closedG = buildClosedG(this);
 
-    this.app.workspace.onLayoutReady(async () => {
-      const noFiles = this.app.vault.getMarkdownFiles().length;
+    app.workspace.onLayoutReady(async () => {
+      const noFiles = app.vault.getMarkdownFiles().length;
       if (this.mainG?.nodes().length < noFiles) {
         await wait(3000);
         this.mainG = await buildMainG(this);
@@ -184,18 +136,17 @@ export default class BCPlugin extends Plugin {
       }
 
       for (const { openOnLoad, type, constructor } of this.VIEWS) {
-        if (openOnLoad) await openView(this.app, type, constructor);
+        if (openOnLoad) await openView(app, type, constructor);
       }
 
-      if (settings.showBCs) await drawTrail(this);
+      if (showBCs) await drawTrail(this);
       this.registerActiveLeafChangeEvent();
       this.registerLayoutChangeEvent();
 
-      this.app.workspace.iterateAllLeaves((leaf) => {
-        if (leaf instanceof MarkdownView) {
+      app.workspace.iterateAllLeaves((leaf) => {
+        if (leaf instanceof MarkdownView)
           //@ts-ignore
           leaf.view.previewMode.rerender(true);
-        }
       });
     });
 
@@ -205,10 +156,8 @@ export default class BCPlugin extends Plugin {
         name: `Open ${plain} View`,
         //@ts-ignore
         checkCallback: async (checking: boolean) => {
-          if (checking) {
-            return this.app.workspace.getLeavesOfType(type).length === 0;
-          }
-          await openView(this.app, type, constructor);
+          if (checking) return app.workspace.getLeavesOfType(type).length === 0;
+          await openView(app, type, constructor);
         },
       });
     }
@@ -216,15 +165,13 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "open-vis-modal",
       name: "Open Visualisation Modal",
-      callback: () => {
-        new VisModal(this.app, this).open();
-      },
+      callback: () => new VisModal(app, this).open(),
     });
 
     this.addCommand({
       id: "manipulate-hierarchy-notes",
       name: "Adjust Hierarchy Notes",
-      callback: () => new HierarchyNoteSelectorModal(this.app, this).open(),
+      callback: () => new HierarchyNoteSelectorModal(app, this).open(),
     });
 
     this.addCommand({
@@ -237,7 +184,7 @@ export default class BCPlugin extends Plugin {
       id: "Toggle-trail-in-Edit&LP",
       name: "Toggle: Show Trail/Grid in Edit & LP mode",
       callback: async () => {
-        settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
+        settings.showBCsInEditLPMode = !showBCsInEditLPMode;
         await this.saveSettings();
         await drawTrail(this);
       },
@@ -246,10 +193,7 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "Write-Breadcrumbs-to-Current-File",
       name: "Write Breadcrumbs to Current File",
-      callback: async () => {
-        const currFile = this.app.workspace.getActiveFile();
-        await writeBCToFile(this, currFile);
-      },
+      callback: async () => await writeBCToFile(this),
     });
 
     this.addCommand({
@@ -278,7 +222,7 @@ export default class BCPlugin extends Plugin {
       });
     });
 
-    getFields(settings.userHiers).forEach((field: string) => {
+    getFields(userHiers).forEach((field: string) => {
       this.addCommand({
         id: `new-file-with-curr-as-${field}`,
         name: `Create a new '${field}' from the current note`,
@@ -289,7 +233,7 @@ export default class BCPlugin extends Plugin {
     this.addRibbonIcon(
       addFeatherIcon("tv") as string,
       "Breadcrumbs Visualisation",
-      () => new VisModal(this.app, this).open()
+      () => new VisModal(app, this).open()
     );
 
     this.registerMarkdownCodeBlockProcessor(
@@ -319,7 +263,6 @@ export default class BCPlugin extends Plugin {
   onunload(): void {
     console.log("unloading");
     this.VIEWS.forEach(async (view) => {
-      // await this.getActiveTYPEView(view.type)?.close();
       this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
         leaf.detach();
       });

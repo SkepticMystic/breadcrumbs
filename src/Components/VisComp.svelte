@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { ALLUNLINKED,REAlCLOSED,RELATIONS,VISTYPES } from "../constants";
-  import type { BCSettings,VisGraphs,visTypes } from "../interfaces";
+  import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
+  import type { VisGraphs, visTypes } from "../interfaces";
   import {
-  closeImpliedLinks,
-  getSubInDirs,
-  removeUnlinkedNodes
+    closeImpliedLinks,
+    getSubInDirs,
+    removeUnlinkedNodes,
   } from "../Utils/graphUtils";
   import { arcDiagram } from "../Visualisations/ArcDiagram";
   import { circlePacking } from "../Visualisations/CirclePacking";
@@ -18,10 +18,10 @@
   import type { VisModal } from "../Visualisations/VisModal";
 
   export let modal: VisModal;
-  export let settings: BCSettings;
 
-  const { app } = modal;
-  const { plugin } = modal;
+  const { app, plugin } = modal;
+  const { mainG, settings } = plugin;
+  const { visGraph, visRelation, visClosed, visAll } = settings;
 
   const currFile = app.workspace.getActiveFile();
 
@@ -29,22 +29,22 @@
     {
       text: "Type",
       options: VISTYPES,
-      val: settings.visGraph,
+      val: visGraph,
     },
     {
       text: "Relation",
       options: RELATIONS,
-      val: settings.visRelation,
+      val: visRelation,
     },
     {
       text: "Close Implied",
       options: REAlCLOSED,
-      val: settings.visClosed,
+      val: visClosed,
     },
     {
       text: "No Unlinked",
       options: ALLUNLINKED,
-      val: settings.visAll,
+      val: visAll,
     },
   ];
 
@@ -53,7 +53,6 @@
     Math.round(window.innerHeight / 1.3),
   ];
 
-  const { mainG } = plugin;
   const [up, same, down] = [
     getSubInDirs(mainG, "up"),
     getSubInDirs(mainG, "same"),
@@ -109,37 +108,17 @@
   ];
 
   const types: {
-    [vis in visTypes]: {
-      fun: (...args: any[]) => void;
-    };
+    [vis in visTypes]: (...args: any[]) => void;
   } = {
-    "Force Directed Graph": {
-      fun: forceDirectedG,
-    },
-    "Tidy Tree": {
-      fun: tidyTree,
-    },
-    "Circle Packing": {
-      fun: circlePacking,
-    },
-    "Edge Bundling": {
-      fun: edgeBundling,
-    },
-    "Arc Diagram": {
-      fun: arcDiagram,
-    },
-    Sunburst: {
-      fun: sunburst,
-    },
-    "Tree Map": {
-      fun: treeMap,
-    },
-    Icicle: {
-      fun: icicle,
-    },
-    "Radial Tree": {
-      fun: radialTree,
-    },
+    "Force Directed Graph": forceDirectedG,
+    "Tidy Tree": tidyTree,
+    "Circle Packing": circlePacking,
+    "Edge Bundling": edgeBundling,
+    "Arc Diagram": arcDiagram,
+    Sunburst: sunburst,
+    "Tree Map": treeMap,
+    Icicle: icicle,
+    "Radial Tree": radialTree,
   };
 
   function draw(type: visTypes) {
@@ -147,15 +126,15 @@
       setTimeout(() => {
         document.querySelector(".d3-graph")?.empty();
         try {
-          types[type].fun(...argArr);
+          types[type](...argArr);
         } catch (error) {
           console.log(error);
         }
       }, 10);
     } else {
-      document.querySelector(".d3-graph")?.empty();
+      document.querySelector(".d3-graph").empty();
       try {
-        types[type].fun(...argArr);
+        types[type](...argArr);
       } catch (error) {
         console.log(error);
       }
@@ -166,17 +145,11 @@
 </script>
 
 <div>
-  {#each selectors as selector}
+  {#each selectors as { text, options, val }}
     <span>
-      {selector.text}:
-      <!-- svelte-ignore a11y-no-onchange -->
-      <select
-        value={selector.val}
-        on:change={(el) => {
-          selector.val = el.target.value;
-        }}
-      >
-        {#each selector.options as op}
+      {text}:
+      <select bind:value={val}>
+        {#each options as op}
           <option value={op}>{op}</option>
         {/each}
       </select>

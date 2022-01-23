@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { App } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
-  import type DucksView from "../Views/DucksView";
-  import type BCPlugin from "../main";
   import FaInfo from "svelte-icons/fa/FaInfo.svelte";
+  import type BCPlugin from "../main";
+  import type DucksView from "../Views/DucksView";
 
   export let plugin: BCPlugin;
   export let app: App;
@@ -13,25 +13,26 @@
   const files = app.vault.getMarkdownFiles();
 
   let query: string = "";
+  let regex = new RegExp(query, "g");
   let include = true;
 
-  let regex = new RegExp(query, "g");
-  $: regex = new RegExp(query, "g");
-
-  let ducks = files
-    .map((file) => file.basename)
-    .filter(
-      (name) => !mainG.neighbors(name).length && include === regex.test(name)
-    );
-  $: console.log({ ducks, query, include, regex });
-
   $: {
-    ducks = files
+    try {
+      const newReg = new RegExp(query, "g");
+      regex = newReg;
+    } catch (e) {}
+  }
+
+  const getDucks = (regex: RegExp) => {
+    if (!regex) return;
+    return files
       .map((file) => file.basename)
       .filter(
         (name) => !mainG.neighbors(name).length && include === regex.test(name)
       );
-  }
+  };
+
+  $: ducks = getDucks(regex);
 </script>
 
 <div class="BC-Ducks markdown-preview-view">
@@ -42,25 +43,18 @@
   >
     <FaInfo />
   </span>
-  <label for="regex">Filter: </label>
-  <input
-    type="text"
-    name="regex"
-    placeholder="Regex"
-    value={query}
-    on:change={(e) => (query = e.target.value)}
-  />
-  <input
-    aria-label="Include"
-    type="checkbox"
-    checked={include}
-    on:change={(e) => (include = e.target.checked)}
-  />
+  <label>
+    Filter:
+    <input type="text" placeholder="Regex" bind:value={query} />
+  </label>
+  <input aria-label="Include" type="checkbox" bind:checked={include} />
+
   {#each ducks as duck}
     <div
       on:click={async (e) => await openOrSwitch(app, duck, e)}
       on:mouseover={(e) => hoverPreview(e, ducksView, duck)}
     >
+      <!-- svelte-ignore a11y-missing-attribute -->
       <a class="internal-link">{duck}</a>
     </div>
   {/each}

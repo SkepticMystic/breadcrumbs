@@ -147,9 +147,8 @@ export function createJuggl(
       return;
     }
     for (let key in JUGGL_CB_DEFAULTS) {
-      if (key in args && args[key] === undefined) {
+      if (key in args && args[key] === undefined)
         args[key] = JUGGL_CB_DEFAULTS[key];
-      }
     }
 
     const bcStore = new BCStore(

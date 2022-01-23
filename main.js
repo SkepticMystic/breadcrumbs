@@ -2945,6 +2945,6528 @@ class Debugger {
     }
 }
 
+const ALIAS = Symbol.for('yaml.alias');
+const DOC = Symbol.for('yaml.document');
+const MAP = Symbol.for('yaml.map');
+const PAIR = Symbol.for('yaml.pair');
+const SCALAR$1 = Symbol.for('yaml.scalar');
+const SEQ = Symbol.for('yaml.seq');
+const NODE_TYPE = Symbol.for('yaml.node.type');
+const isAlias = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === ALIAS;
+const isDocument = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === DOC;
+const isMap = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === MAP;
+const isPair = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === PAIR;
+const isScalar = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === SCALAR$1;
+const isSeq = (node) => !!node && typeof node === 'object' && node[NODE_TYPE] === SEQ;
+function isCollection(node) {
+    if (node && typeof node === 'object')
+        switch (node[NODE_TYPE]) {
+            case MAP:
+            case SEQ:
+                return true;
+        }
+    return false;
+}
+function isNode(node) {
+    if (node && typeof node === 'object')
+        switch (node[NODE_TYPE]) {
+            case ALIAS:
+            case MAP:
+            case SCALAR$1:
+            case SEQ:
+                return true;
+        }
+    return false;
+}
+const hasAnchor = (node) => (isScalar(node) || isCollection(node)) && !!node.anchor;
+class NodeBase {
+    constructor(type) {
+        Object.defineProperty(this, NODE_TYPE, { value: type });
+    }
+    /** Create a copy of this node.  */
+    clone() {
+        const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
+        if (this.range)
+            copy.range = this.range.slice();
+        return copy;
+    }
+}
+
+const BREAK = Symbol('break visit');
+const SKIP = Symbol('skip children');
+const REMOVE = Symbol('remove node');
+/**
+ * Apply a visitor to an AST node or document.
+ *
+ * Walks through the tree (depth-first) starting from `node`, calling a
+ * `visitor` function with three arguments:
+ *   - `key`: For sequence values and map `Pair`, the node's index in the
+ *     collection. Within a `Pair`, `'key'` or `'value'`, correspondingly.
+ *     `null` for the root node.
+ *   - `node`: The current node.
+ *   - `path`: The ancestry of the current node.
+ *
+ * The return value of the visitor may be used to control the traversal:
+ *   - `undefined` (default): Do nothing and continue
+ *   - `visit.SKIP`: Do not visit the children of this node, continue with next
+ *     sibling
+ *   - `visit.BREAK`: Terminate traversal completely
+ *   - `visit.REMOVE`: Remove the current node, then continue with the next one
+ *   - `Node`: Replace the current node, then continue by visiting it
+ *   - `number`: While iterating the items of a sequence or map, set the index
+ *     of the next step. This is useful especially if the index of the current
+ *     node has changed.
+ *
+ * If `visitor` is a single function, it will be called with all values
+ * encountered in the tree, including e.g. `null` values. Alternatively,
+ * separate visitor functions may be defined for each `Map`, `Pair`, `Seq`,
+ * `Alias` and `Scalar` node. To define the same visitor function for more than
+ * one node type, use the `Collection` (map and seq), `Value` (map, seq & scalar)
+ * and `Node` (alias, map, seq & scalar) targets. Of all these, only the most
+ * specific defined one will be used for each node.
+ */
+function visit(node, visitor) {
+    if (typeof visitor === 'object' &&
+        (visitor.Collection || visitor.Node || visitor.Value)) {
+        visitor = Object.assign({
+            Alias: visitor.Node,
+            Map: visitor.Node,
+            Scalar: visitor.Node,
+            Seq: visitor.Node
+        }, visitor.Value && {
+            Map: visitor.Value,
+            Scalar: visitor.Value,
+            Seq: visitor.Value
+        }, visitor.Collection && {
+            Map: visitor.Collection,
+            Seq: visitor.Collection
+        }, visitor);
+    }
+    if (isDocument(node)) {
+        const cd = _visit(null, node.contents, visitor, Object.freeze([node]));
+        if (cd === REMOVE)
+            node.contents = null;
+    }
+    else
+        _visit(null, node, visitor, Object.freeze([]));
+}
+// Without the `as symbol` casts, TS declares these in the `visit`
+// namespace using `var`, but then complains about that because
+// `unique symbol` must be `const`.
+/** Terminate visit traversal completely */
+visit.BREAK = BREAK;
+/** Do not visit the children of the current node */
+visit.SKIP = SKIP;
+/** Remove the current node */
+visit.REMOVE = REMOVE;
+function _visit(key, node, visitor, path) {
+    let ctrl = undefined;
+    if (typeof visitor === 'function')
+        ctrl = visitor(key, node, path);
+    else if (isMap(node)) {
+        if (visitor.Map)
+            ctrl = visitor.Map(key, node, path);
+    }
+    else if (isSeq(node)) {
+        if (visitor.Seq)
+            ctrl = visitor.Seq(key, node, path);
+    }
+    else if (isPair(node)) {
+        if (visitor.Pair)
+            ctrl = visitor.Pair(key, node, path);
+    }
+    else if (isScalar(node)) {
+        if (visitor.Scalar)
+            ctrl = visitor.Scalar(key, node, path);
+    }
+    else if (isAlias(node)) {
+        if (visitor.Alias)
+            ctrl = visitor.Alias(key, node, path);
+    }
+    if (isNode(ctrl) || isPair(ctrl)) {
+        const parent = path[path.length - 1];
+        if (isCollection(parent)) {
+            parent.items[key] = ctrl;
+        }
+        else if (isPair(parent)) {
+            if (key === 'key')
+                parent.key = ctrl;
+            else
+                parent.value = ctrl;
+        }
+        else if (isDocument(parent)) {
+            parent.contents = ctrl;
+        }
+        else {
+            const pt = isAlias(parent) ? 'alias' : 'scalar';
+            throw new Error(`Cannot replace node with ${pt} parent`);
+        }
+        return _visit(key, ctrl, visitor, path);
+    }
+    if (typeof ctrl !== 'symbol') {
+        if (isCollection(node)) {
+            path = Object.freeze(path.concat(node));
+            for (let i = 0; i < node.items.length; ++i) {
+                const ci = _visit(i, node.items[i], visitor, path);
+                if (typeof ci === 'number')
+                    i = ci - 1;
+                else if (ci === BREAK)
+                    return BREAK;
+                else if (ci === REMOVE) {
+                    node.items.splice(i, 1);
+                    i -= 1;
+                }
+            }
+        }
+        else if (isPair(node)) {
+            path = Object.freeze(path.concat(node));
+            const ck = _visit('key', node.key, visitor, path);
+            if (ck === BREAK)
+                return BREAK;
+            else if (ck === REMOVE)
+                node.key = null;
+            const cv = _visit('value', node.value, visitor, path);
+            if (cv === BREAK)
+                return BREAK;
+            else if (cv === REMOVE)
+                node.value = null;
+        }
+    }
+    return ctrl;
+}
+
+const escapeChars = {
+    '!': '%21',
+    ',': '%2C',
+    '[': '%5B',
+    ']': '%5D',
+    '{': '%7B',
+    '}': '%7D'
+};
+const escapeTagName = (tn) => tn.replace(/[!,[\]{}]/g, ch => escapeChars[ch]);
+class Directives {
+    constructor(yaml, tags) {
+        /**
+         * The directives-end/doc-start marker `---`. If `null`, a marker may still be
+         * included in the document's stringified representation.
+         */
+        this.marker = null;
+        this.yaml = Object.assign({}, Directives.defaultYaml, yaml);
+        this.tags = Object.assign({}, Directives.defaultTags, tags);
+    }
+    clone() {
+        const copy = new Directives(this.yaml, this.tags);
+        copy.marker = this.marker;
+        return copy;
+    }
+    /**
+     * During parsing, get a Directives instance for the current document and
+     * update the stream state according to the current version's spec.
+     */
+    atDocument() {
+        const res = new Directives(this.yaml, this.tags);
+        switch (this.yaml.version) {
+            case '1.1':
+                this.atNextDocument = true;
+                break;
+            case '1.2':
+                this.atNextDocument = false;
+                this.yaml = {
+                    explicit: Directives.defaultYaml.explicit,
+                    version: '1.2'
+                };
+                this.tags = Object.assign({}, Directives.defaultTags);
+                break;
+        }
+        return res;
+    }
+    /**
+     * @param onError - May be called even if the action was successful
+     * @returns `true` on success
+     */
+    add(line, onError) {
+        if (this.atNextDocument) {
+            this.yaml = { explicit: Directives.defaultYaml.explicit, version: '1.1' };
+            this.tags = Object.assign({}, Directives.defaultTags);
+            this.atNextDocument = false;
+        }
+        const parts = line.trim().split(/[ \t]+/);
+        const name = parts.shift();
+        switch (name) {
+            case '%TAG': {
+                if (parts.length !== 2) {
+                    onError(0, '%TAG directive should contain exactly two parts');
+                    if (parts.length < 2)
+                        return false;
+                }
+                const [handle, prefix] = parts;
+                this.tags[handle] = prefix;
+                return true;
+            }
+            case '%YAML': {
+                this.yaml.explicit = true;
+                if (parts.length < 1) {
+                    onError(0, '%YAML directive should contain exactly one part');
+                    return false;
+                }
+                const [version] = parts;
+                if (version === '1.1' || version === '1.2') {
+                    this.yaml.version = version;
+                    return true;
+                }
+                else {
+                    onError(6, `Unsupported YAML version ${version}`, true);
+                    return false;
+                }
+            }
+            default:
+                onError(0, `Unknown directive ${name}`, true);
+                return false;
+        }
+    }
+    /**
+     * Resolves a tag, matching handles to those defined in %TAG directives.
+     *
+     * @returns Resolved tag, which may also be the non-specific tag `'!'` or a
+     *   `'!local'` tag, or `null` if unresolvable.
+     */
+    tagName(source, onError) {
+        if (source === '!')
+            return '!'; // non-specific tag
+        if (source[0] !== '!') {
+            onError(`Not a valid tag: ${source}`);
+            return null;
+        }
+        if (source[1] === '<') {
+            const verbatim = source.slice(2, -1);
+            if (verbatim === '!' || verbatim === '!!') {
+                onError(`Verbatim tags aren't resolved, so ${source} is invalid.`);
+                return null;
+            }
+            if (source[source.length - 1] !== '>')
+                onError('Verbatim tags must end with a >');
+            return verbatim;
+        }
+        const [, handle, suffix] = source.match(/^(.*!)([^!]*)$/);
+        if (!suffix)
+            onError(`The ${source} tag has no suffix`);
+        const prefix = this.tags[handle];
+        if (prefix)
+            return prefix + decodeURIComponent(suffix);
+        if (handle === '!')
+            return source; // local tag
+        onError(`Could not resolve tag: ${source}`);
+        return null;
+    }
+    /**
+     * Given a fully resolved tag, returns its printable string form,
+     * taking into account current tag prefixes and defaults.
+     */
+    tagString(tag) {
+        for (const [handle, prefix] of Object.entries(this.tags)) {
+            if (tag.startsWith(prefix))
+                return handle + escapeTagName(tag.substring(prefix.length));
+        }
+        return tag[0] === '!' ? tag : `!<${tag}>`;
+    }
+    toString(doc) {
+        const lines = this.yaml.explicit
+            ? [`%YAML ${this.yaml.version || '1.2'}`]
+            : [];
+        const tagEntries = Object.entries(this.tags);
+        let tagNames;
+        if (doc && tagEntries.length > 0 && isNode(doc.contents)) {
+            const tags = {};
+            visit(doc.contents, (_key, node) => {
+                if (isNode(node) && node.tag)
+                    tags[node.tag] = true;
+            });
+            tagNames = Object.keys(tags);
+        }
+        else
+            tagNames = [];
+        for (const [handle, prefix] of tagEntries) {
+            if (handle === '!!' && prefix === 'tag:yaml.org,2002:')
+                continue;
+            if (!doc || tagNames.some(tn => tn.startsWith(prefix)))
+                lines.push(`%TAG ${handle} ${prefix}`);
+        }
+        return lines.join('\n');
+    }
+}
+Directives.defaultYaml = { explicit: false, version: '1.2' };
+Directives.defaultTags = { '!!': 'tag:yaml.org,2002:' };
+
+/**
+ * Verify that the input string is a valid anchor.
+ *
+ * Will throw on errors.
+ */
+function anchorIsValid(anchor) {
+    if (/[\x00-\x19\s,[\]{}]/.test(anchor)) {
+        const sa = JSON.stringify(anchor);
+        const msg = `Anchor must not contain whitespace or control characters: ${sa}`;
+        throw new Error(msg);
+    }
+    return true;
+}
+function anchorNames(root) {
+    const anchors = new Set();
+    visit(root, {
+        Value(_key, node) {
+            if (node.anchor)
+                anchors.add(node.anchor);
+        }
+    });
+    return anchors;
+}
+/** Find a new anchor name with the given `prefix` and a one-indexed suffix. */
+function findNewAnchor(prefix, exclude) {
+    for (let i = 1; true; ++i) {
+        const name = `${prefix}${i}`;
+        if (!exclude.has(name))
+            return name;
+    }
+}
+function createNodeAnchors(doc, prefix) {
+    const aliasObjects = [];
+    const sourceObjects = new Map();
+    let prevAnchors = null;
+    return {
+        onAnchor(source) {
+            aliasObjects.push(source);
+            if (!prevAnchors)
+                prevAnchors = anchorNames(doc);
+            const anchor = findNewAnchor(prefix, prevAnchors);
+            prevAnchors.add(anchor);
+            return anchor;
+        },
+        /**
+         * With circular references, the source node is only resolved after all
+         * of its child nodes are. This is why anchors are set only after all of
+         * the nodes have been created.
+         */
+        setAnchors() {
+            for (const source of aliasObjects) {
+                const ref = sourceObjects.get(source);
+                if (typeof ref === 'object' &&
+                    ref.anchor &&
+                    (isScalar(ref.node) || isCollection(ref.node))) {
+                    ref.node.anchor = ref.anchor;
+                }
+                else {
+                    const error = new Error('Failed to resolve repeated object (this should not happen)');
+                    error.source = source;
+                    throw error;
+                }
+            }
+        },
+        sourceObjects
+    };
+}
+
+class Alias extends NodeBase {
+    constructor(source) {
+        super(ALIAS);
+        this.source = source;
+        Object.defineProperty(this, 'tag', {
+            set() {
+                throw new Error('Alias nodes cannot have tags');
+            }
+        });
+    }
+    /**
+     * Resolve the value of this alias within `doc`, finding the last
+     * instance of the `source` anchor before this node.
+     */
+    resolve(doc) {
+        let found = undefined;
+        visit(doc, {
+            Node: (_key, node) => {
+                if (node === this)
+                    return visit.BREAK;
+                if (node.anchor === this.source)
+                    found = node;
+            }
+        });
+        return found;
+    }
+    toJSON(_arg, ctx) {
+        if (!ctx)
+            return { source: this.source };
+        const { anchors, doc, maxAliasCount } = ctx;
+        const source = this.resolve(doc);
+        if (!source) {
+            const msg = `Unresolved alias (the anchor must be set before the alias): ${this.source}`;
+            throw new ReferenceError(msg);
+        }
+        const data = anchors.get(source);
+        /* istanbul ignore if */
+        if (!data || data.res === undefined) {
+            const msg = 'This should not happen: Alias anchor was not resolved?';
+            throw new ReferenceError(msg);
+        }
+        if (maxAliasCount >= 0) {
+            data.count += 1;
+            if (data.aliasCount === 0)
+                data.aliasCount = getAliasCount(doc, source, anchors);
+            if (data.count * data.aliasCount > maxAliasCount) {
+                const msg = 'Excessive alias count indicates a resource exhaustion attack';
+                throw new ReferenceError(msg);
+            }
+        }
+        return data.res;
+    }
+    toString(ctx, _onComment, _onChompKeep) {
+        const src = `*${this.source}`;
+        if (ctx) {
+            anchorIsValid(this.source);
+            if (ctx.options.verifyAliasOrder && !ctx.anchors.has(this.source)) {
+                const msg = `Unresolved alias (the anchor must be set before the alias): ${this.source}`;
+                throw new Error(msg);
+            }
+            if (ctx.implicitKey)
+                return `${src} `;
+        }
+        return src;
+    }
+}
+function getAliasCount(doc, node, anchors) {
+    if (isAlias(node)) {
+        const source = node.resolve(doc);
+        const anchor = anchors && source && anchors.get(source);
+        return anchor ? anchor.count * anchor.aliasCount : 0;
+    }
+    else if (isCollection(node)) {
+        let count = 0;
+        for (const item of node.items) {
+            const c = getAliasCount(doc, item, anchors);
+            if (c > count)
+                count = c;
+        }
+        return count;
+    }
+    else if (isPair(node)) {
+        const kc = getAliasCount(doc, node.key, anchors);
+        const vc = getAliasCount(doc, node.value, anchors);
+        return Math.max(kc, vc);
+    }
+    return 1;
+}
+
+/**
+ * Recursively convert any node or its contents to native JavaScript
+ *
+ * @param value - The input value
+ * @param arg - If `value` defines a `toJSON()` method, use this
+ *   as its first argument
+ * @param ctx - Conversion context, originally set in Document#toJS(). If
+ *   `{ keep: true }` is not set, output should be suitable for JSON
+ *   stringification.
+ */
+function toJS(value, arg, ctx) {
+    if (Array.isArray(value))
+        return value.map((v, i) => toJS(v, String(i), ctx));
+    if (value && typeof value.toJSON === 'function') {
+        if (!ctx || !hasAnchor(value))
+            return value.toJSON(arg, ctx);
+        const data = { aliasCount: 0, count: 1, res: undefined };
+        ctx.anchors.set(value, data);
+        ctx.onCreate = res => {
+            data.res = res;
+            delete ctx.onCreate;
+        };
+        const res = value.toJSON(arg, ctx);
+        if (ctx.onCreate)
+            ctx.onCreate(res);
+        return res;
+    }
+    if (typeof value === 'bigint' && !(ctx && ctx.keep))
+        return Number(value);
+    return value;
+}
+
+const isScalarValue = (value) => !value || (typeof value !== 'function' && typeof value !== 'object');
+class Scalar extends NodeBase {
+    constructor(value) {
+        super(SCALAR$1);
+        this.value = value;
+    }
+    toJSON(arg, ctx) {
+        return ctx && ctx.keep ? this.value : toJS(this.value, arg, ctx);
+    }
+    toString() {
+        return String(this.value);
+    }
+}
+Scalar.BLOCK_FOLDED = 'BLOCK_FOLDED';
+Scalar.BLOCK_LITERAL = 'BLOCK_LITERAL';
+Scalar.PLAIN = 'PLAIN';
+Scalar.QUOTE_DOUBLE = 'QUOTE_DOUBLE';
+Scalar.QUOTE_SINGLE = 'QUOTE_SINGLE';
+
+const defaultTagPrefix = 'tag:yaml.org,2002:';
+function findTagObject(value, tagName, tags) {
+    if (tagName) {
+        const match = tags.filter(t => t.tag === tagName);
+        const tagObj = match.find(t => !t.format) || match[0];
+        if (!tagObj)
+            throw new Error(`Tag ${tagName} not found`);
+        return tagObj;
+    }
+    return tags.find(t => t.identify && t.identify(value) && !t.format);
+}
+function createNode(value, tagName, ctx) {
+    var _a, _b;
+    if (isDocument(value))
+        value = value.contents;
+    if (isNode(value))
+        return value;
+    if (isPair(value)) {
+        const map = (_b = (_a = ctx.schema[MAP]).createNode) === null || _b === void 0 ? void 0 : _b.call(_a, ctx.schema, null, ctx);
+        map.items.push(value);
+        return map;
+    }
+    if (value instanceof String ||
+        value instanceof Number ||
+        value instanceof Boolean ||
+        (typeof BigInt === 'function' && value instanceof BigInt) // not supported everywhere
+    ) {
+        // https://tc39.es/ecma262/#sec-serializejsonproperty
+        value = value.valueOf();
+    }
+    const { aliasDuplicateObjects, onAnchor, onTagObj, schema, sourceObjects } = ctx;
+    // Detect duplicate references to the same object & use Alias nodes for all
+    // after first. The `ref` wrapper allows for circular references to resolve.
+    let ref = undefined;
+    if (aliasDuplicateObjects && value && typeof value === 'object') {
+        ref = sourceObjects.get(value);
+        if (ref) {
+            if (!ref.anchor)
+                ref.anchor = onAnchor(value);
+            return new Alias(ref.anchor);
+        }
+        else {
+            ref = { anchor: null, node: null };
+            sourceObjects.set(value, ref);
+        }
+    }
+    if (tagName && tagName.startsWith('!!'))
+        tagName = defaultTagPrefix + tagName.slice(2);
+    let tagObj = findTagObject(value, tagName, schema.tags);
+    if (!tagObj) {
+        if (value && typeof value.toJSON === 'function')
+            value = value.toJSON();
+        if (!value || typeof value !== 'object') {
+            const node = new Scalar(value);
+            if (ref)
+                ref.node = node;
+            return node;
+        }
+        tagObj =
+            value instanceof Map
+                ? schema[MAP]
+                : Symbol.iterator in Object(value)
+                    ? schema[SEQ]
+                    : schema[MAP];
+    }
+    if (onTagObj) {
+        onTagObj(tagObj);
+        delete ctx.onTagObj;
+    }
+    const node = (tagObj === null || tagObj === void 0 ? void 0 : tagObj.createNode)
+        ? tagObj.createNode(ctx.schema, value, ctx)
+        : new Scalar(value);
+    if (tagName)
+        node.tag = tagName;
+    if (ref)
+        ref.node = node;
+    return node;
+}
+
+function collectionFromPath(schema, path, value) {
+    let v = value;
+    for (let i = path.length - 1; i >= 0; --i) {
+        const k = path[i];
+        if (typeof k === 'number' && Number.isInteger(k) && k >= 0) {
+            const a = [];
+            a[k] = v;
+            v = a;
+        }
+        else {
+            v = new Map([[k, v]]);
+        }
+    }
+    return createNode(v, undefined, {
+        aliasDuplicateObjects: false,
+        keepUndefined: false,
+        onAnchor: () => {
+            throw new Error('This should not happen, please report a bug.');
+        },
+        schema,
+        sourceObjects: new Map()
+    });
+}
+// null, undefined, or an empty non-string iterable (e.g. [])
+const isEmptyPath = (path) => path == null ||
+    (typeof path === 'object' && !!path[Symbol.iterator]().next().done);
+class Collection extends NodeBase {
+    constructor(type, schema) {
+        super(type);
+        Object.defineProperty(this, 'schema', {
+            value: schema,
+            configurable: true,
+            enumerable: false,
+            writable: true
+        });
+    }
+    /**
+     * Create a copy of this collection.
+     *
+     * @param schema - If defined, overwrites the original's schema
+     */
+    clone(schema) {
+        const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
+        if (schema)
+            copy.schema = schema;
+        copy.items = copy.items.map(it => isNode(it) || isPair(it) ? it.clone(schema) : it);
+        if (this.range)
+            copy.range = this.range.slice();
+        return copy;
+    }
+    /**
+     * Adds a value to the collection. For `!!map` and `!!omap` the value must
+     * be a Pair instance or a `{ key, value }` object, which may not have a key
+     * that already exists in the map.
+     */
+    addIn(path, value) {
+        if (isEmptyPath(path))
+            this.add(value);
+        else {
+            const [key, ...rest] = path;
+            const node = this.get(key, true);
+            if (isCollection(node))
+                node.addIn(rest, value);
+            else if (node === undefined && this.schema)
+                this.set(key, collectionFromPath(this.schema, rest, value));
+            else
+                throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
+        }
+    }
+    /**
+     * Removes a value from the collection.
+     * @returns `true` if the item was found and removed.
+     */
+    deleteIn(path) {
+        const [key, ...rest] = path;
+        if (rest.length === 0)
+            return this.delete(key);
+        const node = this.get(key, true);
+        if (isCollection(node))
+            return node.deleteIn(rest);
+        else
+            throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
+    }
+    /**
+     * Returns item at `key`, or `undefined` if not found. By default unwraps
+     * scalar values from their surrounding node; to disable set `keepScalar` to
+     * `true` (collections are always returned intact).
+     */
+    getIn(path, keepScalar) {
+        const [key, ...rest] = path;
+        const node = this.get(key, true);
+        if (rest.length === 0)
+            return !keepScalar && isScalar(node) ? node.value : node;
+        else
+            return isCollection(node) ? node.getIn(rest, keepScalar) : undefined;
+    }
+    hasAllNullValues(allowScalar) {
+        return this.items.every(node => {
+            if (!isPair(node))
+                return false;
+            const n = node.value;
+            return (n == null ||
+                (allowScalar &&
+                    isScalar(n) &&
+                    n.value == null &&
+                    !n.commentBefore &&
+                    !n.comment &&
+                    !n.tag));
+        });
+    }
+    /**
+     * Checks if the collection includes a value with the key `key`.
+     */
+    hasIn(path) {
+        const [key, ...rest] = path;
+        if (rest.length === 0)
+            return this.has(key);
+        const node = this.get(key, true);
+        return isCollection(node) ? node.hasIn(rest) : false;
+    }
+    /**
+     * Sets a value in this collection. For `!!set`, `value` needs to be a
+     * boolean to add/remove the item from the set.
+     */
+    setIn(path, value) {
+        const [key, ...rest] = path;
+        if (rest.length === 0) {
+            this.set(key, value);
+        }
+        else {
+            const node = this.get(key, true);
+            if (isCollection(node))
+                node.setIn(rest, value);
+            else if (node === undefined && this.schema)
+                this.set(key, collectionFromPath(this.schema, rest, value));
+            else
+                throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
+        }
+    }
+}
+Collection.maxFlowStringSingleLineLength = 60;
+
+/**
+ * Stringifies a comment.
+ *
+ * Empty comment lines are left empty,
+ * lines consisting of a single space are replaced by `#`,
+ * and all other lines are prefixed with a `#`.
+ */
+const stringifyComment = (str) => str.replace(/^(?!$)(?: $)?/gm, '#');
+function indentComment(comment, indent) {
+    if (/^\n+$/.test(comment))
+        return comment.substring(1);
+    return indent ? comment.replace(/^(?! *$)/gm, indent) : comment;
+}
+const lineComment = (str, indent, comment) => comment.includes('\n')
+    ? '\n' + indentComment(comment, indent)
+    : (str.endsWith(' ') ? '' : ' ') + comment;
+
+const FOLD_FLOW = 'flow';
+const FOLD_BLOCK = 'block';
+const FOLD_QUOTED = 'quoted';
+/**
+ * Tries to keep input at up to `lineWidth` characters, splitting only on spaces
+ * not followed by newlines or spaces unless `mode` is `'quoted'`. Lines are
+ * terminated with `\n` and started with `indent`.
+ */
+function foldFlowLines(text, indent, mode = 'flow', { indentAtStart, lineWidth = 80, minContentWidth = 20, onFold, onOverflow } = {}) {
+    if (!lineWidth || lineWidth < 0)
+        return text;
+    const endStep = Math.max(1 + minContentWidth, 1 + lineWidth - indent.length);
+    if (text.length <= endStep)
+        return text;
+    const folds = [];
+    const escapedFolds = {};
+    let end = lineWidth - indent.length;
+    if (typeof indentAtStart === 'number') {
+        if (indentAtStart > lineWidth - Math.max(2, minContentWidth))
+            folds.push(0);
+        else
+            end = lineWidth - indentAtStart;
+    }
+    let split = undefined;
+    let prev = undefined;
+    let overflow = false;
+    let i = -1;
+    let escStart = -1;
+    let escEnd = -1;
+    if (mode === FOLD_BLOCK) {
+        i = consumeMoreIndentedLines(text, i);
+        if (i !== -1)
+            end = i + endStep;
+    }
+    for (let ch; (ch = text[(i += 1)]);) {
+        if (mode === FOLD_QUOTED && ch === '\\') {
+            escStart = i;
+            switch (text[i + 1]) {
+                case 'x':
+                    i += 3;
+                    break;
+                case 'u':
+                    i += 5;
+                    break;
+                case 'U':
+                    i += 9;
+                    break;
+                default:
+                    i += 1;
+            }
+            escEnd = i;
+        }
+        if (ch === '\n') {
+            if (mode === FOLD_BLOCK)
+                i = consumeMoreIndentedLines(text, i);
+            end = i + endStep;
+            split = undefined;
+        }
+        else {
+            if (ch === ' ' &&
+                prev &&
+                prev !== ' ' &&
+                prev !== '\n' &&
+                prev !== '\t') {
+                // space surrounded by non-space can be replaced with newline + indent
+                const next = text[i + 1];
+                if (next && next !== ' ' && next !== '\n' && next !== '\t')
+                    split = i;
+            }
+            if (i >= end) {
+                if (split) {
+                    folds.push(split);
+                    end = split + endStep;
+                    split = undefined;
+                }
+                else if (mode === FOLD_QUOTED) {
+                    // white-space collected at end may stretch past lineWidth
+                    while (prev === ' ' || prev === '\t') {
+                        prev = ch;
+                        ch = text[(i += 1)];
+                        overflow = true;
+                    }
+                    // Account for newline escape, but don't break preceding escape
+                    const j = i > escEnd + 1 ? i - 2 : escStart - 1;
+                    // Bail out if lineWidth & minContentWidth are shorter than an escape string
+                    if (escapedFolds[j])
+                        return text;
+                    folds.push(j);
+                    escapedFolds[j] = true;
+                    end = j + endStep;
+                    split = undefined;
+                }
+                else {
+                    overflow = true;
+                }
+            }
+        }
+        prev = ch;
+    }
+    if (overflow && onOverflow)
+        onOverflow();
+    if (folds.length === 0)
+        return text;
+    if (onFold)
+        onFold();
+    let res = text.slice(0, folds[0]);
+    for (let i = 0; i < folds.length; ++i) {
+        const fold = folds[i];
+        const end = folds[i + 1] || text.length;
+        if (fold === 0)
+            res = `\n${indent}${text.slice(0, end)}`;
+        else {
+            if (mode === FOLD_QUOTED && escapedFolds[fold])
+                res += `${text[fold]}\\`;
+            res += `\n${indent}${text.slice(fold + 1, end)}`;
+        }
+    }
+    return res;
+}
+/**
+ * Presumes `i + 1` is at the start of a line
+ * @returns index of last newline in more-indented block
+ */
+function consumeMoreIndentedLines(text, i) {
+    let ch = text[i + 1];
+    while (ch === ' ' || ch === '\t') {
+        do {
+            ch = text[(i += 1)];
+        } while (ch && ch !== '\n');
+        ch = text[i + 1];
+    }
+    return i;
+}
+
+const getFoldOptions = (ctx) => ({
+    indentAtStart: ctx.indentAtStart,
+    lineWidth: ctx.options.lineWidth,
+    minContentWidth: ctx.options.minContentWidth
+});
+// Also checks for lines starting with %, as parsing the output as YAML 1.1 will
+// presume that's starting a new document.
+const containsDocumentMarker = (str) => /^(%|---|\.\.\.)/m.test(str);
+function lineLengthOverLimit(str, lineWidth, indentLength) {
+    if (!lineWidth || lineWidth < 0)
+        return false;
+    const limit = lineWidth - indentLength;
+    const strLen = str.length;
+    if (strLen <= limit)
+        return false;
+    for (let i = 0, start = 0; i < strLen; ++i) {
+        if (str[i] === '\n') {
+            if (i - start > limit)
+                return true;
+            start = i + 1;
+            if (strLen - start <= limit)
+                return false;
+        }
+    }
+    return true;
+}
+function doubleQuotedString(value, ctx) {
+    const json = JSON.stringify(value);
+    if (ctx.options.doubleQuotedAsJSON)
+        return json;
+    const { implicitKey } = ctx;
+    const minMultiLineLength = ctx.options.doubleQuotedMinMultiLineLength;
+    const indent = ctx.indent || (containsDocumentMarker(value) ? '  ' : '');
+    let str = '';
+    let start = 0;
+    for (let i = 0, ch = json[i]; ch; ch = json[++i]) {
+        if (ch === ' ' && json[i + 1] === '\\' && json[i + 2] === 'n') {
+            // space before newline needs to be escaped to not be folded
+            str += json.slice(start, i) + '\\ ';
+            i += 1;
+            start = i;
+            ch = '\\';
+        }
+        if (ch === '\\')
+            switch (json[i + 1]) {
+                case 'u':
+                    {
+                        str += json.slice(start, i);
+                        const code = json.substr(i + 2, 4);
+                        switch (code) {
+                            case '0000':
+                                str += '\\0';
+                                break;
+                            case '0007':
+                                str += '\\a';
+                                break;
+                            case '000b':
+                                str += '\\v';
+                                break;
+                            case '001b':
+                                str += '\\e';
+                                break;
+                            case '0085':
+                                str += '\\N';
+                                break;
+                            case '00a0':
+                                str += '\\_';
+                                break;
+                            case '2028':
+                                str += '\\L';
+                                break;
+                            case '2029':
+                                str += '\\P';
+                                break;
+                            default:
+                                if (code.substr(0, 2) === '00')
+                                    str += '\\x' + code.substr(2);
+                                else
+                                    str += json.substr(i, 6);
+                        }
+                        i += 5;
+                        start = i + 1;
+                    }
+                    break;
+                case 'n':
+                    if (implicitKey ||
+                        json[i + 2] === '"' ||
+                        json.length < minMultiLineLength) {
+                        i += 1;
+                    }
+                    else {
+                        // folding will eat first newline
+                        str += json.slice(start, i) + '\n\n';
+                        while (json[i + 2] === '\\' &&
+                            json[i + 3] === 'n' &&
+                            json[i + 4] !== '"') {
+                            str += '\n';
+                            i += 2;
+                        }
+                        str += indent;
+                        // space after newline needs to be escaped to not be folded
+                        if (json[i + 2] === ' ')
+                            str += '\\';
+                        i += 1;
+                        start = i + 1;
+                    }
+                    break;
+                default:
+                    i += 1;
+            }
+    }
+    str = start ? str + json.slice(start) : json;
+    return implicitKey
+        ? str
+        : foldFlowLines(str, indent, FOLD_QUOTED, getFoldOptions(ctx));
+}
+function singleQuotedString(value, ctx) {
+    if (ctx.options.singleQuote === false ||
+        (ctx.implicitKey && value.includes('\n')) ||
+        /[ \t]\n|\n[ \t]/.test(value) // single quoted string can't have leading or trailing whitespace around newline
+    )
+        return doubleQuotedString(value, ctx);
+    const indent = ctx.indent || (containsDocumentMarker(value) ? '  ' : '');
+    const res = "'" + value.replace(/'/g, "''").replace(/\n+/g, `$&\n${indent}`) + "'";
+    return ctx.implicitKey
+        ? res
+        : foldFlowLines(res, indent, FOLD_FLOW, getFoldOptions(ctx));
+}
+function quotedString(value, ctx) {
+    const { singleQuote } = ctx.options;
+    let qs;
+    if (singleQuote === false)
+        qs = doubleQuotedString;
+    else {
+        const hasDouble = value.includes('"');
+        const hasSingle = value.includes("'");
+        if (hasDouble && !hasSingle)
+            qs = singleQuotedString;
+        else if (hasSingle && !hasDouble)
+            qs = doubleQuotedString;
+        else
+            qs = singleQuote ? singleQuotedString : doubleQuotedString;
+    }
+    return qs(value, ctx);
+}
+function blockString({ comment, type, value }, ctx, onComment, onChompKeep) {
+    const { blockQuote, commentString, lineWidth } = ctx.options;
+    // 1. Block can't end in whitespace unless the last line is non-empty.
+    // 2. Strings consisting of only whitespace are best rendered explicitly.
+    if (!blockQuote || /\n[\t ]+$/.test(value) || /^\s*$/.test(value)) {
+        return quotedString(value, ctx);
+    }
+    const indent = ctx.indent ||
+        (ctx.forceBlockIndent || containsDocumentMarker(value) ? '  ' : '');
+    const literal = blockQuote === 'literal'
+        ? true
+        : blockQuote === 'folded' || type === Scalar.BLOCK_FOLDED
+            ? false
+            : type === Scalar.BLOCK_LITERAL
+                ? true
+                : !lineLengthOverLimit(value, lineWidth, indent.length);
+    if (!value)
+        return literal ? '|\n' : '>\n';
+    // determine chomping from whitespace at value end
+    let chomp;
+    let endStart;
+    for (endStart = value.length; endStart > 0; --endStart) {
+        const ch = value[endStart - 1];
+        if (ch !== '\n' && ch !== '\t' && ch !== ' ')
+            break;
+    }
+    let end = value.substring(endStart);
+    const endNlPos = end.indexOf('\n');
+    if (endNlPos === -1) {
+        chomp = '-'; // strip
+    }
+    else if (value === end || endNlPos !== end.length - 1) {
+        chomp = '+'; // keep
+        if (onChompKeep)
+            onChompKeep();
+    }
+    else {
+        chomp = ''; // clip
+    }
+    if (end) {
+        value = value.slice(0, -end.length);
+        if (end[end.length - 1] === '\n')
+            end = end.slice(0, -1);
+        end = end.replace(/\n+(?!\n|$)/g, `$&${indent}`);
+    }
+    // determine indent indicator from whitespace at value start
+    let startWithSpace = false;
+    let startEnd;
+    let startNlPos = -1;
+    for (startEnd = 0; startEnd < value.length; ++startEnd) {
+        const ch = value[startEnd];
+        if (ch === ' ')
+            startWithSpace = true;
+        else if (ch === '\n')
+            startNlPos = startEnd;
+        else
+            break;
+    }
+    let start = value.substring(0, startNlPos < startEnd ? startNlPos + 1 : startEnd);
+    if (start) {
+        value = value.substring(start.length);
+        start = start.replace(/\n+/g, `$&${indent}`);
+    }
+    const indentSize = indent ? '2' : '1'; // root is at -1
+    let header = (literal ? '|' : '>') + (startWithSpace ? indentSize : '') + chomp;
+    if (comment) {
+        header += ' ' + commentString(comment.replace(/ ?[\r\n]+/g, ' '));
+        if (onComment)
+            onComment();
+    }
+    if (literal) {
+        value = value.replace(/\n+/g, `$&${indent}`);
+        return `${header}\n${indent}${start}${value}${end}`;
+    }
+    value = value
+        .replace(/\n+/g, '\n$&')
+        .replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, '$1$2') // more-indented lines aren't folded
+        //                ^ more-ind. ^ empty     ^ capture next empty lines only at end of indent
+        .replace(/\n+/g, `$&${indent}`);
+    const body = foldFlowLines(`${start}${value}${end}`, indent, FOLD_BLOCK, getFoldOptions(ctx));
+    return `${header}\n${indent}${body}`;
+}
+function plainString(item, ctx, onComment, onChompKeep) {
+    const { type, value } = item;
+    const { actualString, implicitKey, indent, inFlow } = ctx;
+    if ((implicitKey && /[\n[\]{},]/.test(value)) ||
+        (inFlow && /[[\]{},]/.test(value))) {
+        return quotedString(value, ctx);
+    }
+    if (!value ||
+        /^[\n\t ,[\]{}#&*!|>'"%@`]|^[?-]$|^[?-][ \t]|[\n:][ \t]|[ \t]\n|[\n\t ]#|[\n\t :]$/.test(value)) {
+        // not allowed:
+        // - empty string, '-' or '?'
+        // - start with an indicator character (except [?:-]) or /[?-] /
+        // - '\n ', ': ' or ' \n' anywhere
+        // - '#' not preceded by a non-space char
+        // - end with ' ' or ':'
+        return implicitKey || inFlow || value.indexOf('\n') === -1
+            ? quotedString(value, ctx)
+            : blockString(item, ctx, onComment, onChompKeep);
+    }
+    if (!implicitKey &&
+        !inFlow &&
+        type !== Scalar.PLAIN &&
+        value.indexOf('\n') !== -1) {
+        // Where allowed & type not set explicitly, prefer block style for multiline strings
+        return blockString(item, ctx, onComment, onChompKeep);
+    }
+    if (indent === '' && containsDocumentMarker(value)) {
+        ctx.forceBlockIndent = true;
+        return blockString(item, ctx, onComment, onChompKeep);
+    }
+    const str = value.replace(/\n+/g, `$&\n${indent}`);
+    // Verify that output will be parsed as a string, as e.g. plain numbers and
+    // booleans get parsed with those types in v1.2 (e.g. '42', 'true' & '0.9e-3'),
+    // and others in v1.1.
+    if (actualString) {
+        const test = (tag) => { var _a; return tag.default && tag.tag !== 'tag:yaml.org,2002:str' && ((_a = tag.test) === null || _a === void 0 ? void 0 : _a.test(str)); };
+        const { compat, tags } = ctx.doc.schema;
+        if (tags.some(test) || (compat === null || compat === void 0 ? void 0 : compat.some(test)))
+            return quotedString(value, ctx);
+    }
+    return implicitKey
+        ? str
+        : foldFlowLines(str, indent, FOLD_FLOW, getFoldOptions(ctx));
+}
+function stringifyString(item, ctx, onComment, onChompKeep) {
+    const { implicitKey, inFlow } = ctx;
+    const ss = typeof item.value === 'string'
+        ? item
+        : Object.assign({}, item, { value: String(item.value) });
+    let { type } = item;
+    if (type !== Scalar.QUOTE_DOUBLE) {
+        // force double quotes on control characters & unpaired surrogates
+        if (/[\x00-\x08\x0b-\x1f\x7f-\x9f\u{D800}-\u{DFFF}]/u.test(ss.value))
+            type = Scalar.QUOTE_DOUBLE;
+    }
+    const _stringify = (_type) => {
+        switch (_type) {
+            case Scalar.BLOCK_FOLDED:
+            case Scalar.BLOCK_LITERAL:
+                return implicitKey || inFlow
+                    ? quotedString(ss.value, ctx) // blocks are not valid inside flow containers
+                    : blockString(ss, ctx, onComment, onChompKeep);
+            case Scalar.QUOTE_DOUBLE:
+                return doubleQuotedString(ss.value, ctx);
+            case Scalar.QUOTE_SINGLE:
+                return singleQuotedString(ss.value, ctx);
+            case Scalar.PLAIN:
+                return plainString(ss, ctx, onComment, onChompKeep);
+            default:
+                return null;
+        }
+    };
+    let res = _stringify(type);
+    if (res === null) {
+        const { defaultKeyType, defaultStringType } = ctx.options;
+        const t = (implicitKey && defaultKeyType) || defaultStringType;
+        res = _stringify(t);
+        if (res === null)
+            throw new Error(`Unsupported default string type ${t}`);
+    }
+    return res;
+}
+
+function createStringifyContext(doc, options) {
+    const opt = Object.assign({
+        blockQuote: true,
+        commentString: stringifyComment,
+        defaultKeyType: null,
+        defaultStringType: 'PLAIN',
+        directives: null,
+        doubleQuotedAsJSON: false,
+        doubleQuotedMinMultiLineLength: 40,
+        falseStr: 'false',
+        indentSeq: true,
+        lineWidth: 80,
+        minContentWidth: 20,
+        nullStr: 'null',
+        simpleKeys: false,
+        singleQuote: null,
+        trueStr: 'true',
+        verifyAliasOrder: true
+    }, doc.schema.toStringOptions, options);
+    let inFlow;
+    switch (opt.collectionStyle) {
+        case 'block':
+            inFlow = false;
+            break;
+        case 'flow':
+            inFlow = true;
+            break;
+        default:
+            inFlow = null;
+    }
+    return {
+        anchors: new Set(),
+        doc,
+        indent: '',
+        indentStep: typeof opt.indent === 'number' ? ' '.repeat(opt.indent) : '  ',
+        inFlow,
+        options: opt
+    };
+}
+function getTagObject(tags, item) {
+    if (item.tag) {
+        const match = tags.filter(t => t.tag === item.tag);
+        if (match.length > 0)
+            return match.find(t => t.format === item.format) || match[0];
+    }
+    let tagObj = undefined;
+    let obj;
+    if (isScalar(item)) {
+        obj = item.value;
+        const match = tags.filter(t => t.identify && t.identify(obj));
+        tagObj =
+            match.find(t => t.format === item.format) || match.find(t => !t.format);
+    }
+    else {
+        obj = item;
+        tagObj = tags.find(t => t.nodeClass && obj instanceof t.nodeClass);
+    }
+    if (!tagObj) {
+        // @ts-ignore
+        const name = obj && obj.constructor ? obj.constructor.name : typeof obj;
+        throw new Error(`Tag not resolved for ${name} value`);
+    }
+    return tagObj;
+}
+// needs to be called before value stringifier to allow for circular anchor refs
+function stringifyProps(node, tagObj, { anchors, doc }) {
+    if (!doc.directives)
+        return '';
+    const props = [];
+    const anchor = (isScalar(node) || isCollection(node)) && node.anchor;
+    if (anchor && anchorIsValid(anchor)) {
+        anchors.add(anchor);
+        props.push(`&${anchor}`);
+    }
+    const tag = node.tag || (tagObj.default ? null : tagObj.tag);
+    if (tag)
+        props.push(doc.directives.tagString(tag));
+    return props.join(' ');
+}
+function stringify$1(item, ctx, onComment, onChompKeep) {
+    var _a;
+    if (isPair(item))
+        return item.toString(ctx, onComment, onChompKeep);
+    if (isAlias(item)) {
+        if (ctx.doc.directives)
+            return item.toString(ctx);
+        if ((_a = ctx.resolvedAliases) === null || _a === void 0 ? void 0 : _a.has(item)) {
+            throw new TypeError(`Cannot stringify circular structure without alias nodes`);
+        }
+        else {
+            if (ctx.resolvedAliases)
+                ctx.resolvedAliases.add(item);
+            else
+                ctx.resolvedAliases = new Set([item]);
+            item = item.resolve(ctx.doc);
+        }
+    }
+    let tagObj = undefined;
+    const node = isNode(item)
+        ? item
+        : ctx.doc.createNode(item, { onTagObj: o => (tagObj = o) });
+    if (!tagObj)
+        tagObj = getTagObject(ctx.doc.schema.tags, node);
+    const props = stringifyProps(node, tagObj, ctx);
+    if (props.length > 0)
+        ctx.indentAtStart = (ctx.indentAtStart || 0) + props.length + 1;
+    const str = typeof tagObj.stringify === 'function'
+        ? tagObj.stringify(node, ctx, onComment, onChompKeep)
+        : isScalar(node)
+            ? stringifyString(node, ctx, onComment, onChompKeep)
+            : node.toString(ctx, onComment, onChompKeep);
+    if (!props)
+        return str;
+    return isScalar(node) || str[0] === '{' || str[0] === '['
+        ? `${props} ${str}`
+        : `${props}\n${ctx.indent}${str}`;
+}
+
+function stringifyPair({ key, value }, ctx, onComment, onChompKeep) {
+    const { allNullValues, doc, indent, indentStep, options: { commentString, indentSeq, simpleKeys } } = ctx;
+    let keyComment = (isNode(key) && key.comment) || null;
+    if (simpleKeys) {
+        if (keyComment) {
+            throw new Error('With simple keys, key nodes cannot have comments');
+        }
+        if (isCollection(key)) {
+            const msg = 'With simple keys, collection cannot be used as a key value';
+            throw new Error(msg);
+        }
+    }
+    let explicitKey = !simpleKeys &&
+        (!key ||
+            (keyComment && value == null && !ctx.inFlow) ||
+            isCollection(key) ||
+            (isScalar(key)
+                ? key.type === Scalar.BLOCK_FOLDED || key.type === Scalar.BLOCK_LITERAL
+                : typeof key === 'object'));
+    ctx = Object.assign({}, ctx, {
+        allNullValues: false,
+        implicitKey: !explicitKey && (simpleKeys || !allNullValues),
+        indent: indent + indentStep
+    });
+    let keyCommentDone = false;
+    let chompKeep = false;
+    let str = stringify$1(key, ctx, () => (keyCommentDone = true), () => (chompKeep = true));
+    if (!explicitKey && !ctx.inFlow && str.length > 1024) {
+        if (simpleKeys)
+            throw new Error('With simple keys, single line scalar must not span more than 1024 characters');
+        explicitKey = true;
+    }
+    if (ctx.inFlow) {
+        if (allNullValues || value == null) {
+            if (keyCommentDone && onComment)
+                onComment();
+            return explicitKey ? `? ${str}` : str;
+        }
+    }
+    else if ((allNullValues && !simpleKeys) || (value == null && explicitKey)) {
+        str = `? ${str}`;
+        if (keyComment && !keyCommentDone) {
+            str += lineComment(str, ctx.indent, commentString(keyComment));
+        }
+        else if (chompKeep && onChompKeep)
+            onChompKeep();
+        return str;
+    }
+    if (keyCommentDone)
+        keyComment = null;
+    if (explicitKey) {
+        if (keyComment)
+            str += lineComment(str, ctx.indent, commentString(keyComment));
+        str = `? ${str}\n${indent}:`;
+    }
+    else {
+        str = `${str}:`;
+        if (keyComment)
+            str += lineComment(str, ctx.indent, commentString(keyComment));
+    }
+    let vcb = '';
+    let valueComment = null;
+    if (isNode(value)) {
+        if (value.spaceBefore)
+            vcb = '\n';
+        if (value.commentBefore) {
+            const cs = commentString(value.commentBefore);
+            vcb += `\n${indentComment(cs, ctx.indent)}`;
+        }
+        valueComment = value.comment;
+    }
+    else if (value && typeof value === 'object') {
+        value = doc.createNode(value);
+    }
+    ctx.implicitKey = false;
+    if (!explicitKey && !keyComment && isScalar(value))
+        ctx.indentAtStart = str.length + 1;
+    chompKeep = false;
+    if (!indentSeq &&
+        indentStep.length >= 2 &&
+        !ctx.inFlow &&
+        !explicitKey &&
+        isSeq(value) &&
+        !value.flow &&
+        !value.tag &&
+        !value.anchor) {
+        // If indentSeq === false, consider '- ' as part of indentation where possible
+        ctx.indent = ctx.indent.substr(2);
+    }
+    let valueCommentDone = false;
+    const valueStr = stringify$1(value, ctx, () => (valueCommentDone = true), () => (chompKeep = true));
+    let ws = ' ';
+    if (vcb || keyComment) {
+        ws = valueStr === '' && !ctx.inFlow ? vcb : `${vcb}\n${ctx.indent}`;
+    }
+    else if (!explicitKey && isCollection(value)) {
+        const flow = valueStr[0] === '[' || valueStr[0] === '{';
+        if (!flow || valueStr.includes('\n'))
+            ws = `\n${ctx.indent}`;
+    }
+    else if (valueStr === '' || valueStr[0] === '\n')
+        ws = '';
+    str += ws + valueStr;
+    if (ctx.inFlow) {
+        if (valueCommentDone && onComment)
+            onComment();
+    }
+    else if (valueComment && !valueCommentDone) {
+        str += lineComment(str, ctx.indent, commentString(valueComment));
+    }
+    else if (chompKeep && onChompKeep) {
+        onChompKeep();
+    }
+    return str;
+}
+
+function warn(logLevel, warning) {
+    if (logLevel === 'debug' || logLevel === 'warn') {
+        if (typeof process !== 'undefined' && process.emitWarning)
+            process.emitWarning(warning);
+        else
+            console.warn(warning);
+    }
+}
+
+const MERGE_KEY = '<<';
+function addPairToJSMap(ctx, map, { key, value }) {
+    if (ctx && ctx.doc.schema.merge && isMergeKey(key)) {
+        value = isAlias(value) ? value.resolve(ctx.doc) : value;
+        if (isSeq(value))
+            for (const it of value.items)
+                mergeToJSMap(ctx, map, it);
+        else if (Array.isArray(value))
+            for (const it of value)
+                mergeToJSMap(ctx, map, it);
+        else
+            mergeToJSMap(ctx, map, value);
+    }
+    else {
+        const jsKey = toJS(key, '', ctx);
+        if (map instanceof Map) {
+            map.set(jsKey, toJS(value, jsKey, ctx));
+        }
+        else if (map instanceof Set) {
+            map.add(jsKey);
+        }
+        else {
+            const stringKey = stringifyKey(key, jsKey, ctx);
+            const jsValue = toJS(value, stringKey, ctx);
+            if (stringKey in map)
+                Object.defineProperty(map, stringKey, {
+                    value: jsValue,
+                    writable: true,
+                    enumerable: true,
+                    configurable: true
+                });
+            else
+                map[stringKey] = jsValue;
+        }
+    }
+    return map;
+}
+const isMergeKey = (key) => key === MERGE_KEY ||
+    (isScalar(key) &&
+        key.value === MERGE_KEY &&
+        (!key.type || key.type === Scalar.PLAIN));
+// If the value associated with a merge key is a single mapping node, each of
+// its key/value pairs is inserted into the current mapping, unless the key
+// already exists in it. If the value associated with the merge key is a
+// sequence, then this sequence is expected to contain mapping nodes and each
+// of these nodes is merged in turn according to its order in the sequence.
+// Keys in mapping nodes earlier in the sequence override keys specified in
+// later mapping nodes. -- http://yaml.org/type/merge.html
+function mergeToJSMap(ctx, map, value) {
+    const source = ctx && isAlias(value) ? value.resolve(ctx.doc) : value;
+    if (!isMap(source))
+        throw new Error('Merge sources must be maps or map aliases');
+    const srcMap = source.toJSON(null, ctx, Map);
+    for (const [key, value] of srcMap) {
+        if (map instanceof Map) {
+            if (!map.has(key))
+                map.set(key, value);
+        }
+        else if (map instanceof Set) {
+            map.add(key);
+        }
+        else if (!Object.prototype.hasOwnProperty.call(map, key)) {
+            Object.defineProperty(map, key, {
+                value,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+        }
+    }
+    return map;
+}
+function stringifyKey(key, jsKey, ctx) {
+    if (jsKey === null)
+        return '';
+    if (typeof jsKey !== 'object')
+        return String(jsKey);
+    if (isNode(key) && ctx && ctx.doc) {
+        const strCtx = createStringifyContext(ctx.doc, {});
+        strCtx.anchors = new Set();
+        for (const node of ctx.anchors.keys())
+            strCtx.anchors.add(node.anchor);
+        strCtx.inFlow = true;
+        strCtx.inStringifyKey = true;
+        const strKey = key.toString(strCtx);
+        if (!ctx.mapKeyWarned) {
+            let jsonStr = JSON.stringify(strKey);
+            if (jsonStr.length > 40)
+                jsonStr = jsonStr.substring(0, 36) + '..."';
+            warn(ctx.doc.options.logLevel, `Keys with collection values will be stringified due to JS Object restrictions: ${jsonStr}. Set mapAsMap: true to use object keys.`);
+            ctx.mapKeyWarned = true;
+        }
+        return strKey;
+    }
+    return JSON.stringify(jsKey);
+}
+
+function createPair(key, value, ctx) {
+    const k = createNode(key, undefined, ctx);
+    const v = createNode(value, undefined, ctx);
+    return new Pair(k, v);
+}
+class Pair {
+    constructor(key, value = null) {
+        Object.defineProperty(this, NODE_TYPE, { value: PAIR });
+        this.key = key;
+        this.value = value;
+    }
+    clone(schema) {
+        let { key, value } = this;
+        if (isNode(key))
+            key = key.clone(schema);
+        if (isNode(value))
+            value = value.clone(schema);
+        return new Pair(key, value);
+    }
+    toJSON(_, ctx) {
+        const pair = ctx && ctx.mapAsMap ? new Map() : {};
+        return addPairToJSMap(ctx, pair, this);
+    }
+    toString(ctx, onComment, onChompKeep) {
+        return ctx && ctx.doc
+            ? stringifyPair(this, ctx, onComment, onChompKeep)
+            : JSON.stringify(this);
+    }
+}
+
+/**
+ * `yaml` defines document-specific options in three places: as an argument of
+ * parse, create and stringify calls, in the values of `YAML.defaultOptions`,
+ * and in the version-dependent `YAML.Document.defaults` object. Values set in
+ * `YAML.defaultOptions` override version-dependent defaults, and argument
+ * options override both.
+ */
+const defaultOptions = {
+    intAsBigInt: false,
+    keepSourceTokens: false,
+    logLevel: 'warn',
+    prettyErrors: true,
+    strict: true,
+    uniqueKeys: true,
+    version: '1.2'
+};
+
+function stringifyCollection(collection, ctx, options) {
+    var _a;
+    const flow = (_a = ctx.inFlow) !== null && _a !== void 0 ? _a : collection.flow;
+    const stringify = flow ? stringifyFlowCollection : stringifyBlockCollection;
+    return stringify(collection, ctx, options);
+}
+function stringifyBlockCollection({ comment, items }, ctx, { blockItemPrefix, flowChars, itemIndent, onChompKeep, onComment }) {
+    const { indent, options: { commentString } } = ctx;
+    const itemCtx = Object.assign({}, ctx, { indent: itemIndent, type: null });
+    let chompKeep = false; // flag for the preceding node's status
+    const lines = [];
+    for (let i = 0; i < items.length; ++i) {
+        const item = items[i];
+        let comment = null;
+        if (isNode(item)) {
+            if (!chompKeep && item.spaceBefore)
+                lines.push('');
+            addCommentBefore(ctx, lines, item.commentBefore, chompKeep);
+            if (item.comment)
+                comment = item.comment;
+        }
+        else if (isPair(item)) {
+            const ik = isNode(item.key) ? item.key : null;
+            if (ik) {
+                if (!chompKeep && ik.spaceBefore)
+                    lines.push('');
+                addCommentBefore(ctx, lines, ik.commentBefore, chompKeep);
+            }
+        }
+        chompKeep = false;
+        let str = stringify$1(item, itemCtx, () => (comment = null), () => (chompKeep = true));
+        if (comment)
+            str += lineComment(str, itemIndent, commentString(comment));
+        if (chompKeep && comment)
+            chompKeep = false;
+        lines.push(blockItemPrefix + str);
+    }
+    let str;
+    if (lines.length === 0) {
+        str = flowChars.start + flowChars.end;
+    }
+    else {
+        str = lines[0];
+        for (let i = 1; i < lines.length; ++i) {
+            const line = lines[i];
+            str += line ? `\n${indent}${line}` : '\n';
+        }
+    }
+    if (comment) {
+        str += '\n' + indentComment(commentString(comment), indent);
+        if (onComment)
+            onComment();
+    }
+    else if (chompKeep && onChompKeep)
+        onChompKeep();
+    return str;
+}
+function stringifyFlowCollection({ comment, items }, ctx, { flowChars, itemIndent, onComment }) {
+    const { indent, indentStep, options: { commentString } } = ctx;
+    itemIndent += indentStep;
+    const itemCtx = Object.assign({}, ctx, {
+        indent: itemIndent,
+        inFlow: true,
+        type: null
+    });
+    let reqNewline = false;
+    let linesAtValue = 0;
+    const lines = [];
+    for (let i = 0; i < items.length; ++i) {
+        const item = items[i];
+        let comment = null;
+        if (isNode(item)) {
+            if (item.spaceBefore)
+                lines.push('');
+            addCommentBefore(ctx, lines, item.commentBefore, false);
+            if (item.comment)
+                comment = item.comment;
+        }
+        else if (isPair(item)) {
+            const ik = isNode(item.key) ? item.key : null;
+            if (ik) {
+                if (ik.spaceBefore)
+                    lines.push('');
+                addCommentBefore(ctx, lines, ik.commentBefore, false);
+                if (ik.comment)
+                    reqNewline = true;
+            }
+            const iv = isNode(item.value) ? item.value : null;
+            if (iv) {
+                if (iv.comment)
+                    comment = iv.comment;
+                if (iv.commentBefore)
+                    reqNewline = true;
+            }
+            else if (item.value == null && ik && ik.comment) {
+                comment = ik.comment;
+            }
+        }
+        if (comment)
+            reqNewline = true;
+        let str = stringify$1(item, itemCtx, () => (comment = null));
+        if (i < items.length - 1)
+            str += ',';
+        if (comment)
+            str += lineComment(str, itemIndent, commentString(comment));
+        if (!reqNewline && (lines.length > linesAtValue || str.includes('\n')))
+            reqNewline = true;
+        lines.push(str);
+        linesAtValue = lines.length;
+    }
+    let str;
+    const { start, end } = flowChars;
+    if (lines.length === 0) {
+        str = start + end;
+    }
+    else {
+        if (!reqNewline) {
+            const len = lines.reduce((sum, line) => sum + line.length + 2, 2);
+            reqNewline = len > Collection.maxFlowStringSingleLineLength;
+        }
+        if (reqNewline) {
+            str = start;
+            for (const line of lines)
+                str += line ? `\n${indentStep}${indent}${line}` : '\n';
+            str += `\n${indent}${end}`;
+        }
+        else {
+            str = `${start} ${lines.join(' ')} ${end}`;
+        }
+    }
+    if (comment) {
+        str += lineComment(str, commentString(comment), indent);
+        if (onComment)
+            onComment();
+    }
+    return str;
+}
+function addCommentBefore({ indent, options: { commentString } }, lines, comment, chompKeep) {
+    if (comment && chompKeep)
+        comment = comment.replace(/^\n+/, '');
+    if (comment) {
+        const ic = indentComment(commentString(comment), indent);
+        lines.push(ic.trimStart()); // Avoid double indent on first line
+    }
+}
+
+function findPair(items, key) {
+    const k = isScalar(key) ? key.value : key;
+    for (const it of items) {
+        if (isPair(it)) {
+            if (it.key === key || it.key === k)
+                return it;
+            if (isScalar(it.key) && it.key.value === k)
+                return it;
+        }
+    }
+    return undefined;
+}
+class YAMLMap extends Collection {
+    constructor(schema) {
+        super(MAP, schema);
+        this.items = [];
+    }
+    static get tagName() {
+        return 'tag:yaml.org,2002:map';
+    }
+    /**
+     * Adds a value to the collection.
+     *
+     * @param overwrite - If not set `true`, using a key that is already in the
+     *   collection will throw. Otherwise, overwrites the previous value.
+     */
+    add(pair, overwrite) {
+        let _pair;
+        if (isPair(pair))
+            _pair = pair;
+        else if (!pair || typeof pair !== 'object' || !('key' in pair)) {
+            // In TypeScript, this never happens.
+            _pair = new Pair(pair, pair.value);
+        }
+        else
+            _pair = new Pair(pair.key, pair.value);
+        const prev = findPair(this.items, _pair.key);
+        const sortEntries = this.schema && this.schema.sortMapEntries;
+        if (prev) {
+            if (!overwrite)
+                throw new Error(`Key ${_pair.key} already set`);
+            // For scalars, keep the old node & its comments and anchors
+            if (isScalar(prev.value) && isScalarValue(_pair.value))
+                prev.value.value = _pair.value;
+            else
+                prev.value = _pair.value;
+        }
+        else if (sortEntries) {
+            const i = this.items.findIndex(item => sortEntries(_pair, item) < 0);
+            if (i === -1)
+                this.items.push(_pair);
+            else
+                this.items.splice(i, 0, _pair);
+        }
+        else {
+            this.items.push(_pair);
+        }
+    }
+    delete(key) {
+        const it = findPair(this.items, key);
+        if (!it)
+            return false;
+        const del = this.items.splice(this.items.indexOf(it), 1);
+        return del.length > 0;
+    }
+    get(key, keepScalar) {
+        const it = findPair(this.items, key);
+        const node = it && it.value;
+        return !keepScalar && isScalar(node) ? node.value : node;
+    }
+    has(key) {
+        return !!findPair(this.items, key);
+    }
+    set(key, value) {
+        this.add(new Pair(key, value), true);
+    }
+    /**
+     * @param ctx - Conversion context, originally set in Document#toJS()
+     * @param {Class} Type - If set, forces the returned collection type
+     * @returns Instance of Type, Map, or Object
+     */
+    toJSON(_, ctx, Type) {
+        const map = Type ? new Type() : ctx && ctx.mapAsMap ? new Map() : {};
+        if (ctx && ctx.onCreate)
+            ctx.onCreate(map);
+        for (const item of this.items)
+            addPairToJSMap(ctx, map, item);
+        return map;
+    }
+    toString(ctx, onComment, onChompKeep) {
+        if (!ctx)
+            return JSON.stringify(this);
+        for (const item of this.items) {
+            if (!isPair(item))
+                throw new Error(`Map items must all be pairs; found ${JSON.stringify(item)} instead`);
+        }
+        if (!ctx.allNullValues && this.hasAllNullValues(false))
+            ctx = Object.assign({}, ctx, { allNullValues: true });
+        return stringifyCollection(this, ctx, {
+            blockItemPrefix: '',
+            flowChars: { start: '{', end: '}' },
+            itemIndent: ctx.indent || '',
+            onChompKeep,
+            onComment
+        });
+    }
+}
+
+function createMap(schema, obj, ctx) {
+    const { keepUndefined, replacer } = ctx;
+    const map = new YAMLMap(schema);
+    const add = (key, value) => {
+        if (typeof replacer === 'function')
+            value = replacer.call(obj, key, value);
+        else if (Array.isArray(replacer) && !replacer.includes(key))
+            return;
+        if (value !== undefined || keepUndefined)
+            map.items.push(createPair(key, value, ctx));
+    };
+    if (obj instanceof Map) {
+        for (const [key, value] of obj)
+            add(key, value);
+    }
+    else if (obj && typeof obj === 'object') {
+        for (const key of Object.keys(obj))
+            add(key, obj[key]);
+    }
+    if (typeof schema.sortMapEntries === 'function') {
+        map.items.sort(schema.sortMapEntries);
+    }
+    return map;
+}
+const map = {
+    collection: 'map',
+    createNode: createMap,
+    default: true,
+    nodeClass: YAMLMap,
+    tag: 'tag:yaml.org,2002:map',
+    resolve(map, onError) {
+        if (!isMap(map))
+            onError('Expected a mapping for this tag');
+        return map;
+    }
+};
+
+class YAMLSeq extends Collection {
+    constructor(schema) {
+        super(SEQ, schema);
+        this.items = [];
+    }
+    static get tagName() {
+        return 'tag:yaml.org,2002:seq';
+    }
+    add(value) {
+        this.items.push(value);
+    }
+    /**
+     * Removes a value from the collection.
+     *
+     * `key` must contain a representation of an integer for this to succeed.
+     * It may be wrapped in a `Scalar`.
+     *
+     * @returns `true` if the item was found and removed.
+     */
+    delete(key) {
+        const idx = asItemIndex(key);
+        if (typeof idx !== 'number')
+            return false;
+        const del = this.items.splice(idx, 1);
+        return del.length > 0;
+    }
+    /**
+     * Returns item at `key`, or `undefined` if not found. By default unwraps
+     * scalar values from their surrounding node; to disable set `keepScalar` to
+     * `true` (collections are always returned intact).
+     *
+     * `key` must contain a representation of an integer for this to succeed.
+     * It may be wrapped in a `Scalar`.
+     */
+    get(key, keepScalar) {
+        const idx = asItemIndex(key);
+        if (typeof idx !== 'number')
+            return undefined;
+        const it = this.items[idx];
+        return !keepScalar && isScalar(it) ? it.value : it;
+    }
+    /**
+     * Checks if the collection includes a value with the key `key`.
+     *
+     * `key` must contain a representation of an integer for this to succeed.
+     * It may be wrapped in a `Scalar`.
+     */
+    has(key) {
+        const idx = asItemIndex(key);
+        return typeof idx === 'number' && idx < this.items.length;
+    }
+    /**
+     * Sets a value in this collection. For `!!set`, `value` needs to be a
+     * boolean to add/remove the item from the set.
+     *
+     * If `key` does not contain a representation of an integer, this will throw.
+     * It may be wrapped in a `Scalar`.
+     */
+    set(key, value) {
+        const idx = asItemIndex(key);
+        if (typeof idx !== 'number')
+            throw new Error(`Expected a valid index, not ${key}.`);
+        const prev = this.items[idx];
+        if (isScalar(prev) && isScalarValue(value))
+            prev.value = value;
+        else
+            this.items[idx] = value;
+    }
+    toJSON(_, ctx) {
+        const seq = [];
+        if (ctx && ctx.onCreate)
+            ctx.onCreate(seq);
+        let i = 0;
+        for (const item of this.items)
+            seq.push(toJS(item, String(i++), ctx));
+        return seq;
+    }
+    toString(ctx, onComment, onChompKeep) {
+        if (!ctx)
+            return JSON.stringify(this);
+        return stringifyCollection(this, ctx, {
+            blockItemPrefix: '- ',
+            flowChars: { start: '[', end: ']' },
+            itemIndent: (ctx.indent || '') + '  ',
+            onChompKeep,
+            onComment
+        });
+    }
+}
+function asItemIndex(key) {
+    let idx = isScalar(key) ? key.value : key;
+    if (idx && typeof idx === 'string')
+        idx = Number(idx);
+    return typeof idx === 'number' && Number.isInteger(idx) && idx >= 0
+        ? idx
+        : null;
+}
+
+function createSeq(schema, obj, ctx) {
+    const { replacer } = ctx;
+    const seq = new YAMLSeq(schema);
+    if (obj && Symbol.iterator in Object(obj)) {
+        let i = 0;
+        for (let it of obj) {
+            if (typeof replacer === 'function') {
+                const key = obj instanceof Set ? it : String(i++);
+                it = replacer.call(obj, key, it);
+            }
+            seq.items.push(createNode(it, undefined, ctx));
+        }
+    }
+    return seq;
+}
+const seq = {
+    collection: 'seq',
+    createNode: createSeq,
+    default: true,
+    nodeClass: YAMLSeq,
+    tag: 'tag:yaml.org,2002:seq',
+    resolve(seq, onError) {
+        if (!isSeq(seq))
+            onError('Expected a sequence for this tag');
+        return seq;
+    }
+};
+
+const string = {
+    identify: value => typeof value === 'string',
+    default: true,
+    tag: 'tag:yaml.org,2002:str',
+    resolve: str => str,
+    stringify(item, ctx, onComment, onChompKeep) {
+        ctx = Object.assign({ actualString: true }, ctx);
+        return stringifyString(item, ctx, onComment, onChompKeep);
+    }
+};
+
+const nullTag = {
+    identify: value => value == null,
+    createNode: () => new Scalar(null),
+    default: true,
+    tag: 'tag:yaml.org,2002:null',
+    test: /^(?:~|[Nn]ull|NULL)?$/,
+    resolve: () => new Scalar(null),
+    stringify: ({ source }, ctx) => source && nullTag.test.test(source) ? source : ctx.options.nullStr
+};
+
+const boolTag = {
+    identify: value => typeof value === 'boolean',
+    default: true,
+    tag: 'tag:yaml.org,2002:bool',
+    test: /^(?:[Tt]rue|TRUE|[Ff]alse|FALSE)$/,
+    resolve: str => new Scalar(str[0] === 't' || str[0] === 'T'),
+    stringify({ source, value }, ctx) {
+        if (source && boolTag.test.test(source)) {
+            const sv = source[0] === 't' || source[0] === 'T';
+            if (value === sv)
+                return source;
+        }
+        return value ? ctx.options.trueStr : ctx.options.falseStr;
+    }
+};
+
+function stringifyNumber({ format, minFractionDigits, tag, value }) {
+    if (typeof value === 'bigint')
+        return String(value);
+    const num = typeof value === 'number' ? value : Number(value);
+    if (!isFinite(num))
+        return isNaN(num) ? '.nan' : num < 0 ? '-.inf' : '.inf';
+    let n = JSON.stringify(value);
+    if (!format &&
+        minFractionDigits &&
+        (!tag || tag === 'tag:yaml.org,2002:float') &&
+        /^\d/.test(n)) {
+        let i = n.indexOf('.');
+        if (i < 0) {
+            i = n.length;
+            n += '.';
+        }
+        let d = minFractionDigits - (n.length - i - 1);
+        while (d-- > 0)
+            n += '0';
+    }
+    return n;
+}
+
+const floatNaN$1 = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    test: /^(?:[-+]?\.(?:inf|Inf|INF|nan|NaN|NAN))$/,
+    resolve: str => str.slice(-3).toLowerCase() === 'nan'
+        ? NaN
+        : str[0] === '-'
+            ? Number.NEGATIVE_INFINITY
+            : Number.POSITIVE_INFINITY,
+    stringify: stringifyNumber
+};
+const floatExp$1 = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    format: 'EXP',
+    test: /^[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)[eE][-+]?[0-9]+$/,
+    resolve: str => parseFloat(str),
+    stringify(node) {
+        const num = Number(node.value);
+        return isFinite(num) ? num.toExponential() : stringifyNumber(node);
+    }
+};
+const float$1 = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    test: /^[-+]?(?:\.[0-9]+|[0-9]+\.[0-9]*)$/,
+    resolve(str) {
+        const node = new Scalar(parseFloat(str));
+        const dot = str.indexOf('.');
+        if (dot !== -1 && str[str.length - 1] === '0')
+            node.minFractionDigits = str.length - dot - 1;
+        return node;
+    },
+    stringify: stringifyNumber
+};
+
+const intIdentify$2 = (value) => typeof value === 'bigint' || Number.isInteger(value);
+const intResolve$1 = (str, offset, radix, { intAsBigInt }) => (intAsBigInt ? BigInt(str) : parseInt(str.substring(offset), radix));
+function intStringify$1(node, radix, prefix) {
+    const { value } = node;
+    if (intIdentify$2(value) && value >= 0)
+        return prefix + value.toString(radix);
+    return stringifyNumber(node);
+}
+const intOct$1 = {
+    identify: value => intIdentify$2(value) && value >= 0,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'OCT',
+    test: /^0o[0-7]+$/,
+    resolve: (str, _onError, opt) => intResolve$1(str, 2, 8, opt),
+    stringify: node => intStringify$1(node, 8, '0o')
+};
+const int$1 = {
+    identify: intIdentify$2,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    test: /^[-+]?[0-9]+$/,
+    resolve: (str, _onError, opt) => intResolve$1(str, 0, 10, opt),
+    stringify: stringifyNumber
+};
+const intHex$1 = {
+    identify: value => intIdentify$2(value) && value >= 0,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'HEX',
+    test: /^0x[0-9a-fA-F]+$/,
+    resolve: (str, _onError, opt) => intResolve$1(str, 2, 16, opt),
+    stringify: node => intStringify$1(node, 16, '0x')
+};
+
+const schema$2 = [
+    map,
+    seq,
+    string,
+    nullTag,
+    boolTag,
+    intOct$1,
+    int$1,
+    intHex$1,
+    floatNaN$1,
+    floatExp$1,
+    float$1
+];
+
+function intIdentify$1(value) {
+    return typeof value === 'bigint' || Number.isInteger(value);
+}
+const stringifyJSON = ({ value }) => JSON.stringify(value);
+const jsonScalars = [
+    {
+        identify: value => typeof value === 'string',
+        default: true,
+        tag: 'tag:yaml.org,2002:str',
+        resolve: str => str,
+        stringify: stringifyJSON
+    },
+    {
+        identify: value => value == null,
+        createNode: () => new Scalar(null),
+        default: true,
+        tag: 'tag:yaml.org,2002:null',
+        test: /^null$/,
+        resolve: () => null,
+        stringify: stringifyJSON
+    },
+    {
+        identify: value => typeof value === 'boolean',
+        default: true,
+        tag: 'tag:yaml.org,2002:bool',
+        test: /^true|false$/,
+        resolve: str => str === 'true',
+        stringify: stringifyJSON
+    },
+    {
+        identify: intIdentify$1,
+        default: true,
+        tag: 'tag:yaml.org,2002:int',
+        test: /^-?(?:0|[1-9][0-9]*)$/,
+        resolve: (str, _onError, { intAsBigInt }) => intAsBigInt ? BigInt(str) : parseInt(str, 10),
+        stringify: ({ value }) => intIdentify$1(value) ? value.toString() : JSON.stringify(value)
+    },
+    {
+        identify: value => typeof value === 'number',
+        default: true,
+        tag: 'tag:yaml.org,2002:float',
+        test: /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?$/,
+        resolve: str => parseFloat(str),
+        stringify: stringifyJSON
+    }
+];
+const jsonError = {
+    default: true,
+    tag: '',
+    test: /^/,
+    resolve(str, onError) {
+        onError(`Unresolved plain scalar ${JSON.stringify(str)}`);
+        return str;
+    }
+};
+const schema$1 = [map, seq].concat(jsonScalars, jsonError);
+
+const binary = {
+    identify: value => value instanceof Uint8Array,
+    default: false,
+    tag: 'tag:yaml.org,2002:binary',
+    /**
+     * Returns a Buffer in node and an Uint8Array in browsers
+     *
+     * To use the resulting buffer as an image, you'll want to do something like:
+     *
+     *   const blob = new Blob([buffer], { type: 'image/jpeg' })
+     *   document.querySelector('#photo').src = URL.createObjectURL(blob)
+     */
+    resolve(src, onError) {
+        if (typeof Buffer === 'function') {
+            return Buffer.from(src, 'base64');
+        }
+        else if (typeof atob === 'function') {
+            // On IE 11, atob() can't handle newlines
+            const str = atob(src.replace(/[\n\r]/g, ''));
+            const buffer = new Uint8Array(str.length);
+            for (let i = 0; i < str.length; ++i)
+                buffer[i] = str.charCodeAt(i);
+            return buffer;
+        }
+        else {
+            onError('This environment does not support reading binary tags; either Buffer or atob is required');
+            return src;
+        }
+    },
+    stringify({ comment, type, value }, ctx, onComment, onChompKeep) {
+        const buf = value; // checked earlier by binary.identify()
+        let str;
+        if (typeof Buffer === 'function') {
+            str =
+                buf instanceof Buffer
+                    ? buf.toString('base64')
+                    : Buffer.from(buf.buffer).toString('base64');
+        }
+        else if (typeof btoa === 'function') {
+            let s = '';
+            for (let i = 0; i < buf.length; ++i)
+                s += String.fromCharCode(buf[i]);
+            str = btoa(s);
+        }
+        else {
+            throw new Error('This environment does not support writing binary tags; either Buffer or btoa is required');
+        }
+        if (!type)
+            type = Scalar.BLOCK_LITERAL;
+        if (type !== Scalar.QUOTE_DOUBLE) {
+            const lineWidth = Math.max(ctx.options.lineWidth - ctx.indent.length, ctx.options.minContentWidth);
+            const n = Math.ceil(str.length / lineWidth);
+            const lines = new Array(n);
+            for (let i = 0, o = 0; i < n; ++i, o += lineWidth) {
+                lines[i] = str.substr(o, lineWidth);
+            }
+            str = lines.join(type === Scalar.BLOCK_LITERAL ? '\n' : ' ');
+        }
+        return stringifyString({ comment, type, value: str }, ctx, onComment, onChompKeep);
+    }
+};
+
+function resolvePairs(seq, onError) {
+    if (isSeq(seq)) {
+        for (let i = 0; i < seq.items.length; ++i) {
+            let item = seq.items[i];
+            if (isPair(item))
+                continue;
+            else if (isMap(item)) {
+                if (item.items.length > 1)
+                    onError('Each pair must have its own sequence indicator');
+                const pair = item.items[0] || new Pair(new Scalar(null));
+                if (item.commentBefore)
+                    pair.key.commentBefore = pair.key.commentBefore
+                        ? `${item.commentBefore}\n${pair.key.commentBefore}`
+                        : item.commentBefore;
+                if (item.comment) {
+                    const cn = pair.value || pair.key;
+                    cn.comment = cn.comment
+                        ? `${item.comment}\n${cn.comment}`
+                        : item.comment;
+                }
+                item = pair;
+            }
+            seq.items[i] = isPair(item) ? item : new Pair(item);
+        }
+    }
+    else
+        onError('Expected a sequence for this tag');
+    return seq;
+}
+function createPairs(schema, iterable, ctx) {
+    const { replacer } = ctx;
+    const pairs = new YAMLSeq(schema);
+    pairs.tag = 'tag:yaml.org,2002:pairs';
+    let i = 0;
+    if (iterable && Symbol.iterator in Object(iterable))
+        for (let it of iterable) {
+            if (typeof replacer === 'function')
+                it = replacer.call(iterable, String(i++), it);
+            let key, value;
+            if (Array.isArray(it)) {
+                if (it.length === 2) {
+                    key = it[0];
+                    value = it[1];
+                }
+                else
+                    throw new TypeError(`Expected [key, value] tuple: ${it}`);
+            }
+            else if (it && it instanceof Object) {
+                const keys = Object.keys(it);
+                if (keys.length === 1) {
+                    key = keys[0];
+                    value = it[key];
+                }
+                else
+                    throw new TypeError(`Expected { key: value } tuple: ${it}`);
+            }
+            else {
+                key = it;
+            }
+            pairs.items.push(createPair(key, value, ctx));
+        }
+    return pairs;
+}
+const pairs = {
+    collection: 'seq',
+    default: false,
+    tag: 'tag:yaml.org,2002:pairs',
+    resolve: resolvePairs,
+    createNode: createPairs
+};
+
+class YAMLOMap extends YAMLSeq {
+    constructor() {
+        super();
+        this.add = YAMLMap.prototype.add.bind(this);
+        this.delete = YAMLMap.prototype.delete.bind(this);
+        this.get = YAMLMap.prototype.get.bind(this);
+        this.has = YAMLMap.prototype.has.bind(this);
+        this.set = YAMLMap.prototype.set.bind(this);
+        this.tag = YAMLOMap.tag;
+    }
+    /**
+     * If `ctx` is given, the return type is actually `Map<unknown, unknown>`,
+     * but TypeScript won't allow widening the signature of a child method.
+     */
+    toJSON(_, ctx) {
+        if (!ctx)
+            return super.toJSON(_);
+        const map = new Map();
+        if (ctx && ctx.onCreate)
+            ctx.onCreate(map);
+        for (const pair of this.items) {
+            let key, value;
+            if (isPair(pair)) {
+                key = toJS(pair.key, '', ctx);
+                value = toJS(pair.value, key, ctx);
+            }
+            else {
+                key = toJS(pair, '', ctx);
+            }
+            if (map.has(key))
+                throw new Error('Ordered maps must not include duplicate keys');
+            map.set(key, value);
+        }
+        return map;
+    }
+}
+YAMLOMap.tag = 'tag:yaml.org,2002:omap';
+const omap = {
+    collection: 'seq',
+    identify: value => value instanceof Map,
+    nodeClass: YAMLOMap,
+    default: false,
+    tag: 'tag:yaml.org,2002:omap',
+    resolve(seq, onError) {
+        const pairs = resolvePairs(seq, onError);
+        const seenKeys = [];
+        for (const { key } of pairs.items) {
+            if (isScalar(key)) {
+                if (seenKeys.includes(key.value)) {
+                    onError(`Ordered maps must not include duplicate keys: ${key.value}`);
+                }
+                else {
+                    seenKeys.push(key.value);
+                }
+            }
+        }
+        return Object.assign(new YAMLOMap(), pairs);
+    },
+    createNode(schema, iterable, ctx) {
+        const pairs = createPairs(schema, iterable, ctx);
+        const omap = new YAMLOMap();
+        omap.items = pairs.items;
+        return omap;
+    }
+};
+
+function boolStringify({ value, source }, ctx) {
+    const boolObj = value ? trueTag : falseTag;
+    if (source && boolObj.test.test(source))
+        return source;
+    return value ? ctx.options.trueStr : ctx.options.falseStr;
+}
+const trueTag = {
+    identify: value => value === true,
+    default: true,
+    tag: 'tag:yaml.org,2002:bool',
+    test: /^(?:Y|y|[Yy]es|YES|[Tt]rue|TRUE|[Oo]n|ON)$/,
+    resolve: () => new Scalar(true),
+    stringify: boolStringify
+};
+const falseTag = {
+    identify: value => value === false,
+    default: true,
+    tag: 'tag:yaml.org,2002:bool',
+    test: /^(?:N|n|[Nn]o|NO|[Ff]alse|FALSE|[Oo]ff|OFF)$/i,
+    resolve: () => new Scalar(false),
+    stringify: boolStringify
+};
+
+const floatNaN = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    test: /^[-+]?\.(?:inf|Inf|INF|nan|NaN|NAN)$/,
+    resolve: (str) => str.slice(-3).toLowerCase() === 'nan'
+        ? NaN
+        : str[0] === '-'
+            ? Number.NEGATIVE_INFINITY
+            : Number.POSITIVE_INFINITY,
+    stringify: stringifyNumber
+};
+const floatExp = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    format: 'EXP',
+    test: /^[-+]?(?:[0-9][0-9_]*)?(?:\.[0-9_]*)?[eE][-+]?[0-9]+$/,
+    resolve: (str) => parseFloat(str.replace(/_/g, '')),
+    stringify(node) {
+        const num = Number(node.value);
+        return isFinite(num) ? num.toExponential() : stringifyNumber(node);
+    }
+};
+const float = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    test: /^[-+]?(?:[0-9][0-9_]*)?\.[0-9_]*$/,
+    resolve(str) {
+        const node = new Scalar(parseFloat(str.replace(/_/g, '')));
+        const dot = str.indexOf('.');
+        if (dot !== -1) {
+            const f = str.substring(dot + 1).replace(/_/g, '');
+            if (f[f.length - 1] === '0')
+                node.minFractionDigits = f.length;
+        }
+        return node;
+    },
+    stringify: stringifyNumber
+};
+
+const intIdentify = (value) => typeof value === 'bigint' || Number.isInteger(value);
+function intResolve(str, offset, radix, { intAsBigInt }) {
+    const sign = str[0];
+    if (sign === '-' || sign === '+')
+        offset += 1;
+    str = str.substring(offset).replace(/_/g, '');
+    if (intAsBigInt) {
+        switch (radix) {
+            case 2:
+                str = `0b${str}`;
+                break;
+            case 8:
+                str = `0o${str}`;
+                break;
+            case 16:
+                str = `0x${str}`;
+                break;
+        }
+        const n = BigInt(str);
+        return sign === '-' ? BigInt(-1) * n : n;
+    }
+    const n = parseInt(str, radix);
+    return sign === '-' ? -1 * n : n;
+}
+function intStringify(node, radix, prefix) {
+    const { value } = node;
+    if (intIdentify(value)) {
+        const str = value.toString(radix);
+        return value < 0 ? '-' + prefix + str.substr(1) : prefix + str;
+    }
+    return stringifyNumber(node);
+}
+const intBin = {
+    identify: intIdentify,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'BIN',
+    test: /^[-+]?0b[0-1_]+$/,
+    resolve: (str, _onError, opt) => intResolve(str, 2, 2, opt),
+    stringify: node => intStringify(node, 2, '0b')
+};
+const intOct = {
+    identify: intIdentify,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'OCT',
+    test: /^[-+]?0[0-7_]+$/,
+    resolve: (str, _onError, opt) => intResolve(str, 1, 8, opt),
+    stringify: node => intStringify(node, 8, '0')
+};
+const int = {
+    identify: intIdentify,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    test: /^[-+]?[0-9][0-9_]*$/,
+    resolve: (str, _onError, opt) => intResolve(str, 0, 10, opt),
+    stringify: stringifyNumber
+};
+const intHex = {
+    identify: intIdentify,
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'HEX',
+    test: /^[-+]?0x[0-9a-fA-F_]+$/,
+    resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
+    stringify: node => intStringify(node, 16, '0x')
+};
+
+class YAMLSet extends YAMLMap {
+    constructor(schema) {
+        super(schema);
+        this.tag = YAMLSet.tag;
+    }
+    add(key) {
+        let pair;
+        if (isPair(key))
+            pair = key;
+        else if (typeof key === 'object' &&
+            'key' in key &&
+            'value' in key &&
+            key.value === null)
+            pair = new Pair(key.key, null);
+        else
+            pair = new Pair(key, null);
+        const prev = findPair(this.items, pair.key);
+        if (!prev)
+            this.items.push(pair);
+    }
+    get(key, keepPair) {
+        const pair = findPair(this.items, key);
+        return !keepPair && isPair(pair)
+            ? isScalar(pair.key)
+                ? pair.key.value
+                : pair.key
+            : pair;
+    }
+    set(key, value) {
+        if (typeof value !== 'boolean')
+            throw new Error(`Expected boolean value for set(key, value) in a YAML set, not ${typeof value}`);
+        const prev = findPair(this.items, key);
+        if (prev && !value) {
+            this.items.splice(this.items.indexOf(prev), 1);
+        }
+        else if (!prev && value) {
+            this.items.push(new Pair(key));
+        }
+    }
+    toJSON(_, ctx) {
+        return super.toJSON(_, ctx, Set);
+    }
+    toString(ctx, onComment, onChompKeep) {
+        if (!ctx)
+            return JSON.stringify(this);
+        if (this.hasAllNullValues(true))
+            return super.toString(Object.assign({}, ctx, { allNullValues: true }), onComment, onChompKeep);
+        else
+            throw new Error('Set items must all have null values');
+    }
+}
+YAMLSet.tag = 'tag:yaml.org,2002:set';
+const set = {
+    collection: 'map',
+    identify: value => value instanceof Set,
+    nodeClass: YAMLSet,
+    default: false,
+    tag: 'tag:yaml.org,2002:set',
+    resolve(map, onError) {
+        if (isMap(map)) {
+            if (map.hasAllNullValues(true))
+                return Object.assign(new YAMLSet(), map);
+            else
+                onError('Set items must all have null values');
+        }
+        else
+            onError('Expected a mapping for this tag');
+        return map;
+    },
+    createNode(schema, iterable, ctx) {
+        const { replacer } = ctx;
+        const set = new YAMLSet(schema);
+        if (iterable && Symbol.iterator in Object(iterable))
+            for (let value of iterable) {
+                if (typeof replacer === 'function')
+                    value = replacer.call(iterable, value, value);
+                set.items.push(createPair(value, null, ctx));
+            }
+        return set;
+    }
+};
+
+/** Internal types handle bigint as number, because TS can't figure it out. */
+function parseSexagesimal(str, asBigInt) {
+    const sign = str[0];
+    const parts = sign === '-' || sign === '+' ? str.substring(1) : str;
+    const num = (n) => asBigInt ? BigInt(n) : Number(n);
+    const res = parts
+        .replace(/_/g, '')
+        .split(':')
+        .reduce((res, p) => res * num(60) + num(p), num(0));
+    return (sign === '-' ? num(-1) * res : res);
+}
+/**
+ * hhhh:mm:ss.sss
+ *
+ * Internal types handle bigint as number, because TS can't figure it out.
+ */
+function stringifySexagesimal(node) {
+    let { value } = node;
+    let num = (n) => n;
+    if (typeof value === 'bigint')
+        num = n => BigInt(n);
+    else if (isNaN(value) || !isFinite(value))
+        return stringifyNumber(node);
+    let sign = '';
+    if (value < 0) {
+        sign = '-';
+        value *= num(-1);
+    }
+    const _60 = num(60);
+    const parts = [value % _60]; // seconds, including ms
+    if (value < 60) {
+        parts.unshift(0); // at least one : is required
+    }
+    else {
+        value = (value - parts[0]) / _60;
+        parts.unshift(value % _60); // minutes
+        if (value >= 60) {
+            value = (value - parts[0]) / _60;
+            parts.unshift(value); // hours
+        }
+    }
+    return (sign +
+        parts
+            .map(n => (n < 10 ? '0' + String(n) : String(n)))
+            .join(':')
+            .replace(/000000\d*$/, '') // % 60 may introduce error
+    );
+}
+const intTime = {
+    identify: value => typeof value === 'bigint' || Number.isInteger(value),
+    default: true,
+    tag: 'tag:yaml.org,2002:int',
+    format: 'TIME',
+    test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+$/,
+    resolve: (str, _onError, { intAsBigInt }) => parseSexagesimal(str, intAsBigInt),
+    stringify: stringifySexagesimal
+};
+const floatTime = {
+    identify: value => typeof value === 'number',
+    default: true,
+    tag: 'tag:yaml.org,2002:float',
+    format: 'TIME',
+    test: /^[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\.[0-9_]*$/,
+    resolve: str => parseSexagesimal(str, false),
+    stringify: stringifySexagesimal
+};
+const timestamp = {
+    identify: value => value instanceof Date,
+    default: true,
+    tag: 'tag:yaml.org,2002:timestamp',
+    // If the time zone is omitted, the timestamp is assumed to be specified in UTC. The time part
+    // may be omitted altogether, resulting in a date format. In such a case, the time part is
+    // assumed to be 00:00:00Z (start of day, UTC).
+    test: RegExp('^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})' + // YYYY-Mm-Dd
+        '(?:' + // time is optional
+        '(?:t|T|[ \\t]+)' + // t | T | whitespace
+        '([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)' + // Hh:Mm:Ss(.ss)?
+        '(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?' + // Z | +5 | -03:30
+        ')?$'),
+    resolve(str) {
+        const match = str.match(timestamp.test);
+        if (!match)
+            throw new Error('!!timestamp expects a date, starting with yyyy-mm-dd');
+        const [, year, month, day, hour, minute, second] = match.map(Number);
+        const millisec = match[7] ? Number((match[7] + '00').substr(1, 3)) : 0;
+        let date = Date.UTC(year, month - 1, day, hour || 0, minute || 0, second || 0, millisec);
+        const tz = match[8];
+        if (tz && tz !== 'Z') {
+            let d = parseSexagesimal(tz, false);
+            if (Math.abs(d) < 30)
+                d *= 60;
+            date -= 60000 * d;
+        }
+        return new Date(date);
+    },
+    stringify: ({ value }) => value.toISOString().replace(/((T00:00)?:00)?\.000Z$/, '')
+};
+
+const schema = [
+    map,
+    seq,
+    string,
+    nullTag,
+    trueTag,
+    falseTag,
+    intBin,
+    intOct,
+    int,
+    intHex,
+    floatNaN,
+    floatExp,
+    float,
+    binary,
+    omap,
+    pairs,
+    set,
+    intTime,
+    floatTime,
+    timestamp
+];
+
+const schemas = new Map([
+    ['core', schema$2],
+    ['failsafe', [map, seq, string]],
+    ['json', schema$1],
+    ['yaml11', schema],
+    ['yaml-1.1', schema]
+]);
+const tagsByName = {
+    binary,
+    bool: boolTag,
+    float: float$1,
+    floatExp: floatExp$1,
+    floatNaN: floatNaN$1,
+    floatTime,
+    int: int$1,
+    intHex: intHex$1,
+    intOct: intOct$1,
+    intTime,
+    map,
+    null: nullTag,
+    omap,
+    pairs,
+    seq,
+    set,
+    timestamp
+};
+const coreKnownTags = {
+    'tag:yaml.org,2002:binary': binary,
+    'tag:yaml.org,2002:omap': omap,
+    'tag:yaml.org,2002:pairs': pairs,
+    'tag:yaml.org,2002:set': set,
+    'tag:yaml.org,2002:timestamp': timestamp
+};
+function getTags(customTags, schemaName) {
+    let tags = schemas.get(schemaName);
+    if (!tags) {
+        if (Array.isArray(customTags))
+            tags = [];
+        else {
+            const keys = Array.from(schemas.keys())
+                .filter(key => key !== 'yaml11')
+                .map(key => JSON.stringify(key))
+                .join(', ');
+            throw new Error(`Unknown schema "${schemaName}"; use one of ${keys} or define customTags array`);
+        }
+    }
+    if (Array.isArray(customTags)) {
+        for (const tag of customTags)
+            tags = tags.concat(tag);
+    }
+    else if (typeof customTags === 'function') {
+        tags = customTags(tags.slice());
+    }
+    return tags.map(tag => {
+        if (typeof tag !== 'string')
+            return tag;
+        const tagObj = tagsByName[tag];
+        if (tagObj)
+            return tagObj;
+        const keys = Object.keys(tagsByName)
+            .map(key => JSON.stringify(key))
+            .join(', ');
+        throw new Error(`Unknown custom tag "${tag}"; use one of ${keys}`);
+    });
+}
+
+const sortMapEntriesByKey = (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
+class Schema {
+    constructor({ compat, customTags, merge, resolveKnownTags, schema, sortMapEntries, toStringDefaults }) {
+        this.compat = Array.isArray(compat)
+            ? getTags(compat, 'compat')
+            : compat
+                ? getTags(null, compat)
+                : null;
+        this.merge = !!merge;
+        this.name = (typeof schema === 'string' && schema) || 'core';
+        this.knownTags = resolveKnownTags ? coreKnownTags : {};
+        this.tags = getTags(customTags, this.name);
+        this.toStringOptions = toStringDefaults || null;
+        Object.defineProperty(this, MAP, { value: map });
+        Object.defineProperty(this, SCALAR$1, { value: string });
+        Object.defineProperty(this, SEQ, { value: seq });
+        // Used by createMap()
+        this.sortMapEntries =
+            sortMapEntries === true ? sortMapEntriesByKey : sortMapEntries || null;
+    }
+    clone() {
+        const copy = Object.create(Schema.prototype, Object.getOwnPropertyDescriptors(this));
+        copy.tags = this.tags.slice();
+        return copy;
+    }
+}
+
+function stringifyDocument(doc, options) {
+    const lines = [];
+    let hasDirectives = options.directives === true;
+    if (options.directives !== false && doc.directives) {
+        const dir = doc.directives.toString(doc);
+        if (dir) {
+            lines.push(dir);
+            hasDirectives = true;
+        }
+        else if (doc.directives.marker)
+            hasDirectives = true;
+    }
+    if (hasDirectives)
+        lines.push('---');
+    const ctx = createStringifyContext(doc, options);
+    const { commentString } = ctx.options;
+    if (doc.commentBefore) {
+        if (lines.length !== 1)
+            lines.unshift('');
+        const cs = commentString(doc.commentBefore);
+        lines.unshift(indentComment(cs, ''));
+    }
+    let chompKeep = false;
+    let contentComment = null;
+    if (doc.contents) {
+        if (isNode(doc.contents)) {
+            if (doc.contents.spaceBefore && hasDirectives)
+                lines.push('');
+            if (doc.contents.commentBefore) {
+                const cs = commentString(doc.contents.commentBefore);
+                lines.push(indentComment(cs, ''));
+            }
+            // top-level block scalars need to be indented if followed by a comment
+            ctx.forceBlockIndent = !!doc.comment;
+            contentComment = doc.contents.comment;
+        }
+        const onChompKeep = contentComment ? undefined : () => (chompKeep = true);
+        let body = stringify$1(doc.contents, ctx, () => (contentComment = null), onChompKeep);
+        if (contentComment)
+            body += lineComment(body, '', commentString(contentComment));
+        if ((body[0] === '|' || body[0] === '>') &&
+            lines[lines.length - 1] === '---') {
+            // Top-level block scalars with a preceding doc marker ought to use the
+            // same line for their header.
+            lines[lines.length - 1] = `--- ${body}`;
+        }
+        else
+            lines.push(body);
+    }
+    else {
+        lines.push(stringify$1(doc.contents, ctx));
+    }
+    let dc = doc.comment;
+    if (dc && chompKeep)
+        dc = dc.replace(/^\n+/, '');
+    if (dc) {
+        if ((!chompKeep || contentComment) && lines[lines.length - 1] !== '')
+            lines.push('');
+        lines.push(indentComment(commentString(dc), ''));
+    }
+    return lines.join('\n') + '\n';
+}
+
+/**
+ * Applies the JSON.parse reviver algorithm as defined in the ECMA-262 spec,
+ * in section 24.5.1.1 "Runtime Semantics: InternalizeJSONProperty" of the
+ * 2021 edition: https://tc39.es/ecma262/#sec-json.parse
+ *
+ * Includes extensions for handling Map and Set objects.
+ */
+function applyReviver(reviver, obj, key, val) {
+    if (val && typeof val === 'object') {
+        if (Array.isArray(val)) {
+            for (let i = 0, len = val.length; i < len; ++i) {
+                const v0 = val[i];
+                const v1 = applyReviver(reviver, val, String(i), v0);
+                if (v1 === undefined)
+                    delete val[i];
+                else if (v1 !== v0)
+                    val[i] = v1;
+            }
+        }
+        else if (val instanceof Map) {
+            for (const k of Array.from(val.keys())) {
+                const v0 = val.get(k);
+                const v1 = applyReviver(reviver, val, k, v0);
+                if (v1 === undefined)
+                    val.delete(k);
+                else if (v1 !== v0)
+                    val.set(k, v1);
+            }
+        }
+        else if (val instanceof Set) {
+            for (const v0 of Array.from(val)) {
+                const v1 = applyReviver(reviver, val, v0, v0);
+                if (v1 === undefined)
+                    val.delete(v0);
+                else if (v1 !== v0) {
+                    val.delete(v0);
+                    val.add(v1);
+                }
+            }
+        }
+        else {
+            for (const [k, v0] of Object.entries(val)) {
+                const v1 = applyReviver(reviver, val, k, v0);
+                if (v1 === undefined)
+                    delete val[k];
+                else if (v1 !== v0)
+                    val[k] = v1;
+            }
+        }
+    }
+    return reviver.call(obj, key, val);
+}
+
+class Document {
+    constructor(value, replacer, options) {
+        /** A comment before this Document */
+        this.commentBefore = null;
+        /** A comment immediately after this Document */
+        this.comment = null;
+        /** Errors encountered during parsing. */
+        this.errors = [];
+        /** Warnings encountered during parsing. */
+        this.warnings = [];
+        Object.defineProperty(this, NODE_TYPE, { value: DOC });
+        let _replacer = null;
+        if (typeof replacer === 'function' || Array.isArray(replacer)) {
+            _replacer = replacer;
+        }
+        else if (options === undefined && replacer) {
+            options = replacer;
+            replacer = undefined;
+        }
+        const opt = Object.assign({}, defaultOptions, options);
+        this.options = opt;
+        let { version } = opt;
+        if (options === null || options === void 0 ? void 0 : options.directives) {
+            this.directives = options.directives.atDocument();
+            if (this.directives.yaml.explicit)
+                version = this.directives.yaml.version;
+        }
+        else
+            this.directives = new Directives({ version });
+        this.setSchema(version, options);
+        if (value === undefined)
+            this.contents = null;
+        else {
+            this.contents = this.createNode(value, _replacer, options);
+        }
+    }
+    /**
+     * Create a deep copy of this Document and its contents.
+     *
+     * Custom Node values that inherit from `Object` still refer to their original instances.
+     */
+    clone() {
+        const copy = Object.create(Document.prototype, {
+            [NODE_TYPE]: { value: DOC }
+        });
+        copy.commentBefore = this.commentBefore;
+        copy.comment = this.comment;
+        copy.errors = this.errors.slice();
+        copy.warnings = this.warnings.slice();
+        copy.options = Object.assign({}, this.options);
+        if (this.directives)
+            copy.directives = this.directives.clone();
+        copy.schema = this.schema.clone();
+        copy.contents = isNode(this.contents)
+            ? this.contents.clone(copy.schema)
+            : this.contents;
+        if (this.range)
+            copy.range = this.range.slice();
+        return copy;
+    }
+    /** Adds a value to the document. */
+    add(value) {
+        if (assertCollection(this.contents))
+            this.contents.add(value);
+    }
+    /** Adds a value to the document. */
+    addIn(path, value) {
+        if (assertCollection(this.contents))
+            this.contents.addIn(path, value);
+    }
+    /**
+     * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
+     *
+     * If `node` already has an anchor, `name` is ignored.
+     * Otherwise, the `node.anchor` value will be set to `name`,
+     * or if an anchor with that name is already present in the document,
+     * `name` will be used as a prefix for a new unique anchor.
+     * If `name` is undefined, the generated anchor will use 'a' as a prefix.
+     */
+    createAlias(node, name) {
+        if (!node.anchor) {
+            const prev = anchorNames(this);
+            node.anchor =
+                !name || prev.has(name) ? findNewAnchor(name || 'a', prev) : name;
+        }
+        return new Alias(node.anchor);
+    }
+    createNode(value, replacer, options) {
+        let _replacer = undefined;
+        if (typeof replacer === 'function') {
+            value = replacer.call({ '': value }, '', value);
+            _replacer = replacer;
+        }
+        else if (Array.isArray(replacer)) {
+            const keyToStr = (v) => typeof v === 'number' || v instanceof String || v instanceof Number;
+            const asStr = replacer.filter(keyToStr).map(String);
+            if (asStr.length > 0)
+                replacer = replacer.concat(asStr);
+            _replacer = replacer;
+        }
+        else if (options === undefined && replacer) {
+            options = replacer;
+            replacer = undefined;
+        }
+        const { aliasDuplicateObjects, anchorPrefix, flow, keepUndefined, onTagObj, tag } = options || {};
+        const { onAnchor, setAnchors, sourceObjects } = createNodeAnchors(this, anchorPrefix || 'a');
+        const ctx = {
+            aliasDuplicateObjects: aliasDuplicateObjects !== null && aliasDuplicateObjects !== void 0 ? aliasDuplicateObjects : true,
+            keepUndefined: keepUndefined !== null && keepUndefined !== void 0 ? keepUndefined : false,
+            onAnchor,
+            onTagObj,
+            replacer: _replacer,
+            schema: this.schema,
+            sourceObjects
+        };
+        const node = createNode(value, tag, ctx);
+        if (flow && isCollection(node))
+            node.flow = true;
+        setAnchors();
+        return node;
+    }
+    /**
+     * Convert a key and a value into a `Pair` using the current schema,
+     * recursively wrapping all values as `Scalar` or `Collection` nodes.
+     */
+    createPair(key, value, options = {}) {
+        const k = this.createNode(key, null, options);
+        const v = this.createNode(value, null, options);
+        return new Pair(k, v);
+    }
+    /**
+     * Removes a value from the document.
+     * @returns `true` if the item was found and removed.
+     */
+    delete(key) {
+        return assertCollection(this.contents) ? this.contents.delete(key) : false;
+    }
+    /**
+     * Removes a value from the document.
+     * @returns `true` if the item was found and removed.
+     */
+    deleteIn(path) {
+        if (isEmptyPath(path)) {
+            if (this.contents == null)
+                return false;
+            this.contents = null;
+            return true;
+        }
+        return assertCollection(this.contents)
+            ? this.contents.deleteIn(path)
+            : false;
+    }
+    /**
+     * Returns item at `key`, or `undefined` if not found. By default unwraps
+     * scalar values from their surrounding node; to disable set `keepScalar` to
+     * `true` (collections are always returned intact).
+     */
+    get(key, keepScalar) {
+        return isCollection(this.contents)
+            ? this.contents.get(key, keepScalar)
+            : undefined;
+    }
+    /**
+     * Returns item at `path`, or `undefined` if not found. By default unwraps
+     * scalar values from their surrounding node; to disable set `keepScalar` to
+     * `true` (collections are always returned intact).
+     */
+    getIn(path, keepScalar) {
+        if (isEmptyPath(path))
+            return !keepScalar && isScalar(this.contents)
+                ? this.contents.value
+                : this.contents;
+        return isCollection(this.contents)
+            ? this.contents.getIn(path, keepScalar)
+            : undefined;
+    }
+    /**
+     * Checks if the document includes a value with the key `key`.
+     */
+    has(key) {
+        return isCollection(this.contents) ? this.contents.has(key) : false;
+    }
+    /**
+     * Checks if the document includes a value at `path`.
+     */
+    hasIn(path) {
+        if (isEmptyPath(path))
+            return this.contents !== undefined;
+        return isCollection(this.contents) ? this.contents.hasIn(path) : false;
+    }
+    /**
+     * Sets a value in this document. For `!!set`, `value` needs to be a
+     * boolean to add/remove the item from the set.
+     */
+    set(key, value) {
+        if (this.contents == null) {
+            this.contents = collectionFromPath(this.schema, [key], value);
+        }
+        else if (assertCollection(this.contents)) {
+            this.contents.set(key, value);
+        }
+    }
+    /**
+     * Sets a value in this document. For `!!set`, `value` needs to be a
+     * boolean to add/remove the item from the set.
+     */
+    setIn(path, value) {
+        if (isEmptyPath(path))
+            this.contents = value;
+        else if (this.contents == null) {
+            this.contents = collectionFromPath(this.schema, Array.from(path), value);
+        }
+        else if (assertCollection(this.contents)) {
+            this.contents.setIn(path, value);
+        }
+    }
+    /**
+     * Change the YAML version and schema used by the document.
+     * A `null` version disables support for directives, explicit tags, anchors, and aliases.
+     * It also requires the `schema` option to be given as a `Schema` instance value.
+     *
+     * Overrides all previously set schema options.
+     */
+    setSchema(version, options = {}) {
+        if (typeof version === 'number')
+            version = String(version);
+        let opt;
+        switch (version) {
+            case '1.1':
+                if (this.directives)
+                    this.directives.yaml.version = '1.1';
+                else
+                    this.directives = new Directives({ version: '1.1' });
+                opt = { merge: true, resolveKnownTags: false, schema: 'yaml-1.1' };
+                break;
+            case '1.2':
+                if (this.directives)
+                    this.directives.yaml.version = '1.2';
+                else
+                    this.directives = new Directives({ version: '1.2' });
+                opt = { merge: false, resolveKnownTags: true, schema: 'core' };
+                break;
+            case null:
+                if (this.directives)
+                    delete this.directives;
+                opt = null;
+                break;
+            default: {
+                const sv = JSON.stringify(version);
+                throw new Error(`Expected '1.1', '1.2' or null as first argument, but found: ${sv}`);
+            }
+        }
+        // Not using `instanceof Schema` to allow for duck typing
+        if (options.schema instanceof Object)
+            this.schema = options.schema;
+        else if (opt)
+            this.schema = new Schema(Object.assign(opt, options));
+        else
+            throw new Error(`With a null YAML version, the { schema: Schema } option is required`);
+    }
+    // json & jsonArg are only used from toJSON()
+    toJS({ json, jsonArg, mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
+        const ctx = {
+            anchors: new Map(),
+            doc: this,
+            keep: !json,
+            mapAsMap: mapAsMap === true,
+            mapKeyWarned: false,
+            maxAliasCount: typeof maxAliasCount === 'number' ? maxAliasCount : 100,
+            stringify: stringify$1
+        };
+        const res = toJS(this.contents, jsonArg || '', ctx);
+        if (typeof onAnchor === 'function')
+            for (const { count, res } of ctx.anchors.values())
+                onAnchor(res, count);
+        return typeof reviver === 'function'
+            ? applyReviver(reviver, { '': res }, '', res)
+            : res;
+    }
+    /**
+     * A JSON representation of the document `contents`.
+     *
+     * @param jsonArg Used by `JSON.stringify` to indicate the array index or
+     *   property name.
+     */
+    toJSON(jsonArg, onAnchor) {
+        return this.toJS({ json: true, jsonArg, mapAsMap: false, onAnchor });
+    }
+    /** A YAML representation of the document. */
+    toString(options = {}) {
+        if (this.errors.length > 0)
+            throw new Error('Document with errors cannot be stringified');
+        if ('indent' in options &&
+            (!Number.isInteger(options.indent) || Number(options.indent) <= 0)) {
+            const s = JSON.stringify(options.indent);
+            throw new Error(`"indent" option must be a positive integer, not ${s}`);
+        }
+        return stringifyDocument(this, options);
+    }
+}
+function assertCollection(contents) {
+    if (isCollection(contents))
+        return true;
+    throw new Error('Expected a YAML collection as document contents');
+}
+
+class YAMLError extends Error {
+    constructor(name, pos, code, message) {
+        super();
+        this.name = name;
+        this.code = code;
+        this.message = message;
+        this.pos = pos;
+    }
+}
+class YAMLParseError extends YAMLError {
+    constructor(pos, code, message) {
+        super('YAMLParseError', pos, code, message);
+    }
+}
+class YAMLWarning extends YAMLError {
+    constructor(pos, code, message) {
+        super('YAMLWarning', pos, code, message);
+    }
+}
+const prettifyError = (src, lc) => (error) => {
+    if (error.pos[0] === -1)
+        return;
+    error.linePos = error.pos.map(pos => lc.linePos(pos));
+    const { line, col } = error.linePos[0];
+    error.message += ` at line ${line}, column ${col}`;
+    let ci = col - 1;
+    let lineStr = src
+        .substring(lc.lineStarts[line - 1], lc.lineStarts[line])
+        .replace(/[\n\r]+$/, '');
+    // Trim to max 80 chars, keeping col position near the middle
+    if (ci >= 60 && lineStr.length > 80) {
+        const trimStart = Math.min(ci - 39, lineStr.length - 79);
+        lineStr = '…' + lineStr.substring(trimStart);
+        ci -= trimStart - 1;
+    }
+    if (lineStr.length > 80)
+        lineStr = lineStr.substring(0, 79) + '…';
+    // Include previous line in context if pointing at line start
+    if (line > 1 && /^ *$/.test(lineStr.substring(0, ci))) {
+        // Regexp won't match if start is trimmed
+        let prev = src.substring(lc.lineStarts[line - 2], lc.lineStarts[line - 1]);
+        if (prev.length > 80)
+            prev = prev.substring(0, 79) + '…\n';
+        lineStr = prev + lineStr;
+    }
+    if (/[^ ]/.test(lineStr)) {
+        let count = 1;
+        const end = error.linePos[1];
+        if (end && end.line === line && end.col > col) {
+            count = Math.min(end.col - col, 80 - ci);
+        }
+        const pointer = ' '.repeat(ci) + '^'.repeat(count);
+        error.message += `:\n\n${lineStr}\n${pointer}\n`;
+    }
+};
+
+function resolveProps(tokens, { flow, indicator, next, offset, onError, startOnNewline }) {
+    let spaceBefore = false;
+    let atNewline = startOnNewline;
+    let hasSpace = startOnNewline;
+    let comment = '';
+    let commentSep = '';
+    let hasNewline = false;
+    let reqSpace = false;
+    let anchor = null;
+    let tag = null;
+    let comma = null;
+    let found = null;
+    let start = null;
+    for (const token of tokens) {
+        if (reqSpace) {
+            if (token.type !== 'space' &&
+                token.type !== 'newline' &&
+                token.type !== 'comma')
+                onError(token.offset, 'MISSING_CHAR', 'Tags and anchors must be separated from the next token by white space');
+            reqSpace = false;
+        }
+        switch (token.type) {
+            case 'space':
+                // At the doc level, tabs at line start may be parsed
+                // as leading white space rather than indentation.
+                // In a flow collection, only the parser handles indent.
+                if (!flow &&
+                    atNewline &&
+                    indicator !== 'doc-start' &&
+                    token.source[0] === '\t')
+                    onError(token, 'TAB_AS_INDENT', 'Tabs are not allowed as indentation');
+                hasSpace = true;
+                break;
+            case 'comment': {
+                if (!hasSpace)
+                    onError(token, 'MISSING_CHAR', 'Comments must be separated from other tokens by white space characters');
+                const cb = token.source.substring(1) || ' ';
+                if (!comment)
+                    comment = cb;
+                else
+                    comment += commentSep + cb;
+                commentSep = '';
+                atNewline = false;
+                break;
+            }
+            case 'newline':
+                if (atNewline) {
+                    if (comment)
+                        comment += token.source;
+                    else
+                        spaceBefore = true;
+                }
+                else
+                    commentSep += token.source;
+                atNewline = true;
+                hasNewline = true;
+                hasSpace = true;
+                break;
+            case 'anchor':
+                if (anchor)
+                    onError(token, 'MULTIPLE_ANCHORS', 'A node can have at most one anchor');
+                anchor = token;
+                if (start === null)
+                    start = token.offset;
+                atNewline = false;
+                hasSpace = false;
+                reqSpace = true;
+                break;
+            case 'tag': {
+                if (tag)
+                    onError(token, 'MULTIPLE_TAGS', 'A node can have at most one tag');
+                tag = token;
+                if (start === null)
+                    start = token.offset;
+                atNewline = false;
+                hasSpace = false;
+                reqSpace = true;
+                break;
+            }
+            case indicator:
+                // Could here handle preceding comments differently
+                if (anchor || tag)
+                    onError(token, 'BAD_PROP_ORDER', `Anchors and tags must be after the ${token.source} indicator`);
+                if (found)
+                    onError(token, 'UNEXPECTED_TOKEN', `Unexpected ${token.source} in ${flow || 'collection'}`);
+                found = token;
+                atNewline = false;
+                hasSpace = false;
+                break;
+            case 'comma':
+                if (flow) {
+                    if (comma)
+                        onError(token, 'UNEXPECTED_TOKEN', `Unexpected , in ${flow}`);
+                    comma = token;
+                    atNewline = false;
+                    hasSpace = false;
+                    break;
+                }
+            // else fallthrough
+            default:
+                onError(token, 'UNEXPECTED_TOKEN', `Unexpected ${token.type} token`);
+                atNewline = false;
+                hasSpace = false;
+        }
+    }
+    const last = tokens[tokens.length - 1];
+    const end = last ? last.offset + last.source.length : offset;
+    if (reqSpace &&
+        next &&
+        next.type !== 'space' &&
+        next.type !== 'newline' &&
+        next.type !== 'comma' &&
+        (next.type !== 'scalar' || next.source !== ''))
+        onError(next.offset, 'MISSING_CHAR', 'Tags and anchors must be separated from the next token by white space');
+    return {
+        comma,
+        found,
+        spaceBefore,
+        comment,
+        hasNewline,
+        anchor,
+        tag,
+        end,
+        start: start !== null && start !== void 0 ? start : end
+    };
+}
+
+function containsNewline(key) {
+    if (!key)
+        return null;
+    switch (key.type) {
+        case 'alias':
+        case 'scalar':
+        case 'double-quoted-scalar':
+        case 'single-quoted-scalar':
+            if (key.source.includes('\n'))
+                return true;
+            if (key.end)
+                for (const st of key.end)
+                    if (st.type === 'newline')
+                        return true;
+            return false;
+        case 'flow-collection':
+            for (const it of key.items) {
+                for (const st of it.start)
+                    if (st.type === 'newline')
+                        return true;
+                if (it.sep)
+                    for (const st of it.sep)
+                        if (st.type === 'newline')
+                            return true;
+                if (containsNewline(it.key) || containsNewline(it.value))
+                    return true;
+            }
+            return false;
+        default:
+            return true;
+    }
+}
+
+function flowIndentCheck(indent, fc, onError) {
+    if ((fc === null || fc === void 0 ? void 0 : fc.type) === 'flow-collection') {
+        const end = fc.end[0];
+        if (end.indent === indent &&
+            (end.source === ']' || end.source === '}') &&
+            containsNewline(fc)) {
+            const msg = 'Flow end indicator should be more indented than parent';
+            onError(end, 'BAD_INDENT', msg, true);
+        }
+    }
+}
+
+function mapIncludes(ctx, items, search) {
+    const { uniqueKeys } = ctx.options;
+    if (uniqueKeys === false)
+        return false;
+    const isEqual = typeof uniqueKeys === 'function'
+        ? uniqueKeys
+        : (a, b) => a === b ||
+            (isScalar(a) &&
+                isScalar(b) &&
+                a.value === b.value &&
+                !(a.value === '<<' && ctx.schema.merge));
+    return items.some(pair => isEqual(pair.key, search));
+}
+
+const startColMsg = 'All mapping items must start at the same column';
+function resolveBlockMap({ composeNode, composeEmptyNode }, ctx, bm, onError) {
+    var _a;
+    const map = new YAMLMap(ctx.schema);
+    if (ctx.atRoot)
+        ctx.atRoot = false;
+    let offset = bm.offset;
+    for (const collItem of bm.items) {
+        const { start, key, sep, value } = collItem;
+        // key properties
+        const keyProps = resolveProps(start, {
+            indicator: 'explicit-key-ind',
+            next: key || (sep === null || sep === void 0 ? void 0 : sep[0]),
+            offset,
+            onError,
+            startOnNewline: true
+        });
+        const implicitKey = !keyProps.found;
+        if (implicitKey) {
+            if (key) {
+                if (key.type === 'block-seq')
+                    onError(offset, 'BLOCK_AS_IMPLICIT_KEY', 'A block sequence may not be used as an implicit map key');
+                else if ('indent' in key && key.indent !== bm.indent)
+                    onError(offset, 'BAD_INDENT', startColMsg);
+            }
+            if (!keyProps.anchor && !keyProps.tag && !sep) {
+                // TODO: assert being at last item?
+                if (keyProps.comment) {
+                    if (map.comment)
+                        map.comment += '\n' + keyProps.comment;
+                    else
+                        map.comment = keyProps.comment;
+                }
+                continue;
+            }
+        }
+        else if (((_a = keyProps.found) === null || _a === void 0 ? void 0 : _a.indent) !== bm.indent)
+            onError(offset, 'BAD_INDENT', startColMsg);
+        if (implicitKey && containsNewline(key))
+            onError(key, // checked by containsNewline()
+            'MULTILINE_IMPLICIT_KEY', 'Implicit keys need to be on a single line');
+        // key value
+        const keyStart = keyProps.end;
+        const keyNode = key
+            ? composeNode(ctx, key, keyProps, onError)
+            : composeEmptyNode(ctx, keyStart, start, null, keyProps, onError);
+        if (ctx.schema.compat)
+            flowIndentCheck(bm.indent, key, onError);
+        if (mapIncludes(ctx, map.items, keyNode))
+            onError(keyStart, 'DUPLICATE_KEY', 'Map keys must be unique');
+        // value properties
+        const valueProps = resolveProps(sep || [], {
+            indicator: 'map-value-ind',
+            next: value,
+            offset: keyNode.range[2],
+            onError,
+            startOnNewline: !key || key.type === 'block-scalar'
+        });
+        offset = valueProps.end;
+        if (valueProps.found) {
+            if (implicitKey) {
+                if ((value === null || value === void 0 ? void 0 : value.type) === 'block-map' && !valueProps.hasNewline)
+                    onError(offset, 'BLOCK_AS_IMPLICIT_KEY', 'Nested mappings are not allowed in compact mappings');
+                if (ctx.options.strict &&
+                    keyProps.start < valueProps.found.offset - 1024)
+                    onError(keyNode.range, 'KEY_OVER_1024_CHARS', 'The : indicator must be at most 1024 chars after the start of an implicit block mapping key');
+            }
+            // value value
+            const valueNode = value
+                ? composeNode(ctx, value, valueProps, onError)
+                : composeEmptyNode(ctx, offset, sep, null, valueProps, onError);
+            if (ctx.schema.compat)
+                flowIndentCheck(bm.indent, value, onError);
+            offset = valueNode.range[2];
+            const pair = new Pair(keyNode, valueNode);
+            if (ctx.options.keepSourceTokens)
+                pair.srcToken = collItem;
+            map.items.push(pair);
+        }
+        else {
+            // key with no value
+            if (implicitKey)
+                onError(keyNode.range, 'MISSING_CHAR', 'Implicit map keys need to be followed by map values');
+            if (valueProps.comment) {
+                if (keyNode.comment)
+                    keyNode.comment += '\n' + valueProps.comment;
+                else
+                    keyNode.comment = valueProps.comment;
+            }
+            const pair = new Pair(keyNode);
+            if (ctx.options.keepSourceTokens)
+                pair.srcToken = collItem;
+            map.items.push(pair);
+        }
+    }
+    map.range = [bm.offset, offset, offset];
+    return map;
+}
+
+function resolveBlockSeq({ composeNode, composeEmptyNode }, ctx, bs, onError) {
+    const seq = new YAMLSeq(ctx.schema);
+    if (ctx.atRoot)
+        ctx.atRoot = false;
+    let offset = bs.offset;
+    for (const { start, value } of bs.items) {
+        const props = resolveProps(start, {
+            indicator: 'seq-item-ind',
+            next: value,
+            offset,
+            onError,
+            startOnNewline: true
+        });
+        offset = props.end;
+        if (!props.found) {
+            if (props.anchor || props.tag || value) {
+                if (value && value.type === 'block-seq')
+                    onError(offset, 'BAD_INDENT', 'All sequence items must start at the same column');
+                else
+                    onError(offset, 'MISSING_CHAR', 'Sequence item without - indicator');
+            }
+            else {
+                // TODO: assert being at last item?
+                if (props.comment)
+                    seq.comment = props.comment;
+                continue;
+            }
+        }
+        const node = value
+            ? composeNode(ctx, value, props, onError)
+            : composeEmptyNode(ctx, offset, start, null, props, onError);
+        if (ctx.schema.compat)
+            flowIndentCheck(bs.indent, value, onError);
+        offset = node.range[2];
+        seq.items.push(node);
+    }
+    seq.range = [bs.offset, offset, offset];
+    return seq;
+}
+
+function resolveEnd(end, offset, reqSpace, onError) {
+    let comment = '';
+    if (end) {
+        let hasSpace = false;
+        let sep = '';
+        for (const token of end) {
+            const { source, type } = token;
+            switch (type) {
+                case 'space':
+                    hasSpace = true;
+                    break;
+                case 'comment': {
+                    if (reqSpace && !hasSpace)
+                        onError(token, 'MISSING_CHAR', 'Comments must be separated from other tokens by white space characters');
+                    const cb = source.substring(1) || ' ';
+                    if (!comment)
+                        comment = cb;
+                    else
+                        comment += sep + cb;
+                    sep = '';
+                    break;
+                }
+                case 'newline':
+                    if (comment)
+                        sep += source;
+                    hasSpace = true;
+                    break;
+                default:
+                    onError(token, 'UNEXPECTED_TOKEN', `Unexpected ${type} at node end`);
+            }
+            offset += source.length;
+        }
+    }
+    return { comment, offset };
+}
+
+const blockMsg = 'Block collections are not allowed within flow collections';
+const isBlock = (token) => token && (token.type === 'block-map' || token.type === 'block-seq');
+function resolveFlowCollection({ composeNode, composeEmptyNode }, ctx, fc, onError) {
+    const isMap = fc.start.source === '{';
+    const fcName = isMap ? 'flow map' : 'flow sequence';
+    const coll = isMap
+        ? new YAMLMap(ctx.schema)
+        : new YAMLSeq(ctx.schema);
+    coll.flow = true;
+    const atRoot = ctx.atRoot;
+    if (atRoot)
+        ctx.atRoot = false;
+    let offset = fc.offset + fc.start.source.length;
+    for (let i = 0; i < fc.items.length; ++i) {
+        const collItem = fc.items[i];
+        const { start, key, sep, value } = collItem;
+        const props = resolveProps(start, {
+            flow: fcName,
+            indicator: 'explicit-key-ind',
+            next: key || (sep === null || sep === void 0 ? void 0 : sep[0]),
+            offset,
+            onError,
+            startOnNewline: false
+        });
+        if (!props.found) {
+            if (!props.anchor && !props.tag && !sep && !value) {
+                if (i === 0 && props.comma)
+                    onError(props.comma, 'UNEXPECTED_TOKEN', `Unexpected , in ${fcName}`);
+                else if (i < fc.items.length - 1)
+                    onError(props.start, 'UNEXPECTED_TOKEN', `Unexpected empty item in ${fcName}`);
+                if (props.comment) {
+                    if (coll.comment)
+                        coll.comment += '\n' + props.comment;
+                    else
+                        coll.comment = props.comment;
+                }
+                offset = props.end;
+                continue;
+            }
+            if (!isMap && ctx.options.strict && containsNewline(key))
+                onError(key, // checked by containsNewline()
+                'MULTILINE_IMPLICIT_KEY', 'Implicit keys of flow sequence pairs need to be on a single line');
+        }
+        if (i === 0) {
+            if (props.comma)
+                onError(props.comma, 'UNEXPECTED_TOKEN', `Unexpected , in ${fcName}`);
+        }
+        else {
+            if (!props.comma)
+                onError(props.start, 'MISSING_CHAR', `Missing , between ${fcName} items`);
+            if (props.comment) {
+                let prevItemComment = '';
+                loop: for (const st of start) {
+                    switch (st.type) {
+                        case 'comma':
+                        case 'space':
+                            break;
+                        case 'comment':
+                            prevItemComment = st.source.substring(1);
+                            break loop;
+                        default:
+                            break loop;
+                    }
+                }
+                if (prevItemComment) {
+                    let prev = coll.items[coll.items.length - 1];
+                    if (isPair(prev))
+                        prev = prev.value || prev.key;
+                    if (prev.comment)
+                        prev.comment += '\n' + prevItemComment;
+                    else
+                        prev.comment = prevItemComment;
+                    props.comment = props.comment.substring(prevItemComment.length + 1);
+                }
+            }
+        }
+        if (!isMap && !sep && !props.found) {
+            // item is a value in a seq
+            // → key & sep are empty, start does not include ? or :
+            const valueNode = value
+                ? composeNode(ctx, value, props, onError)
+                : composeEmptyNode(ctx, props.end, sep, null, props, onError);
+            coll.items.push(valueNode);
+            offset = valueNode.range[2];
+            if (isBlock(value))
+                onError(valueNode.range, 'BLOCK_IN_FLOW', blockMsg);
+        }
+        else {
+            // item is a key+value pair
+            // key value
+            const keyStart = props.end;
+            const keyNode = key
+                ? composeNode(ctx, key, props, onError)
+                : composeEmptyNode(ctx, keyStart, start, null, props, onError);
+            if (isBlock(key))
+                onError(keyNode.range, 'BLOCK_IN_FLOW', blockMsg);
+            // value properties
+            const valueProps = resolveProps(sep || [], {
+                flow: fcName,
+                indicator: 'map-value-ind',
+                next: value,
+                offset: keyNode.range[2],
+                onError,
+                startOnNewline: false
+            });
+            if (valueProps.found) {
+                if (!isMap && !props.found && ctx.options.strict) {
+                    if (sep)
+                        for (const st of sep) {
+                            if (st === valueProps.found)
+                                break;
+                            if (st.type === 'newline') {
+                                onError(st, 'MULTILINE_IMPLICIT_KEY', 'Implicit keys of flow sequence pairs need to be on a single line');
+                                break;
+                            }
+                        }
+                    if (props.start < valueProps.found.offset - 1024)
+                        onError(valueProps.found, 'KEY_OVER_1024_CHARS', 'The : indicator must be at most 1024 chars after the start of an implicit flow sequence key');
+                }
+            }
+            else if (value) {
+                if ('source' in value && value.source && value.source[0] === ':')
+                    onError(value, 'MISSING_CHAR', `Missing space after : in ${fcName}`);
+                else
+                    onError(valueProps.start, 'MISSING_CHAR', `Missing , or : between ${fcName} items`);
+            }
+            // value value
+            const valueNode = value
+                ? composeNode(ctx, value, valueProps, onError)
+                : valueProps.found
+                    ? composeEmptyNode(ctx, valueProps.end, sep, null, valueProps, onError)
+                    : null;
+            if (valueNode) {
+                if (isBlock(value))
+                    onError(valueNode.range, 'BLOCK_IN_FLOW', blockMsg);
+            }
+            else if (valueProps.comment) {
+                if (keyNode.comment)
+                    keyNode.comment += '\n' + valueProps.comment;
+                else
+                    keyNode.comment = valueProps.comment;
+            }
+            const pair = new Pair(keyNode, valueNode);
+            if (ctx.options.keepSourceTokens)
+                pair.srcToken = collItem;
+            if (isMap) {
+                const map = coll;
+                if (mapIncludes(ctx, map.items, keyNode))
+                    onError(keyStart, 'DUPLICATE_KEY', 'Map keys must be unique');
+                map.items.push(pair);
+            }
+            else {
+                const map = new YAMLMap(ctx.schema);
+                map.flow = true;
+                map.items.push(pair);
+                coll.items.push(map);
+            }
+            offset = valueNode ? valueNode.range[2] : valueProps.end;
+        }
+    }
+    const expectedEnd = isMap ? '}' : ']';
+    const [ce, ...ee] = fc.end;
+    let cePos = offset;
+    if (ce && ce.source === expectedEnd)
+        cePos = ce.offset + ce.source.length;
+    else {
+        const name = fcName[0].toUpperCase() + fcName.substring(1);
+        const msg = atRoot
+            ? `${name} must end with a ${expectedEnd}`
+            : `${name} in block collection must be sufficiently indented and end with a ${expectedEnd}`;
+        onError(offset, atRoot ? 'MISSING_CHAR' : 'BAD_INDENT', msg);
+        if (ce && ce.source.length !== 1)
+            ee.unshift(ce);
+    }
+    if (ee.length > 0) {
+        const end = resolveEnd(ee, cePos, ctx.options.strict, onError);
+        if (end.comment) {
+            if (coll.comment)
+                coll.comment += '\n' + end.comment;
+            else
+                coll.comment = end.comment;
+        }
+        coll.range = [fc.offset, cePos, end.offset];
+    }
+    else {
+        coll.range = [fc.offset, cePos, cePos];
+    }
+    return coll;
+}
+
+function composeCollection(CN, ctx, token, tagToken, onError) {
+    let coll;
+    switch (token.type) {
+        case 'block-map': {
+            coll = resolveBlockMap(CN, ctx, token, onError);
+            break;
+        }
+        case 'block-seq': {
+            coll = resolveBlockSeq(CN, ctx, token, onError);
+            break;
+        }
+        case 'flow-collection': {
+            coll = resolveFlowCollection(CN, ctx, token, onError);
+            break;
+        }
+    }
+    if (!tagToken)
+        return coll;
+    const tagName = ctx.directives.tagName(tagToken.source, msg => onError(tagToken, 'TAG_RESOLVE_FAILED', msg));
+    if (!tagName)
+        return coll;
+    // Cast needed due to: https://github.com/Microsoft/TypeScript/issues/3841
+    const Coll = coll.constructor;
+    if (tagName === '!' || tagName === Coll.tagName) {
+        coll.tag = Coll.tagName;
+        return coll;
+    }
+    const expType = isMap(coll) ? 'map' : 'seq';
+    let tag = ctx.schema.tags.find(t => t.collection === expType && t.tag === tagName);
+    if (!tag) {
+        const kt = ctx.schema.knownTags[tagName];
+        if (kt && kt.collection === expType) {
+            ctx.schema.tags.push(Object.assign({}, kt, { default: false }));
+            tag = kt;
+        }
+        else {
+            onError(tagToken, 'TAG_RESOLVE_FAILED', `Unresolved tag: ${tagName}`, true);
+            coll.tag = tagName;
+            return coll;
+        }
+    }
+    const res = tag.resolve(coll, msg => onError(tagToken, 'TAG_RESOLVE_FAILED', msg), ctx.options);
+    const node = isNode(res)
+        ? res
+        : new Scalar(res);
+    node.range = coll.range;
+    node.tag = tagName;
+    if (tag === null || tag === void 0 ? void 0 : tag.format)
+        node.format = tag.format;
+    return node;
+}
+
+function resolveBlockScalar(scalar, strict, onError) {
+    const start = scalar.offset;
+    const header = parseBlockScalarHeader(scalar, strict, onError);
+    if (!header)
+        return { value: '', type: null, comment: '', range: [start, start, start] };
+    const type = header.mode === '>' ? Scalar.BLOCK_FOLDED : Scalar.BLOCK_LITERAL;
+    const lines = scalar.source ? splitLines(scalar.source) : [];
+    // determine the end of content & start of chomping
+    let chompStart = lines.length;
+    for (let i = lines.length - 1; i >= 0; --i) {
+        const content = lines[i][1];
+        if (content === '' || content === '\r')
+            chompStart = i;
+        else
+            break;
+    }
+    // shortcut for empty contents
+    if (!scalar.source || chompStart === 0) {
+        const value = header.chomp === '+' ? '\n'.repeat(Math.max(0, lines.length - 1)) : '';
+        let end = start + header.length;
+        if (scalar.source)
+            end += scalar.source.length;
+        return { value, type, comment: header.comment, range: [start, end, end] };
+    }
+    // find the indentation level to trim from start
+    let trimIndent = scalar.indent + header.indent;
+    let offset = scalar.offset + header.length;
+    let contentStart = 0;
+    for (let i = 0; i < chompStart; ++i) {
+        const [indent, content] = lines[i];
+        if (content === '' || content === '\r') {
+            if (header.indent === 0 && indent.length > trimIndent)
+                trimIndent = indent.length;
+        }
+        else {
+            if (indent.length < trimIndent) {
+                const message = 'Block scalars with more-indented leading empty lines must use an explicit indentation indicator';
+                onError(offset + indent.length, 'MISSING_CHAR', message);
+            }
+            if (header.indent === 0)
+                trimIndent = indent.length;
+            contentStart = i;
+            break;
+        }
+        offset += indent.length + content.length + 1;
+    }
+    let value = '';
+    let sep = '';
+    let prevMoreIndented = false;
+    // leading whitespace is kept intact
+    for (let i = 0; i < contentStart; ++i)
+        value += lines[i][0].slice(trimIndent) + '\n';
+    for (let i = contentStart; i < chompStart; ++i) {
+        let [indent, content] = lines[i];
+        offset += indent.length + content.length + 1;
+        const crlf = content[content.length - 1] === '\r';
+        if (crlf)
+            content = content.slice(0, -1);
+        /* istanbul ignore if already caught in lexer */
+        if (content && indent.length < trimIndent) {
+            const src = header.indent
+                ? 'explicit indentation indicator'
+                : 'first line';
+            const message = `Block scalar lines must not be less indented than their ${src}`;
+            onError(offset - content.length - (crlf ? 2 : 1), 'BAD_INDENT', message);
+            indent = '';
+        }
+        if (type === Scalar.BLOCK_LITERAL) {
+            value += sep + indent.slice(trimIndent) + content;
+            sep = '\n';
+        }
+        else if (indent.length > trimIndent || content[0] === '\t') {
+            // more-indented content within a folded block
+            if (sep === ' ')
+                sep = '\n';
+            else if (!prevMoreIndented && sep === '\n')
+                sep = '\n\n';
+            value += sep + indent.slice(trimIndent) + content;
+            sep = '\n';
+            prevMoreIndented = true;
+        }
+        else if (content === '') {
+            // empty line
+            if (sep === '\n')
+                value += '\n';
+            else
+                sep = '\n';
+        }
+        else {
+            value += sep + content;
+            sep = ' ';
+            prevMoreIndented = false;
+        }
+    }
+    switch (header.chomp) {
+        case '-':
+            break;
+        case '+':
+            for (let i = chompStart; i < lines.length; ++i)
+                value += '\n' + lines[i][0].slice(trimIndent);
+            if (value[value.length - 1] !== '\n')
+                value += '\n';
+            break;
+        default:
+            value += '\n';
+    }
+    const end = start + header.length + scalar.source.length;
+    return { value, type, comment: header.comment, range: [start, end, end] };
+}
+function parseBlockScalarHeader({ offset, props }, strict, onError) {
+    /* istanbul ignore if should not happen */
+    if (props[0].type !== 'block-scalar-header') {
+        onError(props[0], 'IMPOSSIBLE', 'Block scalar header not found');
+        return null;
+    }
+    const { source } = props[0];
+    const mode = source[0];
+    let indent = 0;
+    let chomp = '';
+    let error = -1;
+    for (let i = 1; i < source.length; ++i) {
+        const ch = source[i];
+        if (!chomp && (ch === '-' || ch === '+'))
+            chomp = ch;
+        else {
+            const n = Number(ch);
+            if (!indent && n)
+                indent = n;
+            else if (error === -1)
+                error = offset + i;
+        }
+    }
+    if (error !== -1)
+        onError(error, 'UNEXPECTED_TOKEN', `Block scalar header includes extra characters: ${source}`);
+    let hasSpace = false;
+    let comment = '';
+    let length = source.length;
+    for (let i = 1; i < props.length; ++i) {
+        const token = props[i];
+        switch (token.type) {
+            case 'space':
+                hasSpace = true;
+            // fallthrough
+            case 'newline':
+                length += token.source.length;
+                break;
+            case 'comment':
+                if (strict && !hasSpace) {
+                    const message = 'Comments must be separated from other tokens by white space characters';
+                    onError(token, 'MISSING_CHAR', message);
+                }
+                length += token.source.length;
+                comment = token.source.substring(1);
+                break;
+            case 'error':
+                onError(token, 'UNEXPECTED_TOKEN', token.message);
+                length += token.source.length;
+                break;
+            /* istanbul ignore next should not happen */
+            default: {
+                const message = `Unexpected token in block scalar header: ${token.type}`;
+                onError(token, 'UNEXPECTED_TOKEN', message);
+                const ts = token.source;
+                if (ts && typeof ts === 'string')
+                    length += ts.length;
+            }
+        }
+    }
+    return { mode, indent, chomp, comment, length };
+}
+/** @returns Array of lines split up as `[indent, content]` */
+function splitLines(source) {
+    const split = source.split(/\n( *)/);
+    const first = split[0];
+    const m = first.match(/^( *)/);
+    const line0 = m && m[1] ? [m[1], first.slice(m[1].length)] : ['', first];
+    const lines = [line0];
+    for (let i = 1; i < split.length; i += 2)
+        lines.push([split[i], split[i + 1]]);
+    return lines;
+}
+
+function resolveFlowScalar(scalar, strict, onError) {
+    const { offset, type, source, end } = scalar;
+    let _type;
+    let value;
+    const _onError = (rel, code, msg) => onError(offset + rel, code, msg);
+    switch (type) {
+        case 'scalar':
+            _type = Scalar.PLAIN;
+            value = plainValue(source, _onError);
+            break;
+        case 'single-quoted-scalar':
+            _type = Scalar.QUOTE_SINGLE;
+            value = singleQuotedValue(source, _onError);
+            break;
+        case 'double-quoted-scalar':
+            _type = Scalar.QUOTE_DOUBLE;
+            value = doubleQuotedValue(source, _onError);
+            break;
+        /* istanbul ignore next should not happen */
+        default:
+            onError(scalar, 'UNEXPECTED_TOKEN', `Expected a flow scalar value, but found: ${type}`);
+            return {
+                value: '',
+                type: null,
+                comment: '',
+                range: [offset, offset + source.length, offset + source.length]
+            };
+    }
+    const valueEnd = offset + source.length;
+    const re = resolveEnd(end, valueEnd, strict, onError);
+    return {
+        value,
+        type: _type,
+        comment: re.comment,
+        range: [offset, valueEnd, re.offset]
+    };
+}
+function plainValue(source, onError) {
+    let badChar = '';
+    switch (source[0]) {
+        /* istanbul ignore next should not happen */
+        case '\t':
+            badChar = 'a tab character';
+            break;
+        case ',':
+            badChar = 'flow indicator character ,';
+            break;
+        case '%':
+            badChar = 'directive indicator character %';
+            break;
+        case '|':
+        case '>': {
+            badChar = `block scalar indicator ${source[0]}`;
+            break;
+        }
+        case '@':
+        case '`': {
+            badChar = `reserved character ${source[0]}`;
+            break;
+        }
+    }
+    if (badChar)
+        onError(0, 'BAD_SCALAR_START', `Plain value cannot start with ${badChar}`);
+    return foldLines(source);
+}
+function singleQuotedValue(source, onError) {
+    if (source[source.length - 1] !== "'" || source.length === 1)
+        onError(source.length, 'MISSING_CHAR', "Missing closing 'quote");
+    return foldLines(source.slice(1, -1)).replace(/''/g, "'");
+}
+function foldLines(source) {
+    /**
+     * The negative lookbehind here and in the `re` RegExp is to
+     * prevent causing a polynomial search time in certain cases.
+     *
+     * The try-catch is for Safari, which doesn't support this yet:
+     * https://caniuse.com/js-regexp-lookbehind
+     */
+    let first, line;
+    try {
+        first = new RegExp('(.*?)(?<![ \t])[ \t]*\r?\n', 'sy');
+        line = new RegExp('[ \t]*(.*?)(?:(?<![ \t])[ \t]*)?\r?\n', 'sy');
+    }
+    catch (_) {
+        first = /(.*?)[ \t]*\r?\n/sy;
+        line = /[ \t]*(.*?)[ \t]*\r?\n/sy;
+    }
+    let match = first.exec(source);
+    if (!match)
+        return source;
+    let res = match[1];
+    let sep = ' ';
+    let pos = first.lastIndex;
+    line.lastIndex = pos;
+    while ((match = line.exec(source))) {
+        if (match[1] === '') {
+            if (sep === '\n')
+                res += sep;
+            else
+                sep = '\n';
+        }
+        else {
+            res += sep + match[1];
+            sep = ' ';
+        }
+        pos = line.lastIndex;
+    }
+    const last = /[ \t]*(.*)/sy;
+    last.lastIndex = pos;
+    match = last.exec(source);
+    return res + sep + ((match && match[1]) || '');
+}
+function doubleQuotedValue(source, onError) {
+    let res = '';
+    for (let i = 1; i < source.length - 1; ++i) {
+        const ch = source[i];
+        if (ch === '\r' && source[i + 1] === '\n')
+            continue;
+        if (ch === '\n') {
+            const { fold, offset } = foldNewline(source, i);
+            res += fold;
+            i = offset;
+        }
+        else if (ch === '\\') {
+            let next = source[++i];
+            const cc = escapeCodes[next];
+            if (cc)
+                res += cc;
+            else if (next === '\n') {
+                // skip escaped newlines, but still trim the following line
+                next = source[i + 1];
+                while (next === ' ' || next === '\t')
+                    next = source[++i + 1];
+            }
+            else if (next === '\r' && source[i + 1] === '\n') {
+                // skip escaped CRLF newlines, but still trim the following line
+                next = source[++i + 1];
+                while (next === ' ' || next === '\t')
+                    next = source[++i + 1];
+            }
+            else if (next === 'x' || next === 'u' || next === 'U') {
+                const length = { x: 2, u: 4, U: 8 }[next];
+                res += parseCharCode(source, i + 1, length, onError);
+                i += length;
+            }
+            else {
+                const raw = source.substr(i - 1, 2);
+                onError(i - 1, 'BAD_DQ_ESCAPE', `Invalid escape sequence ${raw}`);
+                res += raw;
+            }
+        }
+        else if (ch === ' ' || ch === '\t') {
+            // trim trailing whitespace
+            const wsStart = i;
+            let next = source[i + 1];
+            while (next === ' ' || next === '\t')
+                next = source[++i + 1];
+            if (next !== '\n' && !(next === '\r' && source[i + 2] === '\n'))
+                res += i > wsStart ? source.slice(wsStart, i + 1) : ch;
+        }
+        else {
+            res += ch;
+        }
+    }
+    if (source[source.length - 1] !== '"' || source.length === 1)
+        onError(source.length, 'MISSING_CHAR', 'Missing closing "quote');
+    return res;
+}
+/**
+ * Fold a single newline into a space, multiple newlines to N - 1 newlines.
+ * Presumes `source[offset] === '\n'`
+ */
+function foldNewline(source, offset) {
+    let fold = '';
+    let ch = source[offset + 1];
+    while (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r') {
+        if (ch === '\r' && source[offset + 2] !== '\n')
+            break;
+        if (ch === '\n')
+            fold += '\n';
+        offset += 1;
+        ch = source[offset + 1];
+    }
+    if (!fold)
+        fold = ' ';
+    return { fold, offset };
+}
+const escapeCodes = {
+    '0': '\0',
+    a: '\x07',
+    b: '\b',
+    e: '\x1b',
+    f: '\f',
+    n: '\n',
+    r: '\r',
+    t: '\t',
+    v: '\v',
+    N: '\u0085',
+    _: '\u00a0',
+    L: '\u2028',
+    P: '\u2029',
+    ' ': ' ',
+    '"': '"',
+    '/': '/',
+    '\\': '\\',
+    '\t': '\t'
+};
+function parseCharCode(source, offset, length, onError) {
+    const cc = source.substr(offset, length);
+    const ok = cc.length === length && /^[0-9a-fA-F]+$/.test(cc);
+    const code = ok ? parseInt(cc, 16) : NaN;
+    if (isNaN(code)) {
+        const raw = source.substr(offset - 2, length + 2);
+        onError(offset - 2, 'BAD_DQ_ESCAPE', `Invalid escape sequence ${raw}`);
+        return raw;
+    }
+    return String.fromCodePoint(code);
+}
+
+function composeScalar(ctx, token, tagToken, onError) {
+    const { value, type, comment, range } = token.type === 'block-scalar'
+        ? resolveBlockScalar(token, ctx.options.strict, onError)
+        : resolveFlowScalar(token, ctx.options.strict, onError);
+    const tagName = tagToken
+        ? ctx.directives.tagName(tagToken.source, msg => onError(tagToken, 'TAG_RESOLVE_FAILED', msg))
+        : null;
+    const tag = tagToken && tagName
+        ? findScalarTagByName(ctx.schema, value, tagName, tagToken, onError)
+        : token.type === 'scalar'
+            ? findScalarTagByTest(ctx, value, token, onError)
+            : ctx.schema[SCALAR$1];
+    let scalar;
+    try {
+        const res = tag.resolve(value, msg => onError(tagToken || token, 'TAG_RESOLVE_FAILED', msg), ctx.options);
+        scalar = isScalar(res) ? res : new Scalar(res);
+    }
+    catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        onError(tagToken || token, 'TAG_RESOLVE_FAILED', msg);
+        scalar = new Scalar(value);
+    }
+    scalar.range = range;
+    scalar.source = value;
+    if (type)
+        scalar.type = type;
+    if (tagName)
+        scalar.tag = tagName;
+    if (tag.format)
+        scalar.format = tag.format;
+    if (comment)
+        scalar.comment = comment;
+    return scalar;
+}
+function findScalarTagByName(schema, value, tagName, tagToken, onError) {
+    var _a;
+    if (tagName === '!')
+        return schema[SCALAR$1]; // non-specific tag
+    const matchWithTest = [];
+    for (const tag of schema.tags) {
+        if (!tag.collection && tag.tag === tagName) {
+            if (tag.default && tag.test)
+                matchWithTest.push(tag);
+            else
+                return tag;
+        }
+    }
+    for (const tag of matchWithTest)
+        if ((_a = tag.test) === null || _a === void 0 ? void 0 : _a.test(value))
+            return tag;
+    const kt = schema.knownTags[tagName];
+    if (kt && !kt.collection) {
+        // Ensure that the known tag is available for stringifying,
+        // but does not get used by default.
+        schema.tags.push(Object.assign({}, kt, { default: false, test: undefined }));
+        return kt;
+    }
+    onError(tagToken, 'TAG_RESOLVE_FAILED', `Unresolved tag: ${tagName}`, tagName !== 'tag:yaml.org,2002:str');
+    return schema[SCALAR$1];
+}
+function findScalarTagByTest({ directives, schema }, value, token, onError) {
+    const tag = schema.tags.find(tag => { var _a; return tag.default && ((_a = tag.test) === null || _a === void 0 ? void 0 : _a.test(value)); }) || schema[SCALAR$1];
+    if (schema.compat) {
+        const compat = schema.compat.find(tag => { var _a; return tag.default && ((_a = tag.test) === null || _a === void 0 ? void 0 : _a.test(value)); }) ||
+            schema[SCALAR$1];
+        if (tag.tag !== compat.tag) {
+            const ts = directives.tagString(tag.tag);
+            const cs = directives.tagString(compat.tag);
+            const msg = `Value may be parsed as either ${ts} or ${cs}`;
+            onError(token, 'TAG_RESOLVE_FAILED', msg, true);
+        }
+    }
+    return tag;
+}
+
+function emptyScalarPosition(offset, before, pos) {
+    if (before) {
+        if (pos === null)
+            pos = before.length;
+        for (let i = pos - 1; i >= 0; --i) {
+            let st = before[i];
+            switch (st.type) {
+                case 'space':
+                case 'comment':
+                case 'newline':
+                    offset -= st.source.length;
+                    continue;
+            }
+            // Technically, an empty scalar is immediately after the last non-empty
+            // node, but it's more useful to place it after any whitespace.
+            st = before[++i];
+            while ((st === null || st === void 0 ? void 0 : st.type) === 'space') {
+                offset += st.source.length;
+                st = before[++i];
+            }
+            break;
+        }
+    }
+    return offset;
+}
+
+const CN = { composeNode, composeEmptyNode };
+function composeNode(ctx, token, props, onError) {
+    const { spaceBefore, comment, anchor, tag } = props;
+    let node;
+    switch (token.type) {
+        case 'alias':
+            node = composeAlias(ctx, token, onError);
+            if (anchor || tag)
+                onError(token, 'ALIAS_PROPS', 'An alias node must not specify any properties');
+            break;
+        case 'scalar':
+        case 'single-quoted-scalar':
+        case 'double-quoted-scalar':
+        case 'block-scalar':
+            node = composeScalar(ctx, token, tag, onError);
+            if (anchor)
+                node.anchor = anchor.source.substring(1);
+            break;
+        case 'block-map':
+        case 'block-seq':
+        case 'flow-collection':
+            node = composeCollection(CN, ctx, token, tag, onError);
+            if (anchor)
+                node.anchor = anchor.source.substring(1);
+            break;
+        default:
+            console.log(token);
+            throw new Error(`Unsupporten token type: ${token.type}`);
+    }
+    if (anchor && node.anchor === '')
+        onError(anchor, 'BAD_ALIAS', 'Anchor cannot be an empty string');
+    if (spaceBefore)
+        node.spaceBefore = true;
+    if (comment) {
+        if (token.type === 'scalar' && token.source === '')
+            node.comment = comment;
+        else
+            node.commentBefore = comment;
+    }
+    if (ctx.options.keepSourceTokens)
+        node.srcToken = token;
+    return node;
+}
+function composeEmptyNode(ctx, offset, before, pos, { spaceBefore, comment, anchor, tag }, onError) {
+    const token = {
+        type: 'scalar',
+        offset: emptyScalarPosition(offset, before, pos),
+        indent: -1,
+        source: ''
+    };
+    const node = composeScalar(ctx, token, tag, onError);
+    if (anchor) {
+        node.anchor = anchor.source.substring(1);
+        if (node.anchor === '')
+            onError(anchor, 'BAD_ALIAS', 'Anchor cannot be an empty string');
+    }
+    if (spaceBefore)
+        node.spaceBefore = true;
+    if (comment)
+        node.comment = comment;
+    return node;
+}
+function composeAlias({ options }, { offset, source, end }, onError) {
+    const alias = new Alias(source.substring(1));
+    if (alias.source === '')
+        onError(offset, 'BAD_ALIAS', 'Alias cannot be an empty string');
+    const valueEnd = offset + source.length;
+    const re = resolveEnd(end, valueEnd, options.strict, onError);
+    alias.range = [offset, valueEnd, re.offset];
+    if (re.comment)
+        alias.comment = re.comment;
+    return alias;
+}
+
+function composeDoc(options, directives, { offset, start, value, end }, onError) {
+    const opts = Object.assign({ directives }, options);
+    const doc = new Document(undefined, opts);
+    const ctx = {
+        atRoot: true,
+        directives: doc.directives,
+        options: doc.options,
+        schema: doc.schema
+    };
+    const props = resolveProps(start, {
+        indicator: 'doc-start',
+        next: value || (end === null || end === void 0 ? void 0 : end[0]),
+        offset,
+        onError,
+        startOnNewline: true
+    });
+    if (props.found) {
+        doc.directives.marker = true;
+        if (value &&
+            (value.type === 'block-map' || value.type === 'block-seq') &&
+            !props.hasNewline)
+            onError(props.end, 'MISSING_CHAR', 'Block collection cannot start on same line with directives-end marker');
+    }
+    doc.contents = value
+        ? composeNode(ctx, value, props, onError)
+        : composeEmptyNode(ctx, props.end, start, null, props, onError);
+    const contentEnd = doc.contents.range[2];
+    const re = resolveEnd(end, contentEnd, false, onError);
+    if (re.comment)
+        doc.comment = re.comment;
+    doc.range = [offset, contentEnd, re.offset];
+    return doc;
+}
+
+function getErrorPos(src) {
+    if (typeof src === 'number')
+        return [src, src + 1];
+    if (Array.isArray(src))
+        return src.length === 2 ? src : [src[0], src[1]];
+    const { offset, source } = src;
+    return [offset, offset + (typeof source === 'string' ? source.length : 1)];
+}
+function parsePrelude(prelude) {
+    var _a;
+    let comment = '';
+    let atComment = false;
+    let afterEmptyLine = false;
+    for (let i = 0; i < prelude.length; ++i) {
+        const source = prelude[i];
+        switch (source[0]) {
+            case '#':
+                comment +=
+                    (comment === '' ? '' : afterEmptyLine ? '\n\n' : '\n') +
+                        (source.substring(1) || ' ');
+                atComment = true;
+                afterEmptyLine = false;
+                break;
+            case '%':
+                if (((_a = prelude[i + 1]) === null || _a === void 0 ? void 0 : _a[0]) !== '#')
+                    i += 1;
+                atComment = false;
+                break;
+            default:
+                // This may be wrong after doc-end, but in that case it doesn't matter
+                if (!atComment)
+                    afterEmptyLine = true;
+                atComment = false;
+        }
+    }
+    return { comment, afterEmptyLine };
+}
+/**
+ * Compose a stream of CST nodes into a stream of YAML Documents.
+ *
+ * ```ts
+ * import { Composer, Parser } from 'yaml'
+ *
+ * const src: string = ...
+ * const tokens = new Parser().parse(src)
+ * const docs = new Composer().compose(tokens)
+ * ```
+ */
+class Composer {
+    constructor(options = {}) {
+        this.doc = null;
+        this.atDirectives = false;
+        this.prelude = [];
+        this.errors = [];
+        this.warnings = [];
+        this.onError = (source, code, message, warning) => {
+            const pos = getErrorPos(source);
+            if (warning)
+                this.warnings.push(new YAMLWarning(pos, code, message));
+            else
+                this.errors.push(new YAMLParseError(pos, code, message));
+        };
+        this.directives = new Directives({
+            version: options.version || defaultOptions.version
+        });
+        this.options = options;
+    }
+    decorate(doc, afterDoc) {
+        const { comment, afterEmptyLine } = parsePrelude(this.prelude);
+        //console.log({ dc: doc.comment, prelude, comment })
+        if (comment) {
+            const dc = doc.contents;
+            if (afterDoc) {
+                doc.comment = doc.comment ? `${doc.comment}\n${comment}` : comment;
+            }
+            else if (afterEmptyLine || doc.directives.marker || !dc) {
+                doc.commentBefore = comment;
+            }
+            else if (isCollection(dc) && !dc.flow && dc.items.length > 0) {
+                let it = dc.items[0];
+                if (isPair(it))
+                    it = it.key;
+                const cb = it.commentBefore;
+                it.commentBefore = cb ? `${comment}\n${cb}` : comment;
+            }
+            else {
+                const cb = dc.commentBefore;
+                dc.commentBefore = cb ? `${comment}\n${cb}` : comment;
+            }
+        }
+        if (afterDoc) {
+            Array.prototype.push.apply(doc.errors, this.errors);
+            Array.prototype.push.apply(doc.warnings, this.warnings);
+        }
+        else {
+            doc.errors = this.errors;
+            doc.warnings = this.warnings;
+        }
+        this.prelude = [];
+        this.errors = [];
+        this.warnings = [];
+    }
+    /**
+     * Current stream status information.
+     *
+     * Mostly useful at the end of input for an empty stream.
+     */
+    streamInfo() {
+        return {
+            comment: parsePrelude(this.prelude).comment,
+            directives: this.directives,
+            errors: this.errors,
+            warnings: this.warnings
+        };
+    }
+    /**
+     * Compose tokens into documents.
+     *
+     * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
+     * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
+     */
+    *compose(tokens, forceDoc = false, endOffset = -1) {
+        for (const token of tokens)
+            yield* this.next(token);
+        yield* this.end(forceDoc, endOffset);
+    }
+    /** Advance the composer by one CST token. */
+    *next(token) {
+        switch (token.type) {
+            case 'directive':
+                this.directives.add(token.source, (offset, message, warning) => {
+                    const pos = getErrorPos(token);
+                    pos[0] += offset;
+                    this.onError(pos, 'BAD_DIRECTIVE', message, warning);
+                });
+                this.prelude.push(token.source);
+                this.atDirectives = true;
+                break;
+            case 'document': {
+                const doc = composeDoc(this.options, this.directives, token, this.onError);
+                if (this.atDirectives && !doc.directives.marker)
+                    this.onError(token, 'MISSING_CHAR', 'Missing directives-end indicator line');
+                this.decorate(doc, false);
+                if (this.doc)
+                    yield this.doc;
+                this.doc = doc;
+                this.atDirectives = false;
+                break;
+            }
+            case 'byte-order-mark':
+            case 'space':
+                break;
+            case 'comment':
+            case 'newline':
+                this.prelude.push(token.source);
+                break;
+            case 'error': {
+                const msg = token.source
+                    ? `${token.message}: ${JSON.stringify(token.source)}`
+                    : token.message;
+                const error = new YAMLParseError(getErrorPos(token), 'UNEXPECTED_TOKEN', msg);
+                if (this.atDirectives || !this.doc)
+                    this.errors.push(error);
+                else
+                    this.doc.errors.push(error);
+                break;
+            }
+            case 'doc-end': {
+                if (!this.doc) {
+                    const msg = 'Unexpected doc-end without preceding document';
+                    this.errors.push(new YAMLParseError(getErrorPos(token), 'UNEXPECTED_TOKEN', msg));
+                    break;
+                }
+                const end = resolveEnd(token.end, token.offset + token.source.length, this.doc.options.strict, this.onError);
+                this.decorate(this.doc, true);
+                if (end.comment) {
+                    const dc = this.doc.comment;
+                    this.doc.comment = dc ? `${dc}\n${end.comment}` : end.comment;
+                }
+                this.doc.range[2] = end.offset;
+                break;
+            }
+            default:
+                this.errors.push(new YAMLParseError(getErrorPos(token), 'UNEXPECTED_TOKEN', `Unsupported token ${token.type}`));
+        }
+    }
+    /**
+     * Call at end of input to yield any remaining document.
+     *
+     * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
+     * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
+     */
+    *end(forceDoc = false, endOffset = -1) {
+        if (this.doc) {
+            this.decorate(this.doc, true);
+            yield this.doc;
+            this.doc = null;
+        }
+        else if (forceDoc) {
+            const opts = Object.assign({ directives: this.directives }, this.options);
+            const doc = new Document(undefined, opts);
+            if (this.atDirectives)
+                this.onError(endOffset, 'MISSING_CHAR', 'Missing directives-end indicator line');
+            doc.range = [0, endOffset, endOffset];
+            this.decorate(doc, false);
+            yield doc;
+        }
+    }
+}
+
+/** The byte order mark */
+const BOM = '\u{FEFF}';
+/** Start of doc-mode */
+const DOCUMENT = '\x02'; // C0: Start of Text
+/** Unexpected end of flow-mode */
+const FLOW_END = '\x18'; // C0: Cancel
+/** Next token is a scalar value */
+const SCALAR = '\x1f'; // C0: Unit Separator
+/** Identify the type of a lexer token. May return `null` for unknown tokens. */
+function tokenType(source) {
+    switch (source) {
+        case BOM:
+            return 'byte-order-mark';
+        case DOCUMENT:
+            return 'doc-mode';
+        case FLOW_END:
+            return 'flow-error-end';
+        case SCALAR:
+            return 'scalar';
+        case '---':
+            return 'doc-start';
+        case '...':
+            return 'doc-end';
+        case '':
+        case '\n':
+        case '\r\n':
+            return 'newline';
+        case '-':
+            return 'seq-item-ind';
+        case '?':
+            return 'explicit-key-ind';
+        case ':':
+            return 'map-value-ind';
+        case '{':
+            return 'flow-map-start';
+        case '}':
+            return 'flow-map-end';
+        case '[':
+            return 'flow-seq-start';
+        case ']':
+            return 'flow-seq-end';
+        case ',':
+            return 'comma';
+    }
+    switch (source[0]) {
+        case ' ':
+        case '\t':
+            return 'space';
+        case '#':
+            return 'comment';
+        case '%':
+            return 'directive-line';
+        case '*':
+            return 'alias';
+        case '&':
+            return 'anchor';
+        case '!':
+            return 'tag';
+        case "'":
+            return 'single-quoted-scalar';
+        case '"':
+            return 'double-quoted-scalar';
+        case '|':
+        case '>':
+            return 'block-scalar-header';
+    }
+    return null;
+}
+
+/*
+START -> stream
+
+stream
+  directive -> line-end -> stream
+  indent + line-end -> stream
+  [else] -> line-start
+
+line-end
+  comment -> line-end
+  newline -> .
+  input-end -> END
+
+line-start
+  doc-start -> doc
+  doc-end -> stream
+  [else] -> indent -> block-start
+
+block-start
+  seq-item-start -> block-start
+  explicit-key-start -> block-start
+  map-value-start -> block-start
+  [else] -> doc
+
+doc
+  line-end -> line-start
+  spaces -> doc
+  anchor -> doc
+  tag -> doc
+  flow-start -> flow -> doc
+  flow-end -> error -> doc
+  seq-item-start -> error -> doc
+  explicit-key-start -> error -> doc
+  map-value-start -> doc
+  alias -> doc
+  quote-start -> quoted-scalar -> doc
+  block-scalar-header -> line-end -> block-scalar(min) -> line-start
+  [else] -> plain-scalar(false, min) -> doc
+
+flow
+  line-end -> flow
+  spaces -> flow
+  anchor -> flow
+  tag -> flow
+  flow-start -> flow -> flow
+  flow-end -> .
+  seq-item-start -> error -> flow
+  explicit-key-start -> flow
+  map-value-start -> flow
+  alias -> flow
+  quote-start -> quoted-scalar -> flow
+  comma -> flow
+  [else] -> plain-scalar(true, 0) -> flow
+
+quoted-scalar
+  quote-end -> .
+  [else] -> quoted-scalar
+
+block-scalar(min)
+  newline + peek(indent < min) -> .
+  [else] -> block-scalar(min)
+
+plain-scalar(is-flow, min)
+  scalar-end(is-flow) -> .
+  peek(newline + (indent < min)) -> .
+  [else] -> plain-scalar(min)
+*/
+function isEmpty(ch) {
+    switch (ch) {
+        case undefined:
+        case ' ':
+        case '\n':
+        case '\r':
+        case '\t':
+            return true;
+        default:
+            return false;
+    }
+}
+const hexDigits = '0123456789ABCDEFabcdef'.split('');
+const tagChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-#;/?:@&=+$_.!~*'()".split('');
+const invalidFlowScalarChars = ',[]{}'.split('');
+const invalidAnchorChars = ' ,[]{}\n\r\t'.split('');
+const isNotAnchorChar = (ch) => !ch || invalidAnchorChars.includes(ch);
+/**
+ * Splits an input string into lexical tokens, i.e. smaller strings that are
+ * easily identifiable by `tokens.tokenType()`.
+ *
+ * Lexing starts always in a "stream" context. Incomplete input may be buffered
+ * until a complete token can be emitted.
+ *
+ * In addition to slices of the original input, the following control characters
+ * may also be emitted:
+ *
+ * - `\x02` (Start of Text): A document starts with the next token
+ * - `\x18` (Cancel): Unexpected end of flow-mode (indicates an error)
+ * - `\x1f` (Unit Separator): Next token is a scalar value
+ * - `\u{FEFF}` (Byte order mark): Emitted separately outside documents
+ */
+class Lexer {
+    constructor() {
+        /**
+         * Flag indicating whether the end of the current buffer marks the end of
+         * all input
+         */
+        this.atEnd = false;
+        /**
+         * Explicit indent set in block scalar header, as an offset from the current
+         * minimum indent, so e.g. set to 1 from a header `|2+`. Set to -1 if not
+         * explicitly set.
+         */
+        this.blockScalarIndent = -1;
+        /**
+         * Block scalars that include a + (keep) chomping indicator in their header
+         * include trailing empty lines, which are otherwise excluded from the
+         * scalar's contents.
+         */
+        this.blockScalarKeep = false;
+        /** Current input */
+        this.buffer = '';
+        /**
+         * Flag noting whether the map value indicator : can immediately follow this
+         * node within a flow context.
+         */
+        this.flowKey = false;
+        /** Count of surrounding flow collection levels. */
+        this.flowLevel = 0;
+        /**
+         * Minimum level of indentation required for next lines to be parsed as a
+         * part of the current scalar value.
+         */
+        this.indentNext = 0;
+        /** Indentation level of the current line. */
+        this.indentValue = 0;
+        /** Position of the next \n character. */
+        this.lineEndPos = null;
+        /** Stores the state of the lexer if reaching the end of incpomplete input */
+        this.next = null;
+        /** A pointer to `buffer`; the current position of the lexer. */
+        this.pos = 0;
+    }
+    /**
+     * Generate YAML tokens from the `source` string. If `incomplete`,
+     * a part of the last line may be left as a buffer for the next call.
+     *
+     * @returns A generator of lexical tokens
+     */
+    *lex(source, incomplete = false) {
+        if (source) {
+            this.buffer = this.buffer ? this.buffer + source : source;
+            this.lineEndPos = null;
+        }
+        this.atEnd = !incomplete;
+        let next = this.next || 'stream';
+        while (next && (incomplete || this.hasChars(1)))
+            next = yield* this.parseNext(next);
+    }
+    atLineEnd() {
+        let i = this.pos;
+        let ch = this.buffer[i];
+        while (ch === ' ' || ch === '\t')
+            ch = this.buffer[++i];
+        if (!ch || ch === '#' || ch === '\n')
+            return true;
+        if (ch === '\r')
+            return this.buffer[i + 1] === '\n';
+        return false;
+    }
+    charAt(n) {
+        return this.buffer[this.pos + n];
+    }
+    continueScalar(offset) {
+        let ch = this.buffer[offset];
+        if (this.indentNext > 0) {
+            let indent = 0;
+            while (ch === ' ')
+                ch = this.buffer[++indent + offset];
+            if (ch === '\r') {
+                const next = this.buffer[indent + offset + 1];
+                if (next === '\n' || (!next && !this.atEnd))
+                    return offset + indent + 1;
+            }
+            return ch === '\n' || indent >= this.indentNext || (!ch && !this.atEnd)
+                ? offset + indent
+                : -1;
+        }
+        if (ch === '-' || ch === '.') {
+            const dt = this.buffer.substr(offset, 3);
+            if ((dt === '---' || dt === '...') && isEmpty(this.buffer[offset + 3]))
+                return -1;
+        }
+        return offset;
+    }
+    getLine() {
+        let end = this.lineEndPos;
+        if (typeof end !== 'number' || (end !== -1 && end < this.pos)) {
+            end = this.buffer.indexOf('\n', this.pos);
+            this.lineEndPos = end;
+        }
+        if (end === -1)
+            return this.atEnd ? this.buffer.substring(this.pos) : null;
+        if (this.buffer[end - 1] === '\r')
+            end -= 1;
+        return this.buffer.substring(this.pos, end);
+    }
+    hasChars(n) {
+        return this.pos + n <= this.buffer.length;
+    }
+    setNext(state) {
+        this.buffer = this.buffer.substring(this.pos);
+        this.pos = 0;
+        this.lineEndPos = null;
+        this.next = state;
+        return null;
+    }
+    peek(n) {
+        return this.buffer.substr(this.pos, n);
+    }
+    *parseNext(next) {
+        switch (next) {
+            case 'stream':
+                return yield* this.parseStream();
+            case 'line-start':
+                return yield* this.parseLineStart();
+            case 'block-start':
+                return yield* this.parseBlockStart();
+            case 'doc':
+                return yield* this.parseDocument();
+            case 'flow':
+                return yield* this.parseFlowCollection();
+            case 'quoted-scalar':
+                return yield* this.parseQuotedScalar();
+            case 'block-scalar':
+                return yield* this.parseBlockScalar();
+            case 'plain-scalar':
+                return yield* this.parsePlainScalar();
+        }
+    }
+    *parseStream() {
+        let line = this.getLine();
+        if (line === null)
+            return this.setNext('stream');
+        if (line[0] === BOM) {
+            yield* this.pushCount(1);
+            line = line.substring(1);
+        }
+        if (line[0] === '%') {
+            let dirEnd = line.length;
+            const cs = line.indexOf('#');
+            if (cs !== -1) {
+                const ch = line[cs - 1];
+                if (ch === ' ' || ch === '\t')
+                    dirEnd = cs - 1;
+            }
+            while (true) {
+                const ch = line[dirEnd - 1];
+                if (ch === ' ' || ch === '\t')
+                    dirEnd -= 1;
+                else
+                    break;
+            }
+            const n = (yield* this.pushCount(dirEnd)) + (yield* this.pushSpaces(true));
+            yield* this.pushCount(line.length - n); // possible comment
+            this.pushNewline();
+            return 'stream';
+        }
+        if (this.atLineEnd()) {
+            const sp = yield* this.pushSpaces(true);
+            yield* this.pushCount(line.length - sp);
+            yield* this.pushNewline();
+            return 'stream';
+        }
+        yield DOCUMENT;
+        return yield* this.parseLineStart();
+    }
+    *parseLineStart() {
+        const ch = this.charAt(0);
+        if (!ch && !this.atEnd)
+            return this.setNext('line-start');
+        if (ch === '-' || ch === '.') {
+            if (!this.atEnd && !this.hasChars(4))
+                return this.setNext('line-start');
+            const s = this.peek(3);
+            if (s === '---' && isEmpty(this.charAt(3))) {
+                yield* this.pushCount(3);
+                this.indentValue = 0;
+                this.indentNext = 0;
+                return 'doc';
+            }
+            else if (s === '...' && isEmpty(this.charAt(3))) {
+                yield* this.pushCount(3);
+                return 'stream';
+            }
+        }
+        this.indentValue = yield* this.pushSpaces(false);
+        if (this.indentNext > this.indentValue && !isEmpty(this.charAt(1)))
+            this.indentNext = this.indentValue;
+        return yield* this.parseBlockStart();
+    }
+    *parseBlockStart() {
+        const [ch0, ch1] = this.peek(2);
+        if (!ch1 && !this.atEnd)
+            return this.setNext('block-start');
+        if ((ch0 === '-' || ch0 === '?' || ch0 === ':') && isEmpty(ch1)) {
+            const n = (yield* this.pushCount(1)) + (yield* this.pushSpaces(true));
+            this.indentNext = this.indentValue + 1;
+            this.indentValue += n;
+            return yield* this.parseBlockStart();
+        }
+        return 'doc';
+    }
+    *parseDocument() {
+        yield* this.pushSpaces(true);
+        const line = this.getLine();
+        if (line === null)
+            return this.setNext('doc');
+        let n = yield* this.pushIndicators();
+        switch (line[n]) {
+            case '#':
+                yield* this.pushCount(line.length - n);
+            // fallthrough
+            case undefined:
+                yield* this.pushNewline();
+                return yield* this.parseLineStart();
+            case '{':
+            case '[':
+                yield* this.pushCount(1);
+                this.flowKey = false;
+                this.flowLevel = 1;
+                return 'flow';
+            case '}':
+            case ']':
+                // this is an error
+                yield* this.pushCount(1);
+                return 'doc';
+            case '*':
+                yield* this.pushUntil(isNotAnchorChar);
+                return 'doc';
+            case '"':
+            case "'":
+                return yield* this.parseQuotedScalar();
+            case '|':
+            case '>':
+                n += yield* this.parseBlockScalarHeader();
+                n += yield* this.pushSpaces(true);
+                yield* this.pushCount(line.length - n);
+                yield* this.pushNewline();
+                return yield* this.parseBlockScalar();
+            default:
+                return yield* this.parsePlainScalar();
+        }
+    }
+    *parseFlowCollection() {
+        let nl, sp;
+        let indent = -1;
+        do {
+            nl = yield* this.pushNewline();
+            sp = yield* this.pushSpaces(true);
+            if (nl > 0)
+                this.indentValue = indent = sp;
+        } while (nl + sp > 0);
+        const line = this.getLine();
+        if (line === null)
+            return this.setNext('flow');
+        if ((indent !== -1 && indent < this.indentNext && line[0] !== '#') ||
+            (indent === 0 &&
+                (line.startsWith('---') || line.startsWith('...')) &&
+                isEmpty(line[3]))) {
+            // Allowing for the terminal ] or } at the same (rather than greater)
+            // indent level as the initial [ or { is technically invalid, but
+            // failing here would be surprising to users.
+            const atFlowEndMarker = indent === this.indentNext - 1 &&
+                this.flowLevel === 1 &&
+                (line[0] === ']' || line[0] === '}');
+            if (!atFlowEndMarker) {
+                // this is an error
+                this.flowLevel = 0;
+                yield FLOW_END;
+                return yield* this.parseLineStart();
+            }
+        }
+        let n = 0;
+        while (line[n] === ',') {
+            n += yield* this.pushCount(1);
+            n += yield* this.pushSpaces(true);
+            this.flowKey = false;
+        }
+        n += yield* this.pushIndicators();
+        switch (line[n]) {
+            case undefined:
+                return 'flow';
+            case '#':
+                yield* this.pushCount(line.length - n);
+                return 'flow';
+            case '{':
+            case '[':
+                yield* this.pushCount(1);
+                this.flowKey = false;
+                this.flowLevel += 1;
+                return 'flow';
+            case '}':
+            case ']':
+                yield* this.pushCount(1);
+                this.flowKey = true;
+                this.flowLevel -= 1;
+                return this.flowLevel ? 'flow' : 'doc';
+            case '*':
+                yield* this.pushUntil(isNotAnchorChar);
+                return 'flow';
+            case '"':
+            case "'":
+                this.flowKey = true;
+                return yield* this.parseQuotedScalar();
+            case ':': {
+                const next = this.charAt(1);
+                if (this.flowKey || isEmpty(next) || next === ',') {
+                    this.flowKey = false;
+                    yield* this.pushCount(1);
+                    yield* this.pushSpaces(true);
+                    return 'flow';
+                }
+            }
+            // fallthrough
+            default:
+                this.flowKey = false;
+                return yield* this.parsePlainScalar();
+        }
+    }
+    *parseQuotedScalar() {
+        const quote = this.charAt(0);
+        let end = this.buffer.indexOf(quote, this.pos + 1);
+        if (quote === "'") {
+            while (end !== -1 && this.buffer[end + 1] === "'")
+                end = this.buffer.indexOf("'", end + 2);
+        }
+        else {
+            // double-quote
+            while (end !== -1) {
+                let n = 0;
+                while (this.buffer[end - 1 - n] === '\\')
+                    n += 1;
+                if (n % 2 === 0)
+                    break;
+                end = this.buffer.indexOf('"', end + 1);
+            }
+        }
+        // Only looking for newlines within the quotes
+        const qb = this.buffer.substring(0, end);
+        let nl = qb.indexOf('\n', this.pos);
+        if (nl !== -1) {
+            while (nl !== -1) {
+                const cs = this.continueScalar(nl + 1);
+                if (cs === -1)
+                    break;
+                nl = qb.indexOf('\n', cs);
+            }
+            if (nl !== -1) {
+                // this is an error caused by an unexpected unindent
+                end = nl - (qb[nl - 1] === '\r' ? 2 : 1);
+            }
+        }
+        if (end === -1) {
+            if (!this.atEnd)
+                return this.setNext('quoted-scalar');
+            end = this.buffer.length;
+        }
+        yield* this.pushToIndex(end + 1, false);
+        return this.flowLevel ? 'flow' : 'doc';
+    }
+    *parseBlockScalarHeader() {
+        this.blockScalarIndent = -1;
+        this.blockScalarKeep = false;
+        let i = this.pos;
+        while (true) {
+            const ch = this.buffer[++i];
+            if (ch === '+')
+                this.blockScalarKeep = true;
+            else if (ch > '0' && ch <= '9')
+                this.blockScalarIndent = Number(ch) - 1;
+            else if (ch !== '-')
+                break;
+        }
+        return yield* this.pushUntil(ch => isEmpty(ch) || ch === '#');
+    }
+    *parseBlockScalar() {
+        let nl = this.pos - 1; // may be -1 if this.pos === 0
+        let indent = 0;
+        let ch;
+        loop: for (let i = this.pos; (ch = this.buffer[i]); ++i) {
+            switch (ch) {
+                case ' ':
+                    indent += 1;
+                    break;
+                case '\n':
+                    nl = i;
+                    indent = 0;
+                    break;
+                case '\r': {
+                    const next = this.buffer[i + 1];
+                    if (!next && !this.atEnd)
+                        return this.setNext('block-scalar');
+                    if (next === '\n')
+                        break;
+                } // fallthrough
+                default:
+                    break loop;
+            }
+        }
+        if (!ch && !this.atEnd)
+            return this.setNext('block-scalar');
+        if (indent >= this.indentNext) {
+            if (this.blockScalarIndent === -1)
+                this.indentNext = indent;
+            else
+                this.indentNext += this.blockScalarIndent;
+            do {
+                const cs = this.continueScalar(nl + 1);
+                if (cs === -1)
+                    break;
+                nl = this.buffer.indexOf('\n', cs);
+            } while (nl !== -1);
+            if (nl === -1) {
+                if (!this.atEnd)
+                    return this.setNext('block-scalar');
+                nl = this.buffer.length;
+            }
+        }
+        if (!this.blockScalarKeep) {
+            do {
+                let i = nl - 1;
+                let ch = this.buffer[i];
+                if (ch === '\r')
+                    ch = this.buffer[--i];
+                while (ch === ' ' || ch === '\t')
+                    ch = this.buffer[--i];
+                if (ch === '\n' && i >= this.pos)
+                    nl = i;
+                else
+                    break;
+            } while (true);
+        }
+        yield SCALAR;
+        yield* this.pushToIndex(nl + 1, true);
+        return yield* this.parseLineStart();
+    }
+    *parsePlainScalar() {
+        const inFlow = this.flowLevel > 0;
+        let end = this.pos - 1;
+        let i = this.pos - 1;
+        let ch;
+        while ((ch = this.buffer[++i])) {
+            if (ch === ':') {
+                const next = this.buffer[i + 1];
+                if (isEmpty(next) || (inFlow && next === ','))
+                    break;
+                end = i;
+            }
+            else if (isEmpty(ch)) {
+                let next = this.buffer[i + 1];
+                if (ch === '\r') {
+                    if (next === '\n') {
+                        i += 1;
+                        ch = '\n';
+                        next = this.buffer[i + 1];
+                    }
+                    else
+                        end = i;
+                }
+                if (next === '#' || (inFlow && invalidFlowScalarChars.includes(next)))
+                    break;
+                if (ch === '\n') {
+                    const cs = this.continueScalar(i + 1);
+                    if (cs === -1)
+                        break;
+                    i = Math.max(i, cs - 2); // to advance, but still account for ' #'
+                }
+            }
+            else {
+                if (inFlow && invalidFlowScalarChars.includes(ch))
+                    break;
+                end = i;
+            }
+        }
+        if (!ch && !this.atEnd)
+            return this.setNext('plain-scalar');
+        yield SCALAR;
+        yield* this.pushToIndex(end + 1, true);
+        return inFlow ? 'flow' : 'doc';
+    }
+    *pushCount(n) {
+        if (n > 0) {
+            yield this.buffer.substr(this.pos, n);
+            this.pos += n;
+            return n;
+        }
+        return 0;
+    }
+    *pushToIndex(i, allowEmpty) {
+        const s = this.buffer.slice(this.pos, i);
+        if (s) {
+            yield s;
+            this.pos += s.length;
+            return s.length;
+        }
+        else if (allowEmpty)
+            yield '';
+        return 0;
+    }
+    *pushIndicators() {
+        switch (this.charAt(0)) {
+            case '!':
+                return ((yield* this.pushTag()) +
+                    (yield* this.pushSpaces(true)) +
+                    (yield* this.pushIndicators()));
+            case '&':
+                return ((yield* this.pushUntil(isNotAnchorChar)) +
+                    (yield* this.pushSpaces(true)) +
+                    (yield* this.pushIndicators()));
+            case ':':
+            case '?': // this is an error outside flow collections
+            case '-': // this is an error
+                if (isEmpty(this.charAt(1))) {
+                    if (this.flowLevel === 0)
+                        this.indentNext = this.indentValue + 1;
+                    else if (this.flowKey)
+                        this.flowKey = false;
+                    return ((yield* this.pushCount(1)) +
+                        (yield* this.pushSpaces(true)) +
+                        (yield* this.pushIndicators()));
+                }
+        }
+        return 0;
+    }
+    *pushTag() {
+        if (this.charAt(1) === '<') {
+            let i = this.pos + 2;
+            let ch = this.buffer[i];
+            while (!isEmpty(ch) && ch !== '>')
+                ch = this.buffer[++i];
+            return yield* this.pushToIndex(ch === '>' ? i + 1 : i, false);
+        }
+        else {
+            let i = this.pos + 1;
+            let ch = this.buffer[i];
+            while (ch) {
+                if (tagChars.includes(ch))
+                    ch = this.buffer[++i];
+                else if (ch === '%' &&
+                    hexDigits.includes(this.buffer[i + 1]) &&
+                    hexDigits.includes(this.buffer[i + 2])) {
+                    ch = this.buffer[(i += 3)];
+                }
+                else
+                    break;
+            }
+            return yield* this.pushToIndex(i, false);
+        }
+    }
+    *pushNewline() {
+        const ch = this.buffer[this.pos];
+        if (ch === '\n')
+            return yield* this.pushCount(1);
+        else if (ch === '\r' && this.charAt(1) === '\n')
+            return yield* this.pushCount(2);
+        else
+            return 0;
+    }
+    *pushSpaces(allowTabs) {
+        let i = this.pos - 1;
+        let ch;
+        do {
+            ch = this.buffer[++i];
+        } while (ch === ' ' || (allowTabs && ch === '\t'));
+        const n = i - this.pos;
+        if (n > 0) {
+            yield this.buffer.substr(this.pos, n);
+            this.pos = i;
+        }
+        return n;
+    }
+    *pushUntil(test) {
+        let i = this.pos;
+        let ch = this.buffer[i];
+        while (!test(ch))
+            ch = this.buffer[++i];
+        return yield* this.pushToIndex(i, false);
+    }
+}
+
+/**
+ * Tracks newlines during parsing in order to provide an efficient API for
+ * determining the one-indexed `{ line, col }` position for any offset
+ * within the input.
+ */
+class LineCounter {
+    constructor() {
+        this.lineStarts = [];
+        /**
+         * Should be called in ascending order. Otherwise, call
+         * `lineCounter.lineStarts.sort()` before calling `linePos()`.
+         */
+        this.addNewLine = (offset) => this.lineStarts.push(offset);
+        /**
+         * Performs a binary search and returns the 1-indexed { line, col }
+         * position of `offset`. If `line === 0`, `addNewLine` has never been
+         * called or `offset` is before the first known newline.
+         */
+        this.linePos = (offset) => {
+            let low = 0;
+            let high = this.lineStarts.length;
+            while (low < high) {
+                const mid = (low + high) >> 1; // Math.floor((low + high) / 2)
+                if (this.lineStarts[mid] < offset)
+                    low = mid + 1;
+                else
+                    high = mid;
+            }
+            if (this.lineStarts[low] === offset)
+                return { line: low + 1, col: 1 };
+            if (low === 0)
+                return { line: 0, col: offset };
+            const start = this.lineStarts[low - 1];
+            return { line: low, col: offset - start + 1 };
+        };
+    }
+}
+
+function includesToken(list, type) {
+    for (let i = 0; i < list.length; ++i)
+        if (list[i].type === type)
+            return true;
+    return false;
+}
+function includesNonEmpty(list) {
+    for (let i = 0; i < list.length; ++i) {
+        switch (list[i].type) {
+            case 'space':
+            case 'comment':
+            case 'newline':
+                break;
+            default:
+                return true;
+        }
+    }
+    return false;
+}
+function isFlowToken(token) {
+    switch (token === null || token === void 0 ? void 0 : token.type) {
+        case 'alias':
+        case 'scalar':
+        case 'single-quoted-scalar':
+        case 'double-quoted-scalar':
+        case 'flow-collection':
+            return true;
+        default:
+            return false;
+    }
+}
+function getPrevProps(parent) {
+    switch (parent.type) {
+        case 'document':
+            return parent.start;
+        case 'block-map': {
+            const it = parent.items[parent.items.length - 1];
+            return it.sep || it.start;
+        }
+        case 'block-seq':
+            return parent.items[parent.items.length - 1].start;
+        /* istanbul ignore next should not happen */
+        default:
+            return [];
+    }
+}
+/** Note: May modify input array */
+function getFirstKeyStartProps(prev) {
+    var _a;
+    if (prev.length === 0)
+        return [];
+    let i = prev.length;
+    loop: while (--i >= 0) {
+        switch (prev[i].type) {
+            case 'doc-start':
+            case 'explicit-key-ind':
+            case 'map-value-ind':
+            case 'seq-item-ind':
+            case 'newline':
+                break loop;
+        }
+    }
+    while (((_a = prev[++i]) === null || _a === void 0 ? void 0 : _a.type) === 'space') {
+        /* loop */
+    }
+    return prev.splice(i, prev.length);
+}
+function fixFlowSeqItems(fc) {
+    if (fc.start.type === 'flow-seq-start') {
+        for (const it of fc.items) {
+            if (it.sep &&
+                !it.value &&
+                !includesToken(it.start, 'explicit-key-ind') &&
+                !includesToken(it.sep, 'map-value-ind')) {
+                if (it.key)
+                    it.value = it.key;
+                delete it.key;
+                if (isFlowToken(it.value)) {
+                    if (it.value.end)
+                        Array.prototype.push.apply(it.value.end, it.sep);
+                    else
+                        it.value.end = it.sep;
+                }
+                else
+                    Array.prototype.push.apply(it.start, it.sep);
+                delete it.sep;
+            }
+        }
+    }
+}
+/**
+ * A YAML concrete syntax tree (CST) parser
+ *
+ * ```ts
+ * const src: string = ...
+ * for (const token of new Parser().parse(src)) {
+ *   // token: Token
+ * }
+ * ```
+ *
+ * To use the parser with a user-provided lexer:
+ *
+ * ```ts
+ * function* parse(source: string, lexer: Lexer) {
+ *   const parser = new Parser()
+ *   for (const lexeme of lexer.lex(source))
+ *     yield* parser.next(lexeme)
+ *   yield* parser.end()
+ * }
+ *
+ * const src: string = ...
+ * const lexer = new Lexer()
+ * for (const token of parse(src, lexer)) {
+ *   // token: Token
+ * }
+ * ```
+ */
+class Parser {
+    /**
+     * @param onNewLine - If defined, called separately with the start position of
+     *   each new line (in `parse()`, including the start of input).
+     */
+    constructor(onNewLine) {
+        /** If true, space and sequence indicators count as indentation */
+        this.atNewLine = true;
+        /** If true, next token is a scalar value */
+        this.atScalar = false;
+        /** Current indentation level */
+        this.indent = 0;
+        /** Current offset since the start of parsing */
+        this.offset = 0;
+        /** On the same line with a block map key */
+        this.onKeyLine = false;
+        /** Top indicates the node that's currently being built */
+        this.stack = [];
+        /** The source of the current token, set in parse() */
+        this.source = '';
+        /** The type of the current token, set in parse() */
+        this.type = '';
+        // Must be defined after `next()`
+        this.lexer = new Lexer();
+        this.onNewLine = onNewLine;
+    }
+    /**
+     * Parse `source` as a YAML stream.
+     * If `incomplete`, a part of the last line may be left as a buffer for the next call.
+     *
+     * Errors are not thrown, but yielded as `{ type: 'error', message }` tokens.
+     *
+     * @returns A generator of tokens representing each directive, document, and other structure.
+     */
+    *parse(source, incomplete = false) {
+        if (this.onNewLine && this.offset === 0)
+            this.onNewLine(0);
+        for (const lexeme of this.lexer.lex(source, incomplete))
+            yield* this.next(lexeme);
+        if (!incomplete)
+            yield* this.end();
+    }
+    /**
+     * Advance the parser by the `source` of one lexical token.
+     */
+    *next(source) {
+        this.source = source;
+        if (this.atScalar) {
+            this.atScalar = false;
+            yield* this.step();
+            this.offset += source.length;
+            return;
+        }
+        const type = tokenType(source);
+        if (!type) {
+            const message = `Not a YAML token: ${source}`;
+            yield* this.pop({ type: 'error', offset: this.offset, message, source });
+            this.offset += source.length;
+        }
+        else if (type === 'scalar') {
+            this.atNewLine = false;
+            this.atScalar = true;
+            this.type = 'scalar';
+        }
+        else {
+            this.type = type;
+            yield* this.step();
+            switch (type) {
+                case 'newline':
+                    this.atNewLine = true;
+                    this.indent = 0;
+                    if (this.onNewLine)
+                        this.onNewLine(this.offset + source.length);
+                    break;
+                case 'space':
+                    if (this.atNewLine && source[0] === ' ')
+                        this.indent += source.length;
+                    break;
+                case 'explicit-key-ind':
+                case 'map-value-ind':
+                case 'seq-item-ind':
+                    if (this.atNewLine)
+                        this.indent += source.length;
+                    break;
+                case 'doc-mode':
+                case 'flow-error-end':
+                    return;
+                default:
+                    this.atNewLine = false;
+            }
+            this.offset += source.length;
+        }
+    }
+    /** Call at end of input to push out any remaining constructions */
+    *end() {
+        while (this.stack.length > 0)
+            yield* this.pop();
+    }
+    get sourceToken() {
+        const st = {
+            type: this.type,
+            offset: this.offset,
+            indent: this.indent,
+            source: this.source
+        };
+        return st;
+    }
+    *step() {
+        const top = this.peek(1);
+        if (this.type === 'doc-end' && (!top || top.type !== 'doc-end')) {
+            while (this.stack.length > 0)
+                yield* this.pop();
+            this.stack.push({
+                type: 'doc-end',
+                offset: this.offset,
+                source: this.source
+            });
+            return;
+        }
+        if (!top)
+            return yield* this.stream();
+        switch (top.type) {
+            case 'document':
+                return yield* this.document(top);
+            case 'alias':
+            case 'scalar':
+            case 'single-quoted-scalar':
+            case 'double-quoted-scalar':
+                return yield* this.scalar(top);
+            case 'block-scalar':
+                return yield* this.blockScalar(top);
+            case 'block-map':
+                return yield* this.blockMap(top);
+            case 'block-seq':
+                return yield* this.blockSequence(top);
+            case 'flow-collection':
+                return yield* this.flowCollection(top);
+            case 'doc-end':
+                return yield* this.documentEnd(top);
+        }
+        /* istanbul ignore next should not happen */
+        yield* this.pop();
+    }
+    peek(n) {
+        return this.stack[this.stack.length - n];
+    }
+    *pop(error) {
+        const token = error || this.stack.pop();
+        /* istanbul ignore if should not happen */
+        if (!token) {
+            const message = 'Tried to pop an empty stack';
+            yield { type: 'error', offset: this.offset, source: '', message };
+        }
+        else if (this.stack.length === 0) {
+            yield token;
+        }
+        else {
+            const top = this.peek(1);
+            if (token.type === 'block-scalar') {
+                // Block scalars use their parent rather than header indent
+                token.indent = 'indent' in top ? top.indent : 0;
+            }
+            else if (token.type === 'flow-collection' && top.type === 'document') {
+                // Ignore all indent for top-level flow collections
+                token.indent = 0;
+            }
+            if (token.type === 'flow-collection')
+                fixFlowSeqItems(token);
+            switch (top.type) {
+                case 'document':
+                    top.value = token;
+                    break;
+                case 'block-scalar':
+                    top.props.push(token); // error
+                    break;
+                case 'block-map': {
+                    const it = top.items[top.items.length - 1];
+                    if (it.value) {
+                        top.items.push({ start: [], key: token, sep: [] });
+                        this.onKeyLine = true;
+                        return;
+                    }
+                    else if (it.sep) {
+                        it.value = token;
+                    }
+                    else {
+                        Object.assign(it, { key: token, sep: [] });
+                        this.onKeyLine = !includesToken(it.start, 'explicit-key-ind');
+                        return;
+                    }
+                    break;
+                }
+                case 'block-seq': {
+                    const it = top.items[top.items.length - 1];
+                    if (it.value)
+                        top.items.push({ start: [], value: token });
+                    else
+                        it.value = token;
+                    break;
+                }
+                case 'flow-collection': {
+                    const it = top.items[top.items.length - 1];
+                    if (!it || it.value)
+                        top.items.push({ start: [], key: token, sep: [] });
+                    else if (it.sep)
+                        it.value = token;
+                    else
+                        Object.assign(it, { key: token, sep: [] });
+                    return;
+                }
+                /* istanbul ignore next should not happen */
+                default:
+                    yield* this.pop();
+                    yield* this.pop(token);
+            }
+            if ((top.type === 'document' ||
+                top.type === 'block-map' ||
+                top.type === 'block-seq') &&
+                (token.type === 'block-map' || token.type === 'block-seq')) {
+                const last = token.items[token.items.length - 1];
+                if (last &&
+                    !last.sep &&
+                    !last.value &&
+                    last.start.length > 0 &&
+                    !includesNonEmpty(last.start) &&
+                    (token.indent === 0 ||
+                        last.start.every(st => st.type !== 'comment' || st.indent < token.indent))) {
+                    if (top.type === 'document')
+                        top.end = last.start;
+                    else
+                        top.items.push({ start: last.start });
+                    token.items.splice(-1, 1);
+                }
+            }
+        }
+    }
+    *stream() {
+        switch (this.type) {
+            case 'directive-line':
+                yield { type: 'directive', offset: this.offset, source: this.source };
+                return;
+            case 'byte-order-mark':
+            case 'space':
+            case 'comment':
+            case 'newline':
+                yield this.sourceToken;
+                return;
+            case 'doc-mode':
+            case 'doc-start': {
+                const doc = {
+                    type: 'document',
+                    offset: this.offset,
+                    start: []
+                };
+                if (this.type === 'doc-start')
+                    doc.start.push(this.sourceToken);
+                this.stack.push(doc);
+                return;
+            }
+        }
+        yield {
+            type: 'error',
+            offset: this.offset,
+            message: `Unexpected ${this.type} token in YAML stream`,
+            source: this.source
+        };
+    }
+    *document(doc) {
+        if (doc.value)
+            return yield* this.lineEnd(doc);
+        switch (this.type) {
+            case 'doc-start': {
+                if (includesNonEmpty(doc.start)) {
+                    yield* this.pop();
+                    yield* this.step();
+                }
+                else
+                    doc.start.push(this.sourceToken);
+                return;
+            }
+            case 'anchor':
+            case 'tag':
+            case 'space':
+            case 'comment':
+            case 'newline':
+                doc.start.push(this.sourceToken);
+                return;
+        }
+        const bv = this.startBlockValue(doc);
+        if (bv)
+            this.stack.push(bv);
+        else {
+            yield {
+                type: 'error',
+                offset: this.offset,
+                message: `Unexpected ${this.type} token in YAML document`,
+                source: this.source
+            };
+        }
+    }
+    *scalar(scalar) {
+        if (this.type === 'map-value-ind') {
+            const prev = getPrevProps(this.peek(2));
+            const start = getFirstKeyStartProps(prev);
+            let sep;
+            if (scalar.end) {
+                sep = scalar.end;
+                sep.push(this.sourceToken);
+                delete scalar.end;
+            }
+            else
+                sep = [this.sourceToken];
+            const map = {
+                type: 'block-map',
+                offset: scalar.offset,
+                indent: scalar.indent,
+                items: [{ start, key: scalar, sep }]
+            };
+            this.onKeyLine = true;
+            this.stack[this.stack.length - 1] = map;
+        }
+        else
+            yield* this.lineEnd(scalar);
+    }
+    *blockScalar(scalar) {
+        switch (this.type) {
+            case 'space':
+            case 'comment':
+            case 'newline':
+                scalar.props.push(this.sourceToken);
+                return;
+            case 'scalar':
+                scalar.source = this.source;
+                // block-scalar source includes trailing newline
+                this.atNewLine = true;
+                this.indent = 0;
+                if (this.onNewLine) {
+                    let nl = this.source.indexOf('\n') + 1;
+                    while (nl !== 0) {
+                        this.onNewLine(this.offset + nl);
+                        nl = this.source.indexOf('\n', nl) + 1;
+                    }
+                }
+                yield* this.pop();
+                break;
+            /* istanbul ignore next should not happen */
+            default:
+                yield* this.pop();
+                yield* this.step();
+        }
+    }
+    *blockMap(map) {
+        var _a;
+        const it = map.items[map.items.length - 1];
+        // it.sep is true-ish if pair already has key or : separator
+        switch (this.type) {
+            case 'newline':
+                this.onKeyLine = false;
+                if (it.value) {
+                    const end = 'end' in it.value ? it.value.end : undefined;
+                    const last = Array.isArray(end) ? end[end.length - 1] : undefined;
+                    if ((last === null || last === void 0 ? void 0 : last.type) === 'comment')
+                        end === null || end === void 0 ? void 0 : end.push(this.sourceToken);
+                    else
+                        map.items.push({ start: [this.sourceToken] });
+                }
+                else if (it.sep)
+                    it.sep.push(this.sourceToken);
+                else
+                    it.start.push(this.sourceToken);
+                return;
+            case 'space':
+            case 'comment':
+                if (it.value)
+                    map.items.push({ start: [this.sourceToken] });
+                else if (it.sep)
+                    it.sep.push(this.sourceToken);
+                else {
+                    if (this.atIndentedComment(it.start, map.indent)) {
+                        const prev = map.items[map.items.length - 2];
+                        const end = (_a = prev === null || prev === void 0 ? void 0 : prev.value) === null || _a === void 0 ? void 0 : _a.end;
+                        if (Array.isArray(end)) {
+                            Array.prototype.push.apply(end, it.start);
+                            end.push(this.sourceToken);
+                            map.items.pop();
+                            return;
+                        }
+                    }
+                    it.start.push(this.sourceToken);
+                }
+                return;
+        }
+        if (this.indent >= map.indent) {
+            const atNextItem = !this.onKeyLine &&
+                this.indent === map.indent &&
+                (it.sep || includesNonEmpty(it.start));
+            switch (this.type) {
+                case 'anchor':
+                case 'tag':
+                    if (atNextItem || it.value) {
+                        map.items.push({ start: [this.sourceToken] });
+                        this.onKeyLine = true;
+                    }
+                    else if (it.sep)
+                        it.sep.push(this.sourceToken);
+                    else
+                        it.start.push(this.sourceToken);
+                    return;
+                case 'explicit-key-ind':
+                    if (!it.sep && !includesToken(it.start, 'explicit-key-ind'))
+                        it.start.push(this.sourceToken);
+                    else if (atNextItem || it.value)
+                        map.items.push({ start: [this.sourceToken] });
+                    else
+                        this.stack.push({
+                            type: 'block-map',
+                            offset: this.offset,
+                            indent: this.indent,
+                            items: [{ start: [this.sourceToken] }]
+                        });
+                    this.onKeyLine = true;
+                    return;
+                case 'map-value-ind':
+                    if (!it.sep)
+                        Object.assign(it, { key: null, sep: [this.sourceToken] });
+                    else if (it.value ||
+                        (atNextItem && !includesToken(it.start, 'explicit-key-ind')))
+                        map.items.push({ start: [], key: null, sep: [this.sourceToken] });
+                    else if (includesToken(it.sep, 'map-value-ind'))
+                        this.stack.push({
+                            type: 'block-map',
+                            offset: this.offset,
+                            indent: this.indent,
+                            items: [{ start: [], key: null, sep: [this.sourceToken] }]
+                        });
+                    else if (includesToken(it.start, 'explicit-key-ind') &&
+                        isFlowToken(it.key) &&
+                        !includesToken(it.sep, 'newline')) {
+                        const start = getFirstKeyStartProps(it.start);
+                        const key = it.key;
+                        const sep = it.sep;
+                        sep.push(this.sourceToken);
+                        // @ts-ignore type guard is wrong here
+                        delete it.key, delete it.sep;
+                        this.stack.push({
+                            type: 'block-map',
+                            offset: this.offset,
+                            indent: this.indent,
+                            items: [{ start, key, sep }]
+                        });
+                    }
+                    else
+                        it.sep.push(this.sourceToken);
+                    this.onKeyLine = true;
+                    return;
+                case 'alias':
+                case 'scalar':
+                case 'single-quoted-scalar':
+                case 'double-quoted-scalar': {
+                    const fs = this.flowScalar(this.type);
+                    if (atNextItem || it.value) {
+                        map.items.push({ start: [], key: fs, sep: [] });
+                        this.onKeyLine = true;
+                    }
+                    else if (it.sep) {
+                        this.stack.push(fs);
+                    }
+                    else {
+                        Object.assign(it, { key: fs, sep: [] });
+                        this.onKeyLine = true;
+                    }
+                    return;
+                }
+                default: {
+                    const bv = this.startBlockValue(map);
+                    if (bv) {
+                        if (atNextItem &&
+                            bv.type !== 'block-seq' &&
+                            includesToken(it.start, 'explicit-key-ind'))
+                            map.items.push({ start: [] });
+                        this.stack.push(bv);
+                        return;
+                    }
+                }
+            }
+        }
+        yield* this.pop();
+        yield* this.step();
+    }
+    *blockSequence(seq) {
+        var _a;
+        const it = seq.items[seq.items.length - 1];
+        switch (this.type) {
+            case 'newline':
+                if (it.value) {
+                    const end = 'end' in it.value ? it.value.end : undefined;
+                    const last = Array.isArray(end) ? end[end.length - 1] : undefined;
+                    if ((last === null || last === void 0 ? void 0 : last.type) === 'comment')
+                        end === null || end === void 0 ? void 0 : end.push(this.sourceToken);
+                    else
+                        seq.items.push({ start: [this.sourceToken] });
+                }
+                else
+                    it.start.push(this.sourceToken);
+                return;
+            case 'space':
+            case 'comment':
+                if (it.value)
+                    seq.items.push({ start: [this.sourceToken] });
+                else {
+                    if (this.atIndentedComment(it.start, seq.indent)) {
+                        const prev = seq.items[seq.items.length - 2];
+                        const end = (_a = prev === null || prev === void 0 ? void 0 : prev.value) === null || _a === void 0 ? void 0 : _a.end;
+                        if (Array.isArray(end)) {
+                            Array.prototype.push.apply(end, it.start);
+                            end.push(this.sourceToken);
+                            seq.items.pop();
+                            return;
+                        }
+                    }
+                    it.start.push(this.sourceToken);
+                }
+                return;
+            case 'anchor':
+            case 'tag':
+                if (it.value || this.indent <= seq.indent)
+                    break;
+                it.start.push(this.sourceToken);
+                return;
+            case 'seq-item-ind':
+                if (this.indent !== seq.indent)
+                    break;
+                if (it.value || includesToken(it.start, 'seq-item-ind'))
+                    seq.items.push({ start: [this.sourceToken] });
+                else
+                    it.start.push(this.sourceToken);
+                return;
+        }
+        if (this.indent > seq.indent) {
+            const bv = this.startBlockValue(seq);
+            if (bv) {
+                this.stack.push(bv);
+                return;
+            }
+        }
+        yield* this.pop();
+        yield* this.step();
+    }
+    *flowCollection(fc) {
+        const it = fc.items[fc.items.length - 1];
+        if (this.type === 'flow-error-end') {
+            let top;
+            do {
+                yield* this.pop();
+                top = this.peek(1);
+            } while (top && top.type === 'flow-collection');
+        }
+        else if (fc.end.length === 0) {
+            switch (this.type) {
+                case 'comma':
+                case 'explicit-key-ind':
+                    if (!it || it.sep)
+                        fc.items.push({ start: [this.sourceToken] });
+                    else
+                        it.start.push(this.sourceToken);
+                    return;
+                case 'map-value-ind':
+                    if (!it || it.value)
+                        fc.items.push({ start: [], key: null, sep: [this.sourceToken] });
+                    else if (it.sep)
+                        it.sep.push(this.sourceToken);
+                    else
+                        Object.assign(it, { key: null, sep: [this.sourceToken] });
+                    return;
+                case 'space':
+                case 'comment':
+                case 'newline':
+                case 'anchor':
+                case 'tag':
+                    if (!it || it.value)
+                        fc.items.push({ start: [this.sourceToken] });
+                    else if (it.sep)
+                        it.sep.push(this.sourceToken);
+                    else
+                        it.start.push(this.sourceToken);
+                    return;
+                case 'alias':
+                case 'scalar':
+                case 'single-quoted-scalar':
+                case 'double-quoted-scalar': {
+                    const fs = this.flowScalar(this.type);
+                    if (!it || it.value)
+                        fc.items.push({ start: [], key: fs, sep: [] });
+                    else if (it.sep)
+                        this.stack.push(fs);
+                    else
+                        Object.assign(it, { key: fs, sep: [] });
+                    return;
+                }
+                case 'flow-map-end':
+                case 'flow-seq-end':
+                    fc.end.push(this.sourceToken);
+                    return;
+            }
+            const bv = this.startBlockValue(fc);
+            /* istanbul ignore else should not happen */
+            if (bv)
+                this.stack.push(bv);
+            else {
+                yield* this.pop();
+                yield* this.step();
+            }
+        }
+        else {
+            const parent = this.peek(2);
+            if (parent.type === 'block-map' &&
+                (this.type === 'map-value-ind' ||
+                    (this.type === 'newline' &&
+                        !parent.items[parent.items.length - 1].sep))) {
+                yield* this.pop();
+                yield* this.step();
+            }
+            else if (this.type === 'map-value-ind' &&
+                parent.type !== 'flow-collection') {
+                const prev = getPrevProps(parent);
+                const start = getFirstKeyStartProps(prev);
+                fixFlowSeqItems(fc);
+                const sep = fc.end.splice(1, fc.end.length);
+                sep.push(this.sourceToken);
+                const map = {
+                    type: 'block-map',
+                    offset: fc.offset,
+                    indent: fc.indent,
+                    items: [{ start, key: fc, sep }]
+                };
+                this.onKeyLine = true;
+                this.stack[this.stack.length - 1] = map;
+            }
+            else {
+                yield* this.lineEnd(fc);
+            }
+        }
+    }
+    flowScalar(type) {
+        if (this.onNewLine) {
+            let nl = this.source.indexOf('\n') + 1;
+            while (nl !== 0) {
+                this.onNewLine(this.offset + nl);
+                nl = this.source.indexOf('\n', nl) + 1;
+            }
+        }
+        return {
+            type,
+            offset: this.offset,
+            indent: this.indent,
+            source: this.source
+        };
+    }
+    startBlockValue(parent) {
+        switch (this.type) {
+            case 'alias':
+            case 'scalar':
+            case 'single-quoted-scalar':
+            case 'double-quoted-scalar':
+                return this.flowScalar(this.type);
+            case 'block-scalar-header':
+                return {
+                    type: 'block-scalar',
+                    offset: this.offset,
+                    indent: this.indent,
+                    props: [this.sourceToken],
+                    source: ''
+                };
+            case 'flow-map-start':
+            case 'flow-seq-start':
+                return {
+                    type: 'flow-collection',
+                    offset: this.offset,
+                    indent: this.indent,
+                    start: this.sourceToken,
+                    items: [],
+                    end: []
+                };
+            case 'seq-item-ind':
+                return {
+                    type: 'block-seq',
+                    offset: this.offset,
+                    indent: this.indent,
+                    items: [{ start: [this.sourceToken] }]
+                };
+            case 'explicit-key-ind': {
+                this.onKeyLine = true;
+                const prev = getPrevProps(parent);
+                const start = getFirstKeyStartProps(prev);
+                start.push(this.sourceToken);
+                return {
+                    type: 'block-map',
+                    offset: this.offset,
+                    indent: this.indent,
+                    items: [{ start }]
+                };
+            }
+            case 'map-value-ind': {
+                this.onKeyLine = true;
+                const prev = getPrevProps(parent);
+                const start = getFirstKeyStartProps(prev);
+                return {
+                    type: 'block-map',
+                    offset: this.offset,
+                    indent: this.indent,
+                    items: [{ start, key: null, sep: [this.sourceToken] }]
+                };
+            }
+        }
+        return null;
+    }
+    atIndentedComment(start, indent) {
+        if (this.type !== 'comment')
+            return false;
+        if (this.indent <= indent)
+            return false;
+        return start.every(st => st.type === 'newline' || st.type === 'space');
+    }
+    *documentEnd(docEnd) {
+        if (this.type !== 'doc-mode') {
+            if (docEnd.end)
+                docEnd.end.push(this.sourceToken);
+            else
+                docEnd.end = [this.sourceToken];
+            if (this.type === 'newline')
+                yield* this.pop();
+        }
+    }
+    *lineEnd(token) {
+        switch (this.type) {
+            case 'comma':
+            case 'doc-start':
+            case 'doc-end':
+            case 'flow-seq-end':
+            case 'flow-map-end':
+            case 'map-value-ind':
+                yield* this.pop();
+                yield* this.step();
+                break;
+            case 'newline':
+                this.onKeyLine = false;
+            // fallthrough
+            case 'space':
+            case 'comment':
+            default:
+                // all other values are errors
+                if (token.end)
+                    token.end.push(this.sourceToken);
+                else
+                    token.end = [this.sourceToken];
+                if (this.type === 'newline')
+                    yield* this.pop();
+        }
+    }
+}
+
+function parseOptions(options) {
+    const prettyErrors = options.prettyErrors !== false;
+    const lineCounter = options.lineCounter || (prettyErrors && new LineCounter()) || null;
+    return { lineCounter, prettyErrors };
+}
+/** Parse an input string into a single YAML.Document */
+function parseDocument(source, options = {}) {
+    const { lineCounter, prettyErrors } = parseOptions(options);
+    const parser = new Parser(lineCounter === null || lineCounter === void 0 ? void 0 : lineCounter.addNewLine);
+    const composer = new Composer(options);
+    // `doc` is always set by compose.end(true) at the very latest
+    let doc = null;
+    for (const _doc of composer.compose(parser.parse(source), true, source.length)) {
+        if (!doc)
+            doc = _doc;
+        else if (doc.options.logLevel !== 'silent') {
+            doc.errors.push(new YAMLParseError(_doc.range.slice(0, 2), 'MULTIPLE_DOCS', 'Source contains multiple documents; please use YAML.parseAllDocuments()'));
+            break;
+        }
+    }
+    if (prettyErrors && lineCounter) {
+        doc.errors.forEach(prettifyError(source, lineCounter));
+        doc.warnings.forEach(prettifyError(source, lineCounter));
+    }
+    return doc;
+}
+function parse(src, reviver, options) {
+    let _reviver = undefined;
+    if (typeof reviver === 'function') {
+        _reviver = reviver;
+    }
+    else if (options === undefined && reviver && typeof reviver === 'object') {
+        options = reviver;
+    }
+    const doc = parseDocument(src, options);
+    if (!doc)
+        return null;
+    doc.warnings.forEach(warning => warn(doc.options.logLevel, warning));
+    if (doc.errors.length > 0) {
+        if (doc.options.logLevel !== 'silent')
+            throw doc.errors[0];
+        else
+            doc.errors = [];
+    }
+    return doc.toJS(Object.assign({ reviver: _reviver }, options));
+}
+function stringify(value, replacer, options) {
+    let _replacer = null;
+    if (typeof replacer === 'function' || Array.isArray(replacer)) {
+        _replacer = replacer;
+    }
+    else if (options === undefined && replacer) {
+        options = replacer;
+    }
+    if (typeof options === 'string')
+        options = options.length;
+    if (typeof options === 'number') {
+        const indent = Math.round(options);
+        options = indent < 1 ? undefined : indent > 8 ? { indent: 8 } : { indent };
+    }
+    if (value === undefined) {
+        const { keepUndefined } = options || replacer || {};
+        if (!keepUndefined)
+            return undefined;
+    }
+    return new Document(value, _replacer, options).toString(options);
+}
+
 const MATRIX_VIEW = "BC-matrix";
 const STATS_VIEW = "BC-stats";
 const DUCK_VIEW = "BC-ducks";
@@ -3233,32 +9755,36 @@ const splitAndTrim = (fields) => {
     else
         return fields.split(",").map((str) => str.trim());
 };
+/**
+ * Pad an array with a filler value to a specified length.
+ * @param {T[]} arr - The array to pad.
+ * @param {number} finalLength - The final length of the array
+ * @param {string} [filler=""] - The filler to use if the array is too short.
+ * @returns {(T | string)[]} The array with the new values.
+ */
 function padArray(arr, finalLength, filler = "") {
     const copy = [...arr];
     const currLength = copy.length;
-    if (currLength > finalLength) {
+    if (currLength > finalLength)
         throw new Error("Current length is greater than final length");
-    }
-    else if (currLength === finalLength) {
+    else if (currLength === finalLength)
         return copy;
-    }
     else {
-        for (let i = currLength; i < finalLength; i++) {
+        for (let i = currLength; i < finalLength; i++)
             copy.push(filler);
-        }
         return copy;
     }
 }
+/**
+ * transpose(A) returns the transpose of A.
+ * @param {T[][]} A - The matrix to transpose.
+ * @returns {T[][]} A 2D array of the transposed matrix.
+ */
 function transpose(A) {
     const cols = A[0].length;
     const AT = [];
-    // For each column
-    for (let j = 0; j < cols; j++) {
-        // Add a new row to AT
-        AT.push([]);
-        // And fill it with the values in the jth column of A
-        A.forEach((row) => AT[j].push(row[j]));
-    }
+    for (let j = 0; j < cols; j++)
+        AT.push(A.map((row) => row[j]));
     return AT;
 }
 /**
@@ -3295,7 +9821,6 @@ function swapItems(i, j, arr) {
     arr[j] = tmp;
     return arr;
 }
-const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 function strToRegex(input) {
     const match = input.match(regNFlags);
     if (!match)
@@ -3366,9 +9891,30 @@ const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
 };
+function changeYaml(yaml, key, newVal) {
+    if (yaml === "") {
+        return `${key}: ['${newVal}']`;
+    }
+    else {
+        const parsed = parse(yaml);
+        const value = parsed[key];
+        if (value === undefined) {
+            parsed[key] = newVal;
+        }
+        else if (typeof value === "string" && value !== newVal) {
+            parsed[key] = [value, newVal];
+        }
+        else if (typeof (value === null || value === void 0 ? void 0 : value[0]) === "string" &&
+            value.includes &&
+            !value.includes(newVal)) {
+            parsed[key] = [...value, newVal];
+        }
+        // else if (other types of values...)
+        return stringify(parsed);
+    }
+}
 function splitAtYaml(content) {
-    const startsWithYaml = content.startsWith("---");
-    if (!startsWithYaml)
+    if (!content.startsWith("---\n"))
         return ["", content];
     else {
         const splits = content.split("---");
@@ -3398,6 +9944,22 @@ function getAlt(node, plugin) {
     else
         return null;
 }
+async function waitForCache(plugin) {
+    var _a, _b;
+    const { app } = plugin;
+    if (app.plugins.enabledPlugins.has("dataview")) {
+        let basename;
+        while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
+            await wait(100);
+            basename = (_b = (_a = app === null || app === void 0 ? void 0 : app.workspace) === null || _a === void 0 ? void 0 : _a.getActiveFile()) === null || _b === void 0 ? void 0 : _b.basename;
+        }
+    }
+    else {
+        await waitForResolvedLinks(app);
+    }
+}
+const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+const getDVApi = (plugin) => { var _a; return (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
 
 function noop() { }
 function assign(tar, src) {
@@ -3578,6 +10140,9 @@ function schedule_update() {
 function add_render_callback(fn) {
     render_callbacks.push(fn);
 }
+function add_flush_callback(fn) {
+    flush_callbacks.push(fn);
+}
 let flushing = false;
 const seen_callbacks = new Set();
 function flush() {
@@ -3699,6 +10264,14 @@ function get_spread_update(levels, updates) {
 }
 function get_spread_object(spread_props) {
     return typeof spread_props === 'object' && spread_props !== null ? spread_props : {};
+}
+
+function bind(component, name, callback) {
+    const index = component.$$.props[name];
+    if (index !== undefined) {
+        component.$$.bound[index] = callback;
+        callback(component.$$.ctx[index]);
+    }
 }
 function create_component(block) {
     block && block.c();
@@ -3829,7 +10402,7 @@ class SvelteComponent {
 
 /* src\Components\ModifyHNItemComp.svelte generated by Svelte v3.35.0 */
 
-function add_css$d() {
+function add_css$e() {
 	var style = element("style");
 	style.id = "svelte-13g4k7i-style";
 	style.textContent = "pre.svelte-13g4k7i{display:inline}";
@@ -3842,7 +10415,7 @@ function create_if_block_2$4(ctx) {
 
 	function select_block_type(ctx, dirty) {
 		if (/*hnItem*/ ctx[2].depth === 0) return create_if_block_3$2;
-		return create_else_block$3;
+		return create_else_block$4;
 	}
 
 	let current_block_type = select_block_type(ctx);
@@ -3878,7 +10451,7 @@ function create_if_block_2$4(ctx) {
 }
 
 // (24:4) {:else}
-function create_else_block$3(ctx) {
+function create_else_block$4(ctx) {
 	let div;
 	let pre;
 	let t_value = /*buildNewItem*/ ctx[6](/*newItem*/ ctx[5], /*hnItem*/ ctx[2].depth - 4, true) + "";
@@ -3953,7 +10526,7 @@ function create_if_block_1$5(ctx) {
 }
 
 // (39:2) {#if rel === "same"}
-function create_if_block$7(ctx) {
+function create_if_block$a(ctx) {
 	let div;
 	let pre;
 	let t_value = /*buildNewItem*/ ctx[6](/*newItem*/ ctx[5], /*hnItem*/ ctx[2].depth, true) + "";
@@ -3980,7 +10553,7 @@ function create_if_block$7(ctx) {
 	};
 }
 
-function create_fragment$m(ctx) {
+function create_fragment$p(ctx) {
 	let h5;
 	let t0;
 	let t1_value = ARROW_DIRECTIONS[/*rel*/ ctx[0]] + "";
@@ -4011,7 +10584,7 @@ function create_fragment$m(ctx) {
 	let if_block0 = /*rel*/ ctx[0] === "up" && create_if_block_2$4(ctx);
 
 	function select_block_type_1(ctx, dirty) {
-		if (/*rel*/ ctx[0] === "same") return create_if_block$7;
+		if (/*rel*/ ctx[0] === "same") return create_if_block$a;
 		if (/*rel*/ ctx[0] === "down") return create_if_block_1$5;
 	}
 
@@ -4158,7 +10731,7 @@ function create_fragment$m(ctx) {
 	};
 }
 
-function instance$m($$self, $$props, $$invalidate) {
+function instance$p($$self, $$props, $$invalidate) {
 	
 	
 	let { modal } = $$props;
@@ -4169,7 +10742,7 @@ function instance$m($$self, $$props, $$invalidate) {
 	let inputEl;
 	let newItem = "";
 	const buildNewItem = (newItem, depth = hnItem.depth, preview = false) => `${(" ").repeat(Math.round(depth / (preview ? 2 : 1)))}- ${preview ? newItem || "<Empty>" : makeWiki(newItem)}`;
-	onMount(() => inputEl.focus());
+	onMount(inputEl.focus);
 
 	function select_change_handler() {
 		rel = select_value(this);
@@ -4239,9 +10812,9 @@ function instance$m($$self, $$props, $$invalidate) {
 class ModifyHNItemComp extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-13g4k7i-style")) add_css$d();
+		if (!document.getElementById("svelte-13g4k7i-style")) add_css$e();
 
-		init(this, options, instance$m, create_fragment$m, safe_not_equal, {
+		init(this, options, instance$p, create_fragment$p, safe_not_equal, {
 			modal: 1,
 			settings: 7,
 			hnItem: 2,
@@ -22746,15 +29319,17 @@ function getFieldInfo(userHiers, field) {
     });
     return { fieldHier, fieldDir };
 }
-function getOppFields(userHiers, field) {
-    // If the field ends with `>`, it is already the opposite field we need (coming from getOppFallback`)
+function getOppFields(userHiers, field, dir) {
+    // If the field ends with `>`, it is already the opposite field we need (coming from `getOppFallback`)
     if (field.endsWith(">"))
         return field.slice(0, -4);
+    const oppFields = [fallbackOppField(field, dir)];
     const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
     if (!fieldHier || !fieldDir)
-        return undefined;
+        return oppFields;
     const oppDir = getOppDir(fieldDir);
-    return fieldHier[oppDir];
+    oppFields.unshift(...fieldHier[oppDir]);
+    return oppFields;
 }
 const hierToStr = (hier) => DIRECTIONS$1.map((dir) => `${ARROW_DIRECTIONS[dir]}: ${hier[dir].join(", ")}`).join("\n");
 const fallbackField = (field, dir) => `${field} <${ARROW_DIRECTIONS[dir]}>`;
@@ -22800,7 +29375,7 @@ function getSubInDirs(main, ...dirs) {
     main === null || main === void 0 ? void 0 : main.forEachEdge((k, a, s, t) => {
         if (dirs.includes(a.dir)) {
             //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
+            addNodesIfNot(sub, [s, t], { order: a.order });
             sub.addEdge(s, t, a);
         }
     });
@@ -22816,7 +29391,7 @@ function getSubForFields(main, fields) {
     main.forEachEdge((k, a, s, t) => {
         if (fields.includes(a.field)) {
             //@ts-ignore
-            addNodesIfNot(sub, [s, t], a);
+            addNodesIfNot(sub, [s, t], { order: a.order });
             sub.addEdge(s, t, a);
         }
     });
@@ -22830,24 +29405,18 @@ function getSubForFields(main, fields) {
  * @param  {UserHier[]} userHiers
  * @param  {boolean} closeAsOpposite
  */
-function getReflexiveClosure(g, userHiers, closeAsOpposite = true) {
+function getReflexiveClosure(g, userHiers) {
     const copy = g.copy();
     copy.forEachEdge((k, a, s, t) => {
-        var _a;
         const { dir, field } = a;
         if (field === undefined)
             return;
         const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
-        addNodesIfNot(copy, [s, t], {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
-        });
+        const oppField = dir === "same" ? field : getOppFields(userHiers, field, dir)[0];
+        addNodesIfNot(copy, [s, t], { order: 9999 });
         addEdgeIfNot(copy, t, s, {
-            //@ts-ignore
-            dir: closeAsOpposite ? oppDir : dir,
-            field: closeAsOpposite ? oppField : field,
+            dir: oppDir,
+            field: oppField,
             implied: BC_I_REFLEXIVE,
         });
     });
@@ -22964,7 +29533,6 @@ function buildObsGraph(app) {
     return ObsG;
 }
 function populateMain(settings, mainG, source, field, target, sourceOrder, targetOrder, fillOpp = false) {
-    var _a;
     const { userHiers } = settings;
     const dir = getFieldInfo(userHiers, field).fieldDir;
     addNodesIfNot(mainG, [source], {
@@ -22979,7 +29547,7 @@ function populateMain(settings, mainG, source, field, target, sourceOrder, targe
     });
     if (fillOpp) {
         const oppDir = getOppDir(dir);
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : getFields(userHiers, oppDir)[0];
+        const oppField = getOppFields(userHiers, field, dir)[0];
         addEdgeIfNot(mainG, target, source, {
             dir: oppDir,
             field: oppField,
@@ -22999,9 +29567,8 @@ function getRealnImplied(plugin, currNode, dir = null) {
     if (!closedG.hasNode(currNode))
         return realsnImplieds;
     closedG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
-        const { field, dir: edgeDir, implied, } = a;
-        const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, edgeDir);
+        const { field, dir: edgeDir, implied } = a;
+        const oppField = getOppFields(userHiers, field, edgeDir)[0];
         (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach((currDir) => {
             const oppDir = getOppDir(currDir);
             // Reals
@@ -23115,17 +29682,24 @@ async function copyGlobalIndex(plugin) {
     loglevel.info({ globalIndex });
     await copy(globalIndex);
 }
+const indexToLinePairs = (index, flat = false) => index
+    .split("\n")
+    .map((line) => {
+    const pair = line.split("- ");
+    return [flat ? "" : pair[0], pair.slice(1).join("- ")];
+})
+    .filter((pair) => pair[1] !== "");
 
 /* src\Components\RenderMarkdown.svelte generated by Svelte v3.35.0 */
 
-function add_css$c() {
+function add_css$d() {
 	var style = element("style");
 	style.id = "svelte-7e9i10-style";
 	style.textContent = "div.BC-note-content.svelte-7e9i10{padding-left:20px}";
 	append(document.head, style);
 }
 
-function create_fragment$l(ctx) {
+function create_fragment$o(ctx) {
 	let div;
 
 	return {
@@ -23147,7 +29721,7 @@ function create_fragment$l(ctx) {
 	};
 }
 
-function instance$l($$self, $$props, $$invalidate) {
+function instance$o($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -23218,28 +29792,28 @@ function instance$l($$self, $$props, $$invalidate) {
 class RenderMarkdown extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-7e9i10-style")) add_css$c();
-		init(this, options, instance$l, create_fragment$l, safe_not_equal, { path: 1, app: 2 });
+		if (!document.getElementById("svelte-7e9i10-style")) add_css$d();
+		init(this, options, instance$o, create_fragment$o, safe_not_equal, { path: 1, app: 2 });
 	}
 }
 
 /* src\Components\CBTree.svelte generated by Svelte v3.35.0 */
 
-function add_css$b() {
+function add_css$c() {
 	var style = element("style");
-	style.id = "svelte-yt7jmz-style";
-	style.textContent = ".BC-tree.svelte-yt7jmz{padding-left:5px}pre.indent.svelte-yt7jmz{display:inline;background-color:transparent;position:top}details.svelte-yt7jmz{display:inline-block}.is-unresolved.svelte-yt7jmz{color:var(--text-muted)}";
+	style.id = "svelte-1df5nr5-style";
+	style.textContent = ".BC-tree.svelte-1df5nr5{padding-left:5px}pre.indent.svelte-1df5nr5{display:inline;background-color:transparent;position:top}details.svelte-1df5nr5{display:inline-block}.is-unresolved.svelte-1df5nr5{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
 function get_each_context$b(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[17] = list[i][0];
-	child_ctx[18] = list[i][1];
+	child_ctx[15] = list[i][0];
+	child_ctx[16] = list[i][1];
 	return child_ctx;
 }
 
-// (27:0) {#if title !== "false"}
+// (21:0) {#if title !== "false"}
 function create_if_block_2$3(ctx) {
 	let h3;
 	let t0;
@@ -23249,9 +29823,9 @@ function create_if_block_2$3(ctx) {
 	return {
 		c() {
 			h3 = element("h3");
-			t0 = text(/*dir*/ ctx[1]);
+			t0 = text(/*dir*/ ctx[0]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[5]);
+			t2 = text(/*basename*/ ctx[7]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -23260,8 +29834,8 @@ function create_if_block_2$3(ctx) {
 			append(h3, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*dir*/ 2) set_data(t0, /*dir*/ ctx[1]);
-			if (dirty & /*basename*/ 32) set_data(t2, /*basename*/ ctx[5]);
+			if (dirty & /*dir*/ 1) set_data(t0, /*dir*/ ctx[0]);
+			if (dirty & /*basename*/ 128) set_data(t2, /*basename*/ ctx[7]);
 		},
 		d(detaching) {
 			if (detaching) detach(h3);
@@ -23269,17 +29843,17 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (32:4) {#if meetsConditions(indent, link)}
-function create_if_block$6(ctx) {
+// (26:4) {#if meetsConditions(indent, link, froms, min, max)}
+function create_if_block$9(ctx) {
 	let current_block_type_index;
 	let if_block;
 	let if_block_anchor;
 	let current;
-	const if_block_creators = [create_if_block_1$4, create_else_block$2];
+	const if_block_creators = [create_if_block_1$4, create_else_block$3];
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
-		if (/*content*/ ctx[3] === "open" || /*content*/ ctx[3] === "closed") return 0;
+		if (/*content*/ ctx[2] === "open" || /*content*/ ctx[2] === "closed") return 0;
 		return 1;
 	}
 
@@ -23339,16 +29913,16 @@ function create_if_block$6(ctx) {
 	};
 }
 
-// (57:6) {:else}
-function create_else_block$2(ctx) {
+// (51:6) {:else}
+function create_else_block$3(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[17] + "-" + "";
+	let t0_value = /*indent*/ ctx[15] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -23356,7 +29930,7 @@ function create_else_block$2(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[15](/*link*/ ctx[18], ...args);
+		return /*click_handler_1*/ ctx[14](/*link*/ ctx[16], ...args);
 	}
 
 	return {
@@ -23369,11 +29943,11 @@ function create_else_block$2(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "indent svelte-yt7jmz");
+			attr(pre, "class", "indent svelte-1df5nr5");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
 			? ""
-			: "is-unresolved") + " svelte-yt7jmz");
+			: "is-unresolved") + " svelte-1df5nr5");
 
 			attr(span, "class", "internal-link");
 		},
@@ -23398,12 +29972,12 @@ function create_else_block$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 16 && t0_value !== (t0_value = /*indent*/ ctx[17] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 16 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 8 && t0_value !== (t0_value = /*indent*/ ctx[15] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 8 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			if (dirty & /*lines*/ 8 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
 			? ""
-			: "is-unresolved") + " svelte-yt7jmz")) {
+			: "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -23417,18 +29991,18 @@ function create_else_block$2(ctx) {
 	};
 }
 
-// (33:6) {#if content === "open" || content === "closed"}
+// (27:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$4(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*indent*/ ctx[17] + "";
+	let t0_value = /*indent*/ ctx[15] + "";
 	let t0;
 	let t1;
 	let details;
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -23440,13 +30014,13 @@ function create_if_block_1$4(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[14](/*link*/ ctx[18], ...args);
+		return /*click_handler*/ ctx[13](/*link*/ ctx[16], ...args);
 	}
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
-				app: /*app*/ ctx[7],
-				path: /*link*/ ctx[18]
+				app: /*app*/ ctx[9],
+				path: /*link*/ ctx[16]
 			}
 		});
 
@@ -23464,15 +30038,15 @@ function create_if_block_1$4(ctx) {
 			t3 = space();
 			create_component(rendermarkdown.$$.fragment);
 			t4 = space();
-			attr(pre, "class", "indent svelte-yt7jmz");
+			attr(pre, "class", "indent svelte-1df5nr5");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
 			? ""
-			: "is-unresolved") + " svelte-yt7jmz");
+			: "is-unresolved") + " svelte-1df5nr5");
 
 			attr(span, "class", "internal-link");
-			details.open = details_open_value = /*content*/ ctx[3] === "open";
-			attr(details, "class", "svelte-yt7jmz");
+			details.open = details_open_value = /*content*/ ctx[2] === "open";
+			attr(details, "class", "svelte-1df5nr5");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -23500,20 +30074,20 @@ function create_if_block_1$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if ((!current || dirty & /*lines*/ 16) && t0_value !== (t0_value = /*indent*/ ctx[17] + "")) set_data(t0, t0_value);
-			if ((!current || dirty & /*lines*/ 16) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if ((!current || dirty & /*lines*/ 8) && t0_value !== (t0_value = /*indent*/ ctx[15] + "")) set_data(t0, t0_value);
+			if ((!current || dirty & /*lines*/ 8) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "")) set_data(t2, t2_value);
 
-			if (!current || dirty & /*plugin, lines*/ 17 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*link*/ ctx[18])
+			if (!current || dirty & /*lines*/ 8 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
 			? ""
-			: "is-unresolved") + " svelte-yt7jmz")) {
+			: "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
 			}
 
 			const rendermarkdown_changes = {};
-			if (dirty & /*lines*/ 16) rendermarkdown_changes.path = /*link*/ ctx[18];
+			if (dirty & /*lines*/ 8) rendermarkdown_changes.path = /*link*/ ctx[16];
 			rendermarkdown.$set(rendermarkdown_changes);
 
-			if (!current || dirty & /*content*/ 8 && details_open_value !== (details_open_value = /*content*/ ctx[3] === "open")) {
+			if (!current || dirty & /*content*/ 4 && details_open_value !== (details_open_value = /*content*/ ctx[2] === "open")) {
 				details.open = details_open_value;
 			}
 		},
@@ -23535,12 +30109,12 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (31:2) {#each lines as [indent, link]}
+// (25:2) {#each lines as [indent, link]}
 function create_each_block$b(ctx) {
-	let show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
+	let show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[4], /*min*/ ctx[5], /*max*/ ctx[6]);
 	let if_block_anchor;
 	let current;
-	let if_block = show_if && create_if_block$6(ctx);
+	let if_block = show_if && create_if_block$9(ctx);
 
 	return {
 		c() {
@@ -23553,17 +30127,17 @@ function create_each_block$b(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty & /*lines*/ 16) show_if = /*meetsConditions*/ ctx[8](/*indent*/ ctx[17], /*link*/ ctx[18]);
+			if (dirty & /*lines, froms, min, max*/ 120) show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[4], /*min*/ ctx[5], /*max*/ ctx[6]);
 
 			if (show_if) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty & /*lines*/ 16) {
+					if (dirty & /*lines, froms, min, max*/ 120) {
 						transition_in(if_block, 1);
 					}
 				} else {
-					if_block = create_if_block$6(ctx);
+					if_block = create_if_block$9(ctx);
 					if_block.c();
 					transition_in(if_block, 1);
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
@@ -23594,12 +30168,12 @@ function create_each_block$b(ctx) {
 	};
 }
 
-function create_fragment$k(ctx) {
+function create_fragment$n(ctx) {
 	let t;
 	let div;
 	let current;
-	let if_block = /*title*/ ctx[2] !== "false" && create_if_block_2$3(ctx);
-	let each_value = /*lines*/ ctx[4];
+	let if_block = /*title*/ ctx[1] !== "false" && create_if_block_2$3(ctx);
+	let each_value = /*lines*/ ctx[3];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -23620,7 +30194,7 @@ function create_fragment$k(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-tree svelte-yt7jmz");
+			attr(div, "class", "BC-tree svelte-1df5nr5");
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -23634,7 +30208,7 @@ function create_fragment$k(ctx) {
 			current = true;
 		},
 		p(ctx, [dirty]) {
-			if (/*title*/ ctx[2] !== "false") {
+			if (/*title*/ ctx[1] !== "false") {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -23647,8 +30221,8 @@ function create_fragment$k(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*content, app, lines, openOrSwitch, plugin, isInVault, dropDendron, settings, meetsConditions*/ 473) {
-				each_value = /*lines*/ ctx[4];
+			if (dirty & /*content, app, lines, openOrSwitch, isInVault, dropDendron, settings, meetsConditions, froms, min, max*/ 892) {
+				each_value = /*lines*/ ctx[3];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -23711,7 +30285,7 @@ const mouseover_handler_1 = e => {
 }; //   hoverPreview needs an itemView so it can access `app`...
 //   hoverPreview(e, el, link)
 
-function instance$k($$self, $$props, $$invalidate) {
+function instance$n($$self, $$props, $$invalidate) {
 	
 	
 	let { plugin } = $$props;
@@ -23726,45 +30300,37 @@ function instance$k($$self, $$props, $$invalidate) {
 	let { max } = $$props;
 	let { basename } = $$props;
 	const { settings, app } = plugin;
-	const indentToDepth = indent => indent.length / 2 + 1;
-
-	const meetsConditions = (indent, node) => {
-		const depth = indentToDepth(indent);
-		return depth >= min && depth <= max && (froms === undefined || froms.includes(node));
-	};
-
-	const click_handler = async (link, e) => await openOrSwitch(plugin.app, link, e);
-	const click_handler_1 = async (link, e) => await openOrSwitch(plugin.app, link, e);
+	const click_handler = async (link, e) => await openOrSwitch(app, link, e);
+	const click_handler_1 = async (link, e) => await openOrSwitch(app, link, e);
 
 	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(0, plugin = $$props.plugin);
-		if ("el" in $$props) $$invalidate(9, el = $$props.el);
-		if ("dir" in $$props) $$invalidate(1, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(10, fields = $$props.fields);
-		if ("title" in $$props) $$invalidate(2, title = $$props.title);
-		if ("content" in $$props) $$invalidate(3, content = $$props.content);
-		if ("lines" in $$props) $$invalidate(4, lines = $$props.lines);
-		if ("froms" in $$props) $$invalidate(11, froms = $$props.froms);
-		if ("min" in $$props) $$invalidate(12, min = $$props.min);
-		if ("max" in $$props) $$invalidate(13, max = $$props.max);
-		if ("basename" in $$props) $$invalidate(5, basename = $$props.basename);
+		if ("plugin" in $$props) $$invalidate(10, plugin = $$props.plugin);
+		if ("el" in $$props) $$invalidate(11, el = $$props.el);
+		if ("dir" in $$props) $$invalidate(0, dir = $$props.dir);
+		if ("fields" in $$props) $$invalidate(12, fields = $$props.fields);
+		if ("title" in $$props) $$invalidate(1, title = $$props.title);
+		if ("content" in $$props) $$invalidate(2, content = $$props.content);
+		if ("lines" in $$props) $$invalidate(3, lines = $$props.lines);
+		if ("froms" in $$props) $$invalidate(4, froms = $$props.froms);
+		if ("min" in $$props) $$invalidate(5, min = $$props.min);
+		if ("max" in $$props) $$invalidate(6, max = $$props.max);
+		if ("basename" in $$props) $$invalidate(7, basename = $$props.basename);
 	};
 
 	return [
-		plugin,
 		dir,
 		title,
 		content,
 		lines,
-		basename,
-		settings,
-		app,
-		meetsConditions,
-		el,
-		fields,
 		froms,
 		min,
 		max,
+		basename,
+		settings,
+		app,
+		plugin,
+		el,
+		fields,
 		click_handler,
 		click_handler_1
 	];
@@ -23773,20 +30339,20 @@ function instance$k($$self, $$props, $$invalidate) {
 class CBTree extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-yt7jmz-style")) add_css$b();
+		if (!document.getElementById("svelte-1df5nr5-style")) add_css$c();
 
-		init(this, options, instance$k, create_fragment$k, safe_not_equal, {
-			plugin: 0,
-			el: 9,
-			dir: 1,
-			fields: 10,
-			title: 2,
-			content: 3,
-			lines: 4,
-			froms: 11,
-			min: 12,
-			max: 13,
-			basename: 5
+		init(this, options, instance$n, create_fragment$n, safe_not_equal, {
+			plugin: 10,
+			el: 11,
+			dir: 0,
+			fields: 12,
+			title: 1,
+			content: 2,
+			lines: 3,
+			froms: 4,
+			min: 5,
+			max: 6,
+			basename: 7
 		});
 	}
 }
@@ -24006,7 +30572,7 @@ const getPlugin = function (app) {
 
 /* src\Components\JugglButton.svelte generated by Svelte v3.35.0 */
 
-function create_fragment$j(ctx) {
+function create_fragment$m(ctx) {
 	let button;
 	let t;
 	let mounted;
@@ -24015,11 +30581,11 @@ function create_fragment$j(ctx) {
 	return {
 		c() {
 			button = element("button");
-			t = text(/*icon*/ ctx[0]);
+			t = text(/*renderedIcon*/ ctx[3]);
 			attr(button, "type", "button");
 			attr(button, "class", "juggl-button");
-			attr(button, "aria-label", /*title*/ ctx[3]);
-			button.disabled = /*disabled*/ ctx[2];
+			attr(button, "aria-label", /*title*/ ctx[2]);
+			button.disabled = /*disabled*/ ctx[1];
 		},
 		m(target, anchor) {
 			insert(target, button, anchor);
@@ -24027,7 +30593,7 @@ function create_fragment$j(ctx) {
 
 			if (!mounted) {
 				dispose = listen(button, "click", function () {
-					if (is_function(/*onClick*/ ctx[1])) /*onClick*/ ctx[1].apply(this, arguments);
+					if (is_function(/*onClick*/ ctx[0])) /*onClick*/ ctx[0].apply(this, arguments);
 				});
 
 				mounted = true;
@@ -24035,14 +30601,14 @@ function create_fragment$j(ctx) {
 		},
 		p(new_ctx, [dirty]) {
 			ctx = new_ctx;
-			if (dirty & /*icon*/ 1) set_data(t, /*icon*/ ctx[0]);
+			if (dirty & /*renderedIcon*/ 8) set_data(t, /*renderedIcon*/ ctx[3]);
 
-			if (dirty & /*title*/ 8) {
-				attr(button, "aria-label", /*title*/ ctx[3]);
+			if (dirty & /*title*/ 4) {
+				attr(button, "aria-label", /*title*/ ctx[2]);
 			}
 
-			if (dirty & /*disabled*/ 4) {
-				button.disabled = /*disabled*/ ctx[2];
+			if (dirty & /*disabled*/ 2) {
+				button.disabled = /*disabled*/ ctx[1];
 			}
 		},
 		i: noop,
@@ -24055,31 +30621,222 @@ function create_fragment$j(ctx) {
 	};
 }
 
-function instance$j($$self, $$props, $$invalidate) {
+function instance$m($$self, $$props, $$invalidate) {
+	let renderedIcon;
 	let { icon } = $$props;
 	let { onClick } = $$props;
 	let { disabled = false } = $$props;
 	let { title } = $$props;
 
 	$$self.$$set = $$props => {
-		if ("icon" in $$props) $$invalidate(0, icon = $$props.icon);
-		if ("onClick" in $$props) $$invalidate(1, onClick = $$props.onClick);
-		if ("disabled" in $$props) $$invalidate(2, disabled = $$props.disabled);
-		if ("title" in $$props) $$invalidate(3, title = $$props.title);
+		if ("icon" in $$props) $$invalidate(4, icon = $$props.icon);
+		if ("onClick" in $$props) $$invalidate(0, onClick = $$props.onClick);
+		if ("disabled" in $$props) $$invalidate(1, disabled = $$props.disabled);
+		if ("title" in $$props) $$invalidate(2, title = $$props.title);
 	};
 
-	return [icon, onClick, disabled, title];
+	$$self.$$.update = () => {
+		if ($$self.$$.dirty & /*icon*/ 16) {
+			$$invalidate(3, renderedIcon = icon);
+		}
+	};
+
+	return [onClick, disabled, title, renderedIcon, icon];
 }
 
 class JugglButton extends SvelteComponent {
 	constructor(options) {
 		super();
 
-		init(this, options, instance$j, create_fragment$j, safe_not_equal, {
-			icon: 0,
-			onClick: 1,
-			disabled: 2,
-			title: 3
+		init(this, options, instance$m, create_fragment$m, safe_not_equal, {
+			icon: 4,
+			onClick: 0,
+			disabled: 1,
+			title: 2
+		});
+	}
+}
+
+/* src\Components\JugglDepth.svelte generated by Svelte v3.35.0 */
+
+function create_if_block$8(ctx) {
+	let div;
+	let jugglbutton0;
+	let t0;
+	let jugglbutton1;
+	let t1;
+	let jugglbutton2;
+	let current;
+
+	jugglbutton0 = new JugglButton({
+			props: {
+				icon: "-",
+				disabled: /*depth*/ ctx[3] <= 0,
+				onClick: /*func*/ ctx[5]
+			}
+		});
+
+	jugglbutton1 = new JugglButton({
+			props: {
+				icon: /*depth*/ ctx[3],
+				disabled: true,
+				onClick: null
+			}
+		});
+
+	jugglbutton2 = new JugglButton({
+			props: {
+				icon: "+",
+				disabled: /*depth*/ ctx[3] >= /*maxDepth*/ ctx[0],
+				onClick: /*func_1*/ ctx[6]
+			}
+		});
+
+	return {
+		c() {
+			div = element("div");
+			create_component(jugglbutton0.$$.fragment);
+			t0 = space();
+			create_component(jugglbutton1.$$.fragment);
+			t1 = space();
+			create_component(jugglbutton2.$$.fragment);
+			attr(div, "class", "cy-toolbar-section");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			mount_component(jugglbutton0, div, null);
+			append(div, t0);
+			mount_component(jugglbutton1, div, null);
+			append(div, t1);
+			mount_component(jugglbutton2, div, null);
+			current = true;
+		},
+		p(ctx, dirty) {
+			const jugglbutton0_changes = {};
+			if (dirty & /*depth*/ 8) jugglbutton0_changes.disabled = /*depth*/ ctx[3] <= 0;
+			if (dirty & /*depth, onUpdateDepth*/ 10) jugglbutton0_changes.onClick = /*func*/ ctx[5];
+			jugglbutton0.$set(jugglbutton0_changes);
+			const jugglbutton1_changes = {};
+			if (dirty & /*depth*/ 8) jugglbutton1_changes.icon = /*depth*/ ctx[3];
+			jugglbutton1.$set(jugglbutton1_changes);
+			const jugglbutton2_changes = {};
+			if (dirty & /*depth, maxDepth*/ 9) jugglbutton2_changes.disabled = /*depth*/ ctx[3] >= /*maxDepth*/ ctx[0];
+			if (dirty & /*depth, onUpdateDepth*/ 10) jugglbutton2_changes.onClick = /*func_1*/ ctx[6];
+			jugglbutton2.$set(jugglbutton2_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(jugglbutton0.$$.fragment, local);
+			transition_in(jugglbutton1.$$.fragment, local);
+			transition_in(jugglbutton2.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(jugglbutton0.$$.fragment, local);
+			transition_out(jugglbutton1.$$.fragment, local);
+			transition_out(jugglbutton2.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_component(jugglbutton0);
+			destroy_component(jugglbutton1);
+			destroy_component(jugglbutton2);
+		}
+	};
+}
+
+function create_fragment$l(ctx) {
+	let if_block_anchor;
+	let current;
+	let if_block = /*visible*/ ctx[2] && create_if_block$8(ctx);
+
+	return {
+		c() {
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
+		},
+		m(target, anchor) {
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			if (/*visible*/ ctx[2]) {
+				if (if_block) {
+					if_block.p(ctx, dirty);
+
+					if (dirty & /*visible*/ 4) {
+						transition_in(if_block, 1);
+					}
+				} else {
+					if_block = create_if_block$8(ctx);
+					if_block.c();
+					transition_in(if_block, 1);
+					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+				}
+			} else if (if_block) {
+				group_outros();
+
+				transition_out(if_block, 1, 1, () => {
+					if_block = null;
+				});
+
+				check_outros();
+			}
+		},
+		i(local) {
+			if (current) return;
+			transition_in(if_block);
+			current = true;
+		},
+		o(local) {
+			transition_out(if_block);
+			current = false;
+		},
+		d(detaching) {
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+function instance$l($$self, $$props, $$invalidate) {
+	let { maxDepth } = $$props;
+	let { onUpdateDepth } = $$props;
+	let { up } = $$props;
+	let depth = maxDepth;
+	let { visible = true } = $$props;
+
+	const func = () => {
+		$$invalidate(3, depth -= 1);
+		onUpdateDepth(depth);
+	};
+
+	const func_1 = () => {
+		$$invalidate(3, depth += 1);
+		onUpdateDepth(depth);
+	};
+
+	$$self.$$set = $$props => {
+		if ("maxDepth" in $$props) $$invalidate(0, maxDepth = $$props.maxDepth);
+		if ("onUpdateDepth" in $$props) $$invalidate(1, onUpdateDepth = $$props.onUpdateDepth);
+		if ("up" in $$props) $$invalidate(4, up = $$props.up);
+		if ("visible" in $$props) $$invalidate(2, visible = $$props.visible);
+	};
+
+	return [maxDepth, onUpdateDepth, visible, depth, up, func, func_1];
+}
+
+class JugglDepth extends SvelteComponent {
+	constructor(options) {
+		super();
+
+		init(this, options, instance$l, create_fragment$l, safe_not_equal, {
+			maxDepth: 0,
+			onUpdateDepth: 1,
+			up: 4,
+			visible: 2
 		});
 	}
 }
@@ -24088,11 +30845,12 @@ const STORE_ID = "core";
 class BCStoreEvents extends obsidian.Events {
 }
 class BCStore extends obsidian.Component {
-    constructor(graph, metadata, plugin) {
+    constructor(graph, metadata, plugin, depthMap) {
         super();
         this.graph = graph;
         this.cache = metadata;
         this.plugin = plugin;
+        this.depthMap = depthMap;
     }
     asString(node) {
         const id = VizId.fromNode(node);
@@ -24125,9 +30883,16 @@ class BCStore extends obsidian.Component {
     getEvents(view) {
         return new BCStoreEvents();
     }
-    getNeighbourhood(nodeId) {
+    async getNeighbourhood(nodeIds, view) {
         // TODO
-        return Promise.resolve([]);
+        const new_nodes = [];
+        for (const nodeId of nodeIds) {
+            const name = nodeId.id.slice(0, -3);
+            for (const new_node of this.graph.neighbors(name)) {
+                new_nodes.push(await this.get(new VizId(new_node + ".md", STORE_ID), view));
+            }
+        }
+        return new_nodes;
     }
     refreshNode(id, view) {
         return;
@@ -24137,20 +30902,27 @@ class BCStore extends obsidian.Component {
     }
     get(nodeId, view) {
         const file = this.getFile(nodeId);
+        let depth = 0;
+        if (this.depthMap && nodeId.id in this.depthMap) {
+            depth = this.depthMap[nodeId.id];
+        }
         if (file === null) {
             const dangling = nodeDangling(nodeId.id);
-            console.log({ dangling });
-            return Promise.resolve(nodeDangling(nodeId.id));
+            dangling.data.depth = depth;
+            return Promise.resolve(dangling);
         }
         const cache = this.cache.getFileCache(file);
         if (cache === null) {
             console.log("returning empty cache", nodeId);
             return Promise.resolve(nodeDangling(nodeId.id));
         }
-        return Promise.resolve(nodeFromFile(file, this.plugin, view.settings, nodeId.toId()));
+        return nodeFromFile(file, this.plugin, view.settings, nodeId.toId()).then(node => {
+            node.data.depth = depth;
+            return node;
+        });
     }
 }
-function createJuggl(plugin, target, initialNodes, args) {
+function createJuggl(plugin, target, initialNodes, args, depthMap = null) {
     try {
         const jugglPlugin = getPlugin(plugin.app);
         if (!jugglPlugin) {
@@ -24158,19 +30930,16 @@ function createJuggl(plugin, target, initialNodes, args) {
             return;
         }
         for (let key in JUGGL_CB_DEFAULTS) {
-            if (key in args && args[key] === undefined) {
+            if (key in args && args[key] === undefined)
                 args[key] = JUGGL_CB_DEFAULTS[key];
-            }
         }
-        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin);
+        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin, depthMap);
         const stores = {
             coreStore: bcStore,
             dataStores: [bcStore],
         };
-        console.log({ args }, { initialNodes });
         const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
         plugin.addChild(juggl);
-        // juggl.load();
         console.log({ juggl });
         return juggl;
     }
@@ -24199,6 +30968,28 @@ function zoomToSource(juggl, source) {
         });
     });
 }
+function createDepthMap(paths, source, offset = 0) {
+    // TODO: Is there a BC function for this already?
+    let depthMap = {};
+    depthMap[source + ".md"] = 0;
+    paths.forEach((path) => {
+        for (let i = 0; i < path.length; i++) {
+            const name = path[i] + ".md";
+            const depth = path.length - i - 1 + offset;
+            if (name in depthMap) {
+                depthMap[name] = Math.min(depthMap[name], depth);
+            }
+            else {
+                depthMap[name] = depth;
+            }
+        }
+    });
+    return depthMap;
+}
+function updateDepth(juggl, depth) {
+    juggl.viz.$(`[depth>${depth}]`).addClass('filtered');
+    juggl.viz.$(`[depth<=${depth}]`).removeClass('filtered');
+}
 function createJugglTrail(plugin, target, paths, source, args) {
     const toolbarDiv = document.createElement("div");
     toolbarDiv.addClass("cy-toolbar");
@@ -24216,9 +31007,11 @@ function createJugglTrail(plugin, target, paths, source, args) {
             onClick: () => {
                 if (jugglUp) {
                     target.children[amtChildren].classList.remove("juggl-hide");
+                    depthUp.$set({ visible: true });
                 }
                 if (jugglDown) {
                     target.children[amtChildren + 1].classList.add("juggl-hide");
+                    depthDown.$set({ visible: false });
                 }
             },
             disabled: false,
@@ -24232,8 +31025,10 @@ function createJugglTrail(plugin, target, paths, source, args) {
             onClick: () => {
                 if (jugglDown) {
                     target.children[amtChildren + 1].classList.remove("juggl-hide");
+                    depthUp.$set({ visible: false });
                     if (jugglUp) {
                         target.children[amtChildren].classList.add("juggl-hide");
+                        depthDown.$set({ visible: true });
                     }
                     return;
                 }
@@ -24246,23 +31041,45 @@ function createJugglTrail(plugin, target, paths, source, args) {
                     .split("\n")
                     .map((line) => {
                     const pair = line.split("- ");
-                    console.log({ pair });
                     return pair[1];
                 })
                     .filter((pair) => pair && pair !== "");
+                let depthMapDown = createDepthMap(allPaths, source);
+                const maxDepthDown = Math.max(...Object.values(depthMapDown));
+                depthDown = new JugglDepth({
+                    target: toolbarDiv,
+                    props: {
+                        maxDepth: maxDepthDown,
+                        onUpdateDepth: (d) => {
+                            updateDepth(jugglDown, d);
+                        }
+                    }
+                });
                 let nodesS = new Set(lines);
                 nodesS.add(source);
                 const nodes = Array.from(nodesS).map((s) => s + ".md");
-                console.log({ nodes });
-                jugglDown = createJuggl(plugin, target, nodes, args);
+                jugglDown = createJuggl(plugin, target, nodes, args, depthMapDown);
                 if (jugglUp) {
                     target.children[amtChildren].addClass("juggl-hide");
+                    depthUp.$set({ visible: false });
                 }
                 zoomToSource(jugglDown, source);
             },
             disabled: false,
             title: "Show down graph",
         },
+    });
+    const depthMapUp = createDepthMap(paths, source, 1);
+    const maxDepthUp = Math.max(...Object.values(depthMapUp));
+    let depthDown;
+    const depthUp = new JugglDepth({
+        target: toolbarDiv,
+        props: {
+            maxDepth: maxDepthUp,
+            onUpdateDepth: (d) => {
+                updateDepth(jugglUp, d);
+            }
+        }
     });
     // new JugglButton({
     //     target: sectDiv,
@@ -24280,7 +31097,7 @@ function createJugglTrail(plugin, target, paths, source, args) {
     let nodes = Array.from(new Set(paths.reduce((prev, curr) => prev.concat(curr), [])));
     nodes.push(source);
     nodes = nodes.map((s) => s + ".md");
-    jugglUp = createJuggl(plugin, target, nodes, args);
+    jugglUp = createJuggl(plugin, target, nodes, args, depthMapUp);
     zoomToSource(jugglUp, source);
 }
 
@@ -24297,6 +31114,7 @@ function getCodeblockCB(plugin) {
         }
         let min = 0, max = Infinity;
         let { depth, dir, from, implied, flat } = parsedSource;
+        console.log({ flat });
         if (depth !== undefined) {
             const minNum = parseInt(depth[0]);
             if (!isNaN(minNum))
@@ -24332,13 +31150,7 @@ function getCodeblockCB(plugin) {
         const allPaths = dfsAllPaths(subClosed, basename);
         const index = createIndex(allPaths, false);
         loglevel.info({ allPaths, index });
-        const lines = index
-            .split("\n")
-            .map((line) => {
-            const pair = line.split("- ");
-            return [flat === "true" ? "" : pair[0], pair.slice(1).join("- ")];
-        })
-            .filter((pair) => pair[1] !== "");
+        const lines = indexToLinePairs(index, flat);
         switch (parsedSource.type) {
             case "tree":
                 new CBTree({
@@ -24358,6 +31170,12 @@ function getCodeblockCB(plugin) {
         }
     };
 }
+/**
+ * Parse a string as a boolean value.
+ * @param {string} value - string
+ * @returns {string | boolean}
+ */
+const parseAsBool = (value) => value === "true" ? true : value === "false" ? false : value;
 function parseCodeBlockSource(source) {
     const lines = source.split("\n");
     const getValue = (type) => {
@@ -24367,13 +31185,8 @@ function parseCodeBlockSource(source) {
     };
     const results = {};
     CODEBLOCK_FIELDS.forEach((field) => {
-        results[field] = getValue(field);
-        if (results[field] === "false") {
-            results[field] = false;
-        }
-        if (results[field] === "true") {
-            results[field] = true;
-        }
+        const value = getValue(field);
+        results[field] = parseAsBool(value);
     });
     results.field = results.field
         ? splitAndTrim(results.field)
@@ -24403,7 +31216,7 @@ function codeblockError(plugin, parsedSource) {
         err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
     if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
         err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
-    if (flat !== undefined && flat !== "true")
+    if (flat !== undefined && flat !== true && flat !== false)
         err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
     if (content !== undefined && content !== "open" && content !== "closed")
         err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
@@ -24430,9 +31243,7 @@ function codeblockError(plugin, parsedSource) {
       depth: 3
       </code></pre>`;
 }
-function indentToDepth(indent) {
-    return indent.length / 2 + 1;
-}
+const indentToDepth = (indent) => indent.length / 2 + 1;
 function meetsConditions(indent, node, froms, min, max) {
     const depth = indentToDepth(indent);
     return (depth >= min &&
@@ -24443,9 +31254,8 @@ function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
     const nodes = lines
         .filter(([indent, node]) => meetsConditions(indent, node, froms, min, max))
         .map(([_, node]) => node + ".md");
-    if (min <= 0) {
+    if (min <= 0)
         nodes.push(source + ".md");
-    }
     console.log({ lines, nodes });
     createJuggl(plugin, target, nodes, args);
 }
@@ -24475,7 +31285,7 @@ async function jumpToFirstDir(plugin, dir) {
 }
 
 async function thread(plugin, field) {
-    var _a, _b;
+    var _a;
     const { app, settings } = plugin;
     const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
     const currFile = app.workspace.getActiveFile();
@@ -24483,7 +31293,7 @@ async function thread(plugin, field) {
         return;
     const newFileParent = app.fileManager.getNewFileParent(currFile.path);
     const dir = getFieldInfo(userHiers, field).fieldDir;
-    const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+    const oppField = getOppFields(userHiers, field, dir)[0];
     let newBasename = threadingTemplate
         ? threadingTemplate
             .replace("{{current}}", currFile.basename)
@@ -24514,7 +31324,7 @@ async function thread(plugin, field) {
     }
     const newFile = await app.vault.create(obsidian.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
     if (!writeBCsInline) {
-        const { api } = (_b = app.plugins.plugins.metaedit) !== null && _b !== void 0 ? _b : {};
+        const { api } = (_a = app.plugins.plugins.metaedit) !== null && _a !== void 0 ? _a : {};
         if (!api) {
             new obsidian.Notice("Metaedit must be enabled to write to yaml. Alternatively, toggle the setting `Write Breadcrumbs Inline` to use Dataview inline fields instead.");
             return;
@@ -24558,38 +31368,34 @@ async function thread(plugin, field) {
     }
 }
 
-async function writeBCToFile(plugin, file) {
-    var _a;
+async function writeBCToFile(plugin, currFile) {
     const { app, settings, mainG } = plugin;
+    const file = currFile !== null && currFile !== void 0 ? currFile : app.workspace.getActiveFile();
     const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;
-    const { frontmatter } = app.metadataCache.getFileCache(file);
-    const api = (_a = app.plugins.plugins.metaedit) === null || _a === void 0 ? void 0 : _a.api;
-    if (!api) {
-        new obsidian.Notice("Metaedit must be enabled for this function to work");
-        return;
-    }
     const succInfo = mainG.mapInEdges(file.basename, (k, a, s, t) => {
-        var _a;
-        const oppField = (_a = getOppFields(userHiers, a.field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(a.field, a.dir);
+        const { field, dir } = a;
+        const oppField = getOppFields(userHiers, field, dir)[0];
         return { succ: s, field: oppField };
     });
     for (const { succ, field } of succInfo) {
         if (!limitWriteBCCheckboxes.includes(field))
             return;
+        const content = await app.vault.read(file);
+        const [yaml, afterYaml] = splitAtYaml(content);
         if (!writeBCsInline) {
-            await createOrUpdateYaml(field, succ, file, frontmatter, api);
+            const inner = yaml === "" ? yaml : yaml.slice(4, -4);
+            const newYaml = changeYaml(inner, field, succ);
+            const newContent = `---\n${newYaml}\n---${afterYaml}`;
+            await app.vault.modify(file, newContent);
         }
         else {
             // TODO Check if this note already has this field
-            let content = await app.vault.read(file);
-            const splits = splitAtYaml(content);
-            content =
-                splits[0] +
-                    (splits[0].length ? "\n" : "") +
-                    `${field}:: [[${succ}]]` +
-                    (splits[1].length ? "\n" : "") +
-                    splits[1];
-            await app.vault.modify(file, content);
+            const newContent = yaml +
+                (yaml.length ? "\n" : "") +
+                `${field}:: [[${succ}]]` +
+                (afterYaml.length ? "\n" : "") +
+                afterYaml;
+            await app.vault.modify(file, newContent);
         }
     }
 }
@@ -24842,13 +31648,13 @@ function addHNsToGraph(settings, hnArr, mainG) {
     const { HNUpField, userHiers } = settings;
     const upFields = getFields(userHiers, "up");
     hnArr.forEach((hnItem, i) => {
-        var _a, _b;
+        var _a;
         const { note, field, parent } = hnItem;
         const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = (_a = getOppFields(userHiers, upField)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(upField, "up");
+        const downField = getOppFields(userHiers, upField, "up")[0];
         if (parent === null) {
             const s = note;
-            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
+            const t = (_a = hnArr[i + 1]) === null || _a === void 0 ? void 0 : _a.note;
             addNodesIfNot(mainG, [s, t]);
             addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
         }
@@ -24858,8 +31664,6 @@ function addHNsToGraph(settings, hnArr, mainG) {
                 dir: "up",
                 field: upField,
             });
-            // I don't think this needs to be done if the reverse is done above
-            addNodesIfNot(mainG, [parent, note]);
             addEdgeIfNot(mainG, parent, note, {
                 dir: "down",
                 field: downField,
@@ -25050,33 +31854,37 @@ function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
 
 /* src\Components\NextPrev.svelte generated by Svelte v3.35.0 */
 
-function add_css$a() {
+function add_css$b() {
 	var style = element("style");
-	style.id = "svelte-1cqb0v5-style";
-	style.textContent = ".BC-nexts.svelte-1cqb0v5 div.svelte-1cqb0v5{text-align:right}.BC-right-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-left:5px;float:right}.BC-left-arrow.svelte-1cqb0v5.svelte-1cqb0v5{padding-right:5px;float:left}.BC-nexts.svelte-1cqb0v5.svelte-1cqb0v5{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-1cqb0v5.svelte-1cqb0v5{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-1cqb0v5.svelte-1cqb0v5{display:grid;grid-template-columns:1fr 1fr}";
+	style.id = "svelte-11g23nm-style";
+	style.textContent = ".BC-nexts.svelte-11g23nm div.svelte-11g23nm{text-align:right}.BC-nexts.svelte-11g23nm.svelte-11g23nm{border-left:1px solid var(--background-modifier-border)}.BC-prevs.svelte-11g23nm.svelte-11g23nm{border-right:1px solid var(--background-modifier-border)}.BC-NextPrev-Container.svelte-11g23nm.svelte-11g23nm{display:grid;grid-template-columns:1fr 1fr}";
 	append(document.head, style);
 }
 
 function get_each_context$a(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[6] = list[i];
+	child_ctx[6] = list[i].field;
+	child_ctx[7] = list[i].real;
+	child_ctx[8] = list[i].to;
 	return child_ctx;
 }
 
 function get_each_context_1$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[9] = list[i];
+	child_ctx[6] = list[i].field;
+	child_ctx[7] = list[i].real;
+	child_ctx[8] = list[i].to;
 	return child_ctx;
 }
 
-// (15:6) {#each prev as p}
+// (14:6) {#each prev as { field, real, to }}
 function create_each_block_1$8(ctx) {
 	let div;
 	let strong;
-	let t0_value = /*p*/ ctx[9].field + "";
+	let t0_value = /*field*/ ctx[6] + "";
 	let t0;
 	let t1;
-	let t2_value = /*p*/ ctx[9].to + "";
+	let t2_value = /*to*/ ctx[8] + "";
 	let t2;
 	let t3;
 	let div_class_value;
@@ -25084,7 +31892,7 @@ function create_each_block_1$8(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[4](/*p*/ ctx[9], ...args);
+		return /*click_handler*/ ctx[4](/*to*/ ctx[8], ...args);
 	}
 
 	return {
@@ -25095,7 +31903,7 @@ function create_each_block_1$8(ctx) {
 			t1 = space();
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-prev" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -25112,10 +31920,10 @@ function create_each_block_1$8(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*prev*/ 4 && t0_value !== (t0_value = /*p*/ ctx[9].field + "")) set_data(t0, t0_value);
-			if (dirty & /*prev*/ 4 && t2_value !== (t2_value = /*p*/ ctx[9].to + "")) set_data(t2, t2_value);
+			if (dirty & /*prev*/ 2 && t0_value !== (t0_value = /*field*/ ctx[6] + "")) set_data(t0, t0_value);
+			if (dirty & /*prev*/ 2 && t2_value !== (t2_value = /*to*/ ctx[8] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*app, prev*/ 5 && div_class_value !== (div_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[0], /*p*/ ctx[9].to, /*p*/ ctx[9].real)) + " svelte-1cqb0v5"))) {
+			if (dirty & /*prev*/ 2 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-prev" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -25127,14 +31935,14 @@ function create_each_block_1$8(ctx) {
 	};
 }
 
-// (28:6) {#each next as n}
+// (27:6) {#each next as { field, real, to }}
 function create_each_block$a(ctx) {
 	let div;
-	let t0_value = /*n*/ ctx[6].to + "";
+	let t0_value = /*to*/ ctx[8] + "";
 	let t0;
 	let t1;
 	let strong;
-	let t2_value = /*n*/ ctx[6].field + "";
+	let t2_value = /*field*/ ctx[6] + "";
 	let t2;
 	let t3;
 	let div_class_value;
@@ -25142,7 +31950,7 @@ function create_each_block$a(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[5](/*n*/ ctx[6], ...args);
+		return /*click_handler_1*/ ctx[5](/*to*/ ctx[8], ...args);
 	}
 
 	return {
@@ -25153,7 +31961,7 @@ function create_each_block$a(ctx) {
 			strong = element("strong");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-next" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -25170,10 +31978,10 @@ function create_each_block$a(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*next*/ 2 && t0_value !== (t0_value = /*n*/ ctx[6].to + "")) set_data(t0, t0_value);
-			if (dirty & /*next*/ 2 && t2_value !== (t2_value = /*n*/ ctx[6].field + "")) set_data(t2, t2_value);
+			if (dirty & /*next*/ 1 && t0_value !== (t0_value = /*to*/ ctx[8] + "")) set_data(t0, t0_value);
+			if (dirty & /*next*/ 1 && t2_value !== (t2_value = /*field*/ ctx[6] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*app, next*/ 3 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[0], /*n*/ ctx[6].to, /*n*/ ctx[6].real) + " BC-next" + " svelte-1cqb0v5"))) {
+			if (dirty & /*next*/ 1 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-next" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -25185,21 +31993,21 @@ function create_each_block$a(ctx) {
 	};
 }
 
-function create_fragment$i(ctx) {
+function create_fragment$k(ctx) {
 	let div2;
 	let div0;
 	let span0;
 	let t;
 	let div1;
 	let span1;
-	let each_value_1 = /*prev*/ ctx[2];
+	let each_value_1 = /*prev*/ ctx[1];
 	let each_blocks_1 = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
 		each_blocks_1[i] = create_each_block_1$8(get_each_context_1$8(ctx, each_value_1, i));
 	}
 
-	let each_value = /*next*/ ctx[1];
+	let each_value = /*next*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -25224,9 +32032,9 @@ function create_fragment$i(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "BC-prevs svelte-1cqb0v5");
-			attr(div1, "class", "BC-nexts svelte-1cqb0v5");
-			attr(div2, "class", "BC-NextPrev-Container svelte-1cqb0v5");
+			attr(div0, "class", "BC-prevs svelte-11g23nm");
+			attr(div1, "class", "BC-nexts svelte-11g23nm");
+			attr(div2, "class", "BC-NextPrev-Container svelte-11g23nm");
 		},
 		m(target, anchor) {
 			insert(target, div2, anchor);
@@ -25246,8 +32054,8 @@ function create_fragment$i(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 5) {
-				each_value_1 = /*prev*/ ctx[2];
+			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 6) {
+				each_value_1 = /*prev*/ ctx[1];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -25269,8 +32077,8 @@ function create_fragment$i(ctx) {
 				each_blocks_1.length = each_value_1.length;
 			}
 
-			if (dirty & /*linkClass, app, next, openOrSwitch*/ 3) {
-				each_value = /*next*/ ctx[1];
+			if (dirty & /*linkClass, app, next, openOrSwitch*/ 5) {
+				each_value = /*next*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -25302,67 +32110,67 @@ function create_fragment$i(ctx) {
 	};
 }
 
-function instance$i($$self, $$props, $$invalidate) {
+function instance$k($$self, $$props, $$invalidate) {
 	
 	
-	
-	let { app } = $$props;
 	let { plugin } = $$props;
 	let { next } = $$props;
 	let { prev } = $$props;
-	const click_handler = async (p, e) => openOrSwitch(app, p.to, e);
-	const click_handler_1 = async (n, e) => openOrSwitch(app, n.to, e);
+	const { app } = plugin;
+	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
 
 	$$self.$$set = $$props => {
-		if ("app" in $$props) $$invalidate(0, app = $$props.app);
 		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
-		if ("next" in $$props) $$invalidate(1, next = $$props.next);
-		if ("prev" in $$props) $$invalidate(2, prev = $$props.prev);
+		if ("next" in $$props) $$invalidate(0, next = $$props.next);
+		if ("prev" in $$props) $$invalidate(1, prev = $$props.prev);
 	};
 
-	return [app, next, prev, plugin, click_handler, click_handler_1];
+	return [next, prev, app, plugin, click_handler, click_handler_1];
 }
 
 class NextPrev extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1cqb0v5-style")) add_css$a();
-		init(this, options, instance$i, create_fragment$i, safe_not_equal, { app: 0, plugin: 3, next: 1, prev: 2 });
+		if (!document.getElementById("svelte-11g23nm-style")) add_css$b();
+		init(this, options, instance$k, create_fragment$k, safe_not_equal, { plugin: 3, next: 0, prev: 1 });
 	}
 }
 
 /* src\Components\TrailGrid.svelte generated by Svelte v3.35.0 */
 
-function add_css$9() {
+function add_css$a() {
 	var style = element("style");
-	style.id = "svelte-ybyqyo-style";
-	style.textContent = "div.BC-trail-grid.svelte-ybyqyo{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-ybyqyo{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-ybyqyo{opacity:0.7}.dot.svelte-ybyqyo{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	style.id = "svelte-1a33qd9-style";
+	style.textContent = "div.BC-trail-grid.svelte-1a33qd9{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-1a33qd9{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-1a33qd9{opacity:0.7}.dot.svelte-1a33qd9{height:5px;width:5px;border-radius:50%;display:inline-block}";
 	append(document.head, style);
 }
 
 function get_each_context$9(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
-	child_ctx[22] = i;
+	child_ctx[24] = list[i];
+	child_ctx[26] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[27] = list[i].value;
+	child_ctx[28] = list[i].first;
+	child_ctx[29] = list[i].last;
 	return child_ctx;
 }
 
 function get_each_context_2$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[32] = list[i];
 	return child_ctx;
 }
 
-// (84:8) {#if step.value && settings.gridDots}
-function create_if_block$5(ctx) {
+// (61:8) {#if value && gridDots}
+function create_if_block$7(ctx) {
 	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*value*/ ctx[27]] / 1000));
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -25387,8 +32195,8 @@ function create_if_block$5(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*settings, wordCounts*/ 40) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[3][/*step*/ ctx[23].value] / 1000));
+			if (dirty[0] & /*dotsColour, wordCounts*/ 132) {
+				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*value*/ ctx[27]] / 1000));
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -25417,15 +32225,15 @@ function create_if_block$5(ctx) {
 	};
 }
 
-// (86:12) {#each range(Math.floor(wordCounts[step.value] / 1000)) as i}
+// (63:12) {#each range(Math.floor(wordCounts[value] / 1000)) as _}
 function create_each_block_2$3(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			attr(span, "class", "dot svelte-ybyqyo");
-			set_style(span, "background-color", /*settings*/ ctx[5].dotsColour);
+			attr(span, "class", "dot svelte-1a33qd9");
+			set_style(span, "background-color", /*dotsColour*/ ctx[7]);
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -25437,11 +32245,11 @@ function create_each_block_2$3(ctx) {
 	};
 }
 
-// (67:4) {#each allRuns[i] as step}
+// (48:4) {#each allRuns[i] as { value, first, last }}
 function create_each_block_1$7(ctx) {
 	let div1;
 	let div0;
-	let t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "";
+	let t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[3])) + "";
 	let t0;
 	let div0_class_value;
 	let t1;
@@ -25450,14 +32258,14 @@ function create_each_block_1$7(ctx) {
 	let div1_style_value;
 	let mounted;
 	let dispose;
-	let if_block = /*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots && create_if_block$5(ctx);
+	let if_block = /*value*/ ctx[27] && /*gridDots*/ ctx[6] && create_if_block$7(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*step*/ ctx[23], ...args);
+		return /*click_handler*/ ctx[12](/*value*/ ctx[27], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*step*/ ctx[23], ...args);
+		return /*mouseover_handler*/ ctx[13](/*value*/ ctx[27], ...args);
 	}
 
 	return {
@@ -25468,11 +32276,11 @@ function create_each_block_1$7(ctx) {
 			t1 = space();
 			if (if_block) if_block.c();
 			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*step*/ ctx[23].value === "" ? "BC-filler" : "") + " svelte-ybyqyo");
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[4], /*value*/ ctx[27])) + " svelte-1a33qd9"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-1a33qd9");
 
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*first*/ ctx[28] + 1) + " / " + (/*i*/ ctx[26] + 1) + " / \r\n                " + (/*last*/ ctx[29] + 2) + " / " + (/*i*/ ctx[26] + 2) + ";\r\n            " + (/*gridHeatmap*/ ctx[5]
+			? `background-color: ${/*toColour*/ ctx[11](/*value*/ ctx[27])}`
 			: ""));
 		},
 		m(target, anchor) {
@@ -25494,19 +32302,8 @@ function create_each_block_1$7(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*plugin*/ 4 && t0_value !== (t0_value = (getAlt(/*step*/ ctx[23].value, /*plugin*/ ctx[2]) ?? dropDendron(/*step*/ ctx[23].value, /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
-
-			if (dirty & /*app*/ 2 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[1], /*step*/ ctx[23].value)) + " svelte-ybyqyo"))) {
-				attr(div0, "class", div0_class_value);
-			}
-
-			if (/*step*/ ctx[23].value && /*settings*/ ctx[5].gridDots) if_block.p(ctx, dirty);
-
-			if (dirty & /*children*/ 16 && div1_style_value !== (div1_style_value = "\r\n            grid-area: " + (/*step*/ ctx[23].first + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*step*/ ctx[23].last + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*settings*/ ctx[5].gridHeatmap
-			? `background-color: ${/*settings*/ ctx[5].heatmapColour}${Math.round(/*children*/ ctx[4][/*step*/ ctx[23].value] * 200 + 55).toString(16)}`
-			: ""))) {
-				attr(div1, "style", div1_style_value);
-			}
+			if (dirty[0] & /*plugin*/ 2 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[3])) + "")) set_data(t0, t0_value);
+			if (/*value*/ ctx[27] && /*gridDots*/ ctx[6]) if_block.p(ctx, dirty);
 		},
 		d(detaching) {
 			if (detaching) detach(div1);
@@ -25517,10 +32314,10 @@ function create_each_block_1$7(ctx) {
 	};
 }
 
-// (66:2) {#each transposedTrails as col, i}
+// (47:2) {#each transposedTrails as col, i}
 function create_each_block$9(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+	let each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -25543,8 +32340,8 @@ function create_each_block$9(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value_1 = /*allRuns*/ ctx[8][/*i*/ ctx[22]];
+			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
+				each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -25573,9 +32370,9 @@ function create_each_block$9(ctx) {
 	};
 }
 
-function create_fragment$h(ctx) {
+function create_fragment$j(ctx) {
 	let div;
-	let each_value = /*transposedTrails*/ ctx[7];
+	let each_value = /*transposedTrails*/ ctx[9];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -25590,8 +32387,8 @@ function create_fragment$h(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-trail-grid svelte-ybyqyo");
-			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[7].length));
+			attr(div, "class", "BC-trail-grid svelte-1a33qd9");
+			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[9].length));
 			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 		},
 		m(target, anchor) {
@@ -25601,9 +32398,9 @@ function create_fragment$h(ctx) {
 				each_blocks[i].m(div, null);
 			}
 		},
-		p(ctx, [dirty]) {
-			if (dirty & /*allRuns, settings, Math, children, openOrSwitch, app, hoverPreview, activeLeafView, range, wordCounts, linkClass, getAlt, plugin, dropDendron*/ 382) {
-				each_value = /*transposedTrails*/ ctx[7];
+		p(ctx, dirty) {
+			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
+				each_value = /*transposedTrails*/ ctx[9];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -25625,7 +32422,7 @@ function create_fragment$h(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*sortedTrails*/ 1) {
+			if (dirty[0] & /*sortedTrails*/ 1) {
 				set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 			}
 		},
@@ -25638,17 +32435,16 @@ function create_fragment$h(ctx) {
 	};
 }
 
-function instance$h($$self, $$props, $$invalidate) {
+function instance$j($$self, $$props, $$invalidate) {
 	
 	
 	let { sortedTrails } = $$props;
-	let { app } = $$props;
 	let { plugin } = $$props;
-	const { settings } = plugin;
-	const { userHiers } = settings;
+	const { settings, app } = plugin;
+	const { userHiers, gridHeatmap, heatmapColour, gridDots, dotsColour } = settings;
 	const currFile = app.workspace.getActiveFile();
 	const activeLeafView = app.workspace.activeLeaf.view;
-	const allCells = [...new Set(sortedTrails.reduce((a, b) => [...a, ...b]))];
+	const allCells = [...new Set(sortedTrails.flat())];
 	const wordCounts = {};
 
 	allCells.forEach(cell => {
@@ -25656,7 +32452,7 @@ function instance$h($$self, $$props, $$invalidate) {
 
 		try {
 			$$invalidate(
-				3,
+				2,
 				wordCounts[cell] = (_a = app.metadataCache.getFirstLinkpathDest(cell, "")) === null || _a === void 0
 				? void 0
 				: _a.stat.size,
@@ -25664,64 +32460,46 @@ function instance$h($$self, $$props, $$invalidate) {
 			);
 		} catch(error) {
 			console.log(error, { currFile });
-			$$invalidate(3, wordCounts[cell] = 0, wordCounts);
+			$$invalidate(2, wordCounts[cell] = 0, wordCounts);
 		}
 	});
 
-	// const data: {[cell: string]: number} = {}
-	// allCells.forEach(cell => data[cell] = app.metadataCache.getFileCache(app.metadataCache.getFirstLinkpathDest(cell, currFile.path))?.links.length ?? 0);
 	const { mainG } = plugin;
-
-	// const [up, down] = [getSubInDirs(mainG, "up"), getSubInDirs(mainG, "down")];
-	// const closedParents = closeImpliedLinks(up, down);
 	const closedParents = getReflexiveClosure(getSubInDirs(mainG, "up", "down"), userHiers);
-
 	const children = {};
-	allCells.forEach(cell => $$invalidate(4, children[cell] = getOutNeighbours(closedParents, cell).length, children));
+	allCells.forEach(cell => children[cell] = getOutNeighbours(closedParents, cell).length);
 	const normalisedData = normalise(Object.values(children));
 
 	allCells.forEach((cell, i) => {
-		$$invalidate(4, children[cell] = normalisedData[i], children);
+		children[cell] = normalisedData[i];
 	});
 
-	// const normalisedData = allCells.forEach(cell => {
-	// })
-	// const links: {[cell: string]: number}[] = []
-	// data.forEach(cell => links[Object.keys(cell)[0]] = (Object.values(cell)[0]?.links.length ?? 0))
-	// console.log(data)
 	const maxLength = Math.max(...sortedTrails.map(trail => trail.length));
-
 	const paddedTrails = sortedTrails.map(trail => padArray(trail, maxLength));
-
-	// const permutations: string[][][] = permute(paddedTrails.map(trail => [trail[0]]))
-	// //  permutations.map(trails => sum(transpose(trails).map(runs).map(runs => runs.length)))
-	// const ALLRuns = permutations.map(permutation => transpose(permutation).map(runs))
-	// const runsPerRun = ALLRuns.map(runs => runs[0].length)
-	// const minRunLength = Math.min(...runsPerRun);
-	// const indexOfMinRun = runsPerRun.indexOf(minRunLength);
-	// const minRun = ALLRuns[indexOfMinRun]
 	const transposedTrails = transpose(paddedTrails);
-
 	const allRuns = transposedTrails.map(runs);
-	const click_handler = (step, e) => openOrSwitch(app, step.value, e);
-	const mouseover_handler = (step, e) => hoverPreview(e, activeLeafView, step.value);
+	const toColour = value => heatmapColour + Math.round(children[value] * 200 + 55).toString(16);
+	const click_handler = async (value, e) => await openOrSwitch(app, value, e);
+	const mouseover_handler = (value, e) => hoverPreview(e, activeLeafView, value);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
-		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(1, plugin = $$props.plugin);
 	};
 
 	return [
 		sortedTrails,
-		app,
 		plugin,
 		wordCounts,
-		children,
 		settings,
+		app,
+		gridHeatmap,
+		gridDots,
+		dotsColour,
 		activeLeafView,
 		transposedTrails,
 		allRuns,
+		toColour,
 		click_handler,
 		mouseover_handler
 	];
@@ -25730,14 +32508,14 @@ function instance$h($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-ybyqyo-style")) add_css$9();
-		init(this, options, instance$h, create_fragment$h, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
+		if (!document.getElementById("svelte-1a33qd9-style")) add_css$a();
+		init(this, options, instance$j, create_fragment$j, safe_not_equal, { sortedTrails: 0, plugin: 1 }, [-1, -1]);
 	}
 }
 
 /* src\Components\TrailPath.svelte generated by Svelte v3.35.0 */
 
-function add_css$8() {
+function add_css$9() {
 	var style = element("style");
 	style.id = "svelte-3c1frp-style";
 	style.textContent = "span.BC-trail-path-container.svelte-3c1frp{display:flex;justify-content:space-between}";
@@ -25746,21 +32524,21 @@ function add_css$8() {
 
 function get_each_context$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[10] = list[i];
+	child_ctx[12] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
-	child_ctx[15] = i;
+	child_ctx[15] = list[i];
+	child_ctx[17] = i;
 	return child_ctx;
 }
 
-// (21:8) {:else}
-function create_else_block$1(ctx) {
+// (19:8) {:else}
+function create_else_block$2(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*trail*/ ctx[10];
+	let each_value_1 = /*trail*/ ctx[12];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -25783,8 +32561,8 @@ function create_else_block$1(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
-				each_value_1 = /*trail*/ ctx[10];
+			if (dirty & /*trailSeperator, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 378) {
+				each_value_1 = /*trail*/ ctx[12];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -25813,14 +32591,15 @@ function create_else_block$1(ctx) {
 	};
 }
 
-// (19:8) {#if trail.length === 0}
+// (17:8) {#if !trail.length}
 function create_if_block_1$3(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			span.textContent = `${/*settings*/ ctx[5].noPathMessage}`;
+			span.textContent = `${/*noPathMessage*/ ctx[7]}`;
+			attr(span, "class", "BC-empty-trail");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -25832,14 +32611,15 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (30:12) {#if i < trail.length - 1}
+// (28:12) {#if i < trail.length - 1}
 function create_if_block_2$2(ctx) {
 	let span;
 
 	return {
 		c() {
 			span = element("span");
-			span.textContent = `${" " + /*settings*/ ctx[5].trailSeperator + " "}`;
+			span.textContent = `${" " + /*trailSeperator*/ ctx[8] + " "}`;
+			attr(span, "class", "BC-trail-sep");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -25851,10 +32631,10 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (22:10) {#each trail as crumb, i}
+// (20:10) {#each trail as crumb, i}
 function create_each_block_1$6(ctx) {
 	let span;
-	let t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "";
+	let t0_value = (getAlt(/*crumb*/ ctx[15], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[15], /*settings*/ ctx[4])) + "";
 	let t0;
 	let t1;
 	let if_block_anchor;
@@ -25862,14 +32642,14 @@ function create_each_block_1$6(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[7](/*crumb*/ ctx[13], ...args);
+		return /*click_handler*/ ctx[9](/*crumb*/ ctx[15], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[8](/*crumb*/ ctx[13], ...args);
+		return /*mouseover_handler*/ ctx[10](/*crumb*/ ctx[15], ...args);
 	}
 
-	let if_block = /*i*/ ctx[15] < /*trail*/ ctx[10].length - 1 && create_if_block_2$2(ctx);
+	let if_block = /*i*/ ctx[17] < /*trail*/ ctx[12].length - 1 && create_if_block_2$2(ctx);
 
 	return {
 		c() {
@@ -25898,9 +32678,9 @@ function create_each_block_1$6(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*trailsToShow, plugin*/ 20 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[13], /*plugin*/ ctx[2]) ?? dropDendron(/*crumb*/ ctx[13], /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
+			if (dirty & /*trailsToShow, plugin*/ 10 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[15], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[15], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (/*i*/ ctx[15] < /*trail*/ ctx[10].length - 1) {
+			if (/*i*/ ctx[17] < /*trail*/ ctx[12].length - 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -25924,14 +32704,14 @@ function create_each_block_1$6(ctx) {
 	};
 }
 
-// (17:4) {#each trailsToShow as trail}
+// (15:4) {#each trailsToShow as trail}
 function create_each_block$8(ctx) {
 	let div;
 	let t;
 
 	function select_block_type(ctx, dirty) {
-		if (/*trail*/ ctx[10].length === 0) return create_if_block_1$3;
-		return create_else_block$1;
+		if (!/*trail*/ ctx[12].length) return create_if_block_1$3;
+		return create_else_block$2;
 	}
 
 	let current_block_type = select_block_type(ctx);
@@ -25968,11 +32748,11 @@ function create_each_block$8(ctx) {
 	};
 }
 
-// (39:2) {#if sortedTrails.length > 1}
-function create_if_block$4(ctx) {
+// (37:2) {#if sortedTrails.length > 1}
+function create_if_block$6(ctx) {
 	let div;
 	let button;
-	let t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "";
+	let t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "";
 	let t;
 	let mounted;
 	let dispose;
@@ -25990,12 +32770,12 @@ function create_if_block$4(ctx) {
 			append(button, t);
 
 			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler_1*/ ctx[9]);
+				dispose = listen(button, "click", /*click_handler_1*/ ctx[11]);
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*showAll*/ 8 && t_value !== (t_value = (/*showAll*/ ctx[3] ? "Shortest" : "All") + "")) set_data(t, t_value);
+			if (dirty & /*showAll*/ 4 && t_value !== (t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
@@ -26005,18 +32785,18 @@ function create_if_block$4(ctx) {
 	};
 }
 
-function create_fragment$g(ctx) {
+function create_fragment$i(ctx) {
 	let span;
 	let div;
 	let t;
-	let each_value = /*trailsToShow*/ ctx[4];
+	let each_value = /*trailsToShow*/ ctx[3];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		each_blocks[i] = create_each_block$8(get_each_context$8(ctx, each_value, i));
 	}
 
-	let if_block = /*sortedTrails*/ ctx[0].length > 1 && create_if_block$4(ctx);
+	let if_block = /*sortedTrails*/ ctx[0].length > 1 && create_if_block$6(ctx);
 
 	return {
 		c() {
@@ -26044,8 +32824,8 @@ function create_fragment$g(ctx) {
 			if (if_block) if_block.m(span, null);
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*settings, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron*/ 118) {
-				each_value = /*trailsToShow*/ ctx[4];
+			if (dirty & /*noPathMessage, trailsToShow, trailSeperator, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 506) {
+				each_value = /*trailsToShow*/ ctx[3];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -26071,7 +32851,7 @@ function create_fragment$g(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$4(ctx);
+					if_block = create_if_block$6(ctx);
 					if_block.c();
 					if_block.m(span, null);
 				}
@@ -26090,40 +32870,39 @@ function create_fragment$g(ctx) {
 	};
 }
 
-function instance$g($$self, $$props, $$invalidate) {
+function instance$i($$self, $$props, $$invalidate) {
 	let trailsToShow;
 	
-	
 	let { sortedTrails } = $$props;
-	let { app } = $$props;
 	let { plugin } = $$props;
-	const { settings } = plugin;
+	const { settings, app } = plugin;
 	const { view } = app.workspace.activeLeaf;
-	let showAll = settings.showAll;
+	let { showAll, noPathMessage, trailSeperator } = settings;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
 	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
-	const click_handler_1 = () => $$invalidate(3, showAll = !showAll);
+	const click_handler_1 = () => $$invalidate(2, showAll = !showAll);
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
-		if ("app" in $$props) $$invalidate(1, app = $$props.app);
-		if ("plugin" in $$props) $$invalidate(2, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(1, plugin = $$props.plugin);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 9) {
-			$$invalidate(4, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
+		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 5) {
+			$$invalidate(3, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
 		}
 	};
 
 	return [
 		sortedTrails,
-		app,
 		plugin,
 		showAll,
 		trailsToShow,
 		settings,
+		app,
 		view,
+		noPathMessage,
+		trailSeperator,
 		click_handler,
 		mouseover_handler,
 		click_handler_1
@@ -26133,8 +32912,8 @@ function instance$g($$self, $$props, $$invalidate) {
 class TrailPath extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-3c1frp-style")) add_css$8();
-		init(this, options, instance$g, create_fragment$g, safe_not_equal, { sortedTrails: 0, app: 1, plugin: 2 });
+		if (!document.getElementById("svelte-3c1frp-style")) add_css$9();
+		init(this, options, instance$i, create_fragment$i, safe_not_equal, { sortedTrails: 0, plugin: 1 });
 	}
 }
 
@@ -26147,7 +32926,7 @@ function getLimitedTrailSub(plugin) {
     }
     else {
         const oppFields = limitTrailCheckboxes
-            .map((field) => { var _a, _b; return (_b = (_a = getOppFields(userHiers, field)) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : fallbackOppField(field, "up"); })
+            .map((field) => { var _a; return (_a = getOppFields(userHiers, field, "up")) === null || _a === void 0 ? void 0 : _a[0]; })
             .filter((field) => field !== undefined);
         subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
     }
@@ -26182,7 +32961,6 @@ function getNextNPrev(plugin, currNode) {
         return null;
     const nextNPrev = blankRealNImplied();
     mainG.forEachEdge(currNode, (k, a, s, t) => {
-        var _a;
         const { dir, field, implied } = a;
         if (dir !== "next" && dir !== "prev")
             return;
@@ -26190,7 +32968,7 @@ function getNextNPrev(plugin, currNode) {
             nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
         }
         else {
-            const oppField = (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir);
+            const oppField = getOppFields(userHiers, field, dir)[0];
             nextNPrev[getOppDir(dir)].implieds.push({
                 field: oppField,
                 to: s,
@@ -26296,27 +33074,22 @@ async function drawTrail(plugin) {
             db.end2G();
             return;
         }
-        const props = { sortedTrails, app, plugin };
-        if (showTrail && sortedTrails.length) {
-            new TrailPath({
-                target: trailDiv,
-                props,
-            });
-        }
-        if (showGrid && sortedTrails.length) {
-            new TrailGrid({
-                target: trailDiv,
-                props,
-            });
-        }
+        const targetProps = {
+            target: trailDiv,
+            props: { sortedTrails, plugin },
+        };
+        if (showTrail && sortedTrails.length)
+            new TrailPath(targetProps);
+        if (showGrid && sortedTrails.length)
+            new TrailGrid(targetProps);
         if (showPrevNext && (next.length || prev.length)) {
             new NextPrev({
                 target: trailDiv,
-                props: { app, plugin, next, prev },
+                props: { plugin, next, prev },
             });
         }
         if (showJuggl && sortedTrails.length) {
-            createJugglTrail(plugin, trailDiv, props.sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
+            createJugglTrail(plugin, trailDiv, sortedTrails, basename, JUGGL_TRAIL_DEFAULTS);
         }
         db.end2G();
     }
@@ -26327,29 +33100,21 @@ async function drawTrail(plugin) {
 }
 
 function getDVMetadataCache(plugin, files) {
-    const { app, db } = plugin;
-    db.startGs("getDVMetadataCache", "dvCaches");
-    const frontms = files.map((file) => {
-        const dvCache = app.plugins.plugins.dataview.api.page(file.path);
-        loglevel.debug(`${file.basename}:`, { dvCache });
-        return dvCache;
-    });
-    db.endGs(2, { frontms });
+    const { db } = plugin;
+    const api = getDVApi(plugin);
+    db.start1G("getDVMetadataCache");
+    const frontms = files.map((file) => api.page(file.path));
+    db.end1G({ frontms });
     return frontms;
 }
 function getObsMetadataCache(plugin, files) {
     const { app, db } = plugin;
-    db.startGs("getObsMetadataCache", "obsCaches");
+    db.start1G("getObsMetadataCache");
     const frontms = files.map((file) => {
-        loglevel.debug(`GetObsMetadataCache: ${file.basename}`);
         const { frontmatter } = app.metadataCache.getFileCache(file);
-        loglevel.debug({ frontmatter });
-        if (frontmatter)
-            return Object.assign({ file }, frontmatter);
-        else
-            return { file };
+        return frontmatter ? Object.assign({ file }, frontmatter) : { file };
     });
-    db.endGs(2, { frontms });
+    db.end1G({ frontms });
     return frontms;
 }
 /**
@@ -26435,9 +33200,15 @@ async function buildMainG(plugin) {
     const mainG = new graphology_umd_min.MultiGraph();
     try {
         const { settings, app, db } = plugin;
+        const { userHiers, CSVPaths, parseJugglLinksWithoutJuggl, hierarchyNotes } = settings;
         db.start2G("initGraphs");
+        if (userHiers.length === 0) {
+            db.end2G();
+            new obsidian.Notice("You do not have any Breadcrumbs hierarchies set up.");
+            return mainG;
+        }
         const files = app.vault.getMarkdownFiles();
-        const dvQ = !!app.plugins.enabledPlugins.has("dataview");
+        const dvQ = app.plugins.enabledPlugins.has("dataview");
         let frontms = dvQ
             ? getDVMetadataCache(plugin, files)
             : getObsMetadataCache(plugin, files);
@@ -26447,62 +33218,32 @@ async function buildMainG(plugin) {
                 ? getDVMetadataCache(plugin, files)
                 : getObsMetadataCache(plugin, files);
         }
-        const { userHiers } = settings;
-        if (userHiers.length === 0) {
-            db.end2G();
-            new obsidian.Notice("You do not have any Breadcrumbs hierarchies set up.");
-            return mainG;
-        }
-        const useCSV = settings.CSVPaths !== "";
-        const CSVRows = useCSV ? await getCSVRows(plugin) : [];
+        const CSVRows = CSVPaths !== "" ? await getCSVRows(plugin) : [];
         const eligableAlts = {};
         BC_ALTS.forEach((alt) => (eligableAlts[alt] = []));
-        function noticeIfBroken(frontm) {
-            const basename = getDVBasename(frontm.file);
-            // @ts-ignore
-            if (frontm[BC_FOLDER_NOTE] === true) {
-                const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
-                new obsidian.Notice(msg);
-                loglevel.warn(msg);
-            }
-            // @ts-ignore
-            if (frontm[BC_LINK_NOTE] === true) {
-                const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
-                new obsidian.Notice(msg);
-                loglevel.warn(msg);
-            }
-            if (frontm["BC-folder-note-up"]) {
-                const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note-up value. Instead of setting the fieldName here, it goes directly into 'BC-folder-note: fieldName'.`;
-                new obsidian.Notice(msg);
-                loglevel.warn(msg);
-            }
-        }
         db.start2G("addFrontmatterToGraph");
-        frontms.forEach((frontm) => {
+        frontms.forEach((page) => {
             BC_ALTS.forEach((alt) => {
-                if (frontm[alt]) {
-                    eligableAlts[alt].push(frontm);
-                }
+                if (page[alt])
+                    eligableAlts[alt].push(page);
             });
-            noticeIfBroken(frontm);
-            const basename = getDVBasename(frontm.file);
-            const sourceOrder = getSourceOrder(frontm);
+            const basename = getDVBasename(page.file);
+            const sourceOrder = getSourceOrder(page);
             iterateHiers(userHiers, (hier, dir, field) => {
-                const values = parseFieldValue(frontm[field]);
+                const values = parseFieldValue(page[field]);
                 values.forEach((target) => {
-                    if ((target.startsWith("<%") && target.endsWith("%>")) ||
-                        (target.startsWith("{{") && target.endsWith("}}")))
+                    if (target.startsWith("<%") || target.startsWith("{{"))
                         return;
                     const targetOrder = getTargetOrder(frontms, target);
                     populateMain(settings, mainG, basename, field, target, sourceOrder, targetOrder);
                 });
-                if (useCSV)
+                if (CSVRows.length)
                     addCSVCrumbs(mainG, CSVRows, dir, field);
             });
         });
         db.end2G();
         // SECTION  Juggl Links
-        const jugglLinks = app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
+        const jugglLinks = app.plugins.plugins.juggl || parseJugglLinksWithoutJuggl
             ? await getJugglLinks(plugin, files)
             : [];
         if (jugglLinks.length)
@@ -26510,15 +33251,11 @@ async function buildMainG(plugin) {
         // !SECTION  Juggl Links
         // SECTION  Hierarchy Notes
         db.start2G("Hierarchy Notes");
-        if (settings.hierarchyNotes[0] !== "") {
-            for (const note of settings.hierarchyNotes) {
+        if (hierarchyNotes.length) {
+            for (const note of hierarchyNotes) {
                 const file = app.metadataCache.getFirstLinkpathDest(note, "");
-                if (file) {
+                if (file)
                     addHNsToGraph(settings, await getHierarchyNoteItems(plugin, file), mainG);
-                }
-                else {
-                    new obsidian.Notice(`${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`);
-                }
             }
         }
         db.end2G();
@@ -26532,10 +33269,7 @@ async function buildMainG(plugin) {
         addTraverseNotesToGraph(plugin, eligableAlts[BC_TRAVERSE_NOTE], mainG, buildObsGraph(app));
         addDendronNotesToGraph(plugin, frontms, mainG);
         db.end1G();
-        files.forEach((file) => {
-            const { basename } = file;
-            addNodesIfNot(mainG, [basename]);
-        });
+        files.forEach((file) => addNodesIfNot(mainG, [file.basename]));
         db.end2G("graphs inited", { mainG });
         return mainG;
     }
@@ -26666,7 +33400,7 @@ async function refreshIndex(plugin) {
 
 /* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
 
-function create_fragment$f(ctx) {
+function create_fragment$h(ctx) {
 	let script;
 	let script_src_value;
 	let t;
@@ -26707,10 +33441,10 @@ function create_fragment$f(ctx) {
 	};
 }
 
-function instance$f($$self, $$props, $$invalidate) {
+function instance$h($$self, $$props, $$invalidate) {
 	let button;
 
-	var initializeKofi = () => {
+	const initializeKofi = () => {
 		kofiwidget2.init("Support Breadcrumbs development!", "#29abe0", "G2G454TZF");
 		$$invalidate(0, button.innerHTML = kofiwidget2.getHTML(), button);
 	};
@@ -26728,7 +33462,7 @@ function instance$f($$self, $$props, $$invalidate) {
 class KoFi extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance$f, create_fragment$f, safe_not_equal, {});
+		init(this, options, instance$h, create_fragment$h, safe_not_equal, {});
 	}
 }
 
@@ -26840,16 +33574,16 @@ function addDendronSettings(plugin, alternativeHierarchyDetails) {
 
 /* src\Components\Checkboxes.svelte generated by Svelte v3.35.0 */
 
-function add_css$7() {
+function add_css$8() {
 	var style = element("style");
-	style.id = "svelte-t4gbbx-style";
-	style.textContent = ".grid.svelte-t4gbbx{display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr))}";
+	style.id = "svelte-d1my4i-style";
+	style.textContent = ".grid.svelte-d1my4i{display:grid;grid-template-columns:repeat(auto-fit, minmax(100px, 1fr))}";
 	append(document.head, style);
 }
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[11] = list[i];
+	child_ctx[12] = list[i];
 	return child_ctx;
 }
 
@@ -26860,7 +33594,7 @@ function create_each_block$7(ctx) {
 	let input;
 	let input_value_value;
 	let t0;
-	let t1_value = /*option*/ ctx[11] + "";
+	let t1_value = /*option*/ ctx[12] + "";
 	let t1;
 	let t2;
 	let mounted;
@@ -26875,7 +33609,7 @@ function create_each_block$7(ctx) {
 			t1 = text(t1_value);
 			t2 = space();
 			attr(input, "type", "checkbox");
-			input.__value = input_value_value = /*option*/ ctx[11];
+			input.__value = input_value_value = /*option*/ ctx[12];
 			input.value = input.__value;
 			/*$$binding_groups*/ ctx[8][0].push(input);
 		},
@@ -26898,7 +33632,7 @@ function create_each_block$7(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*options*/ 1 && input_value_value !== (input_value_value = /*option*/ ctx[11])) {
+			if (dirty & /*options*/ 1 && input_value_value !== (input_value_value = /*option*/ ctx[12])) {
 				input.__value = input_value_value;
 				input.value = input.__value;
 			}
@@ -26907,7 +33641,7 @@ function create_each_block$7(ctx) {
 				input.checked = ~/*selected*/ ctx[1].indexOf(input.__value);
 			}
 
-			if (dirty & /*options*/ 1 && t1_value !== (t1_value = /*option*/ ctx[11] + "")) set_data(t1, t1_value);
+			if (dirty & /*options*/ 1 && t1_value !== (t1_value = /*option*/ ctx[12] + "")) set_data(t1, t1_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
@@ -26918,7 +33652,7 @@ function create_each_block$7(ctx) {
 	};
 }
 
-function create_fragment$e(ctx) {
+function create_fragment$g(ctx) {
 	let div0;
 	let button;
 	let t0;
@@ -26948,7 +33682,7 @@ function create_fragment$e(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div1, "class", "grid svelte-t4gbbx");
+			attr(div1, "class", "grid svelte-d1my4i");
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);
@@ -27006,7 +33740,7 @@ function create_fragment$e(ctx) {
 	};
 }
 
-function instance$e($$self, $$props, $$invalidate) {
+function instance$g($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -27047,16 +33781,14 @@ function instance$e($$self, $$props, $$invalidate) {
 	let { plugin } = $$props;
 	let { settingName } = $$props;
 	let { options } = $$props;
-	let selected = plugin.settings[settingName];
+	const { settings } = plugin;
+	let selected = settings[settingName];
 	let toNone = selected.length === 0 ? false : true;
 
 	function save() {
 		return __awaiter(this, void 0, void 0, function* () {
-			if (plugin.settings[settingName] === undefined) {
-				return console.log(settingName + " not found in BC settings");
-			}
-
-			$$invalidate(4, plugin.settings[settingName] = selected, plugin);
+			if (settings[settingName] === undefined) return console.log(settingName + " not found in BC settings");
+			settings[settingName] = selected;
 			yield plugin.saveSettings();
 			yield refreshIndex(plugin);
 		});
@@ -27074,7 +33806,7 @@ function instance$e($$self, $$props, $$invalidate) {
 		$$invalidate(1, selected);
 	}
 
-	const change_handler = async () => save();
+	const change_handler = async () => await save();
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
@@ -27105,8 +33837,8 @@ function instance$e($$self, $$props, $$invalidate) {
 class Checkboxes extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-t4gbbx-style")) add_css$7();
-		init(this, options, instance$e, create_fragment$e, safe_not_equal, { plugin: 4, settingName: 5, options: 0 });
+		if (!document.getElementById("svelte-d1my4i-style")) add_css$8();
+		init(this, options, instance$g, create_fragment$g, safe_not_equal, { plugin: 4, settingName: 5, options: 0 });
 	}
 }
 
@@ -27285,7 +34017,7 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
 
 /* node_modules\svelte-icons\components\IconBase.svelte generated by Svelte v3.35.0 */
 
-function add_css$6() {
+function add_css$7() {
 	var style = element("style");
 	style.id = "svelte-c8tyih-style";
 	style.textContent = "svg.svelte-c8tyih{stroke:currentColor;fill:currentColor;stroke-width:0;width:100%;height:auto;max-height:100%}";
@@ -27293,7 +34025,7 @@ function add_css$6() {
 }
 
 // (18:2) {#if title}
-function create_if_block$3(ctx) {
+function create_if_block$5(ctx) {
 	let title_1;
 	let t;
 
@@ -27315,11 +34047,11 @@ function create_if_block$3(ctx) {
 	};
 }
 
-function create_fragment$d(ctx) {
+function create_fragment$f(ctx) {
 	let svg;
 	let if_block_anchor;
 	let current;
-	let if_block = /*title*/ ctx[0] && create_if_block$3(ctx);
+	let if_block = /*title*/ ctx[0] && create_if_block$5(ctx);
 	const default_slot_template = /*#slots*/ ctx[3].default;
 	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[2], null);
 
@@ -27349,7 +34081,7 @@ function create_fragment$d(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$3(ctx);
+					if_block = create_if_block$5(ctx);
 					if_block.c();
 					if_block.m(svg, if_block_anchor);
 				}
@@ -27385,7 +34117,7 @@ function create_fragment$d(ctx) {
 	};
 }
 
-function instance$d($$self, $$props, $$invalidate) {
+function instance$f($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
 	let { title = null } = $$props;
 	let { viewBox } = $$props;
@@ -27402,8 +34134,8 @@ function instance$d($$self, $$props, $$invalidate) {
 class IconBase extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-c8tyih-style")) add_css$6();
-		init(this, options, instance$d, create_fragment$d, safe_not_equal, { title: 0, viewBox: 1 });
+		if (!document.getElementById("svelte-c8tyih-style")) add_css$7();
+		init(this, options, instance$f, create_fragment$f, safe_not_equal, { title: 0, viewBox: 1 });
 	}
 }
 
@@ -27426,13 +34158,183 @@ function create_default_slot$5(ctx) {
 	};
 }
 
-function create_fragment$c(ctx) {
+function create_fragment$e(ctx) {
 	let iconbase;
 	let current;
 	const iconbase_spread_levels = [{ viewBox: "0 0 512 512" }, /*$$props*/ ctx[0]];
 
 	let iconbase_props = {
 		$$slots: { default: [create_default_slot$5] },
+		$$scope: { ctx }
+	};
+
+	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
+		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
+	}
+
+	iconbase = new IconBase({ props: iconbase_props });
+
+	return {
+		c() {
+			create_component(iconbase.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(iconbase, target, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const iconbase_changes = (dirty & /*$$props*/ 1)
+			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
+			: {};
+
+			if (dirty & /*$$scope*/ 2) {
+				iconbase_changes.$$scope = { dirty, ctx };
+			}
+
+			iconbase.$set(iconbase_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(iconbase.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(iconbase.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(iconbase, detaching);
+		}
+	};
+}
+
+function instance$e($$self, $$props, $$invalidate) {
+	$$self.$$set = $$new_props => {
+		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+	};
+
+	$$props = exclude_internal_props($$props);
+	return [$$props];
+}
+
+class FaListUl extends SvelteComponent {
+	constructor(options) {
+		super();
+		init(this, options, instance$e, create_fragment$e, safe_not_equal, {});
+	}
+}
+
+/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
+
+function create_default_slot$4(ctx) {
+	let path;
+
+	return {
+		c() {
+			path = svg_element("path");
+			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
+		},
+		m(target, anchor) {
+			insert(target, path, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(path);
+		}
+	};
+}
+
+function create_fragment$d(ctx) {
+	let iconbase;
+	let current;
+	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
+
+	let iconbase_props = {
+		$$slots: { default: [create_default_slot$4] },
+		$$scope: { ctx }
+	};
+
+	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
+		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
+	}
+
+	iconbase = new IconBase({ props: iconbase_props });
+
+	return {
+		c() {
+			create_component(iconbase.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(iconbase, target, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const iconbase_changes = (dirty & /*$$props*/ 1)
+			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
+			: {};
+
+			if (dirty & /*$$scope*/ 2) {
+				iconbase_changes.$$scope = { dirty, ctx };
+			}
+
+			iconbase.$set(iconbase_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(iconbase.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(iconbase.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(iconbase, detaching);
+		}
+	};
+}
+
+function instance$d($$self, $$props, $$invalidate) {
+	$$self.$$set = $$new_props => {
+		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
+	};
+
+	$$props = exclude_internal_props($$props);
+	return [$$props];
+}
+
+class FaPlus extends SvelteComponent {
+	constructor(options) {
+		super();
+		init(this, options, instance$d, create_fragment$d, safe_not_equal, {});
+	}
+}
+
+/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
+
+function create_default_slot$3(ctx) {
+	let path;
+
+	return {
+		c() {
+			path = svg_element("path");
+			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
+		},
+		m(target, anchor) {
+			insert(target, path, anchor);
+		},
+		d(detaching) {
+			if (detaching) detach(path);
+		}
+	};
+}
+
+function create_fragment$c(ctx) {
+	let iconbase;
+	let current;
+	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
+
+	let iconbase_props = {
+		$$slots: { default: [create_default_slot$3] },
 		$$scope: { ctx }
 	};
 
@@ -27485,189 +34387,19 @@ function instance$c($$self, $$props, $$invalidate) {
 	return [$$props];
 }
 
-class FaListUl extends SvelteComponent {
+class FaRegTrashAlt extends SvelteComponent {
 	constructor(options) {
 		super();
 		init(this, options, instance$c, create_fragment$c, safe_not_equal, {});
 	}
 }
 
-/* node_modules\svelte-icons\fa\FaPlus.svelte generated by Svelte v3.35.0 */
-
-function create_default_slot$4(ctx) {
-	let path;
-
-	return {
-		c() {
-			path = svg_element("path");
-			attr(path, "d", "M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z");
-		},
-		m(target, anchor) {
-			insert(target, path, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(path);
-		}
-	};
-}
-
-function create_fragment$b(ctx) {
-	let iconbase;
-	let current;
-	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
-
-	let iconbase_props = {
-		$$slots: { default: [create_default_slot$4] },
-		$$scope: { ctx }
-	};
-
-	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
-		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
-	}
-
-	iconbase = new IconBase({ props: iconbase_props });
-
-	return {
-		c() {
-			create_component(iconbase.$$.fragment);
-		},
-		m(target, anchor) {
-			mount_component(iconbase, target, anchor);
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			const iconbase_changes = (dirty & /*$$props*/ 1)
-			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
-			: {};
-
-			if (dirty & /*$$scope*/ 2) {
-				iconbase_changes.$$scope = { dirty, ctx };
-			}
-
-			iconbase.$set(iconbase_changes);
-		},
-		i(local) {
-			if (current) return;
-			transition_in(iconbase.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(iconbase.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			destroy_component(iconbase, detaching);
-		}
-	};
-}
-
-function instance$b($$self, $$props, $$invalidate) {
-	$$self.$$set = $$new_props => {
-		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-	};
-
-	$$props = exclude_internal_props($$props);
-	return [$$props];
-}
-
-class FaPlus extends SvelteComponent {
-	constructor(options) {
-		super();
-		init(this, options, instance$b, create_fragment$b, safe_not_equal, {});
-	}
-}
-
-/* node_modules\svelte-icons\fa\FaRegTrashAlt.svelte generated by Svelte v3.35.0 */
-
-function create_default_slot$3(ctx) {
-	let path;
-
-	return {
-		c() {
-			path = svg_element("path");
-			attr(path, "d", "M268 416h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12zM432 80h-82.41l-34-56.7A48 48 0 0 0 274.41 0H173.59a48 48 0 0 0-41.16 23.3L98.41 80H16A16 16 0 0 0 0 96v16a16 16 0 0 0 16 16h16v336a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128h16a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16zM171.84 50.91A6 6 0 0 1 177 48h94a6 6 0 0 1 5.15 2.91L293.61 80H154.39zM368 464H80V128h288zm-212-48h24a12 12 0 0 0 12-12V188a12 12 0 0 0-12-12h-24a12 12 0 0 0-12 12v216a12 12 0 0 0 12 12z");
-		},
-		m(target, anchor) {
-			insert(target, path, anchor);
-		},
-		d(detaching) {
-			if (detaching) detach(path);
-		}
-	};
-}
-
-function create_fragment$a(ctx) {
-	let iconbase;
-	let current;
-	const iconbase_spread_levels = [{ viewBox: "0 0 448 512" }, /*$$props*/ ctx[0]];
-
-	let iconbase_props = {
-		$$slots: { default: [create_default_slot$3] },
-		$$scope: { ctx }
-	};
-
-	for (let i = 0; i < iconbase_spread_levels.length; i += 1) {
-		iconbase_props = assign(iconbase_props, iconbase_spread_levels[i]);
-	}
-
-	iconbase = new IconBase({ props: iconbase_props });
-
-	return {
-		c() {
-			create_component(iconbase.$$.fragment);
-		},
-		m(target, anchor) {
-			mount_component(iconbase, target, anchor);
-			current = true;
-		},
-		p(ctx, [dirty]) {
-			const iconbase_changes = (dirty & /*$$props*/ 1)
-			? get_spread_update(iconbase_spread_levels, [iconbase_spread_levels[0], get_spread_object(/*$$props*/ ctx[0])])
-			: {};
-
-			if (dirty & /*$$scope*/ 2) {
-				iconbase_changes.$$scope = { dirty, ctx };
-			}
-
-			iconbase.$set(iconbase_changes);
-		},
-		i(local) {
-			if (current) return;
-			transition_in(iconbase.$$.fragment, local);
-			current = true;
-		},
-		o(local) {
-			transition_out(iconbase.$$.fragment, local);
-			current = false;
-		},
-		d(detaching) {
-			destroy_component(iconbase, detaching);
-		}
-	};
-}
-
-function instance$a($$self, $$props, $$invalidate) {
-	$$self.$$set = $$new_props => {
-		$$invalidate(0, $$props = assign(assign({}, $$props), exclude_internal_props($$new_props)));
-	};
-
-	$$props = exclude_internal_props($$props);
-	return [$$props];
-}
-
-class FaRegTrashAlt extends SvelteComponent {
-	constructor(options) {
-		super();
-		init(this, options, instance$a, create_fragment$a, safe_not_equal, {});
-	}
-}
-
 /* src\Components\UserHierarchies.svelte generated by Svelte v3.35.0 */
 
-function add_css$5() {
+function add_css$6() {
 	var style = element("style");
-	style.id = "svelte-5y4abu-style";
-	style.textContent = "label.BC-Arrow-Label.svelte-5y4abu.svelte-5y4abu{display:inline-block;width:20px !important}div.GA-Buttons.svelte-5y4abu.svelte-5y4abu{padding-bottom:5px}details.BC-Hier-Details.svelte-5y4abu.svelte-5y4abu{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-5y4abu summary.svelte-5y4abu::marker{font-size:10px}.BC-Hier-Details.svelte-5y4abu summary button.svelte-5y4abu{float:right}.icon.svelte-5y4abu.svelte-5y4abu{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
+	style.id = "svelte-1e9on6f-style";
+	style.textContent = "label.BC-Arrow-Label.svelte-1e9on6f.svelte-1e9on6f{display:inline-block;width:20px !important}div.BC-Buttons.svelte-1e9on6f.svelte-1e9on6f{padding-bottom:5px}details.BC-Hier-Details.svelte-1e9on6f.svelte-1e9on6f{border:1px solid var(--background-modifier-border);border-radius:10px;padding:10px 5px 10px 10px;margin-bottom:15px}.BC-Hier-Details.svelte-1e9on6f summary.svelte-1e9on6f::marker{font-size:10px}.BC-Hier-Details.svelte-1e9on6f summary button.svelte-1e9on6f{float:right}.icon.svelte-1e9on6f.svelte-1e9on6f{color:var(--text-normal);display:inline-block;padding-top:3px;width:17px;height:17px}";
 	append(document.head, style);
 }
 
@@ -27684,7 +34416,7 @@ function get_each_context_1$5(ctx, list, i) {
 	return child_ctx;
 }
 
-// (94:6) {#each DIRECTIONS as dir}
+// (100:6) {#each DIRECTIONS as dir}
 function create_each_block_1$5(ctx) {
 	let div;
 	let label;
@@ -27709,7 +34441,7 @@ function create_each_block_1$5(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			input = element("input");
-			attr(label, "class", "BC-Arrow-Label svelte-5y4abu");
+			attr(label, "class", "BC-Arrow-Label svelte-1e9on6f");
 			attr(label, "for", label_for_value = /*dir*/ ctx[15]);
 			attr(input, "type", "text");
 			attr(input, "size", "20");
@@ -27807,14 +34539,14 @@ function create_each_block$6(ctx) {
 
 			t8 = space();
 			attr(button0, "aria-label", "Swap with Hierarchy Above");
-			attr(button0, "class", "svelte-5y4abu");
+			attr(button0, "class", "svelte-1e9on6f");
 			attr(button1, "aria-label", "Swap with Hierarchy Below");
-			attr(button1, "class", "svelte-5y4abu");
+			attr(button1, "class", "svelte-1e9on6f");
 			attr(button2, "aria-label", "Remove Hierarchy");
-			attr(button2, "class", "svelte-5y4abu");
-			attr(span, "class", "GA-Buttons");
-			attr(summary, "class", "svelte-5y4abu");
-			attr(details, "class", "BC-Hier-Details svelte-5y4abu");
+			attr(button2, "class", "svelte-1e9on6f");
+			attr(span, "class", "BC-Buttons");
+			attr(summary, "class", "svelte-1e9on6f");
+			attr(details, "class", "BC-Hier-Details svelte-1e9on6f");
 		},
 		m(target, anchor) {
 			insert(target, details, anchor);
@@ -27881,7 +34613,7 @@ function create_each_block$6(ctx) {
 	};
 }
 
-function create_fragment$9(ctx) {
+function create_fragment$b(ctx) {
 	let div4;
 	let div3;
 	let button0;
@@ -27930,13 +34662,13 @@ function create_fragment$9(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div0, "class", "icon svelte-5y4abu");
+			attr(div0, "class", "icon svelte-1e9on6f");
 			attr(button0, "aria-label", "Add New Hierarchy");
-			attr(div1, "class", "icon svelte-5y4abu");
+			attr(div1, "class", "icon svelte-1e9on6f");
 			attr(button1, "aria-label", "Reset All Hierarchies");
-			attr(div2, "class", "icon svelte-5y4abu");
+			attr(div2, "class", "icon svelte-1e9on6f");
 			attr(button2, "aria-label", "Show Hierarchies");
-			attr(div3, "class", "GA-Buttons svelte-5y4abu");
+			attr(div3, "class", "BC-Buttons svelte-1e9on6f");
 		},
 		m(target, anchor) {
 			insert(target, div4, anchor);
@@ -28021,7 +34753,7 @@ function create_fragment$9(ctx) {
 
 const func_1 = dirFields => `(${dirFields})`;
 
-function instance$9($$self, $$props, $$invalidate) {
+function instance$b($$self, $$props, $$invalidate) {
 	var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
 		function adopt(value) {
 			return value instanceof P
@@ -28126,8 +34858,8 @@ function instance$9($$self, $$props, $$invalidate) {
 class UserHierarchies extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-5y4abu-style")) add_css$5();
-		init(this, options, instance$9, create_fragment$9, safe_not_equal, { plugin: 2 });
+		if (!document.getElementById("svelte-1e9on6f-style")) add_css$6();
+		init(this, options, instance$b, create_fragment$b, safe_not_equal, { plugin: 2 });
 	}
 }
 
@@ -28147,47 +34879,56 @@ function addHierarchySettings(plugin, containerEl) {
 
 /* src\Components\Lists.svelte generated by Svelte v3.35.0 */
 
-function add_css$4() {
+function add_css$5() {
 	var style = element("style");
-	style.id = "svelte-1dlhare-style";
-	style.textContent = "summary.hier-summary.svelte-1dlhare{color:var(--text-title-h2);font-size:larger}summary.svelte-1dlhare{color:var(--text-title-h3)}h5.BC-header.svelte-1dlhare{color:var(--text-title-h5)}.markdown-preview-view.svelte-1dlhare{padding-left:10px}.internal-link.is-unresolved.svelte-1dlhare{color:var(--text-muted)}";
+	style.id = "svelte-1fwbghe-style";
+	style.textContent = "summary.hier-summary.svelte-1fwbghe{color:var(--text-title-h2);font-size:larger}summary.svelte-1fwbghe{color:var(--text-title-h3)}h5.BC-header.svelte-1fwbghe{color:var(--text-title-h5)}.markdown-preview-view.svelte-1fwbghe{padding-left:10px}.internal-link.is-unresolved.svelte-1fwbghe{color:var(--text-muted)}";
 	append(document.head, style);
 }
 
 function get_each_context$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[16] = list[i];
+	child_ctx[17] = list[i].field;
+	child_ctx[18] = list[i].impliedItems;
+	child_ctx[19] = list[i].realItems;
 	return child_ctx;
 }
 
 function get_each_context_2$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[19] = list[i];
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
+	child_ctx[26] = list[i].parent;
 	return child_ctx;
 }
 
 function get_each_context_3$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
 	return child_ctx;
 }
 
-// (26:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
-function create_if_block$2(ctx) {
+// (26:8) {#if realItems.length || (showImpliedRelations && impliedItems.length)}
+function create_if_block$4(ctx) {
 	let details;
 	let summary;
-	let t0_value = /*square*/ ctx[16].field + "";
+	let t0_value = /*field*/ ctx[17] + "";
 	let t0;
 	let t1;
 	let t2;
-	let if_block0 = /*square*/ ctx[16].realItems.length && create_if_block_3$1(ctx);
-	let if_block1 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$2(ctx);
+	let if_block0 = /*realItems*/ ctx[19].length && create_if_block_3$1(ctx);
+	let if_block1 = /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length && create_if_block_1$2(ctx);
 
 	return {
 		c() {
@@ -28198,7 +34939,7 @@ function create_if_block$2(ctx) {
 			if (if_block0) if_block0.c();
 			t2 = space();
 			if (if_block1) if_block1.c();
-			attr(summary, "class", "svelte-1dlhare");
+			attr(summary, "class", "svelte-1fwbghe");
 			details.open = true;
 			attr(details, "class", "BC-details");
 		},
@@ -28212,9 +34953,9 @@ function create_if_block$2(ctx) {
 			if (if_block1) if_block1.m(details, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[16].field + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = /*field*/ ctx[17] + "")) set_data(t0, t0_value);
 
-			if (/*square*/ ctx[16].realItems.length) {
+			if (/*realItems*/ ctx[19].length) {
 				if (if_block0) {
 					if_block0.p(ctx, dirty);
 				} else {
@@ -28227,7 +34968,7 @@ function create_if_block$2(ctx) {
 				if_block0 = null;
 			}
 
-			if (/*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
+			if (/*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -28248,12 +34989,12 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (29:12) {#if square.realItems.length}
+// (29:12) {#if realItems.length}
 function create_if_block_3$1(ctx) {
 	let t;
 	let ol;
 	let if_block = /*showRelationType*/ ctx[8] && create_if_block_4$1();
-	let each_value_3 = /*square*/ ctx[16].realItems;
+	let each_value_3 = /*realItems*/ ctx[19];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -28280,8 +35021,8 @@ function create_if_block_3$1(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
-				each_value_3 = /*square*/ ctx[16].realItems;
+			if (dirty & /*hierSquares, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
+				each_value_3 = /*realItems*/ ctx[19];
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -28320,7 +35061,7 @@ function create_if_block_4$1(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Real";
-			attr(h5, "class", "BC-header svelte-1dlhare");
+			attr(h5, "class", "BC-header svelte-1fwbghe");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -28331,11 +35072,11 @@ function create_if_block_4$1(ctx) {
 	};
 }
 
-// (35:16) {#each square.realItems as realItem}
+// (35:16) {#each realItems as { alt, cls, implied, to }}
 function create_each_block_3$2(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "";
+	let t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -28343,11 +35084,11 @@ function create_each_block_3$2(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*realItem*/ ctx[22], ...args);
+		return /*click_handler*/ ctx[9](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*realItem*/ ctx[22], ...args);
+		return /*mouseover_handler*/ ctx[10](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -28356,7 +35097,7 @@ function create_each_block_3$2(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"));
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1fwbghe"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -28375,9 +35116,9 @@ function create_each_block_3$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-1dlhare"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1fwbghe"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -28389,13 +35130,13 @@ function create_each_block_3$2(ctx) {
 	};
 }
 
-// (50:12) {#if showImpliedRelations && square.impliedItems.length}
+// (49:12) {#if showImpliedRelations && impliedItems.length}
 function create_if_block_1$2(ctx) {
 	let t;
 	let ol;
 	let ol_start_value;
 	let if_block = /*showRelationType*/ ctx[8] && create_if_block_2$1();
-	let each_value_2 = /*square*/ ctx[16].impliedItems;
+	let each_value_2 = /*impliedItems*/ ctx[18];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -28412,7 +35153,7 @@ function create_if_block_1$2(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "start", ol_start_value = /*square*/ ctx[16].realItems.length + 1);
+			attr(ol, "start", ol_start_value = /*realItems*/ ctx[19].length + 1);
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -28424,8 +35165,8 @@ function create_if_block_1$2(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*treatCurrNodeAsImpliedSibling, filteredSquaresArr, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
-				each_value_2 = /*square*/ ctx[16].impliedItems;
+			if (dirty & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
+				each_value_2 = /*impliedItems*/ ctx[18];
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -28447,7 +35188,7 @@ function create_if_block_1$2(ctx) {
 				each_blocks.length = each_value_2.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[16].realItems.length + 1)) {
+			if (dirty & /*hierSquares*/ 1 && ol_start_value !== (ol_start_value = /*realItems*/ ctx[19].length + 1)) {
 				attr(ol, "start", ol_start_value);
 			}
 		},
@@ -28460,7 +35201,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (51:14) {#if showRelationType}
+// (50:14) {#if showRelationType}
 function create_if_block_2$1(ctx) {
 	let h5;
 
@@ -28468,7 +35209,7 @@ function create_if_block_2$1(ctx) {
 		c() {
 			h5 = element("h5");
 			h5.textContent = "Implied";
-			attr(h5, "class", "BC-header svelte-1dlhare");
+			attr(h5, "class", "BC-header svelte-1fwbghe");
 		},
 		m(target, anchor) {
 			insert(target, h5, anchor);
@@ -28479,11 +35220,11 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (56:16) {#each square.impliedItems as impliedItem}
+// (55:16) {#each impliedItems as { alt, cls, implied, to, parent }}
 function create_each_block_2$2(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "";
+	let t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
@@ -28493,11 +35234,11 @@ function create_each_block_2$2(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[11](/*impliedItem*/ ctx[19], ...args);
+		return /*click_handler_1*/ ctx[11](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler_1(...args) {
-		return /*mouseover_handler_1*/ ctx[12](/*impliedItem*/ ctx[19], ...args);
+		return /*mouseover_handler_1*/ ctx[12](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -28505,11 +35246,11 @@ function create_each_block_2$2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare"));
-			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent ?? "");
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1fwbghe"));
+			attr(div, "aria-label", div_aria_label_value = /*parent*/ ctx[26] ?? "");
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
-			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
 			: ""));
 		},
@@ -28529,17 +35270,17 @@ function create_each_block_2$2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
+			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-1dlhare"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1fwbghe"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[19].parent ?? "")) {
+			if (dirty & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*parent*/ ctx[26] ?? "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
-			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			if (dirty & /*hierSquares, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
 			: ""))) {
 				attr(li, "class", li_class_value);
@@ -28553,10 +35294,10 @@ function create_each_block_2$2(ctx) {
 	};
 }
 
-// (25:6) {#each squares as square}
+// (25:6) {#each squares as { field, impliedItems, realItems }}
 function create_each_block_1$4(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$2(ctx);
+	let if_block = (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -28568,11 +35309,11 @@ function create_each_block_1$4(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
+			if (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$2(ctx);
+					if_block = create_if_block$4(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -28588,15 +35329,15 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (19:2) {#each filteredSquaresArr as squares}
+// (19:2) {#each hierSquares as squares}
 function create_each_block$5(ctx) {
 	let details;
 	let summary;
-	let t0_value = /*squares*/ ctx[13].map(func).join(", ") + "";
+	let t0_value = /*squares*/ ctx[14].map(func).join(", ") + "";
 	let t0;
 	let t1;
 	let t2;
-	let each_value_1 = /*squares*/ ctx[13];
+	let each_value_1 = /*squares*/ ctx[14];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -28615,7 +35356,7 @@ function create_each_block$5(ctx) {
 			}
 
 			t2 = space();
-			attr(summary, "class", "hier-summary svelte-1dlhare");
+			attr(summary, "class", "hier-summary svelte-1fwbghe");
 			details.open = true;
 		},
 		m(target, anchor) {
@@ -28631,10 +35372,10 @@ function create_each_block$5(ctx) {
 			append(details, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[13].map(func).join(", ") + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = /*squares*/ ctx[14].map(func).join(", ") + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
-				each_value_1 = /*squares*/ ctx[13];
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value_1 = /*squares*/ ctx[14];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -28663,10 +35404,10 @@ function create_each_block$5(ctx) {
 	};
 }
 
-function create_fragment$8(ctx) {
+function create_fragment$a(ctx) {
 	let div;
 	let div_class_value;
-	let each_value = /*filteredSquaresArr*/ ctx[0];
+	let each_value = /*hierSquares*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -28681,9 +35422,7 @@ function create_fragment$8(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", div_class_value = "BC-list markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
-			? ""
-			: "BC-empty-view") + " svelte-1dlhare");
+			attr(div, "class", div_class_value = "BC-list markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1fwbghe");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -28693,8 +35432,8 @@ function create_fragment$8(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
-				each_value = /*filteredSquaresArr*/ ctx[0];
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value = /*hierSquares*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -28716,9 +35455,7 @@ function create_fragment$8(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "BC-list markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
-			? ""
-			: "BC-empty-view") + " svelte-1dlhare")) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "BC-list markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1fwbghe")) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -28733,35 +35470,33 @@ function create_fragment$8(ctx) {
 
 const func = square => square.field;
 
-function instance$8($$self, $$props, $$invalidate) {
+function instance$a($$self, $$props, $$invalidate) {
 	
 	
 	
-	let { filteredSquaresArr } = $$props;
+	let { hierSquares } = $$props;
 	let { currFile } = $$props;
-	let { settings } = $$props;
 	let { matrixView } = $$props;
-	let { app } = $$props;
+	const { plugin } = matrixView;
+	const { app, settings } = plugin;
 	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, e);
-	const mouseover_handler = (realItem, e) => hoverPreview(e, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, e);
-	const mouseover_handler_1 = (impliedItem, e) => hoverPreview(e, matrixView, impliedItem.to);
+	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler = (to, e) => hoverPreview(e, matrixView, to);
+	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler_1 = (to, e) => hoverPreview(e, matrixView, to);
 
 	$$self.$$set = $$props => {
-		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
+		if ("hierSquares" in $$props) $$invalidate(0, hierSquares = $$props.hierSquares);
 		if ("currFile" in $$props) $$invalidate(1, currFile = $$props.currFile);
-		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
-		if ("matrixView" in $$props) $$invalidate(3, matrixView = $$props.matrixView);
-		if ("app" in $$props) $$invalidate(4, app = $$props.app);
+		if ("matrixView" in $$props) $$invalidate(2, matrixView = $$props.matrixView);
 	};
 
 	return [
-		filteredSquaresArr,
+		hierSquares,
 		currFile,
-		settings,
 		matrixView,
 		app,
+		settings,
 		showImpliedRelations,
 		rlLeaf,
 		treatCurrNodeAsImpliedSibling,
@@ -28776,64 +35511,71 @@ function instance$8($$self, $$props, $$invalidate) {
 class Lists extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1dlhare-style")) add_css$4();
+		if (!document.getElementById("svelte-1fwbghe-style")) add_css$5();
 
-		init(this, options, instance$8, create_fragment$8, safe_not_equal, {
-			filteredSquaresArr: 0,
+		init(this, options, instance$a, create_fragment$a, safe_not_equal, {
+			hierSquares: 0,
 			currFile: 1,
-			settings: 2,
-			matrixView: 3,
-			app: 4
+			matrixView: 2
 		});
 	}
 }
 
 /* src\Components\Matrix.svelte generated by Svelte v3.35.0 */
 
-function add_css$3() {
+function add_css$4() {
 	var style = element("style");
-	style.id = "svelte-sp0k97-style";
-	style.textContent = "div.BC-Matrix.svelte-sp0k97.svelte-sp0k97{padding:5px}div.BC-Matrix.svelte-sp0k97>div.svelte-sp0k97{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-sp0k97.svelte-sp0k97{border:1px solid var(--background-modifier-border)}div.BC-Matrix-headers.svelte-sp0k97.svelte-sp0k97{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-sp0k97.svelte-sp0k97{margin:2px;padding:0px 10px}ol.svelte-sp0k97.svelte-sp0k97{margin:3px;padding-left:30px}";
+	style.id = "svelte-1pfkp12-style";
+	style.textContent = "div.BC-Matrix.svelte-1pfkp12.svelte-1pfkp12{padding:5px}div.BC-Matrix.svelte-1pfkp12>div.svelte-1pfkp12{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-1pfkp12.svelte-1pfkp12{border:1px solid var(--background-modifier-border)}div.BC-Matrix-headers.svelte-1pfkp12.svelte-1pfkp12{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-1pfkp12.svelte-1pfkp12{margin:2px;padding:0px 10px}ol.svelte-1pfkp12.svelte-1pfkp12{margin:3px;padding-left:30px}";
 	append(document.head, style);
 }
 
 function get_each_context$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[16] = list[i];
+	child_ctx[17] = list[i].field;
+	child_ctx[18] = list[i].impliedItems;
+	child_ctx[19] = list[i].realItems;
 	return child_ctx;
 }
 
 function get_each_context_2$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[19] = list[i];
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
+	child_ctx[26] = list[i].parent;
 	return child_ctx;
 }
 
 function get_each_context_3$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[22] = list[i];
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
 	return child_ctx;
 }
 
-// (22:8) {#if square.realItems.length || (showImpliedRelations && square.impliedItems.length)}
-function create_if_block$1(ctx) {
+// (22:8) {#if realItems.length || (showImpliedRelations && impliedItems.length)}
+function create_if_block$3(ctx) {
 	let div1;
 	let div0;
 	let h4;
-	let t0_value = /*square*/ ctx[16].field + "";
+	let t0_value = /*field*/ ctx[17] + "";
 	let t0;
 	let t1;
 	let t2;
 	let t3;
 	let if_block0 = /*showRelationType*/ ctx[8] && create_if_block_5(ctx);
-	let if_block1 = /*square*/ ctx[16].realItems.length && create_if_block_4(ctx);
-	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length && create_if_block_1$1(ctx);
+	let if_block1 = /*realItems*/ ctx[19].length && create_if_block_4(ctx);
+	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length && create_if_block_1$1(ctx);
 
 	return {
 		c() {
@@ -28847,9 +35589,9 @@ function create_if_block$1(ctx) {
 			if (if_block1) if_block1.c();
 			t3 = space();
 			if (if_block2) if_block2.c();
-			attr(h4, "class", "BC-Matrix-header svelte-sp0k97");
-			attr(div0, "class", "BC-Matrix-headers svelte-sp0k97");
-			attr(div1, "class", "BC-Matrix-square svelte-sp0k97");
+			attr(h4, "class", "BC-Matrix-header svelte-1pfkp12");
+			attr(div0, "class", "BC-Matrix-headers svelte-1pfkp12");
+			attr(div1, "class", "BC-Matrix-square svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, div1, anchor);
@@ -28864,10 +35606,10 @@ function create_if_block$1(ctx) {
 			if (if_block2) if_block2.m(div1, null);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t0_value !== (t0_value = /*square*/ ctx[16].field + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = /*field*/ ctx[17] + "")) set_data(t0, t0_value);
 			if (/*showRelationType*/ ctx[8]) if_block0.p(ctx, dirty);
 
-			if (/*square*/ ctx[16].realItems.length) {
+			if (/*realItems*/ ctx[19].length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -28880,7 +35622,7 @@ function create_if_block$1(ctx) {
 				if_block1 = null;
 			}
 
-			if (/*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
+			if (/*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block2) {
 					if_block2.p(ctx, dirty);
 				} else {
@@ -28905,21 +35647,21 @@ function create_if_block$1(ctx) {
 // (27:14) {#if showRelationType}
 function create_if_block_5(ctx) {
 	let h6;
-	let t_value = (/*square*/ ctx[16].realItems.length ? "Real" : "Implied") + "";
+	let t_value = (/*realItems*/ ctx[19].length ? "Real" : "Implied") + "";
 	let t;
 
 	return {
 		c() {
 			h6 = element("h6");
 			t = text(t_value);
-			attr(h6, "class", "BC-Matrix-header svelte-sp0k97");
+			attr(h6, "class", "BC-Matrix-header svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
 			append(h6, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr*/ 1 && t_value !== (t_value = (/*square*/ ctx[16].realItems.length ? "Real" : "Implied") + "")) set_data(t, t_value);
+			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*realItems*/ ctx[19].length ? "Real" : "Implied") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(h6);
@@ -28927,10 +35669,10 @@ function create_if_block_5(ctx) {
 	};
 }
 
-// (33:12) {#if square.realItems.length}
+// (33:12) {#if realItems.length}
 function create_if_block_4(ctx) {
 	let ol;
-	let each_value_3 = /*square*/ ctx[16].realItems;
+	let each_value_3 = /*realItems*/ ctx[19];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -28945,7 +35687,7 @@ function create_if_block_4(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "svelte-sp0k97");
+			attr(ol, "class", "svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, ol, anchor);
@@ -28955,8 +35697,8 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
-				each_value_3 = /*square*/ ctx[16].realItems;
+			if (dirty & /*hierSquares, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 29) {
+				each_value_3 = /*realItems*/ ctx[19];
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -28985,11 +35727,11 @@ function create_if_block_4(ctx) {
 	};
 }
 
-// (35:16) {#each square.realItems as realItem}
+// (35:16) {#each realItems as { alt, cls, implied, to }}
 function create_each_block_3$1(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "";
+	let t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t0;
 	let div_class_value;
 	let t1;
@@ -28997,11 +35739,11 @@ function create_each_block_3$1(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*realItem*/ ctx[22], ...args);
+		return /*click_handler*/ ctx[9](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*realItem*/ ctx[22], ...args);
+		return /*mouseover_handler*/ ctx[10](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -29010,7 +35752,7 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"));
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -29029,9 +35771,9 @@ function create_each_block_3$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 5 && t0_value !== (t0_value = (/*realItem*/ ctx[22].alt ?? dropPathNDendron(/*realItem*/ ctx[22].to, /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*realItem*/ ctx[22].cls + " " + (/*realItem*/ ctx[22].implied ?? "") + " svelte-sp0k97"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -29043,7 +35785,7 @@ function create_each_block_3$1(ctx) {
 	};
 }
 
-// (50:12) {#if showImpliedRelations && square.impliedItems.length}
+// (50:12) {#if showImpliedRelations && impliedItems.length}
 function create_if_block_1$1(ctx) {
 	let div;
 	let h4;
@@ -29051,8 +35793,8 @@ function create_if_block_1$1(ctx) {
 	let t1;
 	let ol;
 	let ol_start_value;
-	let if_block = /*square*/ ctx[16].impliedItems.length && create_if_block_2(ctx);
-	let each_value_2 = /*square*/ ctx[16].impliedItems;
+	let if_block = /*impliedItems*/ ctx[18].length && create_if_block_2(ctx);
+	let each_value_2 = /*impliedItems*/ ctx[18];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -29072,10 +35814,10 @@ function create_if_block_1$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(h4, "class", "BC-Matrix-header svelte-sp0k97");
-			attr(div, "class", "BC-Matrix-headers svelte-sp0k97");
-			attr(ol, "start", ol_start_value = /*square*/ ctx[16].realItems.length + 1);
-			attr(ol, "class", "svelte-sp0k97");
+			attr(h4, "class", "BC-Matrix-header svelte-1pfkp12");
+			attr(div, "class", "BC-Matrix-headers svelte-1pfkp12");
+			attr(ol, "start", ol_start_value = /*realItems*/ ctx[19].length + 1);
+			attr(ol, "class", "svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -29090,7 +35832,7 @@ function create_if_block_1$1(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[16].impliedItems.length) {
+			if (/*impliedItems*/ ctx[18].length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -29103,8 +35845,8 @@ function create_if_block_1$1(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*treatCurrNodeAsImpliedSibling, filteredSquaresArr, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
-				each_value_2 = /*square*/ ctx[16].impliedItems;
+			if (dirty & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
+				each_value_2 = /*impliedItems*/ ctx[18];
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -29126,7 +35868,7 @@ function create_if_block_1$1(ctx) {
 				each_blocks.length = each_value_2.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && ol_start_value !== (ol_start_value = /*square*/ ctx[16].realItems.length + 1)) {
+			if (dirty & /*hierSquares*/ 1 && ol_start_value !== (ol_start_value = /*realItems*/ ctx[19].length + 1)) {
 				attr(ol, "start", ol_start_value);
 			}
 		},
@@ -29140,10 +35882,10 @@ function create_if_block_1$1(ctx) {
 	};
 }
 
-// (53:16) {#if square.impliedItems.length}
+// (53:16) {#if impliedItems.length}
 function create_if_block_2(ctx) {
 	let if_block_anchor;
-	let if_block = /*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length && create_if_block_3();
+	let if_block = /*showRelationType*/ ctx[8] && /*realItems*/ ctx[19].length && create_if_block_3();
 
 	return {
 		c() {
@@ -29155,7 +35897,7 @@ function create_if_block_2(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*showRelationType*/ ctx[8] && /*square*/ ctx[16].realItems.length) {
+			if (/*showRelationType*/ ctx[8] && /*realItems*/ ctx[19].length) {
 				if (if_block) ; else {
 					if_block = create_if_block_3();
 					if_block.c();
@@ -29173,7 +35915,7 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (54:18) {#if showRelationType && square.realItems.length}
+// (54:18) {#if showRelationType && realItems.length}
 function create_if_block_3(ctx) {
 	let h6;
 
@@ -29181,7 +35923,7 @@ function create_if_block_3(ctx) {
 		c() {
 			h6 = element("h6");
 			h6.textContent = "Implied";
-			attr(h6, "class", "BC-Matrix-header svelte-sp0k97");
+			attr(h6, "class", "BC-Matrix-header svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
@@ -29192,11 +35934,11 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (60:16) {#each square.impliedItems as impliedItem}
+// (60:16) {#each impliedItems as { alt, cls, implied, to, parent }}
 function create_each_block_2$1(ctx) {
 	let li;
 	let div;
-	let t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "";
+	let t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
@@ -29206,11 +35948,11 @@ function create_each_block_2$1(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[11](/*impliedItem*/ ctx[19], ...args);
+		return /*click_handler_1*/ ctx[11](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler_1(...args) {
-		return /*mouseover_handler_1*/ ctx[12](/*impliedItem*/ ctx[19], ...args);
+		return /*mouseover_handler_1*/ ctx[12](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -29218,15 +35960,11 @@ function create_each_block_2$1(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97"));
-
-			attr(div, "aria-label", div_aria_label_value = /*impliedItem*/ ctx[19].parent
-			? "↑ " + /*impliedItem*/ ctx[19].parent
-			: "");
-
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"));
+			attr(div, "aria-label", div_aria_label_value = /*parent*/ ctx[26] ? "↑ " + /*parent*/ ctx[26] : "");
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
-			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
 			: ""));
 		},
@@ -29246,19 +35984,17 @@ function create_each_block_2$1(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*filteredSquaresArr, settings*/ 5 && t_value !== (t_value = (/*impliedItem*/ ctx[19].alt ?? dropPathNDendron(/*impliedItem*/ ctx[19].to, /*settings*/ ctx[2])) + "")) set_data(t, t_value);
+			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t, t_value);
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "" + (/*impliedItem*/ ctx[19].cls + " " + (/*impliedItem*/ ctx[19].implied ?? "") + " svelte-sp0k97"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_aria_label_value !== (div_aria_label_value = /*impliedItem*/ ctx[19].parent
-			? "↑ " + /*impliedItem*/ ctx[19].parent
-			: "")) {
+			if (dirty & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*parent*/ ctx[26] ? "↑ " + /*parent*/ ctx[26] : "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
-			if (dirty & /*filteredSquaresArr, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*impliedItem*/ ctx[19].to === /*currFile*/ ctx[1].basename
+			if (dirty & /*hierSquares, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
 			: ""))) {
 				attr(li, "class", li_class_value);
@@ -29272,10 +36008,10 @@ function create_each_block_2$1(ctx) {
 	};
 }
 
-// (21:6) {#each squares as square}
+// (21:6) {#each squares as { field, impliedItems, realItems }}
 function create_each_block_1$3(ctx) {
 	let if_block_anchor;
-	let if_block = (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) && create_if_block$1(ctx);
+	let if_block = (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) && create_if_block$3(ctx);
 
 	return {
 		c() {
@@ -29287,11 +36023,11 @@ function create_each_block_1$3(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*square*/ ctx[16].realItems.length || /*showImpliedRelations*/ ctx[5] && /*square*/ ctx[16].impliedItems.length) {
+			if (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$1(ctx);
+					if_block = create_if_block$3(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -29307,11 +36043,11 @@ function create_each_block_1$3(ctx) {
 	};
 }
 
-// (19:2) {#each filteredSquaresArr as squares}
+// (19:2) {#each hierSquares as squares}
 function create_each_block$4(ctx) {
 	let div;
 	let t;
-	let each_value_1 = /*squares*/ ctx[13];
+	let each_value_1 = /*squares*/ ctx[14];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -29327,7 +36063,7 @@ function create_each_block$4(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "BC-matrix-hier svelte-sp0k97");
+			attr(div, "class", "BC-matrix-hier svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -29339,8 +36075,8 @@ function create_each_block$4(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
-				each_value_1 = /*squares*/ ctx[13];
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value_1 = /*squares*/ ctx[14];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -29369,10 +36105,10 @@ function create_each_block$4(ctx) {
 	};
 }
 
-function create_fragment$7(ctx) {
+function create_fragment$9(ctx) {
 	let div;
 	let div_class_value;
-	let each_value = /*filteredSquaresArr*/ ctx[0];
+	let each_value = /*hierSquares*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -29387,9 +36123,7 @@ function create_fragment$7(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", div_class_value = "BC-Matrix  markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
-			? ""
-			: "BC-empty-view") + " svelte-sp0k97");
+			attr(div, "class", div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1pfkp12");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -29399,8 +36133,8 @@ function create_fragment$7(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*filteredSquaresArr, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
-				each_value = /*filteredSquaresArr*/ ctx[0];
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value = /*hierSquares*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -29422,9 +36156,7 @@ function create_fragment$7(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*filteredSquaresArr*/ 1 && div_class_value !== (div_class_value = "BC-Matrix  markdown-preview-view " + (/*filteredSquaresArr*/ ctx[0].length
-			? ""
-			: "BC-empty-view") + " svelte-sp0k97")) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1pfkp12")) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -29437,35 +36169,33 @@ function create_fragment$7(ctx) {
 	};
 }
 
-function instance$7($$self, $$props, $$invalidate) {
+function instance$9($$self, $$props, $$invalidate) {
 	
 	
 	
-	let { filteredSquaresArr } = $$props;
+	let { hierSquares } = $$props;
 	let { currFile } = $$props;
-	let { settings } = $$props;
 	let { matrixView } = $$props;
-	let { app } = $$props;
+	const { plugin } = matrixView;
+	const { app, settings } = plugin;
 	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
-	const click_handler = async (realItem, e) => openOrSwitch(app, realItem.to, e);
-	const mouseover_handler = (realItem, event) => hoverPreview(event, matrixView, realItem.to);
-	const click_handler_1 = async (impliedItem, e) => openOrSwitch(app, impliedItem.to, e);
-	const mouseover_handler_1 = (impliedItem, e) => hoverPreview(e, matrixView, impliedItem.to);
+	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler = (to, event) => hoverPreview(event, matrixView, to);
+	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler_1 = (to, e) => hoverPreview(e, matrixView, to);
 
 	$$self.$$set = $$props => {
-		if ("filteredSquaresArr" in $$props) $$invalidate(0, filteredSquaresArr = $$props.filteredSquaresArr);
+		if ("hierSquares" in $$props) $$invalidate(0, hierSquares = $$props.hierSquares);
 		if ("currFile" in $$props) $$invalidate(1, currFile = $$props.currFile);
-		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
-		if ("matrixView" in $$props) $$invalidate(3, matrixView = $$props.matrixView);
-		if ("app" in $$props) $$invalidate(4, app = $$props.app);
+		if ("matrixView" in $$props) $$invalidate(2, matrixView = $$props.matrixView);
 	};
 
 	return [
-		filteredSquaresArr,
+		hierSquares,
 		currFile,
-		settings,
 		matrixView,
 		app,
+		settings,
 		showImpliedRelations,
 		rlLeaf,
 		treatCurrNodeAsImpliedSibling,
@@ -29480,14 +36210,396 @@ function instance$7($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-sp0k97-style")) add_css$3();
+		if (!document.getElementById("svelte-1pfkp12-style")) add_css$4();
+
+		init(this, options, instance$9, create_fragment$9, safe_not_equal, {
+			hierSquares: 0,
+			currFile: 1,
+			matrixView: 2
+		});
+	}
+}
+
+/* src\Components\MatrixButtons.svelte generated by Svelte v3.35.0 */
+
+function add_css$3() {
+	var style = element("style");
+	style.id = "svelte-5yqy3v-style";
+	style.textContent = "button.svelte-5yqy3v{padding:1px 6px 2px 6px;margin-right:6px}.BC-matrixQ-button.svelte-5yqy3v{margin-left:7px}";
+	append(document.head, style);
+}
+
+// (25:0) {#if enableAlphaSort}
+function create_if_block$2(ctx) {
+	let button;
+	let mounted;
+	let dispose;
+
+	return {
+		c() {
+			button = element("button");
+			button.textContent = `${/*alphaSortAsc*/ ctx[3] ? "↗" : "↘"}`;
+			attr(button, "class", "BC-sort-button svelte-5yqy3v");
+			attr(button, "aria-label", "Alphabetical Sorting Order");
+		},
+		m(target, anchor) {
+			insert(target, button, anchor);
+
+			if (!mounted) {
+				dispose = listen(button, "click", /*click_handler_2*/ ctx[7]);
+				mounted = true;
+			}
+		},
+		p: noop,
+		d(detaching) {
+			if (detaching) detach(button);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+function create_fragment$8(ctx) {
+	let button0;
+	let t0_value = (/*matrixQ*/ ctx[0] ? "Matrix" : "List") + "";
+	let t0;
+	let t1;
+	let button1;
+	let t3;
+	let if_block_anchor;
+	let mounted;
+	let dispose;
+	let if_block = /*enableAlphaSort*/ ctx[4] && create_if_block$2(ctx);
+
+	return {
+		c() {
+			button0 = element("button");
+			t0 = text(t0_value);
+			t1 = space();
+			button1 = element("button");
+			button1.textContent = "↻";
+			t3 = space();
+			if (if_block) if_block.c();
+			if_block_anchor = empty();
+			attr(button0, "class", "BC-matrixQ-button svelte-5yqy3v");
+			attr(button0, "aria-label", "Mode");
+			attr(button1, "class", "BC-refresh-button svelte-5yqy3v");
+			attr(button1, "aria-label", "Refresh Index");
+		},
+		m(target, anchor) {
+			insert(target, button0, anchor);
+			append(button0, t0);
+			insert(target, t1, anchor);
+			insert(target, button1, anchor);
+			insert(target, t3, anchor);
+			if (if_block) if_block.m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+
+			if (!mounted) {
+				dispose = [
+					listen(button0, "click", /*click_handler*/ ctx[5]),
+					listen(button1, "click", /*click_handler_1*/ ctx[6])
+				];
+
+				mounted = true;
+			}
+		},
+		p(ctx, [dirty]) {
+			if (dirty & /*matrixQ*/ 1 && t0_value !== (t0_value = (/*matrixQ*/ ctx[0] ? "Matrix" : "List") + "")) set_data(t0, t0_value);
+			if (/*enableAlphaSort*/ ctx[4]) if_block.p(ctx, dirty);
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(button0);
+			if (detaching) detach(t1);
+			if (detaching) detach(button1);
+			if (detaching) detach(t3);
+			if (if_block) if_block.d(detaching);
+			if (detaching) detach(if_block_anchor);
+			mounted = false;
+			run_all(dispose);
+		}
+	};
+}
+
+function instance$8($$self, $$props, $$invalidate) {
+	
+	let { matrixQ } = $$props;
+	let { matrixView } = $$props;
+	const { plugin } = matrixView;
+	const { alphaSortAsc, enableAlphaSort } = plugin.settings;
+	const click_handler = () => $$invalidate(0, matrixQ = !matrixQ);
+	const click_handler_1 = async () => await refreshIndex(plugin);
+
+	const click_handler_2 = async () => {
+		$$invalidate(2, plugin.settings.alphaSortAsc = !alphaSortAsc, plugin);
+		await plugin.saveSettings();
+		await matrixView.draw();
+	};
+
+	$$self.$$set = $$props => {
+		if ("matrixQ" in $$props) $$invalidate(0, matrixQ = $$props.matrixQ);
+		if ("matrixView" in $$props) $$invalidate(1, matrixView = $$props.matrixView);
+	};
+
+	return [
+		matrixQ,
+		matrixView,
+		plugin,
+		alphaSortAsc,
+		enableAlphaSort,
+		click_handler,
+		click_handler_1,
+		click_handler_2
+	];
+}
+
+class MatrixButtons extends SvelteComponent {
+	constructor(options) {
+		super();
+		if (!document.getElementById("svelte-5yqy3v-style")) add_css$3();
+		init(this, options, instance$8, create_fragment$8, safe_not_equal, { matrixQ: 0, matrixView: 1 });
+	}
+}
+
+/* src\Components\MLContainer.svelte generated by Svelte v3.35.0 */
+
+function create_else_block$1(ctx) {
+	let list;
+	let current;
+	const list_spread_levels = [/*props*/ ctx[2]];
+	let list_props = {};
+
+	for (let i = 0; i < list_spread_levels.length; i += 1) {
+		list_props = assign(list_props, list_spread_levels[i]);
+	}
+
+	list = new Lists({ props: list_props });
+
+	return {
+		c() {
+			create_component(list.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(list, target, anchor);
+			current = true;
+		},
+		p(ctx, dirty) {
+			const list_changes = (dirty & /*props*/ 4)
+			? get_spread_update(list_spread_levels, [get_spread_object(/*props*/ ctx[2])])
+			: {};
+
+			list.$set(list_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(list.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(list.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(list, detaching);
+		}
+	};
+}
+
+// (21:0) {#if matrixQ}
+function create_if_block$1(ctx) {
+	let matrix;
+	let current;
+	const matrix_spread_levels = [/*props*/ ctx[2]];
+	let matrix_props = {};
+
+	for (let i = 0; i < matrix_spread_levels.length; i += 1) {
+		matrix_props = assign(matrix_props, matrix_spread_levels[i]);
+	}
+
+	matrix = new Matrix({ props: matrix_props });
+
+	return {
+		c() {
+			create_component(matrix.$$.fragment);
+		},
+		m(target, anchor) {
+			mount_component(matrix, target, anchor);
+			current = true;
+		},
+		p(ctx, dirty) {
+			const matrix_changes = (dirty & /*props*/ 4)
+			? get_spread_update(matrix_spread_levels, [get_spread_object(/*props*/ ctx[2])])
+			: {};
+
+			matrix.$set(matrix_changes);
+		},
+		i(local) {
+			if (current) return;
+			transition_in(matrix.$$.fragment, local);
+			current = true;
+		},
+		o(local) {
+			transition_out(matrix.$$.fragment, local);
+			current = false;
+		},
+		d(detaching) {
+			destroy_component(matrix, detaching);
+		}
+	};
+}
+
+function create_fragment$7(ctx) {
+	let div;
+	let matrixbuttons;
+	let updating_matrixQ;
+	let t;
+	let current_block_type_index;
+	let if_block;
+	let if_block_anchor;
+	let current;
+
+	function matrixbuttons_matrixQ_binding(value) {
+		/*matrixbuttons_matrixQ_binding*/ ctx[5](value);
+	}
+
+	let matrixbuttons_props = { matrixView: /*matrixView*/ ctx[0] };
+
+	if (/*matrixQ*/ ctx[1] !== void 0) {
+		matrixbuttons_props.matrixQ = /*matrixQ*/ ctx[1];
+	}
+
+	matrixbuttons = new MatrixButtons({ props: matrixbuttons_props });
+	binding_callbacks.push(() => bind(matrixbuttons, "matrixQ", matrixbuttons_matrixQ_binding));
+	const if_block_creators = [create_if_block$1, create_else_block$1];
+	const if_blocks = [];
+
+	function select_block_type(ctx, dirty) {
+		if (/*matrixQ*/ ctx[1]) return 0;
+		return 1;
+	}
+
+	current_block_type_index = select_block_type(ctx);
+	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+	return {
+		c() {
+			div = element("div");
+			create_component(matrixbuttons.$$.fragment);
+			t = space();
+			if_block.c();
+			if_block_anchor = empty();
+			attr(div, "class", "BC-matrix-buttons");
+		},
+		m(target, anchor) {
+			insert(target, div, anchor);
+			mount_component(matrixbuttons, div, null);
+			insert(target, t, anchor);
+			if_blocks[current_block_type_index].m(target, anchor);
+			insert(target, if_block_anchor, anchor);
+			current = true;
+		},
+		p(ctx, [dirty]) {
+			const matrixbuttons_changes = {};
+			if (dirty & /*matrixView*/ 1) matrixbuttons_changes.matrixView = /*matrixView*/ ctx[0];
+
+			if (!updating_matrixQ && dirty & /*matrixQ*/ 2) {
+				updating_matrixQ = true;
+				matrixbuttons_changes.matrixQ = /*matrixQ*/ ctx[1];
+				add_flush_callback(() => updating_matrixQ = false);
+			}
+
+			matrixbuttons.$set(matrixbuttons_changes);
+			let previous_block_index = current_block_type_index;
+			current_block_type_index = select_block_type(ctx);
+
+			if (current_block_type_index === previous_block_index) {
+				if_blocks[current_block_type_index].p(ctx, dirty);
+			} else {
+				group_outros();
+
+				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+					if_blocks[previous_block_index] = null;
+				});
+
+				check_outros();
+				if_block = if_blocks[current_block_type_index];
+
+				if (!if_block) {
+					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+					if_block.c();
+				} else {
+					if_block.p(ctx, dirty);
+				}
+
+				transition_in(if_block, 1);
+				if_block.m(if_block_anchor.parentNode, if_block_anchor);
+			}
+		},
+		i(local) {
+			if (current) return;
+			transition_in(matrixbuttons.$$.fragment, local);
+			transition_in(if_block);
+			current = true;
+		},
+		o(local) {
+			transition_out(matrixbuttons.$$.fragment, local);
+			transition_out(if_block);
+			current = false;
+		},
+		d(detaching) {
+			if (detaching) detach(div);
+			destroy_component(matrixbuttons);
+			if (detaching) detach(t);
+			if_blocks[current_block_type_index].d(detaching);
+			if (detaching) detach(if_block_anchor);
+		}
+	};
+}
+
+function instance$7($$self, $$props, $$invalidate) {
+	
+	
+	
+	let { hierSquares } = $$props;
+	let { matrixView } = $$props;
+	let { currFile } = $$props;
+	const { plugin } = matrixView;
+	const { settings } = plugin;
+	const { defaultView } = settings;
+	let matrixQ = defaultView;
+	const props = { hierSquares, currFile, matrixView };
+
+	function matrixbuttons_matrixQ_binding(value) {
+		matrixQ = value;
+		$$invalidate(1, matrixQ);
+	}
+
+	$$self.$$set = $$props => {
+		if ("hierSquares" in $$props) $$invalidate(3, hierSquares = $$props.hierSquares);
+		if ("matrixView" in $$props) $$invalidate(0, matrixView = $$props.matrixView);
+		if ("currFile" in $$props) $$invalidate(4, currFile = $$props.currFile);
+	};
+
+	return [
+		matrixView,
+		matrixQ,
+		props,
+		hierSquares,
+		currFile,
+		matrixbuttons_matrixQ_binding
+	];
+}
+
+class MLContainer extends SvelteComponent {
+	constructor(options) {
+		super();
 
 		init(this, options, instance$7, create_fragment$7, safe_not_equal, {
-			filteredSquaresArr: 0,
-			currFile: 1,
-			settings: 2,
-			matrixView: 3,
-			app: 4
+			hierSquares: 3,
+			matrixView: 0,
+			currFile: 4
 		});
 	}
 }
@@ -29507,17 +36619,30 @@ class MatrixView extends obsidian.ItemView {
             };
         };
         this.getOrder = (node) => Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
+        this.sortItemsAlpha = (a, b) => {
+            var _a, _b;
+            const { sortByNameShowAlias, alphaSortAsc } = this.plugin.settings;
+            return (sortByNameShowAlias ? a.to : (_a = a.alt) !== null && _a !== void 0 ? _a : a.to) <
+                (sortByNameShowAlias ? b.to : (_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
+                ? alphaSortAsc
+                    ? -1
+                    : 1
+                : alphaSortAsc
+                    ? 1
+                    : -1;
+        };
         this.plugin = plugin;
         this.db = new Debugger(plugin);
     }
     async onload() {
         super.onload();
-        this.matrixQ = this.plugin.settings.defaultView;
-        this.app.workspace.onLayoutReady(() => {
-            setTimeout(async () => await this.draw(), this.app.plugins.plugins.dataview
-                ? this.app.plugins.plugins.dataview.api
+        const { plugin, app } = this;
+        this.matrixQ = plugin.settings.defaultView;
+        app.workspace.onLayoutReady(() => {
+            setTimeout(async () => await this.draw(), app.plugins.plugins.dataview
+                ? app.plugins.plugins.dataview.api
                     ? 1
-                    : this.plugin.settings.dvWaitTime
+                    : plugin.settings.dvWaitTime
                 : 3000);
         });
     }
@@ -29534,37 +36659,35 @@ class MatrixView extends obsidian.ItemView {
         return Promise.resolve();
     }
     getAlt(node) {
-        var _a, _b;
-        const { altLinkFields, showAllAliases } = this.plugin.settings;
-        if (altLinkFields.length) {
-            // dv First
-            const dv = (_a = this.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
-            if (dv) {
-                const page = dv.page(node);
-                if (!page)
-                    return null;
-                for (const alt of altLinkFields) {
-                    const value = page[alt];
+        const { app, plugin } = this;
+        const { altLinkFields, showAllAliases } = plugin.settings;
+        if (!altLinkFields.length)
+            return null;
+        // dv First
+        const dv = getDVApi(plugin);
+        if (dv) {
+            const page = dv.page(node);
+            if (!page)
+                return null;
+            for (const alt of altLinkFields) {
+                const value = page[alt];
+                const arr = typeof value === "string" ? splitAndTrim(value) : value;
+                if (value)
+                    return showAllAliases ? arr.join(", ") : arr[0];
+            }
+        }
+        else {
+            const file = app.metadataCache.getFirstLinkpathDest(node, "");
+            if (file) {
+                const { frontmatter } = app.metadataCache.getFileCache(file);
+                for (const altField of altLinkFields) {
+                    const value = frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[altField];
                     const arr = typeof value === "string" ? splitAndTrim(value) : value;
                     if (value)
                         return showAllAliases ? arr.join(", ") : arr[0];
                 }
             }
-            else {
-                const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
-                if (file) {
-                    const metadata = this.app.metadataCache.getFileCache(file);
-                    for (const altField of altLinkFields) {
-                        const value = (_b = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _b === void 0 ? void 0 : _b[altField];
-                        const arr = typeof value === "string" ? splitAndTrim(value) : value;
-                        if (value)
-                            return showAllAliases ? arr.join(", ") : arr[0];
-                    }
-                }
-            }
         }
-        else
-            return null;
     }
     // ANCHOR Remove duplicate implied links
     removeDuplicateImplied(reals, implieds) {
@@ -29572,13 +36695,12 @@ class MatrixView extends obsidian.ItemView {
         return implieds.filter((implied) => !realTos.includes(implied.to));
     }
     getMatrixNeighbours(plugin, currNode) {
-        const { closedG } = plugin;
-        const { userHiers } = plugin.settings;
+        const { closedG, settings } = plugin;
+        const { userHiers } = settings;
         const neighbours = blankRealNImplied();
         if (!closedG)
             return neighbours;
         closedG.forEachEdge(currNode, (k, a, s, t) => {
-            var _a;
             const { field, dir, implied } = a;
             if (s === currNode) {
                 neighbours[dir].reals.push({ to: t, field, implied });
@@ -29586,7 +36708,7 @@ class MatrixView extends obsidian.ItemView {
             else {
                 neighbours[getOppDir(dir)].implieds.push({
                     to: s,
-                    field: (_a = getOppFields(userHiers, field)[0]) !== null && _a !== void 0 ? _a : fallbackOppField(field, dir),
+                    field: getOppFields(userHiers, field, dir)[0],
                     implied,
                 });
             }
@@ -29596,11 +36718,10 @@ class MatrixView extends obsidian.ItemView {
     getHierSquares(userHiers, currFile) {
         const { plugin } = this;
         const { mainG, settings } = plugin;
-        const { alphaSortAsc, enableAlphaSort, treatCurrNodeAsImpliedSibling, squareDirectionsOrder, sortByNameShowAlias, } = settings;
+        const { enableAlphaSort, squareDirectionsOrder } = settings;
         if (!mainG)
             return [];
         const { basename } = currFile;
-        // const realsnImplieds = getRealnImplied(plugin, basename);
         const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
@@ -29638,19 +36759,8 @@ class MatrixView extends obsidian.ItemView {
                 ? hier[dir].join(", ")
                 : `${hier[getOppDir(dir)].join(",")}${ARROW_DIRECTIONS[dir]}`;
             const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
-            if (enableAlphaSort) {
-                squares.forEach((sq) => sq.sort((a, b) => {
-                    var _a, _b;
-                    return (sortByNameShowAlias ? a.to : (_a = a.alt) !== null && _a !== void 0 ? _a : a.to) <
-                        (sortByNameShowAlias ? b.to : (_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
-                        ? alphaSortAsc
-                            ? -1
-                            : 1
-                        : alphaSortAsc
-                            ? 1
-                            : -1;
-                }));
-            }
+            if (enableAlphaSort)
+                squares.forEach((sq) => sq.sort(this.sortItemsAlpha));
             squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
             loglevel.info([
                 { ru },
@@ -29694,45 +36804,6 @@ class MatrixView extends obsidian.ItemView {
             return squareDirectionsOrder.map((order) => square[order]);
         });
     }
-    drawButtons(contentEl) {
-        const { plugin, matrixQ } = this;
-        const { settings } = plugin;
-        const { alphaSortAsc } = settings;
-        contentEl.createEl("button", {
-            text: matrixQ ? "List" : "Matrix",
-            attr: {
-                "aria-label": "Mode",
-                style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
-            },
-        }, (el) => {
-            el.onclick = async () => {
-                this.matrixQ = !matrixQ;
-                el.innerText = matrixQ ? "List" : "Matrix";
-                await this.draw();
-            };
-        });
-        contentEl.createEl("button", {
-            text: "↻",
-            attr: {
-                "aria-label": "Refresh Index",
-                style: "padding: 1px 6px 2px 6px;",
-            },
-        }, (el) => (el.onclick = async () => await refreshIndex(plugin)));
-        contentEl.createEl("button", {
-            text: alphaSortAsc ? "↗" : "↘",
-            attr: {
-                "aria-label": "Alphabetical sorting order",
-                style: "padding: 1px 6px 2px 6px;",
-            },
-        }, (el) => {
-            el.onclick = async () => {
-                plugin.settings.alphaSortAsc = !alphaSortAsc;
-                await this.plugin.saveSettings();
-                el.innerText = alphaSortAsc ? "↗" : "↘";
-                await this.draw();
-            };
-        });
-    }
     async draw() {
         try {
             const { contentEl, db, plugin } = this;
@@ -29743,21 +36814,11 @@ class MatrixView extends obsidian.ItemView {
             const currFile = this.app.workspace.getActiveFile();
             if (!currFile)
                 return;
-            this.drawButtons(contentEl);
             const hierSquares = this.getHierSquares(userHiers, currFile).filter((squareArr) => squareArr.some((sq) => sq.realItems.length + sq.impliedItems.length > 0));
-            const compInput = {
+            new MLContainer({
                 target: contentEl,
-                props: {
-                    filteredSquaresArr: hierSquares,
-                    currFile,
-                    settings,
-                    matrixView: this,
-                    app: this.app,
-                },
-            };
-            this.matrixQ
-                ? (this.view = new Matrix(compInput))
-                : (this.view = new Lists(compInput));
+                props: { hierSquares, matrixView: this, currFile },
+            });
             db.end2G();
         }
         catch (err) {
@@ -30410,6 +37471,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         const { settings } = plugin;
         containerEl.empty();
         containerEl.createEl("h2", { text: "Breadcrumbs Settings" });
+        containerEl.addClass("BC-settings-tab");
         addHierarchySettings(plugin, containerEl);
         addRelationSettings(plugin, containerEl);
         addGeneralSettings(plugin, containerEl);
@@ -30537,26 +37599,26 @@ function add_css$2() {
 
 function get_each_context$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[13] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
-// (48:2) {#each ducks as duck}
+// (45:2) {#each ducks as duck}
 function create_each_block$3(ctx) {
 	let div;
 	let a;
-	let t0_value = /*duck*/ ctx[13] + "";
+	let t0_value = /*duck*/ ctx[14] + "";
 	let t0;
 	let t1;
 	let mounted;
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*duck*/ ctx[13], ...args);
+		return /*click_handler*/ ctx[9](/*duck*/ ctx[14], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*duck*/ ctx[13], ...args);
+		return /*mouseover_handler*/ ctx[10](/*duck*/ ctx[14], ...args);
 	}
 
 	return {
@@ -30584,7 +37646,7 @@ function create_each_block$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*ducks*/ 16 && t0_value !== (t0_value = /*duck*/ ctx[13] + "")) set_data(t0, t0_value);
+			if (dirty & /*ducks*/ 16 && t0_value !== (t0_value = /*duck*/ ctx[14] + "")) set_data(t0, t0_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
@@ -30602,11 +37664,11 @@ function create_fragment$5(ctx) {
 	let fainfo;
 	let t2;
 	let label;
-	let t4;
+	let t3;
 	let input0;
-	let t5;
+	let t4;
 	let input1;
-	let t6;
+	let t5;
 	let current;
 	let mounted;
 	let dispose;
@@ -30628,12 +37690,11 @@ function create_fragment$5(ctx) {
 			create_component(fainfo.$$.fragment);
 			t2 = space();
 			label = element("label");
-			label.textContent = "Filter:";
-			t4 = space();
+			t3 = text("Filter:\r\n    ");
 			input0 = element("input");
-			t5 = space();
+			t4 = space();
 			input1 = element("input");
-			t6 = space();
+			t5 = space();
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].c();
@@ -30641,14 +37702,10 @@ function create_fragment$5(ctx) {
 
 			attr(span, "class", "icon svelte-gmdm3a");
 			attr(span, "aria-label", `A Regex used to filter the results.\nIf 'Include' is checked, it will only show notes that match the regex.\nIf 'Include' is not checked, this regex will filter out notes that match it.`);
-			attr(label, "for", "regex");
 			attr(input0, "type", "text");
-			attr(input0, "name", "regex");
 			attr(input0, "placeholder", "Regex");
-			input0.value = /*query*/ ctx[2];
 			attr(input1, "aria-label", "Include");
 			attr(input1, "type", "checkbox");
-			input1.checked = /*include*/ ctx[3];
 			attr(div, "class", "BC-Ducks markdown-preview-view");
 		},
 		m(target, anchor) {
@@ -30659,11 +37716,13 @@ function create_fragment$5(ctx) {
 			mount_component(fainfo, span, null);
 			append(div, t2);
 			append(div, label);
+			append(label, t3);
+			append(label, input0);
+			set_input_value(input0, /*query*/ ctx[2]);
 			append(div, t4);
-			append(div, input0);
-			append(div, t5);
 			append(div, input1);
-			append(div, t6);
+			input1.checked = /*include*/ ctx[3];
+			append(div, t5);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
 				each_blocks[i].m(div, null);
@@ -30673,19 +37732,19 @@ function create_fragment$5(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(input0, "change", /*change_handler*/ ctx[7]),
-					listen(input1, "change", /*change_handler_1*/ ctx[8])
+					listen(input0, "input", /*input0_input_handler*/ ctx[7]),
+					listen(input1, "change", /*input1_change_handler*/ ctx[8])
 				];
 
 				mounted = true;
 			}
 		},
 		p(ctx, [dirty]) {
-			if (!current || dirty & /*query*/ 4 && input0.value !== /*query*/ ctx[2]) {
-				input0.value = /*query*/ ctx[2];
+			if (dirty & /*query*/ 4 && input0.value !== /*query*/ ctx[2]) {
+				set_input_value(input0, /*query*/ ctx[2]);
 			}
 
-			if (!current || dirty & /*include*/ 8) {
+			if (dirty & /*include*/ 8) {
 				input1.checked = /*include*/ ctx[3];
 			}
 
@@ -30732,6 +37791,7 @@ function create_fragment$5(ctx) {
 }
 
 function instance$5($$self, $$props, $$invalidate) {
+	let ducks;
 	
 	
 	
@@ -30741,11 +37801,24 @@ function instance$5($$self, $$props, $$invalidate) {
 	const { mainG } = plugin;
 	const files = app.vault.getMarkdownFiles();
 	let query = "";
-	let include = true;
 	let regex = new RegExp(query, "g");
-	let ducks = files.map(file => file.basename).filter(name => !mainG.neighbors(name).length && include === regex.test(name));
-	const change_handler = e => $$invalidate(2, query = e.target.value);
-	const change_handler_1 = e => $$invalidate(3, include = e.target.checked);
+	let include = true;
+
+	const getDucks = regex => {
+		if (!regex) return;
+		return files.map(file => file.basename).filter(name => !mainG.neighbors(name).length && include === regex.test(name));
+	};
+
+	function input0_input_handler() {
+		query = this.value;
+		$$invalidate(2, query);
+	}
+
+	function input1_change_handler() {
+		include = this.checked;
+		$$invalidate(3, include);
+	}
+
 	const click_handler = async (duck, e) => await openOrSwitch(app, duck, e);
 	const mouseover_handler = (duck, e) => hoverPreview(e, ducksView, duck);
 
@@ -30757,17 +37830,18 @@ function instance$5($$self, $$props, $$invalidate) {
 
 	$$self.$$.update = () => {
 		if ($$self.$$.dirty & /*query*/ 4) {
-			$$invalidate(6, regex = new RegExp(query, "g"));
-		}
-
-		if ($$self.$$.dirty & /*include, regex*/ 72) {
 			{
-				$$invalidate(4, ducks = files.map(file => file.basename).filter(name => !mainG.neighbors(name).length && include === regex.test(name)));
+				try {
+					const newReg = new RegExp(query, "g");
+					$$invalidate(6, regex = newReg);
+				} catch(e) {
+					
+				}
 			}
 		}
 
-		if ($$self.$$.dirty & /*ducks, query, include, regex*/ 92) {
-			console.log({ ducks, query, include, regex });
+		if ($$self.$$.dirty & /*regex*/ 64) {
+			$$invalidate(4, ducks = getDucks(regex));
 		}
 	};
 
@@ -30779,8 +37853,8 @@ function instance$5($$self, $$props, $$invalidate) {
 		ducks,
 		plugin,
 		regex,
-		change_handler,
-		change_handler_1,
+		input0_input_handler,
+		input1_change_handler,
 		click_handler,
 		mouseover_handler
 	];
@@ -30833,71 +37907,71 @@ class DucksView extends obsidian.ItemView {
 
 function add_css$1() {
 	var style = element("style");
-	style.id = "svelte-rb5mhu-style";
-	style.textContent = "table.svelte-rb5mhu{border-collapse:collapse}td.svelte-rb5mhu:first-child{text-align:right}td.svelte-rb5mhu,th.svelte-rb5mhu{padding:3px;border:1px solid var(--background-modifier-border);white-space:pre-line}";
+	style.id = "svelte-cpnw44-style";
+	style.textContent = "table.svelte-cpnw44{border-collapse:collapse}td.svelte-cpnw44:first-child{text-align:right}td.svelte-cpnw44,th.svelte-cpnw44{padding:3px;border:1px solid var(--background-modifier-border);white-space:pre-line}";
 	append(document.head, style);
 }
 
 function get_each_context$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[35] = list[i];
-	child_ctx[37] = i;
+	child_ctx[36] = list[i];
+	child_ctx[38] = i;
 	return child_ctx;
 }
 
 function get_each_context_4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[28] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
-// (96:4) {#each DIRECTIONS as dir}
+// (87:6) {#each DIRECTIONS as dir}
 function create_each_block_7(ctx) {
 	let td;
-	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[28]] + "";
+	let t_value = ARROW_DIRECTIONS[/*dir*/ ctx[29]] + "";
 	let t;
 
 	return {
 		c() {
 			td = element("td");
 			t = text(t_value);
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -30910,10 +37984,10 @@ function create_each_block_7(ctx) {
 	};
 }
 
-// (108:6) {#each DIRECTIONS as dir}
+// (99:8) {#each DIRECTIONS as dir}
 function create_each_block_6(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodes.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Merged.nodes.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -30921,7 +37995,7 @@ function create_each_block_6(ctx) {
 	let dispose;
 
 	function click_handler_1() {
-		return /*click_handler_1*/ ctx[6](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_1*/ ctx[6](/*i*/ ctx[38], /*dir*/ ctx[29]);
 	}
 
 	return {
@@ -30930,8 +38004,8 @@ function create_each_block_6(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.nodesStr);
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Merged.nodesStr);
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -30954,10 +38028,10 @@ function create_each_block_6(ctx) {
 	};
 }
 
-// (129:6) {#each DIRECTIONS as dir}
+// (120:8) {#each DIRECTIONS as dir}
 function create_each_block_5(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edges.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Merged.edges.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -30965,7 +38039,7 @@ function create_each_block_5(ctx) {
 	let dispose;
 
 	function click_handler_3() {
-		return /*click_handler_3*/ ctx[9](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_3*/ ctx[9](/*i*/ ctx[38], /*dir*/ ctx[29]);
 	}
 
 	return {
@@ -30974,8 +38048,8 @@ function create_each_block_5(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Merged.edgesStr);
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Merged.edgesStr);
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -30998,10 +38072,10 @@ function create_each_block_5(ctx) {
 	};
 }
 
-// (150:6) {#each DIRECTIONS as dir}
+// (141:8) {#each DIRECTIONS as dir}
 function create_each_block_4(ctx) {
 	let td;
-	let t0_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edges.length + "";
+	let t0_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Implied.edges.length + "";
 	let t0;
 	let t1;
 	let td_aria_label_value;
@@ -31009,7 +38083,7 @@ function create_each_block_4(ctx) {
 	let dispose;
 
 	function click_handler_5() {
-		return /*click_handler_5*/ ctx[12](/*i*/ ctx[37], /*dir*/ ctx[28]);
+		return /*click_handler_5*/ ctx[12](/*i*/ ctx[38], /*dir*/ ctx[29]);
 	}
 
 	return {
@@ -31018,8 +38092,8 @@ function create_each_block_4(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(td, "aria-label-position", "left");
-			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[37]][/*dir*/ ctx[28]].Implied.edgesStr);
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2][/*i*/ ctx[38]][/*dir*/ ctx[29]].Implied.edgesStr);
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -31042,11 +38116,11 @@ function create_each_block_4(ctx) {
 	};
 }
 
-// (102:2) {#each userHiers as hier, i}
+// (93:4) {#each userHiers as hier, i}
 function create_each_block_3(ctx) {
 	let tr0;
 	let td0;
-	let t0_value = /*hierStrs*/ ctx[4][/*i*/ ctx[37]] + "";
+	let t0_value = /*hierStrs*/ ctx[4][/*i*/ ctx[38]] + "";
 	let t0;
 	let t1;
 	let td1;
@@ -31084,11 +38158,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func(...args) {
-		return /*func*/ ctx[7](/*i*/ ctx[37], ...args);
+		return /*func*/ ctx[7](/*i*/ ctx[38], ...args);
 	}
 
 	function click_handler_2() {
-		return /*click_handler_2*/ ctx[8](/*i*/ ctx[37]);
+		return /*click_handler_2*/ ctx[8](/*i*/ ctx[38]);
 	}
 
 	let each_value_5 = DIRECTIONS$1;
@@ -31099,11 +38173,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func_1(...args) {
-		return /*func_1*/ ctx[10](/*i*/ ctx[37], ...args);
+		return /*func_1*/ ctx[10](/*i*/ ctx[38], ...args);
 	}
 
 	function click_handler_4() {
-		return /*click_handler_4*/ ctx[11](/*i*/ ctx[37]);
+		return /*click_handler_4*/ ctx[11](/*i*/ ctx[38]);
 	}
 
 	let each_value_4 = DIRECTIONS$1;
@@ -31114,11 +38188,11 @@ function create_each_block_3(ctx) {
 	}
 
 	function func_2(...args) {
-		return /*func_2*/ ctx[13](/*i*/ ctx[37], ...args);
+		return /*func_2*/ ctx[13](/*i*/ ctx[38], ...args);
 	}
 
 	function click_handler_6() {
-		return /*click_handler_6*/ ctx[14](/*i*/ ctx[37]);
+		return /*click_handler_6*/ ctx[14](/*i*/ ctx[38]);
 	}
 
 	return {
@@ -31165,19 +38239,19 @@ function create_each_block_3(ctx) {
 			td6 = element("td");
 			t15 = text(t15_value);
 			attr(td0, "rowspan", "3");
-			attr(td0, "class", "svelte-rb5mhu");
-			attr(td1, "class", "svelte-rb5mhu");
+			attr(td0, "class", "svelte-cpnw44");
+			attr(td1, "class", "svelte-cpnw44");
 			attr(td2, "aria-label-position", "left");
-			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Merged", "nodesStr"));
-			attr(td2, "class", "svelte-rb5mhu");
-			attr(td3, "class", "svelte-rb5mhu");
+			attr(td2, "aria-label", td2_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[38], "Merged", "nodesStr"));
+			attr(td2, "class", "svelte-cpnw44");
+			attr(td3, "class", "svelte-cpnw44");
 			attr(td4, "aria-label-position", "left");
-			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Merged", "edgesStr"));
-			attr(td4, "class", "svelte-rb5mhu");
-			attr(td5, "class", "svelte-rb5mhu");
+			attr(td4, "aria-label", td4_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[38], "Merged", "edgesStr"));
+			attr(td4, "class", "svelte-cpnw44");
+			attr(td5, "class", "svelte-cpnw44");
 			attr(td6, "aria-label-position", "left");
-			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[37], "Implied", "edgesStr"));
-			attr(td6, "class", "svelte-rb5mhu");
+			attr(td6, "aria-label", td6_aria_label_value = /*cellStr*/ ctx[3](/*i*/ ctx[38], "Implied", "edgesStr"));
+			attr(td6, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, tr0, anchor);
@@ -31316,7 +38390,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (173:4) {#each DIRECTIONS as dir}
+// (164:6) {#each DIRECTIONS as dir}
 function create_each_block_2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_3)) + "";
@@ -31327,15 +38401,15 @@ function create_each_block_2(ctx) {
 	let dispose;
 
 	function func_3(...args) {
-		return /*func_3*/ ctx[15](/*dir*/ ctx[28], ...args);
+		return /*func_3*/ ctx[15](/*dir*/ ctx[29], ...args);
 	}
 
 	function func_4(...args) {
-		return /*func_4*/ ctx[16](/*dir*/ ctx[28], ...args);
+		return /*func_4*/ ctx[16](/*dir*/ ctx[29], ...args);
 	}
 
 	function click_handler_7() {
-		return /*click_handler_7*/ ctx[17](/*dir*/ ctx[28]);
+		return /*click_handler_7*/ ctx[17](/*dir*/ ctx[29]);
 	}
 
 	return {
@@ -31345,7 +38419,7 @@ function create_each_block_2(ctx) {
 			t1 = space();
 			attr(td, "aria-label-position", "left");
 			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2].map(func_4).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -31368,7 +38442,7 @@ function create_each_block_2(ctx) {
 	};
 }
 
-// (215:4) {#each DIRECTIONS as dir}
+// (182:6) {#each DIRECTIONS as dir}
 function create_each_block_1$2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_5)) + "";
@@ -31379,15 +38453,15 @@ function create_each_block_1$2(ctx) {
 	let dispose;
 
 	function func_5(...args) {
-		return /*func_5*/ ctx[18](/*dir*/ ctx[28], ...args);
+		return /*func_5*/ ctx[18](/*dir*/ ctx[29], ...args);
 	}
 
 	function func_6(...args) {
-		return /*func_6*/ ctx[19](/*dir*/ ctx[28], ...args);
+		return /*func_6*/ ctx[19](/*dir*/ ctx[29], ...args);
 	}
 
 	function click_handler_8() {
-		return /*click_handler_8*/ ctx[20](/*dir*/ ctx[28]);
+		return /*click_handler_8*/ ctx[20](/*dir*/ ctx[29]);
 	}
 
 	return {
@@ -31397,7 +38471,7 @@ function create_each_block_1$2(ctx) {
 			t1 = space();
 			attr(td, "aria-label-position", "left");
 			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2].map(func_6).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -31420,7 +38494,7 @@ function create_each_block_1$2(ctx) {
 	};
 }
 
-// (253:4) {#each DIRECTIONS as dir}
+// (200:6) {#each DIRECTIONS as dir}
 function create_each_block$2(ctx) {
 	let td;
 	let t0_value = lodash.sum(/*data*/ ctx[2].map(func_7)) + "";
@@ -31431,15 +38505,15 @@ function create_each_block$2(ctx) {
 	let dispose;
 
 	function func_7(...args) {
-		return /*func_7*/ ctx[21](/*dir*/ ctx[28], ...args);
+		return /*func_7*/ ctx[21](/*dir*/ ctx[29], ...args);
 	}
 
 	function func_8(...args) {
-		return /*func_8*/ ctx[22](/*dir*/ ctx[28], ...args);
+		return /*func_8*/ ctx[22](/*dir*/ ctx[29], ...args);
 	}
 
 	function click_handler_9() {
-		return /*click_handler_9*/ ctx[23](/*dir*/ ctx[28]);
+		return /*click_handler_9*/ ctx[23](/*dir*/ ctx[29]);
 	}
 
 	return {
@@ -31449,7 +38523,7 @@ function create_each_block$2(ctx) {
 			t1 = space();
 			attr(td, "aria-label-position", "left");
 			attr(td, "aria-label", td_aria_label_value = /*data*/ ctx[2].map(func_8).join("\n"));
-			attr(td, "class", "svelte-rb5mhu");
+			attr(td, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, td, anchor);
@@ -31481,6 +38555,7 @@ function create_fragment$4(ctx) {
 	let th1;
 	let t2;
 	let t3;
+	let tbody;
 	let tr1;
 	let td0;
 	let button;
@@ -31552,6 +38627,7 @@ function create_fragment$4(ctx) {
 			th1 = element("th");
 			t2 = text("Count");
 			t3 = space();
+			tbody = element("tbody");
 			tr1 = element("tr");
 			td0 = element("td");
 			button = element("button");
@@ -31608,21 +38684,21 @@ function create_fragment$4(ctx) {
 			}
 
 			attr(th0, "scope", "col");
-			attr(th0, "class", "svelte-rb5mhu");
+			attr(th0, "class", "svelte-cpnw44");
 			attr(th1, "scope", "col");
 			attr(th1, "colspan", DIRECTIONS$1.length + 2);
-			attr(th1, "class", "svelte-rb5mhu");
+			attr(th1, "class", "svelte-cpnw44");
 			attr(button, "class", "icon");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(td0, "class", "svelte-rb5mhu");
-			attr(td1, "class", "svelte-rb5mhu");
-			attr(td2, "class", "svelte-rb5mhu");
+			attr(td0, "class", "svelte-cpnw44");
+			attr(td1, "class", "svelte-cpnw44");
+			attr(td2, "class", "svelte-cpnw44");
 			attr(td3, "rowspan", "3");
-			attr(td3, "class", "svelte-rb5mhu");
-			attr(td4, "class", "svelte-rb5mhu");
-			attr(td5, "class", "svelte-rb5mhu");
-			attr(td6, "class", "svelte-rb5mhu");
-			attr(table, "class", "svelte-rb5mhu");
+			attr(td3, "class", "svelte-cpnw44");
+			attr(td4, "class", "svelte-cpnw44");
+			attr(td5, "class", "svelte-cpnw44");
+			attr(td6, "class", "svelte-cpnw44");
+			attr(table, "class", "svelte-cpnw44");
 		},
 		m(target, anchor) {
 			insert(target, table, anchor);
@@ -31633,7 +38709,8 @@ function create_fragment$4(ctx) {
 			append(tr0, th1);
 			append(th1, t2);
 			append(table, t3);
-			append(table, tr1);
+			append(table, tbody);
+			append(tbody, tr1);
 			append(tr1, td0);
 			append(td0, button);
 			append(tr1, t5);
@@ -31646,14 +38723,14 @@ function create_fragment$4(ctx) {
 
 			append(tr1, t8);
 			append(tr1, td2);
-			append(table, t10);
+			append(tbody, t10);
 
 			for (let i = 0; i < each_blocks_3.length; i += 1) {
-				each_blocks_3[i].m(table, null);
+				each_blocks_3[i].m(tbody, null);
 			}
 
-			append(table, t11);
-			append(table, tr2);
+			append(tbody, t11);
+			append(tbody, tr2);
 			append(tr2, td3);
 			append(tr2, t13);
 			append(tr2, td4);
@@ -31663,8 +38740,8 @@ function create_fragment$4(ctx) {
 				each_blocks_2[i].m(tr2, null);
 			}
 
-			append(table, t16);
-			append(table, tr3);
+			append(tbody, t16);
+			append(tbody, tr3);
 			append(tr3, td5);
 			append(tr3, t18);
 
@@ -31672,8 +38749,8 @@ function create_fragment$4(ctx) {
 				each_blocks_1[i].m(tr3, null);
 			}
 
-			append(table, t19);
-			append(table, tr4);
+			append(tbody, t19);
+			append(tbody, tr4);
 			append(tr4, td6);
 			append(tr4, t21);
 
@@ -31722,7 +38799,7 @@ function create_fragment$4(ctx) {
 					} else {
 						each_blocks_3[i] = create_each_block_3(child_ctx);
 						each_blocks_3[i].c();
-						each_blocks_3[i].m(table, t11);
+						each_blocks_3[i].m(tbody, t11);
 					}
 				}
 
@@ -31821,14 +38898,12 @@ function instance$4($$self, $$props, $$invalidate) {
 	
 	
 	let { plugin } = $$props;
-	const { settings, mainG } = plugin;
-	const { userHiers } = settings;
-	const db = new Debugger(plugin);
+	const { settings, mainG, db } = plugin;
+	const { userHiers, wikilinkIndex } = settings;
 	db.start2G("StatsView");
 
 	function fillInInfo(dir, gType, hierData, nodesToo = true) {
 		const gInfo = hierData[dir][gType];
-		const { wikilinkIndex } = settings;
 
 		if (nodesToo) {
 			gInfo.nodes = gInfo.graph.nodes();
@@ -31864,19 +38939,13 @@ function instance$4($$self, $$props, $$invalidate) {
 			fillInInfo(dir, "Merged", hierData);
 
 			// Closed graphs
-			if (dir !== "same") {
-				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergedInOppDir);
-			} else {
-				hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, mergedInDir);
-			}
+			hierData[dir].Closed.graph = closeImpliedLinks(mergedInDir, dir === "same" ? mergedInDir : mergedInOppDir);
 
 			fillInInfo(dir, "Closed", hierData);
 
-			if (dir !== "same") {
-				hierData[dir].Implied.graph = mergedInOppDir;
-			} else {
-				hierData[dir].Implied.graph = closeImpliedLinks(mergedInDir, mergedInDir);
-			}
+			hierData[dir].Implied.graph = dir === "same"
+			? closeImpliedLinks(mergedInDir, mergedInDir)
+			: mergedInOppDir;
 
 			fillInInfo(dir, "Implied", hierData, false);
 		});
@@ -31948,7 +39017,7 @@ function instance$4($$self, $$props, $$invalidate) {
 class Stats extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-rb5mhu-style")) add_css$1();
+		if (!document.getElementById("svelte-cpnw44-style")) add_css$1();
 		init(this, options, instance$4, create_fragment$4, safe_not_equal, { plugin: 0 }, [-1, -1]);
 	}
 }
@@ -32163,24 +39232,24 @@ class FaRegSnowflake extends SvelteComponent {
 
 function add_css() {
 	var style = element("style");
-	style.id = "svelte-7s7d25-style";
-	style.textContent = "button.svelte-7s7d25{display:inline;padding:1px 6px 2px 6px}.BC-downs.svelte-7s7d25{padding-left:5px}pre.svelte-7s7d25{display:inline}.is-unresolved.svelte-7s7d25{color:var(--text-muted)}.icon.svelte-7s7d25{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
+	style.id = "svelte-8j6nux-style";
+	style.textContent = "button.svelte-8j6nux{display:inline;padding:1px 6px 2px 6px}.BC-downs.svelte-8j6nux{padding-left:5px}pre.svelte-8j6nux{display:inline}.is-unresolved.svelte-8j6nux{color:var(--text-muted)}.icon.svelte-8j6nux{color:var(--text-normal);display:inline-block;padding-top:5px !important;width:20px;height:20px}";
 	append(document.head, style);
 }
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[12] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
+	child_ctx[17] = list[i];
 	return child_ctx;
 }
 
-// (53:2) {:else}
+// (46:2) {:else}
 function create_else_block(ctx) {
 	let fafire;
 	let current;
@@ -32209,7 +39278,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (51:2) {#if frozen}
+// (44:2) {#if frozen}
 function create_if_block_1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -32238,10 +39307,10 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (69:2) {#each DIRECTIONS as direction}
+// (62:2) {#each DIRECTIONS as direction}
 function create_each_block_1$1(ctx) {
 	let option;
-	let t_value = /*direction*/ ctx[15] + "";
+	let t_value = /*direction*/ ctx[17] + "";
 	let t;
 	let option_value_value;
 
@@ -32249,7 +39318,7 @@ function create_each_block_1$1(ctx) {
 		c() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*direction*/ ctx[15];
+			option.__value = option_value_value = /*direction*/ ctx[17];
 			option.value = option.__value;
 		},
 		m(target, anchor) {
@@ -32263,16 +39332,16 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (76:4) {#if line.length > 1}
+// (69:4) {#if line.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[12][0] + "-" + "";
+	let t0_value = /*line*/ ctx[14][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[12][1], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -32281,11 +39350,11 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[10](/*line*/ ctx[12], ...args);
+		return /*click_handler_2*/ ctx[11](/*line*/ ctx[14], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[11](/*line*/ ctx[12], ...args);
+		return /*mouseover_handler*/ ctx[12](/*line*/ ctx[14], ...args);
 	}
 
 	return {
@@ -32298,11 +39367,11 @@ function create_if_block(ctx) {
 			a = element("a");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(pre, "class", "svelte-7s7d25");
+			attr(pre, "class", "svelte-8j6nux");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[12][1])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[7], /*line*/ ctx[14][1])
 			? ""
-			: "is-unresolved") + " svelte-7s7d25");
+			: "is-unresolved") + " svelte-8j6nux");
 
 			attr(span, "class", "internal-link");
 
@@ -32331,12 +39400,12 @@ function create_if_block(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[12][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[12][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[14][0] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*plugin, lines*/ 33 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*plugin*/ ctx[0].app, /*line*/ ctx[12][1])
+			if (dirty & /*lines*/ 32 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[7], /*line*/ ctx[14][1])
 			? ""
-			: "is-unresolved") + " svelte-7s7d25")) {
+			: "is-unresolved") + " svelte-8j6nux")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -32348,10 +39417,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (75:2) {#each lines as line}
+// (68:2) {#each lines as line}
 function create_each_block$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[12].length > 1 && create_if_block(ctx);
+	let if_block = /*line*/ ctx[14].length > 1 && create_if_block(ctx);
 
 	return {
 		c() {
@@ -32363,7 +39432,7 @@ function create_each_block$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[12].length > 1) {
+			if (/*line*/ ctx[14].length > 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -32442,7 +39511,7 @@ function create_fragment$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(span, "class", "icon svelte-7s7d25");
+			attr(span, "class", "icon svelte-8j6nux");
 
 			attr(span, "aria-label", span_aria_label_value = /*frozen*/ ctx[4]
 			? `Frozen on: ${/*basename*/ ctx[3]}`
@@ -32450,10 +39519,10 @@ function create_fragment$1(ctx) {
 
 			attr(span, "aria-label-position", "left");
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
-			attr(button, "class", "svelte-7s7d25");
+			attr(button, "class", "svelte-8j6nux");
 			attr(select, "class", "dropdown");
-			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[9].call(select));
-			attr(div, "class", "BC-downs svelte-7s7d25");
+			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[10].call(select));
+			attr(div, "class", "BC-downs svelte-8j6nux");
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -32479,9 +39548,9 @@ function create_fragment$1(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", /*click_handler*/ ctx[7]),
-					listen(button, "click", /*click_handler_1*/ ctx[8]),
-					listen(select, "change", /*select_change_handler*/ ctx[9])
+					listen(span, "click", /*click_handler*/ ctx[8]),
+					listen(button, "click", /*click_handler_1*/ ctx[9]),
+					listen(select, "change", /*select_change_handler*/ ctx[10])
 				];
 
 				mounted = true;
@@ -32543,7 +39612,7 @@ function create_fragment$1(ctx) {
 				select_option(select, /*dir*/ ctx[2]);
 			}
 
-			if (dirty & /*settings, openOrSwitch, plugin, lines, hoverPreview, view, isInVault, dropDendron*/ 99) {
+			if (dirty & /*settings, openOrSwitch, app, lines, hoverPreview, view, isInVault, dropDendron*/ 226) {
 				each_value = /*lines*/ ctx[5];
 				let i;
 
@@ -32598,21 +39667,21 @@ function instance$1($$self, $$props, $$invalidate) {
 	
 	let { plugin } = $$props;
 	let { view } = $$props;
-	const { settings } = plugin;
+	const { settings, app, closedG } = plugin;
 	let dir = "down";
 	let frozen = false;
-	let { basename } = plugin.app.workspace.getActiveFile();
+	let { basename } = app.workspace.getActiveFile();
 
-	plugin.app.workspace.on("active-leaf-change", () => {
+	plugin.registerEvent(app.workspace.on("active-leaf-change", () => {
 		if (frozen) return;
-		$$invalidate(3, basename = plugin.app.workspace.getActiveFile().basename);
-	});
+		$$invalidate(3, basename = app.workspace.getActiveFile().basename);
+	}));
 
 	let lines;
 
 	const click_handler = () => {
 		$$invalidate(4, frozen = !frozen);
-		if (!frozen) $$invalidate(3, basename = plugin.app.workspace.getActiveFile().basename);
+		if (!frozen) $$invalidate(3, basename = app.workspace.getActiveFile().basename);
 	};
 
 	const click_handler_1 = async () => {
@@ -32625,7 +39694,7 @@ function instance$1($$self, $$props, $$invalidate) {
 		$$invalidate(2, dir);
 	}
 
-	const click_handler_2 = async (line, e) => await openOrSwitch(plugin.app, line[1], e);
+	const click_handler_2 = async (line, e) => await openOrSwitch(app, line[1], e);
 	const mouseover_handler = (line, e) => hoverPreview(e, view, line[1]);
 
 	$$self.$$set = $$props => {
@@ -32634,18 +39703,13 @@ function instance$1($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*plugin, dir, basename*/ 13) {
+		if ($$self.$$.dirty & /*dir, basename*/ 12) {
 			{
-				const { closedG } = plugin;
 				const downG = getSubInDirs(closedG, dir);
 				const allPaths = dfsAllPaths(downG, basename);
 				const index = createIndex(allPaths, false);
 				loglevel.info({ allPaths, index });
-
-				$$invalidate(5, lines = index.split("\n").map(line => {
-					const pair = line.split("- ");
-					return [pair[0], pair.slice(1).join("- ")];
-				}).filter(pair => pair[1] !== ""));
+				$$invalidate(5, lines = indexToLinePairs(index));
 			}
 		}
 	};
@@ -32658,6 +39722,7 @@ function instance$1($$self, $$props, $$invalidate) {
 		frozen,
 		lines,
 		settings,
+		app,
 		click_handler,
 		click_handler_1,
 		select_change_handler,
@@ -32669,7 +39734,7 @@ function instance$1($$self, $$props, $$invalidate) {
 class SideTree extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-7s7d25-style")) add_css();
+		if (!document.getElementById("svelte-8j6nux-style")) add_css();
 		init(this, options, instance$1, create_fragment$1, safe_not_equal, { plugin: 0, view: 1 });
 	}
 }
@@ -54194,22 +61259,24 @@ const treeMap = (graph, app, currFile, modal, width, height) => {
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[20] = list[i];
-	child_ctx[21] = list;
-	child_ctx[22] = i;
+	child_ctx[24] = list[i].text;
+	child_ctx[25] = list[i].options;
+	child_ctx[26] = list[i].val;
+	child_ctx[27] = list;
+	child_ctx[28] = i;
 	return child_ctx;
 }
 
 function get_each_context_1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i];
+	child_ctx[29] = list[i];
 	return child_ctx;
 }
 
-// (163:8) {#each selector.options as op}
+// (137:8) {#each options as op}
 function create_each_block_1(ctx) {
 	let option;
-	let t_value = /*op*/ ctx[23] + "";
+	let t_value = /*op*/ ctx[29] + "";
 	let t;
 	let option_value_value;
 
@@ -54217,7 +61284,7 @@ function create_each_block_1(ctx) {
 		c() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*op*/ ctx[23];
+			option.__value = option_value_value = /*op*/ ctx[29];
 			option.value = option.__value;
 		},
 		m(target, anchor) {
@@ -54225,9 +61292,9 @@ function create_each_block_1(ctx) {
 			append(option, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*selectors*/ 1 && t_value !== (t_value = /*op*/ ctx[23] + "")) set_data(t, t_value);
+			if (dirty[0] & /*selectors*/ 1 && t_value !== (t_value = /*op*/ ctx[29] + "")) set_data(t, t_value);
 
-			if (dirty & /*selectors*/ 1 && option_value_value !== (option_value_value = /*op*/ ctx[23])) {
+			if (dirty[0] & /*selectors*/ 1 && option_value_value !== (option_value_value = /*op*/ ctx[29])) {
 				option.__value = option_value_value;
 				option.value = option.__value;
 			}
@@ -54238,33 +61305,32 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (153:2) {#each selectors as selector}
+// (133:2) {#each selectors as { text, options, val }}
 function create_each_block(ctx) {
 	let span;
-	let t0_value = /*selector*/ ctx[20].text + "";
+	let t0_value = /*text*/ ctx[24] + "";
 	let t0;
 	let t1;
 	let select;
-	let select_value_value;
 	let t2;
 	let mounted;
 	let dispose;
-	let each_value_1 = /*selector*/ ctx[20].options;
+	let each_value_1 = /*options*/ ctx[25];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
 		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
 	}
 
-	function change_handler(...args) {
-		return /*change_handler*/ ctx[3](/*selector*/ ctx[20], /*each_value*/ ctx[21], /*selector_index*/ ctx[22], ...args);
+	function select_change_handler() {
+		/*select_change_handler*/ ctx[2].call(select, /*each_value*/ ctx[27], /*each_index*/ ctx[28]);
 	}
 
 	return {
 		c() {
 			span = element("span");
 			t0 = text(t0_value);
-			t1 = text(":\r\n      \r\n      ");
+			t1 = text(":\r\n      ");
 			select = element("select");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -54272,6 +61338,7 @@ function create_each_block(ctx) {
 			}
 
 			t2 = space();
+			if (/*val*/ ctx[26] === void 0) add_render_callback(select_change_handler);
 		},
 		m(target, anchor) {
 			insert(target, span, anchor);
@@ -54283,20 +61350,20 @@ function create_each_block(ctx) {
 				each_blocks[i].m(select, null);
 			}
 
-			select_option(select, /*selector*/ ctx[20].val);
+			select_option(select, /*val*/ ctx[26]);
 			append(span, t2);
 
 			if (!mounted) {
-				dispose = listen(select, "change", change_handler);
+				dispose = listen(select, "change", select_change_handler);
 				mounted = true;
 			}
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*selectors*/ 1 && t0_value !== (t0_value = /*selector*/ ctx[20].text + "")) set_data(t0, t0_value);
+			if (dirty[0] & /*selectors*/ 1 && t0_value !== (t0_value = /*text*/ ctx[24] + "")) set_data(t0, t0_value);
 
-			if (dirty & /*selectors*/ 1) {
-				each_value_1 = /*selector*/ ctx[20].options;
+			if (dirty[0] & /*selectors*/ 1) {
+				each_value_1 = /*options*/ ctx[25];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -54318,8 +61385,8 @@ function create_each_block(ctx) {
 				each_blocks.length = each_value_1.length;
 			}
 
-			if (dirty & /*selectors*/ 1 && select_value_value !== (select_value_value = /*selector*/ ctx[20].val)) {
-				select_option(select, /*selector*/ ctx[20].val);
+			if (dirty[0] & /*selectors*/ 1) {
+				select_option(select, /*val*/ ctx[26]);
 			}
 		},
 		d(detaching) {
@@ -54364,8 +61431,8 @@ function create_fragment(ctx) {
 			insert(target, t, anchor);
 			insert(target, div1, anchor);
 		},
-		p(ctx, [dirty]) {
-			if (dirty & /*selectors*/ 1) {
+		p(ctx, dirty) {
+			if (dirty[0] & /*selectors*/ 1) {
 				each_value = /*selectors*/ ctx[0];
 				let i;
 
@@ -54404,36 +61471,35 @@ function instance($$self, $$props, $$invalidate) {
 	
 	
 	let { modal } = $$props;
-	let { settings } = $$props;
-	const { app } = modal;
-	const { plugin } = modal;
+	const { app, plugin } = modal;
+	const { mainG, settings } = plugin;
+	const { visGraph, visRelation, visClosed, visAll } = settings;
 	const currFile = app.workspace.getActiveFile();
 
 	const selectors = [
 		{
 			text: "Type",
 			options: VISTYPES,
-			val: settings.visGraph
+			val: visGraph
 		},
 		{
 			text: "Relation",
 			options: RELATIONS,
-			val: settings.visRelation
+			val: visRelation
 		},
 		{
 			text: "Close Implied",
 			options: REAlCLOSED,
-			val: settings.visClosed
+			val: visClosed
 		},
 		{
 			text: "No Unlinked",
 			options: ALLUNLINKED,
-			val: settings.visAll
+			val: visAll
 		}
 	];
 
 	const [width, height] = [Math.round(window.innerWidth / 1.3), Math.round(window.innerHeight / 1.3)];
-	const { mainG } = plugin;
 
 	const [up, same, down] = [
 		getSubInDirs(mainG, "up"),
@@ -54481,20 +61547,18 @@ function instance($$self, $$props, $$invalidate) {
 	};
 
 	const types = {
-		"Force Directed Graph": { fun: forceDirectedG },
-		"Tidy Tree": { fun: tidyTree },
-		"Circle Packing": { fun: circlePacking },
-		"Edge Bundling": { fun: edgeBundling },
-		"Arc Diagram": { fun: arcDiagram },
-		Sunburst: { fun: sunburst },
-		"Tree Map": { fun: treeMap },
-		Icicle: { fun: icicle },
-		"Radial Tree": { fun: radialTree }
+		"Force Directed Graph": forceDirectedG,
+		"Tidy Tree": tidyTree,
+		"Circle Packing": circlePacking,
+		"Edge Bundling": edgeBundling,
+		"Arc Diagram": arcDiagram,
+		Sunburst: sunburst,
+		"Tree Map": treeMap,
+		Icicle: icicle,
+		"Radial Tree": radialTree
 	};
 
 	function draw(type) {
-		var _a;
-
 		if (!document.querySelector(".d3-graph")) {
 			setTimeout(
 				() => {
@@ -54505,7 +61569,7 @@ function instance($$self, $$props, $$invalidate) {
 					: _a.empty();
 
 					try {
-						types[type].fun(...argArr);
+						types[type](...argArr);
 					} catch(error) {
 						console.log(error);
 					}
@@ -54513,29 +61577,27 @@ function instance($$self, $$props, $$invalidate) {
 				10
 			);
 		} else {
-			(_a = document.querySelector(".d3-graph")) === null || _a === void 0
-			? void 0
-			: _a.empty();
+			document.querySelector(".d3-graph").empty();
 
 			try {
-				types[type].fun(...argArr);
+				types[type](...argArr);
 			} catch(error) {
 				console.log(error);
 			}
 		}
 	}
 
-	const change_handler = (selector, each_value, selector_index, el) => {
-		$$invalidate(0, each_value[selector_index].val = el.target.value, selectors);
-	};
+	function select_change_handler(each_value, each_index) {
+		each_value[each_index].val = select_value(this);
+		$$invalidate(0, selectors);
+	}
 
 	$$self.$$set = $$props => {
 		if ("modal" in $$props) $$invalidate(1, modal = $$props.modal);
-		if ("settings" in $$props) $$invalidate(2, settings = $$props.settings);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*selectors, modal*/ 3) {
+		if ($$self.$$.dirty[0] & /*selectors, modal*/ 3) {
 			argArr = [
 				graphs[selectors[1].val][selectors[2].val][selectors[3].val],
 				app,
@@ -54546,32 +61608,32 @@ function instance($$self, $$props, $$invalidate) {
 			];
 		}
 
-		if ($$self.$$.dirty & /*selectors*/ 1) {
+		if ($$self.$$.dirty[0] & /*selectors*/ 1) {
 			draw(selectors[0].val);
 		}
 	};
 
-	return [selectors, modal, settings, change_handler];
+	return [selectors, modal, select_change_handler];
 }
 
 class VisComp extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance, create_fragment, safe_not_equal, { modal: 1, settings: 2 });
+		init(this, options, instance, create_fragment, safe_not_equal, { modal: 1 }, [-1, -1]);
 	}
 }
 
 function graphlibToD3(g) {
     const d3Graph = { nodes: [], links: [] };
-    const edgeIDs = {};
+    const nodeIDs = {};
     g.nodes().forEach((node, i) => {
         d3Graph.nodes.push({ id: i, name: node });
-        edgeIDs[node] = i;
+        nodeIDs[node] = i;
     });
     g.forEachEdge((k, a, s, t) => {
         d3Graph.links.push({
-            source: edgeIDs[s],
-            target: edgeIDs[t],
+            source: nodeIDs[s],
+            target: nodeIDs[t],
         });
     });
     return d3Graph;
@@ -54683,7 +61745,6 @@ class VisModal extends obsidian.Modal {
             target: contentEl,
             props: {
                 modal: this,
-                settings: this.plugin.settings,
             },
         });
     }
@@ -54698,7 +61759,6 @@ class BCPlugin extends obsidian.Plugin {
         this.visited = [];
         this.activeLeafChange = undefined;
         this.layoutChange = undefined;
-        this.statusBatItemEl = undefined;
     }
     registerActiveLeafChangeEvent() {
         this.activeLeafChange = this.app.workspace.on("active-leaf-change", async () => {
@@ -54709,7 +61769,6 @@ class BCPlugin extends obsidian.Plugin {
                 const activeView = this.getActiveTYPEView(MATRIX_VIEW);
                 if (activeView)
                     await activeView.draw();
-                // if (this.settings.showBCs) await drawTrail(this);
             }
         });
         this.registerEvent(this.activeLeafChange);
@@ -54721,102 +61780,52 @@ class BCPlugin extends obsidian.Plugin {
         });
         this.registerEvent(this.layoutChange);
     }
-    async waitForCache() {
-        var _a, _b, _c;
-        if (this.app.plugins.enabledPlugins.has("dataview")) {
-            let basename;
-            while (!basename ||
-                !this.app.plugins.plugins.dataview.api.page(basename)) {
-                await wait(100);
-                basename = (_c = (_b = (_a = this.app) === null || _a === void 0 ? void 0 : _a.workspace) === null || _b === void 0 ? void 0 : _b.getActiveFile()) === null || _c === void 0 ? void 0 : _c.basename;
-            }
-        }
-        else {
-            await waitForResolvedLinks(this.app);
-        }
-    }
     async onload() {
         console.log("loading breadcrumbs plugin");
+        const { app } = this;
         await this.loadSettings();
         const { settings } = this;
-        this.addSettingTab(new BCSettingTab(this.app, this));
-        // Prevent breaking change
-        if (typeof settings.debugMode === "boolean") {
-            settings.debugMode = settings.debugMode ? "DEBUG" : "WARN";
-            await this.saveSettings();
-        }
-        //@ts-ignore
-        const { userHierarchies } = settings;
-        if (userHierarchies !== undefined && userHierarchies.length > 0) {
-            settings.userHiers = userHierarchies;
-            //@ts-ignore
-            delete settings.userHierarchies;
-            await this.saveSettings();
-        }
-        ["prev", "next"].forEach((dir) => {
-            settings.userHiers.forEach(async (hier, i) => {
-                if (hier[dir] === undefined)
-                    settings.userHiers[i][dir] = [];
-                await this.saveSettings();
-            });
-        });
-        if (settings.hasOwnProperty("limitTrailCheckboxStates")) {
-            //@ts-ignore
-            delete settings.limitTrailCheckboxStates;
-            await this.saveSettings();
-        }
-        if (settings.hasOwnProperty("limitWriteBCCheckboxStates")) {
-            //@ts-ignore
-            delete settings.limitWriteBCCheckboxStates;
-            await this.saveSettings();
-        }
-        if (!settings.CHECKBOX_STATES_OVERWRITTEN) {
-            const fields = getFields(settings.userHiers);
-            settings.limitWriteBCCheckboxes = fields;
-            settings.limitJumpToFirstFields = fields;
-            settings.limitTrailCheckboxes = getFields(settings.userHiers, "up");
-            settings.CHECKBOX_STATES_OVERWRITTEN = true;
-            await this.saveSettings();
-        }
+        this.addSettingTab(new BCSettingTab(app, this));
+        this.db = new Debugger(this);
+        this.registerEditorSuggest(new FieldSuggestor(this));
+        const { openMatrixOnLoad, openStatsOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, showBCsInEditLPMode, userHiers, } = settings;
         this.VIEWS = [
             {
                 plain: "Matrix",
                 type: MATRIX_VIEW,
                 constructor: MatrixView,
-                openOnLoad: settings.openMatrixOnLoad,
+                openOnLoad: openMatrixOnLoad,
             },
             {
                 plain: "Stats",
                 type: STATS_VIEW,
                 constructor: StatsView,
-                openOnLoad: settings.openStatsOnLoad,
+                openOnLoad: openStatsOnLoad,
             },
             {
                 plain: "Duck",
                 type: DUCK_VIEW,
                 constructor: DucksView,
-                openOnLoad: settings.openDuckOnLoad,
+                openOnLoad: openDuckOnLoad,
             },
             {
                 plain: "Down",
                 type: TREE_VIEW,
                 constructor: TreeView,
-                openOnLoad: settings.openDownOnLoad,
+                openOnLoad: openDownOnLoad,
             },
         ];
-        this.db = new Debugger(this);
-        this.registerEditorSuggest(new FieldSuggestor(this));
         for (const { constructor, type } of this.VIEWS) {
             this.registerView(type, (leaf) => new constructor(leaf, this));
         }
         obsidian.addIcon(DUCK_ICON, DUCK_ICON_SVG);
         obsidian.addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
-        await this.waitForCache();
+        await waitForCache(this);
         this.mainG = await buildMainG(this);
         this.closedG = buildClosedG(this);
-        this.app.workspace.onLayoutReady(async () => {
+        app.workspace.onLayoutReady(async () => {
             var _a;
-            const noFiles = this.app.vault.getMarkdownFiles().length;
+            const noFiles = app.vault.getMarkdownFiles().length;
             if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes().length) < noFiles) {
                 await wait(3000);
                 this.mainG = await buildMainG(this);
@@ -54824,17 +61833,16 @@ class BCPlugin extends obsidian.Plugin {
             }
             for (const { openOnLoad, type, constructor } of this.VIEWS) {
                 if (openOnLoad)
-                    await openView(this.app, type, constructor);
+                    await openView(app, type, constructor);
             }
-            if (settings.showBCs)
+            if (showBCs)
                 await drawTrail(this);
             this.registerActiveLeafChangeEvent();
             this.registerLayoutChangeEvent();
-            this.app.workspace.iterateAllLeaves((leaf) => {
-                if (leaf instanceof obsidian.MarkdownView) {
+            app.workspace.iterateAllLeaves((leaf) => {
+                if (leaf instanceof obsidian.MarkdownView)
                     //@ts-ignore
                     leaf.view.previewMode.rerender(true);
-                }
             });
         });
         for (const { type, plain, constructor } of this.VIEWS) {
@@ -54843,24 +61851,21 @@ class BCPlugin extends obsidian.Plugin {
                 name: `Open ${plain} View`,
                 //@ts-ignore
                 checkCallback: async (checking) => {
-                    if (checking) {
-                        return this.app.workspace.getLeavesOfType(type).length === 0;
-                    }
-                    await openView(this.app, type, constructor);
+                    if (checking)
+                        return app.workspace.getLeavesOfType(type).length === 0;
+                    await openView(app, type, constructor);
                 },
             });
         }
         this.addCommand({
             id: "open-vis-modal",
             name: "Open Visualisation Modal",
-            callback: () => {
-                new VisModal(this.app, this).open();
-            },
+            callback: () => new VisModal(app, this).open(),
         });
         this.addCommand({
             id: "manipulate-hierarchy-notes",
             name: "Adjust Hierarchy Notes",
-            callback: () => new HierarchyNoteSelectorModal(this.app, this).open(),
+            callback: () => new HierarchyNoteSelectorModal(app, this).open(),
         });
         this.addCommand({
             id: "Refresh-Breadcrumbs-Index",
@@ -54871,7 +61876,7 @@ class BCPlugin extends obsidian.Plugin {
             id: "Toggle-trail-in-Edit&LP",
             name: "Toggle: Show Trail/Grid in Edit & LP mode",
             callback: async () => {
-                settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
+                settings.showBCsInEditLPMode = !showBCsInEditLPMode;
                 await this.saveSettings();
                 await drawTrail(this);
             },
@@ -54879,10 +61884,7 @@ class BCPlugin extends obsidian.Plugin {
         this.addCommand({
             id: "Write-Breadcrumbs-to-Current-File",
             name: "Write Breadcrumbs to Current File",
-            callback: async () => {
-                const currFile = this.app.workspace.getActiveFile();
-                await writeBCToFile(this, currFile);
-            },
+            callback: async () => await writeBCToFile(this),
         });
         this.addCommand({
             id: "Write-Breadcrumbs-to-All-Files",
@@ -54906,14 +61908,14 @@ class BCPlugin extends obsidian.Plugin {
                 callback: async () => jumpToFirstDir(this, dir),
             });
         });
-        getFields(settings.userHiers).forEach((field) => {
+        getFields(userHiers).forEach((field) => {
             this.addCommand({
                 id: `new-file-with-curr-as-${field}`,
                 name: `Create a new '${field}' from the current note`,
                 callback: async () => thread(this, field),
             });
         });
-        this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(this.app, this).open());
+        this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", getCodeblockCB(this));
     }
     getActiveTYPEView(type) {
@@ -54935,7 +61937,6 @@ class BCPlugin extends obsidian.Plugin {
     onunload() {
         console.log("unloading");
         this.VIEWS.forEach(async (view) => {
-            // await this.getActiveTYPEView(view.type)?.close();
             this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
                 leaf.detach();
             });

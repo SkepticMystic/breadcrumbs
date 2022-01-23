@@ -1,4 +1,10 @@
-import type { FrontMatterCache, TFile } from "obsidian";
+import type { App, FrontMatterCache, TFile } from "obsidian";
+import {
+  isInVault,
+  wait,
+  waitForResolvedLinks,
+} from "obsidian-community-lib/dist/utils";
+import { parse, stringify } from "yaml";
 import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
@@ -65,9 +71,30 @@ export const createOrUpdateYaml = async (
   }
 };
 
+export function changeYaml(yaml: string, key: string, newVal: string): string {
+  if (yaml === "") {
+    return `${key}: ['${newVal}']`;
+  } else {
+    const parsed: { [key: string]: any } = parse(yaml);
+    const value = parsed[key];
+    if (value === undefined) {
+      parsed[key] = newVal;
+    } else if (typeof value === "string" && value !== newVal) {
+      parsed[key] = [value, newVal];
+    } else if (
+      typeof value?.[0] === "string" &&
+      value.includes &&
+      !value.includes(newVal)
+    ) {
+      parsed[key] = [...value, newVal];
+    }
+    // else if (other types of values...)
+    return stringify(parsed);
+  }
+}
+
 export function splitAtYaml(content: string): [string, string] {
-  const startsWithYaml = content.startsWith("---");
-  if (!startsWithYaml) return ["", content];
+  if (!content.startsWith("---\n")) return ["", content];
   else {
     const splits = content.split("---");
     return [
@@ -99,3 +126,24 @@ export function getAlt(node: string, plugin: BCPlugin): string | null {
     }
   } else return null;
 }
+
+export async function waitForCache(plugin: BCPlugin) {
+  const { app } = plugin;
+  if (app.plugins.enabledPlugins.has("dataview")) {
+    let basename: string;
+    while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
+      await wait(100);
+      basename = app?.workspace?.getActiveFile()?.basename;
+    }
+  } else {
+    await waitForResolvedLinks(app);
+  }
+}
+
+export const linkClass = (app: App, to: string, realQ = true) =>
+  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
+    realQ ? "" : "BC-Implied"
+  }`;
+
+export const getDVApi = (plugin: BCPlugin) =>
+  plugin.app.plugins.plugins.dataview?.api;
