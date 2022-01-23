@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.44.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.43.0...2.44.0) (2022-01-23)
+
+
+### Features
+
+* Juggl view now uses custom hierarchy visualization ([578df1b](https://github.com/SkepticMystic/breadcrumbs/commit/578df1b20be07b229ad070b108a933fa87ef9276))
+* Layout type selector for Juggl view ([4f40700](https://github.com/SkepticMystic/breadcrumbs/commit/4f407001e76c0478ecacff2578ce21ce866bb377))
+
+
+### Bug Fixes
+
+* Juggl doesnt render correctly for notes with - in the name ([2024886](https://github.com/SkepticMystic/breadcrumbs/commit/20248868a7e6b3330999e0f161c9a81674617683))
+
 ## [2.43.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.42.1...2.43.0) (2022-01-23)
 
 
