@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.43.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.42.1...2.43.0) (2022-01-23)
+
+
+### Features
+
+* :sparkles: Relation Suggestor with custom trigger ([#286](https://github.com/SkepticMystic/breadcrumbs/issues/286)) ([d7ffaf2](https://github.com/SkepticMystic/breadcrumbs/commit/d7ffaf2be9ad1853563c6a6bd9346b8569b76ffd))
+
 ### [2.42.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.42.0...2.42.1) (2022-01-23)
 
 ## [2.42.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.2...2.42.0) (2022-01-23)
