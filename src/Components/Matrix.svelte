@@ -1,15 +1,16 @@
 <script lang="ts">
-  import type { App, TFile } from "obsidian";
+  import type { TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
-  import type { BCSettings, SquareProps } from "../interfaces";
+  import type { SquareProps } from "../interfaces";
   import { dropPathNDendron } from "../Utils/generalUtils";
   import type MatrixView from "../Views/MatrixView";
 
-  export let filteredSquaresArr: SquareProps[][];
+  export let hierSquares: SquareProps[][];
   export let currFile: TFile;
-  export let settings: BCSettings;
   export let matrixView: MatrixView;
-  export let app: App;
+
+  const { plugin } = matrixView;
+  const { app, settings } = plugin;
 
   const {
     showImpliedRelations,
@@ -20,11 +21,11 @@
 </script>
 
 <div
-  class="BC-Matrix  markdown-preview-view {filteredSquaresArr.length
+  class="BC-Matrix  markdown-preview-view {hierSquares.length
     ? ''
     : 'BC-empty-view'}"
 >
-  {#each filteredSquaresArr as squares}
+  {#each hierSquares as squares}
     <div class="BC-matrix-hier">
       {#each squares as { field, impliedItems, realItems }}
         {#if realItems.length || (showImpliedRelations && impliedItems.length)}

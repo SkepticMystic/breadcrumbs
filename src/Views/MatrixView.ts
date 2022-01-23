@@ -295,60 +295,6 @@ export default class MatrixView extends ItemView {
     });
   }
 
-  drawButtons(contentEl: HTMLElement) {
-    const { plugin, matrixQ } = this;
-    const { settings } = plugin;
-    const { alphaSortAsc } = settings;
-    contentEl.createEl(
-      "button",
-      {
-        text: matrixQ ? "List" : "Matrix",
-        attr: {
-          "aria-label": "Mode",
-          style: "padding: 1px 6px 2px 6px !important; margin-left: 7px;",
-        },
-      },
-      (el) => {
-        el.onclick = async () => {
-          this.matrixQ = !matrixQ;
-          el.innerText = matrixQ ? "List" : "Matrix";
-          await this.draw();
-        };
-      }
-    );
-
-    contentEl.createEl(
-      "button",
-      {
-        text: "↻",
-        attr: {
-          "aria-label": "Refresh Index",
-          style: "padding: 1px 6px 2px 6px;",
-        },
-      },
-      (el) => (el.onclick = async () => await refreshIndex(plugin))
-    );
-
-    contentEl.createEl(
-      "button",
-      {
-        text: alphaSortAsc ? "↗" : "↘",
-        attr: {
-          "aria-label": "Alphabetical sorting order",
-          style: "padding: 1px 6px 2px 6px;",
-        },
-      },
-      (el) => {
-        el.onclick = async () => {
-          plugin.settings.alphaSortAsc = !alphaSortAsc;
-          await this.plugin.saveSettings();
-          el.innerText = alphaSortAsc ? "↗" : "↘";
-          await this.draw();
-        };
-      }
-    );
-  }
-
   async draw(): Promise<void> {
     try {
       const { contentEl, db, plugin } = this;
@@ -359,8 +305,6 @@ export default class MatrixView extends ItemView {
       const currFile = this.app.workspace.getActiveFile();
       if (!currFile) return;
 
-      this.drawButtons(contentEl);
-
       const hierSquares = this.getHierSquares(userHiers, currFile).filter(
         (squareArr) =>
           squareArr.some(
@@ -368,20 +312,10 @@ export default class MatrixView extends ItemView {
           )
       );
 
-      const compInput = {
+      new MLContainer({
         target: contentEl,
-        props: {
-          filteredSquaresArr: hierSquares,
-          currFile,
-          settings,
-          matrixView: this,
-          app: this.app,
-        },
-      };
-
-      this.matrixQ
-        ? (this.view = new Matrix(compInput))
-        : (this.view = new Lists(compInput));
+        props: { hierSquares, matrixView: this, currFile },
+      });
 
       db.end2G();
     } catch (err) {
