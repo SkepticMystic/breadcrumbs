@@ -286,7 +286,7 @@ export function createJugglTrail(
           .split("\n")
           .map((line) => {
             const pair = line.split("- ");
-            return pair[1];
+            return pair.slice(1).join("- ");
           })
           .filter((pair) => pair && pair !== "");
         let depthMapDown = createDepthMap(allPaths, source);
@@ -415,7 +415,6 @@ export function createJugglTrail(
     argsUp.layout = layout;
   }
   const isFdgd = layout === 'cola' || layout === 'd3-force';
-  console.log({argsUp, isFdgd})
   if (isFdgd) {
     // @ts-ignore
     argsUp.fdgdLayout = layout;
