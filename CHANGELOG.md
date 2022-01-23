@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.42.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.2...2.42.0) (2022-01-23)
+
+
+### Features
+
+* Depth configuration in Juggl view ([37ccf4f](https://github.com/SkepticMystic/breadcrumbs/commit/37ccf4f5d816d74367e1736c1df837a9fcc7d29a))
+* Expand nodes in the BC Juggl view graph ([d6b4fe3](https://github.com/SkepticMystic/breadcrumbs/commit/d6b4fe3507a2b9936e63cb93b3da2eba893fad3c))
+
 ### [2.41.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.1...2.41.2) (2022-01-23)
 
 
