@@ -28,6 +28,7 @@ export interface BCSettings {
   downViewWrap: boolean;
   dotsColour: string;
   enableAlphaSort: boolean;
+  enableRelationSuggestor: boolean;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
   gridDots: boolean;
@@ -76,6 +77,7 @@ export interface BCSettings {
   showWriteAllBCsCmd: boolean;
   sortByNameShowAlias: boolean;
   regexNoteField: string;
+  relSuggestorTrigger: string;
   rlLeaf: boolean;
   showBCs: boolean;
   showBCsInEditLPMode: boolean;

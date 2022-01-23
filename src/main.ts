@@ -26,6 +26,7 @@ import {
 import { FieldSuggestor } from "./FieldSuggestor";
 import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
 import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
+import { RelationSuggestor } from "./RelationSuggestor";
 import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getFields } from "./Utils/HierUtils";
 import { waitForCache } from "./Utils/ObsidianUtils";
@@ -73,11 +74,16 @@ export default class BCPlugin extends Plugin {
     const { app } = this;
 
     await this.loadSettings();
-    const { settings } = this;
     this.addSettingTab(new BCSettingTab(app, this));
 
     this.db = new Debugger(this);
-    this.registerEditorSuggest(new FieldSuggestor(this));
+
+    const { settings } = this;
+    const { fieldSuggestor, enableRelationSuggestor } = settings;
+
+    if (fieldSuggestor) this.registerEditorSuggest(new FieldSuggestor(this));
+    if (enableRelationSuggestor)
+      this.registerEditorSuggest(new RelationSuggestor(this));
 
     const {
       openMatrixOnLoad,

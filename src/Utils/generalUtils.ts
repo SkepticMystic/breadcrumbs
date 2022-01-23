@@ -1,5 +1,3 @@
-import type { App } from "obsidian";
-import { isInVault } from "obsidian-community-lib";
 import { dropHeaderOrAlias, regNFlags, splitLinksRegex } from "../constants";
 import type { BCSettings } from "../interfaces";
 
@@ -175,4 +173,9 @@ export function strToRegex(input: string) {
     console.log(e);
     return null;
   }
+}
+
+// Source: https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+export function escapeRegex(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }

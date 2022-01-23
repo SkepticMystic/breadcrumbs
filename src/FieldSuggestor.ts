@@ -22,20 +22,19 @@ export class FieldSuggestor extends EditorSuggest<string> {
     editor: Editor,
     _: TFile
   ): EditorSuggestTriggerInfo | null {
-    if (this.plugin.settings.fieldSuggestor) {
-      const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
-      const match = sub.match(/^BC-(.*)$/)?.[1];
-      if (match !== undefined) {
-        return {
-          end: cursor,
-          start: {
-            ch: sub.lastIndexOf(match),
-            line: cursor.line,
-          },
-          query: match,
-        };
-      }
+    const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
+    const match = sub.match(/^BC-(.*)$/)?.[1];
+    if (match !== undefined) {
+      return {
+        end: cursor,
+        start: {
+          ch: sub.lastIndexOf(match),
+          line: cursor.line,
+        },
+        query: match,
+      };
     }
+
     return null;
   }
 

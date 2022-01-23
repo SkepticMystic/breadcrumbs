@@ -77,6 +77,34 @@ export class BCSettingTab extends PluginSettingTab {
           await plugin.saveSettings();
         })
       );
+    new Setting(alternativeHierarchyDetails)
+      .setName("Enable Relation Suggestor")
+      .setDesc(
+        fragWithHTML(
+          "Enable an editor suggestor which gets triggered by a custom string to show a list of relations from your hierarchies to insert."
+        )
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(settings.enableRelationSuggestor)
+          .onChange(async (value) => {
+            settings.enableRelationSuggestor = value;
+            await plugin.saveSettings();
+          })
+      );
+    new Setting(alternativeHierarchyDetails)
+      .setName("Relation Suggestor Trigger")
+      .setDesc(
+        fragWithHTML(
+          "The string used to trigger the relation suggestor. Default is <code>\\</code>."
+        )
+      )
+      .addText((text) =>
+        text.setValue(settings.relSuggestorTrigger).onChange(async (value) => {
+          settings.relSuggestorTrigger = value;
+          await plugin.saveSettings();
+        })
+      );
 
     addTagNoteSettings(plugin, alternativeHierarchyDetails);
     addRegexNoteSettings(plugin, alternativeHierarchyDetails);
