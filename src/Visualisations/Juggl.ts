@@ -193,6 +193,12 @@ function zoomToSource(juggl: IJuggl, source: string) {
   });
 }
 
+function zoomToGraph(juggl: IJuggl) {
+  juggl.on('vizReady', (viz) => {
+    viz.fit(viz.nodes());
+  });
+}
+
 function createDepthMap(paths: string[][], source: string, offset=0): {[name: string]: number} {
   // TODO: Is there a BC function for this already?
   let depthMap: {[value: string]: number} = {};
@@ -280,7 +286,7 @@ export function createJugglTrail(
           .split("\n")
           .map((line) => {
             const pair = line.split("- ");
-            return pair[1];
+            return pair.slice(1).join("- ");
           })
           .filter((pair) => pair && pair !== "");
         let depthMapDown = createDepthMap(allPaths, source);
@@ -298,13 +304,53 @@ export function createJugglTrail(
         let nodesS = new Set(lines);
         nodesS.add(source);
         const nodes = Array.from(nodesS).map((s) => s + ".md");
-        jugglDown = createJuggl(plugin, target, nodes, args, depthMapDown);
+
+        const argsDown = Object.assign({}, args);
+        const layout = plugin.settings.jugglLayout;
+        if (layout === 'hierarchy') {
+          argsDown.layout = {
+            // @ts-ignore
+            name: 'dagre',
+            animate: false,
+            ranker: (graph) => {
+              Object.keys(graph._nodes).forEach((id) => {
+                const name = VizId.fromId(id).id;
+                if (name in depthMapDown) {
+                  graph._nodes[id].rank = depthMapDown[name] + 1;
+                } else {
+                  graph._nodes[id].rank = 1;
+                }
+              });
+            }
+          }
+        }
+        else {
+          argsDown.layout = layout;
+        }
+        const isFdgd = layout === 'cola' || layout === 'd3-force';
+        if (isFdgd) {
+          // @ts-ignore
+          argsDown.fdgdLayout = layout;
+          argsDown.layout = 'force-directed';
+        }
+        else {
+          argsDown.autoZoom = true;
+          argsDown.animateLayout = false;
+        }
+
+        jugglDown = createJuggl(plugin, target, nodes, argsDown, depthMapDown);
+
+        if (isFdgd) {
+          zoomToSource(jugglDown, source);
+        }
+        else {
+          zoomToGraph(jugglDown);
+        }
 
         if (jugglUp) {
           target.children[amtChildren].addClass("juggl-hide");
           depthUp.$set({visible: false});
         }
-        zoomToSource(jugglDown, source);
       },
       disabled: false,
       title: "Show down graph",
@@ -345,7 +391,44 @@ export function createJugglTrail(
   nodes.push(source);
   nodes = nodes.map((s) => s + ".md");
 
-  jugglUp = createJuggl(plugin, target, nodes, args, depthMapUp);
+  const argsUp: IJugglSettings = Object.assign({}, args);
 
-  zoomToSource(jugglUp, source);
+  const layout = plugin.settings.jugglLayout;
+  if (layout === 'hierarchy') {
+    argsUp.layout = {
+      // @ts-ignore
+      name: 'dagre',
+      animate: false,
+      ranker: (graph) => {
+        Object.keys(graph._nodes).forEach((id) => {
+          const name = VizId.fromId(id).id;
+          if (name in depthMapUp) {
+            graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
+          } else {
+            graph._nodes[id].rank = 1;
+          }
+        });
+      }
+    }
+  }
+  else {
+    argsUp.layout = layout;
+  }
+  const isFdgd = layout === 'cola' || layout === 'd3-force';
+  if (isFdgd) {
+    // @ts-ignore
+    argsUp.fdgdLayout = layout;
+    argsUp.layout = 'force-directed';
+  }
+  else {
+    argsUp.autoZoom = true;
+    argsUp.animateLayout = false;
+  }
+  jugglUp = createJuggl(plugin, target, nodes, argsUp, depthMapUp);
+  if (isFdgd) {
+    zoomToSource(jugglUp, source);
+  }
+  else {
+    zoomToGraph(jugglUp);
+  }
 }
