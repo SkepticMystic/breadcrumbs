@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.41.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.1...2.41.2) (2022-01-23)
+
+
+### Bug Fixes
+
+* **WriteBCToFile:** :bug: Use yaml lib ([5371b8d](https://github.com/SkepticMystic/breadcrumbs/commit/5371b8d5c1dbad690f59a651702860466473837d))
+
 ### [2.41.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.41.0...2.41.1) (2022-01-21)
 
 
