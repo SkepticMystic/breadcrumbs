@@ -305,7 +305,10 @@ export function createJugglTrail(
         nodesS.add(source);
         const nodes = Array.from(nodesS).map((s) => s + ".md");
 
-        const argsDown = Object.assign({}, args, {layout: {
+        const argsDown = Object.assign({}, args);
+        const layout = plugin.settings.jugglLayout;
+        if (layout === 'hierarchy') {
+          argsDown.layout = {
             // @ts-ignore
             name: 'dagre',
             animate: false,
@@ -314,15 +317,23 @@ export function createJugglTrail(
                 const name = VizId.fromId(id).id;
                 if (name in depthMapDown) {
                   graph._nodes[id].rank = depthMapDown[name] + 1;
-                }
-                else {
+                } else {
                   graph._nodes[id].rank = 1;
                 }
               });
             }
-          }});
-        const isFdgd = argsDown.layout === 'force-directed' || argsDown.layout === 'cola' || argsDown.layout === 'd3-force';
-        if (!isFdgd) {
+          }
+        }
+        else {
+          argsDown.layout = layout;
+        }
+        const isFdgd = layout === 'cola' || layout === 'd3-force';
+        if (isFdgd) {
+          // @ts-ignore
+          argsDown.fdgdLayout = layout;
+          argsDown.layout = 'force-directed';
+        }
+        else {
           argsDown.autoZoom = true;
           argsDown.animateLayout = false;
         }
@@ -380,24 +391,37 @@ export function createJugglTrail(
   nodes.push(source);
   nodes = nodes.map((s) => s + ".md");
 
-  const argsUp = Object.assign({}, args, {layout: {
-    // @ts-ignore
-    name: 'dagre',
-    animate: false,
-    ranker: (graph) => {
-      Object.keys(graph._nodes).forEach((id) => {
-        const name = VizId.fromId(id).id;
-        if (name in depthMapUp) {
-          graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
-        }
-        else {
-          graph._nodes[id].rank = 1;
-        }
-      });
+  const argsUp: IJugglSettings = Object.assign({}, args);
+
+  const layout = plugin.settings.jugglLayout;
+  if (layout === 'hierarchy') {
+    argsUp.layout = {
+      // @ts-ignore
+      name: 'dagre',
+      animate: false,
+      ranker: (graph) => {
+        Object.keys(graph._nodes).forEach((id) => {
+          const name = VizId.fromId(id).id;
+          if (name in depthMapUp) {
+            graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
+          } else {
+            graph._nodes[id].rank = 1;
+          }
+        });
+      }
     }
-  }});
-  const isFdgd = argsUp.layout === 'force-directed' || argsUp.layout === 'cola' || argsUp.layout === 'd3-force';
-  if (!isFdgd) {
+  }
+  else {
+    argsUp.layout = layout;
+  }
+  const isFdgd = layout === 'cola' || layout === 'd3-force';
+  console.log({argsUp, isFdgd})
+  if (isFdgd) {
+    // @ts-ignore
+    argsUp.fdgdLayout = layout;
+    argsUp.layout = 'force-directed';
+  }
+  else {
     argsUp.autoZoom = true;
     argsUp.animateLayout = false;
   }

@@ -254,6 +254,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   enableAlphaSort: true,
   fieldSuggestor: true,
   filterImpliedSiblingsOfDifferentTypes: false,
+  jugglLayout: 'hierarchy',
   limitWriteBCCheckboxes: [],
   CHECKBOX_STATES_OVERWRITTEN: false,
   gridDots: false,

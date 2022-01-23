@@ -10,7 +10,7 @@ import type {
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
 import type StatsView from "./Views/StatsView";
-import type { IJugglSettings } from "juggl-api";
+import type {IJugglSettings, JugglLayouts} from "juggl-api";
 
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
@@ -51,6 +51,8 @@ export interface BCSettings {
     cousinsIsSibling: boolean;
   };
   indexNotes: string[];
+  // Default layout to use for Juggl view
+  jugglLayout: JugglLayouts;
   /** An array of fields going _up_ which **will** be shown in the trail view */
   limitTrailCheckboxes: string[];
   /** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
