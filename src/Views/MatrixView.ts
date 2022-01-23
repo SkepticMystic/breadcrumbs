@@ -1,8 +1,7 @@
 import { error, info } from "loglevel";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { Debugger } from "src/Debugger";
-import Lists from "../Components/Lists.svelte";
-import Matrix from "../Components/Matrix.svelte";
+import MLContainer from "../Components/MLContainer.svelte";
 import {
   ARROW_DIRECTIONS,
   blankRealNImplied,
@@ -11,19 +10,19 @@ import {
 } from "../constants";
 import type {
   Directions,
+  EdgeAttr,
   internalLinkObj,
   SquareItem,
   SquareProps,
   UserHier,
 } from "../interfaces";
 import type BCPlugin from "../main";
-import { refreshIndex } from "../refreshIndex";
 import { splitAndTrim } from "../Utils/generalUtils";
 import { getOppDir, getOppFields } from "../Utils/HierUtils";
-import { linkClass } from "../Utils/ObsidianUtils";
+import { getDVApi, linkClass } from "../Utils/ObsidianUtils";
 
 export default class MatrixView extends ItemView {
-  private plugin: BCPlugin;
+  plugin: BCPlugin;
   private view: Matrix | Lists;
   matrixQ: boolean;
   db: Debugger;
@@ -36,15 +35,16 @@ export default class MatrixView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    this.matrixQ = this.plugin.settings.defaultView;
+    const { plugin, app } = this;
+    this.matrixQ = plugin.settings.defaultView;
 
-    this.app.workspace.onLayoutReady(() => {
+    app.workspace.onLayoutReady(() => {
       setTimeout(
         async () => await this.draw(),
-        this.app.plugins.plugins.dataview
-          ? this.app.plugins.plugins.dataview.api
+        app.plugins.plugins.dataview
+          ? app.plugins.plugins.dataview.api
             ? 1
-            : this.plugin.settings.dvWaitTime
+            : plugin.settings.dvWaitTime
           : 3000
       );
     });
@@ -56,7 +56,6 @@ export default class MatrixView extends ItemView {
   getDisplayText() {
     return "Breadcrumbs Matrix";
   }
-
   icon = TRAIL_ICON;
 
   async onOpen(): Promise<void> {}
@@ -67,34 +66,35 @@ export default class MatrixView extends ItemView {
   }
 
   getAlt(node: string): string | null {
-    const { altLinkFields, showAllAliases } = this.plugin.settings;
-    if (altLinkFields.length) {
-      // dv First
-      const dv = this.app.plugins.plugins.dataview?.api;
-      if (dv) {
-        const page = dv.page(node);
-        if (!page) return null;
-        for (const alt of altLinkFields) {
-          const value = page[alt] as string;
+    const { app, plugin } = this;
+    const { altLinkFields, showAllAliases } = plugin.settings;
+    if (!altLinkFields.length) return null;
+
+    // dv First
+    const dv = getDVApi(plugin);
+    if (dv) {
+      const page = dv.page(node);
+      if (!page) return null;
+      for (const alt of altLinkFields) {
+        const value = page[alt] as string;
+
+        const arr: string[] =
+          typeof value === "string" ? splitAndTrim(value) : value;
+        if (value) return showAllAliases ? arr.join(", ") : arr[0];
+      }
+    } else {
+      const file = app.metadataCache.getFirstLinkpathDest(node, "");
+      if (file) {
+        const { frontmatter } = app.metadataCache.getFileCache(file);
+        for (const altField of altLinkFields) {
+          const value = frontmatter?.[altField];
 
           const arr: string[] =
             typeof value === "string" ? splitAndTrim(value) : value;
           if (value) return showAllAliases ? arr.join(", ") : arr[0];
         }
-      } else {
-        const file = this.app.metadataCache.getFirstLinkpathDest(node, "");
-        if (file) {
-          const metadata = this.app.metadataCache.getFileCache(file);
-          for (const altField of altLinkFields) {
-            const value = metadata?.frontmatter?.[altField];
-
-            const arr: string[] =
-              typeof value === "string" ? splitAndTrim(value) : value;
-            if (value) return showAllAliases ? arr.join(", ") : arr[0];
-          }
-        }
       }
-    } else return null;
+    }
   }
 
   toInternalLinkObj = (
@@ -127,17 +127,13 @@ export default class MatrixView extends ItemView {
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
   getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
-    const { closedG } = plugin;
-    const { userHiers } = plugin.settings;
+    const { closedG, settings } = plugin;
+    const { userHiers } = settings;
     const neighbours = blankRealNImplied();
     if (!closedG) return neighbours;
 
     closedG.forEachEdge(currNode, (k, a, s, t) => {
-      const { field, dir, implied } = a as {
-        field: string;
-        dir: Directions;
-        implied?: string;
-      };
+      const { field, dir, implied } = a as EdgeAttr;
 
       if (s === currNode) {
         neighbours[dir].reals.push({ to: t, field, implied });
@@ -153,20 +149,25 @@ export default class MatrixView extends ItemView {
     return neighbours;
   }
 
+  sortItemsAlpha = (a: internalLinkObj, b: internalLinkObj) => {
+    const { sortByNameShowAlias, alphaSortAsc } = this.plugin.settings;
+    return (sortByNameShowAlias ? a.to : a.alt ?? a.to) <
+      (sortByNameShowAlias ? b.to : b.alt ?? b.to)
+      ? alphaSortAsc
+        ? -1
+        : 1
+      : alphaSortAsc
+      ? 1
+      : -1;
+  };
+
   getHierSquares(userHiers: UserHier[], currFile: TFile): SquareProps[][] {
     const { plugin } = this;
     const { mainG, settings } = plugin;
-    const {
-      alphaSortAsc,
-      enableAlphaSort,
-      treatCurrNodeAsImpliedSibling,
-      squareDirectionsOrder,
-      sortByNameShowAlias,
-    } = settings;
+    const { enableAlphaSort, squareDirectionsOrder } = settings;
     if (!mainG) return [];
 
     const { basename } = currFile;
-    // const realsnImplieds = getRealnImplied(plugin, basename);
     const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
 
     return userHiers.map((hier) => {
@@ -242,20 +243,9 @@ export default class MatrixView extends ItemView {
 
       const squares = [ru, rs, rd, rn, rp, iu, is, id, iN, ip];
 
-      if (enableAlphaSort) {
-        squares.forEach((sq) =>
-          sq.sort((a, b) =>
-            (sortByNameShowAlias ? a.to : a.alt ?? a.to) <
-            (sortByNameShowAlias ? b.to : b.alt ?? b.to)
-              ? alphaSortAsc
-                ? -1
-                : 1
-              : alphaSortAsc
-              ? 1
-              : -1
-          )
-        );
-      }
+      if (enableAlphaSort)
+        squares.forEach((sq) => sq.sort(this.sortItemsAlpha));
+
       squares.forEach((sq) => sq.sort((a, b) => a.order - b.order));
 
       info([

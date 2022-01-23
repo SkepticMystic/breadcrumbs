@@ -39,12 +39,10 @@ import { VisModal } from "./Visualisations/VisModal";
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
   visited: [string, HTMLDivElement][] = [];
-  refreshIntervalID: number;
   mainG: MultiGraph;
   closedG: MultiGraph;
   activeLeafChange: EventRef = undefined;
   layoutChange: EventRef = undefined;
-  statusBatItemEl: HTMLElement = undefined;
   db: Debugger;
   VIEWS: ViewInfo[];
 

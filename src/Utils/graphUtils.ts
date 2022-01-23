@@ -9,6 +9,7 @@ import type {
   BCSettings,
   Directions,
   dvFrontmatterCache,
+  EdgeAttr,
   NodePath,
   RealNImplied,
   UserHier,
@@ -320,11 +321,7 @@ export function getRealnImplied(
 
   if (!closedG.hasNode(currNode)) return realsnImplieds;
   closedG.forEachEdge(currNode, (k, a, s, t) => {
-    const {
-      field,
-      dir: edgeDir,
-      implied,
-    } = a as { field: string; dir: Directions; implied?: string };
+    const { field, dir: edgeDir, implied } = a as EdgeAttr;
     const oppField = getOppFields(userHiers, field, edgeDir)[0];
 
     (dir ? [dir, getOppDir(dir)] : DIRECTIONS).forEach(

@@ -1,5 +1,5 @@
 import { MultiGraph } from "graphology";
-import { debug, error, warn } from "loglevel";
+import { debug, error } from "loglevel";
 import { Notice, Pos, TFile } from "obsidian";
 import { wait } from "obsidian-community-lib";
 import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
@@ -48,38 +48,34 @@ import {
   populateMain,
 } from "./Utils/graphUtils";
 import { fallbackField, getFieldInfo, iterateHiers } from "./Utils/HierUtils";
-import { getBaseFromMDPath, getDVBasename } from "./Utils/ObsidianUtils";
+import {
+  getBaseFromMDPath,
+  getDVApi,
+  getDVBasename,
+} from "./Utils/ObsidianUtils";
 import { drawTrail } from "./Views/TrailView";
 
 function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
-  const { app, db } = plugin;
-  db.startGs("getDVMetadataCache", "dvCaches");
+  const { db } = plugin;
+  const api = getDVApi(plugin);
+  db.start1G("getDVMetadataCache");
 
-  const frontms: dvFrontmatterCache[] = files.map((file) => {
-    const dvCache: dvFrontmatterCache = app.plugins.plugins.dataview.api.page(
-      file.path
-    );
-    debug(`${file.basename}:`, { dvCache });
-    return dvCache;
-  });
+  const frontms = files.map((file) => api.page(file.path));
 
-  db.endGs(2, { frontms });
+  db.end1G({ frontms });
   return frontms;
 }
 
 function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
   const { app, db } = plugin;
-  db.startGs("getObsMetadataCache", "obsCaches");
+  db.start1G("getObsMetadataCache");
 
   const frontms: dvFrontmatterCache[] = files.map((file) => {
-    debug(`GetObsMetadataCache: ${file.basename}`);
     const { frontmatter } = app.metadataCache.getFileCache(file);
-    debug({ frontmatter });
-    if (frontmatter) return { file, ...frontmatter };
-    else return { file };
+    return frontmatter ? { file, ...frontmatter } : { file };
   });
 
-  db.endGs(2, { frontms });
+  db.end1G({ frontms });
   return frontms;
 }
 
@@ -166,9 +162,18 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
   const mainG = new MultiGraph();
   try {
     const { settings, app, db } = plugin;
+    const { userHiers, CSVPaths, parseJugglLinksWithoutJuggl, hierarchyNotes } =
+      settings;
     db.start2G("initGraphs");
+
+    if (userHiers.length === 0) {
+      db.end2G();
+      new Notice("You do not have any Breadcrumbs hierarchies set up.");
+      return mainG;
+    }
+
     const files = app.vault.getMarkdownFiles();
-    const dvQ = !!app.plugins.enabledPlugins.has("dataview");
+    const dvQ = app.plugins.enabledPlugins.has("dataview");
 
     let frontms: dvFrontmatterCache[] = dvQ
       ? getDVMetadataCache(plugin, files)
@@ -181,62 +186,25 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
         : getObsMetadataCache(plugin, files);
     }
 
-    const { userHiers } = settings;
-    if (userHiers.length === 0) {
-      db.end2G();
-      new Notice("You do not have any Breadcrumbs hierarchies set up.");
-      return mainG;
-    }
-
-    const useCSV = settings.CSVPaths !== "";
-    const CSVRows = useCSV ? await getCSVRows(plugin) : [];
+    const CSVRows = CSVPaths !== "" ? await getCSVRows(plugin) : [];
 
     const eligableAlts: { [altField: string]: dvFrontmatterCache[] } = {};
     BC_ALTS.forEach((alt) => (eligableAlts[alt] = []));
 
-    function noticeIfBroken(frontm: dvFrontmatterCache): void {
-      const basename = getDVBasename(frontm.file);
-      // @ts-ignore
-      if (frontm[BC_FOLDER_NOTE] === true) {
-        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
-        new Notice(msg);
-        warn(msg);
-      }
-      // @ts-ignore
-      if (frontm[BC_LINK_NOTE] === true) {
-        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated link-note value. Instead of 'true', it now takes in the fieldName you want to use.`;
-        new Notice(msg);
-        warn(msg);
-      }
-      if (frontm["BC-folder-note-up"]) {
-        const msg = `CONSOLE LOGGED: ${basename} is using a deprecated folder-note-up value. Instead of setting the fieldName here, it goes directly into 'BC-folder-note: fieldName'.`;
-        new Notice(msg);
-        warn(msg);
-      }
-    }
-
     db.start2G("addFrontmatterToGraph");
-    frontms.forEach((frontm) => {
+    frontms.forEach((page) => {
       BC_ALTS.forEach((alt) => {
-        if (frontm[alt]) {
-          eligableAlts[alt].push(frontm);
-        }
+        if (page[alt]) eligableAlts[alt].push(page);
       });
 
-      noticeIfBroken(frontm);
-
-      const basename = getDVBasename(frontm.file);
-      const sourceOrder = getSourceOrder(frontm);
+      const basename = getDVBasename(page.file);
+      const sourceOrder = getSourceOrder(page);
 
       iterateHiers(userHiers, (hier, dir, field) => {
-        const values = parseFieldValue(frontm[field]);
+        const values = parseFieldValue(page[field]);
 
         values.forEach((target) => {
-          if (
-            (target.startsWith("<%") && target.endsWith("%>")) ||
-            (target.startsWith("{{") && target.endsWith("}}"))
-          )
-            return;
+          if (target.startsWith("<%") || target.startsWith("{{")) return;
           const targetOrder = getTargetOrder(frontms, target);
 
           populateMain(
@@ -249,7 +217,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
             targetOrder
           );
         });
-        if (useCSV) addCSVCrumbs(mainG, CSVRows, dir, field);
+        if (CSVRows.length) addCSVCrumbs(mainG, CSVRows, dir, field);
       });
     });
 
@@ -257,7 +225,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
 
     // SECTION  Juggl Links
     const jugglLinks =
-      app.plugins.plugins.juggl || settings.parseJugglLinksWithoutJuggl
+      app.plugins.plugins.juggl || parseJugglLinksWithoutJuggl
         ? await getJugglLinks(plugin, files)
         : [];
 
@@ -269,20 +237,15 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
     // SECTION  Hierarchy Notes
     db.start2G("Hierarchy Notes");
 
-    if (settings.hierarchyNotes[0] !== "") {
-      for (const note of settings.hierarchyNotes) {
+    if (hierarchyNotes.length) {
+      for (const note of hierarchyNotes) {
         const file = app.metadataCache.getFirstLinkpathDest(note, "");
-        if (file) {
+        if (file)
           addHNsToGraph(
             settings,
             await getHierarchyNoteItems(plugin, file),
             mainG
           );
-        } else {
-          new Notice(
-            `${note} is no longer in your vault. It is best to remove it in Breadcrumbs settings.`
-          );
-        }
       }
     }
 
@@ -305,10 +268,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
 
     db.end1G();
 
-    files.forEach((file) => {
-      const { basename } = file;
-      addNodesIfNot(mainG, [basename]);
-    });
+    files.forEach((file) => addNodesIfNot(mainG, [file.basename]));
     db.end2G("graphs inited", { mainG });
     return mainG;
   } catch (err) {

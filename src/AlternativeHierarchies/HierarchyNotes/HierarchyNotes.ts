@@ -3,10 +3,7 @@ import { Notice, TFile } from "obsidian";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import type BCPlugin from "../../main";
 import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
-import {
-  getFields,
-  getOppFields
-} from "../../Utils/HierUtils";
+import { getFields, getOppFields } from "../../Utils/HierUtils";
 
 export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
   const { userHiers } = plugin.settings;
@@ -94,8 +91,6 @@ export function addHNsToGraph(
         field: upField,
       });
 
-      // I don't think this needs to be done if the reverse is done above
-      addNodesIfNot(mainG, [parent, note]);
       addEdgeIfNot(mainG, parent, note, {
         dir: "down",
         field: downField,

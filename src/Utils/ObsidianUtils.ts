@@ -144,3 +144,6 @@ export const linkClass = (app: App, to: string, realQ = true) =>
   `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
     realQ ? "" : "BC-Implied"
   }`;
+
+export const getDVApi = (plugin: BCPlugin) =>
+  plugin.app.plugins.plugins.dataview?.api;
