@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.44.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.0...2.44.1) (2022-01-26)
+
+
+### Bug Fixes
+
+* **Codeblock:** :bug: Title field error message triggered in the wrong cases ([6b9dd1c](https://github.com/SkepticMystic/breadcrumbs/commit/6b9dd1cb9433ff45865a7bf3da320806d43b7e83))
+
 ## [2.44.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.43.0...2.44.0) (2022-01-23)
 
 
