@@ -1,7 +1,7 @@
 import type { MultiGraph } from "graphology";
+import type { IJugglSettings, JugglLayouts } from "juggl-api";
 import type { LogLevel } from "loglevel";
-import type { Constructor, FrontMatterCache, Pos, TFile } from "obsidian";
-import type TreeView from "./Views/TreeView";
+import type { Constructor, Pos, TFile } from "obsidian";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
@@ -10,7 +10,7 @@ import type {
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
 import type StatsView from "./Views/StatsView";
-import type {IJugglSettings, JugglLayouts} from "juggl-api";
+import type TreeView from "./Views/TreeView";
 
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
@@ -292,13 +292,13 @@ declare module "obsidian" {
 export interface ParsedCodeblock extends IJugglSettings {
   dir: Directions;
   fields: string[];
-  title: string;
+  title: false | undefined;
   depth: string[];
-  flat: boolean;
+  flat: true | undefined;
   type: CodeblockType;
   content: string;
   from: string;
-  implied: string;
+  implied: false | undefined;
 }
 
 export interface NodePath {

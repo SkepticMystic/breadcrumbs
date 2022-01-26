@@ -1,27 +1,25 @@
 <script lang="ts">
   import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
   import { meetsConditions } from "../Codeblocks";
-  import type { Directions } from "../interfaces";
+  import type { ParsedCodeblock } from "../interfaces";
   import type BCPlugin from "../main";
   import { dropDendron } from "../Utils/generalUtils";
   import RenderMarkdown from "./RenderMarkdown.svelte";
 
   export let plugin: BCPlugin;
   export let el: HTMLElement;
-  export let dir: Directions;
-  export let fields: string[];
-  export let title: string;
-  export let content: string;
   export let lines: [string, string][];
   export let froms: string[];
   export let min: number;
   export let max: number;
   export let basename: string;
+  export let parsedSource: ParsedCodeblock;
 
   const { settings, app } = plugin;
+  const { title, content, dir } = parsedSource;
 </script>
 
-{#if title !== "false"}
+{#if title !== false}
   <h3>{dir} of {basename}</h3>
 {/if}
 <div class="BC-tree">

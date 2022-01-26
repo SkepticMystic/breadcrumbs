@@ -9541,7 +9541,7 @@ const JUGGL_TRAIL_DEFAULTS = Object.assign(JUGGL_CB_DEFAULTS, {
     animateLayout: true,
     autoZoom: false,
     fdgdLayout: "d3-force",
-    height: "400px",
+    height: "300px",
     readContent: false,
     toolbar: false,
     navigator: false,
@@ -9667,6 +9667,7 @@ const DEFAULT_SETTINGS = {
     enableRelationSuggestor: false,
     fieldSuggestor: true,
     filterImpliedSiblingsOfDifferentTypes: false,
+    jugglLayout: 'hierarchy',
     limitWriteBCCheckboxes: [],
     CHECKBOX_STATES_OVERWRITTEN: false,
     gridDots: false,
@@ -29819,7 +29820,7 @@ function get_each_context$b(ctx, list, i) {
 	return child_ctx;
 }
 
-// (21:0) {#if title !== "false"}
+// (19:0) {#if title !== false}
 function create_if_block_2$3(ctx) {
 	let h3;
 	let t0;
@@ -29829,9 +29830,9 @@ function create_if_block_2$3(ctx) {
 	return {
 		c() {
 			h3 = element("h3");
-			t0 = text(/*dir*/ ctx[0]);
+			t0 = text(/*dir*/ ctx[9]);
 			t1 = text(" of ");
-			t2 = text(/*basename*/ ctx[7]);
+			t2 = text(/*basename*/ ctx[4]);
 		},
 		m(target, anchor) {
 			insert(target, h3, anchor);
@@ -29840,8 +29841,7 @@ function create_if_block_2$3(ctx) {
 			append(h3, t2);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*dir*/ 1) set_data(t0, /*dir*/ ctx[0]);
-			if (dirty & /*basename*/ 128) set_data(t2, /*basename*/ ctx[7]);
+			if (dirty & /*basename*/ 16) set_data(t2, /*basename*/ ctx[4]);
 		},
 		d(detaching) {
 			if (detaching) detach(h3);
@@ -29849,7 +29849,7 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (26:4) {#if meetsConditions(indent, link, froms, min, max)}
+// (24:4) {#if meetsConditions(indent, link, froms, min, max)}
 function create_if_block$9(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -29859,7 +29859,7 @@ function create_if_block$9(ctx) {
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
-		if (/*content*/ ctx[2] === "open" || /*content*/ ctx[2] === "closed") return 0;
+		if (/*content*/ ctx[8] === "open" || /*content*/ ctx[8] === "closed") return 0;
 		return 1;
 	}
 
@@ -29877,31 +29877,7 @@ function create_if_block$9(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			let previous_block_index = current_block_type_index;
-			current_block_type_index = select_block_type(ctx);
-
-			if (current_block_type_index === previous_block_index) {
-				if_blocks[current_block_type_index].p(ctx, dirty);
-			} else {
-				group_outros();
-
-				transition_out(if_blocks[previous_block_index], 1, 1, () => {
-					if_blocks[previous_block_index] = null;
-				});
-
-				check_outros();
-				if_block = if_blocks[current_block_type_index];
-
-				if (!if_block) {
-					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-					if_block.c();
-				} else {
-					if_block.p(ctx, dirty);
-				}
-
-				transition_in(if_block, 1);
-				if_block.m(if_block_anchor.parentNode, if_block_anchor);
-			}
+			if_block.p(ctx, dirty);
 		},
 		i(local) {
 			if (current) return;
@@ -29919,7 +29895,7 @@ function create_if_block$9(ctx) {
 	};
 }
 
-// (51:6) {:else}
+// (49:6) {:else}
 function create_else_block$3(ctx) {
 	let div;
 	let pre;
@@ -29928,7 +29904,7 @@ function create_else_block$3(ctx) {
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[5]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -29951,7 +29927,7 @@ function create_else_block$3(ctx) {
 			t3 = space();
 			attr(pre, "class", "indent svelte-1df5nr5");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[6], /*link*/ ctx[16])
 			? ""
 			: "is-unresolved") + " svelte-1df5nr5");
 
@@ -29978,10 +29954,10 @@ function create_else_block$3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 8 && t0_value !== (t0_value = /*indent*/ ctx[15] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 8 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 1 && t0_value !== (t0_value = /*indent*/ ctx[15] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 1 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*lines*/ 8 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
+			if (dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[6], /*link*/ ctx[16])
 			? ""
 			: "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
@@ -29997,7 +29973,7 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (27:6) {#if content === "open" || content === "closed"}
+// (25:6) {#if content === "open" || content === "closed"}
 function create_if_block_1$4(ctx) {
 	let div;
 	let pre;
@@ -30008,12 +29984,11 @@ function create_if_block_1$4(ctx) {
 	let summary;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "";
+	let t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[5]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
 	let rendermarkdown;
-	let details_open_value;
 	let t4;
 	let current;
 	let mounted;
@@ -30025,7 +30000,7 @@ function create_if_block_1$4(ctx) {
 
 	rendermarkdown = new RenderMarkdown({
 			props: {
-				app: /*app*/ ctx[9],
+				app: /*app*/ ctx[6],
 				path: /*link*/ ctx[16]
 			}
 		});
@@ -30046,12 +30021,12 @@ function create_if_block_1$4(ctx) {
 			t4 = space();
 			attr(pre, "class", "indent svelte-1df5nr5");
 
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[6], /*link*/ ctx[16])
 			? ""
 			: "is-unresolved") + " svelte-1df5nr5");
 
 			attr(span, "class", "internal-link");
-			details.open = details_open_value = /*content*/ ctx[2] === "open";
+			details.open = /*content*/ ctx[8] === "open";
 			attr(details, "class", "svelte-1df5nr5");
 		},
 		m(target, anchor) {
@@ -30080,22 +30055,18 @@ function create_if_block_1$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if ((!current || dirty & /*lines*/ 8) && t0_value !== (t0_value = /*indent*/ ctx[15] + "")) set_data(t0, t0_value);
-			if ((!current || dirty & /*lines*/ 8) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[8]) + "")) set_data(t2, t2_value);
+			if ((!current || dirty & /*lines*/ 1) && t0_value !== (t0_value = /*indent*/ ctx[15] + "")) set_data(t0, t0_value);
+			if ((!current || dirty & /*lines*/ 1) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[16], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
 
-			if (!current || dirty & /*lines*/ 8 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[9], /*link*/ ctx[16])
+			if (!current || dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[6], /*link*/ ctx[16])
 			? ""
 			: "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
 			}
 
 			const rendermarkdown_changes = {};
-			if (dirty & /*lines*/ 8) rendermarkdown_changes.path = /*link*/ ctx[16];
+			if (dirty & /*lines*/ 1) rendermarkdown_changes.path = /*link*/ ctx[16];
 			rendermarkdown.$set(rendermarkdown_changes);
-
-			if (!current || dirty & /*content*/ 4 && details_open_value !== (details_open_value = /*content*/ ctx[2] === "open")) {
-				details.open = details_open_value;
-			}
 		},
 		i(local) {
 			if (current) return;
@@ -30115,9 +30086,9 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (25:2) {#each lines as [indent, link]}
+// (23:2) {#each lines as [indent, link]}
 function create_each_block$b(ctx) {
-	let show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[4], /*min*/ ctx[5], /*max*/ ctx[6]);
+	let show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[1], /*min*/ ctx[2], /*max*/ ctx[3]);
 	let if_block_anchor;
 	let current;
 	let if_block = show_if && create_if_block$9(ctx);
@@ -30133,13 +30104,13 @@ function create_each_block$b(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty & /*lines, froms, min, max*/ 120) show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[4], /*min*/ ctx[5], /*max*/ ctx[6]);
+			if (dirty & /*lines, froms, min, max*/ 15) show_if = meetsConditions(/*indent*/ ctx[15], /*link*/ ctx[16], /*froms*/ ctx[1], /*min*/ ctx[2], /*max*/ ctx[3]);
 
 			if (show_if) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 
-					if (dirty & /*lines, froms, min, max*/ 120) {
+					if (dirty & /*lines, froms, min, max*/ 15) {
 						transition_in(if_block, 1);
 					}
 				} else {
@@ -30178,8 +30149,8 @@ function create_fragment$n(ctx) {
 	let t;
 	let div;
 	let current;
-	let if_block = /*title*/ ctx[1] !== "false" && create_if_block_2$3(ctx);
-	let each_value = /*lines*/ ctx[3];
+	let if_block = /*title*/ ctx[7] !== false && create_if_block_2$3(ctx);
+	let each_value = /*lines*/ ctx[0];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -30214,21 +30185,10 @@ function create_fragment$n(ctx) {
 			current = true;
 		},
 		p(ctx, [dirty]) {
-			if (/*title*/ ctx[1] !== "false") {
-				if (if_block) {
-					if_block.p(ctx, dirty);
-				} else {
-					if_block = create_if_block_2$3(ctx);
-					if_block.c();
-					if_block.m(t.parentNode, t);
-				}
-			} else if (if_block) {
-				if_block.d(1);
-				if_block = null;
-			}
+			if (/*title*/ ctx[7] !== false) if_block.p(ctx, dirty);
 
-			if (dirty & /*content, app, lines, openOrSwitch, isInVault, dropDendron, settings, meetsConditions, froms, min, max*/ 892) {
-				each_value = /*lines*/ ctx[3];
+			if (dirty & /*content, app, lines, openOrSwitch, isInVault, dropDendron, settings, meetsConditions, froms, min, max*/ 367) {
+				each_value = /*lines*/ ctx[0];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -30296,37 +30256,29 @@ function instance$n($$self, $$props, $$invalidate) {
 	
 	let { plugin } = $$props;
 	let { el } = $$props;
-	let { dir } = $$props;
-	let { fields } = $$props;
-	let { title } = $$props;
-	let { content } = $$props;
 	let { lines } = $$props;
 	let { froms } = $$props;
 	let { min } = $$props;
 	let { max } = $$props;
 	let { basename } = $$props;
+	let { parsedSource } = $$props;
 	const { settings, app } = plugin;
+	const { title, content, dir } = parsedSource;
 	const click_handler = async (link, e) => await openOrSwitch(app, link, e);
 	const click_handler_1 = async (link, e) => await openOrSwitch(app, link, e);
 
 	$$self.$$set = $$props => {
 		if ("plugin" in $$props) $$invalidate(10, plugin = $$props.plugin);
 		if ("el" in $$props) $$invalidate(11, el = $$props.el);
-		if ("dir" in $$props) $$invalidate(0, dir = $$props.dir);
-		if ("fields" in $$props) $$invalidate(12, fields = $$props.fields);
-		if ("title" in $$props) $$invalidate(1, title = $$props.title);
-		if ("content" in $$props) $$invalidate(2, content = $$props.content);
-		if ("lines" in $$props) $$invalidate(3, lines = $$props.lines);
-		if ("froms" in $$props) $$invalidate(4, froms = $$props.froms);
-		if ("min" in $$props) $$invalidate(5, min = $$props.min);
-		if ("max" in $$props) $$invalidate(6, max = $$props.max);
-		if ("basename" in $$props) $$invalidate(7, basename = $$props.basename);
+		if ("lines" in $$props) $$invalidate(0, lines = $$props.lines);
+		if ("froms" in $$props) $$invalidate(1, froms = $$props.froms);
+		if ("min" in $$props) $$invalidate(2, min = $$props.min);
+		if ("max" in $$props) $$invalidate(3, max = $$props.max);
+		if ("basename" in $$props) $$invalidate(4, basename = $$props.basename);
+		if ("parsedSource" in $$props) $$invalidate(12, parsedSource = $$props.parsedSource);
 	};
 
 	return [
-		dir,
-		title,
-		content,
 		lines,
 		froms,
 		min,
@@ -30334,9 +30286,12 @@ function instance$n($$self, $$props, $$invalidate) {
 		basename,
 		settings,
 		app,
+		title,
+		content,
+		dir,
 		plugin,
 		el,
-		fields,
+		parsedSource,
 		click_handler,
 		click_handler_1
 	];
@@ -30350,15 +30305,12 @@ class CBTree extends SvelteComponent {
 		init(this, options, instance$n, create_fragment$n, safe_not_equal, {
 			plugin: 10,
 			el: 11,
-			dir: 0,
-			fields: 12,
-			title: 1,
-			content: 2,
-			lines: 3,
-			froms: 4,
-			min: 5,
-			max: 6,
-			basename: 7
+			lines: 0,
+			froms: 1,
+			min: 2,
+			max: 3,
+			basename: 4,
+			parsedSource: 12
 		});
 	}
 }
@@ -30974,6 +30926,11 @@ function zoomToSource(juggl, source) {
         });
     });
 }
+function zoomToGraph(juggl) {
+    juggl.on('vizReady', (viz) => {
+        viz.fit(viz.nodes());
+    });
+}
 function createDepthMap(paths, source, offset = 0) {
     // TODO: Is there a BC function for this already?
     let depthMap = {};
@@ -31047,7 +31004,7 @@ function createJugglTrail(plugin, target, paths, source, args) {
                     .split("\n")
                     .map((line) => {
                     const pair = line.split("- ");
-                    return pair[1];
+                    return pair.slice(1).join("- ");
                 })
                     .filter((pair) => pair && pair !== "");
                 let depthMapDown = createDepthMap(allPaths, source);
@@ -31064,12 +31021,50 @@ function createJugglTrail(plugin, target, paths, source, args) {
                 let nodesS = new Set(lines);
                 nodesS.add(source);
                 const nodes = Array.from(nodesS).map((s) => s + ".md");
-                jugglDown = createJuggl(plugin, target, nodes, args, depthMapDown);
+                const argsDown = Object.assign({}, args);
+                const layout = plugin.settings.jugglLayout;
+                if (layout === 'hierarchy') {
+                    argsDown.layout = {
+                        // @ts-ignore
+                        name: 'dagre',
+                        animate: false,
+                        ranker: (graph) => {
+                            Object.keys(graph._nodes).forEach((id) => {
+                                const name = VizId.fromId(id).id;
+                                if (name in depthMapDown) {
+                                    graph._nodes[id].rank = depthMapDown[name] + 1;
+                                }
+                                else {
+                                    graph._nodes[id].rank = 1;
+                                }
+                            });
+                        }
+                    };
+                }
+                else {
+                    argsDown.layout = layout;
+                }
+                const isFdgd = layout === 'cola' || layout === 'd3-force';
+                if (isFdgd) {
+                    // @ts-ignore
+                    argsDown.fdgdLayout = layout;
+                    argsDown.layout = 'force-directed';
+                }
+                else {
+                    argsDown.autoZoom = true;
+                    argsDown.animateLayout = false;
+                }
+                jugglDown = createJuggl(plugin, target, nodes, argsDown, depthMapDown);
+                if (isFdgd) {
+                    zoomToSource(jugglDown, source);
+                }
+                else {
+                    zoomToGraph(jugglDown);
+                }
                 if (jugglUp) {
                     target.children[amtChildren].addClass("juggl-hide");
                     depthUp.$set({ visible: false });
                 }
-                zoomToSource(jugglDown, source);
             },
             disabled: false,
             title: "Show down graph",
@@ -31103,8 +31098,46 @@ function createJugglTrail(plugin, target, paths, source, args) {
     let nodes = Array.from(new Set(paths.reduce((prev, curr) => prev.concat(curr), [])));
     nodes.push(source);
     nodes = nodes.map((s) => s + ".md");
-    jugglUp = createJuggl(plugin, target, nodes, args, depthMapUp);
-    zoomToSource(jugglUp, source);
+    const argsUp = Object.assign({}, args);
+    const layout = plugin.settings.jugglLayout;
+    if (layout === 'hierarchy') {
+        argsUp.layout = {
+            // @ts-ignore
+            name: 'dagre',
+            animate: false,
+            ranker: (graph) => {
+                Object.keys(graph._nodes).forEach((id) => {
+                    const name = VizId.fromId(id).id;
+                    if (name in depthMapUp) {
+                        graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
+                    }
+                    else {
+                        graph._nodes[id].rank = 1;
+                    }
+                });
+            }
+        };
+    }
+    else {
+        argsUp.layout = layout;
+    }
+    const isFdgd = layout === 'cola' || layout === 'd3-force';
+    if (isFdgd) {
+        // @ts-ignore
+        argsUp.fdgdLayout = layout;
+        argsUp.layout = 'force-directed';
+    }
+    else {
+        argsUp.autoZoom = true;
+        argsUp.animateLayout = false;
+    }
+    jugglUp = createJuggl(plugin, target, nodes, argsUp, depthMapUp);
+    if (isFdgd) {
+        zoomToSource(jugglUp, source);
+    }
+    else {
+        zoomToGraph(jugglUp);
+    }
 }
 
 function getCodeblockCB(plugin) {
@@ -31148,7 +31181,7 @@ function getCodeblockCB(plugin) {
             }
         }
         const oppDir = getOppDir(dir);
-        const sub = implied === "false"
+        const sub = implied === false
             ? getSubInDirs(plugin.mainG, dir)
             : getSubInDirs(plugin.mainG, dir, oppDir);
         const closed = getReflexiveClosure(sub, userHiers);
@@ -31161,13 +31194,16 @@ function getCodeblockCB(plugin) {
             case "tree":
                 new CBTree({
                     target: el,
-                    props: Object.assign({ plugin,
+                    props: {
+                        plugin,
                         el,
                         min,
                         max,
                         lines,
                         froms,
-                        basename }, parsedSource),
+                        basename,
+                        parsedSource,
+                    },
                 });
                 break;
             case "juggl":
@@ -31218,11 +31254,11 @@ function codeblockError(plugin, parsedSource) {
         if (f !== undefined && !allFields.includes(f))
             err += `<code>fields: ${f}</code> is not a field in your hierarchies.</br>`;
     });
-    if (title !== undefined && title !== "false")
+    if (title !== undefined && title !== false)
         err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
     if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
         err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
-    if (flat !== undefined && flat !== true && flat !== false)
+    if (flat !== undefined && flat !== true)
         err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
     if (content !== undefined && content !== "open" && content !== "closed")
         err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
@@ -31230,7 +31266,7 @@ function codeblockError(plugin, parsedSource) {
         !plugin.app.plugins.enabledPlugins.has("dataview")) {
         err += `Dataview must be enabled to use <code>from</code>.</br>`;
     }
-    if (implied !== undefined && implied !== "false")
+    if (implied !== undefined && implied !== false)
         err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
     return err === ""
         ? ""
@@ -37396,6 +37432,23 @@ function addTrailViewSettings(plugin, viewDetails) {
         await plugin.saveSettings();
         await drawTrail(plugin);
     }));
+    new obsidian.Setting(trailDetails)
+        .setName("Juggl view layout")
+        .setDesc("The layout type to use for the Juggl view. " +
+        "The hierarchy layout is most natural for Breadcrumbs, but for large graphs D3 Force is recommended.")
+        .addDropdown((dc) => {
+        dc.addOption("hierarchy", "Hierarchy");
+        dc.addOption("d3-force", "D3 Force");
+        dc.addOption("cola", "Cola Force");
+        dc.addOption("grid", "Grid");
+        dc.addOption("concentric", "Concentric");
+        dc.setValue(settings.jugglLayout);
+        dc.onChange(async (value) => {
+            settings.jugglLayout = value;
+            await plugin.saveSettings();
+            await drawTrail(plugin);
+        });
+    });
 }
 
 function addTreeViewSettings(plugin, viewDetails) {

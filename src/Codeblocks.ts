@@ -62,7 +62,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
 
     const oppDir = getOppDir(dir);
     const sub =
-      implied === "false"
+      implied === false
         ? getSubInDirs(plugin.mainG, dir)
         : getSubInDirs(plugin.mainG, dir, oppDir);
     const closed = getReflexiveClosure(sub, userHiers);
@@ -86,7 +86,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
             lines,
             froms,
             basename,
-            ...parsedSource,
+            parsedSource,
           },
         });
         break;
@@ -162,13 +162,13 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
       err += `<code>fields: ${f}</code> is not a field in your hierarchies.</br>`;
   });
 
-  if (title !== undefined && title !== "false")
+  if (title !== undefined && title !== false)
     err += `<code>title: ${title}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
 
   if (depth !== undefined && depth.every((num) => isNaN(parseInt(num))))
     err += `<code>depth: ${depth}</code> is not a valid value. It has to be a number.</br>`;
 
-  if (flat !== undefined && flat !== true && flat !== false)
+  if (flat !== undefined && flat !== true)
     err += `<code>flat: ${flat}</code> is not a valid value. It has to be <code>true</code>, or leave the entire line out.</br>`;
 
   if (content !== undefined && content !== "open" && content !== "closed")
@@ -181,7 +181,7 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
     err += `Dataview must be enabled to use <code>from</code>.</br>`;
   }
 
-  if (implied !== undefined && implied !== "false")
+  if (implied !== undefined && implied !== false)
     err += `<code>implied: ${implied}</code> is not a valid value. It has to be <code>false</code>, or leave the entire line out.</br>`;
 
   return err === ""
