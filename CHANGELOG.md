@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.44.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.2...2.44.3) (2022-01-28)
+
+
+### Bug Fixes
+
+* **Threading:** :bug: Disallow illegal filename characters in threadingTemplate (fix [#288](https://github.com/SkepticMystic/breadcrumbs/issues/288)) ([b08073b](https://github.com/SkepticMystic/breadcrumbs/commit/b08073b1e6250790a595d919aec4547428ab8bfc))
+
 ### [2.44.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.1...2.44.2) (2022-01-27)
 
 ### [2.44.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.0...2.44.1) (2022-01-26)
