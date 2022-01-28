@@ -9649,6 +9649,17 @@ const BC_FIELDS_INFO = [
     },
 ];
 const BC_ALTS = BC_FIELDS_INFO.filter((f) => f.alt).map((f) => f.field);
+const ILLEGAL_FILENAME_CHARS = [
+    "\\",
+    "/",
+    ":",
+    "*",
+    "?",
+    '"',
+    "<",
+    ">",
+    "|",
+];
 const DEFAULT_SETTINGS = {
     addDendronNotes: false,
     aliasesInIndex: false,
@@ -9667,7 +9678,7 @@ const DEFAULT_SETTINGS = {
     enableRelationSuggestor: false,
     fieldSuggestor: true,
     filterImpliedSiblingsOfDifferentTypes: false,
-    jugglLayout: 'hierarchy',
+    jugglLayout: "hierarchy",
     limitWriteBCCheckboxes: [],
     CHECKBOX_STATES_OVERWRITTEN: false,
     gridDots: false,
@@ -37214,7 +37225,13 @@ function addThreadingSettings(plugin, cmdsDetails) {
         .addText((text) => {
         text.setValue(settings.threadingTemplate);
         text.inputEl.onblur = async () => {
-            settings.threadingTemplate = text.getValue();
+            const value = text.getValue();
+            if (ILLEGAL_FILENAME_CHARS.some((char) => value.includes(char))) {
+                new obsidian.Notice(`File name cannot contain any of these characters: ${ILLEGAL_FILENAME_CHARS.join(" ")}`);
+                text.setValue(settings.threadingTemplate);
+                return;
+            }
+            settings.threadingTemplate = value;
             await plugin.saveSettings();
         };
     });

@@ -1,5 +1,10 @@
-import { Setting } from "obsidian";
-import { ARROW_DIRECTIONS, DEFAULT_SETTINGS, DIRECTIONS } from "../constants";
+import { Notice, Setting } from "obsidian";
+import {
+  ARROW_DIRECTIONS,
+  DEFAULT_SETTINGS,
+  DIRECTIONS,
+  ILLEGAL_FILENAME_CHARS,
+} from "../constants";
 import type BCPlugin from "../main";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
 
@@ -40,7 +45,17 @@ export function addThreadingSettings(
     .addText((text) => {
       text.setValue(settings.threadingTemplate);
       text.inputEl.onblur = async () => {
-        settings.threadingTemplate = text.getValue();
+        const value = text.getValue();
+        if (ILLEGAL_FILENAME_CHARS.some((char) => value.includes(char))) {
+          new Notice(
+            `File name cannot contain any of these characters: ${ILLEGAL_FILENAME_CHARS.join(
+              " "
+            )}`
+          );
+          text.setValue(settings.threadingTemplate);
+          return;
+        }
+        settings.threadingTemplate = value;
         await plugin.saveSettings();
       };
     });
