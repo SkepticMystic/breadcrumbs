@@ -1,6 +1,6 @@
 import { MultiGraph } from "graphology";
 import { debug, error } from "loglevel";
-import { Notice, Pos, TFile } from "obsidian";
+import { normalizePath, Notice, Pos, TFile, TFolder } from "obsidian";
 import { wait } from "obsidian-community-lib";
 import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
 import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
@@ -238,14 +238,32 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
     db.start2G("Hierarchy Notes");
 
     if (hierarchyNotes.length) {
-      for (const note of hierarchyNotes) {
-        const file = app.metadataCache.getFirstLinkpathDest(note, "");
-        if (file)
-          addHNsToGraph(
-            settings,
-            await getHierarchyNoteItems(plugin, file),
-            mainG
+      for (const noteOrFolder of hierarchyNotes) {
+        if (noteOrFolder.endsWith("/")) {
+          const folder = app.vault.getAbstractFileByPath(
+            normalizePath(noteOrFolder)
           );
+
+          if (!(folder instanceof TFolder)) continue;
+          for (const child of folder.children) {
+            console.log({ child });
+            if (child instanceof TFile) {
+              addHNsToGraph(
+                settings,
+                await getHierarchyNoteItems(plugin, child),
+                mainG
+              );
+            }
+          }
+        } else {
+          const file = app.metadataCache.getFirstLinkpathDest(noteOrFolder, "");
+          if (file)
+            addHNsToGraph(
+              settings,
+              await getHierarchyNoteItems(plugin, file),
+              mainG
+            );
+        }
       }
     }
 

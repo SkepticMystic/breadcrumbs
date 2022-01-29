@@ -33369,10 +33369,23 @@ async function buildMainG(plugin) {
         // SECTION  Hierarchy Notes
         db.start2G("Hierarchy Notes");
         if (hierarchyNotes.length) {
-            for (const note of hierarchyNotes) {
-                const file = app.metadataCache.getFirstLinkpathDest(note, "");
-                if (file)
-                    addHNsToGraph(settings, await getHierarchyNoteItems(plugin, file), mainG);
+            for (const noteOrFolder of hierarchyNotes) {
+                if (noteOrFolder.endsWith("/")) {
+                    const folder = app.vault.getAbstractFileByPath(obsidian.normalizePath(noteOrFolder));
+                    if (!(folder instanceof obsidian.TFolder))
+                        continue;
+                    for (const child of folder.children) {
+                        console.log({ child });
+                        if (child instanceof obsidian.TFile) {
+                            addHNsToGraph(settings, await getHierarchyNoteItems(plugin, child), mainG);
+                        }
+                    }
+                }
+                else {
+                    const file = app.metadataCache.getFirstLinkpathDest(noteOrFolder, "");
+                    if (file)
+                        addHNsToGraph(settings, await getHierarchyNoteItems(plugin, file), mainG);
+                }
             }
         }
         db.end2G();
@@ -34128,24 +34141,15 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
     const hierarchyNoteDetails = subDetails("Hierarchy Notes", alternativeHierarchyDetails);
     new obsidian.Setting(hierarchyNoteDetails)
         .setName("Hierarchy Note(s)")
-        .setDesc("A list of notes used to create external Breadcrumb structures.")
+        .setDesc(fragWithHTML("A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <i>folder</i> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."))
         .addText((text) => {
         text
             .setPlaceholder("Hierarchy Note(s)")
             .setValue(settings.hierarchyNotes.join(", "));
         text.inputEl.onblur = async () => {
             const splits = splitAndTrim(text.getValue());
-            if (splits[0] === undefined) {
-                settings.hierarchyNotes = splits;
-                await plugin.saveSettings();
-            }
-            else if (splits.every((note) => isInVault(this.app, note))) {
-                settings.hierarchyNotes = splits;
-                await plugin.saveSettings();
-            }
-            else {
-                new obsidian.Notice("Atleast one of the notes is not in your vault");
-            }
+            settings.hierarchyNotes = splits;
+            await plugin.saveSettings();
         };
     });
     new obsidian.Setting(hierarchyNoteDetails)

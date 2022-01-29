@@ -3,7 +3,7 @@ import { isInVault } from "obsidian-community-lib/dist/utils";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "../Utils/generalUtils";
 import { getFields } from "../Utils/HierUtils";
-import { subDetails } from "./BreadcrumbsSettingTab";
+import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
 
 export function addHierarchyNoteSettings(
   plugin: BCPlugin,
@@ -17,7 +17,11 @@ export function addHierarchyNoteSettings(
 
   new Setting(hierarchyNoteDetails)
     .setName("Hierarchy Note(s)")
-    .setDesc("A list of notes used to create external Breadcrumb structures.")
+    .setDesc(
+      fragWithHTML(
+        "A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <i>folder</i> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."
+      )
+    )
     .addText((text) => {
       text
         .setPlaceholder("Hierarchy Note(s)")
@@ -25,15 +29,9 @@ export function addHierarchyNoteSettings(
 
       text.inputEl.onblur = async () => {
         const splits = splitAndTrim(text.getValue());
-        if (splits[0] === undefined) {
-          settings.hierarchyNotes = splits;
-          await plugin.saveSettings();
-        } else if (splits.every((note) => isInVault(this.app, note))) {
-          settings.hierarchyNotes = splits;
-          await plugin.saveSettings();
-        } else {
-          new Notice("Atleast one of the notes is not in your vault");
-        }
+
+        settings.hierarchyNotes = splits;
+        await plugin.saveSettings();
       };
     });
 
