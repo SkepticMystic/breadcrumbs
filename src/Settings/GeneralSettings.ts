@@ -131,19 +131,6 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
         })
     );
 
-  generalDetails.createDiv().createEl("strong", {
-    text: "When running `Jump to first <direction>` command, limit which fields it can use.",
-  });
-
-  new Checkboxes({
-    target: generalDetails,
-    props: {
-      plugin,
-      settingName: "limitJumpToFirstFields",
-      options: getFields(settings.userHiers),
-    },
-  });
-
   if (plugin.app.plugins.plugins.dataview !== undefined) {
     new Setting(generalDetails)
       .setName("Dataview Wait Time")

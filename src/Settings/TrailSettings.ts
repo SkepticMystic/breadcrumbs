@@ -1,4 +1,5 @@
-import {DropdownComponent, Notice, Setting} from "obsidian";
+import type { JugglLayouts } from "juggl-api";
+import { DropdownComponent, Notice, Setting } from "obsidian";
 import { isInVault } from "obsidian-community-lib/dist/utils";
 import Checkboxes from "../Components/Checkboxes.svelte";
 import type BCPlugin from "../main";
@@ -6,7 +7,6 @@ import { splitAndTrim } from "../Utils/generalUtils";
 import { getFields } from "../Utils/HierUtils";
 import { drawTrail } from "../Views/TrailView";
 import { fragWithHTML, subDetails } from "./BreadcrumbsSettingTab";
-import type {JugglLayouts} from "juggl-api";
 
 export function addTrailViewSettings(
   plugin: BCPlugin,
@@ -260,23 +260,24 @@ export function addTrailViewSettings(
     );
 
   new Setting(trailDetails)
-      .setName("Juggl view layout")
-      .setDesc(
-          "The layout type to use for the Juggl view. " +
-          "The hierarchy layout is most natural for Breadcrumbs, but for large graphs D3 Force is recommended."
+    .setName("Juggl view layout")
+    .setDesc(
+      fragWithHTML(
+        "The layout type to use for the Juggl view.<br>The hierarchy layout is most natural for Breadcrumbs, but for large graphs D3 Force is recommended."
       )
-     .addDropdown((dc: DropdownComponent) => {
-         dc.addOption("hierarchy", "Hierarchy");
-         dc.addOption("d3-force", "D3 Force");
-         dc.addOption("cola", "Cola Force");
-         dc.addOption("grid", "Grid");
-         dc.addOption("concentric", "Concentric");
+    )
+    .addDropdown((dc: DropdownComponent) => {
+      dc.addOption("hierarchy", "Hierarchy");
+      dc.addOption("d3-force", "D3 Force");
+      dc.addOption("cola", "Cola Force");
+      dc.addOption("grid", "Grid");
+      dc.addOption("concentric", "Concentric");
 
-         dc.setValue(settings.jugglLayout);
-         dc.onChange(async (value) => {
-             settings.jugglLayout = value as JugglLayouts;
-             await plugin.saveSettings();
-             await drawTrail(plugin);
-         });
-     });
+      dc.setValue(settings.jugglLayout);
+      dc.onChange(async (value) => {
+        settings.jugglLayout = value as JugglLayouts;
+        await plugin.saveSettings();
+        await drawTrail(plugin);
+      });
+    });
 }

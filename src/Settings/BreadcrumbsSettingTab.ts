@@ -8,6 +8,7 @@ import { addDendronSettings } from "./DendronSettings";
 import { addGeneralSettings } from "./GeneralSettings";
 import { addHierarchyNoteSettings } from "./HierarchyNoteSettings";
 import { addHierarchySettings } from "./HierarchySettings";
+import { addJumpToNextSettings } from "./JumpToNextSettings";
 import { addMatrixViewSettings } from "./MatrixViewSettings";
 import { addNoSystemSettings } from "./NoSystemSettings";
 import { addRegexNoteSettings } from "./RegexNoteSettings";
@@ -117,6 +118,7 @@ export class BCSettingTab extends PluginSettingTab {
     addWriteBCsSettings(plugin, cmdsDetails);
     addCreateIndexSettings(plugin, cmdsDetails);
     addThreadingSettings(plugin, cmdsDetails);
+    addJumpToNextSettings(plugin, cmdsDetails);
 
     addDebuggingsSettings(plugin, containerEl);
 
