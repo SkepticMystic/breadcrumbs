@@ -7,7 +7,7 @@
 
 /* completely hides the trail when "no path found message" is left empty and no path is found */
 .BC-trail:empty {
-	display: none;
+  display: none;
 }
 
 .BC-matrix-square li {
@@ -15,8 +15,8 @@
 }
 
 /* ensure empty headers not leaving an element  */
-.BC-Matrix .BC-Matrix-square .BC-Matrix-header:empty{
-	display: none;
+.BC-Matrix .BC-Matrix-square .BC-Matrix-header:empty {
+  display: none;
 }
 
 .internal-link.BC-Link {
@@ -106,4 +106,8 @@
 
 .juggl-hide {
   display: none;
+}
+
+[data-type="BC-matrix"] div.view-content {
+  overflow: hidden !important;
 }

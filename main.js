@@ -35692,8 +35692,8 @@ class Lists extends SvelteComponent {
 
 function add_css$4() {
 	var style = element("style");
-	style.id = "svelte-1pfkp12-style";
-	style.textContent = "div.BC-Matrix.svelte-1pfkp12.svelte-1pfkp12{padding:5px}div.BC-Matrix.svelte-1pfkp12>div.svelte-1pfkp12{border:3px solid var(--background-modifier-border);border-radius:3px;text-align:center;margin:3px;position:relative;height:fit-content}div.BC-Matrix-square.svelte-1pfkp12.svelte-1pfkp12{border:1px solid var(--background-modifier-border)}div.BC-Matrix-headers.svelte-1pfkp12.svelte-1pfkp12{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-1pfkp12.svelte-1pfkp12{margin:2px;padding:0px 10px}ol.svelte-1pfkp12.svelte-1pfkp12{margin:3px;padding-left:30px}";
+	style.id = "svelte-1p44ezg-style";
+	style.textContent = ".BC-Matrix.svelte-1p44ezg.svelte-1p44ezg{padding:5px;font-variant-numeric:tabular-nums;line-height:1.5}.BC-Matrix.svelte-1p44ezg>div.svelte-1p44ezg{border:3px solid var(--background-modifier-border);border-radius:3px;margin:3px;position:relative;height:fit-content}.BC-Matrix-square.svelte-1p44ezg.svelte-1p44ezg{border:1px solid var(--background-modifier-border)}.BC-Matrix-headers.svelte-1p44ezg.svelte-1p44ezg{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-1p44ezg.svelte-1p44ezg{margin:2px;padding:0px 10px}h4.BC-Matrix-header.svelte-1p44ezg.svelte-1p44ezg:first-letter{text-transform:capitalize}ol.svelte-1p44ezg.svelte-1p44ezg{margin:3px;padding-left:30px}.BC-Matrix.svelte-1p44ezg li.svelte-1p44ezg{margin:0.1em}";
 	append(document.head, style);
 }
 
@@ -35756,9 +35756,9 @@ function create_if_block$3(ctx) {
 			if (if_block1) if_block1.c();
 			t3 = space();
 			if (if_block2) if_block2.c();
-			attr(h4, "class", "BC-Matrix-header svelte-1pfkp12");
-			attr(div0, "class", "BC-Matrix-headers svelte-1pfkp12");
-			attr(div1, "class", "BC-Matrix-square svelte-1pfkp12");
+			attr(h4, "class", "BC-Matrix-header svelte-1p44ezg");
+			attr(div0, "class", "BC-Matrix-headers svelte-1p44ezg");
+			attr(div1, "class", "BC-Matrix-square svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div1, anchor);
@@ -35821,7 +35821,7 @@ function create_if_block_5(ctx) {
 		c() {
 			h6 = element("h6");
 			t = text(t_value);
-			attr(h6, "class", "BC-Matrix-header svelte-1pfkp12");
+			attr(h6, "class", "BC-Matrix-header svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
@@ -35854,7 +35854,7 @@ function create_if_block_4(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "svelte-1pfkp12");
+			attr(ol, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, ol, anchor);
@@ -35919,7 +35919,8 @@ function create_each_block_3$1(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"));
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"));
+			attr(li, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -35940,7 +35941,7 @@ function create_each_block_3$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -35981,10 +35982,10 @@ function create_if_block_1$1(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(h4, "class", "BC-Matrix-header svelte-1pfkp12");
-			attr(div, "class", "BC-Matrix-headers svelte-1pfkp12");
+			attr(h4, "class", "BC-Matrix-header svelte-1p44ezg");
+			attr(div, "class", "BC-Matrix-headers svelte-1p44ezg");
 			attr(ol, "start", ol_start_value = /*realItems*/ ctx[19].length + 1);
-			attr(ol, "class", "svelte-1pfkp12");
+			attr(ol, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -36090,7 +36091,7 @@ function create_if_block_3(ctx) {
 		c() {
 			h6 = element("h6");
 			h6.textContent = "Implied";
-			attr(h6, "class", "BC-Matrix-header svelte-1pfkp12");
+			attr(h6, "class", "BC-Matrix-header svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
@@ -36127,13 +36128,13 @@ function create_each_block_2$1(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"));
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"));
 			attr(div, "aria-label", div_aria_label_value = /*parent*/ ctx[26] ? "↑ " + /*parent*/ ctx[26] : "");
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
 			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: ""));
+			: "") + " svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -36153,7 +36154,7 @@ function create_each_block_2$1(ctx) {
 			ctx = new_ctx;
 			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t, t_value);
 
-			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1pfkp12"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"))) {
 				attr(div, "class", div_class_value);
 			}
 
@@ -36163,7 +36164,7 @@ function create_each_block_2$1(ctx) {
 
 			if (dirty & /*hierSquares, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: ""))) {
+			: "") + " svelte-1p44ezg")) {
 				attr(li, "class", li_class_value);
 			}
 		},
@@ -36230,7 +36231,7 @@ function create_each_block$4(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "BC-matrix-hier svelte-1pfkp12");
+			attr(div, "class", "BC-matrix-hier svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -36290,7 +36291,7 @@ function create_fragment$9(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1pfkp12");
+			attr(div, "class", div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -36323,7 +36324,7 @@ function create_fragment$9(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1pfkp12")) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1p44ezg")) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -36377,7 +36378,7 @@ function instance$9($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1pfkp12-style")) add_css$4();
+		if (!document.getElementById("svelte-1p44ezg-style")) add_css$4();
 
 		init(this, options, instance$9, create_fragment$9, safe_not_equal, {
 			hierSquares: 0,

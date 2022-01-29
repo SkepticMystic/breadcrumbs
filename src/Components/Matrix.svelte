@@ -94,23 +94,29 @@
 </div>
 
 <style>
-  div.BC-Matrix {
+  .BC-Matrix {
     padding: 5px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
   }
-  div.BC-Matrix > div {
+  .BC-Matrix > div {
     border: 3px solid var(--background-modifier-border);
     border-radius: 3px;
-    text-align: center;
+    /* text-align: center; */
     margin: 3px;
     position: relative;
     height: fit-content;
   }
 
-  div.BC-Matrix-square {
+  /* .BC-matrix div {
+    text-align: left;
+  } */
+
+  .BC-Matrix-square {
     border: 1px solid var(--background-modifier-border);
   }
 
-  div.BC-Matrix-headers {
+  .BC-Matrix-headers {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -119,9 +125,16 @@
     margin: 2px;
     padding: 0px 10px;
   }
+  h4.BC-Matrix-header:first-letter {
+    text-transform: capitalize;
+  }
 
   ol {
     margin: 3px;
     padding-left: 30px;
+  }
+
+  .BC-Matrix li {
+    margin: 0.1em;
   }
 </style>
