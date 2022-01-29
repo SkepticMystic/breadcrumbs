@@ -285,12 +285,17 @@ export const DATAVIEW_MISSING =
 
 export const DEFAULT_SETTINGS: BCSettings = {
   addDendronNotes: false,
+  addDateNotes: false,
   aliasesInIndex: false,
   alphaSortAsc: true,
   altLinkFields: [],
   CSVPaths: "",
   dateFormat: "YYYY-MM-DD",
+  dateNoteFormat: "yyyy-MM-dd",
+  dateNoteField: "next",
   dataviewNoteField: "up",
+  dateNoteAddMonth: "",
+  dateNoteAddYear: "",
   debugMode: "WARN",
   defaultView: true,
   dendronNoteDelimiter: ".",

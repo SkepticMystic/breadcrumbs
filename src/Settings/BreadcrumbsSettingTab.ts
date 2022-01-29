@@ -20,6 +20,7 @@ import { addTrailViewSettings } from "./TrailSettings";
 import { addTreeViewSettings } from "./TreeViewSettings";
 import { addVisModalSettings } from "./VisModalSettings";
 import { addWriteBCsSettings } from "./WriteBCsSettings";
+import { addDateNoteSettings } from "./DateNoteSettings";
 
 export const fragWithHTML = (html: string) =>
   createFragment((frag) => (frag.createDiv().innerHTML = html));
@@ -115,6 +116,7 @@ export class BCSettingTab extends PluginSettingTab {
     addCSVSettings(plugin, alternativeHierarchyDetails);
     addDendronSettings(plugin, alternativeHierarchyDetails);
     addDataviewSettings(plugin, alternativeHierarchyDetails);
+    addDateNoteSettings(plugin, alternativeHierarchyDetails);
 
     const cmdsDetails = details("Commands", containerEl);
     addWriteBCsSettings(plugin, cmdsDetails);

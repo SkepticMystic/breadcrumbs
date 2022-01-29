@@ -4,6 +4,7 @@ import { normalizePath, Notice, Pos, TFile, TFolder } from "obsidian";
 import { wait } from "obsidian-community-lib";
 import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
 import { addDataviewNotesToGraph } from "./AlternativeHierarchies/DataviewNotes";
+import { addDateNotesToGraph } from "./AlternativeHierarchies/DateNotes";
 import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
 import { addFolderNotesToGraph } from "./AlternativeHierarchies/FolderNotes";
 import {
@@ -286,6 +287,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
     );
     addDendronNotesToGraph(plugin, frontms, mainG);
     addDataviewNotesToGraph(plugin, eligableAlts[BC_DV_NOTE], frontms, mainG);
+    addDateNotesToGraph(plugin, frontms, mainG);
 
     db.end1G();
 

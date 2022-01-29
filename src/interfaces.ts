@@ -1,6 +1,7 @@
 import type { MultiGraph } from "graphology";
 import type { IJugglSettings, JugglLayouts } from "juggl-api";
 import type { LogLevel } from "loglevel";
+import type { DateTime } from "luxon";
 import type { Constructor, Pos, TFile } from "obsidian";
 import type {
   CODEBLOCK_FIELDS,
@@ -15,6 +16,7 @@ import type TreeView from "./Views/TreeView";
 export type DebugLevel = keyof LogLevel;
 export interface BCSettings {
   addDendronNotes: boolean;
+  addDateNotes: boolean;
   aliasesInIndex: boolean;
   alphaSortAsc: boolean;
   altLinkFields: string[];
@@ -26,6 +28,10 @@ export interface BCSettings {
   dendronNoteDelimiter: string;
   dendronNoteField: string;
   dateFormat: string;
+  dateNoteFormat: string;
+  dateNoteField: string;
+  dateNoteAddMonth: string;
+  dateNoteAddYear: string;
   downViewWrap: boolean;
   dotsColour: string;
   enableAlphaSort: boolean;
@@ -291,6 +297,9 @@ declare module "obsidian" {
   }
   interface View {
     editor: Editor;
+  }
+  interface TFile {
+    day?: DateTime;
   }
 }
 

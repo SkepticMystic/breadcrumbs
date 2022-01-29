@@ -1,4 +1,5 @@
 import type { MultiGraph } from "graphology";
+import { getPlugin } from "juggl-api";
 import { addIcon, EventRef, MarkdownView, Plugin } from "obsidian";
 import {
   addFeatherIcon,
@@ -29,15 +30,14 @@ import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
 import { RelationSuggestor } from "./RelationSuggestor";
 import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getFields } from "./Utils/HierUtils";
-import { isInsideYaml, waitForCache } from "./Utils/ObsidianUtils";
+import { waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
+import { BCStore } from "./Visualisations/Juggl";
 import { VisModal } from "./Visualisations/VisModal";
-import {getPlugin} from "juggl-api";
-import {BCStore} from "./Visualisations/Juggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -222,11 +222,11 @@ export default class BCPlugin extends Plugin {
       name: "Copy a Global Index to the clipboard",
       callback: async () => await copyGlobalIndex(this),
     });
-    this.addCommand({
-      id: "in-yaml",
-      name: "TEST: Inside YAML",
-      callback: async () => console.log(isInsideYaml(this.app)),
-    });
+    // this.addCommand({
+    //   id: "in-yaml",
+    //   name: "TEST: Inside YAML",
+    //   callback: async () => console.log(DateTime.now().toFormat("yyyy 'DN'")),
+    // });
 
     ["up", "down", "next", "prev"].forEach((dir: Directions) => {
       this.addCommand({

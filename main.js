@@ -3,6 +3,219 @@
 var obsidian = require('obsidian');
 var console$1 = require('console');
 
+const CAT_DANGLING = 'dangling';
+const CORE_STORE_ID = 'core';
+class VizId {
+    constructor(id, storeId) {
+        this.id = id;
+        this.storeId = storeId;
+    }
+    toString() {
+        return `${this.storeId}:${this.id}`;
+    }
+    toId() {
+        return this.toString();
+    }
+    static fromId(id) {
+        const split = id.split(':');
+        const storeId = split[0];
+        const _id = split.slice(1).join(':');
+        return new VizId(_id, storeId);
+    }
+    static fromNode(node) {
+        return VizId.fromId(node.id());
+    }
+    static fromNodes(nodes) {
+        return nodes.map((n) => VizId.fromNode(n));
+    }
+    static fromFile(file) {
+        return new VizId(file.name, 'core');
+    }
+    static toId(id, storeId) {
+        return new VizId(id, storeId).toId();
+    }
+}
+const _parseTags = function (tags) {
+    return [].concat(...tags
+        .map((tag) => {
+        tag = tag.slice(1);
+        const hSplit = tag.split('/');
+        const tags = [];
+        for (const i in hSplit) {
+            const hTag = hSplit.slice(0, parseInt(i) + 1).join('-');
+            tags.push(`tag-${hTag}`);
+        }
+        return tags;
+    }));
+};
+const getClasses = function (file, metadataCache) {
+    if (file) {
+        const classes = [];
+        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+            classes.push('image');
+        }
+        else if (['mp3', 'webm', 'wav', 'm4a', 'ogg', '3gp', 'flac'].contains(file.extension)) {
+            classes.push('audio');
+        }
+        else if (['mp4', 'webm', 'ogv'].contains(file.extension)) {
+            classes.push('video');
+        }
+        else if (file.extension === 'pdf') {
+            classes.push('pdf');
+        }
+        // This is replaced by the 'path' data attribute.
+        // if (!(file.parent.name === '/' || file.parent.name === '')) {
+        //   classes.push(`folder-${file.parent.name
+        //       .replace(' ', '_')}`);
+        // } else {
+        //   classes.push('root');
+        // }
+        if (file.extension === 'md') {
+            classes.push('note');
+            const cache = metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                if ('image' in cache.frontmatter) {
+                    classes.push('image');
+                }
+                if ('tags' in cache.frontmatter) {
+                    const tags = obsidian.parseFrontMatterTags(cache.frontmatter);
+                    if (tags) {
+                        classes.push(..._parseTags(tags));
+                    }
+                }
+                if ('cssclass' in cache.frontmatter) {
+                    const clazzes = obsidian.parseFrontMatterStringArray(cache.frontmatter, 'cssclass');
+                    if (clazzes) {
+                        classes.push(...clazzes);
+                    }
+                }
+            }
+            if (cache?.tags) {
+                classes.push(..._parseTags(cache.tags.map((t) => t.tag)));
+            }
+        }
+        else {
+            classes.push('file');
+        }
+        return classes;
+    }
+    return [CAT_DANGLING];
+};
+const nodeFromFile = async function (file, plugin, settings, id) {
+    if (!id) {
+        id = VizId.toId(file.name, CORE_STORE_ID);
+    }
+    const cache = plugin.app.metadataCache.getFileCache(file);
+    const name = file.extension === 'md' ? file.basename : file.name;
+    const classes = getClasses(file, plugin.app.metadataCache).join(' ');
+    const data = {
+        id,
+        name,
+        path: file.path,
+    };
+    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
+        try {
+            // @ts-ignore
+            data['resource_url'] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(file.path)}`;
+        }
+        catch { }
+    }
+    if (settings.readContent && file.extension == 'md') {
+        data['content'] = await plugin.app.vault.cachedRead(file);
+    }
+    const frontmatter = cache?.frontmatter;
+    if (frontmatter) {
+        Object.keys(frontmatter).forEach((k) => {
+            if (!(k === 'position')) {
+                if (k === 'image') {
+                    const imageField = frontmatter[k];
+                    try {
+                        // Check if url. throws error otherwise
+                        new URL(imageField);
+                        data[k] = imageField;
+                    }
+                    catch {
+                        try {
+                            // @ts-ignore
+                            data[k] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(imageField)}`;
+                        }
+                        catch { }
+                    }
+                }
+                else {
+                    data[k] = frontmatter[k];
+                }
+            }
+        });
+    }
+    return {
+        group: 'nodes',
+        data: data,
+        classes: classes,
+    };
+};
+const nodeDangling = function (path) {
+    return {
+        group: 'nodes',
+        data: {
+            id: VizId.toId(path, CORE_STORE_ID),
+            name: path,
+        },
+        classes: 'dangling',
+    };
+};
+const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
+const nameRegex = '[^\\W\\d]\\w*';
+const regexEscape = function (str) {
+    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+const parseTypedLink = function (link, line, typedLinkPrefix) {
+    // TODO: This is something specific I use, but shouldn't keep being in this repo.
+    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
+    const matchPI = regexPublishedIn.exec(line);
+    if (!(matchPI === null)) {
+        return {
+            class: 'type-publishedIn',
+            isInline: false,
+            properties: {
+                year: matchPI[2],
+                context: '',
+                type: 'publishedIn',
+            },
+        };
+    }
+    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
+    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
+    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
+    const match = regex.exec(line);
+    const splitLink = link.original.split('|');
+    let alias = null;
+    if (splitLink.length > 1) {
+        alias = splitLink.slice(1).join().slice(0, -2);
+    }
+    if (!(match === null)) {
+        return {
+            class: `type-${match[1]}`,
+            isInline: false,
+            properties: {
+                alias: alias,
+                context: '',
+                type: match[1],
+            },
+        };
+    }
+    return null;
+};
+
+const getPlugin = function (app) {
+    // @ts-ignore
+    if ('juggl' in app.plugins.plugins) {
+        // @ts-ignore
+        return app.plugins.plugins['juggl'];
+    }
+    return null;
+};
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn) {
@@ -9692,12 +9905,17 @@ const ILLEGAL_FILENAME_CHARS = [
 const DATAVIEW_MISSING = "The Dataview plugin must be installed for this to work";
 const DEFAULT_SETTINGS = {
     addDendronNotes: false,
+    addDateNotes: false,
     aliasesInIndex: false,
     alphaSortAsc: true,
     altLinkFields: [],
     CSVPaths: "",
     dateFormat: "YYYY-MM-DD",
+    dateNoteFormat: "yyyy-MM-dd",
+    dateNoteField: "next",
     dataviewNoteField: "up",
+    dateNoteAddMonth: "",
+    dateNoteAddYear: "",
     debugMode: "WARN",
     defaultView: true,
     dendronNoteDelimiter: ".",
@@ -30377,219 +30595,6 @@ class CBTree extends SvelteComponent {
 	}
 }
 
-const CAT_DANGLING = 'dangling';
-const CORE_STORE_ID = 'core';
-class VizId {
-    constructor(id, storeId) {
-        this.id = id;
-        this.storeId = storeId;
-    }
-    toString() {
-        return `${this.storeId}:${this.id}`;
-    }
-    toId() {
-        return this.toString();
-    }
-    static fromId(id) {
-        const split = id.split(':');
-        const storeId = split[0];
-        const _id = split.slice(1).join(':');
-        return new VizId(_id, storeId);
-    }
-    static fromNode(node) {
-        return VizId.fromId(node.id());
-    }
-    static fromNodes(nodes) {
-        return nodes.map((n) => VizId.fromNode(n));
-    }
-    static fromFile(file) {
-        return new VizId(file.name, 'core');
-    }
-    static toId(id, storeId) {
-        return new VizId(id, storeId).toId();
-    }
-}
-const _parseTags = function (tags) {
-    return [].concat(...tags
-        .map((tag) => {
-        tag = tag.slice(1);
-        const hSplit = tag.split('/');
-        const tags = [];
-        for (const i in hSplit) {
-            const hTag = hSplit.slice(0, parseInt(i) + 1).join('-');
-            tags.push(`tag-${hTag}`);
-        }
-        return tags;
-    }));
-};
-const getClasses = function (file, metadataCache) {
-    if (file) {
-        const classes = [];
-        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
-            classes.push('image');
-        }
-        else if (['mp3', 'webm', 'wav', 'm4a', 'ogg', '3gp', 'flac'].contains(file.extension)) {
-            classes.push('audio');
-        }
-        else if (['mp4', 'webm', 'ogv'].contains(file.extension)) {
-            classes.push('video');
-        }
-        else if (file.extension === 'pdf') {
-            classes.push('pdf');
-        }
-        // This is replaced by the 'path' data attribute.
-        // if (!(file.parent.name === '/' || file.parent.name === '')) {
-        //   classes.push(`folder-${file.parent.name
-        //       .replace(' ', '_')}`);
-        // } else {
-        //   classes.push('root');
-        // }
-        if (file.extension === 'md') {
-            classes.push('note');
-            const cache = metadataCache.getFileCache(file);
-            if (cache?.frontmatter) {
-                if ('image' in cache.frontmatter) {
-                    classes.push('image');
-                }
-                if ('tags' in cache.frontmatter) {
-                    const tags = obsidian.parseFrontMatterTags(cache.frontmatter);
-                    if (tags) {
-                        classes.push(..._parseTags(tags));
-                    }
-                }
-                if ('cssclass' in cache.frontmatter) {
-                    const clazzes = obsidian.parseFrontMatterStringArray(cache.frontmatter, 'cssclass');
-                    if (clazzes) {
-                        classes.push(...clazzes);
-                    }
-                }
-            }
-            if (cache?.tags) {
-                classes.push(..._parseTags(cache.tags.map((t) => t.tag)));
-            }
-        }
-        else {
-            classes.push('file');
-        }
-        return classes;
-    }
-    return [CAT_DANGLING];
-};
-const nodeFromFile = async function (file, plugin, settings, id) {
-    if (!id) {
-        id = VizId.toId(file.name, CORE_STORE_ID);
-    }
-    const cache = plugin.app.metadataCache.getFileCache(file);
-    const name = file.extension === 'md' ? file.basename : file.name;
-    const classes = getClasses(file, plugin.app.metadataCache).join(' ');
-    const data = {
-        id,
-        name,
-        path: file.path,
-    };
-    if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg', 'tiff'].contains(file.extension)) {
-        try {
-            // @ts-ignore
-            data['resource_url'] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(file.path)}`;
-        }
-        catch { }
-    }
-    if (settings.readContent && file.extension == 'md') {
-        data['content'] = await plugin.app.vault.cachedRead(file);
-    }
-    const frontmatter = cache?.frontmatter;
-    if (frontmatter) {
-        Object.keys(frontmatter).forEach((k) => {
-            if (!(k === 'position')) {
-                if (k === 'image') {
-                    const imageField = frontmatter[k];
-                    try {
-                        // Check if url. throws error otherwise
-                        new URL(imageField);
-                        data[k] = imageField;
-                    }
-                    catch {
-                        try {
-                            // @ts-ignore
-                            data[k] = `http://localhost:${plugin.settings.imgServerPort}/${encodeURI(imageField)}`;
-                        }
-                        catch { }
-                    }
-                }
-                else {
-                    data[k] = frontmatter[k];
-                }
-            }
-        });
-    }
-    return {
-        group: 'nodes',
-        data: data,
-        classes: classes,
-    };
-};
-const nodeDangling = function (path) {
-    return {
-        group: 'nodes',
-        data: {
-            id: VizId.toId(path, CORE_STORE_ID),
-            name: path,
-        },
-        classes: 'dangling',
-    };
-};
-const wikilinkRegex = '\\[\\[([^\\]\\r\\n]+?)\\]\\]';
-const nameRegex = '[^\\W\\d]\\w*';
-const regexEscape = function (str) {
-    return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-};
-const parseTypedLink = function (link, line, typedLinkPrefix) {
-    // TODO: This is something specific I use, but shouldn't keep being in this repo.
-    const regexPublishedIn = new RegExp(`^${regexEscape(typedLinkPrefix)} (publishedIn) (\\d\\d\\d\\d) (${wikilinkRegex},? *)+$`);
-    const matchPI = regexPublishedIn.exec(line);
-    if (!(matchPI === null)) {
-        return {
-            class: 'type-publishedIn',
-            isInline: false,
-            properties: {
-                year: matchPI[2],
-                context: '',
-                type: 'publishedIn',
-            },
-        };
-    }
-    // Intuition: Start with the typed link prefix. Then a neo4j name (nameRegex).
-    // Then one or more of the wikilink group: wikilink regex separated by optional comma and multiple spaces
-    const regex = new RegExp(`^${regexEscape(typedLinkPrefix)} (${nameRegex}) (${wikilinkRegex},? *)+$`);
-    const match = regex.exec(line);
-    const splitLink = link.original.split('|');
-    let alias = null;
-    if (splitLink.length > 1) {
-        alias = splitLink.slice(1).join().slice(0, -2);
-    }
-    if (!(match === null)) {
-        return {
-            class: `type-${match[1]}`,
-            isInline: false,
-            properties: {
-                alias: alias,
-                context: '',
-                type: match[1],
-            },
-        };
-    }
-    return null;
-};
-
-const getPlugin = function (app) {
-    // @ts-ignore
-    if ('juggl' in app.plugins.plugins) {
-        // @ts-ignore
-        return app.plugins.plugins['juggl'];
-    }
-    return null;
-};
-
 /* src\Components\JugglButton.svelte generated by Svelte v3.35.0 */
 
 function create_fragment$m(ctx) {
@@ -30865,11 +30870,10 @@ const STORE_ID = "core";
 class BCStoreEvents extends obsidian.Events {
 }
 class BCStore extends obsidian.Component {
-    constructor(graph, metadata, plugin, depthMap) {
+    constructor(graph, metadata, depthMap) {
         super();
         this.graph = graph;
         this.cache = metadata;
-        this.plugin = plugin;
         this.depthMap = depthMap;
     }
     asString(node) {
@@ -30883,6 +30887,10 @@ class BCStore extends obsidian.Component {
         const edges = [];
         const nodesListS = new Set(allNodes.map((node) => this.asString(node)).filter((s) => s));
         newNodes.forEach((node) => {
+            const name = this.asString(node);
+            if (!this.graph.hasNode(name)) {
+                return;
+            }
             this.graph.forEachOutEdge(this.asString(node), (key, attr, source, target) => {
                 if (nodesListS.has(target)) {
                     edges.push({
@@ -30904,10 +30912,12 @@ class BCStore extends obsidian.Component {
         return new BCStoreEvents();
     }
     async getNeighbourhood(nodeIds, view) {
-        // TODO
         const new_nodes = [];
         for (const nodeId of nodeIds) {
             const name = nodeId.id.slice(0, -3);
+            if (!this.graph.hasNode(name)) {
+                continue;
+            }
             for (const new_node of this.graph.neighbors(name)) {
                 new_nodes.push(await this.get(new VizId(new_node + ".md", STORE_ID), view));
             }
@@ -30936,7 +30946,7 @@ class BCStore extends obsidian.Component {
             console.log("returning empty cache", nodeId);
             return Promise.resolve(nodeDangling(nodeId.id));
         }
-        return nodeFromFile(file, this.plugin, view.settings, nodeId.toId()).then(node => {
+        return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then(node => {
             node.data.depth = depth;
             return node;
         });
@@ -30953,7 +30963,7 @@ function createJuggl(plugin, target, initialNodes, args, depthMap = null) {
             if (key in args && args[key] === undefined)
                 args[key] = JUGGL_CB_DEFAULTS[key];
         }
-        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, jugglPlugin, depthMap);
+        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, depthMap);
         const stores = {
             coreStore: bcStore,
             dataStores: [bcStore],
@@ -31097,7 +31107,7 @@ function createJugglTrail(plugin, target, paths, source, args) {
                                     graph._nodes[id].rank = depthMapDown[name] + 1;
                                 }
                                 else {
-                                    graph._nodes[id].rank = 1;
+                                    graph._nodes[id].rank = 0;
                                 }
                             });
                         }
@@ -31174,7 +31184,7 @@ function createJugglTrail(plugin, target, paths, source, args) {
                         graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
                     }
                     else {
-                        graph._nodes[id].rank = 1;
+                        graph._nodes[id].rank = maxDepthUp + 2;
                     }
                 });
             }
@@ -31636,6 +31646,23 @@ function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
             const targetOrder = getTargetOrder(frontms, targetBN);
             populateMain(settings, mainG, basename, field, targetBN, sourceOrder, targetOrder, true);
         }
+    });
+}
+
+function addDateNotesToGraph(plugin, frontms, mainG) {
+    const { settings } = plugin;
+    const { addDateNotes, dateNoteAddMonth, dateNoteAddYear, dateNoteFormat, dateNoteField, } = settings;
+    if (!addDateNotes)
+        return;
+    frontms.forEach((page) => {
+        const { day } = page.file;
+        if (!day)
+            return;
+        const today = getDVBasename(page.file);
+        const tomorrow = day.plus({ days: 1 });
+        const tomStr = tomorrow.toFormat(dateNoteFormat);
+        console.log(today, "→", tomStr);
+        populateMain(settings, mainG, today, dateNoteField, tomStr, 9999, 9999, true);
     });
 }
 
@@ -33452,6 +33479,7 @@ async function buildMainG(plugin) {
         addTraverseNotesToGraph(plugin, eligableAlts[BC_TRAVERSE_NOTE], mainG, buildObsGraph(app));
         addDendronNotesToGraph(plugin, frontms, mainG);
         addDataviewNotesToGraph(plugin, eligableAlts[BC_DV_NOTE], frontms, mainG);
+        addDateNotesToGraph(plugin, frontms, mainG);
         db.end1G();
         files.forEach((file) => addNodesIfNot(mainG, [file.basename]));
         db.end2G("graphs inited", { mainG });
@@ -37751,6 +37779,78 @@ function addWriteBCsSettings(plugin, cmdsDetails) {
     }));
 }
 
+function addDateNoteSettings(plugin, alternativeHierarchyDetails) {
+    const { settings } = plugin;
+    const { userHiers } = settings;
+    const fields = getFields(userHiers);
+    const fieldOptions = { "": "" };
+    fields.forEach((field) => (fieldOptions[field] = field));
+    const dateNoteDetails = subDetails("Date Notes", alternativeHierarchyDetails);
+    new obsidian.Setting(dateNoteDetails)
+        .setName("Add Date Notes to Graph")
+        .setDesc("Breadcrumbs will try to link each daily note to the next one using the date format you provide in the settings below.")
+        .addToggle((toggle) => {
+        toggle.setValue(settings.addDateNotes).onChange(async (value) => {
+            settings.addDateNotes = value;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        });
+    });
+    new obsidian.Setting(dateNoteDetails)
+        .setName("Daily Note Format")
+        .setDesc(fragWithHTML(`The Luxon date format of your daily notes. <strong>Note</strong>: Luxon uses different formats to Moment, so your format for the Daily Notes plugin may not work here. Be sure to check out <a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">the docs</a> to find the right format.<br>You can escape characters by wrapping them in single quotes (e.g. <code>yyyy-MM-dd 'Daily Note'</code>)`))
+        .addText((text) => {
+        text.setValue(settings.dateNoteFormat);
+        text.inputEl.onblur = async () => {
+            settings.dateNoteFormat = text.getValue();
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        };
+    });
+    new obsidian.Setting(dateNoteDetails)
+        .setName("Date Note Field")
+        .setDesc(fragWithHTML("Select a field to point to tomorrow's note from the current note. The opposite field will be used to point to yesterday's note (if you have the setting enable)."))
+        .addDropdown((dd) => {
+        dd.addOptions(fieldOptions)
+            .setValue(settings.dateNoteField)
+            .onChange(async (field) => {
+            settings.dateNoteField = field;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        });
+    });
+    // new Setting(dateNoteDetails)
+    //   .setName("Point up to Month")
+    //   .setDesc(
+    //     fragWithHTML(
+    //       "Select a field to point upwards to the corresponding month (This will still work if a note doesn't exist for that month).<br>Leave the dropdown blank to disable this feature."
+    //     )
+    //   )
+    //   .addDropdown((dd: DropdownComponent) => {
+    //     dd.addOptions(fieldOptions);
+    //     dd.onChange(async (field) => {
+    //       settings.dateNoteAddMonth = field;
+    //       await plugin.saveSettings();
+    //       await refreshIndex(plugin);
+    //     });
+    //   });
+    // new Setting(dateNoteDetails)
+    //   .setName("Point up to Year")
+    //   .setDesc(
+    //     fragWithHTML(
+    //       "Select a field to point upwards to the corresponding year (This will still work if a note doesn't exist for that year).<br>Leave the dropdown blank to disable this feature."
+    //     )
+    //   )
+    //   .addDropdown((dd: DropdownComponent) => {
+    //     dd.addOptions(fieldOptions);
+    //     dd.onChange(async (field) => {
+    //       settings.dateNoteAddYear = field;
+    //       await plugin.saveSettings();
+    //       await refreshIndex(plugin);
+    //     });
+    //   });
+}
+
 const fragWithHTML = (html) => createFragment((frag) => (frag.createDiv().innerHTML = html));
 const details = (text, parent) => parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
 const subDetails = (text, parent) => parent
@@ -37809,6 +37909,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         addCSVSettings(plugin, alternativeHierarchyDetails);
         addDendronSettings(plugin, alternativeHierarchyDetails);
         addDataviewSettings(plugin, alternativeHierarchyDetails);
+        addDateNoteSettings(plugin, alternativeHierarchyDetails);
         const cmdsDetails = details("Commands", containerEl);
         addWriteBCsSettings(plugin, cmdsDetails);
         addCreateIndexSettings(plugin, cmdsDetails);
@@ -62223,11 +62324,11 @@ class BCPlugin extends obsidian.Plugin {
             name: "Copy a Global Index to the clipboard",
             callback: async () => await copyGlobalIndex(this),
         });
-        this.addCommand({
-            id: "in-yaml",
-            name: "TEST: Inside YAML",
-            callback: async () => console.log(isInsideYaml(this.app)),
-        });
+        // this.addCommand({
+        //   id: "in-yaml",
+        //   name: "TEST: Inside YAML",
+        //   callback: async () => console.log(DateTime.now().toFormat("yyyy 'DN'")),
+        // });
         ["up", "down", "next", "prev"].forEach((dir) => {
             this.addCommand({
                 id: `jump-to-first-${dir}`,
@@ -62244,6 +62345,11 @@ class BCPlugin extends obsidian.Plugin {
         });
         this.addRibbonIcon(addFeatherIcon("tv"), "Breadcrumbs Visualisation", () => new VisModal(app, this).open());
         this.registerMarkdownCodeBlockProcessor("breadcrumbs", getCodeblockCB(this));
+        const jugglPlugin = getPlugin(this.app);
+        if (jugglPlugin) {
+            this.bcStore = new BCStore(this.mainG, this.app.metadataCache);
+            jugglPlugin.registerStore(this.bcStore);
+        }
     }
     getActiveTYPEView(type) {
         const { constructor } = this.VIEWS.find((view) => view.type === type);
@@ -62263,6 +62369,12 @@ class BCPlugin extends obsidian.Plugin {
             });
         });
         this.visited.forEach((visit) => visit[1].remove());
+        if (this.bcStore) {
+            const jugglPlugin = getPlugin(this.app);
+            if (jugglPlugin) {
+                jugglPlugin.removeStore(this.bcStore);
+            }
+        }
     }
 }
 
