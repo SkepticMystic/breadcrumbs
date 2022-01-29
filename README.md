@@ -70,6 +70,10 @@ This view shows a trail of notes from the top of your vault down to your current
 
 Using this structure that you impose, you can use the breadcrumb trail to visualise the path back to your parent note.
 
+# Juggl view
+The [Juggl plugin](https://juggl.io/) is [tightly integrated](https://juggl.io/Features/Breadcrumbs+integration) with Breadcrumbs, such as with the Juggl view that can automatically be added above your current note:
+
+![](https://i.imgur.com/roOYVhl.png) 
 
 ## Videos
 
