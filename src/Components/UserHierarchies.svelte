@@ -10,6 +10,7 @@
   import { hierToStr } from "../Utils/HierUtils";
 
   export let plugin: BCPlugin;
+  const { settings } = plugin;
 
   let currHiers = [...plugin.settings.userHiers];
   async function update(currHiers: UserHier[]) {
@@ -80,7 +81,24 @@
           <button
             aria-label="Remove Hierarchy"
             on:click={async () => {
-              currHiers.splice(i, 1);
+              const oldHier = currHiers.splice(i, 1)[0];
+              oldHier.up.forEach((upField) => {
+                const index = settings.limitTrailCheckboxes.indexOf(upField);
+                if (index > -1) settings.limitTrailCheckboxes.splice(index, 1);
+              });
+
+              DIRECTIONS.forEach((dir) => {
+                oldHier[dir].forEach((field) => {
+                  const indexI = settings.limitJumpToFirstFields.indexOf(field);
+                  if (indexI > -1)
+                    settings.limitJumpToFirstFields.splice(indexI, 1);
+
+                  const indexJ = settings.limitWriteBCCheckboxes.indexOf(field);
+                  if (indexJ > -1)
+                    settings.limitJumpToFirstFields.splice(indexJ, 1);
+                });
+              });
+
               currHiers = currHiers;
               await update(currHiers);
             }}
@@ -101,8 +119,22 @@
             value={hier[dir]?.join(", ") ?? ""}
             on:change={async (e) => {
               const { value } = e.target;
-              currHiers[i][dir] = splitAndTrim(value);
+              const splits = splitAndTrim(value);
+              currHiers[i][dir] = splits;
               await update(currHiers);
+
+              splits.forEach((split) => {
+                if (
+                  dir === "up" &&
+                  !settings.limitTrailCheckboxes.includes(split)
+                )
+                  settings.limitTrailCheckboxes.push(split);
+                if (!settings.limitJumpToFirstFields.includes(split))
+                  settings.limitJumpToFirstFields.push(split);
+                if (!settings.limitWriteBCCheckboxes.includes(split))
+                  settings.limitWriteBCCheckboxes.push(split);
+              });
+              await plugin.saveSettings();
             }}
           />
         </div>

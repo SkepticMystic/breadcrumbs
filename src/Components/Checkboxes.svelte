@@ -10,7 +10,6 @@
 
   let selected = settings[settingName];
 
-  let toNone = selected.length === 0 ? false : true;
   $: toNone = selected.length === 0 ? false : true;
 
   async function save() {
