@@ -15,6 +15,7 @@ export function addTraverseNotesToGraph(
 ) {
   const { settings } = plugin;
   const { userHiers } = settings;
+  const fields = getFields(userHiers);
 
   traverseNotes.forEach((altFile) => {
     const { file } = altFile;
@@ -22,8 +23,7 @@ export function addTraverseNotesToGraph(
     const noCycles = removeCycles(obsG, basename);
 
     let field = altFile[BC_TRAVERSE_NOTE] as string;
-    if (typeof field !== "string" || !getFields(userHiers).includes(field))
-      return;
+    if (typeof field !== "string" || !fields.includes(field)) return;
 
     const allPaths = dfsAllPaths(noCycles, basename);
     info(allPaths);

@@ -18,13 +18,13 @@ export function addLinkNotesToGraph(
 ) {
   const { app, settings } = plugin;
   const { userHiers } = settings;
+  const fields = getFields(userHiers);
   eligableAlts.forEach((altFile) => {
     const linkNoteFile = altFile.file;
     const linkNoteBasename = getDVBasename(linkNoteFile);
 
     let field = altFile[BC_LINK_NOTE] as string;
-    if (typeof field !== "string" || !getFields(userHiers).includes(field))
-      return;
+    if (typeof field !== "string" || !fields.includes(field)) return;
 
     const links = app.metadataCache
       .getFileCache(linkNoteFile)

@@ -9561,7 +9561,7 @@ const blankRealNImplied = () => {
     };
 };
 const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE,] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-recursive",
     "BC-tag-note",
@@ -9571,6 +9571,8 @@ const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD,
     "BC-traverse-note",
     "BC-regex-note",
     "BC-regex-note-field",
+    "BC-dataview-note",
+    "BC-dataview-note-field",
     "BC-ignore-dendron",
     "BC-hide-trail",
     "BC-order",
@@ -9640,6 +9642,20 @@ const BC_FIELDS_INFO = [
         alt: false,
     },
     {
+        field: BC_DV_NOTE,
+        desc: "Set this note as a Breadcrumbs Dataview-note. The value of this field is a Dataview `from` query. All notes that match the query will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Dataview Notes > Default Field`, or using the fieldName you specify in 'BC-dataview-note-field'.",
+        afterYaml: ": '",
+        afterInline: ":: ",
+        alt: true,
+    },
+    {
+        field: BC_DV_NOTE_FIELD,
+        desc: "Manually choose the field for this Dataview-note to use",
+        afterYaml: ": ",
+        afterInline: ":: ",
+        alt: false,
+    },
+    {
         field: BC_IGNORE_DENDRON,
         desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
         afterYaml: ": true",
@@ -9673,6 +9689,7 @@ const ILLEGAL_FILENAME_CHARS = [
     ">",
     "|",
 ];
+const DATAVIEW_MISSING = "The Dataview plugin must be installed for this to work";
 const DEFAULT_SETTINGS = {
     addDendronNotes: false,
     aliasesInIndex: false,
@@ -9680,6 +9697,7 @@ const DEFAULT_SETTINGS = {
     altLinkFields: [],
     CSVPaths: "",
     dateFormat: "YYYY-MM-DD",
+    dataviewNoteField: "up",
     debugMode: "WARN",
     defaultView: true,
     dendronNoteDelimiter: ".",
@@ -31591,6 +31609,36 @@ function addCSVCrumbs(g, CSVRows, dir, field) {
     });
 }
 
+function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
+    const { settings } = plugin;
+    const { userHiers, dataviewNoteField } = settings;
+    const dv = getDVApi(plugin);
+    if (!dv) {
+        new obsidian.Notice(DATAVIEW_MISSING);
+    }
+    const fields = getFields(userHiers);
+    eligableAlts.forEach((altFile) => {
+        var _a;
+        const basename = getDVBasename(altFile.file);
+        const query = altFile[BC_DV_NOTE];
+        let field = (_a = altFile[BC_DV_NOTE_FIELD]) !== null && _a !== void 0 ? _a : (dataviewNoteField || fields[0]);
+        let targets = [];
+        try {
+            targets = dv.pages(query).values;
+        }
+        catch (er) {
+            new obsidian.Notice(`${query} is not a valid Dataview from-query`);
+            console.log(er);
+        }
+        for (const target of targets) {
+            const targetBN = getDVBasename(target.file);
+            const sourceOrder = getSourceOrder(altFile);
+            const targetOrder = getTargetOrder(frontms, targetBN);
+            populateMain(settings, mainG, basename, field, targetBN, sourceOrder, targetOrder, true);
+        }
+    });
+}
+
 const getDendronParent = (dendron, splitter) => dendron.split(splitter).slice(0, -1).join(splitter);
 function addDendronNotesToGraph(plugin, frontms, mainG) {
     const { settings } = plugin;
@@ -31853,12 +31901,13 @@ function addJugglLinksToGraph(settings, jugglLinks, frontms, mainG) {
 function addLinkNotesToGraph(plugin, eligableAlts, frontms, mainG) {
     const { app, settings } = plugin;
     const { userHiers } = settings;
+    const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
         var _a, _b, _c, _d;
         const linkNoteFile = altFile.file;
         const linkNoteBasename = getDVBasename(linkNoteFile);
         let field = altFile[BC_LINK_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+        if (typeof field !== "string" || !fields.includes(field))
             return;
         const links = (_b = (_a = app.metadataCache
             .getFileCache(linkNoteFile)) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.map((l) => l.link.match(/[^#|]+/)[0]);
@@ -31917,6 +31966,7 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
     const { userHiers, tagNoteField } = settings;
     const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {
+        var _a;
         const tagNoteFile = altFile.file;
         const tagNoteBasename = getDVBasename(tagNoteFile);
         const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
@@ -31932,9 +31982,7 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
             .map((ff) => ff.file)
             .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
             .map(getDVBasename);
-        let field = altFile[BC_TAG_NOTE_FIELD];
-        if (typeof field !== "string" || !fields.includes(field))
-            field = tagNoteField || fields[0];
+        let field = (_a = altFile[BC_TAG_NOTE_FIELD]) !== null && _a !== void 0 ? _a : (tagNoteField || fields[0]);
         targets.forEach((target) => {
             const sourceOrder = getSourceOrder(altFile);
             const targetOrder = getTargetOrder(frontms, tagNoteBasename);
@@ -31946,12 +31994,13 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
 function addTraverseNotesToGraph(plugin, traverseNotes, mainG, obsG) {
     const { settings } = plugin;
     const { userHiers } = settings;
+    const fields = getFields(userHiers);
     traverseNotes.forEach((altFile) => {
         const { file } = altFile;
         const basename = getDVBasename(file);
         const noCycles = removeCycles(obsG, basename);
         let field = altFile[BC_TRAVERSE_NOTE];
-        if (typeof field !== "string" || !getFields(userHiers).includes(field))
+        if (typeof field !== "string" || !fields.includes(field))
             return;
         const allPaths = dfsAllPaths(noCycles, basename);
         loglevel.info(allPaths);
@@ -33099,7 +33148,7 @@ function getNextNPrev(plugin, currNode) {
 async function drawTrail(plugin) {
     var _a, _b, _c, _d;
     try {
-        const { settings, db, app } = plugin;
+        const { settings, db, app, mainG } = plugin;
         const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showJuggl, showPrevNext, showBCsInEditLPMode, } = settings;
         db.start2G("drawTrail");
         const activeMDView = app.workspace.getActiveViewOfType(obsidian.MarkdownView);
@@ -33122,6 +33171,11 @@ async function drawTrail(plugin) {
             db.end2G();
             return;
         }
+        const { basename } = file;
+        if (!mainG.hasNode(basename)) {
+            db.end2G();
+            return;
+        }
         const view = mode === "preview"
             ? activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view")
             : activeMDView.contentEl.querySelector("div.markdown-source-view");
@@ -33130,7 +33184,6 @@ async function drawTrail(plugin) {
         const closedUp = getLimitedTrailSub(plugin);
         const sortedTrails = getBreadcrumbs(settings, closedUp, file);
         loglevel.info({ sortedTrails });
-        const { basename } = file;
         const { next: { reals: rNext, implieds: iNext }, prev: { reals: rPrev, implieds: iPrev }, } = getNextNPrev(plugin, basename);
         // Remove duplicate implied
         const next = [...rNext];
@@ -33398,6 +33451,7 @@ async function buildMainG(plugin) {
         // plugin.addNamingSystemNotesToGraph(frontms, mainG);
         addTraverseNotesToGraph(plugin, eligableAlts[BC_TRAVERSE_NOTE], mainG, buildObsGraph(app));
         addDendronNotesToGraph(plugin, frontms, mainG);
+        addDataviewNotesToGraph(plugin, eligableAlts[BC_DV_NOTE], frontms, mainG);
         db.end1G();
         files.forEach((file) => addNodesIfNot(mainG, [file.basename]));
         db.end2G("graphs inited", { mainG });
@@ -33569,6 +33623,26 @@ class RelationSuggestor extends obsidian.EditorSuggest {
             editor.replaceRange(suggestion + (isInsideYaml(plugin.app) ? ": " : ":: "), { ch: start.ch + 1 - trig.length, line: start.line }, end);
         }
     }
+}
+
+function addDataviewSettings(plugin, alternativeHierarchyDetails) {
+    const { settings } = plugin;
+    const { userHiers } = settings;
+    const fields = getFields(userHiers);
+    const dvDetails = subDetails("Dataview Notes", alternativeHierarchyDetails);
+    new obsidian.Setting(dvDetails)
+        .setName("Default Tag Note Field")
+        .setDesc(fragWithHTML("By default, Dataview notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-dataview-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."))
+        .addDropdown((dd) => {
+        const options = {};
+        fields.forEach((field) => (options[field] = field));
+        dd.addOptions(Object.assign(options, { "": "" }));
+        dd.onChange(async (field) => {
+            settings.dataviewNoteField = field;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        });
+    });
 }
 
 /* src\Components\KoFi.svelte generated by Svelte v3.35.0 */
@@ -36922,6 +36996,8 @@ class MatrixView extends obsidian.ItemView {
         if (!mainG)
             return [];
         const { basename } = currFile;
+        if (!mainG.hasNode(basename))
+            return [];
         const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
         return userHiers.map((hier) => {
             const filteredRealNImplied = blankRealNImplied();
@@ -37009,7 +37085,7 @@ class MatrixView extends obsidian.ItemView {
             const { contentEl, db, plugin } = this;
             db.start2G("Draw Matrix/List View");
             contentEl.empty();
-            const { settings } = plugin;
+            const { settings, mainG } = plugin;
             const { userHiers } = settings;
             const currFile = this.app.workspace.getActiveFile();
             if (!currFile)
@@ -37732,6 +37808,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         addHierarchyNoteSettings(plugin, alternativeHierarchyDetails);
         addCSVSettings(plugin, alternativeHierarchyDetails);
         addDendronSettings(plugin, alternativeHierarchyDetails);
+        addDataviewSettings(plugin, alternativeHierarchyDetails);
         const cmdsDetails = details("Commands", containerEl);
         addWriteBCsSettings(plugin, cmdsDetails);
         addCreateIndexSettings(plugin, cmdsDetails);

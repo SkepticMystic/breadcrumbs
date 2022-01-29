@@ -60,9 +60,8 @@ export function addTagNotesToGraph(
       .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
       .map(getDVBasename);
 
-    let field = altFile[BC_TAG_NOTE_FIELD] as string;
-    if (typeof field !== "string" || !fields.includes(field))
-      field = tagNoteField || fields[0];
+    let field =
+      (altFile[BC_TAG_NOTE_FIELD] as string) ?? (tagNoteField || fields[0]);
 
     targets.forEach((target) => {
       const sourceOrder = getSourceOrder(altFile);
