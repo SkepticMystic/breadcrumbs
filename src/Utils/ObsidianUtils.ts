@@ -147,3 +147,26 @@ export const linkClass = (app: App, to: string, realQ = true) =>
 
 export const getDVApi = (plugin: BCPlugin) =>
   plugin.app.plugins.plugins.dataview?.api;
+
+export function isInsideYaml(app: App): boolean | null {
+  const { workspace, metadataCache } = app;
+  const { activeLeaf } = workspace;
+  const {
+    state: { mode },
+  } = activeLeaf.getViewState();
+
+  if (mode !== "source") return null;
+
+  const { editor } = activeLeaf.view;
+
+  const file = workspace.getActiveFile();
+  if (!file) return null;
+
+  const { frontmatter } = metadataCache.getFileCache(file);
+  if (!frontmatter) return false;
+
+  const { start, end } = frontmatter.position;
+  const currOff = editor.posToOffset(editor.getCursor());
+  if (currOff >= start.offset + 4 && currOff <= end.offset - 4) return true;
+  else return false;
+}

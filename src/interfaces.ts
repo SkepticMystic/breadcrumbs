@@ -287,6 +287,9 @@ declare module "obsidian" {
     };
     commands: { executeCommandById: (id: string) => void };
   }
+  interface View {
+    editor: Editor;
+  }
 }
 
 export interface ParsedCodeblock extends IJugglSettings {
