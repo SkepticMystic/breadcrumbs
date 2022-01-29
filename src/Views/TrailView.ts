@@ -21,23 +21,24 @@ import { getFields, getOppDir, getOppFields } from "../Utils/HierUtils";
 import { createJugglTrail } from "../Visualisations/Juggl";
 
 function getLimitedTrailSub(plugin: BCPlugin) {
-  const { settings, mainG } = plugin;
+  const { settings, mainG, closedG } = plugin;
   const { limitTrailCheckboxes, userHiers } = settings;
-  let subGraph: MultiGraph;
 
   if (
     getFields(userHiers).every((field) => limitTrailCheckboxes.includes(field))
   ) {
-    subGraph = getSubInDirs(mainG, "up", "down");
+    return getSubInDirs(closedG, "up");
   } else {
     const oppFields = limitTrailCheckboxes
       .map((field) => getOppFields(userHiers, field, "up")?.[0])
       .filter((field) => field !== undefined);
-    subGraph = getSubForFields(mainG, [...limitTrailCheckboxes, ...oppFields]);
+    const subGraph = getSubForFields(mainG, [
+      ...limitTrailCheckboxes,
+      ...oppFields,
+    ]);
+    const closed = getReflexiveClosure(subGraph, userHiers);
+    return getSubInDirs(closed, "up");
   }
-
-  const closed = getReflexiveClosure(subGraph, userHiers);
-  return getSubInDirs(closed, "up");
 }
 
 function getBreadcrumbs(
