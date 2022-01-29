@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.46.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.45.1...2.46.0) (2022-01-29)
+
+
+### Features
+
+* **DendronNote:** :sparkles: Allow stubs ([#297](https://github.com/SkepticMystic/breadcrumbs/issues/297)) ([f976162](https://github.com/SkepticMystic/breadcrumbs/commit/f9761621643fbe6c31c2103cd4df32008822345a))
+
 ### [2.45.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.45.0...2.45.1) (2022-01-29)
 
 
