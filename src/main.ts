@@ -29,7 +29,7 @@ import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
 import { RelationSuggestor } from "./RelationSuggestor";
 import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
 import { getFields } from "./Utils/HierUtils";
-import { waitForCache } from "./Utils/ObsidianUtils";
+import { isInsideYaml, waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
 import StatsView from "./Views/StatsView";
@@ -205,26 +205,31 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "Write-Breadcrumbs-to-All-Files",
       name: "Write Breadcrumbs to **ALL** Files",
-      callback: async () => writeBCsToAllFiles(this),
+      callback: async () => await writeBCsToAllFiles(this),
     });
 
     this.addCommand({
       id: "local-index",
       name: "Copy a Local Index to the clipboard",
-      callback: async () => copyLocalIndex(this),
+      callback: async () => await copyLocalIndex(this),
     });
 
     this.addCommand({
       id: "global-index",
       name: "Copy a Global Index to the clipboard",
-      callback: async () => copyGlobalIndex(this),
+      callback: async () => await copyGlobalIndex(this),
+    });
+    this.addCommand({
+      id: "in-yaml",
+      name: "TEST: Inside YAML",
+      callback: async () => console.log(isInsideYaml(this.app)),
     });
 
     ["up", "down", "next", "prev"].forEach((dir: Directions) => {
       this.addCommand({
         id: `jump-to-first-${dir}`,
         name: `Jump to first '${dir}'`,
-        callback: async () => jumpToFirstDir(this, dir),
+        callback: async () => await jumpToFirstDir(this, dir),
       });
     });
 
@@ -232,7 +237,7 @@ export default class BCPlugin extends Plugin {
       this.addCommand({
         id: `new-file-with-curr-as-${field}`,
         name: `Create a new '${field}' from the current note`,
-        callback: async () => thread(this, field),
+        callback: async () => await thread(this, field),
       });
     });
 
@@ -258,13 +263,14 @@ export default class BCPlugin extends Plugin {
     return null;
   }
 
-  async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
+  loadSettings = async () =>
+    (this.settings = Object.assign(
+      {},
+      DEFAULT_SETTINGS,
+      await this.loadData()
+    ));
 
-  async saveSettings(): Promise<void> {
-    await this.saveData(this.settings);
-  }
+  saveSettings = async () => await this.saveData(this.settings);
 
   onunload(): void {
     console.log("unloading");
