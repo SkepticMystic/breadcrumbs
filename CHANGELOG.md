@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.48.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.47.0...2.48.0) (2022-01-29)
+
+
+### Features
+
+* Now adds Breadcrumbs edges to Juggl ([c1101d6](https://github.com/SkepticMystic/breadcrumbs/commit/c1101d6015efd9746db9153f12034e817de11aaa))
+
 ## [2.47.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.46.0...2.47.0) (2022-01-29)
 
 
