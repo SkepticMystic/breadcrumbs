@@ -20,6 +20,7 @@ export interface BCSettings {
   altLinkFields: string[];
   CSVPaths: string;
   dvWaitTime: number;
+  dataviewNoteField: string;
   debugMode: DebugLevel;
   defaultView: boolean;
   dendronNoteDelimiter: string;
@@ -275,6 +276,7 @@ declare module "obsidian" {
         dataview: {
           api: {
             page: (page: string) => dvFrontmatterCache;
+            pages: (query: string) => { values: dvFrontmatterCache[] };
             pagePaths: (query?: string) => { values: string[] };
           };
         };

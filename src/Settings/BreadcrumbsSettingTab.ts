@@ -1,4 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
+import { addDataviewSettings } from "./DataviewNoteSettings";
 import KoFi from "../Components/KoFi.svelte";
 import type BCPlugin from "../main";
 import { addCreateIndexSettings } from "./CreateIndexSettings";
@@ -113,6 +114,7 @@ export class BCSettingTab extends PluginSettingTab {
     addHierarchyNoteSettings(plugin, alternativeHierarchyDetails);
     addCSVSettings(plugin, alternativeHierarchyDetails);
     addDendronSettings(plugin, alternativeHierarchyDetails);
+    addDataviewSettings(plugin, alternativeHierarchyDetails);
 
     const cmdsDetails = details("Commands", containerEl);
     addWriteBCsSettings(plugin, cmdsDetails);

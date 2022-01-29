@@ -25,6 +25,7 @@
         "NamingNotes",
         "Codeblock",
         "TreeView",
-        "impliedRelations"
+        "impliedRelations",
+        "DataviewNotes"
     ]
 }

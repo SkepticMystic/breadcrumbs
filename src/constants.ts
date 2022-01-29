@@ -143,6 +143,8 @@ export const [
   BC_TRAVERSE_NOTE,
   BC_REGEX_NOTE,
   BC_REGEX_NOTE_FIELD,
+  BC_DV_NOTE,
+  BC_DV_NOTE_FIELD,
   BC_IGNORE_DENDRON,
   BC_HIDE_TRAIL,
   BC_ORDER,
@@ -156,6 +158,8 @@ export const [
   "BC-traverse-note",
   "BC-regex-note",
   "BC-regex-note-field",
+  "BC-dataview-note",
+  "BC-dataview-note-field",
   "BC-ignore-dendron",
   "BC-hide-trail",
   "BC-order",
@@ -226,6 +230,20 @@ export const BC_FIELDS_INFO = [
     alt: false,
   },
   {
+    field: BC_DV_NOTE,
+    desc: "Set this note as a Breadcrumbs Dataview-note. The value of this field is a Dataview `from` query. All notes that match the query will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Dataview Notes > Default Field`, or using the fieldName you specify in 'BC-dataview-note-field'.",
+    afterYaml: ": '",
+    afterInline: ":: ",
+    alt: true,
+  },
+  {
+    field: BC_DV_NOTE_FIELD,
+    desc: "Manually choose the field for this Dataview-note to use",
+    afterYaml: ": ",
+    afterInline: ":: ",
+    alt: false,
+  },
+  {
     field: BC_IGNORE_DENDRON,
     desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
     afterYaml: ": true",
@@ -262,6 +280,9 @@ export const ILLEGAL_FILENAME_CHARS = [
   "|",
 ];
 
+export const DATAVIEW_MISSING =
+  "The Dataview plugin must be installed for this to work";
+
 export const DEFAULT_SETTINGS: BCSettings = {
   addDendronNotes: false,
   aliasesInIndex: false,
@@ -269,6 +290,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   altLinkFields: [],
   CSVPaths: "",
   dateFormat: "YYYY-MM-DD",
+  dataviewNoteField: "up",
   debugMode: "WARN",
   defaultView: true,
   dendronNoteDelimiter: ".",
