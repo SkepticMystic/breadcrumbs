@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.45.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.3...2.45.0) (2022-01-29)
+
+
+### Features
+
+* :sparkles: Field suggestor now inserts different keys depending on if your cursor is in yaml or not (inline dataview) ([957ebe4](https://github.com/SkepticMystic/breadcrumbs/commit/957ebe4f2641e47c26477869ab5b58f6e6df6a79))
+* :sparkles: Relation suggestor also detects if your cursor is insideYaml or not ([4d62eef](https://github.com/SkepticMystic/breadcrumbs/commit/4d62eef821e948f451306de06791dc0b64236e7d))
+
+
+### Bug Fixes
+
+* :bug: So many functions that are meant to be awaited ([fc2e99d](https://github.com/SkepticMystic/breadcrumbs/commit/fc2e99df59592edc903d43f187a3152eb80558bd))
+* **LimitTrailFields:** :bug: New fields were being limited by default ([2de4170](https://github.com/SkepticMystic/breadcrumbs/commit/2de41706b559c52260807dcece2b6fa580e6f05f))
+
 ### [2.44.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.2...2.44.3) (2022-01-28)
 
 
