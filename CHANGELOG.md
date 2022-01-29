@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.49.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.48.0...2.49.0) (2022-01-29)
+
+
+### Features
+
+* **DateNotes:** :sparkles: Date notes! Enable the setting for Breadcrumbs to link your daily notes together ([17a02a0](https://github.com/SkepticMystic/breadcrumbs/commit/17a02a0e7b027431b615652a4fdaa8e9b41946ad))
+
 ## [2.48.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.47.0...2.48.0) (2022-01-29)
 
 
