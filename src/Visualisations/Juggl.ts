@@ -27,21 +27,18 @@ const STORE_ID = "core";
 
 class BCStoreEvents extends Events implements DataStoreEvents {}
 
-class BCStore extends Component implements ICoreDataStore {
+export class BCStore extends Component implements ICoreDataStore {
   graph: MultiGraph;
   cache: MetadataCache;
-  plugin: IJugglPlugin;
   depthMap: {[value: string]: number}
   constructor(
     graph: MultiGraph,
     metadata: MetadataCache,
-    plugin: IJugglPlugin,
-    depthMap: {[value: string]: number}
+    depthMap?: {[value: string]: number}
   ) {
     super();
     this.graph = graph;
     this.cache = metadata;
-    this.plugin = plugin;
     this.depthMap = depthMap
   }
 
@@ -64,6 +61,10 @@ class BCStore extends Component implements ICoreDataStore {
       allNodes.map((node) => this.asString(node)).filter((s) => s)
     );
     newNodes.forEach((node) => {
+      const name = this.asString(node);
+      if (!this.graph.hasNode(name)) {
+        return;
+      }
       this.graph.forEachOutEdge(
         this.asString(node),
         (key, attr, source, target) => {
@@ -90,10 +91,12 @@ class BCStore extends Component implements ICoreDataStore {
   }
 
   async getNeighbourhood(nodeIds: VizId[], view: IJuggl): Promise<cytoscape.NodeDefinition[]> {
-    // TODO
     const new_nodes = [];
     for (const nodeId of nodeIds) {
       const name = nodeId.id.slice(0, -3);
+      if (!this.graph.hasNode(name)) {
+        continue;
+      }
       for (const new_node of this.graph.neighbors(name)) {
         new_nodes.push(await this.get(new VizId(new_node + ".md", STORE_ID), view))
       }
@@ -126,7 +129,7 @@ class BCStore extends Component implements ICoreDataStore {
       return Promise.resolve(nodeDangling(nodeId.id));
     }
 
-    return nodeFromFile(file, this.plugin, view.settings, nodeId.toId()).then(node => {
+    return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then(node => {
       node.data.depth = depth;
       return node;
     });
@@ -154,7 +157,6 @@ export function createJuggl(
     const bcStore = new BCStore(
       plugin.mainG,
       plugin.app.metadataCache,
-      jugglPlugin,
       depthMap
     );
     const stores: IJugglStores = {
@@ -318,7 +320,7 @@ export function createJugglTrail(
                 if (name in depthMapDown) {
                   graph._nodes[id].rank = depthMapDown[name] + 1;
                 } else {
-                  graph._nodes[id].rank = 1;
+                  graph._nodes[id].rank = 0;
                 }
               });
             }
@@ -405,7 +407,7 @@ export function createJugglTrail(
           if (name in depthMapUp) {
             graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
           } else {
-            graph._nodes[id].rank = 1;
+            graph._nodes[id].rank = maxDepthUp + 2;
           }
         });
       }
