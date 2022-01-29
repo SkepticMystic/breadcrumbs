@@ -6,6 +6,7 @@ import {
   EditorSuggestTriggerInfo,
   TFile,
 } from "obsidian";
+import { isInsideYaml } from "./Utils/ObsidianUtils";
 import { BC_FIELDS_INFO } from "./constants";
 import type BCPlugin from "./main";
 
@@ -57,16 +58,18 @@ export class FieldSuggestor extends EditorSuggest<string> {
   }
 
   selectSuggestion(suggestion: string): void {
-    const { context } = this;
-    if (context) {
-      const replacement = `${suggestion}${
-        BC_FIELDS_INFO.find((f) => f.field === suggestion)?.after
-      }`;
-      context.editor.replaceRange(
-        replacement,
-        { ch: 0, line: context.start.line },
-        context.end
-      );
-    }
+    const { context, plugin } = this;
+    if (!context) return;
+
+    const field = BC_FIELDS_INFO.find((f) => f.field === suggestion);
+    const replacement = `${suggestion}${
+      field?.[isInsideYaml(plugin.app) ? "afterYaml" : "afterInline"]
+    }`;
+
+    context.editor.replaceRange(
+      replacement,
+      { ch: 0, line: context.start.line },
+      context.end
+    );
   }
 }

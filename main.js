@@ -9514,6 +9514,7 @@ const CODEBLOCK_FIELDS = [
     "implied",
 ];
 const JUGGL_CB_DEFAULTS = {
+    // @ts-ignore
     animateLayout: true,
     autoAddNodes: false,
     autoExpand: false,
@@ -9578,73 +9579,85 @@ const BC_FIELDS_INFO = [
     {
         field: BC_FOLDER_NOTE,
         desc: "Set this note as a Breadcrumbs folder-note. All other notes in this folder will be added to the graph with the field name specified in this key's value",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: true,
     },
     {
         field: BC_FOLDER_NOTE_RECURSIVE,
         desc: "Recursively add notes in subfolders to the foldernote of _that_ subfolder.",
-        after: ": true",
+        afterYaml: ": true",
+        afterInline: ":: true",
         alt: false,
     },
     {
         field: BC_TAG_NOTE,
         desc: "Set this note as a Breadcrumbs tag-note. All other notes with this tag will be added to the graph using the default fieldName specified in `Settings > Alternative Hierarchies > Tag Notes > Default Field`, or using the fieldName you specify with `BC-tag-note-field: fieldName`",
-        after: ": '#",
+        afterYaml: ": '#",
+        afterInline: ":: #",
         alt: true,
     },
     {
         field: BC_TAG_NOTE_FIELD,
         desc: "Manually choose the field for this tag-note to use",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: false,
     },
     {
         field: BC_TAG_NOTE_EXACT,
         desc: "Only look for notes with the exact tag. i.e. `#A` won't match `#A/B`",
-        after: ": true",
+        afterYaml: ": true",
+        afterInline: ":: true",
         alt: false,
     },
     {
         field: BC_LINK_NOTE,
         desc: "Set this note as a Breadcrumbs link-note. All links leaving this note will be added to the graph with the field name specified in this key's value.",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: true,
     },
     {
         field: BC_TRAVERSE_NOTE,
         desc: "Set this note as a Breadcrumbs traverse-note. Starting from this note, the Obsidian graph will be traversed in depth-first order, and all notes along the way will be added to the BC graph using the fieldName you specify",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: true,
     },
     {
         field: BC_REGEX_NOTE,
         desc: "Set this note as a Breadcrumbs regex-note. The value of this field is a regular expression (of the form '/regex/flags'). All note names that match the regex will be added to the BC graph using the default fieldName specified in `Settings > Alternative Hierarchies > Regex Notes > Default Field`, or using the fieldName you specify in 'BC-regex-note-field'.",
-        after: ": '/",
+        afterYaml: ": '/",
+        afterInline: ":: /",
         alt: true,
     },
     {
         field: BC_REGEX_NOTE_FIELD,
         desc: "Manually choose the field for this regex-note to use",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: false,
     },
     {
         field: BC_IGNORE_DENDRON,
         desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
-        after: ": true",
+        afterYaml: ": true",
+        afterInline: ":: true",
         alt: false,
     },
     {
         field: BC_HIDE_TRAIL,
         desc: "Don't show the trail in this note",
-        after: ": true",
+        afterYaml: ": true",
+        afterInline: ":: true",
         alt: false,
     },
     {
         field: BC_ORDER,
         desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
-        after: ": ",
+        afterYaml: ": ",
+        afterInline: ":: ",
         alt: false,
     },
 ];
@@ -31537,12 +31550,12 @@ class FieldSuggestor extends obsidian.EditorSuggest {
         });
     }
     selectSuggestion(suggestion) {
-        var _a;
-        const { context } = this;
-        if (context) {
-            const replacement = `${suggestion}${(_a = BC_FIELDS_INFO.find((f) => f.field === suggestion)) === null || _a === void 0 ? void 0 : _a.after}`;
-            context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
-        }
+        const { context, plugin } = this;
+        if (!context)
+            return;
+        const field = BC_FIELDS_INFO.find((f) => f.field === suggestion);
+        const replacement = `${suggestion}${field === null || field === void 0 ? void 0 : field[isInsideYaml(plugin.app) ? "afterYaml" : "afterInline"]}`;
+        context.editor.replaceRange(replacement, { ch: 0, line: context.start.line }, context.end);
     }
 }
 
