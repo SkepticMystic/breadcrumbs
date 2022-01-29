@@ -99,7 +99,7 @@ function getNextNPrev(plugin: BCPlugin, currNode: string) {
 
 export async function drawTrail(plugin: BCPlugin): Promise<void> {
   try {
-    const { settings, db, app } = plugin;
+    const { settings, db, app, mainG } = plugin;
     const {
       showBCs,
       noPathMessage,
@@ -138,6 +138,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       return;
     }
 
+    const { basename } = file;
+    if (!mainG.hasNode(basename)) {
+      db.end2G();
+      return;
+    }
+
     const view =
       mode === "preview"
         ? activeMDView.previewMode.containerEl.querySelector(
@@ -152,8 +158,6 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     const closedUp = getLimitedTrailSub(plugin);
     const sortedTrails = getBreadcrumbs(settings, closedUp, file);
     info({ sortedTrails });
-
-    const { basename } = file;
 
     const {
       next: { reals: rNext, implieds: iNext },

@@ -1,5 +1,4 @@
 import { Notice, Setting } from "obsidian";
-import { isInVault } from "obsidian-community-lib/dist/utils";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "../Utils/generalUtils";
 import { getFields } from "../Utils/HierUtils";

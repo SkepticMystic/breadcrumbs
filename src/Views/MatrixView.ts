@@ -167,6 +167,7 @@ export default class MatrixView extends ItemView {
     if (!mainG) return [];
 
     const { basename } = currFile;
+    if (!mainG.hasNode(basename)) return [];
     const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
 
     return userHiers.map((hier) => {
@@ -299,7 +300,7 @@ export default class MatrixView extends ItemView {
       const { contentEl, db, plugin } = this;
       db.start2G("Draw Matrix/List View");
       contentEl.empty();
-      const { settings } = plugin;
+      const { settings, mainG } = plugin;
       const { userHiers } = settings;
       const currFile = this.app.workspace.getActiveFile();
       if (!currFile) return;
