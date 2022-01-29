@@ -18,4 +18,10 @@
     on:load={initializeKofi}>
   </script>
 </svelte:head>
-<div bind:this={button} />
+<div class="BC-Kofi-button" bind:this={button} />
+
+<style>
+  .BC-Kofi-button {
+    margin-top: 10px;
+  }
+</style>
