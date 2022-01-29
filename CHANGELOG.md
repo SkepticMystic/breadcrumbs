@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.47.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.46.0...2.47.0) (2022-01-29)
+
+
+### Features
+
+* **DataviewNotes:** :sparkles: Dataview Notes! Use `BC-dataview-note: query` to run any valid Dataview from-query and add Breadcrumbs to all matching notes ([bc2681a](https://github.com/SkepticMystic/breadcrumbs/commit/bc2681a139cc476c1974770c6221a215e1ddc467))
+* **Hierarchy Note:** :sparkles: Point to a folder full of hierarchy notes by ending the folder name with `/` (fix [#138](https://github.com/SkepticMystic/breadcrumbs/issues/138)) ([49fa7ab](https://github.com/SkepticMystic/breadcrumbs/commit/49fa7ab5e38c98814b5d011a6501f4329059d070))
+
+
+### Bug Fixes
+
+* :bug: Checks for new note ([63f062e](https://github.com/SkepticMystic/breadcrumbs/commit/63f062e04afa177f246be6e5f2feeaafd2ef06c2))
+
 ## [2.46.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.45.1...2.46.0) (2022-01-29)
 
 
