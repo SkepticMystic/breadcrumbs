@@ -167,6 +167,6 @@ export function isInsideYaml(app: App): boolean | null {
 
   const { start, end } = frontmatter.position;
   const currOff = editor.posToOffset(editor.getCursor());
-  if (currOff >= start.offset + 4 && currOff <= end.offset - 4) return true;
+  if (currOff >= start.offset && currOff <= end.offset) return true;
   else return false;
 }

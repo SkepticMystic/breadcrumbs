@@ -10006,7 +10006,7 @@ function isInsideYaml(app) {
         return false;
     const { start, end } = frontmatter.position;
     const currOff = editor.posToOffset(editor.getCursor());
-    if (currOff >= start.offset + 4 && currOff <= end.offset - 4)
+    if (currOff >= start.offset && currOff <= end.offset)
         return true;
     else
         return false;
@@ -33518,11 +33518,11 @@ class RelationSuggestor extends obsidian.EditorSuggest {
         });
     }
     selectSuggestion(suggestion) {
-        const { context } = this;
+        const { context, plugin } = this;
         if (context) {
-            const trig = this.plugin.settings.relSuggestorTrigger;
+            const trig = plugin.settings.relSuggestorTrigger;
             const { start, end, editor } = context;
-            editor.replaceRange(suggestion + ":", { ch: start.ch + 1 - trig.length, line: start.line }, end);
+            editor.replaceRange(suggestion + (isInsideYaml(plugin.app) ? ": " : ":: "), { ch: start.ch + 1 - trig.length, line: start.line }, end);
         }
     }
 }

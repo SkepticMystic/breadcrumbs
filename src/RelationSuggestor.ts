@@ -6,6 +6,7 @@ import {
   EditorSuggestTriggerInfo,
   TFile,
 } from "obsidian";
+import { isInsideYaml } from "./Utils/ObsidianUtils";
 import type BCPlugin from "./main";
 import { escapeRegex } from "./Utils/generalUtils";
 import { getFields } from "./Utils/HierUtils";
@@ -54,12 +55,13 @@ export class RelationSuggestor extends EditorSuggest<string> {
   }
 
   selectSuggestion(suggestion: string): void {
-    const { context } = this;
+    const { context, plugin } = this;
     if (context) {
-      const trig = this.plugin.settings.relSuggestorTrigger;
+      const trig = plugin.settings.relSuggestorTrigger;
       const { start, end, editor } = context;
+
       editor.replaceRange(
-        suggestion + ":",
+        suggestion + (isInsideYaml(plugin.app) ? ": " : ":: "),
         { ch: start.ch + 1 - trig.length, line: start.line },
         end
       );
