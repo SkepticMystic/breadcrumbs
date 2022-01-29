@@ -36790,14 +36790,11 @@ class MatrixView extends obsidian.ItemView {
         this.sortItemsAlpha = (a, b) => {
             var _a, _b;
             const { sortByNameShowAlias, alphaSortAsc } = this.plugin.settings;
-            return (sortByNameShowAlias ? a.to : (_a = a.alt) !== null && _a !== void 0 ? _a : a.to) <
-                (sortByNameShowAlias ? b.to : (_b = b.alt) !== null && _b !== void 0 ? _b : b.to)
-                ? alphaSortAsc
-                    ? -1
-                    : 1
-                : alphaSortAsc
-                    ? 1
-                    : -1;
+            const aToSort = (sortByNameShowAlias ? a.to : (_a = a.alt) !== null && _a !== void 0 ? _a : a.to).toLowerCase();
+            const bToSort = (sortByNameShowAlias ? b.to : (_b = b.alt) !== null && _b !== void 0 ? _b : b.to).toLowerCase();
+            const less = alphaSortAsc ? -1 : 1;
+            const more = alphaSortAsc ? 1 : -1;
+            return aToSort < bToSort ? less : more;
         };
         this.plugin = plugin;
         this.db = new Debugger(plugin);

@@ -23,7 +23,7 @@ import { getDVApi, linkClass } from "../Utils/ObsidianUtils";
 
 export default class MatrixView extends ItemView {
   plugin: BCPlugin;
-  private view: Matrix | Lists;
+  private view: MLContainer;
   matrixQ: boolean;
   db: Debugger;
 
@@ -151,14 +151,13 @@ export default class MatrixView extends ItemView {
 
   sortItemsAlpha = (a: internalLinkObj, b: internalLinkObj) => {
     const { sortByNameShowAlias, alphaSortAsc } = this.plugin.settings;
-    return (sortByNameShowAlias ? a.to : a.alt ?? a.to) <
-      (sortByNameShowAlias ? b.to : b.alt ?? b.to)
-      ? alphaSortAsc
-        ? -1
-        : 1
-      : alphaSortAsc
-      ? 1
-      : -1;
+    const aToSort = (sortByNameShowAlias ? a.to : a.alt ?? a.to).toLowerCase();
+    const bToSort = (sortByNameShowAlias ? b.to : b.alt ?? b.to).toLowerCase();
+
+    const less = alphaSortAsc ? -1 : 1;
+    const more = alphaSortAsc ? 1 : -1;
+
+    return aToSort < bToSort ? less : more;
   };
 
   getHierSquares(userHiers: UserHier[], currFile: TFile): SquareProps[][] {
