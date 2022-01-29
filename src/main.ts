@@ -36,6 +36,8 @@ import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { VisModal } from "./Visualisations/VisModal";
+import {getPlugin} from "juggl-api";
+import {BCStore} from "./Visualisations/Juggl";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
@@ -46,6 +48,7 @@ export default class BCPlugin extends Plugin {
   layoutChange: EventRef = undefined;
   db: Debugger;
   VIEWS: ViewInfo[];
+  private bcStore: BCStore;
 
   registerActiveLeafChangeEvent() {
     this.activeLeafChange = this.app.workspace.on(
@@ -246,6 +249,12 @@ export default class BCPlugin extends Plugin {
       "breadcrumbs",
       getCodeblockCB(this)
     );
+
+    const jugglPlugin = getPlugin(this.app);
+    if (jugglPlugin) {
+      this.bcStore = new BCStore(this.mainG, this.app.metadataCache);
+      jugglPlugin.registerStore(this.bcStore);
+    }
   }
 
   getActiveTYPEView(type: string): MyView | null {
@@ -275,5 +284,11 @@ export default class BCPlugin extends Plugin {
     });
 
     this.visited.forEach((visit) => visit[1].remove());
+    if (this.bcStore) {
+      const jugglPlugin = getPlugin(this.app);
+      if (jugglPlugin) {
+        jugglPlugin.removeStore(this.bcStore);
+      }
+    }
   }
 }
