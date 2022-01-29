@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.45.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.45.0...2.45.1) (2022-01-29)
+
+
+### Bug Fixes
+
+* **List/Matrix View:** :bug: Sort by lowerCase (fix [#294](https://github.com/SkepticMystic/breadcrumbs/issues/294)) ([728929e](https://github.com/SkepticMystic/breadcrumbs/commit/728929e74170c4e9ac3ed907bd4f5e438023f29a))
+
 ## [2.45.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.44.3...2.45.0) (2022-01-29)
 
 
