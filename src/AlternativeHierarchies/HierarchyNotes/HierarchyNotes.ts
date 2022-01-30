@@ -1,4 +1,5 @@
 import type { MultiGraph } from "graphology";
+import { warn } from "loglevel";
 import { Notice, TFile } from "obsidian";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import type BCPlugin from "../../main";
@@ -60,7 +61,7 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
       file.basename
     }'`;
     new Notice(msg);
-    console.log(msg, { problemFields });
+    warn(msg, { problemFields });
   }
   return hierarchyNoteItems;
 }

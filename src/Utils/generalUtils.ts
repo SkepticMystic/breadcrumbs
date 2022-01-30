@@ -1,3 +1,4 @@
+import { warn } from "loglevel";
 import { dropHeaderOrAlias, regNFlags, splitLinksRegex } from "../constants";
 import type { BCSettings } from "../interfaces";
 
@@ -170,7 +171,7 @@ export function strToRegex(input: string) {
     const regex = new RegExp(innerRegex, flags);
     return regex;
   } catch (e) {
-    console.log(e);
+    warn(e);
     return null;
   }
 }

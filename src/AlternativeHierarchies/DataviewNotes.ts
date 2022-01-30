@@ -1,4 +1,5 @@
 import type { MultiGraph } from "graphology";
+import { warn } from "loglevel";
 import { Notice } from "obsidian";
 import { BC_DV_NOTE, BC_DV_NOTE_FIELD, DATAVIEW_MISSING } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
@@ -38,7 +39,7 @@ export function addDataviewNotesToGraph(
       targets = dv.pages(query).values;
     } catch (er) {
       new Notice(`${query} is not a valid Dataview from-query`);
-      console.log(er);
+      warn(er);
     }
 
     for (const target of targets) {

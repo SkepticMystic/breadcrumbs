@@ -1,3 +1,4 @@
+import { info } from "loglevel";
 import type { App, FrontMatterCache, TFile } from "obsidian";
 import {
   isInVault,
@@ -58,15 +59,15 @@ export const createOrUpdateYaml = async (
   const valueStr = value.toString();
 
   if (!frontmatter || frontmatter[key] === undefined) {
-    console.log(`Creating: ${key}: ${valueStr}`);
+    info(`Creating: ${key}: ${valueStr}`);
     await api.createYamlProperty(key, `['${valueStr}']`, file);
   } else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-    console.log("Already Exists!");
+    info("Already Exists!");
     return;
   } else {
     const oldValueFlat: string[] = [...[frontmatter[key]]].flat(4);
     const newValue = [...oldValueFlat, `'${valueStr}'`];
-    console.log(`Updating: ${key}: ${newValue}`);
+    info(`Updating: ${key}: ${newValue}`);
     await api.update(key, `[${newValue.join(", ")}]`, file);
   }
 };

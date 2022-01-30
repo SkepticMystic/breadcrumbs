@@ -27,7 +27,6 @@ export function addDateNotesToGraph(
     const tomorrow = day.plus({ days: 1 });
     const tomStr = tomorrow.toFormat(dateNoteFormat);
 
-    console.log(today, "→", tomStr);
     populateMain(
       settings,
       mainG,

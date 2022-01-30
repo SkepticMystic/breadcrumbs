@@ -22,7 +22,6 @@ export function getCodeblockCB(plugin: BCPlugin) {
     ctx: MarkdownPostProcessorContext
   ) => {
     const parsedSource = parseCodeBlockSource(source);
-    console.log(parsedSource);
     const err = codeblockError(plugin, parsedSource);
 
     if (err !== "") {
@@ -32,7 +31,6 @@ export function getCodeblockCB(plugin: BCPlugin) {
     let min = 0,
       max = Infinity;
     let { depth, dir, from, implied, flat } = parsedSource;
-    console.log({ flat });
     if (depth !== undefined) {
       const minNum = parseInt(depth[0]);
       if (!isNaN(minNum)) min = minNum;
@@ -236,6 +234,5 @@ export function createdJugglCB(
     .map(([_, node]) => node + ".md");
   if (min <= 0) nodes.push(source + ".md");
 
-  console.log({ lines, nodes });
   createJuggl(plugin, target, nodes, args);
 }

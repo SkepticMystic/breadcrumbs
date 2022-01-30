@@ -1,6 +1,6 @@
 <script lang="ts">
   import { range } from "lodash";
-  import type { App } from "obsidian";
+  import { warn } from "loglevel";
   import {
     hoverPreview,
     openOrSwitch,
@@ -40,7 +40,7 @@
         ""
       )?.stat.size;
     } catch (error) {
-      console.log(error, { currFile });
+      warn(error, { currFile });
       wordCounts[cell] = 0;
     }
   });

@@ -58,14 +58,12 @@ export function addNamingSystemNotesToGraph(
       if (!currReg) break;
       up = current.match(currReg);
     }
-    console.log({ currReg });
     return up?.[0] ?? null;
   }
 
   frontms.forEach((page) => {
     const sourceBN = getDVBasename(page.file);
     const upSystem = getUp(sourceBN);
-    console.log(sourceBN, "↑", upSystem);
     if (!upSystem) return;
 
     const upFm = frontms.find((fm) => {

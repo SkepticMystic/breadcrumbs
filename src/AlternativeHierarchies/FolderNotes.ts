@@ -67,7 +67,6 @@ export function addFolderNotesToGraph(
     if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
       const { subFolders } = getSubsFromFolder(topFolder);
       const folderQueue: TFolder[] = [...subFolders];
-      console.log({ startingQueue: folderQueue.slice() });
 
       let currFolder = folderQueue.shift();
       while (currFolder !== undefined) {
@@ -96,7 +95,6 @@ export function addFolderNotesToGraph(
 
         targets.forEach((target) => {
           if (target === folderNote) return;
-          console.log("adding", folderNote, "→", target);
           const sourceOrder = 9999; // getSourceOrder(altFile);
           const targetOrder = 9999; //  getTargetOrder(frontms, basename);
 

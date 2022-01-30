@@ -1,3 +1,4 @@
+import { warn } from "loglevel";
 import { Notice, TFile } from "obsidian";
 import type BCPlugin from "../main";
 import { getOppFields } from "../Utils/HierUtils";
@@ -72,7 +73,7 @@ export async function writeBCsToAllFiles(plugin: BCPlugin) {
           new Notice(
             "Some files were not updated due to errors. Check the console to see which ones."
           );
-          console.log({ problemFiles });
+          warn({ problemFiles });
         }
       }
     }

@@ -5,16 +5,17 @@ import {
   getPlugin,
   ICoreDataStore,
   IJuggl,
-  IJugglPlugin,
   IJugglSettings,
   IJugglStores,
   nodeDangling,
   nodeFromFile,
   VizId,
 } from "juggl-api";
+import { info, warn } from "loglevel";
 import { Component, Events, MetadataCache, TFile } from "obsidian";
 import { createIndex } from "../Commands/CreateIndex";
 import JugglButton from "../Components/JugglButton.svelte";
+import JugglDepth from "../Components/JugglDepth.svelte";
 import { JUGGL_CB_DEFAULTS } from "../constants";
 import type BCPlugin from "../main";
 import {
@@ -22,7 +23,6 @@ import {
   getReflexiveClosure,
   getSubInDirs,
 } from "../Utils/graphUtils";
-import JugglDepth from "../Components/JugglDepth.svelte";
 const STORE_ID = "core";
 
 class BCStoreEvents extends Events implements DataStoreEvents {}
@@ -30,16 +30,16 @@ class BCStoreEvents extends Events implements DataStoreEvents {}
 export class BCStore extends Component implements ICoreDataStore {
   graph: MultiGraph;
   cache: MetadataCache;
-  depthMap: {[value: string]: number}
+  depthMap: { [value: string]: number };
   constructor(
     graph: MultiGraph,
     metadata: MetadataCache,
-    depthMap?: {[value: string]: number}
+    depthMap?: { [value: string]: number }
   ) {
     super();
     this.graph = graph;
     this.cache = metadata;
-    this.depthMap = depthMap
+    this.depthMap = depthMap;
   }
 
   asString(node: NodeSingular): string {
@@ -90,7 +90,10 @@ export class BCStore extends Component implements ICoreDataStore {
     return new BCStoreEvents();
   }
 
-  async getNeighbourhood(nodeIds: VizId[], view: IJuggl): Promise<cytoscape.NodeDefinition[]> {
+  async getNeighbourhood(
+    nodeIds: VizId[],
+    view: IJuggl
+  ): Promise<cytoscape.NodeDefinition[]> {
     const new_nodes = [];
     for (const nodeId of nodeIds) {
       const name = nodeId.id.slice(0, -3);
@@ -98,7 +101,9 @@ export class BCStore extends Component implements ICoreDataStore {
         continue;
       }
       for (const new_node of this.graph.neighbors(name)) {
-        new_nodes.push(await this.get(new VizId(new_node + ".md", STORE_ID), view))
+        new_nodes.push(
+          await this.get(new VizId(new_node + ".md", STORE_ID), view)
+        );
       }
     }
     return new_nodes;
@@ -116,7 +121,7 @@ export class BCStore extends Component implements ICoreDataStore {
     const file = this.getFile(nodeId);
     let depth = 0;
     if (this.depthMap && nodeId.id in this.depthMap) {
-      depth = this.depthMap[nodeId.id]
+      depth = this.depthMap[nodeId.id];
     }
     if (file === null) {
       const dangling = nodeDangling(nodeId.id);
@@ -125,14 +130,16 @@ export class BCStore extends Component implements ICoreDataStore {
     }
     const cache = this.cache.getFileCache(file);
     if (cache === null) {
-      console.log("returning empty cache", nodeId);
+      info("returning empty cache", nodeId);
       return Promise.resolve(nodeDangling(nodeId.id));
     }
 
-    return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then(node => {
-      node.data.depth = depth;
-      return node;
-    });
+    return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then(
+      (node) => {
+        node.data.depth = depth;
+        return node;
+      }
+    );
   }
 }
 
@@ -141,7 +148,7 @@ export function createJuggl(
   target: HTMLElement,
   initialNodes: string[],
   args: IJugglSettings,
-  depthMap: {[value: string]: number}=null
+  depthMap: { [value: string]: number } = null
 ): IJuggl {
   try {
     const jugglPlugin = getPlugin(plugin.app);
@@ -166,10 +173,10 @@ export function createJuggl(
 
     const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
     plugin.addChild(juggl);
-    console.log({ juggl });
+    info({ juggl });
     return juggl;
   } catch (error) {
-    console.log({ error });
+    warn({ error });
     return null;
   }
 }
@@ -196,33 +203,36 @@ function zoomToSource(juggl: IJuggl, source: string) {
 }
 
 function zoomToGraph(juggl: IJuggl) {
-  juggl.on('vizReady', (viz) => {
+  juggl.on("vizReady", (viz) => {
     viz.fit(viz.nodes());
   });
 }
 
-function createDepthMap(paths: string[][], source: string, offset=0): {[name: string]: number} {
+function createDepthMap(
+  paths: string[][],
+  source: string,
+  offset = 0
+): { [name: string]: number } {
   // TODO: Is there a BC function for this already?
-  let depthMap: {[value: string]: number} = {};
+  let depthMap: { [value: string]: number } = {};
   depthMap[source + ".md"] = 0;
   paths.forEach((path) => {
-    for (let i=0; i < path.length; i++) {
+    for (let i = 0; i < path.length; i++) {
       const name = path[i] + ".md";
       const depth = path.length - i - 1 + offset;
       if (name in depthMap) {
         depthMap[name] = Math.min(depthMap[name], depth);
-      }
-      else {
+      } else {
         depthMap[name] = depth;
       }
     }
   });
- return depthMap
+  return depthMap;
 }
 
 function updateDepth(juggl: IJuggl, depth: number) {
-  juggl.viz.$(`[depth>${depth}]`).addClass('filtered');
-  juggl.viz.$(`[depth<=${depth}]`).removeClass('filtered');
+  juggl.viz.$(`[depth>${depth}]`).addClass("filtered");
+  juggl.viz.$(`[depth<=${depth}]`).removeClass("filtered");
 }
 
 export function createJugglTrail(
@@ -252,11 +262,11 @@ export function createJugglTrail(
       onClick: () => {
         if (jugglUp) {
           target.children[amtChildren].classList.remove("juggl-hide");
-          depthUp.$set({visible: true});
+          depthUp.$set({ visible: true });
         }
         if (jugglDown) {
           target.children[amtChildren + 1].classList.add("juggl-hide");
-          depthDown.$set({visible: false});
+          depthDown.$set({ visible: false });
         }
       },
       disabled: false,
@@ -271,10 +281,10 @@ export function createJugglTrail(
       onClick: () => {
         if (jugglDown) {
           target.children[amtChildren + 1].classList.remove("juggl-hide");
-          depthUp.$set({visible: false});
+          depthUp.$set({ visible: false });
           if (jugglUp) {
             target.children[amtChildren].classList.add("juggl-hide");
-            depthDown.$set({visible: true});
+            depthDown.$set({ visible: true });
           }
           return;
         }
@@ -292,7 +302,7 @@ export function createJugglTrail(
           })
           .filter((pair) => pair && pair !== "");
         let depthMapDown = createDepthMap(allPaths, source);
-        const maxDepthDown = Math.max(...Object.values(depthMapDown))
+        const maxDepthDown = Math.max(...Object.values(depthMapDown));
 
         depthDown = new JugglDepth({
           target: toolbarDiv,
@@ -300,8 +310,8 @@ export function createJugglTrail(
             maxDepth: maxDepthDown,
             onUpdateDepth: (d) => {
               updateDepth(jugglDown, d);
-            }
-          }
+            },
+          },
         });
         let nodesS = new Set(lines);
         nodesS.add(source);
@@ -309,10 +319,10 @@ export function createJugglTrail(
 
         const argsDown = Object.assign({}, args);
         const layout = plugin.settings.jugglLayout;
-        if (layout === 'hierarchy') {
+        if (layout === "hierarchy") {
           argsDown.layout = {
             // @ts-ignore
-            name: 'dagre',
+            name: "dagre",
             animate: false,
             ranker: (graph) => {
               Object.keys(graph._nodes).forEach((id) => {
@@ -323,19 +333,17 @@ export function createJugglTrail(
                   graph._nodes[id].rank = 0;
                 }
               });
-            }
-          }
-        }
-        else {
+            },
+          };
+        } else {
           argsDown.layout = layout;
         }
-        const isFdgd = layout === 'cola' || layout === 'd3-force';
+        const isFdgd = layout === "cola" || layout === "d3-force";
         if (isFdgd) {
           // @ts-ignore
           argsDown.fdgdLayout = layout;
-          argsDown.layout = 'force-directed';
-        }
-        else {
+          argsDown.layout = "force-directed";
+        } else {
           argsDown.autoZoom = true;
           argsDown.animateLayout = false;
         }
@@ -344,14 +352,13 @@ export function createJugglTrail(
 
         if (isFdgd) {
           zoomToSource(jugglDown, source);
-        }
-        else {
+        } else {
           zoomToGraph(jugglDown);
         }
 
         if (jugglUp) {
           target.children[amtChildren].addClass("juggl-hide");
-          depthUp.$set({visible: false});
+          depthUp.$set({ visible: false });
         }
       },
       disabled: false,
@@ -359,7 +366,7 @@ export function createJugglTrail(
     },
   });
   const depthMapUp = createDepthMap(paths, source, 1);
-  const maxDepthUp = Math.max(...Object.values(depthMapUp))
+  const maxDepthUp = Math.max(...Object.values(depthMapUp));
 
   let depthDown: JugglDepth;
   const depthUp = new JugglDepth({
@@ -368,10 +375,9 @@ export function createJugglTrail(
       maxDepth: maxDepthUp,
       onUpdateDepth: (d) => {
         updateDepth(jugglUp, d);
-      }
-    }
+      },
+    },
   });
-
 
   // new JugglButton({
   //     target: sectDiv,
@@ -396,41 +402,38 @@ export function createJugglTrail(
   const argsUp: IJugglSettings = Object.assign({}, args);
 
   const layout = plugin.settings.jugglLayout;
-  if (layout === 'hierarchy') {
+  if (layout === "hierarchy") {
     argsUp.layout = {
       // @ts-ignore
-      name: 'dagre',
+      name: "dagre",
       animate: false,
       ranker: (graph) => {
         Object.keys(graph._nodes).forEach((id) => {
           const name = VizId.fromId(id).id;
           if (name in depthMapUp) {
-            graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
+            graph._nodes[id].rank = maxDepthUp - depthMapUp[name] + 1;
           } else {
             graph._nodes[id].rank = maxDepthUp + 2;
           }
         });
-      }
-    }
-  }
-  else {
+      },
+    };
+  } else {
     argsUp.layout = layout;
   }
-  const isFdgd = layout === 'cola' || layout === 'd3-force';
+  const isFdgd = layout === "cola" || layout === "d3-force";
   if (isFdgd) {
     // @ts-ignore
     argsUp.fdgdLayout = layout;
-    argsUp.layout = 'force-directed';
-  }
-  else {
+    argsUp.layout = "force-directed";
+  } else {
     argsUp.autoZoom = true;
     argsUp.animateLayout = false;
   }
   jugglUp = createJuggl(plugin, target, nodes, argsUp, depthMapUp);
   if (isFdgd) {
     zoomToSource(jugglUp, source);
-  }
-  else {
+  } else {
     zoomToGraph(jugglUp);
   }
 }

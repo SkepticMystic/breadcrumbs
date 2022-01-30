@@ -10094,7 +10094,7 @@ function strToRegex(input) {
         return regex;
     }
     catch (e) {
-        console.log(e);
+        loglevel.warn(e);
         return null;
     }
 }
@@ -10144,17 +10144,17 @@ function dropWikilinks(str) {
 const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
     const valueStr = value.toString();
     if (!frontmatter || frontmatter[key] === undefined) {
-        console.log(`Creating: ${key}: ${valueStr}`);
+        loglevel.info(`Creating: ${key}: ${valueStr}`);
         await api.createYamlProperty(key, `['${valueStr}']`, file);
     }
     else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-        console.log("Already Exists!");
+        loglevel.info("Already Exists!");
         return;
     }
     else {
         const oldValueFlat = [...[frontmatter[key]]].flat(4);
         const newValue = [...oldValueFlat, `'${valueStr}'`];
-        console.log(`Updating: ${key}: ${newValue}`);
+        loglevel.info(`Updating: ${key}: ${newValue}`);
         await api.update(key, `[${newValue.join(", ")}]`, file);
     }
 };
@@ -30943,10 +30943,10 @@ class BCStore extends obsidian.Component {
         }
         const cache = this.cache.getFileCache(file);
         if (cache === null) {
-            console.log("returning empty cache", nodeId);
+            loglevel.info("returning empty cache", nodeId);
             return Promise.resolve(nodeDangling(nodeId.id));
         }
-        return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then(node => {
+        return nodeFromFile(file, view.plugin, view.settings, nodeId.toId()).then((node) => {
             node.data.depth = depth;
             return node;
         });
@@ -30970,11 +30970,11 @@ function createJuggl(plugin, target, initialNodes, args, depthMap = null) {
         };
         const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
         plugin.addChild(juggl);
-        console.log({ juggl });
+        loglevel.info({ juggl });
         return juggl;
     }
     catch (error) {
-        console.log({ error });
+        loglevel.warn({ error });
         return null;
     }
 }
@@ -30999,7 +30999,7 @@ function zoomToSource(juggl, source) {
     });
 }
 function zoomToGraph(juggl) {
-    juggl.on('vizReady', (viz) => {
+    juggl.on("vizReady", (viz) => {
         viz.fit(viz.nodes());
     });
 }
@@ -31022,8 +31022,8 @@ function createDepthMap(paths, source, offset = 0) {
     return depthMap;
 }
 function updateDepth(juggl, depth) {
-    juggl.viz.$(`[depth>${depth}]`).addClass('filtered');
-    juggl.viz.$(`[depth<=${depth}]`).removeClass('filtered');
+    juggl.viz.$(`[depth>${depth}]`).addClass("filtered");
+    juggl.viz.$(`[depth<=${depth}]`).removeClass("filtered");
 }
 function createJugglTrail(plugin, target, paths, source, args) {
     const toolbarDiv = document.createElement("div");
@@ -31087,18 +31087,18 @@ function createJugglTrail(plugin, target, paths, source, args) {
                         maxDepth: maxDepthDown,
                         onUpdateDepth: (d) => {
                             updateDepth(jugglDown, d);
-                        }
-                    }
+                        },
+                    },
                 });
                 let nodesS = new Set(lines);
                 nodesS.add(source);
                 const nodes = Array.from(nodesS).map((s) => s + ".md");
                 const argsDown = Object.assign({}, args);
                 const layout = plugin.settings.jugglLayout;
-                if (layout === 'hierarchy') {
+                if (layout === "hierarchy") {
                     argsDown.layout = {
                         // @ts-ignore
-                        name: 'dagre',
+                        name: "dagre",
                         animate: false,
                         ranker: (graph) => {
                             Object.keys(graph._nodes).forEach((id) => {
@@ -31110,17 +31110,17 @@ function createJugglTrail(plugin, target, paths, source, args) {
                                     graph._nodes[id].rank = 0;
                                 }
                             });
-                        }
+                        },
                     };
                 }
                 else {
                     argsDown.layout = layout;
                 }
-                const isFdgd = layout === 'cola' || layout === 'd3-force';
+                const isFdgd = layout === "cola" || layout === "d3-force";
                 if (isFdgd) {
                     // @ts-ignore
                     argsDown.fdgdLayout = layout;
-                    argsDown.layout = 'force-directed';
+                    argsDown.layout = "force-directed";
                 }
                 else {
                     argsDown.autoZoom = true;
@@ -31151,8 +31151,8 @@ function createJugglTrail(plugin, target, paths, source, args) {
             maxDepth: maxDepthUp,
             onUpdateDepth: (d) => {
                 updateDepth(jugglUp, d);
-            }
-        }
+            },
+        },
     });
     // new JugglButton({
     //     target: sectDiv,
@@ -31172,32 +31172,32 @@ function createJugglTrail(plugin, target, paths, source, args) {
     nodes = nodes.map((s) => s + ".md");
     const argsUp = Object.assign({}, args);
     const layout = plugin.settings.jugglLayout;
-    if (layout === 'hierarchy') {
+    if (layout === "hierarchy") {
         argsUp.layout = {
             // @ts-ignore
-            name: 'dagre',
+            name: "dagre",
             animate: false,
             ranker: (graph) => {
                 Object.keys(graph._nodes).forEach((id) => {
                     const name = VizId.fromId(id).id;
                     if (name in depthMapUp) {
-                        graph._nodes[id].rank = (maxDepthUp - depthMapUp[name]) + 1;
+                        graph._nodes[id].rank = maxDepthUp - depthMapUp[name] + 1;
                     }
                     else {
                         graph._nodes[id].rank = maxDepthUp + 2;
                     }
                 });
-            }
+            },
         };
     }
     else {
         argsUp.layout = layout;
     }
-    const isFdgd = layout === 'cola' || layout === 'd3-force';
+    const isFdgd = layout === "cola" || layout === "d3-force";
     if (isFdgd) {
         // @ts-ignore
         argsUp.fdgdLayout = layout;
-        argsUp.layout = 'force-directed';
+        argsUp.layout = "force-directed";
     }
     else {
         argsUp.autoZoom = true;
@@ -31217,7 +31217,6 @@ function getCodeblockCB(plugin) {
     return (source, el, ctx) => {
         var _a, _b;
         const parsedSource = parseCodeBlockSource(source);
-        console.log(parsedSource);
         const err = codeblockError(plugin, parsedSource);
         if (err !== "") {
             el.innerHTML = err;
@@ -31225,7 +31224,6 @@ function getCodeblockCB(plugin) {
         }
         let min = 0, max = Infinity;
         let { depth, dir, from, implied, flat } = parsedSource;
-        console.log({ flat });
         if (depth !== undefined) {
             const minNum = parseInt(depth[0]);
             if (!isNaN(minNum))
@@ -31370,7 +31368,6 @@ function createdJugglCB(plugin, target, args, lines, froms, source, min, max) {
         .map(([_, node]) => node + ".md");
     if (min <= 0)
         nodes.push(source + ".md");
-    console.log({ lines, nodes });
     createJuggl(plugin, target, nodes, args);
 }
 
@@ -31534,7 +31531,7 @@ async function writeBCsToAllFiles(plugin) {
                 notice.setMessage("Operation Complete");
                 if (problemFiles.length) {
                     new obsidian.Notice("Some files were not updated due to errors. Check the console to see which ones.");
-                    console.log({ problemFiles });
+                    loglevel.warn({ problemFiles });
                 }
             }
         }
@@ -31638,7 +31635,7 @@ function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
         }
         catch (er) {
             new obsidian.Notice(`${query} is not a valid Dataview from-query`);
-            console.log(er);
+            loglevel.warn(er);
         }
         for (const target of targets) {
             const targetBN = getDVBasename(target.file);
@@ -31661,7 +31658,6 @@ function addDateNotesToGraph(plugin, frontms, mainG) {
         const today = getDVBasename(page.file);
         const tomorrow = day.plus({ days: 1 });
         const tomStr = tomorrow.toFormat(dateNoteFormat);
-        console.log(today, "→", tomStr);
         populateMain(settings, mainG, today, dateNoteField, tomStr, 9999, 9999, true);
     });
 }
@@ -31758,7 +31754,6 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
         if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
             const { subFolders } = getSubsFromFolder(topFolder);
             const folderQueue = [...subFolders];
-            console.log({ startingQueue: folderQueue.slice() });
             let currFolder = folderQueue.shift();
             while (currFolder !== undefined) {
                 const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
@@ -31772,7 +31767,6 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
                 targets.forEach((target) => {
                     if (target === folderNote)
                         return;
-                    console.log("adding", folderNote, "→", target);
                     const sourceOrder = 9999; // getSourceOrder(altFile);
                     const targetOrder = 9999; //  getTargetOrder(frontms, basename);
                     populateMain(settings, mainG, folderNote, field, target, sourceOrder, targetOrder, true);
@@ -31830,7 +31824,7 @@ async function getHierarchyNoteItems(plugin, file) {
     if (problemFields.length > 0) {
         const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
         new obsidian.Notice(msg);
-        console.log(msg, { problemFields });
+        loglevel.warn(msg, { problemFields });
     }
     return hierarchyNoteItems;
 }
@@ -32628,7 +32622,6 @@ function create_fragment$j(ctx) {
 
 function instance$j($$self, $$props, $$invalidate) {
 	
-	
 	let { sortedTrails } = $$props;
 	let { plugin } = $$props;
 	const { settings, app } = plugin;
@@ -32650,7 +32643,7 @@ function instance$j($$self, $$props, $$invalidate) {
 				wordCounts
 			);
 		} catch(error) {
-			console.log(error, { currFile });
+			loglevel.warn(error, { currFile });
 			$$invalidate(2, wordCounts[cell] = 0, wordCounts);
 		}
 	});
@@ -33455,7 +33448,6 @@ async function buildMainG(plugin) {
                     if (!(folder instanceof obsidian.TFolder))
                         continue;
                     for (const child of folder.children) {
-                        console.log({ child });
                         if (child instanceof obsidian.TFile) {
                             addHNsToGraph(settings, await getHierarchyNoteItems(plugin, child), mainG);
                         }
@@ -33871,7 +33863,7 @@ function get_each_context$7(ctx, list, i) {
 	return child_ctx;
 }
 
-// (42:2) {#each options as option}
+// (43:2) {#each options as option}
 function create_each_block$7(ctx) {
 	let div;
 	let label;
@@ -34072,7 +34064,7 @@ function instance$g($$self, $$props, $$invalidate) {
 
 	function save() {
 		return __awaiter(this, void 0, void 0, function* () {
-			if (settings[settingName] === undefined) return console.log(settingName + " not found in BC settings");
+			if (settings[settingName] === undefined) return loglevel.warn(settingName + " not found in BC settings");
 			settings[settingName] = selected;
 			yield plugin.saveSettings();
 			yield refreshIndex(plugin);
@@ -61690,7 +61682,7 @@ function get_each_context_1(ctx, list, i) {
 	return child_ctx;
 }
 
-// (137:8) {#each options as op}
+// (138:8) {#each options as op}
 function create_each_block_1(ctx) {
 	let option;
 	let t_value = /*op*/ ctx[29] + "";
@@ -61722,7 +61714,7 @@ function create_each_block_1(ctx) {
 	};
 }
 
-// (133:2) {#each selectors as { text, options, val }}
+// (134:2) {#each selectors as { text, options, val }}
 function create_each_block(ctx) {
 	let span;
 	let t0_value = /*text*/ ctx[24] + "";
@@ -61988,7 +61980,7 @@ function instance($$self, $$props, $$invalidate) {
 					try {
 						types[type](...argArr);
 					} catch(error) {
-						console.log(error);
+						loglevel.warn(error);
 					}
 				},
 				10
@@ -61999,7 +61991,7 @@ function instance($$self, $$props, $$invalidate) {
 			try {
 				types[type](...argArr);
 			} catch(error) {
-				console.log(error);
+				loglevel.warn(error);
 			}
 		}
 	}

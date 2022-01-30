@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { warn } from "loglevel";
   import type BCPlugin from "../main";
   import { refreshIndex } from "../refreshIndex";
 
@@ -14,7 +15,7 @@
 
   async function save() {
     if (settings[settingName] === undefined)
-      return console.log(settingName + " not found in BC settings");
+      return warn(settingName + " not found in BC settings");
 
     settings[settingName] = selected;
     await plugin.saveSettings();

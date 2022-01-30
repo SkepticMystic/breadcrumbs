@@ -249,7 +249,6 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
 
           if (!(folder instanceof TFolder)) continue;
           for (const child of folder.children) {
-            console.log({ child });
             if (child instanceof TFile) {
               addHNsToGraph(
                 settings,

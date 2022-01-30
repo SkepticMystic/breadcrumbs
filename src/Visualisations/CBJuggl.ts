@@ -12,6 +12,7 @@ import {
   nodeFromFile,
   VizId,
 } from "juggl-api";
+import { info, warn } from "loglevel";
 import { Component, Events, MetadataCache, TFile } from "obsidian";
 import { JUGGL_CB_DEFAULTS } from "../constants";
 import type { ParsedCodeblock } from "../interfaces";
@@ -74,7 +75,6 @@ class BCStore extends Component implements ICoreDataStore {
       allNodes.map((node) => this.asString(node)).filter((s) => s)
     );
     newNodes.forEach((node) => {
-      console.log({ node });
       this.graph.forEachOutEdge(
         this.asString(node),
         (key, attr, source, target) => {
@@ -117,12 +117,12 @@ class BCStore extends Component implements ICoreDataStore {
     const file = this.getFile(nodeId);
     if (file === null) {
       const dangling = nodeDangling(nodeId.id);
-      console.log({ dangling });
+      info({ dangling });
       return Promise.resolve(nodeDangling(nodeId.id));
     }
     const cache = this.cache.getFileCache(file);
     if (cache === null) {
-      console.log("returning empty cache", nodeId);
+      info("returning empty cache", nodeId);
       return Promise.resolve(nodeDangling(nodeId.id));
     }
     return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
@@ -157,13 +157,13 @@ function createJuggl(
       dataStores: [bcStore],
     };
 
-    console.log({ args }, { initialNodes });
+    info({ args }, { initialNodes });
     const juggl = jugglPlugin.createJuggl(target, args, stores, initialNodes);
     plugin.addChild(juggl);
     juggl.load();
-    console.log({ juggl });
+    info({ juggl });
   } catch (error) {
-    console.log({ error });
+    warn({ error });
   }
 }
 
@@ -198,6 +198,6 @@ export function createdJugglCB(
   if (min <= 0) {
     nodes.push(source + ".md");
   }
-  console.log({ lines, nodes });
+  info({ lines, nodes });
   createJuggl(plugin, target, nodes, args);
 }

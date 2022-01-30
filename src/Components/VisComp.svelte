@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { warn } from "loglevel";
   import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
   import type { VisGraphs, visTypes } from "../interfaces";
   import {
@@ -128,7 +129,7 @@
         try {
           types[type](...argArr);
         } catch (error) {
-          console.log(error);
+          warn(error);
         }
       }, 10);
     } else {
@@ -136,7 +137,7 @@
       try {
         types[type](...argArr);
       } catch (error) {
-        console.log(error);
+        warn(error);
       }
     }
   }
