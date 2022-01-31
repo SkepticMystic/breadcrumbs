@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.50.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.49.0...2.50.0) (2022-01-31)
+
+
+### Features
+
+* **FolderNote:** :sparkles: BC-folder-note-subfolders links to notes in _subfolders_ of the current note using the given field ([41d6ee5](https://github.com/SkepticMystic/breadcrumbs/commit/41d6ee5ade769be0c78017966c7d92be4f5a6b1d))
+
 ## [2.49.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.48.0...2.49.0) (2022-01-29)
 
 
