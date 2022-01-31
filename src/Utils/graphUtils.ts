@@ -290,11 +290,9 @@ export function populateMain(
     field,
   });
   if (fillOpp) {
-    const oppDir = getOppDir(dir);
-    const oppField = getOppFields(userHiers, field, dir)[0];
     addEdgeIfNot(mainG, target, source, {
-      dir: oppDir,
-      field: oppField,
+      dir: getOppDir(dir),
+      field: getOppFields(userHiers, field, dir)[0],
     });
   }
 }

@@ -135,6 +135,7 @@ export const [
 
 export const [
   BC_FOLDER_NOTE,
+  BC_FOLDER_NOTE_SUBFOLDERS,
   BC_FOLDER_NOTE_RECURSIVE,
   BC_TAG_NOTE,
   BC_TAG_NOTE_FIELD,
@@ -150,6 +151,7 @@ export const [
   BC_ORDER,
 ] = [
   "BC-folder-note",
+  "BC-folder-note-subfolders",
   "BC-folder-note-recursive",
   "BC-tag-note",
   "BC-tag-note-field",
@@ -172,6 +174,13 @@ export const BC_FIELDS_INFO = [
     afterYaml: ": ",
     afterInline: ":: ",
     alt: true,
+  },
+  {
+    field: BC_FOLDER_NOTE_SUBFOLDERS,
+    desc: "Link to notes in subfolders with the given field.",
+    afterYaml: ": ",
+    afterInline: ":: ",
+    alt: false,
   },
   {
     field: BC_FOLDER_NOTE_RECURSIVE,

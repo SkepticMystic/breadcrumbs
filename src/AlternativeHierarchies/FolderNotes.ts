@@ -1,6 +1,10 @@
 import type { MultiGraph } from "graphology";
 import { TFile, TFolder } from "obsidian";
-import { BC_FOLDER_NOTE, BC_FOLDER_NOTE_RECURSIVE } from "../constants";
+import {
+  BC_FOLDER_NOTE,
+  BC_FOLDER_NOTE_RECURSIVE,
+  BC_FOLDER_NOTE_SUBFOLDERS,
+} from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import {
@@ -15,9 +19,8 @@ const getSubsFromFolder = (folder: TFolder) => {
   const otherNotes: TFile[] = [],
     subFolders: TFolder[] = [];
   folder.children.forEach((tAbstract) => {
-    if (tAbstract instanceof TFile) {
-      otherNotes.push(tAbstract);
-    } else subFolders.push(tAbstract as TFolder);
+    if (tAbstract instanceof TFile) otherNotes.push(tAbstract);
+    else subFolders.push(tAbstract as TFolder);
   });
   return { otherNotes, subFolders };
 };
@@ -31,6 +34,7 @@ export function addFolderNotesToGraph(
   const { settings, app } = plugin;
   const { userHiers } = settings;
   const fields = getFields(userHiers);
+
   folderNotes.forEach((altFile) => {
     const { file } = altFile;
     const basename = getDVBasename(file);
@@ -63,6 +67,36 @@ export function addFolderNotesToGraph(
         true
       );
     });
+
+    if (altFile[BC_FOLDER_NOTE_SUBFOLDERS]) {
+      const subfolderField = altFile[BC_FOLDER_NOTE_SUBFOLDERS] as string;
+      if (
+        typeof subfolderField !== "string" ||
+        !fields.includes(subfolderField)
+      )
+        return;
+
+      const { subFolders } = getSubsFromFolder(topFolder);
+
+      subFolders.forEach((subFolder) => {
+        subFolder.children.forEach((child) => {
+          if (child instanceof TFile) {
+            const childBasename = getDVBasename(child);
+
+            populateMain(
+              settings,
+              mainG,
+              basename,
+              subfolderField,
+              childBasename,
+              9999,
+              9999,
+              true
+            );
+          }
+        });
+      });
+    }
 
     if (altFile[BC_FOLDER_NOTE_RECURSIVE]) {
       const { subFolders } = getSubsFromFolder(topFolder);

@@ -1,11 +1,16 @@
 import { info } from "loglevel";
-import type { App, FrontMatterCache, TFile } from "obsidian";
+import {
+  App,
+  FrontMatterCache,
+  parseYaml,
+  stringifyYaml,
+  TFile,
+} from "obsidian";
 import {
   isInVault,
   wait,
   waitForResolvedLinks,
 } from "obsidian-community-lib/dist/utils";
-import { parse, stringify } from "yaml";
 import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
@@ -76,7 +81,7 @@ export function changeYaml(yaml: string, key: string, newVal: string): string {
   if (yaml === "") {
     return `${key}: ['${newVal}']`;
   } else {
-    const parsed: { [key: string]: any } = parse(yaml);
+    const parsed: { [key: string]: any } = parseYaml(yaml);
     const value = parsed[key];
     if (value === undefined) {
       parsed[key] = newVal;
@@ -90,7 +95,7 @@ export function changeYaml(yaml: string, key: string, newVal: string): string {
       parsed[key] = [...value, newVal];
     }
     // else if (other types of values...)
-    return stringify(parsed);
+    return stringifyYaml(parsed);
   }
 }
 

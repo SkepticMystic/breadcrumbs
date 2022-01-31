@@ -59,6 +59,6 @@
     "obsidian-community-lib": "^1.2.0",
     "svelte": "3.35.0",
     "svelte-icons": "^2.1.0",
-    "yaml": "2.0.0-10"
+    "yaml": "^2.0.0-10"
   }
 }
