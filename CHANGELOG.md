@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.0...2.50.1) (2022-02-03)
+
+
+### Bug Fixes
+
+* **DataviewNotes:** :bug: Don't run if there aren't any eligable alts ([6a5f2c7](https://github.com/SkepticMystic/breadcrumbs/commit/6a5f2c725767ea0ab42ab126ae737bce94348877))
+
 ## [2.50.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.49.0...2.50.0) (2022-01-31)
 
 
