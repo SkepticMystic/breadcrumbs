@@ -25104,8 +25104,9 @@ function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
     const { settings } = plugin;
     const { userHiers, dataviewNoteField } = settings;
     const dv = getDVApi(plugin);
-    if (!dv) {
+    if (!dv && eligableAlts.length) {
         new obsidian.Notice(DATAVIEW_MISSING);
+        return;
     }
     const fields = getFields(userHiers);
     eligableAlts.forEach((altFile) => {

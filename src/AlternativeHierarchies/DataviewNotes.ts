@@ -21,8 +21,9 @@ export function addDataviewNotesToGraph(
   const { settings } = plugin;
   const { userHiers, dataviewNoteField } = settings;
   const dv = getDVApi(plugin);
-  if (!dv) {
+  if (!dv && eligableAlts.length) {
     new Notice(DATAVIEW_MISSING);
+    return;
   }
 
   const fields = getFields(userHiers);
