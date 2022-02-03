@@ -18,7 +18,7 @@ export function addRelationSettings(
   // );
 
   relationDetails.createEl("p", {
-    text: "Here you can toggle on/off different ypes of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.",
+    text: "Here you can toggle on/off different types of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.",
   });
 
   new Setting(relationDetails)
