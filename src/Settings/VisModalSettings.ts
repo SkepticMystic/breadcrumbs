@@ -13,7 +13,7 @@ export function addVisModalSettings(
 
   new Setting(visModalDetails)
     .setName("Default Visualisation Type")
-    .setDesc("Which visualisation to show by defualt")
+    .setDesc("Which visualisation to show by default")
     .addDropdown((cb: DropdownComponent) => {
       VISTYPES.forEach((option: visTypes) => {
         cb.addOption(option, option);
