@@ -1,29 +1,18 @@
-import { normalizePath, Notice } from "obsidian";
+import { App, normalizePath, Notice, TFile } from "obsidian";
+import type { Directions } from "../interfaces";
 import type BCPlugin from "../main";
 import { getFieldInfo, getOppFields } from "../Utils/HierUtils";
 import { createOrUpdateYaml, splitAtYaml } from "../Utils/ObsidianUtils";
 
-export async function thread(plugin: BCPlugin, field: string) {
-  const { app, settings } = plugin;
-  const {
-    userHiers,
-    writeBCsInline,
-    threadingTemplate,
-    dateFormat,
-    threadingDirTemplates,
-    threadIntoNewPane,
-  } = settings;
-
-  const currFile = app.workspace.getActiveFile();
-  if (!currFile) return;
-
-  const newFileParent = app.fileManager.getNewFileParent(currFile.path);
-
-  const dir = getFieldInfo(userHiers, field).fieldDir;
-  const oppField = getOppFields(userHiers, field, dir)[0];
-
-  let newBasename = threadingTemplate
-    ? threadingTemplate
+const resolveThreadingNameTemplate = (
+  template: string,
+  currFile: TFile,
+  field: string,
+  dir: Directions,
+  dateFormat: string
+) =>
+  template
+    ? template
         .replace("{{current}}", currFile.basename)
         .replace("{{field}}", field)
         .replace("{{dir}}", dir)
@@ -31,19 +20,27 @@ export async function thread(plugin: BCPlugin, field: string) {
         .replace("{{date}}", moment().format(dateFormat))
     : "Untitled";
 
-  let i = 1;
-  while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
-    if (i === 1) newBasename += ` ${i}`;
-    else newBasename = newBasename.slice(0, -2) + ` ${i}`;
+function makeFilenameUnique(app: App, filename: string) {
+  let i = 1,
+    newName = filename;
+  while (app.metadataCache.getFirstLinkpathDest(newName, "")) {
+    if (i === 1) newName += ` ${i}`;
+    else newName = newName.slice(0, -2) + ` ${i}`;
     i++;
   }
+  return newName;
+}
 
-  const crumb = writeBCsInline
-    ? `${oppField}:: [[${currFile.basename}]]`
-    : `---\n${oppField}: ['${currFile.basename}']\n---`;
-
-  const templatePath = threadingDirTemplates[dir];
+async function resolveThreadingContentTemplate(
+  app: App,
+  writeBCsInline: boolean,
+  templatePath: string,
+  oppField: string,
+  currFile: TFile,
+  crumb: string
+) {
   let newContent = crumb;
+
   if (templatePath) {
     const templateFile = app.metadataCache.getFirstLinkpathDest(
       templatePath,
@@ -58,6 +55,51 @@ export async function thread(plugin: BCPlugin, field: string) {
         : `${oppField}: ['${currFile.basename}']`
     );
   }
+  return newContent;
+}
+
+export async function thread(plugin: BCPlugin, field: string) {
+  const { app, settings } = plugin;
+  const {
+    userHiers,
+    threadingTemplate,
+    dateFormat,
+    threadIntoNewPane,
+    threadingDirTemplates,
+    threadUnderCursor,
+    writeBCsInline,
+  } = settings;
+
+  const currFile = app.workspace.getActiveFile();
+  if (!currFile) return;
+
+  const newFileParent = app.fileManager.getNewFileParent(currFile.path);
+
+  const dir = getFieldInfo(userHiers, field).fieldDir;
+  const oppField = getOppFields(userHiers, field, dir)[0];
+
+  let newBasename = resolveThreadingNameTemplate(
+    threadingTemplate,
+    currFile,
+    field,
+    dir,
+    dateFormat
+  );
+  newBasename = makeFilenameUnique(app, newBasename);
+
+  const oppCrumb = writeBCsInline
+    ? `${oppField}:: [[${currFile.basename}]]`
+    : `---\n${oppField}: ['${currFile.basename}']\n---`;
+
+  const templatePath = threadingDirTemplates[dir];
+  const newContent = await resolveThreadingContentTemplate(
+    app,
+    writeBCsInline,
+    templatePath,
+    oppField,
+    currFile,
+    oppCrumb
+  );
 
   const newFile = await app.vault.create(
     normalizePath(`${newFileParent.path}/${newBasename}.md`),
@@ -80,17 +122,23 @@ export async function thread(plugin: BCPlugin, field: string) {
       api
     );
   } else {
-    // TODO Check if this note already has this field
-    let content = await app.vault.read(currFile);
-    const splits = splitAtYaml(content);
-    content =
-      splits[0] +
-      (splits[0].length ? "\n" : "") +
-      `${field}:: [[${newFile.basename}]]` +
-      (splits[1].length ? "\n" : "") +
-      splits[1];
+    const crumb = `${field}:: [[${newFile.basename}]]`;
+    const { editor } = app.workspace.activeLeaf.view;
+    if (threadUnderCursor || !editor) {
+      editor.replaceRange(crumb, editor.getCursor());
+    } else {
+      // TODO Check if this note already has this field
+      let content = await app.vault.read(currFile);
+      const splits = splitAtYaml(content);
+      content =
+        splits[0] +
+        (splits[0].length ? "\n" : "") +
+        crumb +
+        (splits[1].length ? "\n" : "") +
+        splits[1];
 
-    await app.vault.modify(currFile, content);
+      await app.vault.modify(currFile, content);
+    }
   }
 
   const leaf = threadIntoNewPane

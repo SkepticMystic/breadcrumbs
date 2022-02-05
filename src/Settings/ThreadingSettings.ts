@@ -20,12 +20,27 @@ export function addThreadingSettings(
   });
   new Setting(threadingDetails)
     .setName("Open new threads in new pane or current pane")
-    .addToggle((tog) =>
+    .addToggle((tog) => {
+      tog.setValue(settings.threadIntoNewPane);
       tog.onChange(async (value) => {
         settings.threadIntoNewPane = value;
         await plugin.saveSettings();
-      })
-    );
+      });
+    });
+  new Setting(threadingDetails)
+    .setName("Thread under Cursor")
+    .setDesc(
+      fragWithHTML(
+        "If the setting <code>Write Breadcrumbs Inline</code> is enabled, where should the new Breadcrumb be added to the current note? ✅ = Under the cursor, ❌ = At the top of the note (under the yaml, if applicable)"
+      )
+    )
+    .addToggle((tog) => {
+      tog.setValue(settings.threadUnderCursor);
+      tog.onChange(async (value) => {
+        settings.threadUnderCursor = value;
+        await plugin.saveSettings();
+      });
+    });
 
   new Setting(threadingDetails)
     .setName("New Note Name Template")

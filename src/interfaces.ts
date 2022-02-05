@@ -105,6 +105,7 @@ export interface BCSettings {
   threadIntoNewPane: boolean;
   threadingTemplate: string;
   threadingDirTemplates: { [dir in Directions]: string };
+  threadUnderCursor: boolean;
   trailSeperator: string;
   treatCurrNodeAsImpliedSibling: boolean;
   trimDendronNotes: boolean;

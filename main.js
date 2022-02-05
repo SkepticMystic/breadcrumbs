@@ -3466,6 +3466,7 @@ const DEFAULT_SETTINGS = {
     threadIntoNewPane: false,
     threadingTemplate: "{{field}} of {{current}}",
     threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
+    threadUnderCursor: false,
     trailSeperator: "→",
     treatCurrNodeAsImpliedSibling: false,
     trimDendronNotes: false,
@@ -24889,36 +24890,26 @@ async function jumpToFirstDir(plugin, dir) {
     await plugin.app.workspace.activeLeaf.openFile(toFile);
 }
 
-async function thread(plugin, field) {
-    var _a;
-    const { app, settings } = plugin;
-    const { userHiers, writeBCsInline, threadingTemplate, dateFormat, threadingDirTemplates, threadIntoNewPane, } = settings;
-    const currFile = app.workspace.getActiveFile();
-    if (!currFile)
-        return;
-    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
-    const dir = getFieldInfo(userHiers, field).fieldDir;
-    const oppField = getOppFields(userHiers, field, dir)[0];
-    let newBasename = threadingTemplate
-        ? threadingTemplate
-            .replace("{{current}}", currFile.basename)
-            .replace("{{field}}", field)
-            .replace("{{dir}}", dir)
-            //@ts-ignore
-            .replace("{{date}}", moment().format(dateFormat))
-        : "Untitled";
-    let i = 1;
-    while (app.metadataCache.getFirstLinkpathDest(newBasename, "")) {
+const resolveThreadingNameTemplate = (template, currFile, field, dir, dateFormat) => template
+    ? template
+        .replace("{{current}}", currFile.basename)
+        .replace("{{field}}", field)
+        .replace("{{dir}}", dir)
+        //@ts-ignore
+        .replace("{{date}}", moment().format(dateFormat))
+    : "Untitled";
+function makeFilenameUnique(app, filename) {
+    let i = 1, newName = filename;
+    while (app.metadataCache.getFirstLinkpathDest(newName, "")) {
         if (i === 1)
-            newBasename += ` ${i}`;
+            newName += ` ${i}`;
         else
-            newBasename = newBasename.slice(0, -2) + ` ${i}`;
+            newName = newName.slice(0, -2) + ` ${i}`;
         i++;
     }
-    const crumb = writeBCsInline
-        ? `${oppField}:: [[${currFile.basename}]]`
-        : `---\n${oppField}: ['${currFile.basename}']\n---`;
-    const templatePath = threadingDirTemplates[dir];
+    return newName;
+}
+async function resolveThreadingContentTemplate(app, writeBCsInline, templatePath, oppField, currFile, crumb) {
     let newContent = crumb;
     if (templatePath) {
         const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, "");
@@ -24927,6 +24918,25 @@ async function thread(plugin, field) {
             ? `${oppField}:: [[${currFile.basename}]]`
             : `${oppField}: ['${currFile.basename}']`);
     }
+    return newContent;
+}
+async function thread(plugin, field) {
+    var _a;
+    const { app, settings } = plugin;
+    const { userHiers, threadingTemplate, dateFormat, threadIntoNewPane, threadingDirTemplates, threadUnderCursor, writeBCsInline, } = settings;
+    const currFile = app.workspace.getActiveFile();
+    if (!currFile)
+        return;
+    const newFileParent = app.fileManager.getNewFileParent(currFile.path);
+    const dir = getFieldInfo(userHiers, field).fieldDir;
+    const oppField = getOppFields(userHiers, field, dir)[0];
+    let newBasename = resolveThreadingNameTemplate(threadingTemplate, currFile, field, dir, dateFormat);
+    newBasename = makeFilenameUnique(app, newBasename);
+    const oppCrumb = writeBCsInline
+        ? `${oppField}:: [[${currFile.basename}]]`
+        : `---\n${oppField}: ['${currFile.basename}']\n---`;
+    const templatePath = threadingDirTemplates[dir];
+    const newContent = await resolveThreadingContentTemplate(app, writeBCsInline, templatePath, oppField, currFile, oppCrumb);
     const newFile = await app.vault.create(obsidian.normalizePath(`${newFileParent.path}/${newBasename}.md`), newContent);
     if (!writeBCsInline) {
         const { api } = (_a = app.plugins.plugins.metaedit) !== null && _a !== void 0 ? _a : {};
@@ -24937,16 +24947,23 @@ async function thread(plugin, field) {
         await createOrUpdateYaml(field, newFile.basename, currFile, app.metadataCache.getFileCache(currFile).frontmatter, api);
     }
     else {
-        // TODO Check if this note already has this field
-        let content = await app.vault.read(currFile);
-        const splits = splitAtYaml(content);
-        content =
-            splits[0] +
-                (splits[0].length ? "\n" : "") +
-                `${field}:: [[${newFile.basename}]]` +
-                (splits[1].length ? "\n" : "") +
-                splits[1];
-        await app.vault.modify(currFile, content);
+        const crumb = `${field}:: [[${newFile.basename}]]`;
+        const { editor } = app.workspace.activeLeaf.view;
+        if (threadUnderCursor || !editor) {
+            editor.replaceRange(crumb, editor.getCursor());
+        }
+        else {
+            // TODO Check if this note already has this field
+            let content = await app.vault.read(currFile);
+            const splits = splitAtYaml(content);
+            content =
+                splits[0] +
+                    (splits[0].length ? "\n" : "") +
+                    crumb +
+                    (splits[1].length ? "\n" : "") +
+                    splits[1];
+            await app.vault.modify(currFile, content);
+        }
     }
     const leaf = threadIntoNewPane
         ? app.workspace.splitActiveLeaf()
@@ -39452,10 +39469,23 @@ function addThreadingSettings(plugin, cmdsDetails) {
     });
     new obsidian.Setting(threadingDetails)
         .setName("Open new threads in new pane or current pane")
-        .addToggle((tog) => tog.onChange(async (value) => {
-        settings.threadIntoNewPane = value;
-        await plugin.saveSettings();
-    }));
+        .addToggle((tog) => {
+        tog.setValue(settings.threadIntoNewPane);
+        tog.onChange(async (value) => {
+            settings.threadIntoNewPane = value;
+            await plugin.saveSettings();
+        });
+    });
+    new obsidian.Setting(threadingDetails)
+        .setName("Thread under Cursor")
+        .setDesc(fragWithHTML("If the setting <code>Write Breadcrumbs Inline</code> is enabled, where should the new Breadcrumb be added to the current note? ✅ = Under the cursor, ❌ = At the top of the note (under the yaml, if applicable)"))
+        .addToggle((tog) => {
+        tog.setValue(settings.threadUnderCursor);
+        tog.onChange(async (value) => {
+            settings.threadUnderCursor = value;
+            await plugin.saveSettings();
+        });
+    });
     new obsidian.Setting(threadingDetails)
         .setName("New Note Name Template")
         .setDesc(fragWithHTML(`When threading into a new note, choose the template for the new note name.</br>

@@ -372,6 +372,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   threadIntoNewPane: false,
   threadingTemplate: "{{field}} of {{current}}",
   threadingDirTemplates: { up: "", same: "", down: "", next: "", prev: "" },
+  threadUnderCursor: false,
   trailSeperator: "→",
   treatCurrNodeAsImpliedSibling: false,
   trimDendronNotes: false,
