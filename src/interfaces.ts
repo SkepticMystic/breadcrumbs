@@ -51,6 +51,8 @@ export interface BCSettings {
     sameParentIsSibling: boolean;
     /** Traverse siblings horizontally to make all siblings siblings of each other */
     siblingsSiblingIsSibling: boolean;
+    /** Your siblings' parents are your parents */
+    siblingsParentIsParent: boolean;
     /** Aunt and Uncle */
     parentsSiblingsIsParents: boolean;
     /** Grandparents */

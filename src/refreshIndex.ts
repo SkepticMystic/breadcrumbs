@@ -25,6 +25,7 @@ import {
   BC_FOLDER_NOTE,
   BC_I_AUNT,
   BC_I_COUSIN,
+  BC_I_PARENT,
   BC_I_SIBLING_1,
   BC_I_SIBLING_2,
   BC_LINK_NOTE,
@@ -330,6 +331,26 @@ function addSiblingsFromSameParent(g: MultiGraph, settings: BCSettings) {
   });
 }
 
+function addSiblingsParentIsParent(g: MultiGraph) {
+  g.forEachNode((currN, a) => {
+    // Find siblings of current node
+    g.forEachOutEdge(currN, (k, currNAttr, s, sibling) => {
+      if (currNAttr.dir !== "same") return;
+      // Find the parents of those siblings
+      g.forEachOutEdge(sibling, (k, a, s, parent) => {
+        const { dir, field } = a;
+        if (dir !== "up") return;
+
+        addEdgeIfNot(g, currN, parent, {
+          dir: "up",
+          field,
+          implied: BC_I_PARENT,
+        });
+      });
+    });
+  });
+}
+
 // Transitive closure of siblings
 function addSiblingsFromSiblings(g: MultiGraph) {}
 
@@ -404,11 +425,13 @@ export function buildClosedG(plugin: BCPlugin) {
       parentsSiblingsIsParents,
       cousinsIsSibling,
       siblingsSiblingIsSibling,
+      siblingsParentIsParent,
     },
   } = settings;
   let closedG = getReflexiveClosure(mainG, userHiers);
 
   if (sameParentIsSibling) addSiblingsFromSameParent(closedG, settings);
+  if (siblingsParentIsParent) addSiblingsParentIsParent(closedG);
   if (parentsSiblingsIsParents) addAuntsUncles(closedG);
   if (cousinsIsSibling) addCousins(closedG);
   if (siblingsSiblingIsSibling) addStructuralEquivalenceSiblings(closedG);

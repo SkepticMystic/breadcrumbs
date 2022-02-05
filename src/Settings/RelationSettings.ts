@@ -47,6 +47,19 @@ export function addRelationSettings(
     );
 
   new Setting(relationDetails)
+    .setName("Siblings' Parent is Parent")
+    .setDesc("Your siblings' parents are your parents")
+    .addToggle((tg) =>
+      tg
+        .setValue(settings.impliedRelations.siblingsParentIsParent)
+        .onChange(async (val) => {
+          settings.impliedRelations.siblingsParentIsParent = val;
+          await plugin.saveSettings();
+          await refreshIndex(plugin);
+        })
+    );
+
+  new Setting(relationDetails)
     .setName("Aunt/Uncle")
     .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
     .addToggle((tg) =>

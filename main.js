@@ -3251,7 +3251,14 @@ const blankRealNImplied = () => {
         prev: { reals: [], implieds: [] },
     };
 };
-const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE,] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
+const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE, BC_I_PARENT,] = [
+    "BC-Aunt",
+    "BC-Cousin",
+    "BC-Sibling-1",
+    "BC-Sibling-2",
+    "BC-Reflexive",
+    "BC-Parent",
+];
 const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDERS, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-subfolders",
@@ -3483,6 +3490,7 @@ const DEFAULT_SETTINGS = {
         siblingIdentity: false,
         sameParentIsSibling: true,
         siblingsSiblingIsSibling: false,
+        siblingsParentIsParent: false,
         parentsSiblingsIsParents: false,
         parentsParentsIsParent: false,
         cousinsIsSibling: false,
@@ -35467,6 +35475,26 @@ function addSiblingsFromSameParent(g, settings) {
         });
     });
 }
+function addSiblingsParentIsParent(g) {
+    g.forEachNode((currN, a) => {
+        // Find siblings of current node
+        g.forEachOutEdge(currN, (k, currNAttr, s, sibling) => {
+            if (currNAttr.dir !== "same")
+                return;
+            // Find the parents of those siblings
+            g.forEachOutEdge(sibling, (k, a, s, parent) => {
+                const { dir, field } = a;
+                if (dir !== "up")
+                    return;
+                addEdgeIfNot(g, currN, parent, {
+                    dir: "up",
+                    field,
+                    implied: BC_I_PARENT,
+                });
+            });
+        });
+    });
+}
 function addAuntsUncles(g) {
     g.forEachNode((currN, a) => {
         // Find parents of current node
@@ -35533,10 +35561,12 @@ function addStructuralEquivalenceSiblings(g) {
 }
 function buildClosedG(plugin) {
     const { mainG, settings } = plugin;
-    const { userHiers, impliedRelations: { sameParentIsSibling, parentsSiblingsIsParents, cousinsIsSibling, siblingsSiblingIsSibling, }, } = settings;
+    const { userHiers, impliedRelations: { sameParentIsSibling, parentsSiblingsIsParents, cousinsIsSibling, siblingsSiblingIsSibling, siblingsParentIsParent, }, } = settings;
     let closedG = getReflexiveClosure(mainG, userHiers);
     if (sameParentIsSibling)
         addSiblingsFromSameParent(closedG, settings);
+    if (siblingsParentIsParent)
+        addSiblingsParentIsParent(closedG);
     if (parentsSiblingsIsParents)
         addAuntsUncles(closedG);
     if (cousinsIsSibling)
@@ -39315,7 +39345,7 @@ function addRelationSettings(plugin, containerEl) {
     //   null
     // );
     relationDetails.createEl("p", {
-        text: "Here you can toggle on/off different types of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relaiton, so you can style the differently. For example `.BC-Aunt`.",
+        text: "Here you can toggle on/off different types of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relation, so you can style them differently. For example `.BC-Aunt`.",
     });
     new obsidian.Setting(relationDetails)
         .setName("Same Parent is Siblings")
@@ -39334,6 +39364,16 @@ function addRelationSettings(plugin, containerEl) {
         .setValue(settings.impliedRelations.siblingsSiblingIsSibling)
         .onChange(async (val) => {
         settings.impliedRelations.siblingsSiblingIsSibling = val;
+        await plugin.saveSettings();
+        await refreshIndex(plugin);
+    }));
+    new obsidian.Setting(relationDetails)
+        .setName("Siblings' Parent is Parent")
+        .setDesc("Your siblings' parents are your parents")
+        .addToggle((tg) => tg
+        .setValue(settings.impliedRelations.siblingsParentIsParent)
+        .onChange(async (val) => {
+        settings.impliedRelations.siblingsParentIsParent = val;
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
@@ -39672,7 +39712,7 @@ function addVisModalSettings(plugin, viewDetails) {
     const visModalDetails = subDetails("Visualisation Modal", viewDetails);
     new obsidian.Setting(visModalDetails)
         .setName("Default Visualisation Type")
-        .setDesc("Which visualisation to show by defualt")
+        .setDesc("Which visualisation to show by default")
         .addDropdown((cb) => {
         VISTYPES.forEach((option) => {
             cb.addOption(option, option);

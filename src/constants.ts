@@ -131,7 +131,15 @@ export const [
   BC_I_SIBLING_1,
   BC_I_SIBLING_2,
   BC_I_REFLEXIVE,
-] = ["BC-Aunt", "BC-Cousin", "BC-Sibling-1", "BC-Sibling-2", "BC-Reflexive"];
+  BC_I_PARENT,
+] = [
+  "BC-Aunt",
+  "BC-Cousin",
+  "BC-Sibling-1",
+  "BC-Sibling-2",
+  "BC-Reflexive",
+  "BC-Parent",
+];
 
 export const [
   BC_FOLDER_NOTE,
@@ -388,6 +396,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
     siblingIdentity: false,
     sameParentIsSibling: true,
     siblingsSiblingIsSibling: false,
+    siblingsParentIsParent: false,
     parentsSiblingsIsParents: false,
     parentsParentsIsParent: false,
     cousinsIsSibling: false,
