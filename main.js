@@ -3687,6 +3687,7 @@ function splitAtYaml(content) {
     }
 }
 const dropHash = (tag) => tag.startsWith("#") ? tag.slice(1) : tag;
+const addHash = (tag) => (tag.startsWith("#") ? tag : `#${tag}`);
 function getAlt(node, plugin) {
     var _a;
     const { app } = plugin;
@@ -33957,9 +33958,8 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
         var _a;
         const tagNoteFile = altFile.file;
         const tagNoteBasename = getDVBasename(tagNoteFile);
-        const tag = altFile[BC_TAG_NOTE].trim().toLowerCase();
-        if (!tag.startsWith("#"))
-            return;
+        const tag = addHash(altFile[BC_TAG_NOTE].trim().toLowerCase());
+        loglevel.info({ tag });
         const hasThisTag = (file) => {
             const allTags = getAllTags(app, file);
             return altFile[BC_TAG_NOTE_EXACT] !== undefined
@@ -33970,6 +33970,7 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
             .map((ff) => ff.file)
             .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
             .map(getDVBasename);
+        loglevel.info({ targets });
         let field = (_a = altFile[BC_TAG_NOTE_FIELD]) !== null && _a !== void 0 ? _a : (tagNoteField || fields[0]);
         targets.forEach((target) => {
             const sourceOrder = getSourceOrder(altFile);
@@ -35406,6 +35407,7 @@ async function buildMainG(plugin) {
         if (jugglLinks.length)
             addJugglLinksToGraph(settings, jugglLinks, frontms, mainG);
         // !SECTION  Juggl Links
+        db.start2G("Alternative Hierarchies");
         // SECTION  Hierarchy Notes
         db.start2G("Hierarchy Notes");
         if (hierarchyNotes.length) {
@@ -35429,17 +35431,32 @@ async function buildMainG(plugin) {
         }
         db.end2G();
         // !SECTION  Hierarchy Notes
-        db.start1G("Alternative Hierarchies");
+        db.start2G("Folder Notes");
         addFolderNotesToGraph(plugin, eligableAlts[BC_FOLDER_NOTE], frontms, mainG);
+        db.end2G();
+        db.start2G("Tag Notes");
         addTagNotesToGraph(plugin, eligableAlts[BC_TAG_NOTE], frontms, mainG);
+        db.end2G();
+        db.start2G("Link Notes");
         addLinkNotesToGraph(plugin, eligableAlts[BC_LINK_NOTE], frontms, mainG);
+        db.end2G();
+        db.start2G("Regex Notes");
         addRegexNotesToGraph(plugin, eligableAlts[BC_REGEX_NOTE], frontms, mainG);
+        db.end2G();
         // plugin.addNamingSystemNotesToGraph(frontms, mainG);
+        db.start2G("Traverse Notes");
         addTraverseNotesToGraph(plugin, eligableAlts[BC_TRAVERSE_NOTE], mainG, buildObsGraph(app));
+        db.end2G();
+        db.start2G("Dendron Notes");
         addDendronNotesToGraph(plugin, frontms, mainG);
+        db.end2G();
+        db.start2G("Dataview Notes");
         addDataviewNotesToGraph(plugin, eligableAlts[BC_DV_NOTE], frontms, mainG);
+        db.end2G();
+        db.start2G("Date Notes");
         addDateNotesToGraph(plugin, frontms, mainG);
-        db.end1G();
+        db.end2G();
+        db.end2G();
         files.forEach((file) => addNodesIfNot(mainG, [file.basename]));
         db.end2G("graphs inited", { mainG });
         return mainG;
