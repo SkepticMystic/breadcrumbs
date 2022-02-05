@@ -3,6 +3,7 @@ import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import { populateMain } from "../Utils/graphUtils";
 import { getDVBasename } from "../Utils/ObsidianUtils";
+import * as luxon from "luxon";
 
 export function addDateNotesToGraph(
   plugin: BCPlugin,
@@ -19,11 +20,13 @@ export function addDateNotesToGraph(
   } = settings;
   if (!addDateNotes) return;
 
+  const { regex } = luxon.DateTime.fromFormatExplain("", dateNoteFormat);
   frontms.forEach((page) => {
-    const { day } = page.file;
-    if (!day) return;
+    const { file } = page;
+    const { day } = file;
+    if (!day || !regex.test(getDVBasename(file))) return;
 
-    const today = getDVBasename(page.file);
+    const today = getDVBasename(file);
     const tomorrow = day.plus({ days: 1 });
     const tomStr = tomorrow.toFormat(dateNoteFormat);
 
