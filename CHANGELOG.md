@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.52.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.51.1...2.52.0) (2022-02-05)
+
+
+### Features
+
+* **Threading:** :sparkles: Option to threadUnderCursor (Fix [#276](https://github.com/SkepticMystic/breadcrumbs/issues/276)) ([5b0ddde](https://github.com/SkepticMystic/breadcrumbs/commit/5b0dddedc55cd11ba656b4ffab4c48af22761791))
+
 ### [2.51.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.51.0...2.51.1) (2022-02-05)
 
 ## [2.51.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.4...2.51.0) (2022-02-05)
