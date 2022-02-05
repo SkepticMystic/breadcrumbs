@@ -4,7 +4,7 @@ This plugin adds multiple new views to Obsidian.
 
 ### The [wiki](https://github.com/SkepticMystic/breadcrumbs/wiki) has way more in-depth info on the plugin than this current outdated and limited readme file.
 
-Join our discussions in [GitHub](https://github.com/SkepticMystic/breadcrumbs/discussions)! For example, learn about how to [get the most out of Breadcrumbs](https://github.com/SkepticMystic/breadcrumbs/discussions/175 "Getting the most out of Breadcrumbs · Discussion #175 · SkepticMystic/breadcrumbs").
+Join our discussions in [GitHub](https://github.com/SkepticMystic/breadcrumbs/discussions) or [Discord](https://discord.com/channels/686053708261228577/929513881041248266)! For example, learn how other users [get the most out of Breadcrumbs](https://github.com/SkepticMystic/breadcrumbs/discussions/175 "Getting the most out of Breadcrumbs · Discussion #175 · SkepticMystic/breadcrumbs").
 
 You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md).
 
