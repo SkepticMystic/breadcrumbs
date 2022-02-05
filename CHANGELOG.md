@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.51.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.4...2.51.0) (2022-02-05)
+
+
+### Features
+
+* **impliedRelations:** :sparkles: New optional impliedRelation: Siblings' parent is your parent ([#301](https://github.com/SkepticMystic/breadcrumbs/issues/301)) ([2a92f6d](https://github.com/SkepticMystic/breadcrumbs/commit/2a92f6da3ee2b51d104aae327396be6ff2511743))
+
 ### [2.50.4](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.3...2.50.4) (2022-02-05)
 
 ### [2.50.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.2...2.50.3) (2022-02-05)
