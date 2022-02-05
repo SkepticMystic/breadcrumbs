@@ -24,19 +24,18 @@ export function addMatrixViewSettings(
       })
     );
 
-  // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
-  // new Setting(MLViewDetails)
-  //   .setName("Show all field names or just relation types")
-  //   .setDesc(
-  //     "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names."
-  //   )
-  //   .addToggle((toggle) =>
-  //     toggle.setValue(settings.showNameOrType).onChange(async (value) => {
-  //       settings.showNameOrType = value;
-  //       await plugin.saveSettings();
-  //       await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-  //     })
-  //   );
+  new Setting(MLViewDetails)
+    .setName("Show all field names or just relation types")
+    .setDesc(
+      "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names."
+    )
+    .addToggle((toggle) =>
+      toggle.setValue(settings.showNameOrType).onChange(async (value) => {
+        settings.showNameOrType = value;
+        await plugin.saveSettings();
+        await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+      })
+    );
 
   new Setting(MLViewDetails)
     .setName("Show Relationship Type")
@@ -141,27 +140,28 @@ export function addMatrixViewSettings(
       })
     );
 
-  new Setting(MLViewDetails)
-    .setName("Filter Implied Siblings")
-    .setDesc(
-      fragWithHTML(
-        `Implied siblings are:
-          <ol>
-            <li>notes with the same parent, or</li>
-            <li>notes that are real siblings.</li>
-          </ol>
-          This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations <code>B -parent-> A</code>, and <code>C -parent-> A</code> create an implied sibling between B and C (they have the same parent, A). The two real relations <code>B -parent-> A</code>, and <code>C -up-> A</code> create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).`
-      )
-    )
-    .addToggle((toggle) =>
-      toggle
-        .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
-        .onChange(async (value) => {
-          settings.filterImpliedSiblingsOfDifferentTypes = value;
-          await plugin.saveSettings();
-          await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-        })
-    );
+  // TODO I don't think this setting works anymore. I removed it's functionality when adding multiple hierarchies
+  // new Setting(MLViewDetails)
+  //   .setName("Filter Implied Siblings")
+  //   .setDesc(
+  //     fragWithHTML(
+  //       `Implied siblings are:
+  //         <ol>
+  //           <li>notes with the same parent, or</li>
+  //           <li>notes that are real siblings.</li>
+  //         </ol>
+  //         This setting only applies to type 1 implied siblings. If enabled, Breadcrumbs will filter type 1 implied siblings so that they not only share the same parent, but the parent relation has the exact same type. For example, the two real relations <code>B -parent-> A</code>, and <code>C -parent-> A</code> create an implied sibling between B and C (they have the same parent, A). The two real relations <code>B -parent-> A</code>, and <code>C -up-> A</code> create an implied sibling between B and C (they also have the same parent, A). But if this setting is turned on, the second implied sibling would not show, because the parent types are differnet (parent versus up).`
+  //     )
+  //   )
+  //   .addToggle((toggle) =>
+  //     toggle
+  //       .setValue(settings.filterImpliedSiblingsOfDifferentTypes)
+  //       .onChange(async (value) => {
+  //         settings.filterImpliedSiblingsOfDifferentTypes = value;
+  //         await plugin.saveSettings();
+  //         await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+  //       })
+  //   );
 
   new Setting(MLViewDetails)
     .setName("Open View in Right or Left side")
@@ -181,4 +181,12 @@ export function addMatrixViewSettings(
         );
       })
     );
+
+    new Setting(MLViewDetails).setName('Overflow').setDesc('When the Matrix View is too small to show a note name, should it wrap the name to the next line, or trim it to stay on one line? ✅ = Wrap, ❌ = Trim').addToggle((toggle) => {
+      toggle.setValue(settings.overflowMLView).onChange(async (value) => {
+        settings.overflowMLView = value;
+        await plugin.saveSettings();
+        await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
+      })
+    }
 }

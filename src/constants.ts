@@ -337,6 +337,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   openStatsOnLoad: true,
   openDuckOnLoad: false,
   openDownOnLoad: true,
+  overflowMLView: true,
   parseJugglLinksWithoutJuggl: false,
   showNameOrType: true,
   showRelationType: true,
