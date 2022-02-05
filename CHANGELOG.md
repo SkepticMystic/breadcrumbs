@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.50.3](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.2...2.50.3) (2022-02-05)
+
+
+### Bug Fixes
+
+* **DateNotes:** :bug: Only add date notes that match the given dateFormat ([#302](https://github.com/SkepticMystic/breadcrumbs/issues/302)) ([1ea6d2a](https://github.com/SkepticMystic/breadcrumbs/commit/1ea6d2aa725be2800ef4f9ee39fd98927f6b13ea))
+
 ### [2.50.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.1...2.50.2) (2022-02-03)
 
 ### [2.50.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.50.0...2.50.1) (2022-02-03)
