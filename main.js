@@ -35399,7 +35399,7 @@ async function buildMainG(plugin) {
         db.start2G("addFrontmatterToGraph");
         frontms.forEach((page) => {
             BC_ALTS.forEach((alt) => {
-                if (page[alt] !== undefined)
+                if (page[alt] !== undefined && page[alt] !== null)
                     eligableAlts[alt].push(page);
             });
             const basename = getDVBasename(page.file);
