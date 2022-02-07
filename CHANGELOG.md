@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.52.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.52.0...2.52.1) (2022-02-07)
+
+
+### Bug Fixes
+
+* :bug: Don't add empty BC-note-fields to eligableAlts ([#326](https://github.com/SkepticMystic/breadcrumbs/issues/326)) ([be3a5aa](https://github.com/SkepticMystic/breadcrumbs/commit/be3a5aa3df158f3f847dadbabeed2fe112d12506))
+
 ## [2.52.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.51.1...2.52.0) (2022-02-05)
 
 
