@@ -188,5 +188,6 @@ export function addMatrixViewSettings(
         await plugin.saveSettings();
         await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
       })
-    }
+    })
+
 }
