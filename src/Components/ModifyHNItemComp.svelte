@@ -21,7 +21,7 @@
   let inputEl: HTMLInputElement;
 
   //@ts-ignore
-  let newItem = modal.app.workspace.activeLeaf.view.file.name
+  let newItem = modal.app.workspace.activeLeaf.view.file.basename
 
   const buildNewItem = (
     newItem: string,

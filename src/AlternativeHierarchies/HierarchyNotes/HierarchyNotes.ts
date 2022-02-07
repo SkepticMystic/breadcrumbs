@@ -22,7 +22,6 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
   const problemFields: string[] = [];
 
   const upFields = getFields(userHiers, "up");
-  const nextFields = getFields( userHiers , "next")
   for (const item of listItems) {
     const currItem = lines[item.position.start.line];
 
@@ -31,7 +30,7 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
     let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
     // Ensure fieldName is one of the existing up fields or next fields. `null` if not
-    if (field !== null && !(upFields.includes(field) ||  nextFields.includes(field)) ) {
+    if (field !== null && !upFields.includes(field) ) {
       problemFields.push(field);
       field = null;
     }
@@ -74,12 +73,11 @@ export function addHNsToGraph(
 ) {
   const { HNUpField, userHiers } = settings;
   const upFields = getFields(userHiers, "up");
-  const nextFields = getFields (userHiers , "next") 
 
   hnArr.forEach((hnItem, i) => {
     const { note, field, parent } = hnItem;
     const targetField = field ?? (HNUpField || upFields[0]);
-    const downField = getOppFields(userHiers, targetField, getFields(userHiers, "up").includes(targetField) ? "up" : "next")[0];
+    const downField = getOppFields(userHiers, targetField, "up" )[0];
 
     if (parent === null) {
       const s = note;
