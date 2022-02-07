@@ -4193,7 +4193,7 @@ function add_css$f() {
 	append(document.head, style);
 }
 
-// (21:2) {#if rel === "up"}
+// (24:2) {#if rel === "up"}
 function create_if_block_2$4(ctx) {
 	let if_block_anchor;
 
@@ -4234,7 +4234,7 @@ function create_if_block_2$4(ctx) {
 	};
 }
 
-// (24:4) {:else}
+// (27:4) {:else}
 function create_else_block$4(ctx) {
 	let div;
 	let pre;
@@ -4262,7 +4262,7 @@ function create_else_block$4(ctx) {
 	};
 }
 
-// (22:4) {#if hnItem.depth === 0}
+// (25:4) {#if hnItem.depth === 0}
 function create_if_block_3$2(ctx) {
 	let div;
 
@@ -4281,7 +4281,7 @@ function create_if_block_3$2(ctx) {
 	};
 }
 
-// (45:27) 
+// (48:27) 
 function create_if_block_1$5(ctx) {
 	let div;
 	let pre;
@@ -4309,7 +4309,7 @@ function create_if_block_1$5(ctx) {
 	};
 }
 
-// (39:2) {#if rel === "same"}
+// (42:2) {#if rel === "same"}
 function create_if_block$a(ctx) {
 	let div;
 	let pre;
@@ -4524,9 +4524,15 @@ function instance$p($$self, $$props, $$invalidate) {
 	let { file } = $$props;
 	let { rel } = $$props;
 	let inputEl;
-	let newItem = "";
+
+	//@ts-ignore
+	let newItem = modal.app.workspace.activeLeaf.view.file.name;
+
 	const buildNewItem = (newItem, depth = hnItem.depth, preview = false) => `${(" ").repeat(Math.round(depth / (preview ? 2 : 1)))}- ${preview ? newItem || "<Empty>" : makeWiki(newItem)}`;
-	onMount(inputEl.focus);
+
+	onMount(() => {
+		inputEl.focus();
+	});
 
 	function select_change_handler() {
 		rel = select_value(this);
@@ -4620,7 +4626,7 @@ class ModifyHierItemModal extends obsidian.Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        new ModifyHNItemComp({
+        this.mount = new ModifyHNItemComp({
             target: contentEl,
             props: {
                 modal: this,
@@ -4632,6 +4638,7 @@ class ModifyHierItemModal extends obsidian.Modal {
         });
     }
     onClose() {
+        this.mount.$destroy();
         this.contentEl.empty();
     }
 }
@@ -4656,10 +4663,10 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
     async onOpen() {
         this.setPlaceholder("HN Manipulator");
         this.setInstructions([
-            { command: "Enter/Click", purpose: "Jump to item" },
+            { command: "Shift + Enter", purpose: "Jump to item" },
             { command: "Shift + ↑", purpose: "Add parent" },
             { command: "Shift + →", purpose: "Add sibling" },
-            { command: "Shift + ↓", purpose: "Add child" },
+            { command: "Shift + ↓ / Enter / Click", purpose: "Add child" },
             { command: "Delete", purpose: "Delete item" },
         ]);
         this.file = this.app.metadataCache.getFirstLinkpathDest(this.hierNoteName, "");
@@ -4682,6 +4689,7 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
             const line = splits.slice(1).join("- ");
             return { depth, line, lineNo: item.i };
         });
+        console.log(items);
         return items;
     }
     getItemText(item) {
@@ -4707,16 +4715,7 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
         if (evt instanceof KeyboardEvent && evt.key === "Delete") {
             this.deleteItem(item);
         }
-        else if (evt instanceof KeyboardEvent && evt.shiftKey) {
-            const rel = evt.key === "ArrowUp"
-                ? "up"
-                : evt.key === "ArrowDown"
-                    ? "down"
-                    : "same";
-            new ModifyHierItemModal(this.app, this.plugin, item, this.file, rel).open();
-            this.close();
-        }
-        else {
+        else if (evt instanceof KeyboardEvent && evt.key == "Enter" && evt.shiftKey) {
             const view = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
             const { editor } = view !== null && view !== void 0 ? view : {};
             if (!editor)
@@ -4724,6 +4723,26 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
             //@ts-ignore
             view.leaf.openFile(this.file, { active: true, mode: "source" });
             editor.setCursor({ line: item.lineNo, ch: item.depth + 2 });
+        }
+        else if (evt instanceof KeyboardEvent || evt instanceof MouseEvent) {
+            let rel;
+            if (evt instanceof MouseEvent && evt.type == "click") {
+                rel = "down";
+            }
+            if (evt instanceof KeyboardEvent) {
+                if (evt.key === "Enter")
+                    rel = "down";
+            }
+            if (evt instanceof KeyboardEvent && evt.shiftKey) {
+                if (evt.key === "ArrowUp")
+                    rel = "up";
+                if (evt.key === "ArrowDown")
+                    rel = "down";
+                if (evt.key === "ArrowRight")
+                    rel = "same";
+            }
+            new ModifyHierItemModal(this.app, this.plugin, item, this.file, rel).open();
+            this.close();
         }
     }
 }
@@ -4742,7 +4761,7 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
             this.close();
             new obsidian.Notice("No hierarchy notes found");
         }
-        else if (hierarchyNotes.length === 1) {
+        else if (hierarchyNotes.length === 1 && !hierarchyNotes[0].endsWith("/")) {
             this.close();
             new HierarchyNoteManipulator(this.app, this.plugin, hierarchyNotes[0]).open();
         }
@@ -4751,7 +4770,20 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
         }
     }
     getItems() {
-        return this.settings.hierarchyNotes;
+        let setting = this.settings.hierarchyNotes;
+        if (setting.length == 1 && setting[0].endsWith("/")) {
+            // this is a folder
+            let folder = setting[0].slice(0, -1);
+            if (this.plugin.app.plugins.plugins.dataview != undefined) {
+                let pages = this.plugin.app.plugins.plugins.dataview.api.pages(`"${folder}"`);
+                return pages.values.map(page => page.file.path);
+            }
+            else {
+                new obsidian.Notice("make sure you have dataview enabled");
+            }
+        }
+        else
+            return setting;
     }
     getItemText(item) {
         return `${item}`;
