@@ -36203,6 +36203,12 @@ function addGeneralSettings(plugin, containerEl) {
         await plugin.saveSettings();
     }));
     new obsidian.Setting(generalDetails)
+        .setName("Refresh Index On Note Save")
+        .addToggle((toggle) => toggle.setValue(settings.refreshOnNoteSave).onChange(async (value) => {
+        settings.refreshOnNoteSave = value;
+        await plugin.saveSettings();
+    }));
+    new obsidian.Setting(generalDetails)
         .setName("show up fields in Juggl")
         .setDesc("Juggl will show both up and down fields")
         .addToggle((toggle) => {
@@ -64253,6 +64259,7 @@ class BCPlugin extends obsidian.Plugin {
         super(...arguments);
         this.visited = [];
         this.activeLeafChange = undefined;
+        this.activeLeafSave = undefined;
         this.layoutChange = undefined;
         this.loadSettings = async () => (this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
         this.saveSettings = async () => await this.saveData(this.settings);
@@ -64270,6 +64277,18 @@ class BCPlugin extends obsidian.Plugin {
         });
         this.registerEvent(this.activeLeafChange);
     }
+    // registerActiveLeafSaveEvent ( ) { 
+    //   this.activeLeafSave = this.app.workspace.on("" , 
+    //   async () => {
+    //     if (this.settings.refreshOnNoteSave) { 
+    //       await refreshIndex (this) ;  
+    //     }else { 
+    //       const activeView = this.getActiveTYPEView(MATRIX_VIEW); 
+    //       if (activeView) await activeView.draw();
+    //     }
+    //   }
+    //   )
+    // }
     registerLayoutChangeEvent() {
         this.layoutChange = this.app.workspace.on("layout-change", async () => {
             if (this.settings.showBCs)
@@ -64325,7 +64344,7 @@ class BCPlugin extends obsidian.Plugin {
         this.mainG = await buildMainG(this);
         this.closedG = buildClosedG(this);
         app.workspace.onLayoutReady(async () => {
-            var _a;
+            var _a, _b, _c;
             const noFiles = app.vault.getMarkdownFiles().length;
             if (((_a = this.mainG) === null || _a === void 0 ? void 0 : _a.nodes().length) < noFiles) {
                 await wait(3000);
@@ -64340,6 +64359,23 @@ class BCPlugin extends obsidian.Plugin {
                 await drawTrail(this);
             this.registerActiveLeafChangeEvent();
             this.registerLayoutChangeEvent();
+            // Source for save setting
+            // https://github.com/hipstersmoothie/obsidian-plugin-prettier/blob/main/src/main.ts
+            const saveCommandDefinition = (_c = (_b = this.app.commands) === null || _b === void 0 ? void 0 : _b.commands) === null || _c === void 0 ? void 0 : _c['editor:save-file'];
+            const save = saveCommandDefinition === null || saveCommandDefinition === void 0 ? void 0 : saveCommandDefinition.callback;
+            if (typeof save === 'function') {
+                saveCommandDefinition.callback = async () => {
+                    save();
+                    if (this.settings.refreshOnNoteSave) {
+                        await refreshIndex(this);
+                    }
+                    else {
+                        const activeView = this.getActiveTYPEView(MATRIX_VIEW);
+                        if (activeView)
+                            await activeView.draw();
+                    }
+                };
+            }
             app.workspace.iterateAllLeaves((leaf) => {
                 if (leaf instanceof obsidian.MarkdownView)
                     //@ts-ignore

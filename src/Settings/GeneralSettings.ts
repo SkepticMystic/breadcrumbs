@@ -74,6 +74,15 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
       })
     );
 
+  new Setting(generalDetails) 
+  .setName("Refresh Index On Note Save") 
+      .addToggle((toggle) => 
+      toggle.setValue(settings.refreshOnNoteSave) .onChange(async (value) => {
+        settings.refreshOnNoteSave = value ; 
+        await plugin.saveSettings() 
+      } )
+      )
+
   new Setting (generalDetails) 
   .setName("show up fields in Juggl")
   .setDesc("Juggl will show both up and down fields")

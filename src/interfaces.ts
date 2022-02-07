@@ -81,6 +81,7 @@ export interface BCSettings {
   overflowMLView: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   refreshOnNoteChange: boolean;
+  refreshOnNoteSave: boolean ; 
   respectReadableLineLength: boolean;
   showAllPathsIfNoneToIndexNote: boolean;
   showAllAliases: boolean;
