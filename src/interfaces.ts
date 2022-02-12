@@ -330,6 +330,14 @@ export interface EdgeAttr {
 }
 
 export interface BCAPII {
+  /* All 5 possible directions. */
+  DIRECTIONS: typeof DIRECTIONS;
+
+  /**
+   * An arrow for each {@link DIRECTIONS} value.
+   */
+  ARROW_DIRECTIONS: { [dir in Directions]: string };
+
   /** The raw Breadcrumbs graph, as defined by the real Breadcrumbs in your notes, and any alternative hierarchy methods used. */
   mainG: MultiGraph;
 
