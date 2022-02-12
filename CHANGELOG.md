@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.54.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.53.0...2.54.0) (2022-02-12)
+
+
+### Features
+
+* **API:** :sparkles: Expose more methods on API ([3ab66ea](https://github.com/SkepticMystic/breadcrumbs/commit/3ab66eabc39ed708030889c1284b5aaeace6e162))
+
 ## [2.53.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.52.2...2.53.0) (2022-02-12)
 
 
