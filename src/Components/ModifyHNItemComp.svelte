@@ -20,7 +20,8 @@
   }
   let inputEl: HTMLInputElement;
 
-  let newItem = "";
+  //@ts-ignore
+  let newItem = modal.app.workspace.activeLeaf.view.file.basename;
 
   const buildNewItem = (
     newItem: string,
@@ -31,7 +32,7 @@
       preview ? newItem || "<Empty>" : makeWiki(newItem)
     }`;
 
-  onMount(inputEl.focus);
+  // onMount(inputEl.focus);
 </script>
 
 <h5>Add an {ARROW_DIRECTIONS[rel]} to {dropWikilinks(hnItem.line)}</h5>

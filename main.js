@@ -3157,6 +3157,8 @@ const DEFAULT_SETTINGS = {
         parentsParentsIsParent: false,
         cousinsIsSibling: false,
     },
+    refreshOnNoteSave: false,
+    showUpInJuggl: false
 };
 
 /*
@@ -15661,7 +15663,7 @@ async function getHierarchyNoteItems(plugin, file) {
         const afterBulletCurr = afterBulletReg.exec(currItem)[1];
         const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
         let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-        // Ensure fieldName is one of the existing up fields. `null` if not
+        // Ensure fieldName is one of the existing up fields or next fields. `null` if not
         if (field !== null && !upFields.includes(field)) {
             problemFields.push(field);
             field = null;
@@ -15698,8 +15700,8 @@ function addHNsToGraph(settings, hnArr, mainG) {
     hnArr.forEach((hnItem, i) => {
         var _a;
         const { note, field, parent } = hnItem;
-        const upField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = getOppFields(userHiers, upField, "up")[0];
+        const targetField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
+        const downField = getOppFields(userHiers, targetField, "up")[0];
         if (parent === null) {
             const s = note;
             const t = (_a = hnArr[i + 1]) === null || _a === void 0 ? void 0 : _a.note;
@@ -15708,10 +15710,12 @@ function addHNsToGraph(settings, hnArr, mainG) {
         }
         else {
             addNodesIfNot(mainG, [note, parent]);
-            addEdgeIfNot(mainG, note, parent, {
-                dir: "up",
-                field: upField,
-            });
+            if (settings.showUpInJuggl) {
+                addEdgeIfNot(mainG, note, parent, {
+                    dir: "up",
+                    field: targetField,
+                });
+            }
             addEdgeIfNot(mainG, parent, note, {
                 dir: "down",
                 field: downField,
@@ -36057,7 +36061,7 @@ function add_css$9() {
 	append(document.head, style);
 }
 
-// (21:2) {#if rel === "up"}
+// (22:2) {#if rel === "up"}
 function create_if_block_2$1(ctx) {
 	let if_block_anchor;
 
@@ -36098,7 +36102,7 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (24:4) {:else}
+// (25:4) {:else}
 function create_else_block$2(ctx) {
 	let div;
 	let pre;
@@ -36126,7 +36130,7 @@ function create_else_block$2(ctx) {
 	};
 }
 
-// (22:4) {#if hnItem.depth === 0}
+// (23:4) {#if hnItem.depth === 0}
 function create_if_block_3(ctx) {
 	let div;
 
@@ -36145,7 +36149,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (45:27) 
+// (46:27) 
 function create_if_block_1$2(ctx) {
 	let div;
 	let pre;
@@ -36173,7 +36177,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (39:2) {#if rel === "same"}
+// (40:2) {#if rel === "same"}
 function create_if_block$3(ctx) {
 	let div;
 	let pre;
@@ -36388,9 +36392,11 @@ function instance$g($$self, $$props, $$invalidate) {
 	let { file } = $$props;
 	let { rel } = $$props;
 	let inputEl;
-	let newItem = "";
+
+	//@ts-ignore
+	let newItem = modal.app.workspace.activeLeaf.view.file.basename;
+
 	const buildNewItem = (newItem, depth = hnItem.depth, preview = false) => `${(" ").repeat(Math.round(depth / (preview ? 2 : 1)))}- ${preview ? newItem || "<Empty>" : makeWiki(newItem)}`;
-	onMount(inputEl.focus);
 
 	function select_change_handler() {
 		rel = select_value(this);
@@ -36484,7 +36490,7 @@ class ModifyHierItemModal extends obsidian.Modal {
     onOpen() {
         const { contentEl } = this;
         contentEl.empty();
-        new ModifyHNItemComp({
+        this.mount = new ModifyHNItemComp({
             target: contentEl,
             props: {
                 modal: this,
@@ -36496,6 +36502,7 @@ class ModifyHierItemModal extends obsidian.Modal {
         });
     }
     onClose() {
+        this.mount.$destroy();
         this.contentEl.empty();
     }
 }
@@ -36518,20 +36525,23 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
         this.scope.register(["Shift"], "ArrowDown", chooseOverride);
     }
     async onOpen() {
+        const { app } = this;
         this.setPlaceholder("HN Manipulator");
         this.setInstructions([
-            { command: "Enter/Click", purpose: "Jump to item" },
+            { command: "Shift + Enter", purpose: "Jump to item" },
             { command: "Shift + ↑", purpose: "Add parent" },
             { command: "Shift + →", purpose: "Add sibling" },
-            { command: "Shift + ↓", purpose: "Add child" },
+            { command: "Shift + ↓ / Enter / Click", purpose: "Add child" },
             { command: "Delete", purpose: "Delete item" },
         ]);
-        this.file = this.app.metadataCache.getFirstLinkpathDest(this.hierNoteName, "");
+        this.file = app.metadataCache.getFirstLinkpathDest(this.hierNoteName, "");
         if (!this.file)
             this.lines = [];
-        const content = await this.app.vault.cachedRead(this.file);
+        console.log(this);
+        const content = await app.vault.cachedRead(this.file);
         this.lines = content.split("\n");
-        this.listItems = this.app.metadataCache.getFileCache(this.file).listItems;
+        this.listItems = app.metadataCache.getFileCache(this.file).listItems;
+        console.log(this);
         super.onOpen();
     }
     getItems() {
@@ -36546,6 +36556,7 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
             const line = splits.slice(1).join("- ");
             return { depth, line, lineNo: item.i };
         });
+        loglevel.info(items);
         return items;
     }
     getItemText(item) {
@@ -36571,16 +36582,9 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
         if (evt instanceof KeyboardEvent && evt.key === "Delete") {
             this.deleteItem(item);
         }
-        else if (evt instanceof KeyboardEvent && evt.shiftKey) {
-            const rel = evt.key === "ArrowUp"
-                ? "up"
-                : evt.key === "ArrowDown"
-                    ? "down"
-                    : "same";
-            new ModifyHierItemModal(this.app, this.plugin, item, this.file, rel).open();
-            this.close();
-        }
-        else {
+        else if (evt instanceof KeyboardEvent &&
+            evt.key == "Enter" &&
+            evt.shiftKey) {
             const view = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
             const { editor } = view !== null && view !== void 0 ? view : {};
             if (!editor)
@@ -36588,6 +36592,24 @@ class HierarchyNoteManipulator extends obsidian.FuzzySuggestModal {
             //@ts-ignore
             view.leaf.openFile(this.file, { active: true, mode: "source" });
             editor.setCursor({ line: item.lineNo, ch: item.depth + 2 });
+        }
+        else if (evt instanceof KeyboardEvent || evt instanceof MouseEvent) {
+            let rel;
+            if (evt instanceof MouseEvent && evt.type == "click")
+                rel = "down";
+            if (evt instanceof KeyboardEvent)
+                if (evt.key === "Enter")
+                    rel = "down";
+            if (evt instanceof KeyboardEvent && evt.shiftKey) {
+                if (evt.key === "ArrowUp")
+                    rel = "up";
+                if (evt.key === "ArrowDown")
+                    rel = "down";
+                if (evt.key === "ArrowRight")
+                    rel = "same";
+            }
+            new ModifyHierItemModal(this.app, this.plugin, item, this.file, rel).open();
+            this.close();
         }
     }
 }
@@ -36606,7 +36628,8 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
             this.close();
             new obsidian.Notice("No hierarchy notes found");
         }
-        else if (hierarchyNotes.length === 1) {
+        else if (hierarchyNotes.length === 1 &&
+            !hierarchyNotes[0].endsWith("/")) {
             this.close();
             new HierarchyNoteManipulator(this.app, this.plugin, hierarchyNotes[0]).open();
         }
@@ -36615,7 +36638,20 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
         }
     }
     getItems() {
-        return this.settings.hierarchyNotes;
+        const { hierarchyNotes } = this.settings;
+        if (hierarchyNotes.length == 1 && hierarchyNotes[0].endsWith("/")) {
+            // this is a folder
+            let folder = hierarchyNotes[0].slice(0, -1);
+            if (this.plugin.app.plugins.plugins.dataview != undefined) {
+                let pages = this.plugin.app.plugins.plugins.dataview.api.pages(`"${folder}"`);
+                return pages.values.map((page) => page.file.path);
+            }
+            else {
+                new obsidian.Notice("make sure you have dataview enabled");
+            }
+        }
+        else
+            return hierarchyNotes;
     }
     getItemText(item) {
         return `${item}`;
@@ -37939,6 +37975,21 @@ function addGeneralSettings(plugin, containerEl) {
         settings.refreshOnNoteChange = value;
         await plugin.saveSettings();
     }));
+    new obsidian.Setting(generalDetails)
+        .setName("Refresh Index On Note Save")
+        .addToggle((toggle) => toggle.setValue(settings.refreshOnNoteSave).onChange(async (value) => {
+        settings.refreshOnNoteSave = value;
+        await plugin.saveSettings();
+    }));
+    new obsidian.Setting(generalDetails)
+        .setName("Show up fields in Juggl")
+        .setDesc("Juggl will show both up and down fields")
+        .addToggle((toggle) => {
+        toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+            settings.showUpInJuggl = value;
+            await plugin.saveSettings();
+        });
+    });
     new obsidian.Setting(generalDetails)
         .setName("Fields used for Alternative note names (Aliases)")
         .setDesc(fragWithHTML("A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."))
@@ -64287,6 +64338,7 @@ class BCPlugin extends obsidian.Plugin {
         super(...arguments);
         this.visited = [];
         this.activeLeafChange = undefined;
+        this.activeLeafSave = undefined;
         this.layoutChange = undefined;
         this.loadSettings = async () => (this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
         this.saveSettings = async () => await this.saveData(this.settings);
@@ -64304,6 +64356,18 @@ class BCPlugin extends obsidian.Plugin {
         });
         this.registerEvent(this.activeLeafChange);
     }
+    // registerActiveLeafSaveEvent ( ) {
+    //   this.activeLeafSave = this.app.workspace.on("" ,
+    //   async () => {
+    //     if (this.settings.refreshOnNoteSave) {
+    //       await refreshIndex (this) ;
+    //     }else {
+    //       const activeView = this.getActiveTYPEView(MATRIX_VIEW);
+    //       if (activeView) await activeView.draw();
+    //     }
+    //   }
+    //   )
+    // }
     registerLayoutChangeEvent() {
         this.layoutChange = this.app.workspace.on("layout-change", async () => {
             if (this.settings.showBCs)
@@ -64374,6 +64438,21 @@ class BCPlugin extends obsidian.Plugin {
                 await drawTrail(this);
             this.registerActiveLeafChangeEvent();
             this.registerLayoutChangeEvent();
+            // Source for save setting
+            // https://github.com/hipstersmoothie/obsidian-plugin-prettier/blob/main/src/main.ts
+            const saveCommandDefinition = this.app.commands.commands["editor:save-file"];
+            const save = saveCommandDefinition === null || saveCommandDefinition === void 0 ? void 0 : saveCommandDefinition.callback;
+            if (typeof save === "function") {
+                saveCommandDefinition.callback = async () => {
+                    await save();
+                    if (this.settings.refreshOnNoteSave) {
+                        await refreshIndex(this);
+                        const activeView = this.getActiveTYPEView(MATRIX_VIEW);
+                        if (activeView)
+                            await activeView.draw();
+                    }
+                };
+            }
             app.workspace.iterateAllLeaves((leaf) => {
                 if (leaf instanceof obsidian.MarkdownView)
                     //@ts-ignore

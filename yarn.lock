@@ -711,7 +711,7 @@
   "resolved" "https://registry.npmjs.org/ansicolors/-/ansicolors-0.2.1.tgz"
   "version" "0.2.1"
 
-"anymatch@~3.1.1", "anymatch@~3.1.2":
+"anymatch@~3.1.1":
   "integrity" "sha512-P43ePfOAIupkguHUycrc4qJ9kz8ZiuOUijaETwX7THt0Y/GNK7v0aa8rY816xWjZ7rJdA5XdMcpVFTKMq+RvWg=="
   "resolved" "https://registry.npmjs.org/anymatch/-/anymatch-3.1.2.tgz"
   "version" "3.1.2"
@@ -1073,22 +1073,7 @@
     "ansi-styles" "^4.1.0"
     "supports-color" "^7.1.0"
 
-"chokidar@^3.4.1":
-  "integrity" "sha512-ekGhOnNVPgT77r4K/U3GDhu+FQ2S8TnK/s2KbIGXi0SZWuwkZ2QNyfWdZW+TVfn84DpEP7rLeCt2UI6bJ8GwbQ=="
-  "resolved" "https://registry.npmjs.org/chokidar/-/chokidar-3.5.2.tgz"
-  "version" "3.5.2"
-  dependencies:
-    "anymatch" "~3.1.2"
-    "braces" "~3.0.2"
-    "glob-parent" "~5.1.2"
-    "is-binary-path" "~2.1.0"
-    "is-glob" "~4.0.1"
-    "normalize-path" "~3.0.0"
-    "readdirp" "~3.6.0"
-  optionalDependencies:
-    "fsevents" "~2.3.2"
-
-"chokidar@3.5.1":
+"chokidar@^3.4.1", "chokidar@3.5.1":
   "integrity" "sha512-9+s+Od+W0VJJzawDma/gvBNQqkTiqYTWLuZoyAsivsI4AaWTCzHG06/TMjsf1cYe9Cb97UCEhjz7HvnPk2p/tw=="
   "resolved" "https://registry.npmjs.org/chokidar/-/chokidar-3.5.1.tgz"
   "version" "3.5.1"
@@ -2302,6 +2287,11 @@
   "resolved" "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   "version" "1.0.0"
 
+"fsevents@~2.3.1", "fsevents@~2.3.2":
+  "integrity" "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="
+  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
+  "version" "2.3.2"
+
 "function-bind@^1.1.1":
   "integrity" "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
   "resolved" "https://registry.npmjs.org/function-bind/-/function-bind-1.1.1.tgz"
@@ -2376,7 +2366,7 @@
     "debug" "^4.1.1"
     "tslib" "^1.14.1"
 
-"glob-parent@^5.1.2", "glob-parent@~5.1.0", "glob-parent@~5.1.2":
+"glob-parent@^5.1.2", "glob-parent@~5.1.0":
   "integrity" "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="
   "resolved" "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.2.tgz"
   "version" "5.1.2"
@@ -2934,7 +2924,8 @@
     "through" ">=2.2.7 <3"
 
 "juggl-api@github:HEmile/juggl-api":
-  "resolved" "git+ssh://git@github.com/HEmile/juggl-api.git#d695772216a51281d02c69eceb0d4a390213602a"
+  "integrity" "sha512-oF6tCcj1faOb0fMLL3aBWGTmjdbFsOWBRgz+MaFxiuBZlcDhZZoCM3Me1hVSiS2i9LVnl5uVktGfG9HyXxgzkg=="
+  "resolved" "git+ssh://git@github.com/HEmile/juggl-api.git"
   "version" "1.0.0"
   dependencies:
     "@types/cytoscape" "^3.14.11"
@@ -3835,13 +3826,6 @@
   "integrity" "sha512-cMhu7c/8rdhkHXWsY+osBhfSy0JikwpHK/5+imo+LpeasTF8ouErHrlYkwT0++njiyuDvc7OFY5T3ukvZ8qmFQ=="
   "resolved" "https://registry.npmjs.org/readdirp/-/readdirp-3.5.0.tgz"
   "version" "3.5.0"
-  dependencies:
-    "picomatch" "^2.2.1"
-
-"readdirp@~3.6.0":
-  "integrity" "sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA=="
-  "resolved" "https://registry.npmjs.org/readdirp/-/readdirp-3.6.0.tgz"
-  "version" "3.6.0"
   dependencies:
     "picomatch" "^2.2.1"
 

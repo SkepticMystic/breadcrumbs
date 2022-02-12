@@ -29,7 +29,7 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
     const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
     let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
 
-    // Ensure fieldName is one of the existing up fields. `null` if not
+    // Ensure fieldName is one of the existing up fields or next fields. `null` if not
     if (field !== null && !upFields.includes(field)) {
       problemFields.push(field);
       field = null;
@@ -40,7 +40,6 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
       const parentNote = lines[parent];
       const afterBulletParent = afterBulletReg.exec(parentNote)[1];
       const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
-
       hierarchyNoteItems.push({
         note,
         parent: dropWikiParent,
@@ -76,8 +75,8 @@ export function addHNsToGraph(
 
   hnArr.forEach((hnItem, i) => {
     const { note, field, parent } = hnItem;
-    const upField = field ?? (HNUpField || upFields[0]);
-    const downField = getOppFields(userHiers, upField, "up")[0];
+    const targetField = field ?? (HNUpField || upFields[0]);
+    const downField = getOppFields(userHiers, targetField, "up")[0];
 
     if (parent === null) {
       const s = note;
@@ -87,10 +86,12 @@ export function addHNsToGraph(
       addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
     } else {
       addNodesIfNot(mainG, [note, parent]);
-      addEdgeIfNot(mainG, note, parent, {
-        dir: "up",
-        field: upField,
-      });
+      if (settings.showUpInJuggl) {
+        addEdgeIfNot(mainG, note, parent, {
+          dir: "up",
+          field: targetField,
+        });
+      }
 
       addEdgeIfNot(mainG, parent, note, {
         dir: "down",

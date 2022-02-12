@@ -410,4 +410,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
     parentsParentsIsParent: false,
     cousinsIsSibling: false,
   },
+  refreshOnNoteSave: false,
+  showUpInJuggl: false
 };
