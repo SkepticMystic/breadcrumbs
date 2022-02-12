@@ -1,9 +1,7 @@
 import { Notice, Setting } from "obsidian";
-import Checkboxes from "../Components/Checkboxes.svelte";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
 import { splitAndTrim } from "../Utils/generalUtils";
-import { getFields } from "../Utils/HierUtils";
 import { details, fragWithHTML } from "./BreadcrumbsSettingTab";
 
 export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
