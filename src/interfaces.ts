@@ -375,6 +375,9 @@ export interface BCAPII {
    */
   dfsAllPaths: (fromNode?: string, g?: MultiGraph) => string[][];
 
+  /** Use the results of {@link dfsAllPaths} to create a nested markdown list */
+  createIndex: (allPaths: string[][], wikilink: boolean) => string;
+
   /** Get the Breadcrumb neighbours of the current note, split by `direction` and `real/implied`
    * @param {string} fromNode - The starting node. Defaults to the currently active note.
    */

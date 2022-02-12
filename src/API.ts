@@ -17,6 +17,7 @@ import {
   getOppFields,
   iterateHiers,
 } from "./Utils/HierUtils";
+import { createIndex } from "./Commands/CreateIndex";
 
 export class BCAPI implements BCAPII {
   app: App;
@@ -46,6 +47,9 @@ export class BCAPI implements BCAPII {
     fromNode = this.app.workspace.getActiveFile()?.basename,
     g = this.mainG
   ) => dfsAllPaths(g, fromNode);
+
+  public createIndex = (allPaths: string[][], wikilinks = false) =>
+    createIndex(allPaths, wikilinks);
 
   public getMatrixNeighbours = (
     fromNode = this.app.workspace.getActiveFile()?.basename

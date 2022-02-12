@@ -36029,6 +36029,7 @@ class BCAPI {
         this.getSubInDirs = (dirs, g = this.mainG) => getSubInDirs(g, ...dirs);
         this.getSubForFields = (fields, g = this.mainG) => getSubForFields(g, fields);
         this.dfsAllPaths = (fromNode, g) => { var _a; if (fromNode === void 0) { fromNode = (_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.basename; } if (g === void 0) { g = this.mainG; } return dfsAllPaths(g, fromNode); };
+        this.createIndex = (allPaths, wikilinks = false) => createIndex(allPaths, wikilinks);
         this.getMatrixNeighbours = (fromNode) => { var _a; if (fromNode === void 0) { fromNode = (_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.basename; } return getMatrixNeighbours(this.plugin, fromNode); };
         this.getOppDir = (dir) => getOppDir(dir);
         this.getOppFields = (field) => {
