@@ -428,6 +428,7 @@ export function createJugglTrail(
     argsUp.layout = "force-directed";
   } else {
     argsUp.autoZoom = true;
+    // @ts-ignore
     argsUp.animateLayout = false;
   }
   jugglUp = createJuggl(plugin, target, nodes, argsUp, depthMapUp);

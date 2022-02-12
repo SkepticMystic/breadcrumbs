@@ -33,6 +33,7 @@ export function addDendronNotesToGraph(
       );
 
       // !parentFile implies a "stub"
+      // @ts-ignore
       if (!parentFile || parentFile[BC_IGNORE_DENDRON] !== true) {
         populateMain(
           settings,

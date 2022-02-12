@@ -105,6 +105,7 @@ class BCStore extends Component implements ICoreDataStore {
     return Promise.resolve([]);
   }
 
+  // @ts-ignore
   refreshNode(view: IJuggl, id: VizId): void | Promise<void> {
     return;
   }
@@ -125,6 +126,7 @@ class BCStore extends Component implements ICoreDataStore {
       info("returning empty cache", nodeId);
       return Promise.resolve(nodeDangling(nodeId.id));
     }
+    // @ts-ignore
     return Promise.resolve(nodeFromFile(file, this.plugin, nodeId.toId()));
   }
 }
@@ -153,7 +155,9 @@ function createJuggl(
       jugglPlugin
     );
     const stores: IJugglStores = {
+      // @ts-ignore
       coreStore: bcStore,
+      // @ts-ignore
       dataStores: [bcStore],
     };
 

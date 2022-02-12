@@ -137,6 +137,7 @@ export const edgeBundling = (
       if (!node) {
         node = map[name] = data || { name: name, children: [] };
         if (name.length) {
+          // @ts-ignore
           node.parent = find(name.substring(0, (i = name.lastIndexOf("."))));
           node.parent.children.push(node);
           node.key = name.substring(i + 1);

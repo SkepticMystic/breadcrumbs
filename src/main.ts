@@ -293,6 +293,7 @@ export default class BCPlugin extends Plugin {
     if (this.bcStore) {
       const jugglPlugin = getPlugin(this.app);
       if (jugglPlugin) {
+        // @ts-ignore
         jugglPlugin.removeStore(this.bcStore);
       }
     }

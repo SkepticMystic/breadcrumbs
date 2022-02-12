@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup -c --environment BUILD:production",
+    "docs": "typedoc src/index.ts",
     "release": "standard-version",
     "test": "ts-mocha"
   },
@@ -41,6 +42,7 @@
     "svelte-preprocess": "4.7.3",
     "ts-mocha": "^8.0.0",
     "tslib": "^2.2.0",
+    "typedoc": "^0.22.11",
     "typescript": "^4.4.2"
   },
   "dependencies": {
