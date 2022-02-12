@@ -330,7 +330,10 @@ export interface EdgeAttr {
 }
 
 export interface BCAPII {
+  /** The raw Breadcrumbs graph, as defined by the real Breadcrumbs in your notes, and any alternative hierarchy methods used. */
   mainG: MultiGraph;
+
+  /** The Breadcrumbs graph after the various implied relations have been filled in (as defined by your `Relations` settings). */
   closedG: MultiGraph;
 
   /** Build the obsidian graph as a graphology MultiGraph */
@@ -343,7 +346,7 @@ export interface BCAPII {
    * @param  {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
    * @param  {Directions} dir - An array of directions to look for.
    */
-  getSubInDirs: (dirs: Directions[], g: MultiGraph) => MultiGraph;
+  getSubInDirs: (dirs: Directions[], g?: MultiGraph) => MultiGraph;
 
   /**
    * Return a subgraph of all nodes & edges with `fields.includes(a.field)`.
@@ -352,20 +355,20 @@ export interface BCAPII {
    * @param  {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
    * @param  {string[]} fields - An array of fields to look for.
    */
-  getSubForFields: (fields: Directions[], g: MultiGraph) => MultiGraph;
+  getSubForFields: (fields: Directions[], g?: MultiGraph) => MultiGraph;
 
   /**
    * Finds all paths from a starting node to all other sinks in a graph.
    *
    *
    * @param {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
-   * @param {string} fromNode - The starting node
+   * @param {string} fromNode - The starting node. Defaults to the currently active note.
    * @returns An array of arrays. Each array is a path.
    */
-  dfsAllPaths: (fromNode: string, g: MultiGraph) => string[][];
+  dfsAllPaths: (fromNode?: string, g?: MultiGraph) => string[][];
 
   /** Get the Breadcrumb neighbours of the current note, split by `direction` and `real/implied`
-   * @param {string} fromNode - The starting node
+   * @param {string} fromNode - The starting node. Defaults to the currently active note.
    */
-  getMatrixNeighbours: (fromNode: string) => RealNImplied;
+  getMatrixNeighbours: (fromNode?: string) => RealNImplied;
 }
