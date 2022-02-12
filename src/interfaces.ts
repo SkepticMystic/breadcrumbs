@@ -355,7 +355,7 @@ export interface BCAPII {
    * @param  {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
    * @param  {string[]} fields - An array of fields to look for.
    */
-  getSubForFields: (fields: Directions[], g?: MultiGraph) => MultiGraph;
+  getSubForFields: (fields: string[], g?: MultiGraph) => MultiGraph;
 
   /**
    * Finds all paths from a starting node to all other sinks in a graph.
@@ -371,4 +371,28 @@ export interface BCAPII {
    * @param {string} fromNode - The starting node. Defaults to the currently active note.
    */
   getMatrixNeighbours: (fromNode?: string) => RealNImplied;
+
+  /** Get the direction opposite to `dir` */
+  getOppDir: (dir: Directions) => Directions;
+
+  /** Get all fields in the direction opposite to the direction of `field` */
+  getOppFields: (field: string) => string[];
+
+  /**
+   *  Get the hierarchy and direction that `field` is in
+   * @returns {{ fieldHier: UserHier; fieldDir: Directions }}
+   * */
+  getFieldInfo(field: string): { fieldHier: UserHier; fieldDir: Directions };
+
+  /**
+   * Get all the fields in `dir`.
+   * Returns all fields by default.
+   * @param  {Directions} dir
+   */
+  getFields(dir?: Directions | ""): string[];
+
+  /** Iterate over all user hierarchies, running `cb` on each new field */
+  iterateHiers: (
+    cb: (hier: UserHier, dir: Directions, field: string) => void
+  ) => void;
 }

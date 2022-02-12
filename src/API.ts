@@ -1,7 +1,7 @@
 import type { MultiGraph } from "graphology";
 import type { App } from "obsidian";
 import { ARROW_DIRECTIONS, DIRECTIONS } from "./constants";
-import type { BCAPII, Directions } from "./interfaces";
+import type { BCAPII, Directions, UserHier } from "./interfaces";
 import type BCPlugin from "./main";
 import { getMatrixNeighbours } from "./Views/MatrixView";
 import {
@@ -10,6 +10,13 @@ import {
   getSubForFields,
   getSubInDirs,
 } from "./Utils/graphUtils";
+import {
+  getFieldInfo,
+  getFields,
+  getOppDir,
+  getOppFields,
+  iterateHiers,
+} from "./Utils/HierUtils";
 
 export class BCAPI implements BCAPII {
   app: App;
@@ -43,4 +50,22 @@ export class BCAPI implements BCAPII {
   public getMatrixNeighbours = (
     fromNode = this.app.workspace.getActiveFile()?.basename
   ) => getMatrixNeighbours(this.plugin, fromNode);
+
+  public getOppDir = (dir: Directions) => getOppDir(dir);
+
+  public getOppFields = (field: string) => {
+    const { fieldDir } = getFieldInfo(this.plugin.settings.userHiers, field);
+    return getOppFields(this.plugin.settings.userHiers, field, fieldDir);
+  };
+
+  public getFieldInfo = (field: string) =>
+    getFieldInfo(this.plugin.settings.userHiers, field);
+  public getFields = (dir?: Directions) =>
+    getFields(this.plugin.settings.userHiers, dir ?? "all");
+
+  public iterateHiers(
+    cb: (hier: UserHier, dir: Directions, field: string) => void
+  ) {
+    iterateHiers(this.plugin.settings.userHiers, cb);
+  }
 }

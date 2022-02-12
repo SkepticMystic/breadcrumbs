@@ -5,4 +5,5 @@ export type {
   RealNImplied,
   Directions,
   SquareItem,
+  UserHier
 } from "./interfaces";

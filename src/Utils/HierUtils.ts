@@ -64,7 +64,7 @@ export function getOppFields(
   dir: Directions
 ) {
   // If the field ends with `>`, it is already the opposite field we need (coming from `getOppFallback`)
-  if (field.endsWith(">")) return field.slice(0, -4);
+  if (field.endsWith(">")) return [field.slice(0, -4)];
 
   const oppFields = [fallbackOppField(field, dir)];
   const { fieldHier, fieldDir } = getFieldInfo(userHiers, field);
