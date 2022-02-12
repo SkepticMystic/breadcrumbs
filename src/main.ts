@@ -45,7 +45,7 @@ export default class BCPlugin extends Plugin {
   mainG: MultiGraph;
   closedG: MultiGraph;
   activeLeafChange: EventRef = undefined;
-  activeLeafSave : EventRef = undefined  ; 
+  activeLeafSave: EventRef = undefined;
   layoutChange: EventRef = undefined;
   db: Debugger;
   VIEWS: ViewInfo[];
@@ -66,13 +66,13 @@ export default class BCPlugin extends Plugin {
     this.registerEvent(this.activeLeafChange);
   }
 
-  // registerActiveLeafSaveEvent ( ) { 
-  //   this.activeLeafSave = this.app.workspace.on("" , 
+  // registerActiveLeafSaveEvent ( ) {
+  //   this.activeLeafSave = this.app.workspace.on("" ,
   //   async () => {
-  //     if (this.settings.refreshOnNoteSave) { 
-  //       await refreshIndex (this) ;  
-  //     }else { 
-  //       const activeView = this.getActiveTYPEView(MATRIX_VIEW); 
+  //     if (this.settings.refreshOnNoteSave) {
+  //       await refreshIndex (this) ;
+  //     }else {
+  //       const activeView = this.getActiveTYPEView(MATRIX_VIEW);
   //       if (activeView) await activeView.draw();
   //     }
   //   }
@@ -168,17 +168,15 @@ export default class BCPlugin extends Plugin {
 
       // Source for save setting
       // https://github.com/hipstersmoothie/obsidian-plugin-prettier/blob/main/src/main.ts
-      const saveCommandDefinition = (this.app as any).commands?.commands?.[
-        'editor:save-file'
-      ];
+      const saveCommandDefinition =
+        this.app.commands.commands["editor:save-file"];
       const save = saveCommandDefinition?.callback;
 
-      if (typeof save === 'function') {
+      if (typeof save === "function") {
         saveCommandDefinition.callback = async () => {
-          save(); 
+          await save();
           if (this.settings.refreshOnNoteSave) {
             await refreshIndex(this);
-          } else {
             const activeView = this.getActiveTYPEView(MATRIX_VIEW);
             if (activeView) await activeView.draw();
           }

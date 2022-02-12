@@ -1,4 +1,4 @@
-import { error } from "loglevel";
+import { error, info } from "loglevel";
 import {
   App,
   FuzzyMatch,
@@ -47,6 +47,7 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
   }
 
   async onOpen(): Promise<void> {
+    const { app } = this;
     this.setPlaceholder("HN Manipulator");
     this.setInstructions([
       { command: "Shift + Enter", purpose: "Jump to item" },
@@ -56,16 +57,16 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
       { command: "Delete", purpose: "Delete item" },
     ]);
 
-    this.file = this.app.metadataCache.getFirstLinkpathDest(
-      this.hierNoteName,
-      ""
-    );
+    this.file = app.metadataCache.getFirstLinkpathDest(this.hierNoteName, "");
     if (!this.file) this.lines = [];
-    const content = await this.app.vault.cachedRead(this.file);
+
+    console.log(this);
+    const content = await app.vault.cachedRead(this.file);
     this.lines = content.split("\n");
 
-    this.listItems = this.app.metadataCache.getFileCache(this.file).listItems;
+    this.listItems = app.metadataCache.getFileCache(this.file).listItems;
 
+    console.log(this);
     super.onOpen();
   }
 
@@ -83,8 +84,7 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
         return { depth, line, lineNo: item.i };
       });
 
-    console.log(items)
-
+    info(items);
     return items;
   }
 
@@ -114,25 +114,25 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
   onChooseItem(item: HNItem, evt: MouseEvent | KeyboardEvent): void {
     if (evt instanceof KeyboardEvent && evt.key === "Delete") {
       this.deleteItem(item);
-    }else if (evt instanceof KeyboardEvent && evt.key == "Enter" && evt.shiftKey ){
+    } else if (
+      evt instanceof KeyboardEvent &&
+      evt.key == "Enter" &&
+      evt.shiftKey
+    ) {
       const view = this.app.workspace.getActiveViewOfType(MarkdownView);
       const { editor } = view ?? {};
       if (!editor) return;
       //@ts-ignore
       view.leaf.openFile(this.file, { active: true, mode: "source" });
       editor.setCursor({ line: item.lineNo, ch: item.depth + 2 });
-    } else if (evt instanceof KeyboardEvent  || evt instanceof MouseEvent) {
-      let  rel : "up" | "down" | "same" ;
-      if (evt instanceof MouseEvent && evt.type == "click") { 
-        rel = "down"
-      }
-      if ( evt instanceof KeyboardEvent ) { 
-        if ( evt.key === "Enter") rel = "down"
-      }
-      if ( evt instanceof KeyboardEvent && evt.shiftKey )   { 
-        if (evt.key === "ArrowUp") rel = "up" 
-        if ( evt.key === "ArrowDown" ) rel = "down" 
-        if (evt.key === "ArrowRight") rel = "same" 
+    } else if (evt instanceof KeyboardEvent || evt instanceof MouseEvent) {
+      let rel: "up" | "down" | "same";
+      if (evt instanceof MouseEvent && evt.type == "click") rel = "down";
+      if (evt instanceof KeyboardEvent) if (evt.key === "Enter") rel = "down";
+      if (evt instanceof KeyboardEvent && evt.shiftKey) {
+        if (evt.key === "ArrowUp") rel = "up";
+        if (evt.key === "ArrowDown") rel = "down";
+        if (evt.key === "ArrowRight") rel = "same";
       }
 
       new ModifyHierItemModal(
@@ -143,6 +143,6 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
         rel
       ).open();
       this.close();
-    } 
+    }
   }
 }

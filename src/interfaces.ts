@@ -81,7 +81,7 @@ export interface BCSettings {
   overflowMLView: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   refreshOnNoteChange: boolean;
-  refreshOnNoteSave: boolean ; 
+  refreshOnNoteSave: boolean;
   respectReadableLineLength: boolean;
   showAllPathsIfNoneToIndexNote: boolean;
   showAllAliases: boolean;
@@ -97,7 +97,7 @@ export interface BCSettings {
   showAll: boolean;
   showGrid: boolean;
   showImpliedRelations: boolean;
-  showUpInJuggl : boolean  ; 
+  showUpInJuggl: boolean;
   showJuggl: boolean;
   showPrevNext: boolean;
   showRefreshNotice: boolean;
@@ -299,7 +299,10 @@ declare module "obsidian" {
       };
       enabledPlugins: { has: (plugin: string) => boolean };
     };
-    commands: { executeCommandById: (id: string) => void };
+    commands: {
+      executeCommandById: (id: string) => void;
+      commands: { [cmd: string]: { callback: () => any } };
+    };
   }
   interface View {
     editor: Editor;

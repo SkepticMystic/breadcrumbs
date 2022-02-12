@@ -1,9 +1,7 @@
 import { Notice, Setting } from "obsidian";
-import Checkboxes from "../Components/Checkboxes.svelte";
 import type BCPlugin from "../main";
 import { refreshIndex } from "../refreshIndex";
 import { splitAndTrim } from "../Utils/generalUtils";
-import { getFields } from "../Utils/HierUtils";
 import { details, fragWithHTML } from "./BreadcrumbsSettingTab";
 
 export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
@@ -74,24 +72,24 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
       })
     );
 
-  new Setting(generalDetails) 
-  .setName("Refresh Index On Note Save") 
-      .addToggle((toggle) => 
+  new Setting(generalDetails)
+    .setName("Refresh Index On Note Save")
+    .addToggle((toggle) =>
       toggle.setValue(settings.refreshOnNoteSave).onChange(async (value) => {
-        settings.refreshOnNoteSave = value ; 
-        await plugin.saveSettings() 
-      } )
-      )
+        settings.refreshOnNoteSave = value;
+        await plugin.saveSettings();
+      })
+    );
 
-  new Setting (generalDetails) 
-  .setName("Show up fields in Juggl")
-  .setDesc("Juggl will show both up and down fields")
-  .addToggle((toggle) => {
-    toggle.setValue(settings.showUpInJuggl).onChange(async (value)=> {
-      settings.showUpInJuggl = value ; 
-      await plugin.saveSettings() ;
-    })
-  }) 
+  new Setting(generalDetails)
+    .setName("Show up fields in Juggl")
+    .setDesc("Juggl will show both up and down fields")
+    .addToggle((toggle) => {
+      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+        settings.showUpInJuggl = value;
+        await plugin.saveSettings();
+      });
+    });
 
   new Setting(generalDetails)
     .setName("Fields used for Alternative note names (Aliases)")

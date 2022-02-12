@@ -9,8 +9,7 @@ interface HNItem {
 }
 
 export class ModifyHierItemModal extends Modal {
-
-  mount : ModifyHNItemComp ; 
+  mount: ModifyHNItemComp;
   plugin: BCPlugin;
   modal: ModifyHierItemModal;
   hnItem: HNItem;
@@ -36,7 +35,7 @@ export class ModifyHierItemModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    this.mount  = new ModifyHNItemComp({
+    this.mount = new ModifyHNItemComp({
       target: contentEl,
       props: {
         modal: this,
@@ -49,7 +48,7 @@ export class ModifyHierItemModal extends Modal {
   }
 
   onClose() {
-    this.mount.$destroy() 
+    this.mount.$destroy();
     this.contentEl.empty();
   }
 }
