@@ -1,6 +1,7 @@
 import type {
   BCSettings,
   Directions,
+  RealNImplied,
   Relations,
   UserHier,
   visTypes,
@@ -38,7 +39,12 @@ export const VISTYPES: visTypes[] = [
   "Radial Tree",
 ];
 
+/* All 5 possible directions. */
 export const DIRECTIONS = ["up", "same", "down", "next", "prev"] as const;
+
+/**
+ * An arrow for each {@link DIRECTIONS} value.
+ */
 export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
   up: "↑",
   same: "↔",
@@ -115,7 +121,7 @@ export const blankDirObjs = (): { [dir in Directions]: {} } => {
   };
 };
 
-export const blankRealNImplied = () => {
+export const blankRealNImplied = (): RealNImplied => {
   return {
     up: { reals: [], implieds: [] },
     down: { reals: [], implieds: [] },

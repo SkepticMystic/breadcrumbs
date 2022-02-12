@@ -4,7 +4,12 @@ import type { Attributes } from "graphology-types";
 import { info } from "loglevel";
 import type { App } from "obsidian";
 import type BCPlugin from "../../main";
-import { BC_I_REFLEXIVE, BC_ORDER, blankRealNImplied } from "../constants";
+import {
+  BC_I_REFLEXIVE,
+  BC_ORDER,
+  blankRealNImplied,
+  DIRECTIONS,
+} from "../constants";
 import type {
   BCSettings,
   Directions,
@@ -16,10 +21,6 @@ import type {
 } from "../interfaces";
 import { getFieldInfo, getOppDir, getOppFields } from "./HierUtils";
 import { getBaseFromMDPath } from "./ObsidianUtils";
-
-// TODO - this is a hack to get the graph to work with the approvals
-// I shouldn't need
-const DIRECTIONS = ["up", "same", "down", "next", "prev"];
 
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
@@ -44,12 +45,14 @@ export function removeUnlinkedNodes(g: MultiGraph) {
 
 /**
  * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
- * @param  {MultiGraph} main
+ *
+ * Filter the given graph to only include edges in the given directions.
+ * @param  {MultiGraph} g
  * @param  {Directions} dir
  */
-export function getSubInDirs(main: MultiGraph, ...dirs: Directions[]) {
+export function getSubInDirs(g: MultiGraph, ...dirs: Directions[]) {
   const sub = new MultiGraph();
-  main?.forEachEdge((k, a, s, t) => {
+  g?.forEachEdge((k, a, s, t) => {
     if (dirs.includes(a.dir)) {
       //@ts-ignore
       addNodesIfNot(sub, [s, t], { order: a.order });
@@ -60,13 +63,15 @@ export function getSubInDirs(main: MultiGraph, ...dirs: Directions[]) {
 }
 
 /**
- * Return a subgraph of all nodes & edges with `files.includes(a.field)`
- * @param  {MultiGraph} main
+ * Return a subgraph of all nodes & edges with `fields.includes(a.field)`.
+ *
+ * Filter the given graph to only include edges with the given fields.
+ * @param  {MultiGraph} g
  * @param  {string[]} fields
  */
-export function getSubForFields(main: MultiGraph, fields: string[]) {
+export function getSubForFields(g: MultiGraph, fields: string[]) {
   const sub = new MultiGraph();
-  main.forEachEdge((k, a, s, t) => {
+  g.forEachEdge((k, a, s, t) => {
     if (fields.includes(a.field)) {
       //@ts-ignore
       addNodesIfNot(sub, [s, t], { order: a.order });
@@ -143,9 +148,13 @@ export const getInNeighbours = (g: MultiGraph, node: string) =>
   g.hasNode(node) ? g.inNeighbors(node) : [];
 
 /**
- *  Get the hierarchy and direction that `field` is in
- * */
-
+ * Finds all paths from a starting node to all other sinks in a graph.
+ *
+ *
+ * @param {MultiGraph} g - The graph to search
+ * @param {string} start - The starting node
+ * @returns An array of arrays. Each array is a path.
+ */
 export function dfsAllPaths(g: MultiGraph, start: string): string[][] {
   const queue: NodePath[] = [{ node: start, path: [] }];
   const visited: { [note: string]: number } = {};
@@ -329,7 +338,7 @@ export function getRealnImplied(
         if (s === currNode && (edgeDir === currDir || edgeDir === oppDir)) {
           const arr = realsnImplieds[edgeDir].reals;
           if (arr.findIndex((item) => item.to === t) === -1) {
-            arr.push({ to: t, real: true, field, implied });
+            arr.push({ to: t, field, implied });
           }
         }
         // Implieds
@@ -339,7 +348,6 @@ export function getRealnImplied(
           if (arr.findIndex((item) => item.to === s) === -1) {
             arr.push({
               to: s,
-              real: false,
               field: oppField,
               implied,
             });

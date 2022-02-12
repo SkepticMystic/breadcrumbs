@@ -15,12 +15,13 @@ import { getFieldInfo, getFields, getOppDir } from "./Utils/HierUtils";
 import { createJuggl } from "./Visualisations/Juggl";
 
 export function getCodeblockCB(plugin: BCPlugin) {
-  const { settings } = plugin;
+  const { settings, db } = plugin;
   return (
     source: string,
     el: HTMLElement,
     ctx: MarkdownPostProcessorContext
   ) => {
+    db.start2G("Codeblock");
     const parsedSource = parseCodeBlockSource(source);
     const err = codeblockError(plugin, parsedSource);
 
@@ -101,6 +102,8 @@ export function getCodeblockCB(plugin: BCPlugin) {
         );
         break;
     }
+
+    db.end2G();
   };
 }
 

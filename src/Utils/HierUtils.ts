@@ -39,6 +39,9 @@ export const getOppDir = (dir: Directions): Directions => {
   }
 };
 
+/**
+ *  Get the hierarchy and direction that `field` is in
+ * */
 export function getFieldInfo(userHiers: UserHier[], field: string) {
   let fieldDir: Directions;
   let fieldHier: UserHier;

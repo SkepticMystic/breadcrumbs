@@ -263,7 +263,6 @@ export type HierData = {
 
 export type SquareItem = {
   to: string;
-  real: boolean;
   field: string;
   implied?: string;
 };
@@ -331,8 +330,42 @@ export interface EdgeAttr {
 }
 
 export interface BCAPII {
+  mainG: MultiGraph;
+  closedG: MultiGraph;
+
+  /** Build the obsidian graph as a graphology MultiGraph */
   buildObsGraph: () => MultiGraph;
-  getSubInDirs: (dirs: Directions[], g?: MultiGraph) => MultiGraph;
-  getSubForFields: (fields: Directions[], g?: MultiGraph) => MultiGraph;
-  dfsAllPaths: (fromNode: string, g?: MultiGraph) => string[][];
+
+  /**
+   * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
+   *
+   * Filter the given graph to only include edges in the given directions.
+   * @param  {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
+   * @param  {Directions} dir - An array of directions to look for.
+   */
+  getSubInDirs: (dirs: Directions[], g: MultiGraph) => MultiGraph;
+
+  /**
+   * Return a subgraph of all nodes & edges with `fields.includes(a.field)`.
+   *
+   * Filter the given graph to only include edges with the given fields.
+   * @param  {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
+   * @param  {string[]} fields - An array of fields to look for.
+   */
+  getSubForFields: (fields: Directions[], g: MultiGraph) => MultiGraph;
+
+  /**
+   * Finds all paths from a starting node to all other sinks in a graph.
+   *
+   *
+   * @param {MultiGraph} g - The graph to search. Defaults to `plugin.mainG`
+   * @param {string} fromNode - The starting node
+   * @returns An array of arrays. Each array is a path.
+   */
+  dfsAllPaths: (fromNode: string, g: MultiGraph) => string[][];
+
+  /** Get the Breadcrumb neighbours of the current note, split by `direction` and `real/implied`
+   * @param {string} fromNode - The starting node
+   */
+  getMatrixNeighbours: (fromNode: string) => RealNImplied;
 }

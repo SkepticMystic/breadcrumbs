@@ -83,13 +83,12 @@ function getNextNPrev(plugin: BCPlugin, currNode: string) {
     const { dir, field, implied } = a as EdgeAttr;
     if (dir !== "next" && dir !== "prev") return;
     if (s === currNode) {
-      nextNPrev[dir].reals.push({ field, to: t, real: true, implied });
+      nextNPrev[dir].reals.push({ field, to: t, implied });
     } else {
       const oppField = getOppFields(userHiers, field, dir)[0];
       nextNPrev[getOppDir(dir)].implieds.push({
         field: oppField,
         to: s,
-        real: false,
         implied,
       });
     }

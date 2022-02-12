@@ -21,6 +21,28 @@ import { splitAndTrim } from "../Utils/generalUtils";
 import { getOppDir, getOppFields } from "../Utils/HierUtils";
 import { getDVApi, linkClass } from "../Utils/ObsidianUtils";
 
+export function getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
+  const { closedG, settings } = plugin;
+  const { userHiers } = settings;
+  const neighbours = blankRealNImplied();
+  if (!closedG) return neighbours;
+
+  closedG.forEachEdge(currNode, (k, a, s, t) => {
+    const { field, dir, implied } = a as EdgeAttr;
+
+    if (s === currNode) {
+      neighbours[dir].reals.push({ to: t, field, implied });
+    } else {
+      neighbours[getOppDir(dir)].implieds.push({
+        to: s,
+        field: getOppFields(userHiers, field, dir)[0],
+        implied,
+      });
+    }
+  });
+
+  return neighbours;
+}
 export default class MatrixView extends ItemView {
   plugin: BCPlugin;
   private view: MLContainer;
@@ -126,29 +148,6 @@ export default class MatrixView extends ItemView {
   getOrder = (node: string) =>
     Number.parseInt(this.plugin.mainG.getNodeAttribute(node, "order"));
 
-  getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
-    const { closedG, settings } = plugin;
-    const { userHiers } = settings;
-    const neighbours = blankRealNImplied();
-    if (!closedG) return neighbours;
-
-    closedG.forEachEdge(currNode, (k, a, s, t) => {
-      const { field, dir, implied } = a as EdgeAttr;
-
-      if (s === currNode) {
-        neighbours[dir].reals.push({ to: t, field, implied });
-      } else {
-        neighbours[getOppDir(dir)].implieds.push({
-          to: s,
-          field: getOppFields(userHiers, field, dir)[0],
-          implied,
-        });
-      }
-    });
-
-    return neighbours;
-  }
-
   sortItemsAlpha = (a: internalLinkObj, b: internalLinkObj) => {
     const { sortByNameShowAlias, alphaSortAsc } = this.plugin.settings;
     const aToSort = (sortByNameShowAlias ? a.to : a.alt ?? a.to).toLowerCase();
@@ -168,15 +167,15 @@ export default class MatrixView extends ItemView {
 
     const { basename } = currFile;
     if (!mainG.hasNode(basename)) return [];
-    const realsnImplieds = this.getMatrixNeighbours(plugin, basename);
+    const realsnImplieds = getMatrixNeighbours(plugin, basename);
 
     return userHiers.map((hier) => {
-      const filteredRealNImplied: {
+      const filteredRealNImplied = blankRealNImplied() as unknown as {
         [dir in Directions]: {
           reals: internalLinkObj[];
           implieds: internalLinkObj[];
         };
-      } = blankRealNImplied();
+      };
 
       const resultsFilter = (
         item: SquareItem,
