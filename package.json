@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup -c --environment BUILD:production",
-    "docs": "typedoc src/index.ts",
+    "docs": "npx typedoc src/index.ts && git commit -am \"chore: :memo: Update docs\"",
     "release": "standard-version",
     "test": "ts-mocha"
   },
