@@ -1,1 +1,6 @@
-export { buildObsGraph } from "./Utils/graphUtils";
+export {
+  buildObsGraph,
+  getSubInDirs,
+  getSubForFields,
+  dfsAllPaths,
+} from "./Utils/graphUtils";

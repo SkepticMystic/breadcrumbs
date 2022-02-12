@@ -300,6 +300,8 @@ export const ILLEGAL_FILENAME_CHARS = [
 export const DATAVIEW_MISSING =
   "The Dataview plugin must be installed for this to work";
 
+export const API_NAME = "BCAPI";
+
 export const DEFAULT_SETTINGS: BCSettings = {
   addDendronNotes: false,
   addDateNotes: false,

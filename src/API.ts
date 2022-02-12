@@ -1,22 +1,30 @@
-export {};
-// import type { MultiGraph } from "graphology";
-// import type { App } from "obsidian";
-// import type BCPlugin from "./main";
-// import { buildObsGraph } from "./Utils/graphUtils";
-// import type { BCAPIInterface } from "./interfaces";
+import type { App } from "obsidian";
+import type { BCAPII, Directions } from "./interfaces";
+import type BCPlugin from "./main";
+import {
+  buildObsGraph,
+  dfsAllPaths,
+  getSubForFields,
+  getSubInDirs,
+} from "./Utils/graphUtils";
 
-// export class BCAPI implements BCAPIInterface {
-//   app: App;
-//   mainG: MultiGraph;
-//   closedG: MultiGraph;
+export class BCAPI implements BCAPII {
+  app: App;
+  plugin: BCPlugin;
 
-//   public constructor(app: App, mainG: MultiGraph, closedG: MultiGraph) {
-//     this.app = app;
-//     this.mainG = mainG;
-//     this.closedG = closedG;
-//   }
+  public constructor(app: App, plugin: BCPlugin) {
+    this.app = app;
+    this.plugin = plugin;
+  }
 
-//   public buildObsG() {
-//     buildObsGraph;
-//   }
-// }
+  public buildObsGraph = () => buildObsGraph(this.app);
+
+  public getSubInDirs = (dirs: Directions[], g = this.plugin.mainG) =>
+    getSubInDirs(g, ...dirs);
+
+  public getSubForFields = (fields: string[], g = this.plugin.mainG) =>
+    getSubForFields(g, fields);
+
+  public dfsAllPaths = (fromNode: string, g = this.plugin.mainG) =>
+    dfsAllPaths(g, fromNode);
+}

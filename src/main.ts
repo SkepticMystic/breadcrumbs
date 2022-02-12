@@ -6,6 +6,7 @@ import {
   openView,
   wait,
 } from "obsidian-community-lib/dist/utils";
+import { BCAPI } from "./API";
 import { Debugger } from "src/Debugger";
 import { HierarchyNoteSelectorModal } from "./AlternativeHierarchies/HierarchyNotes/HierNoteModal";
 import { getCodeblockCB } from "./Codeblocks";
@@ -23,9 +24,16 @@ import {
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   TREE_VIEW,
+  API_NAME,
 } from "./constants";
 import { FieldSuggestor } from "./FieldSuggestor";
-import type { BCSettings, Directions, MyView, ViewInfo } from "./interfaces";
+import type {
+  BCAPII,
+  BCSettings,
+  Directions,
+  MyView,
+  ViewInfo,
+} from "./interfaces";
 import { buildClosedG, buildMainG, refreshIndex } from "./refreshIndex";
 import { RelationSuggestor } from "./RelationSuggestor";
 import { BCSettingTab } from "./Settings/BreadcrumbsSettingTab";
@@ -48,6 +56,7 @@ export default class BCPlugin extends Plugin {
   layoutChange: EventRef = undefined;
   db: Debugger;
   VIEWS: ViewInfo[];
+  api: BCAPII;
   private bcStore: BCStore;
 
   registerActiveLeafChangeEvent() {
@@ -260,6 +269,11 @@ export default class BCPlugin extends Plugin {
       this.bcStore = new BCStore(this.mainG, this.app.metadataCache);
       jugglPlugin.registerStore(this.bcStore);
     }
+
+    this.api = new BCAPI(app, this);
+    // Register API to global window object.
+    (window[API_NAME] = this.api) &&
+      this.register(() => delete window[API_NAME]);
   }
 
   getActiveTYPEView(type: string): MyView | null {

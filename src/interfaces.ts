@@ -329,3 +329,10 @@ export interface EdgeAttr {
   field: string;
   implied?: string;
 }
+
+export interface BCAPII {
+  buildObsGraph: () => MultiGraph;
+  getSubInDirs: (dirs: Directions[], g?: MultiGraph) => MultiGraph;
+  getSubForFields: (fields: Directions[], g?: MultiGraph) => MultiGraph;
+  dfsAllPaths: (fromNode: string, g?: MultiGraph) => string[][];
+}
