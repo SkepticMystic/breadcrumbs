@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.55.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.54.0...2.55.0) (2022-02-12)
+
+
+### Features
+
+* **API:** :sparkles: Add various hierarchy utilities ([9b1bb8f](https://github.com/SkepticMystic/breadcrumbs/commit/9b1bb8f1a1dccae01439d33e1743fb4db83faaf6))
+
 ## [2.54.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.53.0...2.54.0) (2022-02-12)
 
 
