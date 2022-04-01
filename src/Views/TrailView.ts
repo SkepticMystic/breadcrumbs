@@ -216,11 +216,17 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       view.querySelector("div.markdown-preview-sizer").before(trailDiv);
     } else {
       const cmEditor = view.querySelector("div.cm-contentContainer");
-      // const cmSizer = view.querySelector("div.CodeMirror-sizer");
+      const cmGutter = view.querySelector("div.cm-gutters");
       if (cmEditor) {
         cmEditor.firstChild?.before(trailDiv);
       }
-      // if (cmSizer) cmSizer.before(trailDiv);
+      // set padding top of gutter to match height of trailDiv
+      if (cmGutter) {
+        requestAnimationFrame(() => {
+          const gutterHeight = trailDiv.getBoundingClientRect().height;
+          cmGutter.style.paddingTop = `${gutterHeight + 4}px`;
+        });
+      }
     }
 
     trailDiv.empty();
