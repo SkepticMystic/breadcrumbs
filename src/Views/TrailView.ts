@@ -109,9 +109,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       showPrevNext,
       showBCsInEditLPMode,
     } = settings;
+
     db.start2G("drawTrail");
+
     const activeMDView = app.workspace.getActiveViewOfType(MarkdownView);
     const mode = activeMDView?.getMode();
+
     if (
       !showBCs ||
       !activeMDView ||
@@ -125,13 +128,7 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     const { file } = activeMDView;
     const { frontmatter } = app.metadataCache.getFileCache(file) ?? {};
 
-    // @ts-ignore
-    const { hideTrailField } = settings;
-    if (hideTrailField && frontmatter?.[hideTrailField]) {
-      new Notice(
-        `${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`
-      );
-    }
+
     if (frontmatter?.[BC_HIDE_TRAIL] || frontmatter?.["kanban-plugin"]) {
       db.end2G();
       return;
@@ -146,8 +143,8 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     const view =
       mode === "preview"
         ? activeMDView.previewMode.containerEl.querySelector(
-            "div.markdown-preview-view"
-          )
+          "div.markdown-preview-view"
+        )
         : activeMDView.contentEl.querySelector("div.markdown-source-view");
 
     activeMDView.containerEl
@@ -198,11 +195,10 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       : "100%";
 
     const trailDiv = createDiv({
-      cls: `BC-trail ${
-        respectReadableLineLength
-          ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
-          : ""
-      }`,
+      cls: `BC-trail ${respectReadableLineLength
+        ? "is-readable-line-width markdown-preview-sizer markdown-preview-section"
+        : ""
+        }`,
       attr: {
         style:
           (mode !== "preview" ? `max-width: ${max_width};` : "") +
