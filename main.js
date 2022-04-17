@@ -37708,11 +37708,12 @@ class RelationSuggestor extends obsidian.EditorSuggest {
     }
     selectSuggestion(suggestion) {
         const { context, plugin } = this;
-        if (context) {
-            const trig = plugin.settings.relSuggestorTrigger;
-            const { start, end, editor } = context;
-            editor.replaceRange(suggestion + (isInsideYaml(plugin.app) ? ": " : ":: "), { ch: start.ch + 1 - trig.length, line: start.line }, end);
-        }
+        if (!context)
+            return;
+        const trig = plugin.settings.relSuggestorTrigger;
+        const { start, end, editor } = context;
+        const replacement = suggestion + (isInsideYaml(plugin.app) ? ": " : ":: ") + '[[';
+        editor.replaceRange(replacement, { ch: start.ch + 1 - trig.length, line: start.line }, end);
     }
 }
 
