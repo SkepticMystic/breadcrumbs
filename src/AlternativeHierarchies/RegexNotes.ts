@@ -1,6 +1,6 @@
 import type { MultiGraph } from "graphology";
 import { info } from "loglevel";
-import { BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD } from "../constants";
+import { BC_IGNORE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import { strToRegex } from "../Utils/generalUtils";
@@ -35,6 +35,7 @@ export function addRegexNotesToGraph(
 
     const targets = [];
     frontms.forEach((page) => {
+      if (page[BC_IGNORE]) return;
       const basename = getDVBasename(page.file);
       if (basename !== regexNoteBasename && regex.test(basename))
         targets.push(basename);

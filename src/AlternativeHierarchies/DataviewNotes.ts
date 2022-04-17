@@ -1,7 +1,7 @@
 import type { MultiGraph } from "graphology";
 import { warn } from "loglevel";
 import { Notice } from "obsidian";
-import { BC_DV_NOTE, BC_DV_NOTE_FIELD, DATAVIEW_MISSING } from "../constants";
+import { BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE, DATAVIEW_MISSING } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import {
@@ -44,6 +44,7 @@ export function addDataviewNotesToGraph(
     }
 
     for (const target of targets) {
+      if (target[BC_IGNORE]) continue;
       const targetBN = getDVBasename(target.file);
       const sourceOrder = getSourceOrder(altFile);
       const targetOrder = getTargetOrder(frontms, targetBN);

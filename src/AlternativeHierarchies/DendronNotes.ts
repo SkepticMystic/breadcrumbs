@@ -1,5 +1,5 @@
 import type { MultiGraph } from "graphology";
-import { BC_IGNORE_DENDRON } from "../constants";
+import { BC_IGNORE, BC_IGNORE_DENDRON } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import {
@@ -22,7 +22,7 @@ export function addDendronNotesToGraph(
   if (!addDendronNotes) return;
 
   for (const frontm of frontms) {
-    if (frontm[BC_IGNORE_DENDRON]) continue;
+    if (frontm[BC_IGNORE_DENDRON] || frontm[BC_IGNORE]) continue;
 
     let curr = getDVBasename(frontm.file);
     let parent = getDendronParent(curr, dendronNoteDelimiter);

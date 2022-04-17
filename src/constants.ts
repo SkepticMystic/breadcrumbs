@@ -139,13 +139,13 @@ export const [
   BC_I_REFLEXIVE,
   BC_I_PARENT,
 ] = [
-  "BC-Aunt",
-  "BC-Cousin",
-  "BC-Sibling-1",
-  "BC-Sibling-2",
-  "BC-Reflexive",
-  "BC-Parent",
-];
+    "BC-Aunt",
+    "BC-Cousin",
+    "BC-Sibling-1",
+    "BC-Sibling-2",
+    "BC-Reflexive",
+    "BC-Parent",
+  ];
 
 export const [
   BC_FOLDER_NOTE,
@@ -160,26 +160,28 @@ export const [
   BC_REGEX_NOTE_FIELD,
   BC_DV_NOTE,
   BC_DV_NOTE_FIELD,
+  BC_IGNORE,
   BC_IGNORE_DENDRON,
   BC_HIDE_TRAIL,
   BC_ORDER,
 ] = [
-  "BC-folder-note",
-  "BC-folder-note-subfolders",
-  "BC-folder-note-recursive",
-  "BC-tag-note",
-  "BC-tag-note-field",
-  "BC-tag-note-exact",
-  "BC-link-note",
-  "BC-traverse-note",
-  "BC-regex-note",
-  "BC-regex-note-field",
-  "BC-dataview-note",
-  "BC-dataview-note-field",
-  "BC-ignore-dendron",
-  "BC-hide-trail",
-  "BC-order",
-];
+    "BC-folder-note",
+    "BC-folder-note-subfolders",
+    "BC-folder-note-recursive",
+    "BC-tag-note",
+    "BC-tag-note-field",
+    "BC-tag-note-exact",
+    "BC-link-note",
+    "BC-traverse-note",
+    "BC-regex-note",
+    "BC-regex-note-field",
+    "BC-dataview-note",
+    "BC-dataview-note-field",
+    "BC-ignore",
+    "BC-ignore-dendron",
+    "BC-hide-trail",
+    "BC-order",
+  ];
 
 export const BC_FIELDS_INFO = [
   {
