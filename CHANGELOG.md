@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.56.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.2...2.56.0) (2022-04-17)
+
+
+### Features
+
+* :sparkles: `BC-ignore: true` to ignore a note from BC entirely ([9e719a7](https://github.com/SkepticMystic/breadcrumbs/commit/9e719a7b53742a80be3a1adc14889472032d192e))
+* **API:** :sparkles: Add refreshIndex method ([#369](https://github.com/SkepticMystic/breadcrumbs/issues/369)) ([f9b97b9](https://github.com/SkepticMystic/breadcrumbs/commit/f9b97b9b6f4942f8e4dcc05ea1c25962f23f5373))
+* **Hierarchy Note:** :sparkles: Allow next and prev directions ([#327](https://github.com/SkepticMystic/breadcrumbs/issues/327)) ([657a2d3](https://github.com/SkepticMystic/breadcrumbs/commit/657a2d3ec7d2fbe38814d25ccc91c56c67a9296d))
+* **RelationSuggester:** :sparkles: Add wikilink brackets after relation selection ([042dd33](https://github.com/SkepticMystic/breadcrumbs/commit/042dd3307e300c8ed4a0f376713a9dea4feba05d))
+
+
+### Bug Fixes
+
+* **nextPrev:** :bug: hoverPreview now works on NextPrev View (fix [#356](https://github.com/SkepticMystic/breadcrumbs/issues/356)) ([8191522](https://github.com/SkepticMystic/breadcrumbs/commit/8191522d2315b143a48f24cbd405cd51ee8aa790))
+* **Path View:** :bug: Toggle Trail in Live Preview Mode command wasn't using the latest value to toggle the setting ([#364](https://github.com/SkepticMystic/breadcrumbs/issues/364)) ([42b2b67](https://github.com/SkepticMystic/breadcrumbs/commit/42b2b6745b89b40a4f64639db6fffac4bbd0b6f4))
+
 ### [2.55.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.1...2.55.2) (2022-02-13)
 
 ### [2.55.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.0...2.55.1) (2022-02-12)
