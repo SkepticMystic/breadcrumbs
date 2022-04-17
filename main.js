@@ -15910,28 +15910,28 @@ function add_css$d() {
 
 function get_each_context$9(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[6] = list[i].field;
-	child_ctx[7] = list[i].real;
-	child_ctx[8] = list[i].to;
+	child_ctx[9] = list[i].field;
+	child_ctx[10] = list[i].real;
+	child_ctx[11] = list[i].to;
 	return child_ctx;
 }
 
 function get_each_context_1$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[6] = list[i].field;
-	child_ctx[7] = list[i].real;
-	child_ctx[8] = list[i].to;
+	child_ctx[9] = list[i].field;
+	child_ctx[10] = list[i].real;
+	child_ctx[11] = list[i].to;
 	return child_ctx;
 }
 
-// (14:6) {#each prev as { field, real, to }}
+// (15:6) {#each prev as { field, real, to }}
 function create_each_block_1$6(ctx) {
 	let div;
 	let strong;
-	let t0_value = /*field*/ ctx[6] + "";
+	let t0_value = /*field*/ ctx[9] + "";
 	let t0;
 	let t1;
-	let t2_value = /*to*/ ctx[8] + "";
+	let t2_value = /*to*/ ctx[11] + "";
 	let t2;
 	let t3;
 	let div_class_value;
@@ -15939,7 +15939,11 @@ function create_each_block_1$6(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[4](/*to*/ ctx[8], ...args);
+		return /*click_handler*/ ctx[5](/*to*/ ctx[11], ...args);
+	}
+
+	function mouseover_handler(...args) {
+		return /*mouseover_handler*/ ctx[6](/*to*/ ctx[11], ...args);
 	}
 
 	return {
@@ -15950,7 +15954,7 @@ function create_each_block_1$6(ctx) {
 			t1 = space();
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-prev" + " svelte-11g23nm"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[11], /*real*/ ctx[10]) + " BC-prev" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -15961,35 +15965,39 @@ function create_each_block_1$6(ctx) {
 			append(div, t3);
 
 			if (!mounted) {
-				dispose = listen(div, "click", click_handler);
+				dispose = [
+					listen(div, "click", click_handler),
+					listen(div, "mouseover", mouseover_handler)
+				];
+
 				mounted = true;
 			}
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*prev*/ 2 && t0_value !== (t0_value = /*field*/ ctx[6] + "")) set_data(t0, t0_value);
-			if (dirty & /*prev*/ 2 && t2_value !== (t2_value = /*to*/ ctx[8] + "")) set_data(t2, t2_value);
+			if (dirty & /*prev*/ 2 && t0_value !== (t0_value = /*field*/ ctx[9] + "")) set_data(t0, t0_value);
+			if (dirty & /*prev*/ 2 && t2_value !== (t2_value = /*to*/ ctx[11] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*prev*/ 2 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-prev" + " svelte-11g23nm"))) {
+			if (dirty & /*prev*/ 2 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[11], /*real*/ ctx[10]) + " BC-prev" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
 		d(detaching) {
 			if (detaching) detach(div);
 			mounted = false;
-			dispose();
+			run_all(dispose);
 		}
 	};
 }
 
-// (27:6) {#each next as { field, real, to }}
+// (29:6) {#each next as { field, real, to }}
 function create_each_block$9(ctx) {
 	let div;
-	let t0_value = /*to*/ ctx[8] + "";
+	let t0_value = /*to*/ ctx[11] + "";
 	let t0;
 	let t1;
 	let strong;
-	let t2_value = /*field*/ ctx[6] + "";
+	let t2_value = /*field*/ ctx[9] + "";
 	let t2;
 	let t3;
 	let div_class_value;
@@ -15997,7 +16005,11 @@ function create_each_block$9(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[5](/*to*/ ctx[8], ...args);
+		return /*click_handler_1*/ ctx[7](/*to*/ ctx[11], ...args);
+	}
+
+	function mouseover_handler_1(...args) {
+		return /*mouseover_handler_1*/ ctx[8](/*to*/ ctx[11], ...args);
 	}
 
 	return {
@@ -16008,7 +16020,7 @@ function create_each_block$9(ctx) {
 			strong = element("strong");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-next" + " svelte-11g23nm"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[11], /*real*/ ctx[10]) + " BC-next" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -16019,23 +16031,27 @@ function create_each_block$9(ctx) {
 			append(div, t3);
 
 			if (!mounted) {
-				dispose = listen(div, "click", click_handler_1);
+				dispose = [
+					listen(div, "click", click_handler_1),
+					listen(div, "mouseover", mouseover_handler_1)
+				];
+
 				mounted = true;
 			}
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*next*/ 1 && t0_value !== (t0_value = /*to*/ ctx[8] + "")) set_data(t0, t0_value);
-			if (dirty & /*next*/ 1 && t2_value !== (t2_value = /*field*/ ctx[6] + "")) set_data(t2, t2_value);
+			if (dirty & /*next*/ 1 && t0_value !== (t0_value = /*to*/ ctx[11] + "")) set_data(t0, t0_value);
+			if (dirty & /*next*/ 1 && t2_value !== (t2_value = /*field*/ ctx[9] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*next*/ 1 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[8], /*real*/ ctx[7]) + " BC-next" + " svelte-11g23nm"))) {
+			if (dirty & /*next*/ 1 && div_class_value !== (div_class_value = "" + (linkClass(/*app*/ ctx[2], /*to*/ ctx[11], /*real*/ ctx[10]) + " BC-next" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
 		d(detaching) {
 			if (detaching) detach(div);
 			mounted = false;
-			dispose();
+			run_all(dispose);
 		}
 	};
 }
@@ -16101,7 +16117,7 @@ function create_fragment$n(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*linkClass, app, prev, openOrSwitch*/ 6) {
+			if (dirty & /*linkClass, app, prev, openOrSwitch, hoverPreview, activeLeafView*/ 14) {
 				each_value_1 = /*prev*/ ctx[1];
 				let i;
 
@@ -16124,7 +16140,7 @@ function create_fragment$n(ctx) {
 				each_blocks_1.length = each_value_1.length;
 			}
 
-			if (dirty & /*linkClass, app, next, openOrSwitch*/ 5) {
+			if (dirty & /*linkClass, app, next, openOrSwitch, hoverPreview, activeLeafView*/ 13) {
 				each_value = /*next*/ ctx[0];
 				let i;
 
@@ -16164,23 +16180,36 @@ function instance$n($$self, $$props, $$invalidate) {
 	let { next } = $$props;
 	let { prev } = $$props;
 	const { app } = plugin;
+	const activeLeafView = app.workspace.activeLeaf.view;
 	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler = (to, e) => hoverPreview(e, activeLeafView, to);
 	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
+	const mouseover_handler_1 = (to, e) => hoverPreview(e, activeLeafView, to);
 
 	$$self.$$set = $$props => {
-		if ("plugin" in $$props) $$invalidate(3, plugin = $$props.plugin);
+		if ("plugin" in $$props) $$invalidate(4, plugin = $$props.plugin);
 		if ("next" in $$props) $$invalidate(0, next = $$props.next);
 		if ("prev" in $$props) $$invalidate(1, prev = $$props.prev);
 	};
 
-	return [next, prev, app, plugin, click_handler, click_handler_1];
+	return [
+		next,
+		prev,
+		app,
+		activeLeafView,
+		plugin,
+		click_handler,
+		mouseover_handler,
+		click_handler_1,
+		mouseover_handler_1
+	];
 }
 
 class NextPrev extends SvelteComponent {
 	constructor(options) {
 		super();
 		if (!document.getElementById("svelte-11g23nm-style")) add_css$d();
-		init(this, options, instance$n, create_fragment$n, safe_not_equal, { plugin: 3, next: 0, prev: 1 });
+		init(this, options, instance$n, create_fragment$n, safe_not_equal, { plugin: 4, next: 0, prev: 1 });
 	}
 }
 
@@ -34954,11 +34983,6 @@ async function drawTrail(plugin) {
         }
         const { file } = activeMDView;
         const { frontmatter } = (_b = app.metadataCache.getFileCache(file)) !== null && _b !== void 0 ? _b : {};
-        // @ts-ignore
-        const { hideTrailField } = settings;
-        if (hideTrailField && (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[hideTrailField])) {
-            new obsidian.Notice(`${file.basename} still uses an old frontmatter field to hide it's trail. This settings has been deprecated in favour of a standardised field: 'BC-hide-trail'. Please change it so that this note's trail is hidden again.`);
-        }
         if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[BC_HIDE_TRAIL]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
             db.end2G();
             return;
@@ -35019,11 +35043,16 @@ async function drawTrail(plugin) {
         }
         else {
             const cmEditor = view.querySelector("div.cm-contentContainer");
-            // const cmSizer = view.querySelector("div.CodeMirror-sizer");
             if (cmEditor) {
                 (_d = cmEditor.firstChild) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
+                // const gutters = document.querySelector('.cm-gutters')
+                // if (gutters) {
+                //   const height = trailDiv.clientHeight
+                //   console.log({ height, comp: getComputedStyle(trailDiv).display })
+                //   gutters.firstChild.before(createDiv({ attr: { style: `height: ${height}px;` } }))
+                // }
             }
-            // if (cmSizer) cmSizer.before(trailDiv);
+            ;
         }
         trailDiv.empty();
         if (settings.indexNotes.includes(basename)) {
@@ -36024,6 +36053,7 @@ class BCAPI {
         this.DIRECTIONS = DIRECTIONS;
         this.ARROW_DIRECTIONS = ARROW_DIRECTIONS;
         this.buildObsGraph = () => buildObsGraph(this.app);
+        this.refreshIndex = async () => await refreshIndex(this.plugin);
         this.getSubInDirs = (dirs, g = this.mainG) => getSubInDirs(g, ...dirs);
         this.getSubForFields = (fields, g = this.mainG) => getSubForFields(g, fields);
         this.dfsAllPaths = (fromNode, g) => { var _a; if (fromNode === void 0) { fromNode = (_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.basename; } if (g === void 0) { g = this.mainG; } return dfsAllPaths(g, fromNode); };
@@ -64485,7 +64515,7 @@ class BCPlugin extends obsidian.Plugin {
             id: "Toggle-trail-in-Edit&LP",
             name: "Toggle: Show Trail/Grid in Edit & LP mode",
             callback: async () => {
-                settings.showBCsInEditLPMode = !showBCsInEditLPMode;
+                settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
                 await this.saveSettings();
                 await drawTrail(this);
             },
