@@ -233,7 +233,7 @@ export default class BCPlugin extends Plugin {
       id: "Toggle-trail-in-Edit&LP",
       name: "Toggle: Show Trail/Grid in Edit & LP mode",
       callback: async () => {
-        settings.showBCsInEditLPMode = !showBCsInEditLPMode;
+        settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
         await this.saveSettings();
         await drawTrail(this);
       },
@@ -318,11 +318,11 @@ export default class BCPlugin extends Plugin {
   }
 
   loadSettings = async () =>
-    (this.settings = Object.assign(
-      {},
-      DEFAULT_SETTINGS,
-      await this.loadData()
-    ));
+  (this.settings = Object.assign(
+    {},
+    DEFAULT_SETTINGS,
+    await this.loadData()
+  ));
 
   saveSettings = async () => await this.saveData(this.settings);
 
