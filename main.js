@@ -2919,7 +2919,7 @@ const [BC_I_AUNT, BC_I_COUSIN, BC_I_SIBLING_1, BC_I_SIBLING_2, BC_I_REFLEXIVE, B
     "BC-Reflexive",
     "BC-Parent",
 ];
-const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDERS, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
+const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDERS, BC_FOLDER_NOTE_RECURSIVE, BC_TAG_NOTE, BC_TAG_NOTE_FIELD, BC_TAG_NOTE_EXACT, BC_LINK_NOTE, BC_TRAVERSE_NOTE, BC_REGEX_NOTE, BC_REGEX_NOTE_FIELD, BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE, BC_IGNORE_DENDRON, BC_HIDE_TRAIL, BC_ORDER,] = [
     "BC-folder-note",
     "BC-folder-note-subfolders",
     "BC-folder-note-recursive",
@@ -2932,6 +2932,7 @@ const [BC_FOLDER_NOTE, BC_FOLDER_NOTE_SUBFOLDERS, BC_FOLDER_NOTE_RECURSIVE, BC_T
     "BC-regex-note-field",
     "BC-dataview-note",
     "BC-dataview-note-field",
+    "BC-ignore",
     "BC-ignore-dendron",
     "BC-hide-trail",
     "BC-order",
@@ -7030,6 +7031,8 @@ function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
             loglevel.warn(er);
         }
         for (const target of targets) {
+            if (target[BC_IGNORE])
+                continue;
             const targetBN = getDVBasename(target.file);
             const sourceOrder = getSourceOrder(altFile);
             const targetOrder = getTargetOrder(frontms, targetBN);
@@ -15520,7 +15523,7 @@ function addDendronNotesToGraph(plugin, frontms, mainG) {
     if (!addDendronNotes)
         return;
     for (const frontm of frontms) {
-        if (frontm[BC_IGNORE_DENDRON])
+        if (frontm[BC_IGNORE_DENDRON] || frontm[BC_IGNORE])
             continue;
         let curr = getDVBasename(frontm.file);
         let parent = getDendronParent(curr, dendronNoteDelimiter);
@@ -15591,7 +15594,7 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
         const topFolder = app.vault.getAbstractFileByPath(topFolderName);
         const targets = frontms
             .map((ff) => ff.file)
-            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path)
+            .filter((other) => getFolderName(other) === topFolderName && other.path !== file.path && !other[BC_IGNORE])
             .map(getDVBasename);
         const field = altFile[BC_FOLDER_NOTE];
         if (typeof field !== "string" || !fields.includes(field))
@@ -15647,7 +15650,6 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
 }
 
 async function getHierarchyNoteItems(plugin, file) {
-    const { userHiers } = plugin.settings;
     const { listItems } = plugin.app.metadataCache.getFileCache(file);
     if (!listItems)
         return [];
@@ -15656,18 +15658,11 @@ async function getHierarchyNoteItems(plugin, file) {
     const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
     const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
     const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
-    const problemFields = [];
-    const upFields = getFields(userHiers, "up");
     for (const item of listItems) {
-        const currItem = lines[item.position.start.line];
-        const afterBulletCurr = afterBulletReg.exec(currItem)[1];
+        const line = lines[item.position.start.line];
+        const afterBulletCurr = afterBulletReg.exec(line)[1];
         const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
         let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-        // Ensure fieldName is one of the existing up fields or next fields. `null` if not
-        if (field !== null && !upFields.includes(field)) {
-            problemFields.push(field);
-            field = null;
-        }
         const { parent } = item;
         if (parent >= 0) {
             const parentNote = lines[parent];
@@ -15687,38 +15682,35 @@ async function getHierarchyNoteItems(plugin, file) {
             });
         }
     }
-    if (problemFields.length > 0) {
-        const msg = `'${problemFields.join(", ")}' is/are not a field in any of your hierarchies, but is/are being used in: '${file.basename}'`;
-        new obsidian.Notice(msg);
-        loglevel.warn(msg, { problemFields });
-    }
     return hierarchyNoteItems;
 }
 function addHNsToGraph(settings, hnArr, mainG) {
     const { HNUpField, userHiers } = settings;
     const upFields = getFields(userHiers, "up");
     hnArr.forEach((hnItem, i) => {
-        var _a;
+        var _a, _b;
         const { note, field, parent } = hnItem;
         const targetField = field !== null && field !== void 0 ? field : (HNUpField || upFields[0]);
-        const downField = getOppFields(userHiers, targetField, "up")[0];
+        const dir = (_a = getFieldInfo(userHiers, targetField)) === null || _a === void 0 ? void 0 : _a.fieldDir;
+        const oppDir = getOppDir(dir);
+        const oppField = getOppFields(userHiers, targetField, dir)[0];
         if (parent === null) {
             const s = note;
-            const t = (_a = hnArr[i + 1]) === null || _a === void 0 ? void 0 : _a.note;
+            const t = (_b = hnArr[i + 1]) === null || _b === void 0 ? void 0 : _b.note;
             addNodesIfNot(mainG, [s, t]);
-            addEdgeIfNot(mainG, s, t, { dir: "down", field: downField });
+            addEdgeIfNot(mainG, s, t, { dir: oppDir, field: oppField });
         }
         else {
             addNodesIfNot(mainG, [note, parent]);
             if (settings.showUpInJuggl) {
                 addEdgeIfNot(mainG, note, parent, {
-                    dir: "up",
+                    dir,
                     field: targetField,
                 });
             }
             addEdgeIfNot(mainG, parent, note, {
-                dir: "down",
-                field: downField,
+                dir: oppDir,
+                field: oppField,
             });
         }
     });
@@ -15825,6 +15817,8 @@ function addRegexNotesToGraph(plugin, eligableAlts, frontms, mainG) {
             field = regexNoteField || fields[0];
         const targets = [];
         frontms.forEach((page) => {
+            if (page[BC_IGNORE])
+                return;
             const basename = getDVBasename(page.file);
             if (basename !== regexNoteBasename && regex.test(basename))
                 targets.push(basename);
@@ -15868,7 +15862,7 @@ function addTagNotesToGraph(plugin, eligableAlts, frontms, mainG) {
         };
         const targets = frontms
             .map((ff) => ff.file)
-            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
+            .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file) && !file[BC_IGNORE])
             .map(getDVBasename);
         loglevel.info({ targets });
         let field = (_a = altFile[BC_TAG_NOTE_FIELD]) !== null && _a !== void 0 ? _a : (tagNoteField || fields[0]);
