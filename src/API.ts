@@ -18,6 +18,7 @@ import {
   iterateHiers,
 } from "./Utils/HierUtils";
 import { createIndex } from "./Commands/CreateIndex";
+import { refreshIndex } from "./refreshIndex";
 
 export class BCAPI implements BCAPII {
   app: App;
@@ -36,6 +37,8 @@ export class BCAPI implements BCAPII {
   public ARROW_DIRECTIONS = ARROW_DIRECTIONS;
 
   public buildObsGraph = () => buildObsGraph(this.app);
+
+  public refreshIndex = async () => await refreshIndex(this.plugin)
 
   public getSubInDirs = (dirs: Directions[], g = this.mainG) =>
     getSubInDirs(g, ...dirs);

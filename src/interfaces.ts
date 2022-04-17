@@ -133,13 +133,13 @@ export type RawValue =
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-    | string
-    | string[]
-    | string[][]
-    | dvLink
-    | dvLink[]
-    | Pos
-    | TFile;
+  | string
+  | string[]
+  | string[][]
+  | dvLink
+  | dvLink[]
+  | Pos
+  | TFile;
 }
 
 export type Directions = typeof DIRECTIONS[number];
@@ -351,6 +351,9 @@ export interface BCAPII {
 
   /** Build the obsidian graph as a graphology MultiGraph */
   buildObsGraph: () => MultiGraph;
+
+  /** Refresh the Breadcrumb Index programmatically. */
+  refreshIndex: () => Promise<void>
 
   /**
    * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`
