@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { isInVault, openOrSwitch } from "obsidian-community-lib/dist/utils";
+  import {
+    isInVault,
+    openOrSwitch,
+    hoverPreview,
+  } from "obsidian-community-lib/dist/utils";
   import { meetsConditions } from "../Codeblocks";
   import type { ParsedCodeblock } from "../interfaces";
   import type BCPlugin from "../main";
@@ -17,6 +21,8 @@
 
   const { settings, app } = plugin;
   const { title, content, dir } = parsedSource;
+
+  const activeLeafView = app.workspace.activeLeaf.view;
 </script>
 
 {#if title !== false}
@@ -33,10 +39,7 @@
               <span
                 class="internal-link"
                 on:click={async (e) => await openOrSwitch(app, link, e)}
-                on:mouseover={(e) => {
-                  //   hoverPreview needs an itemView so it can access `app`...
-                  //   hoverPreview(e, el, link)
-                }}
+                on:mouseover={(e) => hoverPreview(e, activeLeafView, link)}
               >
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <a
@@ -55,10 +58,7 @@
           <span
             class="internal-link"
             on:click={async (e) => await openOrSwitch(app, link, e)}
-            on:mouseover={(e) => {
-              //   hoverPreview needs an itemView so it can access `app`...
-              //   hoverPreview(e, el, link)
-            }}
+            on:mouseover={(e) => hoverPreview(e, activeLeafView, link)}
           >
             <!-- svelte-ignore a11y-missing-attribute -->
             <a
