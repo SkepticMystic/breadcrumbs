@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.58.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.2...2.58.0) (2022-04-18)
+
+
+### Features
+
+* **Grid View:** :sparkles: Buttons to change max depth ([51a8a73](https://github.com/SkepticMystic/breadcrumbs/commit/51a8a7310b7011fb42c4e158eb35186772e3f906))
+
 ### [2.57.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.1...2.57.2) (2022-04-18)
 
 
