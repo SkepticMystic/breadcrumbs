@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.57.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.56.0...2.57.0) (2022-04-18)
+
+
+### Features
+
+* **Codeblock:** :sparkles: Add `fields` field to limit codeblock tree to only show given fields ([d6fedda](https://github.com/SkepticMystic/breadcrumbs/commit/d6fedda7d740019123265eb9ef340d44877f36e2))
+
+
+### Bug Fixes
+
+* :bug: Add description for BC-IGNORE field ([a0b749b](https://github.com/SkepticMystic/breadcrumbs/commit/a0b749be1b56e7e360bf0c98162bcf0cdc29fe35))
+* :bug: Alternative hierarchy default fields were being overwritten on Settings.onload ([dbb7ad6](https://github.com/SkepticMystic/breadcrumbs/commit/dbb7ad6dde57dec871639d90d0c46d4e994b8e07))
+* :truck: Move Juggl setting to better place ([903049f](https://github.com/SkepticMystic/breadcrumbs/commit/903049fe975f530b631b38b77203de92fb5465be))
+* **Codeblock:** :bug: hoverPreview on Codeblock Trees ([e26ff93](https://github.com/SkepticMystic/breadcrumbs/commit/e26ff93d257df9e3c14651351709d0e4ac2e268f))
+* **Codeblock:** :loud_sound: End log group if `err` is non-empty ([8a83dbf](https://github.com/SkepticMystic/breadcrumbs/commit/8a83dbf782aab5cbea6a0e065e00fd99cb17a70f))
+
 ## [2.56.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.2...2.56.0) (2022-04-17)
 
 
