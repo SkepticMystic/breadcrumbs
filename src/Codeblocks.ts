@@ -27,6 +27,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
 
     if (err !== "") {
       el.innerHTML = err;
+      db.end2G();
       return;
     }
     let min = 0,
