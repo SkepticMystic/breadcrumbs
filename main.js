@@ -37765,8 +37765,9 @@ function addDataviewSettings(plugin, alternativeHierarchyDetails) {
         .addDropdown((dd) => {
         const options = {};
         fields.forEach((field) => (options[field] = field));
-        dd.addOptions(Object.assign(options, { "": "" }));
-        dd.onChange(async (field) => {
+        dd.addOptions(Object.assign(options, { "": "" }))
+            .setValue(settings.dataviewNoteField)
+            .onChange(async (field) => {
             settings.dataviewNoteField = field;
             await plugin.saveSettings();
             await refreshIndex(plugin);
@@ -37945,12 +37946,13 @@ function addDendronSettings(plugin, alternativeHierarchyDetails) {
     new obsidian.Setting(dendronDetails)
         .setName("Dendron Note Field")
         .setDesc("Which field should Breadcrumbs use for Dendron notes?")
-        .addDropdown((cb) => {
+        .addDropdown((dd) => {
+        dd.setValue(settings.dendronNoteField);
         fields.forEach((field) => {
-            cb.addOption(field, field);
+            dd.addOption(field, field);
         });
-        cb.setValue(settings.dendronNoteField);
-        cb.onChange(async (value) => {
+        dd.setValue(settings.dendronNoteField);
+        dd.onChange(async (value) => {
             settings.dendronNoteField = value;
             await plugin.saveSettings();
         });
@@ -38118,11 +38120,11 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
         .setDesc(fragWithHTML("By default, hierarchy notes use the first <code>up</code> field in your hierarchies. Choose a different one to use by default. If you don't want to choose a default, select the blank option at the bottom of the list."))
         .addDropdown((dd) => {
         const upFields = getFields(settings.userHiers, "up");
-        dd.setValue(settings.HNUpField || upFields[0]);
         const options = {};
         upFields.forEach((field) => (options[field] = field));
-        dd.addOptions(options);
-        dd.onChange(async (field) => {
+        dd.addOptions(options)
+            .setValue(settings.HNUpField || upFields[0])
+            .onChange(async (field) => {
             settings.HNUpField = field;
             await plugin.saveSettings();
             await refreshIndex(plugin);
@@ -39500,8 +39502,9 @@ function addRegexNoteSettings(plugin, alternativeHierarchyDetails) {
         .addDropdown((dd) => {
         const options = {};
         getFields(settings.userHiers).forEach((field) => (options[field] = field));
-        dd.addOptions(Object.assign(options, { "": "" }));
-        dd.onChange(async (field) => {
+        dd.addOptions(Object.assign(options, { "": "" }))
+            .setValue(settings.regexNoteField)
+            .onChange(async (field) => {
             settings.regexNoteField = field;
             await plugin.saveSettings();
             await refreshIndex(plugin);
@@ -39592,8 +39595,9 @@ function addTagNoteSettings(plugin, alternativeHierarchyDetails) {
         .addDropdown((dd) => {
         const options = {};
         getFields(settings.userHiers).forEach((field) => (options[field] = field));
-        dd.addOptions(Object.assign(options, { "": "" }));
-        dd.onChange(async (field) => {
+        dd.addOptions(Object.assign(options, { "": "" }))
+            .setValue(settings.tagNoteField)
+            .onChange(async (field) => {
             settings.tagNoteField = field;
             await plugin.saveSettings();
             await refreshIndex(plugin);

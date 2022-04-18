@@ -70,13 +70,15 @@ export function addDendronSettings(
   new Setting(dendronDetails)
     .setName("Dendron Note Field")
     .setDesc("Which field should Breadcrumbs use for Dendron notes?")
-    .addDropdown((cb: DropdownComponent) => {
-      fields.forEach((field) => {
-        cb.addOption(field, field);
-      });
-      cb.setValue(settings.dendronNoteField);
+    .addDropdown((dd: DropdownComponent) => {
+      dd.setValue(settings.dendronNoteField);
 
-      cb.onChange(async (value) => {
+      fields.forEach((field) => {
+        dd.addOption(field, field);
+      });
+      dd.setValue(settings.dendronNoteField);
+
+      dd.onChange(async (value) => {
         settings.dendronNoteField = value;
         await plugin.saveSettings();
       });

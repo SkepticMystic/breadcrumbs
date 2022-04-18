@@ -44,17 +44,17 @@ export function addHierarchyNoteSettings(
     )
     .addDropdown((dd: DropdownComponent) => {
       const upFields = getFields(settings.userHiers, "up");
-      dd.setValue(settings.HNUpField || upFields[0])
 
       const options = {};
       upFields.forEach(
         (field) => (options[field] = field)
       );
-      dd.addOptions(options);
-      dd.onChange(async (field) => {
-        settings.HNUpField = field;
-        await plugin.saveSettings();
-        await refreshIndex(plugin);
-      });
+      dd.addOptions(options)
+        .setValue(settings.HNUpField || upFields[0])
+        .onChange(async (field) => {
+          settings.HNUpField = field;
+          await plugin.saveSettings();
+          await refreshIndex(plugin);
+        });
     });
 }
