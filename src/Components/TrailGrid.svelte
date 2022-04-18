@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { range } from "lodash";
-  import { warn } from "loglevel";
   import {
     hoverPreview,
     openOrSwitch,
@@ -13,11 +11,7 @@
     runs,
     transpose,
   } from "../Utils/generalUtils";
-  import {
-    getOutNeighbours,
-    getReflexiveClosure,
-    getSubInDirs,
-  } from "../Utils/graphUtils";
+  import { getReflexiveClosure, getSubInDirs } from "../Utils/graphUtils";
   import { getAlt, linkClass } from "../Utils/ObsidianUtils";
 
   export let sortedTrails: string[][];
@@ -43,50 +37,111 @@
     children[cell] = normalisedData[i];
   });
 
-  const maxLength = Math.max(...sortedTrails.map((trail) => trail.length));
-  const paddedTrails: string[][] = sortedTrails.map((trail) =>
-    padArray(trail, maxLength)
-  );
+  const maxLength = sortedTrails.last().length;
 
-  const transposedTrails = transpose(paddedTrails);
-  const allRuns = transposedTrails.map(runs);
+  let depth = maxLength;
+
+  let slicedTrails = sortedTrails;
+  $: {
+    slicedTrails = [];
+    sortedTrails.forEach((trail) => {
+      const slice = trail.slice(maxLength - depth);
+      if (slice.length) slicedTrails.push(slice);
+    });
+  }
+
+  $: paddedTrails = slicedTrails.map((trail) => padArray(trail, depth));
+
+  $: transposedTrails = transpose(paddedTrails);
+  $: allRuns = transposedTrails.map(runs);
 
   const toColour = (value: string) =>
     heatmapColour + Math.round(children[value] * 200 + 55).toString(16);
 </script>
 
-<div
-  class="BC-trail-grid"
-  style="
-    grid-template-columns: {'1fr '.repeat(transposedTrails.length)};
-    grid-template-rows: {'1fr '.repeat(sortedTrails.length)}"
->
-  {#each transposedTrails as col, i}
-    {#each allRuns[i] as { value, first, last }}
-      <div
-        class="BC-trail-grid-item {value === '' ? 'BC-filler' : ''}"
-        style="
-            grid-area: {first + 1} / {i + 1} / 
-                {last + 2} / {i + 2};
-            {gridHeatmap ? `background-color: ${toColour(value)}` : ''}"
-        on:click={async (e) => await openOrSwitch(app, value, e)}
-        on:mouseover={(e) => hoverPreview(e, activeLeafView, value)}
-      >
-        <div class={linkClass(app, value)}>
-          {getAlt(value, plugin) ?? dropDendron(value, settings)}
+<div class="BC-grid-wrapper">
+  <div
+    class="BC-trail-grid"
+    style="
+      grid-template-columns: {'1fr '.repeat(transposedTrails.length)};
+      grid-template-rows: {'1fr '.repeat(slicedTrails.length)}"
+  >
+    {#each transposedTrails as col, i}
+      {#each allRuns[i] as { value, first, last }}
+        <div
+          class="BC-trail-grid-item {value === '' ? 'BC-filler' : ''}"
+          style="
+              grid-area: {first + 1} / {i + 1} /
+                  {last + 2} / {i + 2};
+              {gridHeatmap ? `background-color: ${toColour(value)}` : ''}"
+          on:click={async (e) => await openOrSwitch(app, value, e)}
+          on:mouseover={(e) => hoverPreview(e, activeLeafView, value)}
+        >
+          <div class={linkClass(app, value)}>
+            {getAlt(value, plugin) ?? dropDendron(value, settings)}
+          </div>
         </div>
-      </div>
+      {/each}
     {/each}
-  {/each}
+  </div>
+
+  <div class="BC-grid-options">
+    <span
+      ><span class="BC-grid-options-icon">⚙️</span>
+
+      <button
+        class="BC-depth-button"
+        disabled={depth === 1}
+        on:click={() => (depth -= 1)}>-</button
+      ><span class="tree-item-flair">{depth}</span>
+      <button
+        class="BC-depth-button"
+        disabled={depth === maxLength}
+        on:click={() => (depth += 1)}>+</button
+      >
+    </span>
+  </div>
 </div>
 
 <style>
+  div.BC-grid-wrapper {
+    position: relative;
+  }
+
   div.BC-trail-grid {
     border: 2px solid var(--background-modifier-border);
     display: grid;
     align-items: stretch;
     width: auto;
     height: auto;
+  }
+
+  .BC-grid-options {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    height: 35px;
+    width: 32px;
+
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 10px;
+
+    text-align: center;
+
+    transition: width 0.3s;
+    overflow-wrap: normal;
+    overflow: hidden;
+  }
+  div.BC-grid-options:hover {
+    padding: 0px 5px 5px 5px;
+    width: fit-content;
+  }
+  div.BC-grid-options:hover .BC-grid-options-icon {
+    display: none;
+  }
+
+  .BC-depth-button {
+    padding: 3px 5px;
   }
 
   div.BC-trail-grid-item {
