@@ -102,32 +102,6 @@ export function addTrailViewSettings(
         });
     });
 
-  new Setting(trailDetails)
-    .setName("Grid view dots")
-    .setDesc(
-      "If the grid view is visible, shows dots based on the file size of each cell."
-    )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.gridDots).onChange(async (value) => {
-        settings.gridDots = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-      })
-    );
-
-  const dotsColour = trailDetails.createDiv();
-  dotsColour.createEl("h4", {
-    text: "Dots colour",
-  });
-  const dotsColourPicker = dotsColour.createEl("input", {
-    type: "color",
-  });
-
-  dotsColourPicker.value = settings.dotsColour;
-  dotsColourPicker.addEventListener("change", async () => {
-    settings.dotsColour = dotsColourPicker.value;
-    await plugin.saveSettings();
-  });
 
   new Setting(trailDetails)
     .setName("Grid view heatmap")

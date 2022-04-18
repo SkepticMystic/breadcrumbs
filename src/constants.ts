@@ -335,7 +335,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   dendronNoteDelimiter: ".",
   dendronNoteField: "up",
   downViewWrap: false,
-  dotsColour: "#000000",
   dvWaitTime: 5000,
   enableAlphaSort: true,
   enableRelationSuggestor: false,
@@ -344,7 +343,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   jugglLayout: "hierarchy",
   limitWriteBCCheckboxes: [],
   CHECKBOX_STATES_OVERWRITTEN: false,
-  gridDots: false,
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"

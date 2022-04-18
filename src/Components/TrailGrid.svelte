@@ -23,29 +23,12 @@
   export let sortedTrails: string[][];
   export let plugin: BCPlugin;
 
-  const { settings, app } = plugin;
-  const { userHiers, gridHeatmap, heatmapColour, gridDots, dotsColour } =
-    settings;
+  const { settings, app, mainG } = plugin;
+  const { userHiers, gridHeatmap, heatmapColour } = settings;
 
-  const currFile = app.workspace.getActiveFile();
   const activeLeafView = app.workspace.activeLeaf.view;
 
   const allCells = [...new Set(sortedTrails.flat())];
-
-  const wordCounts: { [cell: string]: number } = {};
-  allCells.forEach((cell) => {
-    try {
-      wordCounts[cell] = app.metadataCache.getFirstLinkpathDest(
-        cell,
-        ""
-      )?.stat.size;
-    } catch (error) {
-      warn(error, { currFile });
-      wordCounts[cell] = 0;
-    }
-  });
-
-  const { mainG } = plugin;
 
   const closedParents = getReflexiveClosure(
     getSubInDirs(mainG, "up", "down"),
@@ -53,9 +36,7 @@
   );
 
   const children: { [cell: string]: number } = {};
-  allCells.forEach(
-    (cell) => (children[cell] = getOutNeighbours(closedParents, cell).length)
-  );
+  allCells.forEach((cell) => (children[cell] = closedParents.outDegree(cell)));
 
   const normalisedData = normalise(Object.values(children));
   allCells.forEach((cell, i) => {
@@ -94,13 +75,6 @@
         <div class={linkClass(app, value)}>
           {getAlt(value, plugin) ?? dropDendron(value, settings)}
         </div>
-        {#if value && gridDots}
-          <div class="dots">
-            {#each range(Math.floor(wordCounts[value] / 1000)) as _}
-              <span class="dot" style="background-color: {dotsColour}" />
-            {/each}
-          </div>
-        {/if}
       </div>
     {/each}
   {/each}
@@ -129,10 +103,10 @@
     opacity: 0.7;
   }
 
-  .dot {
+  /* .dot {
     height: 5px;
     width: 5px;
     border-radius: 50%;
     display: inline-block;
-  }
+  } */
 </style>

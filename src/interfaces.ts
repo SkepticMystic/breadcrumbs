@@ -33,12 +33,10 @@ export interface BCSettings {
   dateNoteAddMonth: string;
   dateNoteAddYear: string;
   downViewWrap: boolean;
-  dotsColour: string;
   enableAlphaSort: boolean;
   enableRelationSuggestor: boolean;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
-  gridDots: boolean;
   gridHeatmap: boolean;
   heatmapColour: string;
   hierarchyNotes: string[];

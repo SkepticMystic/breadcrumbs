@@ -3083,7 +3083,6 @@ const DEFAULT_SETTINGS = {
     dendronNoteDelimiter: ".",
     dendronNoteField: "up",
     downViewWrap: false,
-    dotsColour: "#000000",
     dvWaitTime: 5000,
     enableAlphaSort: true,
     enableRelationSuggestor: false,
@@ -3092,7 +3091,6 @@ const DEFAULT_SETTINGS = {
     jugglLayout: "hierarchy",
     limitWriteBCCheckboxes: [],
     CHECKBOX_STATES_OVERWRITTEN: false,
-    gridDots: false,
     gridHeatmap: false,
     heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     hierarchyNotes: [""],
@@ -4076,7 +4074,7 @@ function get_each_context_1$8(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_2$3(ctx, list, i) {
+function get_each_context_2$2(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[23] = list[i].alt;
 	child_ctx[24] = list[i].cls;
@@ -4096,7 +4094,7 @@ function get_each_context_3$2(ctx, list, i) {
 }
 
 // (26:8) {#if realItems.length || (showImpliedRelations && impliedItems.length)}
-function create_if_block$a(ctx) {
+function create_if_block$9(ctx) {
 	let details;
 	let summary;
 	let t0_value = /*field*/ ctx[18] + "";
@@ -4316,7 +4314,7 @@ function create_if_block_1$5(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
-		each_blocks[i] = create_each_block_2$3(get_each_context_2$3(ctx, each_value_2, i));
+		each_blocks[i] = create_each_block_2$2(get_each_context_2$2(ctx, each_value_2, i));
 	}
 
 	return {
@@ -4346,12 +4344,12 @@ function create_if_block_1$5(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
-					const child_ctx = get_each_context_2$3(ctx, each_value_2, i);
+					const child_ctx = get_each_context_2$2(ctx, each_value_2, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_2$3(child_ctx);
+						each_blocks[i] = create_each_block_2$2(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(ol, null);
 					}
@@ -4397,7 +4395,7 @@ function create_if_block_2$4(ctx) {
 }
 
 // (57:16) {#each impliedItems as { alt, cls, implied, to, parent }}
-function create_each_block_2$3(ctx) {
+function create_each_block_2$2(ctx) {
 	let li;
 	let div;
 	let t_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "";
@@ -4473,7 +4471,7 @@ function create_each_block_2$3(ctx) {
 // (25:6) {#each squares as { field, impliedItems, realItems }}
 function create_each_block_1$8(ctx) {
 	let if_block_anchor;
-	let if_block = (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) && create_if_block$a(ctx);
+	let if_block = (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) && create_if_block$9(ctx);
 
 	return {
 		c() {
@@ -4489,7 +4487,7 @@ function create_each_block_1$8(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$a(ctx);
+					if_block = create_if_block$9(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -4729,7 +4727,7 @@ function get_each_context_1$7(ctx, list, i) {
 	return child_ctx;
 }
 
-function get_each_context_2$2(ctx, list, i) {
+function get_each_context_2$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
 	child_ctx[23] = list[i].alt;
 	child_ctx[24] = list[i].cls;
@@ -4749,7 +4747,7 @@ function get_each_context_3$1(ctx, list, i) {
 }
 
 // (22:8) {#if realItems.length || (showImpliedRelations && impliedItems.length)}
-function create_if_block$9(ctx) {
+function create_if_block$8(ctx) {
 	let div1;
 	let div0;
 	let h4;
@@ -4984,7 +4982,7 @@ function create_if_block_1$4(ctx) {
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
-		each_blocks[i] = create_each_block_2$2(get_each_context_2$2(ctx, each_value_2, i));
+		each_blocks[i] = create_each_block_2$1(get_each_context_2$1(ctx, each_value_2, i));
 	}
 
 	return {
@@ -5036,12 +5034,12 @@ function create_if_block_1$4(ctx) {
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
-					const child_ctx = get_each_context_2$2(ctx, each_value_2, i);
+					const child_ctx = get_each_context_2$1(ctx, each_value_2, i);
 
 					if (each_blocks[i]) {
 						each_blocks[i].p(child_ctx, dirty);
 					} else {
-						each_blocks[i] = create_each_block_2$2(child_ctx);
+						each_blocks[i] = create_each_block_2$1(child_ctx);
 						each_blocks[i].c();
 						each_blocks[i].m(ol, null);
 					}
@@ -5121,7 +5119,7 @@ function create_if_block_3$1(ctx) {
 }
 
 // (62:16) {#each impliedItems as { alt, cls, implied, to, parent }}
-function create_each_block_2$2(ctx) {
+function create_each_block_2$1(ctx) {
 	let li;
 	let div;
 	let t_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "";
@@ -5197,7 +5195,7 @@ function create_each_block_2$2(ctx) {
 // (21:6) {#each squares as { field, impliedItems, realItems }}
 function create_each_block_1$7(ctx) {
 	let if_block_anchor;
-	let if_block = (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) && create_if_block$9(ctx);
+	let if_block = (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) && create_if_block$8(ctx);
 
 	return {
 		c() {
@@ -5213,7 +5211,7 @@ function create_each_block_1$7(ctx) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
-					if_block = create_if_block$9(ctx);
+					if_block = create_if_block$8(ctx);
 					if_block.c();
 					if_block.m(if_block_anchor.parentNode, if_block_anchor);
 				}
@@ -33423,131 +33421,45 @@ var lodash = createCommonjsModule(function (module, exports) {
 
 function add_css$c() {
 	var style = element("style");
-	style.id = "svelte-1a33qd9-style";
-	style.textContent = "div.BC-trail-grid.svelte-1a33qd9{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-1a33qd9{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-1a33qd9{opacity:0.7}.dot.svelte-1a33qd9{height:5px;width:5px;border-radius:50%;display:inline-block}";
+	style.id = "svelte-1n98bln-style";
+	style.textContent = "div.BC-trail-grid.svelte-1n98bln{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}div.BC-trail-grid-item.svelte-1n98bln{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-1n98bln{opacity:0.7}";
 	append(document.head, style);
 }
 
 function get_each_context$8(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[24] = list[i];
-	child_ctx[26] = i;
+	child_ctx[20] = list[i];
+	child_ctx[22] = i;
 	return child_ctx;
 }
 
 function get_each_context_1$5(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[27] = list[i].value;
-	child_ctx[28] = list[i].first;
-	child_ctx[29] = list[i].last;
+	child_ctx[23] = list[i].value;
+	child_ctx[24] = list[i].first;
+	child_ctx[25] = list[i].last;
 	return child_ctx;
 }
 
-function get_each_context_2$1(ctx, list, i) {
-	const child_ctx = ctx.slice();
-	child_ctx[32] = list[i];
-	return child_ctx;
-}
-
-// (61:8) {#if value && gridDots}
-function create_if_block$8(ctx) {
-	let div;
-	let each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*value*/ ctx[27]] / 1000));
-	let each_blocks = [];
-
-	for (let i = 0; i < each_value_2.length; i += 1) {
-		each_blocks[i] = create_each_block_2$1(get_each_context_2$1(ctx, each_value_2, i));
-	}
-
-	return {
-		c() {
-			div = element("div");
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].c();
-			}
-
-			attr(div, "class", "dots");
-		},
-		m(target, anchor) {
-			insert(target, div, anchor);
-
-			for (let i = 0; i < each_blocks.length; i += 1) {
-				each_blocks[i].m(div, null);
-			}
-		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*dotsColour, wordCounts*/ 132) {
-				each_value_2 = lodash.range(Math.floor(/*wordCounts*/ ctx[2][/*value*/ ctx[27]] / 1000));
-				let i;
-
-				for (i = 0; i < each_value_2.length; i += 1) {
-					const child_ctx = get_each_context_2$1(ctx, each_value_2, i);
-
-					if (each_blocks[i]) {
-						each_blocks[i].p(child_ctx, dirty);
-					} else {
-						each_blocks[i] = create_each_block_2$1(child_ctx);
-						each_blocks[i].c();
-						each_blocks[i].m(div, null);
-					}
-				}
-
-				for (; i < each_blocks.length; i += 1) {
-					each_blocks[i].d(1);
-				}
-
-				each_blocks.length = each_value_2.length;
-			}
-		},
-		d(detaching) {
-			if (detaching) detach(div);
-			destroy_each(each_blocks, detaching);
-		}
-	};
-}
-
-// (63:12) {#each range(Math.floor(wordCounts[value] / 1000)) as _}
-function create_each_block_2$1(ctx) {
-	let span;
-
-	return {
-		c() {
-			span = element("span");
-			attr(span, "class", "dot svelte-1a33qd9");
-			set_style(span, "background-color", /*dotsColour*/ ctx[7]);
-		},
-		m(target, anchor) {
-			insert(target, span, anchor);
-		},
-		p: noop,
-		d(detaching) {
-			if (detaching) detach(span);
-		}
-	};
-}
-
-// (48:4) {#each allRuns[i] as { value, first, last }}
+// (35:4) {#each allRuns[i] as { value, first, last }}
 function create_each_block_1$5(ctx) {
 	let div1;
 	let div0;
-	let t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[3])) + "";
+	let t0_value = (getAlt(/*value*/ ctx[23], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[23], /*settings*/ ctx[2])) + "";
 	let t0;
 	let div0_class_value;
 	let t1;
-	let t2;
 	let div1_class_value;
 	let div1_style_value;
 	let mounted;
 	let dispose;
-	let if_block = /*value*/ ctx[27] && /*gridDots*/ ctx[6] && create_if_block$8(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[12](/*value*/ ctx[27], ...args);
+		return /*click_handler*/ ctx[9](/*value*/ ctx[23], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[13](/*value*/ ctx[27], ...args);
+		return /*mouseover_handler*/ ctx[10](/*value*/ ctx[23], ...args);
 	}
 
 	return {
@@ -33556,13 +33468,11 @@ function create_each_block_1$5(ctx) {
 			div0 = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			if (if_block) if_block.c();
-			t2 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[4], /*value*/ ctx[27])) + " svelte-1a33qd9"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-1a33qd9");
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[3], /*value*/ ctx[23])) + " svelte-1n98bln"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[23] === "" ? "BC-filler" : "") + " svelte-1n98bln");
 
-			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*first*/ ctx[28] + 1) + " / " + (/*i*/ ctx[26] + 1) + " / \r\n                " + (/*last*/ ctx[29] + 2) + " / " + (/*i*/ ctx[26] + 2) + ";\r\n            " + (/*gridHeatmap*/ ctx[5]
-			? `background-color: ${/*toColour*/ ctx[11](/*value*/ ctx[27])}`
+			attr(div1, "style", div1_style_value = "\r\n            grid-area: " + (/*first*/ ctx[24] + 1) + " / " + (/*i*/ ctx[22] + 1) + " / \r\n                " + (/*last*/ ctx[25] + 2) + " / " + (/*i*/ ctx[22] + 2) + ";\r\n            " + (/*gridHeatmap*/ ctx[4]
+			? `background-color: ${/*toColour*/ ctx[8](/*value*/ ctx[23])}`
 			: ""));
 		},
 		m(target, anchor) {
@@ -33570,8 +33480,6 @@ function create_each_block_1$5(ctx) {
 			append(div1, div0);
 			append(div0, t0);
 			append(div1, t1);
-			if (if_block) if_block.m(div1, null);
-			append(div1, t2);
 
 			if (!mounted) {
 				dispose = [
@@ -33584,22 +33492,20 @@ function create_each_block_1$5(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty[0] & /*plugin*/ 2 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[3])) + "")) set_data(t0, t0_value);
-			if (/*value*/ ctx[27] && /*gridDots*/ ctx[6]) if_block.p(ctx, dirty);
+			if (dirty & /*plugin*/ 2 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[23], /*plugin*/ ctx[1]) ?? dropDendron(/*value*/ ctx[23], /*settings*/ ctx[2])) + "")) set_data(t0, t0_value);
 		},
 		d(detaching) {
 			if (detaching) detach(div1);
-			if (if_block) if_block.d();
 			mounted = false;
 			run_all(dispose);
 		}
 	};
 }
 
-// (47:2) {#each transposedTrails as col, i}
+// (34:2) {#each transposedTrails as col, i}
 function create_each_block$8(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
+	let each_value_1 = /*allRuns*/ ctx[7][/*i*/ ctx[22]];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -33622,8 +33528,8 @@ function create_each_block$8(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
-				each_value_1 = /*allRuns*/ ctx[10][/*i*/ ctx[26]];
+			if (dirty & /*allRuns, gridHeatmap, toColour, openOrSwitch, app, hoverPreview, activeLeafView, linkClass, getAlt, plugin, dropDendron, settings*/ 446) {
+				each_value_1 = /*allRuns*/ ctx[7][/*i*/ ctx[22]];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -33654,7 +33560,7 @@ function create_each_block$8(ctx) {
 
 function create_fragment$m(ctx) {
 	let div;
-	let each_value = /*transposedTrails*/ ctx[9];
+	let each_value = /*transposedTrails*/ ctx[6];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value.length; i += 1) {
@@ -33669,8 +33575,8 @@ function create_fragment$m(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(div, "class", "BC-trail-grid svelte-1a33qd9");
-			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[9].length));
+			attr(div, "class", "BC-trail-grid svelte-1n98bln");
+			set_style(div, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[6].length));
 			set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 		},
 		m(target, anchor) {
@@ -33680,9 +33586,9 @@ function create_fragment$m(ctx) {
 				each_blocks[i].m(div, null);
 			}
 		},
-		p(ctx, dirty) {
-			if (dirty[0] & /*allRuns, gridHeatmap, toColour, app, activeLeafView, wordCounts, dotsColour, gridDots, plugin, settings*/ 3582) {
-				each_value = /*transposedTrails*/ ctx[9];
+		p(ctx, [dirty]) {
+			if (dirty & /*allRuns, gridHeatmap, toColour, openOrSwitch, app, hoverPreview, activeLeafView, linkClass, getAlt, plugin, dropDendron, settings*/ 446) {
+				each_value = /*transposedTrails*/ ctx[6];
 				let i;
 
 				for (i = 0; i < each_value.length; i += 1) {
@@ -33704,7 +33610,7 @@ function create_fragment$m(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (dirty[0] & /*sortedTrails*/ 1) {
+			if (dirty & /*sortedTrails*/ 1) {
 				set_style(div, "grid-template-rows", ("1fr ").repeat(/*sortedTrails*/ ctx[0].length));
 			}
 		},
@@ -33721,34 +33627,13 @@ function instance$m($$self, $$props, $$invalidate) {
 	
 	let { sortedTrails } = $$props;
 	let { plugin } = $$props;
-	const { settings, app } = plugin;
-	const { userHiers, gridHeatmap, heatmapColour, gridDots, dotsColour } = settings;
-	const currFile = app.workspace.getActiveFile();
+	const { settings, app, mainG } = plugin;
+	const { userHiers, gridHeatmap, heatmapColour } = settings;
 	const activeLeafView = app.workspace.activeLeaf.view;
 	const allCells = [...new Set(sortedTrails.flat())];
-	const wordCounts = {};
-
-	allCells.forEach(cell => {
-		var _a;
-
-		try {
-			$$invalidate(
-				2,
-				wordCounts[cell] = (_a = app.metadataCache.getFirstLinkpathDest(cell, "")) === null || _a === void 0
-				? void 0
-				: _a.stat.size,
-				wordCounts
-			);
-		} catch(error) {
-			loglevel.warn(error, { currFile });
-			$$invalidate(2, wordCounts[cell] = 0, wordCounts);
-		}
-	});
-
-	const { mainG } = plugin;
 	const closedParents = getReflexiveClosure(getSubInDirs(mainG, "up", "down"), userHiers);
 	const children = {};
-	allCells.forEach(cell => children[cell] = getOutNeighbours(closedParents, cell).length);
+	allCells.forEach(cell => children[cell] = closedParents.outDegree(cell));
 	const normalisedData = normalise(Object.values(children));
 
 	allCells.forEach((cell, i) => {
@@ -33771,12 +33656,9 @@ function instance$m($$self, $$props, $$invalidate) {
 	return [
 		sortedTrails,
 		plugin,
-		wordCounts,
 		settings,
 		app,
 		gridHeatmap,
-		gridDots,
-		dotsColour,
 		activeLeafView,
 		transposedTrails,
 		allRuns,
@@ -33789,8 +33671,8 @@ function instance$m($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-1a33qd9-style")) add_css$c();
-		init(this, options, instance$m, create_fragment$m, safe_not_equal, { sortedTrails: 0, plugin: 1 }, [-1, -1]);
+		if (!document.getElementById("svelte-1n98bln-style")) add_css$c();
+		init(this, options, instance$m, create_fragment$m, safe_not_equal, { sortedTrails: 0, plugin: 1 });
 	}
 }
 
@@ -39758,26 +39640,6 @@ function addTrailViewSettings(plugin, viewDetails) {
             await plugin.saveSettings();
             await drawTrail(plugin);
         });
-    });
-    new obsidian.Setting(trailDetails)
-        .setName("Grid view dots")
-        .setDesc("If the grid view is visible, shows dots based on the file size of each cell.")
-        .addToggle((toggle) => toggle.setValue(settings.gridDots).onChange(async (value) => {
-        settings.gridDots = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-    }));
-    const dotsColour = trailDetails.createDiv();
-    dotsColour.createEl("h4", {
-        text: "Dots colour",
-    });
-    const dotsColourPicker = dotsColour.createEl("input", {
-        type: "color",
-    });
-    dotsColourPicker.value = settings.dotsColour;
-    dotsColourPicker.addEventListener("change", async () => {
-        settings.dotsColour = dotsColourPicker.value;
-        await plugin.saveSettings();
     });
     new obsidian.Setting(trailDetails)
         .setName("Grid view heatmap")
