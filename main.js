@@ -3023,6 +3023,13 @@ const BC_FIELDS_INFO = [
         alt: false,
     },
     {
+        field: BC_IGNORE,
+        desc: "Tells Breadcrumbs to ignore a note from its index entirely. This is useful if you want to use Breadcrumbs to index notes, but you don't want to show them in the graph.",
+        afterYaml: ": true",
+        afterInline: ":: true",
+        alt: false,
+    },
+    {
         field: BC_IGNORE_DENDRON,
         desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
         afterYaml: ": true",
@@ -38007,15 +38014,6 @@ function addGeneralSettings(plugin, containerEl) {
         await plugin.saveSettings();
     }));
     new obsidian.Setting(generalDetails)
-        .setName("Show up fields in Juggl")
-        .setDesc("Juggl will show both up and down fields")
-        .addToggle((toggle) => {
-        toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
-            settings.showUpInJuggl = value;
-            await plugin.saveSettings();
-        });
-    });
-    new obsidian.Setting(generalDetails)
         .setName("Fields used for Alternative note names (Aliases)")
         .setDesc(fragWithHTML("A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."))
         .addText((text) => {
@@ -39846,6 +39844,15 @@ function addTrailViewSettings(plugin, viewDetails) {
         await plugin.saveSettings();
         await drawTrail(plugin);
     }));
+    new obsidian.Setting(trailDetails)
+        .setName("Show up fields in Juggl")
+        .setDesc("Juggl will show both up and down fields")
+        .addToggle((toggle) => {
+        toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+            settings.showUpInJuggl = value;
+            await plugin.saveSettings();
+        });
+    });
     new obsidian.Setting(trailDetails)
         .setName("Juggl view layout")
         .setDesc(fragWithHTML("The layout type to use for the Juggl view.<br>The hierarchy layout is most natural for Breadcrumbs, but for large graphs D3 Force is recommended."))
@@ -64412,7 +64419,7 @@ class BCPlugin extends obsidian.Plugin {
             this.registerEditorSuggest(new FieldSuggestor(this));
         if (enableRelationSuggestor)
             this.registerEditorSuggest(new RelationSuggestor(this));
-        const { openMatrixOnLoad, openStatsOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, showBCsInEditLPMode, userHiers, } = settings;
+        const { openMatrixOnLoad, openStatsOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, userHiers, } = settings;
         this.VIEWS = [
             {
                 plain: "Matrix",
@@ -64540,11 +64547,6 @@ class BCPlugin extends obsidian.Plugin {
             name: "Copy a Global Index to the clipboard",
             callback: async () => await copyGlobalIndex(this),
         });
-        // this.addCommand({
-        //   id: "in-yaml",
-        //   name: "TEST: Inside YAML",
-        //   callback: async () => console.log(DateTime.now().toFormat("yyyy 'DN'")),
-        // });
         ["up", "down", "next", "prev"].forEach((dir) => {
             this.addCommand({
                 id: `jump-to-first-${dir}`,

@@ -269,6 +269,13 @@ export const BC_FIELDS_INFO = [
     alt: false,
   },
   {
+    field: BC_IGNORE,
+    desc: "Tells Breadcrumbs to ignore a note from its index entirely. This is useful if you want to use Breadcrumbs to index notes, but you don't want to show them in the graph.",
+    afterYaml: ": true",
+    afterInline: ":: true",
+    alt: false,
+  },
+  {
     field: BC_IGNORE_DENDRON,
     desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
     afterYaml: ": true",
