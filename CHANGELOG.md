@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.58.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.0...2.58.1) (2022-04-18)
+
+
+### Bug Fixes
+
+* **LimitTrailFields:** :bug: Reset limitTrailCheckboxes if it's empty ([208a957](https://github.com/SkepticMystic/breadcrumbs/commit/208a95720f9cc06d47f302233a707863caca3790))
+
 ## [2.58.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.2...2.58.0) (2022-04-18)
 
 
