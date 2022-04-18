@@ -49,14 +49,20 @@ import { VisModal } from "./Visualisations/VisModal";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
+
   visited: [string, HTMLDivElement][] = [];
+
   mainG: MultiGraph;
   closedG: MultiGraph;
+
   activeLeafChange: EventRef = undefined;
   activeLeafSave: EventRef = undefined;
   layoutChange: EventRef = undefined;
+
   db: Debugger;
+
   VIEWS: ViewInfo[];
+
   api: BCAPII;
   private bcStore: BCStore;
 
@@ -117,7 +123,6 @@ export default class BCPlugin extends Plugin {
       openDuckOnLoad,
       openDownOnLoad,
       showBCs,
-      showBCsInEditLPMode,
       userHiers,
     } = settings;
 
@@ -262,11 +267,6 @@ export default class BCPlugin extends Plugin {
       name: "Copy a Global Index to the clipboard",
       callback: async () => await copyGlobalIndex(this),
     });
-    // this.addCommand({
-    //   id: "in-yaml",
-    //   name: "TEST: Inside YAML",
-    //   callback: async () => console.log(DateTime.now().toFormat("yyyy 'DN'")),
-    // });
 
     ["up", "down", "next", "prev"].forEach((dir: Directions) => {
       this.addCommand({

@@ -25,7 +25,7 @@ import { addDateNoteSettings } from "./DateNoteSettings";
 export const fragWithHTML = (html: string) =>
   createFragment((frag) => (frag.createDiv().innerHTML = html));
 
-export const details = (text: string, parent) =>
+export const details = (text: string, parent: HTMLElement) =>
   parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
 
 export const subDetails = (text: string, parent: HTMLDetailsElement) =>
@@ -48,6 +48,7 @@ export class BCSettingTab extends PluginSettingTab {
   async display(): Promise<void> {
     const { plugin, containerEl } = this;
     const { settings } = plugin;
+
     containerEl.empty();
     containerEl.createEl("h2", { text: "Breadcrumbs Settings" });
     containerEl.addClass("BC-settings-tab");

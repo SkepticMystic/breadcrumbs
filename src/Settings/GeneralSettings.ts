@@ -81,15 +81,6 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
       })
     );
 
-  new Setting(generalDetails)
-    .setName("Show up fields in Juggl")
-    .setDesc("Juggl will show both up and down fields")
-    .addToggle((toggle) => {
-      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
-        settings.showUpInJuggl = value;
-        await plugin.saveSettings();
-      });
-    });
 
   new Setting(generalDetails)
     .setName("Fields used for Alternative note names (Aliases)")

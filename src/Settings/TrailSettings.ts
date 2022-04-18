@@ -59,7 +59,7 @@ export function addTrailViewSettings(
     .setName("Views to show")
     .setDesc(
       "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
-        "Juggl requires having the Juggl plugin installed."
+      "Juggl requires having the Juggl plugin installed."
     )
     .addToggle((toggle) => {
       toggle
@@ -258,6 +258,17 @@ export function addTrailViewSettings(
           await drawTrail(plugin);
         })
     );
+
+
+  new Setting(trailDetails)
+    .setName("Show up fields in Juggl")
+    .setDesc("Juggl will show both up and down fields")
+    .addToggle((toggle) => {
+      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+        settings.showUpInJuggl = value;
+        await plugin.saveSettings();
+      });
+    });
 
   new Setting(trailDetails)
     .setName("Juggl view layout")
