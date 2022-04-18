@@ -61,7 +61,7 @@
 
             {#if showImpliedRelations && impliedItems.length}
               <div class="BC-Matrix-headers">
-                <h4 class="BC-Matrix-header" />
+                <h4 class="BC-Matrix-header">{" "}</h4>
                 {#if impliedItems.length}
                   {#if showRelationType && realItems.length}
                     <h6 class="BC-Matrix-header">Implied</h6>

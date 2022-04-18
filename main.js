@@ -4973,8 +4973,8 @@ function create_each_block_3$1(ctx) {
 function create_if_block_1$4(ctx) {
 	let div;
 	let h4;
-	let t0;
 	let t1;
+	let t2;
 	let ol;
 	let ol_start_value;
 	let if_block = /*impliedItems*/ ctx[19].length && create_if_block_2$3(ctx);
@@ -4989,9 +4989,10 @@ function create_if_block_1$4(ctx) {
 		c() {
 			div = element("div");
 			h4 = element("h4");
-			t0 = space();
-			if (if_block) if_block.c();
+			h4.textContent = `${" "}`;
 			t1 = space();
+			if (if_block) if_block.c();
+			t2 = space();
 			ol = element("ol");
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -5006,9 +5007,9 @@ function create_if_block_1$4(ctx) {
 		m(target, anchor) {
 			insert(target, div, anchor);
 			append(div, h4);
-			append(div, t0);
+			append(div, t1);
 			if (if_block) if_block.m(div, null);
-			insert(target, t1, anchor);
+			insert(target, t2, anchor);
 			insert(target, ol, anchor);
 
 			for (let i = 0; i < each_blocks.length; i += 1) {
@@ -5059,7 +5060,7 @@ function create_if_block_1$4(ctx) {
 		d(detaching) {
 			if (detaching) detach(div);
 			if (if_block) if_block.d();
-			if (detaching) detach(t1);
+			if (detaching) detach(t2);
 			if (detaching) detach(ol);
 			destroy_each(each_blocks, detaching);
 		}
@@ -34126,12 +34127,10 @@ function createIndex(allPaths, asWikilinks) {
             const currNode = path[depth];
             // If that node has been visited before at the current depth
             if (visited.hasOwnProperty(currNode) &&
-                visited[currNode].includes(depth)) {
+                visited[currNode].includes(depth))
                 continue;
-            }
             else {
-                index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}`;
-                index += "\n";
+                index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}\n`;
                 if (!visited.hasOwnProperty(currNode))
                     visited[currNode] = [];
                 visited[currNode].push(depth);
