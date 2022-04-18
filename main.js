@@ -37320,17 +37320,19 @@ class CBTree extends SvelteComponent {
 
 function getCodeblockCB(plugin) {
     const { settings, db } = plugin;
+    const { userHiers } = settings;
     return (source, el, ctx) => {
-        var _a, _b;
+        var _a;
         db.start2G("Codeblock");
         const parsedSource = parseCodeBlockSource(source);
         const err = codeblockError(plugin, parsedSource);
         if (err !== "") {
             el.innerHTML = err;
+            db.end2G();
             return;
         }
         let min = 0, max = Infinity;
-        let { depth, dir, from, implied, flat } = parsedSource;
+        let { depth, dir, fields, from, implied, flat } = parsedSource;
         if (depth !== undefined) {
             const minNum = parseInt(depth[0]);
             if (!isNaN(minNum))
@@ -37340,14 +37342,13 @@ function getCodeblockCB(plugin) {
                 max = maxNum;
         }
         const currFile = plugin.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
-        const { userHiers } = settings;
         const { basename } = currFile;
         let froms = undefined;
         if (from !== undefined) {
             try {
-                const api = (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api;
+                const api = getDVApi(plugin);
                 if (api) {
-                    const pages = (_b = api.pagePaths(from)) === null || _b === void 0 ? void 0 : _b.values;
+                    const pages = (_a = api.pagePaths(from)) === null || _a === void 0 ? void 0 : _a.values;
                     froms = pages.map(dropFolder);
                 }
                 else
@@ -37362,7 +37363,8 @@ function getCodeblockCB(plugin) {
             ? getSubInDirs(plugin.mainG, dir)
             : getSubInDirs(plugin.mainG, dir, oppDir);
         const closed = getReflexiveClosure(sub, userHiers);
-        const subClosed = getSubInDirs(closed, dir);
+        const subFields = fields !== null && fields !== void 0 ? fields : getFields(userHiers);
+        const subClosed = getSubForFields(getSubInDirs(closed, dir), subFields);
         const allPaths = dfsAllPaths(subClosed, basename);
         const index = createIndex(allPaths, false);
         loglevel.info({ allPaths, index });
@@ -37391,7 +37393,7 @@ function getCodeblockCB(plugin) {
     };
 }
 /**
- * Parse a string as a boolean value.
+ * Parse a string as a boolean value. If not "true" or "false", return `value`.
  * @param {string} value - string
  * @returns {string | boolean}
  */
@@ -37408,8 +37410,8 @@ function parseCodeBlockSource(source) {
         const value = getValue(field);
         results[field] = parseAsBool(value);
     });
-    results.field = results.field
-        ? splitAndTrim(results.field)
+    results.fields = results.fields
+        ? splitAndTrim(results.fields)
         : undefined;
     if (results.depth) {
         const match = results.depth.match(/(\d*)-?(\d*)/);

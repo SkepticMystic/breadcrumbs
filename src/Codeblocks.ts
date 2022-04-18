@@ -1,5 +1,6 @@
 import { info } from "loglevel";
 import { MarkdownPostProcessorContext, Notice } from "obsidian";
+import { getDVApi } from "./Utils/ObsidianUtils";
 import { createIndex, indexToLinePairs } from "./Commands/CreateIndex";
 import CBTree from "./Components/CBTree.svelte";
 import { CODEBLOCK_FIELDS, CODEBLOCK_TYPES, DIRECTIONS } from "./constants";
@@ -9,6 +10,7 @@ import { dropFolder, splitAndTrim } from "./Utils/generalUtils";
 import {
   dfsAllPaths,
   getReflexiveClosure,
+  getSubForFields,
   getSubInDirs,
 } from "./Utils/graphUtils";
 import { getFieldInfo, getFields, getOppDir } from "./Utils/HierUtils";
@@ -16,6 +18,8 @@ import { createJuggl } from "./Visualisations/Juggl";
 
 export function getCodeblockCB(plugin: BCPlugin) {
   const { settings, db } = plugin;
+  const { userHiers } = settings;
+
   return (
     source: string,
     el: HTMLElement,
@@ -30,9 +34,10 @@ export function getCodeblockCB(plugin: BCPlugin) {
       db.end2G();
       return;
     }
+
     let min = 0,
       max = Infinity;
-    let { depth, dir, from, implied, flat } = parsedSource;
+    let { depth, dir, fields, from, implied, flat } = parsedSource;
     if (depth !== undefined) {
       const minNum = parseInt(depth[0]);
       if (!isNaN(minNum)) min = minNum;
@@ -44,13 +49,12 @@ export function getCodeblockCB(plugin: BCPlugin) {
       ctx.sourcePath,
       ""
     );
-    const { userHiers } = settings;
     const { basename } = currFile;
 
     let froms = undefined;
     if (from !== undefined) {
       try {
-        const api = plugin.app.plugins.plugins.dataview?.api;
+        const api = getDVApi(plugin);
         if (api) {
           const pages = api.pagePaths(from)?.values;
           froms = pages.map(dropFolder);
@@ -66,7 +70,10 @@ export function getCodeblockCB(plugin: BCPlugin) {
         ? getSubInDirs(plugin.mainG, dir)
         : getSubInDirs(plugin.mainG, dir, oppDir);
     const closed = getReflexiveClosure(sub, userHiers);
-    const subClosed = getSubInDirs(closed, dir);
+
+    const subFields = fields ?? getFields(userHiers);
+    const subClosed = getSubForFields(getSubInDirs(closed, dir), subFields);
+
 
     const allPaths = dfsAllPaths(subClosed, basename);
     const index = createIndex(allPaths, false);
@@ -109,7 +116,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
 }
 
 /**
- * Parse a string as a boolean value.
+ * Parse a string as a boolean value. If not "true" or "false", return `value`.
  * @param {string} value - string
  * @returns {string | boolean}
  */
@@ -126,13 +133,14 @@ function parseCodeBlockSource(source: string): ParsedCodeblock {
 
   const results: { [field in CodeblockFields]: string | boolean | string[] } =
     {};
+
   CODEBLOCK_FIELDS.forEach((field) => {
     const value = getValue(field);
     results[field] = parseAsBool(value);
   });
 
-  results.field = results.field
-    ? splitAndTrim(results.field as string)
+  results.fields = results.fields
+    ? splitAndTrim(results.fields as string)
     : undefined;
 
   if (results.depth) {
@@ -193,15 +201,14 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
     <pre><code>
       type: tree
       dir: ${validDir ? dir : "down"}
-      fields: ${
-        allFields
-          .map((f) => {
-            return { f, dir: getFieldInfo(userHiers, f).fieldDir };
-          })
-          .filter((info) => info.dir === dir)
-          .map((info) => info.f)
-          .join(", ") || "child"
-      }
+      fields: ${allFields
+      .map((f) => {
+        return { f, dir: getFieldInfo(userHiers, f).fieldDir };
+      })
+      .filter((info) => info.dir === dir)
+      .map((info) => info.f)
+      .join(", ") || "child"
+    }
       depth: 3
       </code></pre>`;
 }
