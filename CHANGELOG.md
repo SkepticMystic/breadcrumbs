@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.57.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.1...2.57.2) (2022-04-18)
+
+
+### Bug Fixes
+
+* **DataviewNotes:** :bug: Check for links in query ([51d0b67](https://github.com/SkepticMystic/breadcrumbs/commit/51d0b677acb81e7f7559e20a344d625ad48436af))
+
 ### [2.57.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.0...2.57.1) (2022-04-18)
 
 ## [2.57.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.56.0...2.57.0) (2022-04-18)
