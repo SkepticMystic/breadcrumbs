@@ -5420,152 +5420,6 @@ var graphology_umd_min = createCommonjsModule(function (module, exports) {
 });
 
 /**
- * Get basename from a **Markdown** `path`
- * @param  {string} path
- */
-const getBaseFromMDPath = (path) => {
-    const splitSlash = path.split("/").last();
-    if (splitSlash.endsWith(".md")) {
-        return splitSlash.split(".md").slice(0, -1).join(".");
-    }
-    else
-        return splitSlash;
-};
-const getDVBasename = (file) => file.basename || file.name;
-const getFolderName = (file) => { var _a; 
-//@ts-ignore
-return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
-function makeWiki(str, wikiQ = true) {
-    let copy = str.slice();
-    if (wikiQ) {
-        copy = "[[" + copy;
-        copy += "]]";
-    }
-    return copy;
-}
-function dropWikilinks(str) {
-    let copy = str.slice();
-    if (copy.startsWith("[[") && copy.endsWith("]]"))
-        copy = copy.slice(2, -2);
-    return copy;
-}
-/**
- * Adds or updates the given yaml `key` to `value` in the given TFile
- * @param  {string} key
- * @param  {string} value
- * @param  {TFile} file
- * @param  {FrontMatterCache|undefined} frontmatter
- * @param  {MetaeditApi} api
- */
-const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
-    const valueStr = value.toString();
-    if (!frontmatter || frontmatter[key] === undefined) {
-        loglevel.info(`Creating: ${key}: ${valueStr}`);
-        await api.createYamlProperty(key, `['${valueStr}']`, file);
-    }
-    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
-        loglevel.info("Already Exists!");
-        return;
-    }
-    else {
-        const oldValueFlat = [...[frontmatter[key]]].flat(4);
-        const newValue = [...oldValueFlat, `'${valueStr}'`];
-        loglevel.info(`Updating: ${key}: ${newValue}`);
-        await api.update(key, `[${newValue.join(", ")}]`, file);
-    }
-};
-function changeYaml(yaml, key, newVal) {
-    if (yaml === "") {
-        return `${key}: ['${newVal}']`;
-    }
-    else {
-        const parsed = obsidian.parseYaml(yaml);
-        const value = parsed[key];
-        if (value === undefined) {
-            parsed[key] = newVal;
-        }
-        else if (typeof value === "string" && value !== newVal) {
-            parsed[key] = [value, newVal];
-        }
-        else if (typeof (value === null || value === void 0 ? void 0 : value[0]) === "string" &&
-            value.includes &&
-            !value.includes(newVal)) {
-            parsed[key] = [...value, newVal];
-        }
-        // else if (other types of values...)
-        return obsidian.stringifyYaml(parsed);
-    }
-}
-function splitAtYaml(content) {
-    if (!content.startsWith("---\n"))
-        return ["", content];
-    else {
-        const splits = content.split("---");
-        return [
-            splits.slice(0, 2).join("---") + "---",
-            splits.slice(2).join("---"),
-        ];
-    }
-}
-const dropHash = (tag) => tag.startsWith("#") ? tag.slice(1) : tag;
-const addHash = (tag) => (tag.startsWith("#") ? tag : `#${tag}`);
-function getAlt(node, plugin) {
-    var _a;
-    const { app } = plugin;
-    const { altLinkFields, showAllAliases } = plugin.settings;
-    if (altLinkFields.length) {
-        const file = app.metadataCache.getFirstLinkpathDest(node, "");
-        if (file) {
-            const metadata = app.metadataCache.getFileCache(file);
-            for (const altField of altLinkFields) {
-                const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
-                const arr = typeof value === "string" ? splitAndTrim(value) : value;
-                if (value)
-                    return showAllAliases ? arr.join(", ") : arr[0];
-            }
-        }
-    }
-    else
-        return null;
-}
-async function waitForCache(plugin) {
-    var _a, _b;
-    const { app } = plugin;
-    if (app.plugins.enabledPlugins.has("dataview")) {
-        let basename;
-        while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
-            await wait(100);
-            basename = (_b = (_a = app === null || app === void 0 ? void 0 : app.workspace) === null || _a === void 0 ? void 0 : _a.getActiveFile()) === null || _b === void 0 ? void 0 : _b.basename;
-        }
-    }
-    else {
-        await waitForResolvedLinks(app);
-    }
-}
-const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
-const getDVApi = (plugin) => { var _a; return (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
-function isInsideYaml(app) {
-    const { workspace, metadataCache } = app;
-    const { activeLeaf } = workspace;
-    const { state: { mode }, } = activeLeaf.getViewState();
-    if (mode !== "source")
-        return null;
-    const { editor } = activeLeaf.view;
-    const file = workspace.getActiveFile();
-    if (!file)
-        return null;
-    const { frontmatter } = metadataCache.getFileCache(file);
-    if (!frontmatter)
-        return false;
-    const { start, end } = frontmatter.position;
-    const currOff = editor.posToOffset(editor.getCursor());
-    if (currOff >= start.offset && currOff <= end.offset)
-        return true;
-    else
-        return false;
-}
-
-/**
  * Graphology isGraph
  * ===================
  *
@@ -6727,6 +6581,152 @@ function iterateHiers(userHiers, fn) {
     });
 }
 
+/**
+ * Get basename from a **Markdown** `path`
+ * @param  {string} path
+ */
+const getBaseFromMDPath = (path) => {
+    const splitSlash = path.split("/").last();
+    if (splitSlash.endsWith(".md")) {
+        return splitSlash.split(".md").slice(0, -1).join(".");
+    }
+    else
+        return splitSlash;
+};
+const getDVBasename = (file) => file.basename || file.name;
+const getFolderName = (file) => { var _a; 
+//@ts-ignore
+return ((_a = file === null || file === void 0 ? void 0 : file.parent) === null || _a === void 0 ? void 0 : _a.name) || file.folder; };
+function makeWiki(str, wikiQ = true) {
+    let copy = str.slice();
+    if (wikiQ) {
+        copy = "[[" + copy;
+        copy += "]]";
+    }
+    return copy;
+}
+function dropWikilinks(str) {
+    let copy = str.slice();
+    if (copy.startsWith("[[") && copy.endsWith("]]"))
+        copy = copy.slice(2, -2);
+    return copy;
+}
+/**
+ * Adds or updates the given yaml `key` to `value` in the given TFile
+ * @param  {string} key
+ * @param  {string} value
+ * @param  {TFile} file
+ * @param  {FrontMatterCache|undefined} frontmatter
+ * @param  {MetaeditApi} api
+ */
+const createOrUpdateYaml = async (key, value, file, frontmatter, api) => {
+    const valueStr = value.toString();
+    if (!frontmatter || frontmatter[key] === undefined) {
+        loglevel.info(`Creating: ${key}: ${valueStr}`);
+        await api.createYamlProperty(key, `['${valueStr}']`, file);
+    }
+    else if ([...[frontmatter[key]]].flat(3).some((val) => val == valueStr)) {
+        loglevel.info("Already Exists!");
+        return;
+    }
+    else {
+        const oldValueFlat = [...[frontmatter[key]]].flat(4);
+        const newValue = [...oldValueFlat, `'${valueStr}'`];
+        loglevel.info(`Updating: ${key}: ${newValue}`);
+        await api.update(key, `[${newValue.join(", ")}]`, file);
+    }
+};
+function changeYaml(yaml, key, newVal) {
+    if (yaml === "") {
+        return `${key}: ['${newVal}']`;
+    }
+    else {
+        const parsed = obsidian.parseYaml(yaml);
+        const value = parsed[key];
+        if (value === undefined) {
+            parsed[key] = newVal;
+        }
+        else if (typeof value === "string" && value !== newVal) {
+            parsed[key] = [value, newVal];
+        }
+        else if (typeof (value === null || value === void 0 ? void 0 : value[0]) === "string" &&
+            value.includes &&
+            !value.includes(newVal)) {
+            parsed[key] = [...value, newVal];
+        }
+        // else if (other types of values...)
+        return obsidian.stringifyYaml(parsed);
+    }
+}
+function splitAtYaml(content) {
+    if (!content.startsWith("---\n"))
+        return ["", content];
+    else {
+        const splits = content.split("---");
+        return [
+            splits.slice(0, 2).join("---") + "---",
+            splits.slice(2).join("---"),
+        ];
+    }
+}
+const dropHash = (tag) => tag.startsWith("#") ? tag.slice(1) : tag;
+const addHash = (tag) => (tag.startsWith("#") ? tag : `#${tag}`);
+function getAlt(node, plugin) {
+    var _a;
+    const { app } = plugin;
+    const { altLinkFields, showAllAliases } = plugin.settings;
+    if (altLinkFields.length) {
+        const file = app.metadataCache.getFirstLinkpathDest(node, "");
+        if (file) {
+            const metadata = app.metadataCache.getFileCache(file);
+            for (const altField of altLinkFields) {
+                const value = (_a = metadata === null || metadata === void 0 ? void 0 : metadata.frontmatter) === null || _a === void 0 ? void 0 : _a[altField];
+                const arr = typeof value === "string" ? splitAndTrim(value) : value;
+                if (value)
+                    return showAllAliases ? arr.join(", ") : arr[0];
+            }
+        }
+    }
+    else
+        return null;
+}
+async function waitForCache(plugin) {
+    var _a, _b;
+    const { app } = plugin;
+    if (app.plugins.enabledPlugins.has("dataview")) {
+        let basename;
+        while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
+            await wait(100);
+            basename = (_b = (_a = app === null || app === void 0 ? void 0 : app.workspace) === null || _a === void 0 ? void 0 : _a.getActiveFile()) === null || _b === void 0 ? void 0 : _b.basename;
+        }
+    }
+    else {
+        await waitForResolvedLinks(app);
+    }
+}
+const linkClass = (app, to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+const getDVApi = (plugin) => { var _a; return (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
+function isInsideYaml(app) {
+    const { workspace, metadataCache } = app;
+    const { activeLeaf } = workspace;
+    const { state: { mode }, } = activeLeaf.getViewState();
+    if (mode !== "source")
+        return null;
+    const { editor } = activeLeaf.view;
+    const file = workspace.getActiveFile();
+    if (!file)
+        return null;
+    const { frontmatter } = metadataCache.getFileCache(file);
+    if (!frontmatter)
+        return false;
+    const { start, end } = frontmatter.position;
+    const currOff = editor.posToOffset(editor.getCursor());
+    if (currOff >= start.offset && currOff <= end.offset)
+        return true;
+    else
+        return false;
+}
+
 // This function takes the real & implied graphs for a given relation, and returns a new graphs with both.
 // It makes implied relations real
 // TODO use reflexiveClosure instead
@@ -6980,6 +6980,116 @@ function getRealnImplied(plugin, currNode, dir = null) {
         });
     });
     return realsnImplieds;
+}
+
+function addSiblingsFromSameParent(g, settings) {
+    const { userHiers, treatCurrNodeAsImpliedSibling } = settings;
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currNAttr, s, parentNode) => {
+            var _a;
+            if (currNAttr.dir !== "up")
+                return;
+            const { fieldDir, fieldHier } = getFieldInfo(userHiers, currNAttr.field);
+            const field = (_a = fieldHier.same[0]) !== null && _a !== void 0 ? _a : fallbackField(currNAttr.field, fieldDir);
+            // Find the children of those parents
+            g.forEachOutEdge(parentNode, (k, a, s, impliedSibling) => {
+                // Skip the current node if the settings say to
+                if (a.dir !== "down" ||
+                    (!treatCurrNodeAsImpliedSibling && impliedSibling === currN))
+                    return;
+                addEdgeIfNot(g, currN, impliedSibling, {
+                    dir: "same",
+                    field,
+                    implied: BC_I_SIBLING_1,
+                });
+            });
+        });
+    });
+}
+function addSiblingsParentIsParent(g) {
+    g.forEachNode((currN, a) => {
+        // Find siblings of current node
+        g.forEachOutEdge(currN, (k, currNAttr, s, sibling) => {
+            if (currNAttr.dir !== "same")
+                return;
+            // Find the parents of those siblings
+            g.forEachOutEdge(sibling, (k, a, s, parent) => {
+                const { dir, field } = a;
+                if (dir !== "up")
+                    return;
+                addEdgeIfNot(g, currN, parent, {
+                    dir: "up",
+                    field,
+                    implied: BC_I_PARENT,
+                });
+            });
+        });
+    });
+}
+function addAuntsUncles(g) {
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+            if (currEAttr.dir !== "up")
+                return;
+            // Find the siblings of those parents
+            g.forEachOutEdge(parentNode, (k, a, s, uncle) => {
+                if (a.dir !== "same")
+                    return;
+                addEdgeIfNot(g, currN, uncle, {
+                    dir: "up",
+                    // Use the starting node's parent field
+                    field: currEAttr.field,
+                    implied: BC_I_AUNT,
+                });
+            });
+        });
+    });
+}
+function addCousins(g) {
+    g.forEachNode((currN, a) => {
+        // Find parents of current node
+        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
+            if (currEAttr.dir !== "up")
+                return;
+            // Find the siblings of those parents
+            g.forEachOutEdge(parentNode, (k, parentSiblingAttr, s, uncle) => {
+                if (parentSiblingAttr.dir !== "same")
+                    return;
+                g.forEachOutEdge(uncle, (k, a, s, cousin) => {
+                    if (a.dir !== "down" || currN === cousin)
+                        return;
+                    addEdgeIfNot(g, currN, cousin, {
+                        dir: "same",
+                        field: parentSiblingAttr.field,
+                        implied: BC_I_COUSIN,
+                    });
+                });
+            });
+        });
+    });
+}
+// Sis --> Me <-- Bro
+// Implies: Sis <--> Bro
+function addStructuralEquivalenceSiblings(g) {
+    g.forEachNode((currN, a) => {
+        g.forEachInEdge(currN, (k, aSis, sis, _) => {
+            if (aSis.dir !== "same")
+                return;
+            g.forEachInEdge(currN, (k, aBro, bro, _) => {
+                if (aBro.dir !== "same" || sis === bro)
+                    return;
+                if (aBro.field === aSis.field) {
+                    addEdgeIfNot(g, sis, bro, {
+                        dir: "same",
+                        field: aBro.field,
+                        implied: BC_I_SIBLING_2,
+                    });
+                }
+            });
+        });
+    });
 }
 
 async function getCSVRows(plugin) {
@@ -35187,115 +35297,6 @@ async function buildMainG(plugin) {
         plugin.db.end2G();
         return mainG;
     }
-}
-function addSiblingsFromSameParent(g, settings) {
-    const { userHiers, treatCurrNodeAsImpliedSibling } = settings;
-    g.forEachNode((currN, a) => {
-        // Find parents of current node
-        g.forEachOutEdge(currN, (k, currNAttr, s, parentNode) => {
-            var _a;
-            if (currNAttr.dir !== "up")
-                return;
-            const { fieldDir, fieldHier } = getFieldInfo(userHiers, currNAttr.field);
-            const field = (_a = fieldHier.same[0]) !== null && _a !== void 0 ? _a : fallbackField(currNAttr.field, fieldDir);
-            // Find the children of those parents
-            g.forEachOutEdge(parentNode, (k, a, s, impliedSibling) => {
-                // Skip the current node if the settings say to
-                if (a.dir !== "down" ||
-                    (!treatCurrNodeAsImpliedSibling && impliedSibling === currN))
-                    return;
-                addEdgeIfNot(g, currN, impliedSibling, {
-                    dir: "same",
-                    field,
-                    implied: BC_I_SIBLING_1,
-                });
-            });
-        });
-    });
-}
-function addSiblingsParentIsParent(g) {
-    g.forEachNode((currN, a) => {
-        // Find siblings of current node
-        g.forEachOutEdge(currN, (k, currNAttr, s, sibling) => {
-            if (currNAttr.dir !== "same")
-                return;
-            // Find the parents of those siblings
-            g.forEachOutEdge(sibling, (k, a, s, parent) => {
-                const { dir, field } = a;
-                if (dir !== "up")
-                    return;
-                addEdgeIfNot(g, currN, parent, {
-                    dir: "up",
-                    field,
-                    implied: BC_I_PARENT,
-                });
-            });
-        });
-    });
-}
-function addAuntsUncles(g) {
-    g.forEachNode((currN, a) => {
-        // Find parents of current node
-        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
-            if (currEAttr.dir !== "up")
-                return;
-            // Find the siblings of those parents
-            g.forEachOutEdge(parentNode, (k, a, s, uncle) => {
-                if (a.dir !== "same")
-                    return;
-                addEdgeIfNot(g, currN, uncle, {
-                    dir: "up",
-                    // Use the starting node's parent field
-                    field: currEAttr.field,
-                    implied: BC_I_AUNT,
-                });
-            });
-        });
-    });
-}
-function addCousins(g) {
-    g.forEachNode((currN, a) => {
-        // Find parents of current node
-        g.forEachOutEdge(currN, (k, currEAttr, s, parentNode) => {
-            if (currEAttr.dir !== "up")
-                return;
-            // Find the siblings of those parents
-            g.forEachOutEdge(parentNode, (k, parentSiblingAttr, s, uncle) => {
-                if (parentSiblingAttr.dir !== "same")
-                    return;
-                g.forEachOutEdge(uncle, (k, a, s, cousin) => {
-                    if (a.dir !== "down" || currN === cousin)
-                        return;
-                    addEdgeIfNot(g, currN, cousin, {
-                        dir: "same",
-                        field: parentSiblingAttr.field,
-                        implied: BC_I_COUSIN,
-                    });
-                });
-            });
-        });
-    });
-}
-// Sis --> Me <-- Bro
-// Implies: Sis <--> Bro
-function addStructuralEquivalenceSiblings(g) {
-    g.forEachNode((currN, a) => {
-        g.forEachInEdge(currN, (k, aSis, sis, _) => {
-            if (aSis.dir !== "same")
-                return;
-            g.forEachInEdge(currN, (k, aBro, bro, _) => {
-                if (aBro.dir !== "same" || sis === bro)
-                    return;
-                if (aBro.field === aSis.field) {
-                    addEdgeIfNot(g, sis, bro, {
-                        dir: "same",
-                        field: aBro.field,
-                        implied: BC_I_SIBLING_2,
-                    });
-                }
-            });
-        });
-    });
 }
 function buildClosedG(plugin) {
     const { mainG, settings } = plugin;
