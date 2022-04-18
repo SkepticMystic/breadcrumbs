@@ -139,6 +139,49 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
         })
     );
 
+
+  new Setting(generalDetails)
+    .setName("Enable Field Suggestor")
+    .setDesc(
+      fragWithHTML(
+        'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'
+      )
+    )
+    .addToggle((toggle) =>
+      toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+        settings.fieldSuggestor = value;
+        await plugin.saveSettings();
+      })
+    );
+  new Setting(generalDetails)
+    .setName("Enable Relation Suggestor")
+    .setDesc(
+      fragWithHTML(
+        "Enable an editor suggestor which gets triggered by a custom string to show a list of relations from your hierarchies to insert."
+      )
+    )
+    .addToggle((toggle) =>
+      toggle
+        .setValue(settings.enableRelationSuggestor)
+        .onChange(async (value) => {
+          settings.enableRelationSuggestor = value;
+          await plugin.saveSettings();
+        })
+    );
+  new Setting(generalDetails)
+    .setName("Relation Suggestor Trigger")
+    .setDesc(
+      fragWithHTML(
+        "The string used to trigger the relation suggestor. Default is <code>\\</code>."
+      )
+    )
+    .addText((text) =>
+      text.setValue(settings.relSuggestorTrigger).onChange(async (value) => {
+        settings.relSuggestorTrigger = value;
+        await plugin.saveSettings();
+      })
+    );
+
   if (plugin.app.plugins.plugins.dataview !== undefined) {
     new Setting(generalDetails)
       .setName("Dataview Wait Time")
