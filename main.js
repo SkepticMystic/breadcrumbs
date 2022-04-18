@@ -7136,7 +7136,11 @@ function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
     eligableAlts.forEach((altFile) => {
         var _a;
         const basename = getDVBasename(altFile.file);
-        const query = altFile[BC_DV_NOTE];
+        let query = altFile[BC_DV_NOTE];
+        if (query.hasOwnProperty('path')) {
+            //@ts-ignore
+            query = `[[${query.path}]]`;
+        }
         let field = (_a = altFile[BC_DV_NOTE_FIELD]) !== null && _a !== void 0 ? _a : (dataviewNoteField || fields[0]);
         let targets = [];
         try {

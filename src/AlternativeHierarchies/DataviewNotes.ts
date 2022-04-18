@@ -30,14 +30,20 @@ export function addDataviewNotesToGraph(
 
   eligableAlts.forEach((altFile) => {
     const basename = getDVBasename(altFile.file);
-    const query = altFile[BC_DV_NOTE] as string;
+
+    let query = altFile[BC_DV_NOTE] as (string | Record<string, string>);
+    if (query.hasOwnProperty('path')) {
+      //@ts-ignore
+      query = `[[${query.path}]]`;
+    }
+
 
     let field =
       (altFile[BC_DV_NOTE_FIELD] as string) ?? (dataviewNoteField || fields[0]);
 
     let targets: dvFrontmatterCache[] = [];
     try {
-      targets = dv.pages(query).values;
+      targets = dv.pages(<string>query).values;
     } catch (er) {
       new Notice(`${query} is not a valid Dataview from-query`);
       warn(er);
