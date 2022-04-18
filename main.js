@@ -64412,6 +64412,9 @@ class BCPlugin extends obsidian.Plugin {
             this.registerEditorSuggest(new FieldSuggestor(this));
         if (enableRelationSuggestor)
             this.registerEditorSuggest(new RelationSuggestor(this));
+        if (settings.limitTrailCheckboxes.length === 0) {
+            settings.limitTrailCheckboxes = getFields(settings.userHiers);
+        }
         const { openMatrixOnLoad, openStatsOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, userHiers, } = settings;
         this.VIEWS = [
             {

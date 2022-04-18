@@ -117,6 +117,11 @@ export default class BCPlugin extends Plugin {
     if (enableRelationSuggestor)
       this.registerEditorSuggest(new RelationSuggestor(this));
 
+
+    if (settings.limitTrailCheckboxes.length === 0) {
+      settings.limitTrailCheckboxes = getFields(settings.userHiers)
+    }
+
     const {
       openMatrixOnLoad,
       openStatsOnLoad,
