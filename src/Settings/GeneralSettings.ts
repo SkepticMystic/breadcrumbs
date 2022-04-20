@@ -22,15 +22,15 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
           await plugin.saveSettings();
         });
     })
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Stats View")
-        .setValue(settings.openStatsOnLoad)
-        .onChange(async (value) => {
-          settings.openStatsOnLoad = value;
-          await plugin.saveSettings();
-        });
-    })
+    // .addToggle((toggle) => {
+    //   toggle
+    //     .setTooltip("Stats View")
+    //     .setValue(settings.openStatsOnLoad)
+    //     .onChange(async (value) => {
+    //       settings.openStatsOnLoad = value;
+    //       await plugin.saveSettings();
+    //     });
+    // })
     .addToggle((toggle) => {
       toggle
         .setTooltip("Ducks View")

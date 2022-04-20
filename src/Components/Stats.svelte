@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import { sum } from "lodash";
   import { debug } from "loglevel";
   import { copy } from "obsidian-community-lib";
@@ -130,7 +130,7 @@
         </td>
         <td>Nodes</td>
         {#each DIRECTIONS as dir}
-          <!-- svelte-ignore a11y-unknown-aria-attribute -->
+          
           <td
             aria-label-position="left"
             aria-label={data[i][dir].Merged.nodesStr}
@@ -139,7 +139,7 @@
             {data[i][dir].Merged.nodes.length}
           </td>
         {/each}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={cellStr(i, "Merged", "nodesStr")}
@@ -151,7 +151,7 @@
       <tr>
         <td>Real Edges</td>
         {#each DIRECTIONS as dir}
-          <!-- svelte-ignore a11y-unknown-aria-attribute -->
+          
           <td
             aria-label-position="left"
             aria-label={data[i][dir].Merged.edgesStr}
@@ -160,7 +160,7 @@
             {data[i][dir].Merged.edges.length}
           </td>
         {/each}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={cellStr(i, "Merged", "edgesStr")}
@@ -172,7 +172,7 @@
       <tr>
         <td>Implied Edges</td>
         {#each DIRECTIONS as dir}
-          <!-- svelte-ignore a11y-unknown-aria-attribute -->
+          
           <td
             aria-label-position="left"
             aria-label={data[i][dir].Implied.edgesStr}
@@ -181,7 +181,7 @@
             {data[i][dir].Implied.edges.length}
           </td>
         {/each}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={cellStr(i, "Implied", "edgesStr")}
@@ -195,7 +195,7 @@
       <td rowspan="3"> Totals </td>
       <td>Nodes</td>
       {#each DIRECTIONS as dir}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={data
@@ -213,7 +213,7 @@
     <tr>
       <td>Real Edges</td>
       {#each DIRECTIONS as dir}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={data
@@ -231,7 +231,7 @@
     <tr>
       <td>Implied Edges</td>
       {#each DIRECTIONS as dir}
-        <!-- svelte-ignore a11y-unknown-aria-attribute -->
+        
         <td
           aria-label-position="left"
           aria-label={data
@@ -263,4 +263,4 @@
     border: 1px solid var(--background-modifier-border);
     white-space: pre-line;
   }
-</style>
+</style> -->

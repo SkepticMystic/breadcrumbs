@@ -9,7 +9,7 @@ import type {
 import type { IJugglSettings } from "juggl-api";
 
 export const MATRIX_VIEW = "BC-matrix";
-export const STATS_VIEW = "BC-stats";
+// export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
 export const TREE_VIEW = "BC-tree";
 
@@ -356,7 +356,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   refreshOnNoteChange: false,
   useAllMetadata: true,
   openMatrixOnLoad: true,
-  openStatsOnLoad: true,
+  // openStatsOnLoad: true,
   openDuckOnLoad: false,
   openDownOnLoad: true,
   overflowMLView: true,

@@ -10,7 +10,7 @@ import type {
 } from "./constants";
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
-import type StatsView from "./Views/StatsView";
+// import type StatsView from "./Views/StatsView";
 import type TreeView from "./Views/TreeView";
 
 export type DebugLevel = keyof LogLevel;
@@ -72,7 +72,7 @@ export interface BCSettings {
   namingSystemEndsWithDelimiter: boolean;
   noPathMessage: string;
   openMatrixOnLoad: boolean;
-  openStatsOnLoad: boolean;
+  // openStatsOnLoad: boolean;
   openDuckOnLoad: boolean;
   openDownOnLoad: boolean;
   overflowMLView: boolean;
@@ -146,7 +146,9 @@ export type UserHier = {
 export type CodeblockType = typeof CODEBLOCK_TYPES[number];
 export type CodeblockFields = typeof CODEBLOCK_FIELDS[number];
 
-export type MyView = MatrixView | DucksView | StatsView | TreeView;
+export type MyView = MatrixView | DucksView |
+  // StatsView | 
+  TreeView;
 export type ViewInfo = {
   plain: string;
   type: string;

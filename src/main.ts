@@ -20,7 +20,7 @@ import {
   DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
-  STATS_VIEW,
+  // STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   TREE_VIEW,
@@ -41,7 +41,7 @@ import { getFields } from "./Utils/HierUtils";
 import { waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
-import StatsView from "./Views/StatsView";
+// import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { BCStore } from "./Visualisations/Juggl";
@@ -124,7 +124,7 @@ export default class BCPlugin extends Plugin {
 
     const {
       openMatrixOnLoad,
-      openStatsOnLoad,
+      // openStatsOnLoad,
       openDuckOnLoad,
       openDownOnLoad,
       showBCs,
@@ -138,12 +138,12 @@ export default class BCPlugin extends Plugin {
         constructor: MatrixView,
         openOnLoad: openMatrixOnLoad,
       },
-      {
-        plain: "Stats",
-        type: STATS_VIEW,
-        constructor: StatsView,
-        openOnLoad: openStatsOnLoad,
-      },
+      // {
+      //   plain: "Stats",
+      //   type: STATS_VIEW,
+      //   constructor: StatsView,
+      //   openOnLoad: openStatsOnLoad,
+      // },
       {
         plain: "Duck",
         type: DUCK_VIEW,
