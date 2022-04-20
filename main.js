@@ -38621,12 +38621,9 @@ function addRegexNoteSettings(plugin, alternativeHierarchyDetails) {
 function addRelationSettings(plugin, containerEl) {
     const { settings } = plugin;
     const relationDetails = details("Relationships", containerEl);
-    // MarkdownRenderer.renderMarkdown(
-    //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
-    //   containerEl,
-    //   "",
-    //   null
-    // );
+    function mermaidDiagram(diagramStr) {
+        obsidian.MarkdownRenderer.renderMarkdown(diagramStr, relationDetails.createDiv(), "", null);
+    }
     relationDetails.createEl("p", {
         text: "Here you can toggle on/off different types of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relation, so you can style them differently. For example `.BC-Aunt`.",
     });
@@ -38640,6 +38637,7 @@ function addRelationSettings(plugin, containerEl) {
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
+    mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nSister -->|up| Dad\nMe <-.->|same| Sister\n```");
     new obsidian.Setting(relationDetails)
         .setName("Siblings' Siblings")
         .setDesc("Treat your siblings' siblings as your siblings")
@@ -38650,6 +38648,7 @@ function addRelationSettings(plugin, containerEl) {
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
+    mermaidDiagram("```mermaid\nflowchart LR\nMe -->|same| Sister\nMe -->|same| Brother\nSister <-.->|same| Brother\n```");
     new obsidian.Setting(relationDetails)
         .setName("Siblings' Parent is Parent")
         .setDesc("Your siblings' parents are your parents")
@@ -38660,6 +38659,7 @@ function addRelationSettings(plugin, containerEl) {
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
+    mermaidDiagram("```mermaid\nflowchart LR\nSister -->|up| Dad\nSister <-->|same| Me\nMe -.->|up| Dad\n```");
     new obsidian.Setting(relationDetails)
         .setName("Aunt/Uncle")
         .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
@@ -38670,6 +38670,7 @@ function addRelationSettings(plugin, containerEl) {
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
+    mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nDad -->|same| Uncle\nMe -.->|up| Uncle\n```");
     new obsidian.Setting(relationDetails)
         .setName("Cousins")
         .setDesc("Treat the cousins of a note as siblings (parents' siblings' children are cousins)")
@@ -38680,6 +38681,7 @@ function addRelationSettings(plugin, containerEl) {
         await plugin.saveSettings();
         await refreshIndex(plugin);
     }));
+    mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nDad -->|same| Uncle\nUncle -->|down| Cousin\nMe <-.->|same| Cousin\n```");
     new obsidian.Setting(relationDetails)
         .setName("Make Current Note an Implied Sibling")
         .setDesc("Techincally, the current note is always it's own implied sibling. By default, it is not show as such. Toggle this on to make it show.")
