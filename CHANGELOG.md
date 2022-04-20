@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.1...3.0.0) (2022-04-20)
+
+
+### Features
+
+* **impliedRelations:** :sparkles: Working Mermaid diagrams to visualise the implied relations ([eb3c416](https://github.com/SkepticMystic/breadcrumbs/commit/eb3c416f03312e1c55aa3cb6bdb7392965c21f62))
+
 ### [2.58.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.0...2.58.1) (2022-04-18)
 
 
