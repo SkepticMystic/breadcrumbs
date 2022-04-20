@@ -8,17 +8,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
   const { settings } = plugin;
   const generalDetails = details("General Options", containerEl);
 
-  new Setting(generalDetails)
-    .setName("Show Refresh Index Notice")
-    .setDesc(
-      "When Refreshing Index, should it show a notice once the operation is complete?"
-    )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.showRefreshNotice).onChange(async (value) => {
-        settings.showRefreshNotice = value;
-        await plugin.saveSettings();
-      })
-    );
+
 
   new Setting(generalDetails)
     .setName("Open Views by Default")
@@ -81,6 +71,17 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
       })
     );
 
+  new Setting(generalDetails)
+    .setName("Show Refresh Index Notice")
+    .setDesc(
+      "When Refreshing Index, should it show a notice once the operation is complete?"
+    )
+    .addToggle((toggle) =>
+      toggle.setValue(settings.showRefreshNotice).onChange(async (value) => {
+        settings.showRefreshNotice = value;
+        await plugin.saveSettings();
+      })
+    );
 
   new Setting(generalDetails)
     .setName("Fields used for Alternative note names (Aliases)")
