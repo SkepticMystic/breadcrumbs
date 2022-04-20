@@ -10,24 +10,12 @@ export function addMatrixViewSettings(
   viewDetails: HTMLDetailsElement
 ) {
   const { settings } = plugin;
-  const MLViewDetails = subDetails("Matrix/List View", viewDetails);
-
-  new Setting(MLViewDetails)
-    .setName("Show Matrix or List view by default")
-    .setDesc(
-      "When Obsidian first loads, which view should it show? ✅ = Matrix, ❌ = List"
-    )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.defaultView).onChange(async (value) => {
-        settings.defaultView = value;
-        await plugin.saveSettings();
-      })
-    );
+  const MLViewDetails = subDetails("Matrix View", viewDetails);
 
   new Setting(MLViewDetails)
     .setName("Show all field names or just relation types")
     .setDesc(
-      "This changes the headers in matrix/list view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names."
+      "This changes the headers in matrix view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names."
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.showNameOrType).onChange(async (value) => {

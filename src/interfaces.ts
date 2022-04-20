@@ -24,7 +24,6 @@ export interface BCSettings {
   dvWaitTime: number;
   dataviewNoteField: string;
   debugMode: DebugLevel;
-  defaultView: boolean;
   dendronNoteDelimiter: string;
   dendronNoteField: string;
   dateFormat: string;

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
+  import MatrixButtons from "./MatrixButtons.svelte";
   import type { SquareProps } from "../interfaces";
   import { dropPathNDendron } from "../Utils/generalUtils";
   import type MatrixView from "../Views/MatrixView";
@@ -20,6 +21,10 @@
     overflowMLView,
   } = settings;
 </script>
+
+<div class="BC-matrix-buttons">
+  <MatrixButtons {matrixView} />
+</div>
 
 <div
   class="BC-Matrix  markdown-preview-view {hierSquares.length

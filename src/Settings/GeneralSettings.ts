@@ -86,7 +86,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     .setName("Fields used for Alternative note names (Aliases)")
     .setDesc(
       fragWithHTML(
-        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."
+        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."
       )
     )
     .addText((text) => {

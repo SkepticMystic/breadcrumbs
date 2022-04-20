@@ -291,7 +291,7 @@ export const BC_FIELDS_INFO = [
   },
   {
     field: BC_ORDER,
-    desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+    desc: "Set the order of this note in the Matrix view. A lower value places this note higher in the order.",
     afterYaml: ": ",
     afterInline: ":: ",
     alt: false,
@@ -331,7 +331,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   dateNoteAddMonth: "",
   dateNoteAddYear: "",
   debugMode: "WARN",
-  defaultView: true,
   dendronNoteDelimiter: ".",
   dendronNoteField: "up",
   downViewWrap: false,

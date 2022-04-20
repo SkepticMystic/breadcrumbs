@@ -1,7 +1,7 @@
 import { error, info } from "loglevel";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { Debugger } from "src/Debugger";
-import MLContainer from "../Components/MLContainer.svelte";
+import Matrix from "../Components/Matrix.svelte";
 import {
   ARROW_DIRECTIONS,
   blankRealNImplied,
@@ -45,8 +45,7 @@ export function getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
 }
 export default class MatrixView extends ItemView {
   plugin: BCPlugin;
-  private view: MLContainer;
-  matrixQ: boolean;
+  private view: Matrix;
   db: Debugger;
 
   constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
@@ -58,7 +57,6 @@ export default class MatrixView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     const { plugin, app } = this;
-    this.matrixQ = plugin.settings.defaultView;
 
     app.workspace.onLayoutReady(() => {
       setTimeout(
@@ -80,7 +78,7 @@ export default class MatrixView extends ItemView {
   }
   icon = TRAIL_ICON;
 
-  async onOpen(): Promise<void> {}
+  async onOpen(): Promise<void> { }
 
   onClose(): Promise<void> {
     this.view?.$destroy();
@@ -297,10 +295,11 @@ export default class MatrixView extends ItemView {
   async draw(): Promise<void> {
     try {
       const { contentEl, db, plugin } = this;
-      db.start2G("Draw Matrix/List View");
+      db.start2G("Draw Matrix View");
       contentEl.empty();
-      const { settings, mainG } = plugin;
-      const { userHiers } = settings;
+
+      const { userHiers } = plugin.settings;
+
       const currFile = this.app.workspace.getActiveFile();
       if (!currFile) return;
 
@@ -311,10 +310,11 @@ export default class MatrixView extends ItemView {
           )
       );
 
-      new MLContainer({
+      new Matrix({
         target: contentEl,
         props: { hierSquares, matrixView: this, currFile },
-      });
+      })
+      
 
       db.end2G();
     } catch (err) {

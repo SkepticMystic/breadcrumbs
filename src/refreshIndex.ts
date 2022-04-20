@@ -353,5 +353,5 @@ export async function refreshIndex(plugin: BCPlugin) {
     await plugin.getActiveTYPEView(type)?.draw();
 
   if (plugin.settings.showBCs) await drawTrail(plugin);
-  if (plugin.settings.showRefreshNotice) new Notice("Index refreshed");
+  if (plugin.settings.showRefreshNotice) new Notice("BC Index refreshed");
 }

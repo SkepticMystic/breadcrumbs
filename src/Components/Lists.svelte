@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import type { SquareProps } from "../interfaces";
@@ -111,4 +111,4 @@
   .internal-link.is-unresolved {
     color: var(--text-muted);
   }
-</style>
+</style> -->
