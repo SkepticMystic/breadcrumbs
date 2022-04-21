@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.0.0...3.1.0) (2022-04-21)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: If alias is showing, add aria-label for original name ([e6e782a](https://github.com/SkepticMystic/breadcrumbs/commit/e6e782ae5ec9e89b42078df6e5609f3a4dd86c6c))
+
 ## [3.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.1...3.0.0) (2022-04-20)
 
 
