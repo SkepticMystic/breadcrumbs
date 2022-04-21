@@ -56,6 +56,8 @@
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(event) =>
                         hoverPreview(event, matrixView, to)}
+                      aria-label={alt ? to : ""}
+                      aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {alt ?? dropPathNDendron(to, settings)}
                     </div>
@@ -87,7 +89,8 @@
                         : ''}"
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(e) => hoverPreview(e, matrixView, to)}
-                      aria-label={parent ? "↑ " + parent : ""}
+                      aria-label={(alt ? `${to}\n` : "") +
+                        (parent ? "↑ " + parent : "")}
                       aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {alt ?? dropPathNDendron(to, settings)}

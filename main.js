@@ -34381,7 +34381,7 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*hierSquares, overflowMLView, app, matrixView, settings*/ 541) {
+			if (dirty[0] & /*hierSquares, overflowMLView, rlLeaf, app, matrixView, settings*/ 605) {
 				each_value_3 = /*realItems*/ ctx[20];
 				let i;
 
@@ -34418,6 +34418,8 @@ function create_each_block_3(ctx) {
 	let t0_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "";
 	let t0;
 	let div_class_value;
+	let div_aria_label_value;
+	let div_aria_label_position_value;
 	let t1;
 	let mounted;
 	let dispose;
@@ -34437,6 +34439,8 @@ function create_each_block_3(ctx) {
 			t0 = text(t0_value);
 			t1 = space();
 			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"));
+			attr(div, "aria-label", div_aria_label_value = /*alt*/ ctx[23] ? /*to*/ ctx[26] : "");
+			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 			attr(li, "class", "svelte-s0mwjt");
 		},
 		m(target, anchor) {
@@ -34461,6 +34465,10 @@ function create_each_block_3(ctx) {
 			if (dirty[0] & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"))) {
 				attr(div, "class", div_class_value);
 			}
+
+			if (dirty[0] & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*alt*/ ctx[23] ? /*to*/ ctx[26] : "")) {
+				attr(div, "aria-label", div_aria_label_value);
+			}
 		},
 		d(detaching) {
 			if (detaching) detach(li);
@@ -34470,7 +34478,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (57:12) {#if showImpliedRelations && impliedItems.length}
+// (59:12) {#if showImpliedRelations && impliedItems.length}
 function create_if_block_1$3(ctx) {
 	let div;
 	let h4;
@@ -34568,7 +34576,7 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (60:16) {#if impliedItems.length}
+// (62:16) {#if impliedItems.length}
 function create_if_block_2$2(ctx) {
 	let if_block_anchor;
 	let if_block = /*showRelationType*/ ctx[8] && /*realItems*/ ctx[20].length && create_if_block_3$1();
@@ -34601,7 +34609,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (61:18) {#if showRelationType && realItems.length}
+// (63:18) {#if showRelationType && realItems.length}
 function create_if_block_3$1(ctx) {
 	let h6;
 
@@ -34620,7 +34628,7 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (67:16) {#each impliedItems as { alt, cls, implied, to, parent }}
+// (69:16) {#each impliedItems as { alt, cls, implied, to, parent }}
 function create_each_block_2(ctx) {
 	let li;
 	let div;
@@ -34647,7 +34655,7 @@ function create_each_block_2(ctx) {
 			div = element("div");
 			t = text(t_value);
 			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"));
-			attr(div, "aria-label", div_aria_label_value = /*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : "");
+			attr(div, "aria-label", div_aria_label_value = (/*alt*/ ctx[23] ? `${/*to*/ ctx[26]}\n` : "") + (/*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : ""));
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
 			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[26] === /*currFile*/ ctx[1].basename
@@ -34676,7 +34684,7 @@ function create_each_block_2(ctx) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty[0] & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : "")) {
+			if (dirty[0] & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = (/*alt*/ ctx[23] ? `${/*to*/ ctx[26]}\n` : "") + (/*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : ""))) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
