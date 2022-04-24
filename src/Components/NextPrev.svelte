@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { openOrSwitch } from "obsidian-community-lib";
+  import { openOrSwitch, hoverPreview } from "obsidian-community-lib";
   import type { SquareItem } from "../interfaces";
   import type BCPlugin from "../main";
   import { linkClass } from "../Utils/ObsidianUtils";
@@ -9,6 +9,8 @@
   export let prev: SquareItem[];
 
   const { app } = plugin;
+
+  const activeLeafView = app.workspace.activeLeaf.view;
 </script>
 
 <div class="BC-NextPrev-Container">
@@ -18,6 +20,7 @@
         <div
           class="{linkClass(app, to, real)} BC-prev"
           on:click={async (e) => await openOrSwitch(app, to, e)}
+          on:mouseover={(e) => hoverPreview(e, activeLeafView, to)}
         >
           <strong>{field}</strong>
           {to}
@@ -31,6 +34,7 @@
         <div
           class="{linkClass(app, to, real)} BC-next"
           on:click={async (e) => await openOrSwitch(app, to, e)}
+          on:mouseover={(e) => hoverPreview(e, activeLeafView, to)}
         >
           {to} <strong>{field}</strong>
         </div>

@@ -21,13 +21,15 @@ export function addDataviewSettings(
       )
     )
     .addDropdown((dd: DropdownComponent) => {
+
       const options = {};
       fields.forEach((field) => (options[field] = field));
-      dd.addOptions(Object.assign(options, { "": "" }));
-      dd.onChange(async (field) => {
-        settings.dataviewNoteField = field;
-        await plugin.saveSettings();
-        await refreshIndex(plugin);
-      });
+      dd.addOptions(Object.assign(options, { "": "" }))
+        .setValue(settings.dataviewNoteField)
+        .onChange(async (field) => {
+          settings.dataviewNoteField = field;
+          await plugin.saveSettings();
+          await refreshIndex(plugin);
+        });
     });
 }

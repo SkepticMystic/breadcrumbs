@@ -1,7 +1,8 @@
 import { details } from "./BreadcrumbsSettingTab";
 import type BCPlugin from "../main";
-import { Setting } from "obsidian";
+import { MarkdownRenderer, Setting } from "obsidian";
 import { refreshIndex } from "../refreshIndex";
+
 
 export function addRelationSettings(
   plugin: BCPlugin,
@@ -10,12 +11,15 @@ export function addRelationSettings(
   const { settings } = plugin;
   const relationDetails = details("Relationships", containerEl);
 
-  // MarkdownRenderer.renderMarkdown(
-  //   "```mermaid\nflowchart BT\nMe -->|up| Dad\nDad -->|same| Aunt\nMe -->|up| Aunt\n```",
-  //   containerEl,
-  //   "",
-  //   null
-  // );
+  function mermaidDiagram(diagramStr: string) {
+    MarkdownRenderer.renderMarkdown(
+      diagramStr,
+      relationDetails.createDiv(),
+      "",
+      null
+    );
+  }
+
 
   relationDetails.createEl("p", {
     text: "Here you can toggle on/off different types of implied relationships. All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.\nAll implied relationships are given a CSS class of the type of implied relation, so you can style them differently. For example `.BC-Aunt`.",
@@ -33,6 +37,9 @@ export function addRelationSettings(
           await refreshIndex(plugin);
         })
     );
+
+  mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nSister -->|up| Dad\nMe <-.->|same| Sister\n```")
+
   new Setting(relationDetails)
     .setName("Siblings' Siblings")
     .setDesc("Treat your siblings' siblings as your siblings")
@@ -45,6 +52,8 @@ export function addRelationSettings(
           await refreshIndex(plugin);
         })
     );
+
+  mermaidDiagram("```mermaid\nflowchart LR\nMe -->|same| Sister\nMe -->|same| Brother\nSister <-.->|same| Brother\n```")
 
   new Setting(relationDetails)
     .setName("Siblings' Parent is Parent")
@@ -59,6 +68,8 @@ export function addRelationSettings(
         })
     );
 
+  mermaidDiagram("```mermaid\nflowchart LR\nSister -->|up| Dad\nSister <-->|same| Me\nMe -.->|up| Dad\n```")
+
   new Setting(relationDetails)
     .setName("Aunt/Uncle")
     .setDesc("Treat your parent's siblings as your parents (aunts/uncles)")
@@ -71,6 +82,9 @@ export function addRelationSettings(
           await refreshIndex(plugin);
         })
     );
+
+  mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nDad -->|same| Uncle\nMe -.->|up| Uncle\n```")
+
   new Setting(relationDetails)
     .setName("Cousins")
     .setDesc(
@@ -85,6 +99,8 @@ export function addRelationSettings(
           await refreshIndex(plugin);
         })
     );
+
+  mermaidDiagram("```mermaid\nflowchart LR\nMe -->|up| Dad\nDad -->|same| Uncle\nUncle -->|down| Cousin\nMe <-.->|same| Cousin\n```")
 
   new Setting(relationDetails)
     .setName("Make Current Note an Implied Sibling")

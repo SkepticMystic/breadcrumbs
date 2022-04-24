@@ -20,7 +20,7 @@ import {
   DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
-  STATS_VIEW,
+  // STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   TREE_VIEW,
@@ -41,7 +41,7 @@ import { getFields } from "./Utils/HierUtils";
 import { waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
-import StatsView from "./Views/StatsView";
+// import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { BCStore } from "./Visualisations/Juggl";
@@ -49,14 +49,20 @@ import { VisModal } from "./Visualisations/VisModal";
 
 export default class BCPlugin extends Plugin {
   settings: BCSettings;
+
   visited: [string, HTMLDivElement][] = [];
+
   mainG: MultiGraph;
   closedG: MultiGraph;
+
   activeLeafChange: EventRef = undefined;
   activeLeafSave: EventRef = undefined;
   layoutChange: EventRef = undefined;
+
   db: Debugger;
+
   VIEWS: ViewInfo[];
+
   api: BCAPII;
   private bcStore: BCStore;
 
@@ -111,13 +117,17 @@ export default class BCPlugin extends Plugin {
     if (enableRelationSuggestor)
       this.registerEditorSuggest(new RelationSuggestor(this));
 
+
+    if (settings.limitTrailCheckboxes.length === 0) {
+      settings.limitTrailCheckboxes = getFields(settings.userHiers)
+    }
+
     const {
       openMatrixOnLoad,
-      openStatsOnLoad,
+      // openStatsOnLoad,
       openDuckOnLoad,
       openDownOnLoad,
       showBCs,
-      showBCsInEditLPMode,
       userHiers,
     } = settings;
 
@@ -128,12 +138,12 @@ export default class BCPlugin extends Plugin {
         constructor: MatrixView,
         openOnLoad: openMatrixOnLoad,
       },
-      {
-        plain: "Stats",
-        type: STATS_VIEW,
-        constructor: StatsView,
-        openOnLoad: openStatsOnLoad,
-      },
+      // {
+      //   plain: "Stats",
+      //   type: STATS_VIEW,
+      //   constructor: StatsView,
+      //   openOnLoad: openStatsOnLoad,
+      // },
       {
         plain: "Duck",
         type: DUCK_VIEW,
@@ -233,7 +243,7 @@ export default class BCPlugin extends Plugin {
       id: "Toggle-trail-in-Edit&LP",
       name: "Toggle: Show Trail/Grid in Edit & LP mode",
       callback: async () => {
-        settings.showBCsInEditLPMode = !showBCsInEditLPMode;
+        settings.showBCsInEditLPMode = !settings.showBCsInEditLPMode;
         await this.saveSettings();
         await drawTrail(this);
       },
@@ -262,11 +272,6 @@ export default class BCPlugin extends Plugin {
       name: "Copy a Global Index to the clipboard",
       callback: async () => await copyGlobalIndex(this),
     });
-    // this.addCommand({
-    //   id: "in-yaml",
-    //   name: "TEST: Inside YAML",
-    //   callback: async () => console.log(DateTime.now().toFormat("yyyy 'DN'")),
-    // });
 
     ["up", "down", "next", "prev"].forEach((dir: Directions) => {
       this.addCommand({
@@ -318,11 +323,11 @@ export default class BCPlugin extends Plugin {
   }
 
   loadSettings = async () =>
-    (this.settings = Object.assign(
-      {},
-      DEFAULT_SETTINGS,
-      await this.loadData()
-    ));
+  (this.settings = Object.assign(
+    {},
+    DEFAULT_SETTINGS,
+    await this.loadData()
+  ));
 
   saveSettings = async () => await this.saveData(this.settings);
 

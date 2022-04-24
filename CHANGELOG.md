@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.0.0...3.1.0) (2022-04-21)
+
+
+### Features
+
+* **List/Matrix View:** :sparkles: If alias is showing, add aria-label for original name ([e6e782a](https://github.com/SkepticMystic/breadcrumbs/commit/e6e782ae5ec9e89b42078df6e5609f3a4dd86c6c))
+
+## [3.0.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.1...3.0.0) (2022-04-20)
+
+
+### Features
+
+* **impliedRelations:** :sparkles: Working Mermaid diagrams to visualise the implied relations ([eb3c416](https://github.com/SkepticMystic/breadcrumbs/commit/eb3c416f03312e1c55aa3cb6bdb7392965c21f62))
+
+### [2.58.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.58.0...2.58.1) (2022-04-18)
+
+
+### Bug Fixes
+
+* **LimitTrailFields:** :bug: Reset limitTrailCheckboxes if it's empty ([208a957](https://github.com/SkepticMystic/breadcrumbs/commit/208a95720f9cc06d47f302233a707863caca3790))
+
+## [2.58.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.2...2.58.0) (2022-04-18)
+
+
+### Features
+
+* **Grid View:** :sparkles: Buttons to change max depth ([51a8a73](https://github.com/SkepticMystic/breadcrumbs/commit/51a8a7310b7011fb42c4e158eb35186772e3f906))
+
+### [2.57.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.1...2.57.2) (2022-04-18)
+
+
+### Bug Fixes
+
+* **DataviewNotes:** :bug: Check for links in query ([51d0b67](https://github.com/SkepticMystic/breadcrumbs/commit/51d0b677acb81e7f7559e20a344d625ad48436af))
+
+### [2.57.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.57.0...2.57.1) (2022-04-18)
+
+## [2.57.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.56.0...2.57.0) (2022-04-18)
+
+
+### Features
+
+* **Codeblock:** :sparkles: Add `fields` field to limit codeblock tree to only show given fields ([d6fedda](https://github.com/SkepticMystic/breadcrumbs/commit/d6fedda7d740019123265eb9ef340d44877f36e2))
+
+
+### Bug Fixes
+
+* :bug: Add description for BC-IGNORE field ([a0b749b](https://github.com/SkepticMystic/breadcrumbs/commit/a0b749be1b56e7e360bf0c98162bcf0cdc29fe35))
+* :bug: Alternative hierarchy default fields were being overwritten on Settings.onload ([dbb7ad6](https://github.com/SkepticMystic/breadcrumbs/commit/dbb7ad6dde57dec871639d90d0c46d4e994b8e07))
+* :truck: Move Juggl setting to better place ([903049f](https://github.com/SkepticMystic/breadcrumbs/commit/903049fe975f530b631b38b77203de92fb5465be))
+* **Codeblock:** :bug: hoverPreview on Codeblock Trees ([e26ff93](https://github.com/SkepticMystic/breadcrumbs/commit/e26ff93d257df9e3c14651351709d0e4ac2e268f))
+* **Codeblock:** :loud_sound: End log group if `err` is non-empty ([8a83dbf](https://github.com/SkepticMystic/breadcrumbs/commit/8a83dbf782aab5cbea6a0e065e00fd99cb17a70f))
+
+## [2.56.0](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.2...2.56.0) (2022-04-17)
+
+
+### Features
+
+* :sparkles: `BC-ignore: true` to ignore a note from BC entirely ([9e719a7](https://github.com/SkepticMystic/breadcrumbs/commit/9e719a7b53742a80be3a1adc14889472032d192e))
+* **API:** :sparkles: Add refreshIndex method ([#369](https://github.com/SkepticMystic/breadcrumbs/issues/369)) ([f9b97b9](https://github.com/SkepticMystic/breadcrumbs/commit/f9b97b9b6f4942f8e4dcc05ea1c25962f23f5373))
+* **Hierarchy Note:** :sparkles: Allow next and prev directions ([#327](https://github.com/SkepticMystic/breadcrumbs/issues/327)) ([657a2d3](https://github.com/SkepticMystic/breadcrumbs/commit/657a2d3ec7d2fbe38814d25ccc91c56c67a9296d))
+* **RelationSuggester:** :sparkles: Add wikilink brackets after relation selection ([042dd33](https://github.com/SkepticMystic/breadcrumbs/commit/042dd3307e300c8ed4a0f376713a9dea4feba05d))
+
+
+### Bug Fixes
+
+* **nextPrev:** :bug: hoverPreview now works on NextPrev View (fix [#356](https://github.com/SkepticMystic/breadcrumbs/issues/356)) ([8191522](https://github.com/SkepticMystic/breadcrumbs/commit/8191522d2315b143a48f24cbd405cd51ee8aa790))
+* **Path View:** :bug: Toggle Trail in Live Preview Mode command wasn't using the latest value to toggle the setting ([#364](https://github.com/SkepticMystic/breadcrumbs/issues/364)) ([42b2b67](https://github.com/SkepticMystic/breadcrumbs/commit/42b2b6745b89b40a4f64639db6fffac4bbd0b6f4))
+
 ### [2.55.2](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.1...2.55.2) (2022-02-13)
 
 ### [2.55.1](https://github.com/SkepticMystic/breadcrumbs/compare/2.55.0...2.55.1) (2022-02-12)

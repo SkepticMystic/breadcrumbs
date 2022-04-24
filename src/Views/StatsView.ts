@@ -1,52 +1,52 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
-import { STATS_VIEW } from "../constants";
-import type BCPlugin from "../main";
-import Stats from "../Components/Stats.svelte";
+// import { ItemView, WorkspaceLeaf } from "obsidian";
+// import { STATS_VIEW } from "../constants";
+// import type BCPlugin from "../main";
+// import Stats from "../Components/Stats.svelte";
 
-export default class StatsView extends ItemView {
-  private plugin: BCPlugin;
-  private view: Stats;
+// export default class StatsView extends ItemView {
+//   private plugin: BCPlugin;
+//   private view: Stats;
 
-  constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
-    super(leaf);
-    this.plugin = plugin;
-  }
+//   constructor(leaf: WorkspaceLeaf, plugin: BCPlugin) {
+//     super(leaf);
+//     this.plugin = plugin;
+//   }
 
-  async onload(): Promise<void> {
-    super.onload();
-    this.app.workspace.onLayoutReady(() => {
-      setTimeout(
-        async () => await this.draw(),
-        this.plugin.settings.dvWaitTime
-      );
-    });
-  }
+//   async onload(): Promise<void> {
+//     super.onload();
+//     this.app.workspace.onLayoutReady(() => {
+//       setTimeout(
+//         async () => await this.draw(),
+//         this.plugin.settings.dvWaitTime
+//       );
+//     });
+//   }
 
-  getViewType() {
-    return STATS_VIEW;
-  }
-  getDisplayText() {
-    return "Breadcrumbs Stats";
-  }
+//   getViewType() {
+//     return STATS_VIEW;
+//   }
+//   getDisplayText() {
+//     return "Breadcrumbs Stats";
+//   }
 
-  icon = "info";
+//   icon = "info";
 
-  async onOpen(): Promise<void> {
-    await this.plugin.saveSettings();
-  }
+//   async onOpen(): Promise<void> {
+//     await this.plugin.saveSettings();
+//   }
 
-  onClose(): Promise<void> {
-    this.view?.$destroy();
-    return Promise.resolve();
-  }
+//   onClose(): Promise<void> {
+//     this.view?.$destroy();
+//     return Promise.resolve();
+//   }
 
-  async draw(): Promise<void> {
-    const { contentEl, plugin } = this;
-    contentEl.empty();
+//   async draw(): Promise<void> {
+//     const { contentEl, plugin } = this;
+//     contentEl.empty();
 
-    this.view = new Stats({
-      target: contentEl,
-      props: { plugin },
-    });
-  }
-}
+//     this.view = new Stats({
+//       target: contentEl,
+//       props: { plugin },
+//     });
+//   }
+// }

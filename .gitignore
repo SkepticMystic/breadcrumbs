@@ -16,4 +16,4 @@ data.json
 
 *.received.*
 test/*.js
-src/*.js
+src/**/*.js

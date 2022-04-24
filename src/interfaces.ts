@@ -10,7 +10,7 @@ import type {
 } from "./constants";
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
-import type StatsView from "./Views/StatsView";
+// import type StatsView from "./Views/StatsView";
 import type TreeView from "./Views/TreeView";
 
 export type DebugLevel = keyof LogLevel;
@@ -24,7 +24,6 @@ export interface BCSettings {
   dvWaitTime: number;
   dataviewNoteField: string;
   debugMode: DebugLevel;
-  defaultView: boolean;
   dendronNoteDelimiter: string;
   dendronNoteField: string;
   dateFormat: string;
@@ -33,12 +32,10 @@ export interface BCSettings {
   dateNoteAddMonth: string;
   dateNoteAddYear: string;
   downViewWrap: boolean;
-  dotsColour: string;
   enableAlphaSort: boolean;
   enableRelationSuggestor: boolean;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
-  gridDots: boolean;
   gridHeatmap: boolean;
   heatmapColour: string;
   hierarchyNotes: string[];
@@ -75,7 +72,7 @@ export interface BCSettings {
   namingSystemEndsWithDelimiter: boolean;
   noPathMessage: string;
   openMatrixOnLoad: boolean;
-  openStatsOnLoad: boolean;
+  // openStatsOnLoad: boolean;
   openDuckOnLoad: boolean;
   openDownOnLoad: boolean;
   overflowMLView: boolean;
@@ -133,13 +130,13 @@ export type RawValue =
 export interface dvFrontmatterCache {
   file: TFile;
   [field: string]:
-    | string
-    | string[]
-    | string[][]
-    | dvLink
-    | dvLink[]
-    | Pos
-    | TFile;
+  | string
+  | string[]
+  | string[][]
+  | dvLink
+  | dvLink[]
+  | Pos
+  | TFile;
 }
 
 export type Directions = typeof DIRECTIONS[number];
@@ -149,7 +146,9 @@ export type UserHier = {
 export type CodeblockType = typeof CODEBLOCK_TYPES[number];
 export type CodeblockFields = typeof CODEBLOCK_FIELDS[number];
 
-export type MyView = MatrixView | DucksView | StatsView | TreeView;
+export type MyView = MatrixView | DucksView |
+  // StatsView | 
+  TreeView;
 export type ViewInfo = {
   plain: string;
   type: string;
@@ -351,6 +350,9 @@ export interface BCAPII {
 
   /** Build the obsidian graph as a graphology MultiGraph */
   buildObsGraph: () => MultiGraph;
+
+  /** Refresh the Breadcrumb Index programmatically. */
+  refreshIndex: () => Promise<void>
 
   /**
    * Return a subgraph of all nodes & edges with `dirs.includes(a.dir)`

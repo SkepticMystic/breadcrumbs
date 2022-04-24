@@ -1,7 +1,7 @@
 import type { MultiGraph } from "graphology";
 import { warn } from "loglevel";
 import { Notice } from "obsidian";
-import { BC_DV_NOTE, BC_DV_NOTE_FIELD, DATAVIEW_MISSING } from "../constants";
+import { BC_DV_NOTE, BC_DV_NOTE_FIELD, BC_IGNORE, DATAVIEW_MISSING } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
 import {
@@ -30,20 +30,27 @@ export function addDataviewNotesToGraph(
 
   eligableAlts.forEach((altFile) => {
     const basename = getDVBasename(altFile.file);
-    const query = altFile[BC_DV_NOTE] as string;
+
+    let query = altFile[BC_DV_NOTE] as (string | Record<string, string>);
+    if (query.hasOwnProperty('path')) {
+      //@ts-ignore
+      query = `[[${query.path}]]`;
+    }
+
 
     let field =
       (altFile[BC_DV_NOTE_FIELD] as string) ?? (dataviewNoteField || fields[0]);
 
     let targets: dvFrontmatterCache[] = [];
     try {
-      targets = dv.pages(query).values;
+      targets = dv.pages(<string>query).values;
     } catch (er) {
       new Notice(`${query} is not a valid Dataview from-query`);
       warn(er);
     }
 
     for (const target of targets) {
+      if (target[BC_IGNORE]) continue;
       const targetBN = getDVBasename(target.file);
       const sourceOrder = getSourceOrder(altFile);
       const targetOrder = getTargetOrder(frontms, targetBN);

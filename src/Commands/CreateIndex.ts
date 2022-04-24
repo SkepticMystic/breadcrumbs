@@ -64,14 +64,10 @@ export function createIndex(
       if (
         visited.hasOwnProperty(currNode) &&
         visited[currNode].includes(depth)
-      ) {
-        continue;
-      } else {
-        index += `${indent.repeat(depth)}- ${
-          asWikilinks ? makeWiki(currNode) : currNode
-        }`;
-
-        index += "\n";
+      ) continue
+      else {
+        index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode
+          }\n`;
 
         if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
         visited[currNode].push(depth);

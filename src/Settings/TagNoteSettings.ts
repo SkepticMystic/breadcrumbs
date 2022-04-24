@@ -19,15 +19,17 @@ export function addTagNoteSettings(
       )
     )
     .addDropdown((dd: DropdownComponent) => {
+
       const options = {};
       getFields(settings.userHiers).forEach(
         (field) => (options[field] = field)
       );
-      dd.addOptions(Object.assign(options, { "": "" }));
-      dd.onChange(async (field) => {
-        settings.tagNoteField = field;
-        await plugin.saveSettings();
-        await refreshIndex(plugin);
-      });
+      dd.addOptions(Object.assign(options, { "": "" }))
+        .setValue(settings.tagNoteField)
+        .onChange(async (field) => {
+          settings.tagNoteField = field;
+          await plugin.saveSettings();
+          await refreshIndex(plugin);
+        });
     });
 }

@@ -4,6 +4,7 @@ import {
   BC_FOLDER_NOTE,
   BC_FOLDER_NOTE_RECURSIVE,
   BC_FOLDER_NOTE_SUBFOLDERS,
+  BC_IGNORE,
 } from "../constants";
 import type { dvFrontmatterCache } from "../interfaces";
 import type BCPlugin from "../main";
@@ -45,7 +46,7 @@ export function addFolderNotesToGraph(
       .map((ff) => ff.file)
       .filter(
         (other) =>
-          getFolderName(other) === topFolderName && other.path !== file.path
+          getFolderName(other) === topFolderName && other.path !== file.path && !other[BC_IGNORE]
       )
       .map(getDVBasename);
 

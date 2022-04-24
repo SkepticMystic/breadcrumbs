@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { TFile } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
+  import MatrixButtons from "./MatrixButtons.svelte";
   import type { SquareProps } from "../interfaces";
   import { dropPathNDendron } from "../Utils/generalUtils";
   import type MatrixView from "../Views/MatrixView";
@@ -20,6 +21,10 @@
     overflowMLView,
   } = settings;
 </script>
+
+<div class="BC-matrix-buttons">
+  <MatrixButtons {matrixView} />
+</div>
 
 <div
   class="BC-Matrix  markdown-preview-view {hierSquares.length
@@ -51,6 +56,8 @@
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(event) =>
                         hoverPreview(event, matrixView, to)}
+                      aria-label={alt ? to : ""}
+                      aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {alt ?? dropPathNDendron(to, settings)}
                     </div>
@@ -61,7 +68,7 @@
 
             {#if showImpliedRelations && impliedItems.length}
               <div class="BC-Matrix-headers">
-                <h4 class="BC-Matrix-header" />
+                <h4 class="BC-Matrix-header">{" "}</h4>
                 {#if impliedItems.length}
                   {#if showRelationType && realItems.length}
                     <h6 class="BC-Matrix-header">Implied</h6>
@@ -82,7 +89,8 @@
                         : ''}"
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(e) => hoverPreview(e, matrixView, to)}
-                      aria-label={parent ? "↑ " + parent : ""}
+                      aria-label={(alt ? `${to}\n` : "") +
+                        (parent ? "↑ " + parent : "")}
                       aria-label-position={rlLeaf ? "left" : "right"}
                     >
                       {alt ?? dropPathNDendron(to, settings)}

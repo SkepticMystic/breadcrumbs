@@ -2,6 +2,7 @@ import type { MultiGraph } from "graphology";
 import { info } from "loglevel";
 import type { App, TFile } from "obsidian";
 import {
+  BC_IGNORE,
   BC_TAG_NOTE,
   BC_TAG_NOTE_EXACT,
   BC_TAG_NOTE_FIELD,
@@ -58,7 +59,7 @@ export function addTagNotesToGraph(
 
     const targets = frontms
       .map((ff) => ff.file)
-      .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file))
+      .filter((file) => file.path !== tagNoteFile.path && hasThisTag(file) && !file[BC_IGNORE])
       .map(getDVBasename);
     info({ targets });
 

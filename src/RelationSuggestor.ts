@@ -56,15 +56,16 @@ export class RelationSuggestor extends EditorSuggest<string> {
 
   selectSuggestion(suggestion: string): void {
     const { context, plugin } = this;
-    if (context) {
-      const trig = plugin.settings.relSuggestorTrigger;
-      const { start, end, editor } = context;
+    if (!context) return
 
-      editor.replaceRange(
-        suggestion + (isInsideYaml(plugin.app) ? ": " : ":: "),
-        { ch: start.ch + 1 - trig.length, line: start.line },
-        end
-      );
-    }
+    const trig = plugin.settings.relSuggestorTrigger;
+    const { start, end, editor } = context;
+
+    const replacement = suggestion + (isInsideYaml(plugin.app) ? ": " : ":: ") + '[[';
+    editor.replaceRange(
+      replacement,
+      { ch: start.ch + 1 - trig.length, line: start.line },
+      end
+    );
   }
 }

@@ -9,7 +9,7 @@ import type {
 import type { IJugglSettings } from "juggl-api";
 
 export const MATRIX_VIEW = "BC-matrix";
-export const STATS_VIEW = "BC-stats";
+// export const STATS_VIEW = "BC-stats";
 export const DUCK_VIEW = "BC-ducks";
 export const TREE_VIEW = "BC-tree";
 
@@ -139,13 +139,13 @@ export const [
   BC_I_REFLEXIVE,
   BC_I_PARENT,
 ] = [
-  "BC-Aunt",
-  "BC-Cousin",
-  "BC-Sibling-1",
-  "BC-Sibling-2",
-  "BC-Reflexive",
-  "BC-Parent",
-];
+    "BC-Aunt",
+    "BC-Cousin",
+    "BC-Sibling-1",
+    "BC-Sibling-2",
+    "BC-Reflexive",
+    "BC-Parent",
+  ];
 
 export const [
   BC_FOLDER_NOTE,
@@ -160,26 +160,28 @@ export const [
   BC_REGEX_NOTE_FIELD,
   BC_DV_NOTE,
   BC_DV_NOTE_FIELD,
+  BC_IGNORE,
   BC_IGNORE_DENDRON,
   BC_HIDE_TRAIL,
   BC_ORDER,
 ] = [
-  "BC-folder-note",
-  "BC-folder-note-subfolders",
-  "BC-folder-note-recursive",
-  "BC-tag-note",
-  "BC-tag-note-field",
-  "BC-tag-note-exact",
-  "BC-link-note",
-  "BC-traverse-note",
-  "BC-regex-note",
-  "BC-regex-note-field",
-  "BC-dataview-note",
-  "BC-dataview-note-field",
-  "BC-ignore-dendron",
-  "BC-hide-trail",
-  "BC-order",
-];
+    "BC-folder-note",
+    "BC-folder-note-subfolders",
+    "BC-folder-note-recursive",
+    "BC-tag-note",
+    "BC-tag-note-field",
+    "BC-tag-note-exact",
+    "BC-link-note",
+    "BC-traverse-note",
+    "BC-regex-note",
+    "BC-regex-note-field",
+    "BC-dataview-note",
+    "BC-dataview-note-field",
+    "BC-ignore",
+    "BC-ignore-dendron",
+    "BC-hide-trail",
+    "BC-order",
+  ];
 
 export const BC_FIELDS_INFO = [
   {
@@ -267,6 +269,13 @@ export const BC_FIELDS_INFO = [
     alt: false,
   },
   {
+    field: BC_IGNORE,
+    desc: "Tells Breadcrumbs to ignore a note from its index entirely. This is useful if you want to use Breadcrumbs to index notes, but you don't want to show them in the graph.",
+    afterYaml: ": true",
+    afterInline: ":: true",
+    alt: false,
+  },
+  {
     field: BC_IGNORE_DENDRON,
     desc: "Tells Breadcrumbs to not treat this note as a dendron note (only useful if the note name has you dendron splitter in it, usually a period `.`).",
     afterYaml: ": true",
@@ -282,7 +291,7 @@ export const BC_FIELDS_INFO = [
   },
   {
     field: BC_ORDER,
-    desc: "Set the order of this note in the List/Matrix view. A lower value places this note higher in the order.",
+    desc: "Set the order of this note in the Matrix view. A lower value places this note higher in the order.",
     afterYaml: ": ",
     afterInline: ":: ",
     alt: false,
@@ -322,11 +331,9 @@ export const DEFAULT_SETTINGS: BCSettings = {
   dateNoteAddMonth: "",
   dateNoteAddYear: "",
   debugMode: "WARN",
-  defaultView: true,
   dendronNoteDelimiter: ".",
   dendronNoteField: "up",
   downViewWrap: false,
-  dotsColour: "#000000",
   dvWaitTime: 5000,
   enableAlphaSort: true,
   enableRelationSuggestor: false,
@@ -335,7 +342,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   jugglLayout: "hierarchy",
   limitWriteBCCheckboxes: [],
   CHECKBOX_STATES_OVERWRITTEN: false,
-  gridDots: false,
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"
@@ -350,7 +356,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   refreshOnNoteChange: false,
   useAllMetadata: true,
   openMatrixOnLoad: true,
-  openStatsOnLoad: true,
+  // openStatsOnLoad: true,
   openDuckOnLoad: false,
   openDownOnLoad: true,
   overflowMLView: true,

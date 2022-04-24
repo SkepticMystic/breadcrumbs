@@ -28,6 +28,7 @@
         "impliedRelations",
         "DataviewNotes",
         "DateNotes",
-        "API"
+        "API",
+        "RelationSuggester"
     ]
 }

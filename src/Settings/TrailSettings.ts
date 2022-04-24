@@ -59,7 +59,7 @@ export function addTrailViewSettings(
     .setName("Views to show")
     .setDesc(
       "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
-        "Juggl requires having the Juggl plugin installed."
+      "Juggl requires having the Juggl plugin installed."
     )
     .addToggle((toggle) => {
       toggle
@@ -102,32 +102,6 @@ export function addTrailViewSettings(
         });
     });
 
-  new Setting(trailDetails)
-    .setName("Grid view dots")
-    .setDesc(
-      "If the grid view is visible, shows dots based on the file size of each cell."
-    )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.gridDots).onChange(async (value) => {
-        settings.gridDots = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-      })
-    );
-
-  const dotsColour = trailDetails.createDiv();
-  dotsColour.createEl("h4", {
-    text: "Dots colour",
-  });
-  const dotsColourPicker = dotsColour.createEl("input", {
-    type: "color",
-  });
-
-  dotsColourPicker.value = settings.dotsColour;
-  dotsColourPicker.addEventListener("change", async () => {
-    settings.dotsColour = dotsColourPicker.value;
-    await plugin.saveSettings();
-  });
 
   new Setting(trailDetails)
     .setName("Grid view heatmap")
@@ -258,6 +232,17 @@ export function addTrailViewSettings(
           await drawTrail(plugin);
         })
     );
+
+
+  new Setting(trailDetails)
+    .setName("Show up fields in Juggl")
+    .setDesc("Juggl will show both up and down fields")
+    .addToggle((toggle) => {
+      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+        settings.showUpInJuggl = value;
+        await plugin.saveSettings();
+      });
+    });
 
   new Setting(trailDetails)
     .setName("Juggl view layout")

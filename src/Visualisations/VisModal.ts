@@ -24,6 +24,7 @@ export function graphlibToD3(g: Graph): d3Graph {
       target: nodeIDs[t],
     });
   });
+
   return d3Graph;
 }
 

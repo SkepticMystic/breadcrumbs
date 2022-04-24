@@ -8,17 +8,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
   const { settings } = plugin;
   const generalDetails = details("General Options", containerEl);
 
-  new Setting(generalDetails)
-    .setName("Show Refresh Index Notice")
-    .setDesc(
-      "When Refreshing Index, should it show a notice once the operation is complete?"
-    )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.showRefreshNotice).onChange(async (value) => {
-        settings.showRefreshNotice = value;
-        await plugin.saveSettings();
-      })
-    );
+
 
   new Setting(generalDetails)
     .setName("Open Views by Default")
@@ -32,15 +22,15 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
           await plugin.saveSettings();
         });
     })
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Stats View")
-        .setValue(settings.openStatsOnLoad)
-        .onChange(async (value) => {
-          settings.openStatsOnLoad = value;
-          await plugin.saveSettings();
-        });
-    })
+    // .addToggle((toggle) => {
+    //   toggle
+    //     .setTooltip("Stats View")
+    //     .setValue(settings.openStatsOnLoad)
+    //     .onChange(async (value) => {
+    //       settings.openStatsOnLoad = value;
+    //       await plugin.saveSettings();
+    //     });
+    // })
     .addToggle((toggle) => {
       toggle
         .setTooltip("Ducks View")
@@ -82,20 +72,22 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     );
 
   new Setting(generalDetails)
-    .setName("Show up fields in Juggl")
-    .setDesc("Juggl will show both up and down fields")
-    .addToggle((toggle) => {
-      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
-        settings.showUpInJuggl = value;
+    .setName("Show Refresh Index Notice")
+    .setDesc(
+      "When Refreshing Index, should it show a notice once the operation is complete?"
+    )
+    .addToggle((toggle) =>
+      toggle.setValue(settings.showRefreshNotice).onChange(async (value) => {
+        settings.showRefreshNotice = value;
         await plugin.saveSettings();
-      });
-    });
+      })
+    );
 
   new Setting(generalDetails)
     .setName("Fields used for Alternative note names (Aliases)")
     .setDesc(
       fragWithHTML(
-        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the list/matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."
+        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."
       )
     )
     .addText((text) => {
@@ -146,6 +138,49 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
           settings.parseJugglLinksWithoutJuggl = value;
           await plugin.saveSettings();
         })
+    );
+
+
+  new Setting(generalDetails)
+    .setName("Enable Field Suggestor")
+    .setDesc(
+      fragWithHTML(
+        'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'
+      )
+    )
+    .addToggle((toggle) =>
+      toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
+        settings.fieldSuggestor = value;
+        await plugin.saveSettings();
+      })
+    );
+  new Setting(generalDetails)
+    .setName("Enable Relation Suggestor")
+    .setDesc(
+      fragWithHTML(
+        "Enable an editor suggestor which gets triggered by a custom string to show a list of relations from your hierarchies to insert."
+      )
+    )
+    .addToggle((toggle) =>
+      toggle
+        .setValue(settings.enableRelationSuggestor)
+        .onChange(async (value) => {
+          settings.enableRelationSuggestor = value;
+          await plugin.saveSettings();
+        })
+    );
+  new Setting(generalDetails)
+    .setName("Relation Suggestor Trigger")
+    .setDesc(
+      fragWithHTML(
+        "The string used to trigger the relation suggestor. Default is <code>\\</code>."
+      )
+    )
+    .addText((text) =>
+      text.setValue(settings.relSuggestorTrigger).onChange(async (value) => {
+        settings.relSuggestorTrigger = value;
+        await plugin.saveSettings();
+      })
     );
 
   if (plugin.app.plugins.plugins.dataview !== undefined) {
