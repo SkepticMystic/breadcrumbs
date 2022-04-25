@@ -33797,6 +33797,14 @@ async function drawTrail(plugin) {
         }
         else {
             const cmEditor = view.querySelector("div.cm-contentContainer");
+            const cmGutter = view.querySelector("div.cm-gutters");
+            // set padding top of gutter to match height of trailDiv
+            if (cmGutter) {
+                requestAnimationFrame(() => {
+                    const gutterHeight = trailDiv.getBoundingClientRect().height;
+                    cmGutter.style.paddingTop = `${gutterHeight + 4}px`;
+                });
+            }
             if (cmEditor) {
                 (_d = cmEditor.firstChild) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
                 // const gutters = document.querySelector('.cm-gutters')
