@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.2.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.1.1...3.2.0) (2022-04-25)
+
+
+### Features
+
+* **Path View:** :sparkles: Option to show Longest path ([4d9e1b5](https://github.com/SkepticMystic/breadcrumbs/commit/4d9e1b5cc58dfb3a43cd0c44ebd132f34b332854))
+
 ### [3.1.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.1.0...3.1.1) (2022-04-25)
 
 ## [3.1.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.0.0...3.1.0) (2022-04-21)
