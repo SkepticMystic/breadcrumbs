@@ -10,7 +10,6 @@ import type {
 } from "./constants";
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
-// import type StatsView from "./Views/StatsView";
 import type TreeView from "./Views/TreeView";
 
 export type DebugLevel = keyof LogLevel;
@@ -91,7 +90,7 @@ export interface BCSettings {
   rlLeaf: boolean;
   showBCs: boolean;
   showBCsInEditLPMode: boolean;
-  showAll: boolean;
+  showAll: string;
   showGrid: boolean;
   showImpliedRelations: boolean;
   showUpInJuggl: boolean;

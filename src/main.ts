@@ -41,7 +41,6 @@ import { getFields } from "./Utils/HierUtils";
 import { waitForCache } from "./Utils/ObsidianUtils";
 import DucksView from "./Views/DucksView";
 import MatrixView from "./Views/MatrixView";
-// import StatsView from "./Views/StatsView";
 import { drawTrail } from "./Views/TrailView";
 import TreeView from "./Views/TreeView";
 import { BCStore } from "./Visualisations/Juggl";
@@ -122,9 +121,12 @@ export default class BCPlugin extends Plugin {
       settings.limitTrailCheckboxes = getFields(settings.userHiers)
     }
 
+    if (typeof settings.showAll === 'boolean') {
+      settings.showAll = settings.showAll ? 'All' : 'Shortest'
+    }
+
     const {
       openMatrixOnLoad,
-      // openStatsOnLoad,
       openDuckOnLoad,
       openDownOnLoad,
       showBCs,
@@ -138,12 +140,6 @@ export default class BCPlugin extends Plugin {
         constructor: MatrixView,
         openOnLoad: openMatrixOnLoad,
       },
-      // {
-      //   plain: "Stats",
-      //   type: STATS_VIEW,
-      //   constructor: StatsView,
-      //   openOnLoad: openStatsOnLoad,
-      // },
       {
         plain: "Duck",
         type: DUCK_VIEW,

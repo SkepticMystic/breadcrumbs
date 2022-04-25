@@ -1,6 +1,7 @@
 import type { JugglLayouts } from "juggl-api";
 import { DropdownComponent, Notice, Setting } from "obsidian";
 import { isInVault } from "obsidian-community-lib/dist/utils";
+import { TRAIL_LENGTHS } from "../constants";
 import Checkboxes from "../Components/Checkboxes.svelte";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "../Utils/generalUtils";
@@ -177,14 +178,21 @@ export function addTrailViewSettings(
     .setDesc(
       "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? ✅ = all, ❌ = shortest"
     )
-    .addToggle((toggle) =>
-      toggle.setValue(settings.showAll).onChange(async (value) => {
-        settings.showAll = value;
+    .addDropdown(dd => {
+      const options = {}
+      TRAIL_LENGTHS.forEach(length => {
+        options[length] = length;
+      })
 
+      dd.addOptions(options);
+      dd.setValue(settings.showAll);
+      dd.onChange(async val => {
+        settings.showAll = val;
         await plugin.saveSettings();
         await drawTrail(plugin);
+
       })
-    );
+    })
 
   new Setting(trailDetails)
     .setName("Breadcrumb trail seperator")

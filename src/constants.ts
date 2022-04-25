@@ -27,6 +27,13 @@ export const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 /** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
 export const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
 
+
+export const TRAIL_LENGTHS = [
+  'Shortest',
+  'Longest',
+  'All'
+]
+
 export const VISTYPES: visTypes[] = [
   "Force Directed Graph",
   "Tidy Tree",
@@ -380,7 +387,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   squareDirectionsOrder: [0, 1, 2, 3, 4],
   limitTrailCheckboxes: [],
   limitJumpToFirstFields: [],
-  showAll: false,
+  showAll: 'All',
   noPathMessage: `This note has no real or implied parents`,
   tagNoteField: "",
   threadIntoNewPane: false,

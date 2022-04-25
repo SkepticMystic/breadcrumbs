@@ -3,6 +3,7 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
+  import { TRAIL_LENGTHS } from "../constants";
   import type BCPlugin from "../main";
   import { dropDendron } from "../Utils/generalUtils";
   import { getAlt } from "../Utils/ObsidianUtils";
@@ -14,7 +15,20 @@
   const { view } = app.workspace.activeLeaf;
   let { showAll, noPathMessage, trailSeperator } = settings;
 
-  $: trailsToShow = showAll ? sortedTrails : [sortedTrails[0]];
+  function getNextTrailLength(curr: string) {
+    return TRAIL_LENGTHS[
+      (TRAIL_LENGTHS.indexOf(curr) + 1) % TRAIL_LENGTHS.length
+    ];
+  }
+
+  let trail_length = showAll;
+
+  $: trailsToShow =
+    trail_length == "All"
+      ? sortedTrails
+      : trail_length == "Shortest"
+      ? [sortedTrails[0]]
+      : [sortedTrails.last()];
 </script>
 
 <span class="BC-trail-path-container">
@@ -43,8 +57,11 @@
 
   {#if sortedTrails.length > 1}
     <div>
-      <button class="button-div" on:click={() => (showAll = !showAll)}>
-        {showAll ? "Shortest" : "All"}
+      <button
+        class="button-div"
+        on:click={() => (trail_length = getNextTrailLength(trail_length))}
+      >
+        {trail_length}
       </button>
     </div>
   {/if}

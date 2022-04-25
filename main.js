@@ -2826,6 +2826,11 @@ const splitLinksRegex = new RegExp(/\[\[(.+?)\]\]/g);
 const dropHeaderOrAlias = new RegExp(/\[\[([^#|]+)\]\]/);
 /** A meta-regex that takes in a string of the form `/regex/flags`, and returns 2 groups, the inner `regex`, and the `flags`. */
 const regNFlags = new RegExp(/^.(.*?)\W(\w*)$/);
+const TRAIL_LENGTHS = [
+    'Shortest',
+    'Longest',
+    'All'
+];
 const VISTYPES = [
     "Force Directed Graph",
     "Tidy Tree",
@@ -3126,7 +3131,7 @@ const DEFAULT_SETTINGS = {
     squareDirectionsOrder: [0, 1, 2, 3, 4],
     limitTrailCheckboxes: [],
     limitJumpToFirstFields: [],
-    showAll: false,
+    showAll: 'All',
     noPathMessage: `This note has no real or implied parents`,
     tagNoteField: "",
     threadIntoNewPane: false,
@@ -15355,21 +15360,21 @@ function add_css$b() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[12] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
-	child_ctx[17] = i;
+	child_ctx[17] = list[i];
+	child_ctx[19] = i;
 	return child_ctx;
 }
 
-// (19:8) {:else}
+// (29:8) {:else}
 function create_else_block$3(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*trail*/ ctx[12];
+	let each_value_1 = /*trail*/ ctx[14];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -15393,7 +15398,7 @@ function create_else_block$3(ctx) {
 		},
 		p(ctx, dirty) {
 			if (dirty & /*trailSeperator, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 378) {
-				each_value_1 = /*trail*/ ctx[12];
+				each_value_1 = /*trail*/ ctx[14];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -15422,7 +15427,7 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (17:8) {#if !trail.length}
+// (27:8) {#if !trail.length}
 function create_if_block_1$4(ctx) {
 	let span;
 
@@ -15442,7 +15447,7 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (28:12) {#if i < trail.length - 1}
+// (38:12) {#if i < trail.length - 1}
 function create_if_block_2$3(ctx) {
 	let span;
 
@@ -15462,10 +15467,10 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (20:10) {#each trail as crumb, i}
+// (30:10) {#each trail as crumb, i}
 function create_each_block_1$4(ctx) {
 	let span;
-	let t0_value = (getAlt(/*crumb*/ ctx[15], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[15], /*settings*/ ctx[4])) + "";
+	let t0_value = (getAlt(/*crumb*/ ctx[17], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[17], /*settings*/ ctx[4])) + "";
 	let t0;
 	let t1;
 	let if_block_anchor;
@@ -15473,14 +15478,14 @@ function create_each_block_1$4(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[9](/*crumb*/ ctx[15], ...args);
+		return /*click_handler*/ ctx[10](/*crumb*/ ctx[17], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[10](/*crumb*/ ctx[15], ...args);
+		return /*mouseover_handler*/ ctx[11](/*crumb*/ ctx[17], ...args);
 	}
 
-	let if_block = /*i*/ ctx[17] < /*trail*/ ctx[12].length - 1 && create_if_block_2$3(ctx);
+	let if_block = /*i*/ ctx[19] < /*trail*/ ctx[14].length - 1 && create_if_block_2$3(ctx);
 
 	return {
 		c() {
@@ -15509,9 +15514,9 @@ function create_each_block_1$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*trailsToShow, plugin*/ 10 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[15], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[15], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
+			if (dirty & /*trailsToShow, plugin*/ 10 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[17], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[17], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (/*i*/ ctx[17] < /*trail*/ ctx[12].length - 1) {
+			if (/*i*/ ctx[19] < /*trail*/ ctx[14].length - 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -15535,13 +15540,13 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (15:4) {#each trailsToShow as trail}
+// (25:4) {#each trailsToShow as trail}
 function create_each_block$7(ctx) {
 	let div;
 	let t;
 
 	function select_block_type(ctx, dirty) {
-		if (!/*trail*/ ctx[12].length) return create_if_block_1$4;
+		if (!/*trail*/ ctx[14].length) return create_if_block_1$4;
 		return create_else_block$3;
 	}
 
@@ -15579,11 +15584,10 @@ function create_each_block$7(ctx) {
 	};
 }
 
-// (37:2) {#if sortedTrails.length > 1}
+// (47:2) {#if sortedTrails.length > 1}
 function create_if_block$7(ctx) {
 	let div;
 	let button;
-	let t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "";
 	let t;
 	let mounted;
 	let dispose;
@@ -15592,7 +15596,7 @@ function create_if_block$7(ctx) {
 		c() {
 			div = element("div");
 			button = element("button");
-			t = text(t_value);
+			t = text(/*trail_length*/ ctx[2]);
 			attr(button, "class", "button-div");
 		},
 		m(target, anchor) {
@@ -15601,12 +15605,12 @@ function create_if_block$7(ctx) {
 			append(button, t);
 
 			if (!mounted) {
-				dispose = listen(button, "click", /*click_handler_1*/ ctx[11]);
+				dispose = listen(button, "click", /*click_handler_1*/ ctx[12]);
 				mounted = true;
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*showAll*/ 4 && t_value !== (t_value = (/*showAll*/ ctx[2] ? "Shortest" : "All") + "")) set_data(t, t_value);
+			if (dirty & /*trail_length*/ 4) set_data(t, /*trail_length*/ ctx[2]);
 		},
 		d(detaching) {
 			if (detaching) detach(div);
@@ -15709,9 +15713,15 @@ function instance$k($$self, $$props, $$invalidate) {
 	const { settings, app } = plugin;
 	const { view } = app.workspace.activeLeaf;
 	let { showAll, noPathMessage, trailSeperator } = settings;
+
+	function getNextTrailLength(curr) {
+		return TRAIL_LENGTHS[(TRAIL_LENGTHS.indexOf(curr) + 1) % TRAIL_LENGTHS.length];
+	}
+
+	let trail_length = showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
 	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
-	const click_handler_1 = () => $$invalidate(2, showAll = !showAll);
+	const click_handler_1 = () => $$invalidate(2, trail_length = getNextTrailLength(trail_length));
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -15719,21 +15729,26 @@ function instance$k($$self, $$props, $$invalidate) {
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty & /*showAll, sortedTrails*/ 5) {
-			$$invalidate(3, trailsToShow = showAll ? sortedTrails : [sortedTrails[0]]);
+		if ($$self.$$.dirty & /*trail_length, sortedTrails*/ 5) {
+			$$invalidate(3, trailsToShow = trail_length == "All"
+			? sortedTrails
+			: trail_length == "Shortest"
+				? [sortedTrails[0]]
+				: [sortedTrails.last()]);
 		}
 	};
 
 	return [
 		sortedTrails,
 		plugin,
-		showAll,
+		trail_length,
 		trailsToShow,
 		settings,
 		app,
 		view,
 		noPathMessage,
 		trailSeperator,
+		getNextTrailLength,
 		click_handler,
 		mouseover_handler,
 		click_handler_1
@@ -38935,11 +38950,19 @@ function addTrailViewSettings(plugin, viewDetails) {
     new obsidian.Setting(trailDetails)
         .setName("Default: All or Shortest")
         .setDesc("If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? ✅ = all, ❌ = shortest")
-        .addToggle((toggle) => toggle.setValue(settings.showAll).onChange(async (value) => {
-        settings.showAll = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-    }));
+        .addDropdown(dd => {
+        const options = {};
+        TRAIL_LENGTHS.forEach(length => {
+            options[length] = length;
+        });
+        dd.addOptions(options);
+        dd.setValue(settings.showAll);
+        dd.onChange(async (val) => {
+            settings.showAll = val;
+            await plugin.saveSettings();
+            await drawTrail(plugin);
+        });
+    });
     new obsidian.Setting(trailDetails)
         .setName("Breadcrumb trail seperator")
         .setDesc("The character to show between crumbs in the breadcrumb trail. The default is '→'")
@@ -62371,9 +62394,10 @@ class BCPlugin extends obsidian.Plugin {
         if (settings.limitTrailCheckboxes.length === 0) {
             settings.limitTrailCheckboxes = getFields(settings.userHiers);
         }
-        const { openMatrixOnLoad, 
-        // openStatsOnLoad,
-        openDuckOnLoad, openDownOnLoad, showBCs, userHiers, } = settings;
+        if (typeof settings.showAll === 'boolean') {
+            settings.showAll = settings.showAll ? 'All' : 'Shortest';
+        }
+        const { openMatrixOnLoad, openDuckOnLoad, openDownOnLoad, showBCs, userHiers, } = settings;
         this.VIEWS = [
             {
                 plain: "Matrix",
@@ -62381,12 +62405,6 @@ class BCPlugin extends obsidian.Plugin {
                 constructor: MatrixView,
                 openOnLoad: openMatrixOnLoad,
             },
-            // {
-            //   plain: "Stats",
-            //   type: STATS_VIEW,
-            //   constructor: StatsView,
-            //   openOnLoad: openStatsOnLoad,
-            // },
             {
                 plain: "Duck",
                 type: DUCK_VIEW,
