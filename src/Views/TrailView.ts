@@ -212,6 +212,16 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       view.querySelector("div.markdown-preview-sizer").before(trailDiv);
     } else {
       const cmEditor = view.querySelector("div.cm-contentContainer");
+
+      const cmGutter = view.querySelector("div.cm-gutters");
+      // set padding top of gutter to match height of trailDiv
+      if (cmGutter) {
+        requestAnimationFrame(() => {
+          const gutterHeight = trailDiv.getBoundingClientRect().height;
+          cmGutter.style.paddingTop = `${gutterHeight + 4}px`;
+        });
+      }
+
       if (cmEditor) {
         cmEditor.firstChild?.before(trailDiv)
         // const gutters = document.querySelector('.cm-gutters')
