@@ -15364,21 +15364,21 @@ function add_css$b() {
 
 function get_each_context$7(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$4(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[18] = list[i];
-	child_ctx[20] = i;
+	child_ctx[17] = list[i];
+	child_ctx[19] = i;
 	return child_ctx;
 }
 
-// (29:8) {:else}
+// (26:8) {:else}
 function create_else_block$3(ctx) {
 	let each_1_anchor;
-	let each_value_1 = /*trail*/ ctx[15];
+	let each_value_1 = /*trail*/ ctx[14];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -15402,7 +15402,7 @@ function create_else_block$3(ctx) {
 		},
 		p(ctx, dirty) {
 			if (dirty & /*trailSeperator, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 378) {
-				each_value_1 = /*trail*/ ctx[15];
+				each_value_1 = /*trail*/ ctx[14];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -15431,7 +15431,7 @@ function create_else_block$3(ctx) {
 	};
 }
 
-// (27:8) {#if !trail.length}
+// (24:8) {#if !trail.length}
 function create_if_block_1$4(ctx) {
 	let span;
 
@@ -15451,7 +15451,7 @@ function create_if_block_1$4(ctx) {
 	};
 }
 
-// (38:12) {#if i < trail.length - 1}
+// (35:12) {#if i < trail.length - 1}
 function create_if_block_2$3(ctx) {
 	let span;
 
@@ -15471,10 +15471,10 @@ function create_if_block_2$3(ctx) {
 	};
 }
 
-// (30:10) {#each trail as crumb, i}
+// (27:10) {#each trail as crumb, i}
 function create_each_block_1$4(ctx) {
 	let span;
-	let t0_value = (getAlt(/*crumb*/ ctx[18], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[18], /*settings*/ ctx[4])) + "";
+	let t0_value = (getAlt(/*crumb*/ ctx[17], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[17], /*settings*/ ctx[4])) + "";
 	let t0;
 	let t1;
 	let if_block_anchor;
@@ -15482,14 +15482,14 @@ function create_each_block_1$4(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[10](/*crumb*/ ctx[18], ...args);
+		return /*click_handler*/ ctx[9](/*crumb*/ ctx[17], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[11](/*crumb*/ ctx[18], ...args);
+		return /*mouseover_handler*/ ctx[10](/*crumb*/ ctx[17], ...args);
 	}
 
-	let if_block = /*i*/ ctx[20] < /*trail*/ ctx[15].length - 1 && create_if_block_2$3(ctx);
+	let if_block = /*i*/ ctx[19] < /*trail*/ ctx[14].length - 1 && create_if_block_2$3(ctx);
 
 	return {
 		c() {
@@ -15518,9 +15518,9 @@ function create_each_block_1$4(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*trailsToShow, plugin*/ 10 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[18], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[18], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
+			if (dirty & /*trailsToShow, plugin*/ 10 && t0_value !== (t0_value = (getAlt(/*crumb*/ ctx[17], /*plugin*/ ctx[1]) ?? dropDendron(/*crumb*/ ctx[17], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (/*i*/ ctx[20] < /*trail*/ ctx[15].length - 1) {
+			if (/*i*/ ctx[19] < /*trail*/ ctx[14].length - 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -15544,13 +15544,13 @@ function create_each_block_1$4(ctx) {
 	};
 }
 
-// (25:4) {#each trailsToShow as trail}
+// (22:4) {#each trailsToShow as trail}
 function create_each_block$7(ctx) {
 	let div;
 	let t;
 
 	function select_block_type(ctx, dirty) {
-		if (!/*trail*/ ctx[15].length) return create_if_block_1$4;
+		if (!/*trail*/ ctx[14].length) return create_if_block_1$4;
 		return create_else_block$3;
 	}
 
@@ -15588,7 +15588,7 @@ function create_each_block$7(ctx) {
 	};
 }
 
-// (47:2) {#if sortedTrails.length > 1}
+// (44:2) {#if sortedTrails.length > 1}
 function create_if_block$7(ctx) {
 	let div;
 	let button;
@@ -15610,8 +15610,8 @@ function create_if_block$7(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(button, "click", /*click_handler_1*/ ctx[12]),
-					listen(button, "contextmenu", /*contextmenu_handler*/ ctx[13])
+					listen(button, "click", /*click_handler_1*/ ctx[11]),
+					listen(button, "contextmenu", /*contextmenu_handler*/ ctx[12])
 				];
 
 				mounted = true;
@@ -15721,16 +15721,15 @@ function instance$k($$self, $$props, $$invalidate) {
 	const { settings, app } = plugin;
 	const { view } = app.workspace.activeLeaf;
 	let { showAll, noPathMessage, trailSeperator } = settings;
-
-	function getTrailLength(curr, offset = 1) {
-		return TRAIL_LENGTHS[(TRAIL_LENGTHS.indexOf(curr) + offset) % TRAIL_LENGTHS.length];
-	}
-
 	let trail_length = showAll;
 	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
 	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
 	const click_handler_1 = () => $$invalidate(2, trail_length = getTrailLength(trail_length));
-	const contextmenu_handler = () => $$invalidate(2, trail_length = getTrailLength(trail_length, -1));
+
+	const contextmenu_handler = e => {
+		e.preventDefault();
+		$$invalidate(2, trail_length = getTrailLength(trail_length, -1));
+	};
 
 	$$self.$$set = $$props => {
 		if ("sortedTrails" in $$props) $$invalidate(0, sortedTrails = $$props.sortedTrails);
@@ -15757,7 +15756,6 @@ function instance$k($$self, $$props, $$invalidate) {
 		view,
 		noPathMessage,
 		trailSeperator,
-		getTrailLength,
 		click_handler,
 		mouseover_handler,
 		click_handler_1,
@@ -33745,6 +33743,10 @@ function getNextNPrev(plugin, currNode) {
     });
     return nextNPrev;
 }
+function getTrailLength(curr, offset = 1) {
+    const index = (TRAIL_LENGTHS.indexOf(curr) + offset) % TRAIL_LENGTHS.length;
+    return TRAIL_LENGTHS[index < 0 ? TRAIL_LENGTHS.length + index : index];
+}
 async function drawTrail(plugin) {
     var _a, _b, _c, _d, _e;
     try {
@@ -37214,7 +37216,7 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
     const hierarchyNoteDetails = subDetails("Hierarchy Notes", alternativeHierarchyDetails);
     new obsidian.Setting(hierarchyNoteDetails)
         .setName("Hierarchy Note(s)")
-        .setDesc(fragWithHTML("A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <i>folder</i> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."))
+        .setDesc(fragWithHTML("A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <em>folder</em> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."))
         .addText((text) => {
         text
             .setPlaceholder("Hierarchy Note(s)")

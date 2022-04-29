@@ -19,7 +19,7 @@ export function addHierarchyNoteSettings(
     .setName("Hierarchy Note(s)")
     .setDesc(
       fragWithHTML(
-        "A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <i>folder</i> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."
+        "A comma-separated list of notes used to create external Breadcrumb structures.<br>You can also point to a <em>folder</em> of hierarchy notes by entering <code>folderName/</code> (ending with a <code>/</code>).<br>Hierarchy note names and folders of hierarchy notes can both be entered in the same comma-separated list."
       )
     )
     .addText((text) => {
