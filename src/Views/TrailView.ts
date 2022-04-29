@@ -1,6 +1,6 @@
 import type { MultiGraph } from "graphology";
 import { error, info } from "loglevel";
-import { MarkdownView, Notice, TFile } from "obsidian";
+import { MarkdownView, TFile } from "obsidian";
 import NextPrev from "../Components/NextPrev.svelte";
 import TrailGrid from "../Components/TrailGrid.svelte";
 import TrailPath from "../Components/TrailPath.svelte";
@@ -163,15 +163,13 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     // Remove duplicate implied
     const next = [...rNext];
     iNext.forEach((i) => {
-      if (next.findIndex((n) => n.to === i.to) === -1) {
-        next.push(i);
-      }
+      if (next.findIndex((n) => n.to === i.to) === -1)
+        next.push(i)
     });
     const prev = [...rPrev];
     iPrev.forEach((i) => {
-      if (prev.findIndex((n) => n.to === i.to) === -1) {
-        prev.push(i);
-      }
+      if (prev.findIndex((n) => n.to === i.to) === -1)
+        prev.push(i)
     });
 
     const noItems = !sortedTrails.length && !next.length && !prev.length;
@@ -210,30 +208,41 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
 
     if (mode === "preview") {
       view.querySelector("div.markdown-preview-sizer").before(trailDiv);
-    } else {
-      const cmEditor = view.querySelector("div.cm-contentContainer");
 
+      // const banner = document.querySelector('.obsidian-banner-wrapper')
+      // if (banner) {
+      //   requestAnimationFrame(() => {
+      //     const bannerMargin = getComputedStyle(banner).marginTop
+      //     console.log(bannerMargin)
+      //     trailDiv.style.marginTop = bannerMargin;
+      //     banner.style.marginTop = '0px'
+      //   })
+      // }
+    } else {
       const cmGutter = view.querySelector("div.cm-gutters");
-      // set padding top of gutter to match height of trailDiv
       if (cmGutter) {
         requestAnimationFrame(() => {
           const gutterHeight = trailDiv.getBoundingClientRect().height;
+          // set padding top of gutter to match height of trailDiv
           cmGutter.style.paddingTop = `${gutterHeight + 4}px`;
         });
       }
 
-      if (cmEditor) {
-        cmEditor.firstChild?.before(trailDiv)
-        // const gutters = document.querySelector('.cm-gutters')
-        // if (gutters) {
+      // const banner = document.querySelector('.obsidian-banner-spacer')
+      // if (banner) {
+      //   console.log({ banner })
+      //   requestAnimationFrame(() => {
+      //     const bannerMargin = parseInt(getComputedStyle(banner).height)
+      //     console.log(bannerMargin)
+      //     trailDiv.style.marginTop = `${bannerMargin + 10}px`;
+      //     banner.style.height = '0px'
+      //   })
+      // }
 
-        //   const height = trailDiv.clientHeight
-        //   console.log({ height, comp: getComputedStyle(trailDiv).display })
-        //   gutters.firstChild.before(createDiv({ attr: { style: `height: ${height}px;` } }))
-        // }
-      };
+      view.querySelector("div.cm-contentContainer")?.firstChild?.before(trailDiv)
 
     }
+
 
     trailDiv.empty();
     if (settings.indexNotes.includes(basename)) {

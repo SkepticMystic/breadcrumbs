@@ -3086,7 +3086,6 @@ const DEFAULT_SETTINGS = {
     debugMode: "WARN",
     dendronNoteDelimiter: ".",
     dendronNoteField: "up",
-    downViewWrap: false,
     dvWaitTime: 5000,
     enableAlphaSort: true,
     enableRelationSuggestor: false,
@@ -3107,10 +3106,8 @@ const DEFAULT_SETTINGS = {
     refreshOnNoteChange: false,
     useAllMetadata: true,
     openMatrixOnLoad: true,
-    // openStatsOnLoad: true,
     openDuckOnLoad: false,
     openDownOnLoad: true,
-    overflowMLView: true,
     parseJugglLinksWithoutJuggl: false,
     showNameOrType: true,
     showRelationType: true,
@@ -14967,8 +14964,8 @@ class NextPrev extends SvelteComponent {
 
 function add_css$c() {
 	var style = element("style");
-	style.id = "svelte-awewii-style";
-	style.textContent = "div.BC-grid-wrapper.svelte-awewii.svelte-awewii{position:relative}div.BC-trail-grid.svelte-awewii.svelte-awewii{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}.BC-grid-options.svelte-awewii.svelte-awewii{position:absolute;top:0px;right:0px;height:35px;width:32px;border:1px solid var(--background-modifier-border);border-radius:10px;text-align:center;transition:width 0.3s;overflow-wrap:normal;overflow:hidden}div.BC-grid-options.svelte-awewii.svelte-awewii:hover{padding:0px 5px 5px 5px;width:fit-content}div.BC-grid-options.svelte-awewii:hover .BC-grid-options-icon.svelte-awewii{display:none}.BC-depth-button.svelte-awewii.svelte-awewii{padding:3px 5px}div.BC-trail-grid-item.svelte-awewii.svelte-awewii{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-awewii.svelte-awewii{opacity:0.7}";
+	style.id = "svelte-c6w3ih-style";
+	style.textContent = "div.BC-grid-wrapper.svelte-c6w3ih.svelte-c6w3ih{position:relative}div.BC-trail-grid.svelte-c6w3ih.svelte-c6w3ih{border:2px solid var(--background-modifier-border);display:grid;align-items:stretch;width:auto;height:auto}.BC-grid-options.svelte-c6w3ih.svelte-c6w3ih{position:absolute;top:0px;right:0px;height:35px;width:32px;border:1px solid var(--background-modifier-border);border-radius:10px;text-align:center;transition:width 0.3s;overflow-wrap:normal;overflow:hidden}div.BC-grid-options.svelte-c6w3ih.svelte-c6w3ih:hover{padding:5px;width:fit-content}div.BC-grid-options.svelte-c6w3ih:hover .BC-grid-options-icon.svelte-c6w3ih{display:none}.BC-grid-options-options.svelte-c6w3ih.svelte-c6w3ih{display:none}div.BC-grid-options.svelte-c6w3ih:hover .BC-grid-options-options.svelte-c6w3ih{display:unset}.BC-depth-button.svelte-c6w3ih.svelte-c6w3ih{padding:3px 5px}div.BC-trail-grid-item.svelte-c6w3ih.svelte-c6w3ih{display:flex;flex-direction:column;border:1px solid var(--background-modifier-border);align-items:center;justify-content:center;padding:2px;font-size:smaller}div.BC-trail-grid-item.BC-filler.svelte-c6w3ih.svelte-c6w3ih{opacity:0.7}";
 	append(document.head, style);
 }
 
@@ -15014,8 +15011,8 @@ function create_each_block_1$5(ctx) {
 			div0 = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[6], /*value*/ ctx[27])) + " svelte-awewii"));
-			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-awewii");
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[6], /*value*/ ctx[27])) + " svelte-c6w3ih"));
+			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-c6w3ih");
 
 			attr(div1, "style", div1_style_value = "\r\n              grid-area: " + (/*first*/ ctx[28] + 1) + " / " + (/*i*/ ctx[26] + 1) + " /\r\n                  " + (/*last*/ ctx[29] + 2) + " / " + (/*i*/ ctx[26] + 2) + ";\r\n              " + (/*gridHeatmap*/ ctx[7]
 			? `background-color: ${/*toColour*/ ctx[10](/*value*/ ctx[27])}`
@@ -15040,11 +15037,11 @@ function create_each_block_1$5(ctx) {
 			ctx = new_ctx;
 			if (dirty[0] & /*allRuns, plugin*/ 17 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[0]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
 
-			if (dirty[0] & /*allRuns*/ 16 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[6], /*value*/ ctx[27])) + " svelte-awewii"))) {
+			if (dirty[0] & /*allRuns*/ 16 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*app*/ ctx[6], /*value*/ ctx[27])) + " svelte-c6w3ih"))) {
 				attr(div0, "class", div0_class_value);
 			}
 
-			if (dirty[0] & /*allRuns*/ 16 && div1_class_value !== (div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-awewii")) {
+			if (dirty[0] & /*allRuns*/ 16 && div1_class_value !== (div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-c6w3ih")) {
 				attr(div1, "class", div1_class_value);
 			}
 
@@ -15123,17 +15120,19 @@ function create_fragment$l(ctx) {
 	let div0;
 	let t0;
 	let div1;
-	let span2;
+	let span3;
 	let span0;
 	let t2;
+	let span2;
 	let button0;
 	let t3;
 	let button0_disabled_value;
-	let span1;
 	let t4;
+	let span1;
 	let t5;
-	let button1;
 	let t6;
+	let button1;
+	let t7;
 	let button1_disabled_value;
 	let mounted;
 	let dispose;
@@ -15155,28 +15154,31 @@ function create_fragment$l(ctx) {
 
 			t0 = space();
 			div1 = element("div");
-			span2 = element("span");
+			span3 = element("span");
 			span0 = element("span");
 			span0.textContent = "⚙️";
 			t2 = space();
+			span2 = element("span");
 			button0 = element("button");
 			t3 = text("-");
+			t4 = space();
 			span1 = element("span");
-			t4 = text(/*depth*/ ctx[1]);
-			t5 = space();
+			t5 = text(/*depth*/ ctx[1]);
+			t6 = space();
 			button1 = element("button");
-			t6 = text("+");
-			attr(div0, "class", "BC-trail-grid svelte-awewii");
+			t7 = text("+");
+			attr(div0, "class", "BC-trail-grid svelte-c6w3ih");
 			set_style(div0, "grid-template-columns", ("1fr ").repeat(/*transposedTrails*/ ctx[3].length));
 			set_style(div0, "grid-template-rows", ("1fr ").repeat(/*slicedTrails*/ ctx[2].length));
-			attr(span0, "class", "BC-grid-options-icon svelte-awewii");
-			attr(button0, "class", "BC-depth-button svelte-awewii");
+			attr(span0, "class", "BC-grid-options-icon svelte-c6w3ih");
+			attr(button0, "class", "BC-depth-button svelte-c6w3ih");
 			button0.disabled = button0_disabled_value = /*depth*/ ctx[1] === 1;
 			attr(span1, "class", "tree-item-flair");
-			attr(button1, "class", "BC-depth-button svelte-awewii");
+			attr(button1, "class", "BC-depth-button svelte-c6w3ih");
 			button1.disabled = button1_disabled_value = /*depth*/ ctx[1] === /*maxLength*/ ctx[9];
-			attr(div1, "class", "BC-grid-options svelte-awewii");
-			attr(div2, "class", "BC-grid-wrapper svelte-awewii");
+			attr(span2, "class", "BC-grid-options-options svelte-c6w3ih");
+			attr(div1, "class", "BC-grid-options svelte-c6w3ih");
+			attr(div2, "class", "BC-grid-wrapper svelte-c6w3ih");
 		},
 		m(target, anchor) {
 			insert(target, div2, anchor);
@@ -15188,16 +15190,18 @@ function create_fragment$l(ctx) {
 
 			append(div2, t0);
 			append(div2, div1);
-			append(div1, span2);
-			append(span2, span0);
-			append(span2, t2);
+			append(div1, span3);
+			append(span3, span0);
+			append(span3, t2);
+			append(span3, span2);
 			append(span2, button0);
 			append(button0, t3);
+			append(span2, t4);
 			append(span2, span1);
-			append(span1, t4);
-			append(span2, t5);
+			append(span1, t5);
+			append(span2, t6);
 			append(span2, button1);
-			append(button1, t6);
+			append(button1, t7);
 
 			if (!mounted) {
 				dispose = [
@@ -15244,7 +15248,7 @@ function create_fragment$l(ctx) {
 				button0.disabled = button0_disabled_value;
 			}
 
-			if (dirty[0] & /*depth*/ 2) set_data(t4, /*depth*/ ctx[1]);
+			if (dirty[0] & /*depth*/ 2) set_data(t5, /*depth*/ ctx[1]);
 
 			if (dirty[0] & /*depth*/ 2 && button1_disabled_value !== (button1_disabled_value = /*depth*/ ctx[1] === /*maxLength*/ ctx[9])) {
 				button1.disabled = button1_disabled_value;
@@ -15344,7 +15348,7 @@ function instance$l($$self, $$props, $$invalidate) {
 class TrailGrid extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-awewii-style")) add_css$c();
+		if (!document.getElementById("svelte-c6w3ih-style")) add_css$c();
 		init(this, options, instance$l, create_fragment$l, safe_not_equal, { sortedTrails: 11, plugin: 0 }, [-1, -1]);
 	}
 }
@@ -33736,7 +33740,7 @@ function getNextNPrev(plugin, currNode) {
     return nextNPrev;
 }
 async function drawTrail(plugin) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     try {
         const { settings, db, app, mainG } = plugin;
         const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showJuggl, showPrevNext, showBCsInEditLPMode, } = settings;
@@ -33773,15 +33777,13 @@ async function drawTrail(plugin) {
         // Remove duplicate implied
         const next = [...rNext];
         iNext.forEach((i) => {
-            if (next.findIndex((n) => n.to === i.to) === -1) {
+            if (next.findIndex((n) => n.to === i.to) === -1)
                 next.push(i);
-            }
         });
         const prev = [...rPrev];
         iPrev.forEach((i) => {
-            if (prev.findIndex((n) => n.to === i.to) === -1) {
+            if (prev.findIndex((n) => n.to === i.to) === -1)
                 prev.push(i);
-            }
         });
         const noItems = !sortedTrails.length && !next.length && !prev.length;
         if (noItems && noPathMessage === "") {
@@ -33809,27 +33811,36 @@ async function drawTrail(plugin) {
         plugin.visited.push([file.path, trailDiv]);
         if (mode === "preview") {
             view.querySelector("div.markdown-preview-sizer").before(trailDiv);
+            // const banner = document.querySelector('.obsidian-banner-wrapper')
+            // if (banner) {
+            //   requestAnimationFrame(() => {
+            //     const bannerMargin = getComputedStyle(banner).marginTop
+            //     console.log(bannerMargin)
+            //     trailDiv.style.marginTop = bannerMargin;
+            //     banner.style.marginTop = '0px'
+            //   })
+            // }
         }
         else {
-            const cmEditor = view.querySelector("div.cm-contentContainer");
             const cmGutter = view.querySelector("div.cm-gutters");
-            // set padding top of gutter to match height of trailDiv
             if (cmGutter) {
                 requestAnimationFrame(() => {
                     const gutterHeight = trailDiv.getBoundingClientRect().height;
+                    // set padding top of gutter to match height of trailDiv
                     cmGutter.style.paddingTop = `${gutterHeight + 4}px`;
                 });
             }
-            if (cmEditor) {
-                (_d = cmEditor.firstChild) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
-                // const gutters = document.querySelector('.cm-gutters')
-                // if (gutters) {
-                //   const height = trailDiv.clientHeight
-                //   console.log({ height, comp: getComputedStyle(trailDiv).display })
-                //   gutters.firstChild.before(createDiv({ attr: { style: `height: ${height}px;` } }))
-                // }
-            }
-            ;
+            // const banner = document.querySelector('.obsidian-banner-spacer')
+            // if (banner) {
+            //   console.log({ banner })
+            //   requestAnimationFrame(() => {
+            //     const bannerMargin = parseInt(getComputedStyle(banner).height)
+            //     console.log(bannerMargin)
+            //     trailDiv.style.marginTop = `${bannerMargin + 10}px`;
+            //     banner.style.height = '0px'
+            //   })
+            // }
+            (_e = (_d = view.querySelector("div.cm-contentContainer")) === null || _d === void 0 ? void 0 : _d.firstChild) === null || _e === void 0 ? void 0 : _e.before(trailDiv);
         }
         trailDiv.empty();
         if (settings.indexNotes.includes(basename)) {
@@ -34232,41 +34243,41 @@ class MatrixButtons extends SvelteComponent {
 
 function add_css$9() {
 	var style = element("style");
-	style.id = "svelte-s0mwjt-style";
-	style.textContent = ".BC-Matrix.svelte-s0mwjt.svelte-s0mwjt{padding:5px;font-variant-numeric:tabular-nums;line-height:1.5}.BC-Matrix.svelte-s0mwjt>div.svelte-s0mwjt{border:3px solid var(--background-modifier-border);border-radius:3px;margin:3px;position:relative;height:fit-content}.BC-Matrix-square.svelte-s0mwjt.svelte-s0mwjt{border:1px solid var(--background-modifier-border)}.BC-Matrix-headers.svelte-s0mwjt.svelte-s0mwjt{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-s0mwjt.svelte-s0mwjt{margin:2px;padding:0px 10px}h4.BC-Matrix-header.svelte-s0mwjt.svelte-s0mwjt:first-letter{text-transform:capitalize}ol.svelte-s0mwjt.svelte-s0mwjt{margin:3px;padding-left:30px}.BC-Matrix.svelte-s0mwjt li.svelte-s0mwjt{margin:0.1em}.BC-Matrix.svelte-s0mwjt .BC-Link.overflow.svelte-s0mwjt{width:100%;padding-right:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}";
+	style.id = "svelte-1p44ezg-style";
+	style.textContent = ".BC-Matrix.svelte-1p44ezg.svelte-1p44ezg{padding:5px;font-variant-numeric:tabular-nums;line-height:1.5}.BC-Matrix.svelte-1p44ezg>div.svelte-1p44ezg{border:3px solid var(--background-modifier-border);border-radius:3px;margin:3px;position:relative;height:fit-content}.BC-Matrix-square.svelte-1p44ezg.svelte-1p44ezg{border:1px solid var(--background-modifier-border)}.BC-Matrix-headers.svelte-1p44ezg.svelte-1p44ezg{display:flex;justify-content:space-between;align-items:center}.BC-Matrix-header.svelte-1p44ezg.svelte-1p44ezg{margin:2px;padding:0px 10px}h4.BC-Matrix-header.svelte-1p44ezg.svelte-1p44ezg:first-letter{text-transform:capitalize}ol.svelte-1p44ezg.svelte-1p44ezg{margin:3px;padding-left:30px}.BC-Matrix.svelte-1p44ezg li.svelte-1p44ezg{margin:0.1em}";
 	append(document.head, style);
 }
 
 function get_each_context$6(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[15] = list[i];
+	child_ctx[14] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[18] = list[i].field;
-	child_ctx[19] = list[i].impliedItems;
-	child_ctx[20] = list[i].realItems;
+	child_ctx[17] = list[i].field;
+	child_ctx[18] = list[i].impliedItems;
+	child_ctx[19] = list[i].realItems;
 	return child_ctx;
 }
 
 function get_each_context_2(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i].alt;
-	child_ctx[24] = list[i].cls;
-	child_ctx[25] = list[i].implied;
-	child_ctx[26] = list[i].to;
-	child_ctx[27] = list[i].parent;
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
+	child_ctx[26] = list[i].parent;
 	return child_ctx;
 }
 
 function get_each_context_3(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[23] = list[i].alt;
-	child_ctx[24] = list[i].cls;
-	child_ctx[25] = list[i].implied;
-	child_ctx[26] = list[i].to;
+	child_ctx[22] = list[i].alt;
+	child_ctx[23] = list[i].cls;
+	child_ctx[24] = list[i].implied;
+	child_ctx[25] = list[i].to;
 	return child_ctx;
 }
 
@@ -34275,14 +34286,14 @@ function create_if_block$4(ctx) {
 	let div1;
 	let div0;
 	let h4;
-	let t0_value = /*field*/ ctx[18] + "";
+	let t0_value = /*field*/ ctx[17] + "";
 	let t0;
 	let t1;
 	let t2;
 	let t3;
 	let if_block0 = /*showRelationType*/ ctx[8] && create_if_block_5(ctx);
-	let if_block1 = /*realItems*/ ctx[20].length && create_if_block_4(ctx);
-	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length && create_if_block_1$3(ctx);
+	let if_block1 = /*realItems*/ ctx[19].length && create_if_block_4(ctx);
+	let if_block2 = /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length && create_if_block_1$3(ctx);
 
 	return {
 		c() {
@@ -34296,9 +34307,9 @@ function create_if_block$4(ctx) {
 			if (if_block1) if_block1.c();
 			t3 = space();
 			if (if_block2) if_block2.c();
-			attr(h4, "class", "BC-Matrix-header svelte-s0mwjt");
-			attr(div0, "class", "BC-Matrix-headers svelte-s0mwjt");
-			attr(div1, "class", "BC-Matrix-square svelte-s0mwjt");
+			attr(h4, "class", "BC-Matrix-header svelte-1p44ezg");
+			attr(div0, "class", "BC-Matrix-headers svelte-1p44ezg");
+			attr(div1, "class", "BC-Matrix-square svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div1, anchor);
@@ -34313,10 +34324,10 @@ function create_if_block$4(ctx) {
 			if (if_block2) if_block2.m(div1, null);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*hierSquares*/ 1 && t0_value !== (t0_value = /*field*/ ctx[18] + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = /*field*/ ctx[17] + "")) set_data(t0, t0_value);
 			if (/*showRelationType*/ ctx[8]) if_block0.p(ctx, dirty);
 
-			if (/*realItems*/ ctx[20].length) {
+			if (/*realItems*/ ctx[19].length) {
 				if (if_block1) {
 					if_block1.p(ctx, dirty);
 				} else {
@@ -34329,7 +34340,7 @@ function create_if_block$4(ctx) {
 				if_block1 = null;
 			}
 
-			if (/*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) {
+			if (/*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block2) {
 					if_block2.p(ctx, dirty);
 				} else {
@@ -34354,21 +34365,21 @@ function create_if_block$4(ctx) {
 // (32:14) {#if showRelationType}
 function create_if_block_5(ctx) {
 	let h6;
-	let t_value = (/*realItems*/ ctx[20].length ? "Real" : "Implied") + "";
+	let t_value = (/*realItems*/ ctx[19].length ? "Real" : "Implied") + "";
 	let t;
 
 	return {
 		c() {
 			h6 = element("h6");
 			t = text(t_value);
-			attr(h6, "class", "BC-Matrix-header svelte-s0mwjt");
+			attr(h6, "class", "BC-Matrix-header svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
 			append(h6, t);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*hierSquares*/ 1 && t_value !== (t_value = (/*realItems*/ ctx[20].length ? "Real" : "Implied") + "")) set_data(t, t_value);
+			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*realItems*/ ctx[19].length ? "Real" : "Implied") + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(h6);
@@ -34379,7 +34390,7 @@ function create_if_block_5(ctx) {
 // (38:12) {#if realItems.length}
 function create_if_block_4(ctx) {
 	let ol;
-	let each_value_3 = /*realItems*/ ctx[20];
+	let each_value_3 = /*realItems*/ ctx[19];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_3.length; i += 1) {
@@ -34394,7 +34405,7 @@ function create_if_block_4(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(ol, "class", "svelte-s0mwjt");
+			attr(ol, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, ol, anchor);
@@ -34404,8 +34415,8 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*hierSquares, overflowMLView, rlLeaf, app, matrixView, settings*/ 605) {
-				each_value_3 = /*realItems*/ ctx[20];
+			if (dirty & /*hierSquares, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 93) {
+				each_value_3 = /*realItems*/ ctx[19];
 				let i;
 
 				for (i = 0; i < each_value_3.length; i += 1) {
@@ -34438,7 +34449,7 @@ function create_if_block_4(ctx) {
 function create_each_block_3(ctx) {
 	let li;
 	let div;
-	let t0_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "";
+	let t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t0;
 	let div_class_value;
 	let div_aria_label_value;
@@ -34448,11 +34459,11 @@ function create_each_block_3(ctx) {
 	let dispose;
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[10](/*to*/ ctx[26], ...args);
+		return /*click_handler*/ ctx[9](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[11](/*to*/ ctx[26], ...args);
+		return /*mouseover_handler*/ ctx[10](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -34461,10 +34472,10 @@ function create_each_block_3(ctx) {
 			div = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"));
-			attr(div, "aria-label", div_aria_label_value = /*alt*/ ctx[23] ? /*to*/ ctx[26] : "");
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"));
+			attr(div, "aria-label", div_aria_label_value = /*alt*/ ctx[22] ? /*to*/ ctx[25] : "");
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
-			attr(li, "class", "svelte-s0mwjt");
+			attr(li, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -34483,13 +34494,13 @@ function create_each_block_3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty[0] & /*hierSquares*/ 1 && t0_value !== (t0_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
+			if (dirty & /*hierSquares*/ 1 && t0_value !== (t0_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t0, t0_value);
 
-			if (dirty[0] & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty[0] & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*alt*/ ctx[23] ? /*to*/ ctx[26] : "")) {
+			if (dirty & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = /*alt*/ ctx[22] ? /*to*/ ctx[25] : "")) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 		},
@@ -34501,7 +34512,7 @@ function create_each_block_3(ctx) {
 	};
 }
 
-// (59:12) {#if showImpliedRelations && impliedItems.length}
+// (57:12) {#if showImpliedRelations && impliedItems.length}
 function create_if_block_1$3(ctx) {
 	let div;
 	let h4;
@@ -34509,8 +34520,8 @@ function create_if_block_1$3(ctx) {
 	let t2;
 	let ol;
 	let ol_start_value;
-	let if_block = /*impliedItems*/ ctx[19].length && create_if_block_2$2(ctx);
-	let each_value_2 = /*impliedItems*/ ctx[19];
+	let if_block = /*impliedItems*/ ctx[18].length && create_if_block_2$2(ctx);
+	let each_value_2 = /*impliedItems*/ ctx[18];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_2.length; i += 1) {
@@ -34531,10 +34542,10 @@ function create_if_block_1$3(ctx) {
 				each_blocks[i].c();
 			}
 
-			attr(h4, "class", "BC-Matrix-header svelte-s0mwjt");
-			attr(div, "class", "BC-Matrix-headers svelte-s0mwjt");
-			attr(ol, "start", ol_start_value = /*realItems*/ ctx[20].length + 1);
-			attr(ol, "class", "svelte-s0mwjt");
+			attr(h4, "class", "BC-Matrix-header svelte-1p44ezg");
+			attr(div, "class", "BC-Matrix-headers svelte-1p44ezg");
+			attr(ol, "start", ol_start_value = /*realItems*/ ctx[19].length + 1);
+			attr(ol, "class", "svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -34549,7 +34560,7 @@ function create_if_block_1$3(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (/*impliedItems*/ ctx[19].length) {
+			if (/*impliedItems*/ ctx[18].length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -34562,8 +34573,8 @@ function create_if_block_1$3(ctx) {
 				if_block = null;
 			}
 
-			if (dirty[0] & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, overflowMLView, rlLeaf, app, matrixView, settings*/ 735) {
-				each_value_2 = /*impliedItems*/ ctx[19];
+			if (dirty & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 223) {
+				each_value_2 = /*impliedItems*/ ctx[18];
 				let i;
 
 				for (i = 0; i < each_value_2.length; i += 1) {
@@ -34585,7 +34596,7 @@ function create_if_block_1$3(ctx) {
 				each_blocks.length = each_value_2.length;
 			}
 
-			if (dirty[0] & /*hierSquares*/ 1 && ol_start_value !== (ol_start_value = /*realItems*/ ctx[20].length + 1)) {
+			if (dirty & /*hierSquares*/ 1 && ol_start_value !== (ol_start_value = /*realItems*/ ctx[19].length + 1)) {
 				attr(ol, "start", ol_start_value);
 			}
 		},
@@ -34599,10 +34610,10 @@ function create_if_block_1$3(ctx) {
 	};
 }
 
-// (62:16) {#if impliedItems.length}
+// (60:16) {#if impliedItems.length}
 function create_if_block_2$2(ctx) {
 	let if_block_anchor;
-	let if_block = /*showRelationType*/ ctx[8] && /*realItems*/ ctx[20].length && create_if_block_3$1();
+	let if_block = /*showRelationType*/ ctx[8] && /*realItems*/ ctx[19].length && create_if_block_3$1();
 
 	return {
 		c() {
@@ -34614,7 +34625,7 @@ function create_if_block_2$2(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*showRelationType*/ ctx[8] && /*realItems*/ ctx[20].length) {
+			if (/*showRelationType*/ ctx[8] && /*realItems*/ ctx[19].length) {
 				if (if_block) ; else {
 					if_block = create_if_block_3$1();
 					if_block.c();
@@ -34632,7 +34643,7 @@ function create_if_block_2$2(ctx) {
 	};
 }
 
-// (63:18) {#if showRelationType && realItems.length}
+// (61:18) {#if showRelationType && realItems.length}
 function create_if_block_3$1(ctx) {
 	let h6;
 
@@ -34640,7 +34651,7 @@ function create_if_block_3$1(ctx) {
 		c() {
 			h6 = element("h6");
 			h6.textContent = "Implied";
-			attr(h6, "class", "BC-Matrix-header svelte-s0mwjt");
+			attr(h6, "class", "BC-Matrix-header svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, h6, anchor);
@@ -34651,11 +34662,11 @@ function create_if_block_3$1(ctx) {
 	};
 }
 
-// (69:16) {#each impliedItems as { alt, cls, implied, to, parent }}
+// (67:16) {#each impliedItems as { alt, cls, implied, to, parent }}
 function create_each_block_2(ctx) {
 	let li;
 	let div;
-	let t_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "";
+	let t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "";
 	let t;
 	let div_class_value;
 	let div_aria_label_value;
@@ -34665,11 +34676,11 @@ function create_each_block_2(ctx) {
 	let dispose;
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[12](/*to*/ ctx[26], ...args);
+		return /*click_handler_1*/ ctx[11](/*to*/ ctx[25], ...args);
 	}
 
 	function mouseover_handler_1(...args) {
-		return /*mouseover_handler_1*/ ctx[13](/*to*/ ctx[26], ...args);
+		return /*mouseover_handler_1*/ ctx[12](/*to*/ ctx[25], ...args);
 	}
 
 	return {
@@ -34677,13 +34688,13 @@ function create_each_block_2(ctx) {
 			li = element("li");
 			div = element("div");
 			t = text(t_value);
-			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"));
-			attr(div, "aria-label", div_aria_label_value = (/*alt*/ ctx[23] ? `${/*to*/ ctx[26]}\n` : "") + (/*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : ""));
+			attr(div, "class", div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"));
+			attr(div, "aria-label", div_aria_label_value = (/*alt*/ ctx[22] ? `${/*to*/ ctx[25]}\n` : "") + (/*parent*/ ctx[26] ? "↑ " + /*parent*/ ctx[26] : ""));
 			attr(div, "aria-label-position", div_aria_label_position_value = /*rlLeaf*/ ctx[6] ? "left" : "right");
 
-			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[26] === /*currFile*/ ctx[1].basename
+			attr(li, "class", li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " svelte-s0mwjt");
+			: "") + " svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -34701,19 +34712,19 @@ function create_each_block_2(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty[0] & /*hierSquares*/ 1 && t_value !== (t_value = (/*alt*/ ctx[23] ?? dropPathNDendron(/*to*/ ctx[26], /*settings*/ ctx[4])) + "")) set_data(t, t_value);
+			if (dirty & /*hierSquares*/ 1 && t_value !== (t_value = (/*alt*/ ctx[22] ?? dropPathNDendron(/*to*/ ctx[25], /*settings*/ ctx[4])) + "")) set_data(t, t_value);
 
-			if (dirty[0] & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[24] + " " + (/*implied*/ ctx[25] ?? "") + " " + (!/*overflowMLView*/ ctx[9] ? "overflow" : "") + " svelte-s0mwjt"))) {
+			if (dirty & /*hierSquares*/ 1 && div_class_value !== (div_class_value = "" + (/*cls*/ ctx[23] + " " + (/*implied*/ ctx[24] ?? "") + " svelte-1p44ezg"))) {
 				attr(div, "class", div_class_value);
 			}
 
-			if (dirty[0] & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = (/*alt*/ ctx[23] ? `${/*to*/ ctx[26]}\n` : "") + (/*parent*/ ctx[27] ? "↑ " + /*parent*/ ctx[27] : ""))) {
+			if (dirty & /*hierSquares*/ 1 && div_aria_label_value !== (div_aria_label_value = (/*alt*/ ctx[22] ? `${/*to*/ ctx[25]}\n` : "") + (/*parent*/ ctx[26] ? "↑ " + /*parent*/ ctx[26] : ""))) {
 				attr(div, "aria-label", div_aria_label_value);
 			}
 
-			if (dirty[0] & /*hierSquares, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[26] === /*currFile*/ ctx[1].basename
+			if (dirty & /*hierSquares, currFile*/ 3 && li_class_value !== (li_class_value = "BC-Implied " + (/*treatCurrNodeAsImpliedSibling*/ ctx[7] && /*to*/ ctx[25] === /*currFile*/ ctx[1].basename
 			? "BC-active-note"
-			: "") + " svelte-s0mwjt")) {
+			: "") + " svelte-1p44ezg")) {
 				attr(li, "class", li_class_value);
 			}
 		},
@@ -34728,7 +34739,7 @@ function create_each_block_2(ctx) {
 // (26:6) {#each squares as { field, impliedItems, realItems }}
 function create_each_block_1$3(ctx) {
 	let if_block_anchor;
-	let if_block = (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) && create_if_block$4(ctx);
+	let if_block = (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) && create_if_block$4(ctx);
 
 	return {
 		c() {
@@ -34740,7 +34751,7 @@ function create_each_block_1$3(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*realItems*/ ctx[20].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[19].length) {
+			if (/*realItems*/ ctx[19].length || /*showImpliedRelations*/ ctx[5] && /*impliedItems*/ ctx[18].length) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -34764,7 +34775,7 @@ function create_each_block_1$3(ctx) {
 function create_each_block$6(ctx) {
 	let div;
 	let t;
-	let each_value_1 = /*squares*/ ctx[15];
+	let each_value_1 = /*squares*/ ctx[14];
 	let each_blocks = [];
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
@@ -34780,7 +34791,7 @@ function create_each_block$6(ctx) {
 			}
 
 			t = space();
-			attr(div, "class", "BC-matrix-hier svelte-s0mwjt");
+			attr(div, "class", "BC-matrix-hier svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -34792,8 +34803,8 @@ function create_each_block$6(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, overflowMLView, rlLeaf, app, matrixView, settings, showRelationType, showImpliedRelations*/ 1023) {
-				each_value_1 = /*squares*/ ctx[15];
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
+				each_value_1 = /*squares*/ ctx[14];
 				let i;
 
 				for (i = 0; i < each_value_1.length; i += 1) {
@@ -34853,7 +34864,7 @@ function create_fragment$g(ctx) {
 			}
 
 			attr(div0, "class", "BC-matrix-buttons");
-			attr(div1, "class", div1_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-s0mwjt");
+			attr(div1, "class", div1_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1p44ezg");
 		},
 		m(target, anchor) {
 			insert(target, div0, anchor);
@@ -34867,12 +34878,12 @@ function create_fragment$g(ctx) {
 
 			current = true;
 		},
-		p(ctx, dirty) {
+		p(ctx, [dirty]) {
 			const matrixbuttons_changes = {};
-			if (dirty[0] & /*matrixView*/ 4) matrixbuttons_changes.matrixView = /*matrixView*/ ctx[2];
+			if (dirty & /*matrixView*/ 4) matrixbuttons_changes.matrixView = /*matrixView*/ ctx[2];
 			matrixbuttons.$set(matrixbuttons_changes);
 
-			if (dirty[0] & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, overflowMLView, rlLeaf, app, matrixView, settings, showRelationType, showImpliedRelations*/ 1023) {
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 511) {
 				each_value = /*hierSquares*/ ctx[0];
 				let i;
 
@@ -34895,7 +34906,7 @@ function create_fragment$g(ctx) {
 				each_blocks.length = each_value.length;
 			}
 
-			if (!current || dirty[0] & /*hierSquares*/ 1 && div1_class_value !== (div1_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-s0mwjt")) {
+			if (!current || dirty & /*hierSquares*/ 1 && div1_class_value !== (div1_class_value = "BC-Matrix  markdown-preview-view " + (/*hierSquares*/ ctx[0].length ? "" : "BC-empty-view") + " svelte-1p44ezg")) {
 				attr(div1, "class", div1_class_value);
 			}
 		},
@@ -34927,7 +34938,7 @@ function instance$g($$self, $$props, $$invalidate) {
 	let { matrixView } = $$props;
 	const { plugin } = matrixView;
 	const { app, settings } = plugin;
-	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType, overflowMLView } = settings;
+	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
 	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
 	const mouseover_handler = (to, event) => hoverPreview(event, matrixView, to);
 	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
@@ -34949,7 +34960,6 @@ function instance$g($$self, $$props, $$invalidate) {
 		rlLeaf,
 		treatCurrNodeAsImpliedSibling,
 		showRelationType,
-		overflowMLView,
 		click_handler,
 		mouseover_handler,
 		click_handler_1,
@@ -34960,21 +34970,13 @@ function instance$g($$self, $$props, $$invalidate) {
 class Matrix extends SvelteComponent {
 	constructor(options) {
 		super();
-		if (!document.getElementById("svelte-s0mwjt-style")) add_css$9();
+		if (!document.getElementById("svelte-1p44ezg-style")) add_css$9();
 
-		init(
-			this,
-			options,
-			instance$g,
-			create_fragment$g,
-			safe_not_equal,
-			{
-				hierSquares: 0,
-				currFile: 1,
-				matrixView: 2
-			},
-			[-1, -1]
-		);
+		init(this, options, instance$g, create_fragment$g, safe_not_equal, {
+			hierSquares: 0,
+			currFile: 1,
+			matrixView: 2
+		});
 	}
 }
 
@@ -36904,12 +36906,11 @@ function addDataviewSettings(plugin, alternativeHierarchyDetails) {
     const fields = getFields(userHiers);
     const dvDetails = subDetails("Dataview Notes", alternativeHierarchyDetails);
     new obsidian.Setting(dvDetails)
-        .setName("Default Tag Note Field")
+        .setName("Default Dataview Note Field")
         .setDesc(fragWithHTML("By default, Dataview notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-dataview-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."))
         .addDropdown((dd) => {
-        const options = {};
-        fields.forEach((field) => (options[field] = field));
-        dd.addOptions(Object.assign(options, { "": "" }))
+        fields.forEach((field) => dd.addOption(field, field));
+        dd.addOption("", "")
             .setValue(settings.dataviewNoteField)
             .onChange(async (field) => {
             settings.dataviewNoteField = field;
@@ -37062,26 +37063,26 @@ function addDendronSettings(plugin, alternativeHierarchyDetails) {
         await plugin.saveSettings();
     }));
     new obsidian.Setting(dendronDetails)
-        .setName("Dendron note delimiter")
-        .setDesc(fragWithHTML("If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is <code>.</code>."))
+        .setName("Delimiter")
+        .setDesc(fragWithHTML("Which delimiter should Breadcrumbs look for? The default is <code>.</code>."))
         .addText((text) => {
-        text.setPlaceholder("Delimiter").setValue(settings.dendronNoteDelimiter);
+        text
+            .setPlaceholder("Delimiter")
+            .setValue(settings.dendronNoteDelimiter);
         text.inputEl.onblur = async () => {
             const value = text.getValue();
-            if (value) {
+            if (value)
                 settings.dendronNoteDelimiter = value;
-                await plugin.saveSettings();
-            }
             else {
                 new obsidian.Notice(`The delimiter can't be blank`);
                 settings.dendronNoteDelimiter = DEFAULT_SETTINGS.dendronNoteDelimiter;
-                await plugin.saveSettings();
             }
+            await plugin.saveSettings();
         };
     });
     new obsidian.Setting(dendronDetails)
         .setName("Trim Dendron Note Names")
-        .setDesc(fragWithHTML("When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> would be trimmed to only display <code>C</code>."))
+        .setDesc(fragWithHTML("When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> → <code>C</code>."))
         .addToggle((toggle) => toggle.setValue(settings.trimDendronNotes).onChange(async (value) => {
         settings.trimDendronNotes = value;
         await plugin.saveSettings();
@@ -37091,14 +37092,12 @@ function addDendronSettings(plugin, alternativeHierarchyDetails) {
         .setName("Dendron Note Field")
         .setDesc("Which field should Breadcrumbs use for Dendron notes?")
         .addDropdown((dd) => {
-        dd.setValue(settings.dendronNoteField);
-        fields.forEach((field) => {
-            dd.addOption(field, field);
-        });
+        fields.forEach((field) => dd.addOption(field, field));
         dd.setValue(settings.dendronNoteField);
         dd.onChange(async (value) => {
             settings.dendronNoteField = value;
             await plugin.saveSettings();
+            await refreshIndex(plugin);
         });
     });
 }
@@ -37107,47 +37106,8 @@ function addGeneralSettings(plugin, containerEl) {
     const { settings } = plugin;
     const generalDetails = details("General Options", containerEl);
     new obsidian.Setting(generalDetails)
-        .setName("Open Views by Default")
-        .setDesc("Choose which of the views to open onload")
-        .addToggle((toggle) => {
-        toggle
-            .setTooltip("Matrix View")
-            .setValue(settings.openMatrixOnLoad)
-            .onChange(async (value) => {
-            settings.openMatrixOnLoad = value;
-            await plugin.saveSettings();
-        });
-    })
-        // .addToggle((toggle) => {
-        //   toggle
-        //     .setTooltip("Stats View")
-        //     .setValue(settings.openStatsOnLoad)
-        //     .onChange(async (value) => {
-        //       settings.openStatsOnLoad = value;
-        //       await plugin.saveSettings();
-        //     });
-        // })
-        .addToggle((toggle) => {
-        toggle
-            .setTooltip("Ducks View")
-            .setValue(settings.openDuckOnLoad)
-            .onChange(async (value) => {
-            settings.openDuckOnLoad = value;
-            await plugin.saveSettings();
-        });
-    })
-        .addToggle((toggle) => {
-        toggle
-            .setTooltip("Tree View")
-            .setValue(settings.openDownOnLoad)
-            .onChange(async (value) => {
-            settings.openDownOnLoad = value;
-            await plugin.saveSettings();
-        });
-    });
-    new obsidian.Setting(generalDetails)
         .setName("Refresh Index on Note Change")
-        .setDesc("Refresh the Breadcrumbs index data everytime you change notes.\nThis is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default.")
+        .setDesc(fragWithHTML("Refresh the Breadcrumbs index data everytime you change notes.</br><strong>Note</strong>: This can be very slow on large vaults."))
         .addToggle((toggle) => toggle.setValue(settings.refreshOnNoteChange).onChange(async (value) => {
         settings.refreshOnNoteChange = value;
         await plugin.saveSettings();
@@ -37166,8 +37126,8 @@ function addGeneralSettings(plugin, containerEl) {
         await plugin.saveSettings();
     }));
     new obsidian.Setting(generalDetails)
-        .setName("Fields used for Alternative note names (Aliases)")
-        .setDesc(fragWithHTML("A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."))
+        .setName("Alias Fields")
+        .setDesc(fragWithHTML("A comma-separated list of fields used to specify aliases. These fields will be checked, in order, to display an alternate note title in different views.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>."))
         .addText((text) => {
         text.setValue(settings.altLinkFields.join(", "));
         text.inputEl.onblur = async () => {
@@ -37185,7 +37145,7 @@ function addGeneralSettings(plugin, containerEl) {
     }));
     new obsidian.Setting(generalDetails)
         .setName("Use yaml or inline fields for hierarchy data")
-        .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled).\nIf this is disabled, it will only use Juggl links for it's metadata (See below).")
+        .setDesc("If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline Dataview fields.\nIf this is disabled, it will only use Juggl links (See below).")
         .addToggle((toggle) => toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
         settings.useAllMetadata = value;
         await plugin.saveSettings();
@@ -37193,7 +37153,7 @@ function addGeneralSettings(plugin, containerEl) {
     }));
     new obsidian.Setting(generalDetails)
         .setName("Use Juggl link syntax without having Juggl installed.")
-        .setDesc(fragWithHTML('Should Breadcrumbs look for <a href="https://juggl.io/Link+Types">Juggl links</a> even if you don\'t have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.'))
+        .setDesc(fragWithHTML('Should Breadcrumbs look for <a href="https://juggl.io/Link+Types" aria-label="https://juggl.io/Link+Types">Juggl links</a> even if you don\'t have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.'))
         .addToggle((toggle) => toggle
         .setValue(settings.parseJugglLinksWithoutJuggl)
         .onChange(async (value) => {
@@ -37202,7 +37162,7 @@ function addGeneralSettings(plugin, containerEl) {
     }));
     new obsidian.Setting(generalDetails)
         .setName("Enable Field Suggestor")
-        .setDesc(fragWithHTML('Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'))
+        .setDesc(fragWithHTML('Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when you type <code>BC-</code> at the start of a line.'))
         .addToggle((toggle) => toggle.setValue(settings.fieldSuggestor).onChange(async (value) => {
         settings.fieldSuggestor = value;
         await plugin.saveSettings();
@@ -37226,7 +37186,7 @@ function addGeneralSettings(plugin, containerEl) {
     if (plugin.app.plugins.plugins.dataview !== undefined) {
         new obsidian.Setting(generalDetails)
             .setName("Dataview Wait Time")
-            .setDesc('Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take.\nIf you see an error in the console saying "Cannot destructure currGraphs of undefined", try making this time longer. If you don\'t get that error, you can make this time shorter to make the Breadcrumbs load faster. The default is 5 seconds.')
+            .setDesc('Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. The default is 5 seconds.')
             .addText((text) => text
             .setPlaceholder("Seconds")
             .setValue((settings.dvWaitTime / 1000).toString())
@@ -38153,10 +38113,10 @@ class UserHierarchies extends SvelteComponent {
 function addHierarchySettings(plugin, containerEl) {
     const fieldDetails = details("Hierarchies", containerEl);
     fieldDetails.createEl("p", {
-        text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 3 boxes that appear. The ↑ field is for parent relations, the → field is for siblings, and ↓ is for child relations.",
+        text: "Here you can set up different hierarchies you use in your vault. To add a new hierarchy, click the plus button. Then, fill in the field names of your hierachy into the 5 boxes that appear.",
     });
     fieldDetails.createEl("p", {
-        text: "For each direction (up, same, down, next, previous), you can enter multiple field names in a comma seperated list. For example: `parent, broader, upper`",
+        text: "For each direction, you can enter multiple field names in a comma-seperated list. For example: `parent, broader, upper`",
     });
     new UserHierarchies({
         target: fieldDetails,
@@ -38438,6 +38398,7 @@ class Checkboxes extends SvelteComponent {
 function addJumpToNextSettings(plugin, viewDetails) {
     const { settings } = plugin;
     const jumpToDirDetails = subDetails("Jump to Next Direction", viewDetails);
+    jumpToDirDetails.createDiv({ cls: 'setting-item-name', text: 'Limit which fields to jump to' });
     new Checkboxes({
         target: jumpToDirDetails,
         props: {
@@ -38453,7 +38414,7 @@ function addMatrixViewSettings(plugin, viewDetails) {
     const MLViewDetails = subDetails("Matrix View", viewDetails);
     new obsidian.Setting(MLViewDetails)
         .setName("Show all field names or just relation types")
-        .setDesc("This changes the headers in matrix view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names.")
+        .setDesc(fragWithHTML("Show the list of metadata fields for each relation type (e.g. <code>parent, broader, upper</code>), or just the name of the relation type, i.e. '<code>Parent</code>', '<code>Sibling</code>', '<code>Child</code>'.</br>✅ = show the full list."))
         .addToggle((toggle) => toggle.setValue(settings.showNameOrType).onChange(async (value) => {
         settings.showNameOrType = value;
         await plugin.saveSettings();
@@ -38461,7 +38422,7 @@ function addMatrixViewSettings(plugin, viewDetails) {
     }));
     new obsidian.Setting(MLViewDetails)
         .setName("Show Relationship Type")
-        .setDesc(fragWithHTML("Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. <code>parent:: [[Note]]</code>. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."))
+        .setDesc(fragWithHTML("Show whether a link is real or implied."))
         .addToggle((toggle) => toggle.setValue(settings.showRelationType).onChange(async (value) => {
         settings.showRelationType = value;
         await plugin.saveSettings();
@@ -38469,15 +38430,15 @@ function addMatrixViewSettings(plugin, viewDetails) {
     }));
     new obsidian.Setting(MLViewDetails)
         .setName("Directions Order")
-        .setDesc(fragWithHTML(`Change the order in which the directions appear in the M/L view. Use numbers to change the order, the default is "up, same, down, next, prev" (<code>01234</code>).
+        .setDesc(fragWithHTML(`Change the order in which the directions appear in the Matrix view.</br>The default is "up, same, down, next, prev" (<code>01234</code>).
           <ul>
-            <li>0 = up</li>
-            <li>1 = same</li>
-            <li>2 = down</li>
-            <li>3 = next</li>
-            <li>4 = prev</li>
+            <li>0 → up</li>
+            <li>1 → same</li>
+            <li>2 → down</li>
+            <li>3 → next</li>
+            <li>4 → prev</li>
           </ul>
-          <strong>Note:</strong> You can remove numbers to hide those directions in the Matrix View. For example, <code>02</code> will only show up and down, in that order.`))
+          <strong>Note</strong>: You can remove numbers to hide those directions in the Matrix View. For example, <code>02</code> will only show up and down, in that order.`))
         .addText((text) => {
         text.setValue(settings.squareDirectionsOrder.join(""));
         text.inputEl.onblur = async () => {
@@ -38496,7 +38457,7 @@ function addMatrixViewSettings(plugin, viewDetails) {
     });
     new obsidian.Setting(MLViewDetails)
         .setName("Enable Alpahebtical Sorting")
-        .setDesc("By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below.")
+        .setDesc("By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable alphabetical sorting.")
         .addToggle((toggle) => toggle.setValue(settings.enableAlphaSort).onChange(async (value) => {
         settings.enableAlphaSort = value;
         await plugin.saveSettings();
@@ -38505,7 +38466,7 @@ function addMatrixViewSettings(plugin, viewDetails) {
     // TODO hide this setting if !enableAlphaSort
     new obsidian.Setting(MLViewDetails)
         .setName("Sort Alphabetically Ascending/Descending")
-        .setDesc("Sort square items alphabetically in Ascending (✅) or Descending (❌) order, by default.")
+        .setDesc("Sort square items alphabetically in Ascending (✅) or Descending (❌) order.")
         .addToggle((toggle) => toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {
         settings.alphaSortAsc = value;
         await plugin.saveSettings();
@@ -38558,16 +38519,6 @@ function addMatrixViewSettings(plugin, viewDetails) {
         await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
         await openView(this.app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
     }));
-    new obsidian.Setting(MLViewDetails)
-        .setName("Overflow")
-        .setDesc("When the Matrix View is too small to show a note name, should it wrap the name to the next line, or trim it to stay on one line? ✅ = Wrap, ❌ = Trim")
-        .addToggle((toggle) => {
-        toggle.setValue(settings.overflowMLView).onChange(async (value) => {
-            settings.overflowMLView = value;
-            await plugin.saveSettings();
-            await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-        });
-    });
 }
 
 function addNoSystemSettings(plugin, alternativeHierarchyDetails) {
@@ -38772,13 +38723,12 @@ function addThreadingSettings(plugin, cmdsDetails) {
     new obsidian.Setting(threadingDetails)
         .setName("New Note Name Template")
         .setDesc(fragWithHTML(`When threading into a new note, choose the template for the new note name.</br>
-        The default is <code>{{field}} of {{current}}</code>.</br>
         Options include:</br>
         <ul>
-        <li><code>{{field}}</code>: the field being thread into</li>
-        <li><code>{{dir}}</code>: the direction being thread into</li>
-        <li><code>{{current}}</code>: the current note name</li>
-        <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+          <li><code>{{field}}</code>: the field being thread into</li>
+          <li><code>{{dir}}</code>: the direction being thread into</li>
+          <li><code>{{current}}</code>: the current note name</li>
+          <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
         </ul>`))
         .addText((text) => {
         text.setValue(settings.threadingTemplate);
@@ -38787,11 +38737,24 @@ function addThreadingSettings(plugin, cmdsDetails) {
             if (ILLEGAL_FILENAME_CHARS.some((char) => value.includes(char))) {
                 new obsidian.Notice(`File name cannot contain any of these characters: ${ILLEGAL_FILENAME_CHARS.join(" ")}`);
                 text.setValue(settings.threadingTemplate);
-                return;
             }
-            settings.threadingTemplate = value;
-            await plugin.saveSettings();
+            else {
+                settings.threadingTemplate = value;
+                await plugin.saveSettings();
+            }
         };
+    });
+    new obsidian.Setting(threadingDetails)
+        .setName("Date Format")
+        .setDesc("The date format used in the Threading Template (setting above)")
+        .addMomentFormat((format) => {
+        format
+            .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
+            .setValue(settings.dateFormat)
+            .onChange(async (value) => {
+            settings.dateFormat = value;
+            await plugin.saveSettings();
+        });
     });
     const threadDirTemplatesSetting = new obsidian.Setting(threadingDetails)
         .setClass("thread-dir-templates")
@@ -38807,18 +38770,6 @@ function addThreadingSettings(plugin, cmdsDetails) {
             await plugin.saveSettings();
         };
     }));
-    new obsidian.Setting(threadingDetails)
-        .setName("Date Format")
-        .setDesc("The date format used in the Threading Template (setting above)")
-        .addMomentFormat((format) => {
-        format
-            .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
-            .setValue(settings.dateFormat)
-            .onChange(async (value) => {
-            settings.dateFormat = value;
-            await plugin.saveSettings();
-        });
-    });
 }
 
 function addTrailViewSettings(plugin, viewDetails) {
@@ -38834,16 +38785,15 @@ function addTrailViewSettings(plugin, viewDetails) {
     }));
     new obsidian.Setting(trailDetails)
         .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
-        .setDesc("It always shows in preview mode, but should it also show in the other two?\n\nKeep in mind that there is currently a limitation where the Breadcrumbs view will be stuck to the top of the note in edit/LP mode, even if you scroll down.")
+        .setDesc("It always shows in preview mode, but should it also show in the other two?")
         .addToggle((toggle) => toggle.setValue(settings.showBCsInEditLPMode).onChange(async (value) => {
         settings.showBCsInEditLPMode = value;
         await plugin.saveSettings();
         await drawTrail(plugin);
     }));
-    const limitTrailFieldsDiv = trailDetails.createDiv({
-        cls: "limit-ML-fields",
-    });
-    limitTrailFieldsDiv.createEl("strong", {
+    trailDetails.createEl('hr');
+    trailDetails.createDiv({
+        cls: "setting-item-name",
         text: "Limit Trail View to only show certain fields",
     });
     new Checkboxes({
@@ -38854,13 +38804,12 @@ function addTrailViewSettings(plugin, viewDetails) {
             options: getFields(settings.userHiers, "up"),
         },
     });
-    new obsidian.Setting(trailDetails)
+    const viewsToShow = new obsidian.Setting(trailDetails)
         .setName("Views to show")
-        .setDesc("Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
-        "Juggl requires having the Juggl plugin installed.")
+        .setDesc("Choose which of the views to show at the top of the note. Juggl View requires the Juggl plugin.")
         .addToggle((toggle) => {
         toggle
-            .setTooltip("Show Trail view")
+            .setTooltip("Trail view")
             .setValue(settings.showTrail)
             .onChange(async (value) => {
             settings.showTrail = value;
@@ -38870,7 +38819,7 @@ function addTrailViewSettings(plugin, viewDetails) {
     })
         .addToggle((toggle) => {
         toggle
-            .setTooltip("Show Grid view")
+            .setTooltip("Grid view")
             .setValue(settings.showGrid)
             .onChange(async (value) => {
             settings.showGrid = value;
@@ -38880,17 +38829,7 @@ function addTrailViewSettings(plugin, viewDetails) {
     })
         .addToggle((toggle) => {
         toggle
-            .setTooltip("Show Juggl view")
-            .setValue(settings.showJuggl)
-            .onChange(async (value) => {
-            settings.showJuggl = value;
-            await plugin.saveSettings();
-            await drawTrail(plugin);
-        });
-    })
-        .addToggle((toggle) => {
-        toggle
-            .setTooltip("Show Next/Previous view")
+            .setTooltip("Next/Previous view")
             .setValue(settings.showPrevNext)
             .onChange(async (value) => {
             settings.showPrevNext = value;
@@ -38898,29 +38837,41 @@ function addTrailViewSettings(plugin, viewDetails) {
             await drawTrail(plugin);
         });
     });
+    if (plugin.app.plugins.plugins.juggl !== undefined) {
+        viewsToShow.addToggle((toggle) => {
+            toggle
+                .setTooltip("Juggl view")
+                .setValue(settings.showJuggl)
+                .onChange(async (value) => {
+                settings.showJuggl = value;
+                await plugin.saveSettings();
+                await drawTrail(plugin);
+            });
+        });
+    }
     new obsidian.Setting(trailDetails)
         .setName("Grid view heatmap")
-        .setDesc("If the grid view is visible, change the background colour of squares based on the number of children leaving that note.")
+        .setDesc("Change the background colour of Grid View squares based on the number of children leaving that note.")
         .addToggle((toggle) => toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
         settings.gridHeatmap = value;
         await plugin.saveSettings();
         await drawTrail(plugin);
     }));
-    const heatmapColour = trailDetails.createDiv();
-    heatmapColour.createEl("h4", {
-        text: "Heat map colour",
-    });
-    const heatmapColourPicker = heatmapColour.createEl("input", {
+    const heatmapColour = trailDetails.createDiv({ cls: 'setting-item-name', text: 'Heatmap colour' });
+    heatmapColour.createEl("input", {
         type: "color",
-    });
-    heatmapColourPicker.value = settings.heatmapColour;
-    heatmapColourPicker.addEventListener("change", async () => {
-        settings.heatmapColour = heatmapColourPicker.value;
-        await plugin.saveSettings();
+        value: settings.heatmapColour,
+        attr: { style: 'display: block;' }
+    }, (el) => {
+        el.addEventListener("change", async () => {
+            settings.heatmapColour = el.value;
+            await plugin.saveSettings();
+            await drawTrail(plugin);
+        });
     });
     new obsidian.Setting(trailDetails)
         .setName("Index Note(s)")
-        .setDesc(fragWithHTML("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename. So if your index note is <code>000 Home.md</code>, enter <code>000 Home</code>. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."))
+        .setDesc(fragWithHTML("The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename.</br>You can also have multiple index notes (comma-separated list).</br>Leaving this field empty will make the trail show all paths going as far up the parent-tree as possible."))
         .addText((text) => {
         text
             .setPlaceholder("Index Note")
@@ -38932,14 +38883,13 @@ function addTrailViewSettings(plugin, viewDetails) {
                 settings.indexNotes = splits;
                 await plugin.saveSettings();
             }
-            else {
-                new obsidian.Notice(`Atleast one of the notes is not in your vault`);
-            }
+            else
+                new obsidian.Notice("Atleast one of the notes is not in your vault");
         };
     });
     new obsidian.Setting(trailDetails)
         .setName("Shows all paths if none to index note are found")
-        .setDesc("If you have an index notes chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?")
+        .setDesc("If you have an index note chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?")
         .addToggle((toggle) => toggle
         .setValue(settings.showAllPathsIfNoneToIndexNote)
         .onChange(async (value) => {
@@ -38948,8 +38898,8 @@ function addTrailViewSettings(plugin, viewDetails) {
         await drawTrail(plugin);
     }));
     new obsidian.Setting(trailDetails)
-        .setName("Default: All or Shortest")
-        .setDesc("If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? ✅ = all, ❌ = shortest")
+        .setName("Default: All, Longest, or Shortest")
+        .setDesc("If multiple paths are found going up the parent tree, which of them should show?")
         .addDropdown(dd => {
         const options = {};
         TRAIL_LENGTHS.forEach(length => {
@@ -38964,8 +38914,8 @@ function addTrailViewSettings(plugin, viewDetails) {
         });
     });
     new obsidian.Setting(trailDetails)
-        .setName("Breadcrumb trail seperator")
-        .setDesc("The character to show between crumbs in the breadcrumb trail. The default is '→'")
+        .setName("Seperator")
+        .setDesc(fragWithHTML("The character to show between crumbs in the breadcrumb trail. The default is <code>→</code>"))
         .addText((text) => text
         .setPlaceholder("→")
         .setValue(settings.trailSeperator)
@@ -38976,9 +38926,9 @@ function addTrailViewSettings(plugin, viewDetails) {
     }));
     new obsidian.Setting(trailDetails)
         .setName("No path found message")
-        .setDesc("The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)")
+        .setDesc("The text to display when no path to the index note is found, or the current note has no parent.")
         .addText((text) => text
-        .setPlaceholder(`No path to index note was found`)
+        .setPlaceholder("No path to index note was found")
         .setValue(settings.noPathMessage)
         .onChange(async (value) => {
         settings.noPathMessage = value;
@@ -38999,7 +38949,9 @@ function addTrailViewSettings(plugin, viewDetails) {
         .setName("Show up fields in Juggl")
         .setDesc("Juggl will show both up and down fields")
         .addToggle((toggle) => {
-        toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
+        toggle
+            .setValue(settings.showUpInJuggl)
+            .onChange(async (value) => {
             settings.showUpInJuggl = value;
             await plugin.saveSettings();
         });
@@ -39020,18 +38972,6 @@ function addTrailViewSettings(plugin, viewDetails) {
             await drawTrail(plugin);
         });
     });
-}
-
-function addTreeViewSettings(plugin, viewDetails) {
-    const { settings } = plugin;
-    const treeViewDetails = subDetails("Tree View", viewDetails);
-    new obsidian.Setting(treeViewDetails)
-        .setName("Enable line wrapping")
-        .setDesc("Make the items in the tree view line wrap when there isn't enough space (✅). ❌ makes them overflow off the screen.")
-        .addToggle((toggle) => toggle.setValue(settings.downViewWrap).onChange(async (value) => {
-        settings.downViewWrap = value;
-        await plugin.saveSettings();
-    }));
 }
 
 function addVisModalSettings(plugin, viewDetails) {
@@ -39094,11 +39034,9 @@ function addVisModalSettings(plugin, viewDetails) {
 function addWriteBCsSettings(plugin, cmdsDetails) {
     const { settings } = plugin;
     const writeBCsToFileDetails = subDetails("Write Breadcrumbs to File", cmdsDetails);
-    const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
-        cls: "limit-ML-fields",
-    });
-    limitWriteBCDiv.createEl("strong", {
-        text: "Limit to only write certain fields to files",
+    writeBCsToFileDetails.createDiv({
+        cls: "setting-item-name",
+        text: "Limit to only write certain fields",
     });
     new Checkboxes({
         target: writeBCsToFileDetails,
@@ -39109,7 +39047,7 @@ function addWriteBCsSettings(plugin, cmdsDetails) {
         },
     });
     new obsidian.Setting(writeBCsToFileDetails)
-        .setName("Write BCs to file Inline")
+        .setName("Write Inline")
         .setDesc("When writing BCs to file, should they be written inline (using Dataview syntax), or into the YAML of the note?")
         .addToggle((toggle) => toggle.setValue(settings.writeBCsInline).onChange(async (value) => {
         settings.writeBCsInline = value;
@@ -39143,7 +39081,7 @@ function addDateNoteSettings(plugin, alternativeHierarchyDetails) {
     });
     new obsidian.Setting(dateNoteDetails)
         .setName("Daily Note Format")
-        .setDesc(fragWithHTML(`The Luxon date format of your daily notes. <strong>Note</strong>: Luxon uses different formats to Moment, so your format for the Daily Notes plugin may not work here. Be sure to check out <a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">the docs</a> to find the right format.<br>You can escape characters by wrapping them in single quotes (e.g. <code>yyyy-MM-dd 'Daily Note'</code>)`))
+        .setDesc(fragWithHTML(`The Luxon date format of your daily notes.</br><strong>Note</strong>: Luxon uses different formats to Moment, so your format for the Daily Notes plugin may not work here. Be sure to check out <a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">the docs</a> to find the right format.<br>You can escape characters by wrapping them in single quotes (e.g. <code>yyyy-MM-dd 'Daily Note'</code>)`))
         .addText((text) => {
         text.setValue(settings.dateNoteFormat);
         text.inputEl.onblur = async () => {
@@ -39154,7 +39092,7 @@ function addDateNoteSettings(plugin, alternativeHierarchyDetails) {
     });
     new obsidian.Setting(dateNoteDetails)
         .setName("Date Note Field")
-        .setDesc(fragWithHTML("Select a field to point to tomorrow's note from the current note. The opposite field will be used to point to yesterday's note (if you have the setting enable)."))
+        .setDesc(fragWithHTML("Select a field to point to tomorrow's note from the current note. The opposite field will be used to point to yesterday's note."))
         .addDropdown((dd) => {
         dd.addOptions(fieldOptions)
             .setValue(settings.dateNoteField)
@@ -39211,6 +39149,7 @@ class BCSettingTab extends obsidian.PluginSettingTab {
     }
     async display() {
         const { plugin, containerEl } = this;
+        const { settings } = plugin;
         containerEl.empty();
         containerEl.createEl("h2", { text: "Breadcrumbs Settings" });
         containerEl.addClass("BC-settings-tab");
@@ -39218,10 +39157,41 @@ class BCSettingTab extends obsidian.PluginSettingTab {
         addRelationSettings(plugin, containerEl);
         addGeneralSettings(plugin, containerEl);
         const viewDetails = details("Views", containerEl);
+        new obsidian.Setting(viewDetails)
+            .setName("Open Views by Default")
+            .setDesc("Choose which of the views to open onload")
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Matrix View")
+                .setValue(settings.openMatrixOnLoad)
+                .onChange(async (value) => {
+                settings.openMatrixOnLoad = value;
+                await plugin.saveSettings();
+            });
+        })
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Ducks View")
+                .setValue(settings.openDuckOnLoad)
+                .onChange(async (value) => {
+                settings.openDuckOnLoad = value;
+                await plugin.saveSettings();
+            });
+        })
+            .addToggle((toggle) => {
+            toggle
+                .setTooltip("Tree View")
+                .setValue(settings.openDownOnLoad)
+                .onChange(async (value) => {
+                settings.openDownOnLoad = value;
+                await plugin.saveSettings();
+            });
+        });
+        viewDetails.createEl('hr');
         addMatrixViewSettings(plugin, viewDetails);
         addTrailViewSettings(plugin, viewDetails);
         addVisModalSettings(plugin, viewDetails);
-        addTreeViewSettings(plugin, viewDetails);
+        // addTreeViewSettings(plugin, viewDetails);
         const alternativeHierarchyDetails = details("Alternative Hierarchies", containerEl);
         addTagNoteSettings(plugin, alternativeHierarchyDetails);
         addRegexNoteSettings(plugin, alternativeHierarchyDetails);
@@ -39928,7 +39898,6 @@ function create_if_block(ctx) {
 	let t2;
 	let a_class_value;
 	let t3;
-	let div_style_value;
 	let mounted;
 	let dispose;
 
@@ -39957,10 +39926,6 @@ function create_if_block(ctx) {
 			: "is-unresolved") + " svelte-8j6nux");
 
 			attr(span, "class", "internal-link");
-
-			attr(div, "style", div_style_value = /*settings*/ ctx[6].downViewWrap
-			? ""
-			: "white-space: nowrap;");
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -40195,7 +40160,7 @@ function create_fragment$1(ctx) {
 				select_option(select, /*dir*/ ctx[2]);
 			}
 
-			if (dirty & /*settings, openOrSwitch, app, lines, hoverPreview, view, isInVault, dropDendron*/ 226) {
+			if (dirty & /*openOrSwitch, app, lines, hoverPreview, view, isInVault, dropDendron, settings*/ 226) {
 				each_value = /*lines*/ ctx[5];
 				let i;
 
