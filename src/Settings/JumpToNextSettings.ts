@@ -10,6 +10,8 @@ export function addJumpToNextSettings(
   const { settings } = plugin;
   const jumpToDirDetails = subDetails("Jump to Next Direction", viewDetails);
 
+  jumpToDirDetails.createDiv({ cls: 'setting-item-name', text: 'Limit which fields to jump to' })
+
   new Checkboxes({
     target: jumpToDirDetails,
     props: {

@@ -14,8 +14,8 @@ export function addMatrixViewSettings(
 
   new Setting(MLViewDetails)
     .setName("Show all field names or just relation types")
-    .setDesc(
-      "This changes the headers in matrix view. You can have the headers be the list of metadata fields for each relation type (e.g. `parent, broader, upper`). Or you can have them just be the name of the relation type, i.e. 'Parent', 'Sibling', 'Child'. ✅ = show the full list of names."
+    .setDesc(fragWithHTML(
+      "Show the list of metadata fields for each relation type (e.g. <code>parent, broader, upper</code>), or just the name of the relation type, i.e. '<code>Parent</code>', '<code>Sibling</code>', '<code>Child</code>'.</br>✅ = show the full list.")
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.showNameOrType).onChange(async (value) => {
@@ -29,7 +29,7 @@ export function addMatrixViewSettings(
     .setName("Show Relationship Type")
     .setDesc(
       fragWithHTML(
-        "Show whether a link is real or implied. A real link is one you explicitly put in a note. E.g. <code>parent:: [[Note]]</code>. An implied link is the reverse of a real link. For example, if A is the real parent of B, then B must be the implied child of A."
+        "Show whether a link is real or implied."
       )
     )
     .addToggle((toggle) =>
@@ -44,15 +44,15 @@ export function addMatrixViewSettings(
     .setName("Directions Order")
     .setDesc(
       fragWithHTML(
-        `Change the order in which the directions appear in the M/L view. Use numbers to change the order, the default is "up, same, down, next, prev" (<code>01234</code>).
+        `Change the order in which the directions appear in the Matrix view.</br>The default is "up, same, down, next, prev" (<code>01234</code>).
           <ul>
-            <li>0 = up</li>
-            <li>1 = same</li>
-            <li>2 = down</li>
-            <li>3 = next</li>
-            <li>4 = prev</li>
+            <li>0 → up</li>
+            <li>1 → same</li>
+            <li>2 → down</li>
+            <li>3 → next</li>
+            <li>4 → prev</li>
           </ul>
-          <strong>Note:</strong> You can remove numbers to hide those directions in the Matrix View. For example, <code>02</code> will only show up and down, in that order.`
+          <strong>Note</strong>: You can remove numbers to hide those directions in the Matrix View. For example, <code>02</code> will only show up and down, in that order.`
       )
     )
     .addText((text) => {
@@ -80,7 +80,7 @@ export function addMatrixViewSettings(
   new Setting(MLViewDetails)
     .setName("Enable Alpahebtical Sorting")
     .setDesc(
-      "By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable Alphabetical sorting. You can choose ascending/descending order in the setting below."
+      "By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable alphabetical sorting."
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.enableAlphaSort).onChange(async (value) => {
@@ -94,7 +94,7 @@ export function addMatrixViewSettings(
   new Setting(MLViewDetails)
     .setName("Sort Alphabetically Ascending/Descending")
     .setDesc(
-      "Sort square items alphabetically in Ascending (✅) or Descending (❌) order, by default."
+      "Sort square items alphabetically in Ascending (✅) or Descending (❌) order."
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.alphaSortAsc).onChange(async (value) => {

@@ -14,17 +14,15 @@ export function addDataviewSettings(
   const dvDetails = subDetails("Dataview Notes", alternativeHierarchyDetails);
 
   new Setting(dvDetails)
-    .setName("Default Tag Note Field")
+    .setName("Default Dataview Note Field")
     .setDesc(
       fragWithHTML(
         "By default, Dataview notes use the first field in your hierarchies (usually an <code>↑</code> field). Choose a different one to use by default, without having to specify <code>BC-dataview-note-field: {field}</code>.</br>If you don't want to choose a default, select the blank option at the bottom of the list."
       )
     )
     .addDropdown((dd: DropdownComponent) => {
-
-      const options = {};
-      fields.forEach((field) => (options[field] = field));
-      dd.addOptions(Object.assign(options, { "": "" }))
+      fields.forEach((field) => dd.addOption(field, field));
+      dd.addOption("", "")
         .setValue(settings.dataviewNoteField)
         .onChange(async (field) => {
           settings.dataviewNoteField = field;

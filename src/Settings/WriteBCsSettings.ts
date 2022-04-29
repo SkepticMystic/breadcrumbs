@@ -14,11 +14,9 @@ export function addWriteBCsSettings(
     cmdsDetails
   );
 
-  const limitWriteBCDiv = writeBCsToFileDetails.createDiv({
-    cls: "limit-ML-fields",
-  });
-  limitWriteBCDiv.createEl("strong", {
-    text: "Limit to only write certain fields to files",
+  writeBCsToFileDetails.createDiv({
+    cls: "setting-item-name",
+    text: "Limit to only write certain fields",
   });
 
   new Checkboxes({
@@ -31,7 +29,7 @@ export function addWriteBCsSettings(
   });
 
   new Setting(writeBCsToFileDetails)
-    .setName("Write BCs to file Inline")
+    .setName("Write Inline")
     .setDesc(
       "When writing BCs to file, should they be written inline (using Dataview syntax), or into the YAML of the note?"
     )

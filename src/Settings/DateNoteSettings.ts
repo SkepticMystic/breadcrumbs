@@ -33,7 +33,7 @@ export function addDateNoteSettings(
     .setName("Daily Note Format")
     .setDesc(
       fragWithHTML(
-        `The Luxon date format of your daily notes. <strong>Note</strong>: Luxon uses different formats to Moment, so your format for the Daily Notes plugin may not work here. Be sure to check out <a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">the docs</a> to find the right format.<br>You can escape characters by wrapping them in single quotes (e.g. <code>yyyy-MM-dd 'Daily Note'</code>)`
+        `The Luxon date format of your daily notes.</br><strong>Note</strong>: Luxon uses different formats to Moment, so your format for the Daily Notes plugin may not work here. Be sure to check out <a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">the docs</a> to find the right format.<br>You can escape characters by wrapping them in single quotes (e.g. <code>yyyy-MM-dd 'Daily Note'</code>)`
       )
     )
     .addText((text) => {
@@ -49,7 +49,7 @@ export function addDateNoteSettings(
     .setName("Date Note Field")
     .setDesc(
       fragWithHTML(
-        "Select a field to point to tomorrow's note from the current note. The opposite field will be used to point to yesterday's note (if you have the setting enable)."
+        "Select a field to point to tomorrow's note from the current note. The opposite field will be used to point to yesterday's note."
       )
     )
     .addDropdown((dd: DropdownComponent) => {

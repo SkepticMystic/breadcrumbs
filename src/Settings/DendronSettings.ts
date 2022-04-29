@@ -1,4 +1,5 @@
 import { DropdownComponent, Notice, Setting } from "obsidian";
+import { refreshIndex } from "../refreshIndex";
 import { DEFAULT_SETTINGS, MATRIX_VIEW } from "../constants";
 import type BCPlugin from "../main";
 import { getFields } from "../Utils/HierUtils";
@@ -30,25 +31,25 @@ export function addDendronSettings(
       })
     );
   new Setting(dendronDetails)
-    .setName("Dendron note delimiter")
+    .setName("Delimiter")
     .setDesc(
       fragWithHTML(
-        "If you choose to use Dendron notes (setting above), which delimiter should Breadcrumbs look for? The default is <code>.</code>."
+        "Which delimiter should Breadcrumbs look for? The default is <code>.</code>."
       )
     )
     .addText((text) => {
-      text.setPlaceholder("Delimiter").setValue(settings.dendronNoteDelimiter);
+      text
+        .setPlaceholder("Delimiter")
+        .setValue(settings.dendronNoteDelimiter);
 
       text.inputEl.onblur = async () => {
         const value = text.getValue();
-        if (value) {
-          settings.dendronNoteDelimiter = value;
-          await plugin.saveSettings();
-        } else {
+        if (value) settings.dendronNoteDelimiter = value;
+        else {
           new Notice(`The delimiter can't be blank`);
           settings.dendronNoteDelimiter = DEFAULT_SETTINGS.dendronNoteDelimiter;
-          await plugin.saveSettings();
         }
+        await plugin.saveSettings();
       };
     });
 
@@ -56,7 +57,7 @@ export function addDendronSettings(
     .setName("Trim Dendron Note Names")
     .setDesc(
       fragWithHTML(
-        "When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> would be trimmed to only display <code>C</code>."
+        "When displaying a dendron note name, should it be trimmed to only show the last item in the chain?</br>e.g. <code>A.B.C</code> → <code>C</code>."
       )
     )
     .addToggle((toggle) =>
@@ -71,16 +72,13 @@ export function addDendronSettings(
     .setName("Dendron Note Field")
     .setDesc("Which field should Breadcrumbs use for Dendron notes?")
     .addDropdown((dd: DropdownComponent) => {
-      dd.setValue(settings.dendronNoteField);
-
-      fields.forEach((field) => {
-        dd.addOption(field, field);
-      });
+      fields.forEach((field) => dd.addOption(field, field));
       dd.setValue(settings.dendronNoteField);
 
       dd.onChange(async (value) => {
         settings.dendronNoteField = value;
         await plugin.saveSettings();
+        await refreshIndex(plugin);
       });
     });
 }

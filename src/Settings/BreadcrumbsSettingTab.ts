@@ -47,6 +47,7 @@ export class BCSettingTab extends PluginSettingTab {
 
   async display(): Promise<void> {
     const { plugin, containerEl } = this;
+    const { settings } = plugin
 
     containerEl.empty();
     containerEl.createEl("h2", { text: "Breadcrumbs Settings" });
@@ -57,10 +58,44 @@ export class BCSettingTab extends PluginSettingTab {
     addGeneralSettings(plugin, containerEl);
 
     const viewDetails = details("Views", containerEl);
+
+    new Setting(viewDetails)
+      .setName("Open Views by Default")
+      .setDesc("Choose which of the views to open onload")
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Matrix View")
+          .setValue(settings.openMatrixOnLoad)
+          .onChange(async (value) => {
+            settings.openMatrixOnLoad = value;
+            await plugin.saveSettings();
+          });
+      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Ducks View")
+          .setValue(settings.openDuckOnLoad)
+          .onChange(async (value) => {
+            settings.openDuckOnLoad = value;
+            await plugin.saveSettings();
+          });
+      })
+      .addToggle((toggle) => {
+        toggle
+          .setTooltip("Tree View")
+          .setValue(settings.openDownOnLoad)
+          .onChange(async (value) => {
+            settings.openDownOnLoad = value;
+            await plugin.saveSettings();
+          });
+      });
+
+    viewDetails.createEl('hr')
+
     addMatrixViewSettings(plugin, viewDetails);
     addTrailViewSettings(plugin, viewDetails);
     addVisModalSettings(plugin, viewDetails);
-    addTreeViewSettings(plugin, viewDetails);
+    // addTreeViewSettings(plugin, viewDetails);
 
     const alternativeHierarchyDetails = details(
       "Alternative Hierarchies",

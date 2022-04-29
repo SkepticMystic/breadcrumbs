@@ -8,52 +8,10 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
   const { settings } = plugin;
   const generalDetails = details("General Options", containerEl);
 
-
-
-  new Setting(generalDetails)
-    .setName("Open Views by Default")
-    .setDesc("Choose which of the views to open onload")
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Matrix View")
-        .setValue(settings.openMatrixOnLoad)
-        .onChange(async (value) => {
-          settings.openMatrixOnLoad = value;
-          await plugin.saveSettings();
-        });
-    })
-    // .addToggle((toggle) => {
-    //   toggle
-    //     .setTooltip("Stats View")
-    //     .setValue(settings.openStatsOnLoad)
-    //     .onChange(async (value) => {
-    //       settings.openStatsOnLoad = value;
-    //       await plugin.saveSettings();
-    //     });
-    // })
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Ducks View")
-        .setValue(settings.openDuckOnLoad)
-        .onChange(async (value) => {
-          settings.openDuckOnLoad = value;
-          await plugin.saveSettings();
-        });
-    })
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Tree View")
-        .setValue(settings.openDownOnLoad)
-        .onChange(async (value) => {
-          settings.openDownOnLoad = value;
-          await plugin.saveSettings();
-        });
-    });
-
   new Setting(generalDetails)
     .setName("Refresh Index on Note Change")
-    .setDesc(
-      "Refresh the Breadcrumbs index data everytime you change notes.\nThis is how Breadcrumbs used to work, making it responsive to changes immediately after changing notes. However, this can be very slow on large vaults, so it is off by default."
+    .setDesc(fragWithHTML(
+      "Refresh the Breadcrumbs index data everytime you change notes.</br><strong>Note</strong>: This can be very slow on large vaults.")
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.refreshOnNoteChange).onChange(async (value) => {
@@ -84,10 +42,10 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     );
 
   new Setting(generalDetails)
-    .setName("Fields used for Alternative note names (Aliases)")
+    .setName("Alias Fields")
     .setDesc(
       fragWithHTML(
-        "A comma-separated list of fields you use to specify note name aliases. These fields will be checked, in order, and be used to display an alternate note title in both the matrix view, and trail/grid view.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>, for example."
+        "A comma-separated list of fields used to specify aliases. These fields will be checked, in order, to display an alternate note title in different views.</br>This field will probably be <code>alias</code> or <code>aliases</code>, but it can be anything, like <code>title</code>."
       )
     )
     .addText((text) => {
@@ -114,7 +72,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
   new Setting(generalDetails)
     .setName("Use yaml or inline fields for hierarchy data")
     .setDesc(
-      "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline fields (if you have Dataview enabled).\nIf this is disabled, it will only use Juggl links for it's metadata (See below)."
+      "If enabled, Breadcrumbs will make it's hierarchy using yaml fields, and inline Dataview fields.\nIf this is disabled, it will only use Juggl links (See below)."
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.useAllMetadata).onChange(async (value) => {
@@ -128,7 +86,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     .setName("Use Juggl link syntax without having Juggl installed.")
     .setDesc(
       fragWithHTML(
-        'Should Breadcrumbs look for <a href="https://juggl.io/Link+Types">Juggl links</a> even if you don\'t have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.'
+        'Should Breadcrumbs look for <a href="https://juggl.io/Link+Types" aria-label="https://juggl.io/Link+Types">Juggl links</a> even if you don\'t have Juggl installed? If you do have Juggl installed, it will always look for Juggl links.'
       )
     )
     .addToggle((toggle) =>
@@ -145,7 +103,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     .setName("Enable Field Suggestor")
     .setDesc(
       fragWithHTML(
-        'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when the content you type matches the regex <code>/^BC-.*$/</code>. Basically, just type "BC-" at the start of a line to trigger it.'
+        'Alot of Breadcrumbs features require a metadata (or inline Dataview) field to work. For example, `BC-folder-note`.</br>The Field Suggestor will show an autocomplete menu with all available Breadcrumbs field options when you type <code>BC-</code> at the start of a line.'
       )
     )
     .addToggle((toggle) =>
@@ -187,7 +145,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
     new Setting(generalDetails)
       .setName("Dataview Wait Time")
       .setDesc(
-        'Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take.\nIf you see an error in the console saying "Cannot destructure currGraphs of undefined", try making this time longer. If you don\'t get that error, you can make this time shorter to make the Breadcrumbs load faster. The default is 5 seconds.'
+        'Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. The default is 5 seconds.'
       )
       .addText((text) =>
         text

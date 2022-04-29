@@ -18,6 +18,7 @@ export function addThreadingSettings(
   threadingDetails.createDiv({
     text: "Settings for the commands `Create new <field> from current note`",
   });
+
   new Setting(threadingDetails)
     .setName("Open new threads in new pane or current pane")
     .addToggle((tog) => {
@@ -47,13 +48,12 @@ export function addThreadingSettings(
     .setDesc(
       fragWithHTML(
         `When threading into a new note, choose the template for the new note name.</br>
-        The default is <code>{{field}} of {{current}}</code>.</br>
         Options include:</br>
         <ul>
-        <li><code>{{field}}</code>: the field being thread into</li>
-        <li><code>{{dir}}</code>: the direction being thread into</li>
-        <li><code>{{current}}</code>: the current note name</li>
-        <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
+          <li><code>{{field}}</code>: the field being thread into</li>
+          <li><code>{{dir}}</code>: the direction being thread into</li>
+          <li><code>{{current}}</code>: the current note name</li>
+          <li><code>{{date}}</code>: the current date (Set the format in the setting below)</li>
         </ul>`
       )
     )
@@ -68,12 +68,25 @@ export function addThreadingSettings(
             )}`
           );
           text.setValue(settings.threadingTemplate);
-          return;
+        } else {
+          settings.threadingTemplate = value;
+          await plugin.saveSettings();
         }
-        settings.threadingTemplate = value;
-        await plugin.saveSettings();
       };
     });
+  new Setting(threadingDetails)
+    .setName("Date Format")
+    .setDesc("The date format used in the Threading Template (setting above)")
+    .addMomentFormat((format) => {
+      format
+        .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
+        .setValue(settings.dateFormat)
+        .onChange(async (value) => {
+          settings.dateFormat = value;
+          await plugin.saveSettings();
+        });
+    });
+
   const threadDirTemplatesSetting = new Setting(threadingDetails)
     .setClass("thread-dir-templates")
     .setName("Templater Template per Direction")
@@ -96,16 +109,4 @@ export function addThreadingSettings(
     })
   );
 
-  new Setting(threadingDetails)
-    .setName("Date Format")
-    .setDesc("The date format used in the Threading Template (setting above)")
-    .addMomentFormat((format) => {
-      format
-        .setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
-        .setValue(settings.dateFormat)
-        .onChange(async (value) => {
-          settings.dateFormat = value;
-          await plugin.saveSettings();
-        });
-    });
 }

@@ -30,7 +30,7 @@ export function addTrailViewSettings(
   new Setting(trailDetails)
     .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
     .setDesc(
-      "It always shows in preview mode, but should it also show in the other two?\n\nKeep in mind that there is currently a limitation where the Breadcrumbs view will be stuck to the top of the note in edit/LP mode, even if you scroll down."
+      "It always shows in preview mode, but should it also show in the other two?"
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.showBCsInEditLPMode).onChange(async (value) => {
@@ -40,10 +40,9 @@ export function addTrailViewSettings(
       })
     );
 
-  const limitTrailFieldsDiv = trailDetails.createDiv({
-    cls: "limit-ML-fields",
-  });
-  limitTrailFieldsDiv.createEl("strong", {
+  trailDetails.createEl('hr')
+  trailDetails.createDiv({
+    cls: "setting-item-name",
     text: "Limit Trail View to only show certain fields",
   });
 
@@ -56,15 +55,14 @@ export function addTrailViewSettings(
     },
   });
 
-  new Setting(trailDetails)
+  const viewsToShow = new Setting(trailDetails)
     .setName("Views to show")
     .setDesc(
-      "Choose which of the views to show at the top of the note.\nTrail, Grid, Juggl graph and/or the Next-Previous view. " +
-      "Juggl requires having the Juggl plugin installed."
+      "Choose which of the views to show at the top of the note. Juggl View requires the Juggl plugin."
     )
     .addToggle((toggle) => {
       toggle
-        .setTooltip("Show Trail view")
+        .setTooltip("Trail view")
         .setValue(settings.showTrail)
         .onChange(async (value) => {
           settings.showTrail = value;
@@ -74,7 +72,7 @@ export function addTrailViewSettings(
     })
     .addToggle((toggle) => {
       toggle
-        .setTooltip("Show Grid view")
+        .setTooltip("Grid view")
         .setValue(settings.showGrid)
         .onChange(async (value) => {
           settings.showGrid = value;
@@ -84,7 +82,19 @@ export function addTrailViewSettings(
     })
     .addToggle((toggle) => {
       toggle
-        .setTooltip("Show Juggl view")
+        .setTooltip("Next/Previous view")
+        .setValue(settings.showPrevNext)
+        .onChange(async (value) => {
+          settings.showPrevNext = value;
+          await plugin.saveSettings();
+          await drawTrail(plugin);
+        });
+    })
+
+  if (plugin.app.plugins.plugins.juggl !== undefined) {
+    viewsToShow.addToggle((toggle) => {
+      toggle
+        .setTooltip("Juggl view")
         .setValue(settings.showJuggl)
         .onChange(async (value) => {
           settings.showJuggl = value;
@@ -92,22 +102,13 @@ export function addTrailViewSettings(
           await drawTrail(plugin);
         });
     })
-    .addToggle((toggle) => {
-      toggle
-        .setTooltip("Show Next/Previous view")
-        .setValue(settings.showPrevNext)
-        .onChange(async (value) => {
-          settings.showPrevNext = value;
-          await plugin.saveSettings();
-          await drawTrail(plugin);
-        });
-    });
+  }
 
 
   new Setting(trailDetails)
     .setName("Grid view heatmap")
     .setDesc(
-      "If the grid view is visible, change the background colour of squares based on the number of children leaving that note."
+      "Change the background colour of Grid View squares based on the number of children leaving that note."
     )
     .addToggle((toggle) =>
       toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
@@ -117,25 +118,24 @@ export function addTrailViewSettings(
       })
     );
 
-  const heatmapColour = trailDetails.createDiv();
-  heatmapColour.createEl("h4", {
-    text: "Heat map colour",
-  });
-  const heatmapColourPicker = heatmapColour.createEl("input", {
+  const heatmapColour = trailDetails.createDiv({ cls: 'setting-item-name', text: 'Heatmap colour' });
+  heatmapColour.createEl("input", {
     type: "color",
-  });
-
-  heatmapColourPicker.value = settings.heatmapColour;
-  heatmapColourPicker.addEventListener("change", async () => {
-    settings.heatmapColour = heatmapColourPicker.value;
-    await plugin.saveSettings();
+    value: settings.heatmapColour,
+    attr: { style: 'display: block;' }
+  }, (el) => {
+    el.addEventListener("change", async () => {
+      settings.heatmapColour = el.value;
+      await plugin.saveSettings();
+      await drawTrail(plugin);
+    });
   });
 
   new Setting(trailDetails)
     .setName("Index Note(s)")
     .setDesc(
       fragWithHTML(
-        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename. So if your index note is <code>000 Home.md</code>, enter <code>000 Home</code>. You can also have multiple index notes (comma-separated list). The breadcrumb trail will show the shortest path back to any one of the index notes listed. You can now leave this field empty, meaning the trail will show a path going as far up the parent-tree as possible."
+        "The note that all of your other notes lead back to. The parent of all your parent notes. Just enter the basename.</br>You can also have multiple index notes (comma-separated list).</br>Leaving this field empty will make the trail show all paths going as far up the parent-tree as possible."
       )
     )
     .addText((text) => {
@@ -151,16 +151,15 @@ export function addTrailViewSettings(
         ) {
           settings.indexNotes = splits;
           await plugin.saveSettings();
-        } else {
-          new Notice(`Atleast one of the notes is not in your vault`);
-        }
+        } else new Notice("Atleast one of the notes is not in your vault");
+
       };
     });
 
   new Setting(trailDetails)
     .setName("Shows all paths if none to index note are found")
     .setDesc(
-      "If you have an index notes chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?"
+      "If you have an index note chosen, but the trail view has no paths going up to those index notes, should it show all paths instead?"
     )
     .addToggle((toggle) =>
       toggle
@@ -174,9 +173,9 @@ export function addTrailViewSettings(
     );
 
   new Setting(trailDetails)
-    .setName("Default: All or Shortest")
+    .setName("Default: All, Longest, or Shortest")
     .setDesc(
-      "If multiple paths are found going up the parent tree, should all of them be shown by default, or only the shortest? ✅ = all, ❌ = shortest"
+      "If multiple paths are found going up the parent tree, which of them should show?"
     )
     .addDropdown(dd => {
       const options = {}
@@ -186,18 +185,17 @@ export function addTrailViewSettings(
 
       dd.addOptions(options);
       dd.setValue(settings.showAll);
-      dd.onChange(async val => {
+      dd.onChange(async (val) => {
         settings.showAll = val;
         await plugin.saveSettings();
         await drawTrail(plugin);
-
       })
     })
 
   new Setting(trailDetails)
-    .setName("Breadcrumb trail seperator")
-    .setDesc(
-      "The character to show between crumbs in the breadcrumb trail. The default is '→'"
+    .setName("Seperator")
+    .setDesc(fragWithHTML(
+      "The character to show between crumbs in the breadcrumb trail. The default is <code>→</code>")
     )
     .addText((text) =>
       text
@@ -213,11 +211,11 @@ export function addTrailViewSettings(
   new Setting(trailDetails)
     .setName("No path found message")
     .setDesc(
-      "The text to display when no path to the index note was found, or when the current note has no parent (this happens if you haven't chosen an index note)"
+      "The text to display when no path to the index note is found, or the current note has no parent."
     )
     .addText((text) =>
       text
-        .setPlaceholder(`No path to index note was found`)
+        .setPlaceholder("No path to index note was found")
         .setValue(settings.noPathMessage)
         .onChange(async (value) => {
           settings.noPathMessage = value;
@@ -246,10 +244,12 @@ export function addTrailViewSettings(
     .setName("Show up fields in Juggl")
     .setDesc("Juggl will show both up and down fields")
     .addToggle((toggle) => {
-      toggle.setValue(settings.showUpInJuggl).onChange(async (value) => {
-        settings.showUpInJuggl = value;
-        await plugin.saveSettings();
-      });
+      toggle
+        .setValue(settings.showUpInJuggl)
+        .onChange(async (value) => {
+          settings.showUpInJuggl = value;
+          await plugin.saveSettings();
+        });
     });
 
   new Setting(trailDetails)
