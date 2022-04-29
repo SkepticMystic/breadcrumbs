@@ -8,6 +8,7 @@ import {
   BC_HIDE_TRAIL,
   blankRealNImplied,
   JUGGL_TRAIL_DEFAULTS,
+  TRAIL_LENGTHS,
 } from "../constants";
 import type { BCSettings, EdgeAttr, RealNImplied } from "../interfaces";
 import type BCPlugin from "../main";
@@ -94,6 +95,12 @@ function getNextNPrev(plugin: BCPlugin, currNode: string) {
     }
   });
   return nextNPrev;
+}
+
+export function getTrailLength(curr: string, offset: number = 1) {
+  const index =
+    (TRAIL_LENGTHS.indexOf(curr) + offset) % TRAIL_LENGTHS.length;
+  return TRAIL_LENGTHS[index < 0 ? TRAIL_LENGTHS.length + index : index];
 }
 
 export async function drawTrail(plugin: BCPlugin): Promise<void> {

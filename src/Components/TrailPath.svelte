@@ -3,7 +3,7 @@
     hoverPreview,
     openOrSwitch,
   } from "obsidian-community-lib/dist/utils";
-  import { TRAIL_LENGTHS } from "../constants";
+  import { getTrailLength } from "../Views/TrailView";
   import type BCPlugin from "../main";
   import { dropDendron } from "../Utils/generalUtils";
   import { getAlt } from "../Utils/ObsidianUtils";
@@ -14,12 +14,6 @@
   const { settings, app } = plugin;
   const { view } = app.workspace.activeLeaf;
   let { showAll, noPathMessage, trailSeperator } = settings;
-
-  function getTrailLength(curr: string, offset: number = 1) {
-    return TRAIL_LENGTHS[
-      (TRAIL_LENGTHS.indexOf(curr) + offset) % TRAIL_LENGTHS.length
-    ];
-  }
 
   let trail_length = showAll;
 
