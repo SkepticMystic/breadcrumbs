@@ -15,9 +15,9 @@
   const { view } = app.workspace.activeLeaf;
   let { showAll, noPathMessage, trailSeperator } = settings;
 
-  function getNextTrailLength(curr: string) {
+  function getTrailLength(curr: string, offset: number = 1) {
     return TRAIL_LENGTHS[
-      (TRAIL_LENGTHS.indexOf(curr) + 1) % TRAIL_LENGTHS.length
+      (TRAIL_LENGTHS.indexOf(curr) + offset) % TRAIL_LENGTHS.length
     ];
   }
 
@@ -59,7 +59,8 @@
     <div>
       <button
         class="button-div"
-        on:click={() => (trail_length = getNextTrailLength(trail_length))}
+        on:click={() => (trail_length = getTrailLength(trail_length))}
+        on:contextmenu={() => (trail_length = getTrailLength(trail_length, -1))}
       >
         {trail_length}
       </button>
