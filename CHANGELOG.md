@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.0...3.3.1) (2022-04-29)
+
+
+### Bug Fixes
+
+* **Path View:** :bug: Prevent contextmenu from popping up ([d58fd33](https://github.com/SkepticMystic/breadcrumbs/commit/d58fd33e6c6e0d45d14f0ddb8973c70b264d849e))
+* **Path View:** :bug: Trail_Length: Modulo wasn't wrapping ([6d88364](https://github.com/SkepticMystic/breadcrumbs/commit/6d88364b0aa00f9a768d610e836a19a3ae778b74))
+
 ## [3.3.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.2.1...3.3.0) (2022-04-29)
 
 
