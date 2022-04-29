@@ -30,7 +30,6 @@ export interface BCSettings {
   dateNoteField: string;
   dateNoteAddMonth: string;
   dateNoteAddYear: string;
-  downViewWrap: boolean;
   enableAlphaSort: boolean;
   enableRelationSuggestor: boolean;
   fieldSuggestor: boolean;

@@ -340,7 +340,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   debugMode: "WARN",
   dendronNoteDelimiter: ".",
   dendronNoteField: "up",
-  downViewWrap: false,
   dvWaitTime: 5000,
   enableAlphaSort: true,
   enableRelationSuggestor: false,
