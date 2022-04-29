@@ -60,7 +60,10 @@
       <button
         class="button-div"
         on:click={() => (trail_length = getTrailLength(trail_length))}
-        on:contextmenu={() => (trail_length = getTrailLength(trail_length, -1))}
+        on:contextmenu={(e) => {
+          e.preventDefault();
+          trail_length = getTrailLength(trail_length, -1);
+        }}
       >
         {trail_length}
       </button>
