@@ -169,17 +169,4 @@ export function addMatrixViewSettings(
         );
       })
     );
-
-  new Setting(MLViewDetails)
-    .setName("Overflow")
-    .setDesc(
-      "When the Matrix View is too small to show a note name, should it wrap the name to the next line, or trim it to stay on one line? ✅ = Wrap, ❌ = Trim"
-    )
-    .addToggle((toggle) => {
-      toggle.setValue(settings.overflowMLView).onChange(async (value) => {
-        settings.overflowMLView = value;
-        await plugin.saveSettings();
-        await plugin.getActiveTYPEView(MATRIX_VIEW).draw();
-      });
-    });
 }

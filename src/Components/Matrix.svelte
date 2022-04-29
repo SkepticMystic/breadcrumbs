@@ -18,7 +18,6 @@
     rlLeaf,
     treatCurrNodeAsImpliedSibling,
     showRelationType,
-    overflowMLView,
   } = settings;
 </script>
 
@@ -50,9 +49,7 @@
                 {#each realItems as { alt, cls, implied, to }}
                   <li>
                     <div
-                      class="{cls} {implied ?? ''} {!overflowMLView
-                        ? 'overflow'
-                        : ''}"
+                      class="{cls} {implied ?? ''}"
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(event) =>
                         hoverPreview(event, matrixView, to)}
@@ -84,9 +81,7 @@
                       : ''}"
                   >
                     <div
-                      class="{cls} {implied ?? ''} {!overflowMLView
-                        ? 'overflow'
-                        : ''}"
+                      class="{cls} {implied ?? ''}"
                       on:click={async (e) => await openOrSwitch(app, to, e)}
                       on:mouseover={(e) => hoverPreview(e, matrixView, to)}
                       aria-label={(alt ? `${to}\n` : "") +
@@ -149,13 +144,5 @@
 
   .BC-Matrix li {
     margin: 0.1em;
-  }
-
-  .BC-Matrix .BC-Link.overflow {
-    width: 100%;
-    padding-right: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 </style>

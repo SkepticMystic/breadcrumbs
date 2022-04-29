@@ -74,7 +74,6 @@ export interface BCSettings {
   // openStatsOnLoad: boolean;
   openDuckOnLoad: boolean;
   openDownOnLoad: boolean;
-  overflowMLView: boolean;
   parseJugglLinksWithoutJuggl: boolean;
   refreshOnNoteChange: boolean;
   refreshOnNoteSave: boolean;
