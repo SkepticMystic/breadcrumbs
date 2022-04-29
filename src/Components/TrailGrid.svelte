@@ -86,19 +86,22 @@
   </div>
 
   <div class="BC-grid-options">
-    <span
-      ><span class="BC-grid-options-icon">⚙️</span>
+    <span>
+      <span class="BC-grid-options-icon">⚙️</span>
 
-      <button
-        class="BC-depth-button"
-        disabled={depth === 1}
-        on:click={() => (depth -= 1)}>-</button
-      ><span class="tree-item-flair">{depth}</span>
-      <button
-        class="BC-depth-button"
-        disabled={depth === maxLength}
-        on:click={() => (depth += 1)}>+</button
-      >
+      <span class="BC-grid-options-options">
+        <button
+          class="BC-depth-button"
+          disabled={depth === 1}
+          on:click={() => (depth -= 1)}>-</button
+        >
+        <span class="tree-item-flair">{depth}</span>
+        <button
+          class="BC-depth-button"
+          disabled={depth === maxLength}
+          on:click={() => (depth += 1)}>+</button
+        >
+      </span>
     </span>
   </div>
 </div>
@@ -133,11 +136,18 @@
     overflow: hidden;
   }
   div.BC-grid-options:hover {
-    padding: 0px 5px 5px 5px;
+    padding: 5px;
     width: fit-content;
   }
   div.BC-grid-options:hover .BC-grid-options-icon {
     display: none;
+  }
+
+  .BC-grid-options-options {
+    display: none;
+  }
+  div.BC-grid-options:hover .BC-grid-options-options {
+    display: unset;
   }
 
   .BC-depth-button {

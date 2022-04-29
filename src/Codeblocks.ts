@@ -45,6 +45,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
       if (!isNaN(maxNum)) max = maxNum;
     }
 
+    
     const currFile = plugin.app.metadataCache.getFirstLinkpathDest(
       ctx.sourcePath,
       ""
