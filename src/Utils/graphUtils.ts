@@ -168,9 +168,9 @@ export function dfsAllPaths(g: MultiGraph, start: string): string[][] {
     const extPath = [node, ...path];
     const succsNotVisited = g.hasNode(node)
       ? g.filterOutNeighbors(
-          node,
-          (succ) => !visited[succ] || visited[succ] < 5
-        )
+        node,
+        (succ) => !visited[succ] || visited[succ] < 5
+      )
       : [];
     const newItems = succsNotVisited.map((succ) => {
       visited[succ] = visited[succ] ? visited[succ] + 1 : 1;
@@ -308,7 +308,7 @@ export function populateMain(
 
 export const getTargetOrder = (frontms: dvFrontmatterCache[], target: string) =>
   parseInt(
-    (frontms.find((arr) => arr.file.basename === target)?.[
+    (frontms.find((ff) => ff?.file?.basename === target)?.[
       BC_ORDER
     ] as string) ?? "9999"
   );

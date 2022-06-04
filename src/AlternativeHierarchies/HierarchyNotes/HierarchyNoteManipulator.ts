@@ -123,7 +123,7 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
       const { editor } = view ?? {};
       if (!editor) return;
       //@ts-ignore
-      view.leaf.openFile(this.file, { active: true, mode: "source" });
+      await view.leaf.openFile(this.file, { active: true, mode: "source" });
       editor.setCursor({ line: item.lineNo, ch: item.depth + 2 });
     } else if (evt instanceof KeyboardEvent || evt instanceof MouseEvent) {
       let rel: "up" | "down" | "same";
