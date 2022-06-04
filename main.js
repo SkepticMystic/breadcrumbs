@@ -5570,7 +5570,7 @@ function populateMain(settings, mainG, source, field, target, sourceOrder, targe
 }
 const getTargetOrder = (frontms, target) => {
     var _a, _b;
-    return parseInt((_b = (_a = frontms.find((arr) => arr.file.basename === target)) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
+    return parseInt((_b = (_a = frontms.find((ff) => { var _a; return ((_a = ff === null || ff === void 0 ? void 0 : ff.file) === null || _a === void 0 ? void 0 : _a.basename) === target; })) === null || _a === void 0 ? void 0 : _a[BC_ORDER]) !== null && _b !== void 0 ? _b : "9999");
 };
 const getSourceOrder = (frontm) => { var _a; return parseInt((_a = frontm[BC_ORDER]) !== null && _a !== void 0 ? _a : "9999"); };
 /** Remember to filter by hierarchy in MatrixView! */
