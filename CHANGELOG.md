@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.2](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.1...3.3.2) (2022-06-04)
+
+
+### Bug Fixes
+
+* No async functions ([273db73](https://github.com/SkepticMystic/breadcrumbs/commit/273db736ecfea8497bd218935283107ae4392541))
+* Null check on ff in targetOrder ([59f70ee](https://github.com/SkepticMystic/breadcrumbs/commit/59f70eebdf6db61111d2f33d2e18fd04ebb3eb21))
+
 ### [3.3.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.0...3.3.1) (2022-04-29)
 
 
