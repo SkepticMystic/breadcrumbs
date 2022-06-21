@@ -3,7 +3,7 @@ import { info } from "loglevel";
 import { copy } from "obsidian-community-lib/dist/utils";
 import type BCPlugin from "../main";
 import { dfsAllPaths, getSinks, getSubInDirs } from "../Utils/graphUtils";
-import { makeWiki } from "../Utils/ObsidianUtils";
+import {getFile, makeWiki} from "../Utils/ObsidianUtils";
 
 /**
  * Returns a copy of `index`, doesn't mutate.
@@ -80,7 +80,7 @@ export function createIndex(
 export async function copyLocalIndex(plugin: BCPlugin) {
   const { settings, closedG } = plugin;
   const { wikilinkIndex } = settings;
-  const { basename } = plugin.app.workspace.getActiveFile();
+  const { basename } = getFile()
 
   const onlyDowns = getSubInDirs(closedG, "down");
   const allPaths = dfsAllPaths(onlyDowns, basename);

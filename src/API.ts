@@ -19,6 +19,7 @@ import {
 } from "./Utils/HierUtils";
 import { createIndex } from "./Commands/CreateIndex";
 import { refreshIndex } from "./refreshIndex";
+import {getFile} from "./Utils/ObsidianUtils";
 
 export class BCAPI implements BCAPII {
   app: App;
@@ -47,7 +48,7 @@ export class BCAPI implements BCAPII {
     getSubForFields(g, fields);
 
   public dfsAllPaths = (
-    fromNode = this.app.workspace.getActiveFile()?.basename,
+    fromNode = getFile()?.basename,
     g = this.mainG
   ) => dfsAllPaths(g, fromNode);
 
@@ -55,7 +56,7 @@ export class BCAPI implements BCAPII {
     createIndex(allPaths, wikilinks);
 
   public getMatrixNeighbours = (
-    fromNode = this.app.workspace.getActiveFile()?.basename
+    fromNode = getFile()?.basename
   ) => getMatrixNeighbours(this.plugin, fromNode);
 
   public getOppDir = (dir: Directions) => getOppDir(dir);

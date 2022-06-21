@@ -17,6 +17,7 @@
   import { tidyTree } from "../Visualisations/TidyTree";
   import { treeMap } from "../Visualisations/TreeMap";
   import type { VisModal } from "../Visualisations/VisModal";
+  import {getFile} from "../Utils/ObsidianUtils";
 
   export let modal: VisModal;
 
@@ -24,7 +25,7 @@
   const { mainG, settings } = plugin;
   const { visGraph, visRelation, visClosed, visAll } = settings;
 
-  const currFile = app.workspace.getActiveFile();
+  const currFile = getFile();
 
   const selectors = [
     {

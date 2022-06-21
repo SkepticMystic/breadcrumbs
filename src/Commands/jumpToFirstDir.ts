@@ -2,10 +2,11 @@ import { Notice } from "obsidian";
 import type { Directions } from "../interfaces";
 import type BCPlugin from "../main";
 import { getRealnImplied } from "../Utils/graphUtils";
+import {getFile} from "../Utils/ObsidianUtils";
 
 export async function jumpToFirstDir(plugin: BCPlugin, dir: Directions) {
   const { limitJumpToFirstFields } = plugin.settings;
-  const file = plugin.app.workspace.getActiveFile();
+  const file = getFile();
   if (!file) {
     new Notice("You need to be focussed on a Markdown file");
     return;
