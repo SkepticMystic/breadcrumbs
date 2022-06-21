@@ -2,7 +2,7 @@
   "id": "breadcrumbs",
   "name": "Breadcrumbs",
   "version": "3.3.2",
-  "minAppVersion": "0.12.12",
+  "minAppVersion": "0.15.2",
   "description": "Visualise & navigate your vault's structure",
   "author": "SkepticMystic",
   "authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
