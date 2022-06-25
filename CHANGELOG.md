@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.4.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.2...3.4.0) (2022-06-25)
+
+
+### Features
+
+* **Grid View:** :sparkles: Setting to limit initial depth ([1f2f3a0](https://github.com/SkepticMystic/breadcrumbs/commit/1f2f3a0d113b5449fb38d2a20e90748305193ad4))
+
+
+### Bug Fixes
+
+* Extend limit on gridDepth slider ([3aa4abb](https://github.com/SkepticMystic/breadcrumbs/commit/3aa4abb4a051295db066de7e498f3ae26e74e03c))
+* file-open instead of active-leaf-change ([6dd8289](https://github.com/SkepticMystic/breadcrumbs/commit/6dd82897de96c45ea941424782c28f4065a2cefe))
+* Obsidian v0.15+ compatibility ([f245a4b](https://github.com/SkepticMystic/breadcrumbs/commit/f245a4ba0f6b94960f0d390f725cd97e903a8d8c))
+
 ### [3.3.2](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.1...3.3.2) (2022-06-04)
 
 
