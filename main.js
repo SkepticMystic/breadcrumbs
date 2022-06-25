@@ -62332,7 +62332,7 @@ class BCPlugin extends obsidian.Plugin {
         this.saveSettings = async () => await this.saveData(this.settings);
     }
     registerActiveLeafChangeEvent() {
-        this.activeLeafChange = this.app.workspace.on("active-leaf-change", async () => {
+        this.activeLeafChange = this.app.workspace.on("file-open", async () => {
             if (this.settings.refreshOnNoteChange) {
                 await refreshIndex(this);
             }

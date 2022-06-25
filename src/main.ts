@@ -67,7 +67,7 @@ export default class BCPlugin extends Plugin {
 
   registerActiveLeafChangeEvent() {
     this.activeLeafChange = this.app.workspace.on(
-      "active-leaf-change",
+      "file-open",
       async () => {
         if (this.settings.refreshOnNoteChange) {
           await refreshIndex(this);
