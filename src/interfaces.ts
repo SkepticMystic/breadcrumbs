@@ -2,7 +2,7 @@ import type { MultiGraph } from "graphology";
 import type { IJugglSettings, JugglLayouts } from "juggl-api";
 import type { LogLevel } from "loglevel";
 import type { DateTime } from "luxon";
-import type { Constructor, Pos, TFile } from "obsidian";
+import type { App, Constructor, Pos, TFile } from "obsidian";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
@@ -34,6 +34,7 @@ export interface BCSettings {
   enableRelationSuggestor: boolean;
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
+  gridDefaultDepth: number;
   gridHeatmap: boolean;
   heatmapColour: string;
   hierarchyNotes: string[];

@@ -19,7 +19,7 @@ import {
 } from "./Utils/HierUtils";
 import { createIndex } from "./Commands/CreateIndex";
 import { refreshIndex } from "./refreshIndex";
-import {getCurrFile} from "./Utils/ObsidianUtils";
+import { getCurrFile } from "./Utils/ObsidianUtils";
 
 export class BCAPI implements BCAPII {
   app: App;

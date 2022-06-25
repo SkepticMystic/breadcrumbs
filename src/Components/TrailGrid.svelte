@@ -18,7 +18,7 @@
   export let plugin: BCPlugin;
 
   const { settings, app, mainG } = plugin;
-  const { userHiers, gridHeatmap, heatmapColour } = settings;
+  const { userHiers, gridHeatmap, heatmapColour, gridDefaultDepth } = settings;
 
   const activeLeafView = app.workspace.activeLeaf.view;
 
@@ -39,7 +39,8 @@
 
   const maxLength = sortedTrails.last().length;
 
-  let depth = maxLength;
+  // Use the user setting to limit the initial depth
+  let depth = Math.min(maxLength, gridDefaultDepth);
 
   let slicedTrails = sortedTrails;
   $: {

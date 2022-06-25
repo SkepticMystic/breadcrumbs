@@ -104,6 +104,22 @@ export function addTrailViewSettings(
     })
   }
 
+  new Setting(trailDetails)
+    .setName('Grid view depth')
+    .setDesc('Limit the initial depth of the grid view')
+    .addSlider((slider) => {
+      slider
+        .setLimits(0, 10, 1)
+        .setValue(settings.gridDefaultDepth)
+        .setDynamicTooltip();
+
+      slider.sliderEl.onblur = async () => {
+        settings.gridDefaultDepth = slider.getValue();
+        await plugin.saveSettings();
+        await drawTrail(plugin);
+      }
+    })
+
 
   new Setting(trailDetails)
     .setName("Grid view heatmap")
@@ -111,11 +127,13 @@ export function addTrailViewSettings(
       "Change the background colour of Grid View squares based on the number of children leaving that note."
     )
     .addToggle((toggle) =>
-      toggle.setValue(settings.gridHeatmap).onChange(async (value) => {
-        settings.gridHeatmap = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-      })
+      toggle
+        .setValue(settings.gridHeatmap)
+        .onChange(async (value) => {
+          settings.gridHeatmap = value;
+          await plugin.saveSettings();
+          await drawTrail(plugin);
+        })
     );
 
   const heatmapColour = trailDetails.createDiv({ cls: 'setting-item-name', text: 'Heatmap colour' });
