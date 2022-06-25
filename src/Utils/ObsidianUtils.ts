@@ -15,13 +15,7 @@ import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
 
-export const getCurrFile = (): TFile | null => {
-  let file = app.workspace.getActiveFile()
-  if (!file) {
-    file = app.workspace.lastActiveFile
-  }
-  return file;
-}
+export const getCurrFile = (): TFile | null => app.workspace.getActiveFile() ?? app.workspace.getMostRecentlyActiveFile()
 
 /**
  * Get basename from a **Markdown** `path`
@@ -155,8 +149,7 @@ export async function waitForCache(plugin: BCPlugin) {
 }
 
 export const linkClass = (app: App, to: string, realQ = true) =>
-  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${
-    realQ ? "" : "BC-Implied"
+  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
   }`;
 
 export const getDVApi = (plugin: BCPlugin) =>

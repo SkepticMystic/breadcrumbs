@@ -5209,13 +5209,7 @@ function escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
-const getCurrFile = () => {
-    let file = app.workspace.getActiveFile();
-    if (!file) {
-        file = app.workspace.lastActiveFile;
-    }
-    return file;
-};
+const getCurrFile = () => { var _a; return (_a = app.workspace.getActiveFile()) !== null && _a !== void 0 ? _a : app.workspace.getMostRecentlyActiveFile(); };
 /**
  * Get basename from a **Markdown** `path`
  * @param  {string} path
