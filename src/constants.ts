@@ -348,7 +348,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   jugglLayout: "hierarchy",
   limitWriteBCCheckboxes: [],
   CHECKBOX_STATES_OVERWRITTEN: false,
-  gridDefaultDepth: 10,
+  gridDefaultDepth: 25,
   gridHeatmap: false,
   heatmapColour: getComputedStyle(document.body).getPropertyValue(
     "--text-accent"

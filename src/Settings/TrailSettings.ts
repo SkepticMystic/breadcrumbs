@@ -109,7 +109,7 @@ export function addTrailViewSettings(
     .setDesc('Limit the initial depth of the grid view')
     .addSlider((slider) => {
       slider
-        .setLimits(0, 10, 1)
+        .setLimits(0, 25, 1)
         .setValue(settings.gridDefaultDepth)
         .setDynamicTooltip();
 

@@ -3094,7 +3094,7 @@ const DEFAULT_SETTINGS = {
     jugglLayout: "hierarchy",
     limitWriteBCCheckboxes: [],
     CHECKBOX_STATES_OVERWRITTEN: false,
-    gridDefaultDepth: 10,
+    gridDefaultDepth: 25,
     gridHeatmap: false,
     heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     hierarchyNotes: [""],
@@ -38873,7 +38873,7 @@ function addTrailViewSettings(plugin, viewDetails) {
         .setDesc('Limit the initial depth of the grid view')
         .addSlider((slider) => {
         slider
-            .setLimits(0, 10, 1)
+            .setLimits(0, 25, 1)
             .setValue(settings.gridDefaultDepth)
             .setDynamicTooltip();
         slider.sliderEl.onblur = async () => {
