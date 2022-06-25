@@ -15,7 +15,7 @@ import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
 
-export const getFile = (): TFile | null => {
+export const getCurrFile = (): TFile | null => {
   let file = app.workspace.getActiveFile()
   if (!file) {
     file = app.workspace.lastActiveFile
@@ -147,7 +147,7 @@ export async function waitForCache(plugin: BCPlugin) {
     let basename: string;
     while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
       await wait(100);
-      basename = getFile()?.basename;
+      basename = getCurrFile()?.basename;
     }
   } else {
     await waitForResolvedLinks(app);
@@ -173,7 +173,7 @@ export function isInsideYaml(app: App): boolean | null {
 
   const { editor } = activeLeaf.view;
 
-  const file = getFile();
+  const file = getCurrFile();
   if (!file) return null;
 
   const { frontmatter } = metadataCache.getFileCache(file);

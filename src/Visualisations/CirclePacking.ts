@@ -4,7 +4,7 @@ import type { App, TFile } from "obsidian";
 import type { AdjListItem, d3Link, d3Node } from "../interfaces";
 import { bfsAdjList, dfsFlatAdjList, VisModal } from "./VisModal";
 import { openOrSwitch } from "obsidian-community-lib";
-import {getFile} from "../Utils/ObsidianUtils";
+import {getCurrFile} from "../Utils/ObsidianUtils";
 
 export const circlePacking = (
   graph: Graph,
@@ -81,7 +81,7 @@ export const circlePacking = (
   node.attr("aria-label", (d: AdjListItem) => d.name);
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    const currFile = getFile();
+    const currFile = getCurrFile();
     openOrSwitch(app, dest, event);
     modal.close();
   };

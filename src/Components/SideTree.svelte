@@ -15,7 +15,7 @@
   import { dropDendron } from "../Utils/generalUtils";
   import { dfsAllPaths, getSubInDirs } from "../Utils/graphUtils";
   import type TreeView from "../Views/TreeView";
-  import {getFile} from "../Utils/ObsidianUtils";
+  import {getCurrFile} from "../Utils/ObsidianUtils";
 
   export let plugin: BCPlugin;
   export let view: TreeView;
@@ -24,12 +24,12 @@
 
   let dir: Directions = "down";
   let frozen = false;
-  let { basename } = getFile();
+  let { basename } = getCurrFile();
 
   plugin.registerEvent(
     app.workspace.on("active-leaf-change", () => {
       if (frozen) return;
-      basename = getFile()?.basename;
+      basename = getCurrFile()?.basename;
     })
   );
 
@@ -51,7 +51,7 @@
   aria-label-position="left"
   on:click={() => {
     frozen = !frozen;
-    if (!frozen) basename = getFile()?.basename;
+    if (!frozen) basename = getCurrFile()?.basename;
   }}
 >
   {#if frozen}

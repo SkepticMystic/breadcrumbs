@@ -2,7 +2,7 @@ import { App, normalizePath, Notice, TFile } from "obsidian";
 import type { Directions } from "../interfaces";
 import type BCPlugin from "../main";
 import { getFieldInfo, getOppFields } from "../Utils/HierUtils";
-import {createOrUpdateYaml, getFile, splitAtYaml} from "../Utils/ObsidianUtils";
+import {createOrUpdateYaml, getCurrFile, splitAtYaml} from "../Utils/ObsidianUtils";
 
 const resolveThreadingNameTemplate = (
   template: string,
@@ -70,7 +70,7 @@ export async function thread(plugin: BCPlugin, field: string) {
     writeBCsInline,
   } = settings;
 
-  const currFile = getFile();
+  const currFile = getCurrFile();
   if (!currFile) return;
 
   const newFileParent = app.fileManager.getNewFileParent(currFile.path);

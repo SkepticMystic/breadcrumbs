@@ -19,7 +19,7 @@ import type {
 import type BCPlugin from "../main";
 import { splitAndTrim } from "../Utils/generalUtils";
 import { getOppDir, getOppFields } from "../Utils/HierUtils";
-import {getDVApi, getFile, linkClass} from "../Utils/ObsidianUtils";
+import {getDVApi, getCurrFile, linkClass} from "../Utils/ObsidianUtils";
 
 export function getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
   const { closedG, settings } = plugin;
@@ -300,7 +300,7 @@ export default class MatrixView extends ItemView {
 
       const { userHiers } = plugin.settings;
 
-      const currFile = getFile();
+      const currFile = getCurrFile();
       if (!currFile) return;
 
       const hierSquares = this.getHierSquares(userHiers, currFile).filter(
