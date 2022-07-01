@@ -128,24 +128,17 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       (mode !== "preview" && !showBCsInEditLPMode)
     ) {
       activeMDView?.containerEl.querySelector(".BC-trail")?.remove();
-      db.end2G();
-      return;
+      return db.end2G();
     }
 
     const { file } = activeMDView;
     const { frontmatter } = app.metadataCache.getFileCache(file) ?? {};
 
 
-    if (frontmatter?.[BC_HIDE_TRAIL] || frontmatter?.["kanban-plugin"]) {
-      db.end2G();
-      return;
-    }
+    if (frontmatter?.[BC_HIDE_TRAIL] || frontmatter?.["kanban-plugin"]) return db.end2G();
 
     const { basename } = file;
-    if (!mainG.hasNode(basename)) {
-      db.end2G();
-      return;
-    }
+    if (!mainG.hasNode(basename)) return db.end2G();
 
     const view =
       mode === "preview"
@@ -181,10 +174,7 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
 
     const noItems = !sortedTrails.length && !next.length && !prev.length;
 
-    if (noItems && noPathMessage === "") {
-      db.end2G();
-      return;
-    }
+    if (noItems && noPathMessage === "") return db.end2G();
 
     const selectorForMaxWidth =
       mode === "preview"
@@ -254,14 +244,12 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
     trailDiv.empty();
     if (settings.indexNotes.includes(basename)) {
       trailDiv.innerText = "Index Note";
-      db.end2G();
-      return;
+      return db.end2G();
     }
 
     if (noItems) {
       trailDiv.innerText = noPathMessage;
-      db.end2G();
-      return;
+      return db.end2G();
     }
 
     const targetProps = {

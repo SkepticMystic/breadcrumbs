@@ -33764,20 +33764,15 @@ async function drawTrail(plugin) {
             !activeMDView ||
             (mode !== "preview" && !showBCsInEditLPMode)) {
             (_a = activeMDView === null || activeMDView === void 0 ? void 0 : activeMDView.containerEl.querySelector(".BC-trail")) === null || _a === void 0 ? void 0 : _a.remove();
-            db.end2G();
-            return;
+            return db.end2G();
         }
         const { file } = activeMDView;
         const { frontmatter } = (_b = app.metadataCache.getFileCache(file)) !== null && _b !== void 0 ? _b : {};
-        if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[BC_HIDE_TRAIL]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"])) {
-            db.end2G();
-            return;
-        }
+        if ((frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter[BC_HIDE_TRAIL]) || (frontmatter === null || frontmatter === void 0 ? void 0 : frontmatter["kanban-plugin"]))
+            return db.end2G();
         const { basename } = file;
-        if (!mainG.hasNode(basename)) {
-            db.end2G();
-            return;
-        }
+        if (!mainG.hasNode(basename))
+            return db.end2G();
         const view = mode === "preview"
             ? activeMDView.previewMode.containerEl.querySelector("div.markdown-preview-view")
             : activeMDView.contentEl.querySelector("div.markdown-source-view");
@@ -33799,10 +33794,8 @@ async function drawTrail(plugin) {
                 prev.push(i);
         });
         const noItems = !sortedTrails.length && !next.length && !prev.length;
-        if (noItems && noPathMessage === "") {
-            db.end2G();
-            return;
-        }
+        if (noItems && noPathMessage === "")
+            return db.end2G();
         const selectorForMaxWidth = mode === "preview"
             ? ".markdown-preview-view.is-readable-line-width .markdown-preview-sizer"
             : "";
@@ -33858,13 +33851,11 @@ async function drawTrail(plugin) {
         trailDiv.empty();
         if (settings.indexNotes.includes(basename)) {
             trailDiv.innerText = "Index Note";
-            db.end2G();
-            return;
+            return db.end2G();
         }
         if (noItems) {
             trailDiv.innerText = noPathMessage;
-            db.end2G();
-            return;
+            return db.end2G();
         }
         const targetProps = {
             target: trailDiv,
