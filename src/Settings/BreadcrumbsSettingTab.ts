@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { PluginSettingTab, Setting } from "obsidian";
 import { addDataviewSettings } from "./DataviewNoteSettings";
 import KoFi from "../Components/KoFi.svelte";
 import type BCPlugin from "../main";
@@ -29,20 +29,17 @@ export const details = (text: string, parent: HTMLElement) =>
   parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
 
 export const subDetails = (text: string, parent: HTMLDetailsElement) =>
-  parent
-    .createDiv({
-      attr: { style: "padding-left: 10px;" },
-    })
+  parent.createDiv({
+    attr: { style: "padding-left: 10px;" },
+  })
     .createEl("details", {}, (d) => d.createEl("summary", { text }));
 
 export class BCSettingTab extends PluginSettingTab {
   plugin: BCPlugin;
-  app: App;
 
-  constructor(app: App, plugin: BCPlugin) {
+  constructor(plugin: BCPlugin) {
     super(app, plugin);
     this.plugin = plugin;
-    this.app = app;
   }
 
   async display(): Promise<void> {

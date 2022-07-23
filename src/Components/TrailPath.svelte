@@ -11,7 +11,7 @@
   export let sortedTrails: string[][];
   export let plugin: BCPlugin;
 
-  const { settings, app } = plugin;
+  const { settings } = plugin;
   const { view } = app.workspace.activeLeaf;
   let { showAll, noPathMessage, trailSeperator } = settings;
 

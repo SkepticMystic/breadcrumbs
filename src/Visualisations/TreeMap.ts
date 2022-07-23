@@ -1,13 +1,12 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import { openOrSwitch } from "obsidian-community-lib";
 import type { VisModal } from "./VisModal";
 import { dfsFlatAdjList } from "./VisModal";
 
 export const treeMap = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,
@@ -25,8 +24,8 @@ export const treeMap = (
     .size([width, height])
     .padding(1)
     .round(true)(
-    hierarchy.sum((d) => d.height).sort((a, b) => b.height - a.height)
-  );
+      hierarchy.sum((d) => d.height).sort((a, b) => b.height - a.height)
+    );
 
   //   const root = treemap(data);
 

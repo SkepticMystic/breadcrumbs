@@ -32,7 +32,7 @@ export function addFolderNotesToGraph(
   frontms: dvFrontmatterCache[],
   mainG: MultiGraph
 ) {
-  const { settings, app } = plugin;
+  const { settings } = plugin;
   const { userHiers } = settings;
   const fields = getFields(userHiers);
 

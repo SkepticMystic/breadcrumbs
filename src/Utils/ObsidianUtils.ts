@@ -1,6 +1,5 @@
 import { info } from "loglevel";
 import {
-  App,
   FrontMatterCache,
   parseYaml,
   stringifyYaml,
@@ -118,7 +117,6 @@ export const dropHash = (tag: string) =>
 export const addHash = (tag: string) => (tag.startsWith("#") ? tag : `#${tag}`);
 
 export function getAlt(node: string, plugin: BCPlugin): string | null {
-  const { app } = plugin;
   const { altLinkFields, showAllAliases } = plugin.settings;
   if (altLinkFields.length) {
     const file = app.metadataCache.getFirstLinkpathDest(node, "");
@@ -136,7 +134,6 @@ export function getAlt(node: string, plugin: BCPlugin): string | null {
 }
 
 export async function waitForCache(plugin: BCPlugin) {
-  const { app } = plugin;
   if (app.plugins.enabledPlugins.has("dataview")) {
     let basename: string;
     while (!basename || !app.plugins.plugins.dataview.api.page(basename)) {
@@ -148,14 +145,14 @@ export async function waitForCache(plugin: BCPlugin) {
   }
 }
 
-export const linkClass = (app: App, to: string, realQ = true) =>
+export const linkClass = (to: string, realQ = true) =>
   `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
   }`;
 
 export const getDVApi = (plugin: BCPlugin) =>
   plugin.app.plugins.plugins.dataview?.api;
 
-export function isInsideYaml(app: App): boolean | null {
+export function isInsideYaml(): boolean | null {
   const { workspace, metadataCache } = app;
   const { activeLeaf } = workspace;
   const {

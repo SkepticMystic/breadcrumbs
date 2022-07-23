@@ -1,5 +1,4 @@
 import type { MultiGraph } from "graphology";
-import type { App } from "obsidian";
 import { ARROW_DIRECTIONS, DIRECTIONS } from "./constants";
 import type { BCAPII, Directions, UserHier } from "./interfaces";
 import type BCPlugin from "./main";
@@ -22,13 +21,13 @@ import { refreshIndex } from "./refreshIndex";
 import { getCurrFile } from "./Utils/ObsidianUtils";
 
 export class BCAPI implements BCAPII {
-  app: App;
+
   plugin: BCPlugin;
   mainG: MultiGraph;
   closedG: MultiGraph;
 
-  public constructor(app: App, plugin: BCPlugin) {
-    this.app = app;
+  public constructor(plugin: BCPlugin) {
+
     this.plugin = plugin;
     this.mainG = this.plugin.mainG;
     this.closedG = this.plugin.closedG;
@@ -37,7 +36,7 @@ export class BCAPI implements BCAPII {
   public DIRECTIONS = DIRECTIONS;
   public ARROW_DIRECTIONS = ARROW_DIRECTIONS;
 
-  public buildObsGraph = () => buildObsGraph(this.app);
+  public buildObsGraph = buildObsGraph;
 
   public refreshIndex = async () => await refreshIndex(this.plugin)
 

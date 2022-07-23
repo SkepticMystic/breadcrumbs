@@ -1,6 +1,6 @@
 import type { MultiGraph } from "graphology";
 import { info } from "loglevel";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import {
   BC_IGNORE,
   BC_TAG_NOTE,
@@ -18,7 +18,7 @@ import {
 import { getFields } from "../Utils/HierUtils";
 import { addHash, dropHash, getDVBasename } from "../Utils/ObsidianUtils";
 
-const getAllTags = (app: App, file: TFile, withHash = true): string[] => {
+const getAllTags = (file: TFile, withHash = true): string[] => {
   const { tags, frontmatter } = app.metadataCache.getFileCache(file);
   const allTags: string[] = [];
 
@@ -40,7 +40,7 @@ export function addTagNotesToGraph(
   frontms: dvFrontmatterCache[],
   mainG: MultiGraph
 ) {
-  const { settings, app } = plugin;
+  const { settings } = plugin;
   const { userHiers, tagNoteField } = settings;
   const fields = getFields(userHiers);
   eligableAlts.forEach((altFile) => {
@@ -51,7 +51,7 @@ export function addTagNotesToGraph(
     info({ tag });
 
     const hasThisTag = (file: TFile) => {
-      const allTags = getAllTags(app, file);
+      const allTags = getAllTags(file);
       return altFile[BC_TAG_NOTE_EXACT] !== undefined
         ? allTags.includes(tag)
         : allTags.some((t) => t.includes(tag));

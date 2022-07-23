@@ -15,7 +15,7 @@ export default class TreeView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    this.app.workspace.onLayoutReady(async () => {
+    app.workspace.onLayoutReady(async () => {
       await this.draw();
     });
   }

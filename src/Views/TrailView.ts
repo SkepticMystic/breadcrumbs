@@ -105,7 +105,7 @@ export function getTrailLength(curr: string, offset: number = 1) {
 
 export async function drawTrail(plugin: BCPlugin): Promise<void> {
   try {
-    const { settings, db, app, mainG } = plugin;
+    const { settings, db, mainG } = plugin;
     const {
       showBCs,
       noPathMessage,

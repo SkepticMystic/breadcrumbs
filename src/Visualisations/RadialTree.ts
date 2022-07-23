@@ -1,11 +1,10 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import { dfsFlatAdjList, VisModal } from "./VisModal";
 
 export const radialTree = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,
@@ -56,8 +55,8 @@ export const radialTree = (
       color.domain().indexOf(name) >= 0
         ? color(name)
         : d.parent
-        ? d.parent.color
-        : null;
+          ? d.parent.color
+          : null;
     if (d.children) d.children.forEach(setColor);
   }
 
@@ -95,15 +94,15 @@ export const radialTree = (
       (endAngle === startAngle
         ? ""
         : "A" +
-          startRadius +
-          "," +
-          startRadius +
-          " 0 0 " +
-          (endAngle > startAngle ? 1 : 0) +
-          " " +
-          startRadius * c1 +
-          "," +
-          startRadius * s1) +
+        startRadius +
+        "," +
+        startRadius +
+        " 0 0 " +
+        (endAngle > startAngle ? 1 : 0) +
+        " " +
+        startRadius * c1 +
+        "," +
+        startRadius * s1) +
       "L" +
       endRadius * c1 +
       "," +
@@ -188,8 +187,7 @@ font-weight: bold;
     .attr(
       "transform",
       (d) =>
-        `rotate(${d.x - 90}) translate(${innerRadius + 4},0)${
-          d.x < 180 ? "" : " rotate(180)"
+        `rotate(${d.x - 90}) translate(${innerRadius + 4},0)${d.x < 180 ? "" : " rotate(180)"
         }`
     )
     .attr("text-anchor", (d) => (d.x < 180 ? "start" : "end"))

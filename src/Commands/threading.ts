@@ -1,8 +1,8 @@
-import { App, normalizePath, Notice, TFile } from "obsidian";
+import { normalizePath, Notice, TFile } from "obsidian";
 import type { Directions } from "../interfaces";
 import type BCPlugin from "../main";
 import { getFieldInfo, getOppFields } from "../Utils/HierUtils";
-import {createOrUpdateYaml, getCurrFile, splitAtYaml} from "../Utils/ObsidianUtils";
+import { createOrUpdateYaml, getCurrFile, splitAtYaml } from "../Utils/ObsidianUtils";
 
 const resolveThreadingNameTemplate = (
   template: string,
@@ -13,14 +13,14 @@ const resolveThreadingNameTemplate = (
 ) =>
   template
     ? template
-        .replace("{{current}}", currFile.basename)
-        .replace("{{field}}", field)
-        .replace("{{dir}}", dir)
-        //@ts-ignore
-        .replace("{{date}}", moment().format(dateFormat))
+      .replace("{{current}}", currFile.basename)
+      .replace("{{field}}", field)
+      .replace("{{dir}}", dir)
+      //@ts-ignore
+      .replace("{{date}}", moment().format(dateFormat))
     : "Untitled";
 
-function makeFilenameUnique(app: App, filename: string) {
+function makeFilenameUnique(filename: string) {
   let i = 1,
     newName = filename;
   while (app.metadataCache.getFirstLinkpathDest(newName, "")) {
@@ -32,7 +32,6 @@ function makeFilenameUnique(app: App, filename: string) {
 }
 
 async function resolveThreadingContentTemplate(
-  app: App,
   writeBCsInline: boolean,
   templatePath: string,
   oppField: string,
@@ -59,7 +58,7 @@ async function resolveThreadingContentTemplate(
 }
 
 export async function thread(plugin: BCPlugin, field: string) {
-  const { app, settings } = plugin;
+  const { settings } = plugin;
   const {
     userHiers,
     threadingTemplate,
@@ -85,7 +84,7 @@ export async function thread(plugin: BCPlugin, field: string) {
     dir,
     dateFormat
   );
-  newBasename = makeFilenameUnique(app, newBasename);
+  newBasename = makeFilenameUnique(newBasename);
 
   const oppCrumb = writeBCsInline
     ? `${oppField}:: [[${currFile.basename}]]`
@@ -93,7 +92,6 @@ export async function thread(plugin: BCPlugin, field: string) {
 
   const templatePath = threadingDirTemplates[dir];
   const newContent = await resolveThreadingContentTemplate(
-    app,
     writeBCsInline,
     templatePath,
     oppField,
@@ -142,7 +140,7 @@ export async function thread(plugin: BCPlugin, field: string) {
   }
 
   const leaf = threadIntoNewPane
-    ? app.workspace.splitActiveLeaf()
+    ? app.workspace.getLeaf(true)
     : app.workspace.activeLeaf;
 
   await leaf.openFile(newFile, { active: true, mode: "source" });

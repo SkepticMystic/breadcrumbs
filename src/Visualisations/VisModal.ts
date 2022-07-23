@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import { App, Modal, Notice } from "obsidian";
+import { Modal, Notice } from "obsidian";
 import VisComp from "../Components/VisComp.svelte";
 import type { AdjListItem, d3Graph } from "../interfaces";
 import type BCPlugin from "../main";
@@ -212,7 +212,7 @@ export class VisModal extends Modal {
   plugin: BCPlugin;
   modal: VisModal;
 
-  constructor(app: App, plugin: BCPlugin) {
+  constructor(plugin: BCPlugin) {
     super(app);
     this.plugin = plugin;
     this.modal = this;

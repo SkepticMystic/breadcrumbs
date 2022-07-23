@@ -16,7 +16,7 @@ export function addLinkNotesToGraph(
   frontms: dvFrontmatterCache[],
   mainG: MultiGraph
 ) {
-  const { app, settings } = plugin;
+  const { settings } = plugin;
   const { userHiers } = settings;
   const fields = getFields(userHiers);
   eligableAlts.forEach((altFile) => {

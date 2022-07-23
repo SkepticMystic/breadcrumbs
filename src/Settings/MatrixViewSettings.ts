@@ -160,9 +160,9 @@ export function addMatrixViewSettings(
       toggle.setValue(settings.rlLeaf).onChange(async (value) => {
         settings.rlLeaf = value;
         await plugin.saveSettings();
-        await this.app.workspace.detachLeavesOfType(MATRIX_VIEW);
+        app.workspace.detachLeavesOfType(MATRIX_VIEW);
         await openView(
-          this.app,
+          app,
           MATRIX_VIEW,
           MatrixView,
           value ? "right" : "left"

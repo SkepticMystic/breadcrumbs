@@ -14,7 +14,7 @@ export class FieldSuggestor extends EditorSuggest<string> {
   plugin: BCPlugin;
 
   constructor(plugin: BCPlugin) {
-    super(plugin.app);
+    super(app);
     this.plugin = plugin;
   }
 
@@ -62,9 +62,8 @@ export class FieldSuggestor extends EditorSuggest<string> {
     if (!context) return;
 
     const field = BC_FIELDS_INFO.find((f) => f.field === suggestion);
-    const replacement = `${suggestion}${
-      field?.[isInsideYaml(plugin.app) ? "afterYaml" : "afterInline"]
-    }`;
+    const replacement = `${suggestion}${field?.[isInsideYaml(app) ? "afterYaml" : "afterInline"]
+      }`;
 
     context.editor.replaceRange(
       replacement,

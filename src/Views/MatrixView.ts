@@ -19,7 +19,7 @@ import type {
 import type BCPlugin from "../main";
 import { splitAndTrim } from "../Utils/generalUtils";
 import { getOppDir, getOppFields } from "../Utils/HierUtils";
-import {getDVApi, getCurrFile, linkClass} from "../Utils/ObsidianUtils";
+import { getDVApi, getCurrFile, linkClass } from "../Utils/ObsidianUtils";
 
 export function getMatrixNeighbours(plugin: BCPlugin, currNode: string) {
   const { closedG, settings } = plugin;
@@ -56,7 +56,7 @@ export default class MatrixView extends ItemView {
 
   async onload(): Promise<void> {
     super.onload();
-    const { plugin, app } = this;
+    const { plugin } = this;
 
     app.workspace.onLayoutReady(() => {
       setTimeout(
@@ -86,7 +86,7 @@ export default class MatrixView extends ItemView {
   }
 
   getAlt(node: string): string | null {
-    const { app, plugin } = this;
+    const { plugin } = this;
     const { altLinkFields, showAllAliases } = plugin.settings;
     if (!altLinkFields.length) return null;
 
@@ -125,7 +125,7 @@ export default class MatrixView extends ItemView {
   ): internalLinkObj => {
     return {
       to,
-      cls: linkClass(this.app, to, realQ),
+      cls: linkClass(to, realQ),
       alt: this.getAlt(to),
       order: this.getOrder(to),
       parent,
@@ -314,7 +314,7 @@ export default class MatrixView extends ItemView {
         target: contentEl,
         props: { hierSquares, matrixView: this, currFile },
       })
-      
+
 
       db.end2G();
     } catch (err) {

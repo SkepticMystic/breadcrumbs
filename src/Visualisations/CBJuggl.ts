@@ -39,7 +39,7 @@ function meetsConditions(
   );
 }
 
-class BCStoreEvents extends Events implements DataStoreEvents {}
+class BCStoreEvents extends Events implements DataStoreEvents { }
 
 class BCStore extends Component implements ICoreDataStore {
   graph: MultiGraph;
@@ -138,7 +138,7 @@ function createJuggl(
   args: IJugglSettings
 ) {
   try {
-    const jugglPlugin = getPlugin(plugin.app);
+    const jugglPlugin = getPlugin(app);
     if (!jugglPlugin) {
       // TODO: Error handling
       return;

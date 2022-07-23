@@ -2,10 +2,10 @@ import { warn } from "loglevel";
 import { Notice, TFile } from "obsidian";
 import type BCPlugin from "../main";
 import { getOppFields } from "../Utils/HierUtils";
-import {changeYaml, getCurrFile, splitAtYaml} from "../Utils/ObsidianUtils";
+import { changeYaml, getCurrFile, splitAtYaml } from "../Utils/ObsidianUtils";
 
 export async function writeBCToFile(plugin: BCPlugin, currFile?: TFile) {
-  const { app, settings, mainG } = plugin;
+  const { settings, mainG } = plugin;
   const file = currFile ?? getCurrFile();
 
   const { limitWriteBCCheckboxes, writeBCsInline, userHiers } = settings;

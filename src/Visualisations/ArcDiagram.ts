@@ -1,13 +1,12 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import type { d3Node } from "../interfaces";
 import { graphlibToD3, VisModal } from "./VisModal";
 import { openOrSwitch } from "obsidian-community-lib";
 
 export const arcDiagram = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,
@@ -189,9 +188,8 @@ text {
     const y1 = d.source.y;
     const y2 = d.target.y;
     const r = Math.abs(y2 - y1) / 2;
-    return `M${margin.left},${y1}A${r},${r} 0,0,${y1 < y2 ? 1 : 0} ${
-      margin.left
-    },${y2}`;
+    return `M${margin.left},${y1}A${r},${r} 0,0,${y1 < y2 ? 1 : 0} ${margin.left
+      },${y2}`;
   }
 
   function zoomed({ transform }) {

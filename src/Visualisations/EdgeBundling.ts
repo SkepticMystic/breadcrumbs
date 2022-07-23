@@ -1,11 +1,10 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import { dfsFlatAdjList, VisModal } from "./VisModal";
 
 export const edgeBundling = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,

@@ -25,7 +25,7 @@ import {
 } from "../Utils/graphUtils";
 const STORE_ID = "core";
 
-class BCStoreEvents extends Events implements DataStoreEvents {}
+class BCStoreEvents extends Events implements DataStoreEvents { }
 
 export class BCStore extends Component implements ICoreDataStore {
   graph: MultiGraph;
@@ -151,7 +151,7 @@ export function createJuggl(
   depthMap: { [value: string]: number } = null
 ): IJuggl {
   try {
-    const jugglPlugin = getPlugin(plugin.app);
+    const jugglPlugin = getPlugin(app);
     if (!jugglPlugin) {
       // TODO: Error handling
       return;

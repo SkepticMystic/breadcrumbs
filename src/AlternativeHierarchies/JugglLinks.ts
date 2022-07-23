@@ -13,7 +13,7 @@ export async function getJugglLinks(
   plugin: BCPlugin,
   files: TFile[]
 ): Promise<JugglLink[]> {
-  const { settings, app, db } = plugin;
+  const { settings, db } = plugin;
   db.start2G("getJugglLinks");
 
   const { userHiers } = settings;

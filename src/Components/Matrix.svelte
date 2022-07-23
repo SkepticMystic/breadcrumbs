@@ -11,7 +11,7 @@
   export let matrixView: MatrixView;
 
   const { plugin } = matrixView;
-  const { app, settings } = plugin;
+  const { settings } = plugin;
 
   const {
     showImpliedRelations,

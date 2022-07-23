@@ -17,11 +17,11 @@
   import { tidyTree } from "../Visualisations/TidyTree";
   import { treeMap } from "../Visualisations/TreeMap";
   import type { VisModal } from "../Visualisations/VisModal";
-  import {getCurrFile} from "../Utils/ObsidianUtils";
+  import { getCurrFile } from "../Utils/ObsidianUtils";
 
   export let modal: VisModal;
 
-  const { app, plugin } = modal;
+  const { plugin } = modal;
   const { mainG, settings } = plugin;
   const { visGraph, visRelation, visClosed, visAll } = settings;
 

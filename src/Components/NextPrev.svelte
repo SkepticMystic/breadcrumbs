@@ -8,8 +8,6 @@
   export let next: SquareItem[];
   export let prev: SquareItem[];
 
-  const { app } = plugin;
-
   const activeLeafView = app.workspace.activeLeaf.view;
 </script>
 

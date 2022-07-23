@@ -72,7 +72,7 @@ function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
 }
 
 function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
-  const { app, db } = plugin;
+  const { db } = plugin;
   db.start1G("getObsMetadataCache");
 
   const frontms: dvFrontmatterCache[] = files.map((file) => {
@@ -166,7 +166,7 @@ function parseFieldValue(
 export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
   const mainG = new MultiGraph();
   try {
-    const { settings, app, db } = plugin;
+    const { settings, db } = plugin;
     const { userHiers, CSVPaths, parseJugglLinksWithoutJuggl, hierarchyNotes } =
       settings;
     db.start2G("initGraphs");
@@ -294,7 +294,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
       plugin,
       eligableAlts[BC_TRAVERSE_NOTE],
       mainG,
-      buildObsGraph(app)
+      buildObsGraph()
     );
     db.end2G();
     db.start2G("Dendron Notes");

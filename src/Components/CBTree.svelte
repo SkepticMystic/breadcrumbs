@@ -19,7 +19,7 @@
   export let basename: string;
   export let parsedSource: ParsedCodeblock;
 
-  const { settings, app } = plugin;
+  const { settings } = plugin;
   const { title, content, dir } = parsedSource;
 
   const activeLeafView = app.workspace.activeLeaf.view;
@@ -49,7 +49,7 @@
                 >
               </span>
             </summary>
-            <RenderMarkdown {app} path={link} />
+            <RenderMarkdown path={link} />
           </details>
         </div>
       {:else}

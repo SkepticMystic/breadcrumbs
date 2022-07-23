@@ -3,11 +3,10 @@ import type Graph from "graphology";
 import { openOrSwitch } from "obsidian-community-lib";
 import type { d3Node } from "../interfaces";
 import { graphlibToD3, VisModal } from "./VisModal";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 
 export const forceDirectedG = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,
@@ -269,7 +268,7 @@ export const forceDirectedG = (
     })
     .on("mouseout", unfocus);
 
-  function focusNeighbours(d, event: MouseEvent) {}
+  function focusNeighbours(d, event: MouseEvent) { }
 
   function unfocus() {
     // labelNode.attr("display", "block");

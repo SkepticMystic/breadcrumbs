@@ -55,7 +55,6 @@ export default class BCPlugin extends Plugin {
   closedG: MultiGraph;
 
   activeLeafChange: EventRef = undefined;
-  activeLeafSave: EventRef = undefined;
   layoutChange: EventRef = undefined;
 
   db: Debugger;
@@ -66,12 +65,11 @@ export default class BCPlugin extends Plugin {
   private bcStore: BCStore;
 
   registerActiveLeafChangeEvent() {
-    this.activeLeafChange = this.app.workspace.on(
+    this.activeLeafChange = app.workspace.on(
       "file-open",
       async () => {
-        if (this.settings.refreshOnNoteChange) {
-          await refreshIndex(this);
-        } else {
+        if (this.settings.refreshOnNoteChange) await refreshIndex(this);
+        else {
           const activeView = this.getActiveTYPEView(MATRIX_VIEW);
           if (activeView) await activeView.draw();
         }
@@ -80,21 +78,8 @@ export default class BCPlugin extends Plugin {
     this.registerEvent(this.activeLeafChange);
   }
 
-  // registerActiveLeafSaveEvent ( ) {
-  //   this.activeLeafSave = this.app.workspace.on("" ,
-  //   async () => {
-  //     if (this.settings.refreshOnNoteSave) {
-  //       await refreshIndex (this) ;
-  //     }else {
-  //       const activeView = this.getActiveTYPEView(MATRIX_VIEW);
-  //       if (activeView) await activeView.draw();
-  //     }
-  //   }
-  //   )
-  // }
-
   registerLayoutChangeEvent() {
-    this.layoutChange = this.app.workspace.on("layout-change", async () => {
+    this.layoutChange = app.workspace.on("layout-change", async () => {
       if (this.settings.showBCs) await drawTrail(this);
     });
     this.registerEvent(this.layoutChange);
@@ -102,36 +87,31 @@ export default class BCPlugin extends Plugin {
 
   async onload(): Promise<void> {
     console.log("loading breadcrumbs plugin");
-    const { app } = this;
 
     await this.loadSettings();
-    this.addSettingTab(new BCSettingTab(app, this));
+    this.addSettingTab(new BCSettingTab(this));
 
     this.db = new Debugger(this);
 
     const { settings } = this;
-    const { fieldSuggestor, enableRelationSuggestor } = settings;
-
-    if (fieldSuggestor) this.registerEditorSuggest(new FieldSuggestor(this));
-    if (enableRelationSuggestor)
-      this.registerEditorSuggest(new RelationSuggestor(this));
-
-
-    if (settings.limitTrailCheckboxes.length === 0) {
-      settings.limitTrailCheckboxes = getFields(settings.userHiers)
-    }
-
-    if (typeof settings.showAll === 'boolean') {
-      settings.showAll = settings.showAll ? 'All' : 'Shortest'
-    }
-
     const {
+      fieldSuggestor,
+      enableRelationSuggestor,
       openMatrixOnLoad,
       openDuckOnLoad,
       openDownOnLoad,
       showBCs,
       userHiers,
     } = settings;
+
+    if (fieldSuggestor) this.registerEditorSuggest(new FieldSuggestor(this));
+    if (enableRelationSuggestor)
+      this.registerEditorSuggest(new RelationSuggestor(this));
+
+
+    // Override older versions of these settings
+    if (settings.limitTrailCheckboxes.length === 0) settings.limitTrailCheckboxes = getFields(settings.userHiers)
+    if (typeof settings.showAll === 'boolean') settings.showAll = settings.showAll ? 'All' : 'Shortest'
 
     this.VIEWS = [
       {
@@ -173,9 +153,8 @@ export default class BCPlugin extends Plugin {
         this.closedG = buildClosedG(this);
       }
 
-      for (const { openOnLoad, type, constructor } of this.VIEWS) {
+      for (const { openOnLoad, type, constructor } of this.VIEWS)
         if (openOnLoad) await openView(app, type, constructor);
-      }
 
       if (showBCs) await drawTrail(this);
       this.registerActiveLeafChangeEvent();
@@ -184,7 +163,7 @@ export default class BCPlugin extends Plugin {
       // Source for save setting
       // https://github.com/hipstersmoothie/obsidian-plugin-prettier/blob/main/src/main.ts
       const saveCommandDefinition =
-        this.app.commands.commands["editor:save-file"];
+        app.commands.commands["editor:save-file"];
       const save = saveCommandDefinition?.callback;
 
       if (typeof save === "function") {
@@ -220,13 +199,13 @@ export default class BCPlugin extends Plugin {
     this.addCommand({
       id: "open-vis-modal",
       name: "Open Visualisation Modal",
-      callback: () => new VisModal(app, this).open(),
+      callback: () => new VisModal(this).open(),
     });
 
     this.addCommand({
       id: "manipulate-hierarchy-notes",
       name: "Adjust Hierarchy Notes",
-      callback: () => new HierarchyNoteSelectorModal(app, this).open(),
+      callback: () => new HierarchyNoteSelectorModal(this).open(),
     });
 
     this.addCommand({
@@ -288,7 +267,7 @@ export default class BCPlugin extends Plugin {
     this.addRibbonIcon(
       addFeatherIcon("tv") as string,
       "Breadcrumbs Visualisation",
-      () => new VisModal(app, this).open()
+      () => new VisModal(this).open()
     );
 
     this.registerMarkdownCodeBlockProcessor(
@@ -296,13 +275,13 @@ export default class BCPlugin extends Plugin {
       getCodeblockCB(this)
     );
 
-    const jugglPlugin = getPlugin(this.app);
+    const jugglPlugin = getPlugin(app);
     if (jugglPlugin) {
-      this.bcStore = new BCStore(this.mainG, this.app.metadataCache);
+      this.bcStore = new BCStore(this.mainG, app.metadataCache);
       jugglPlugin.registerStore(this.bcStore);
     }
 
-    this.api = new BCAPI(app, this);
+    this.api = new BCAPI(this);
     // Register API to global window object.
     (window[API_NAME] = this.api) &&
       this.register(() => delete window[API_NAME]);
@@ -310,7 +289,7 @@ export default class BCPlugin extends Plugin {
 
   getActiveTYPEView(type: string): MyView | null {
     const { constructor } = this.VIEWS.find((view) => view.type === type);
-    const leaves = this.app.workspace.getLeavesOfType(type);
+    const leaves = app.workspace.getLeavesOfType(type);
     if (leaves && leaves.length >= 1) {
       const { view } = leaves[0];
       if (view instanceof constructor) return view;
@@ -330,14 +309,14 @@ export default class BCPlugin extends Plugin {
   onunload(): void {
     console.log("unloading");
     this.VIEWS.forEach(async (view) => {
-      this.app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
+      app.workspace.getLeavesOfType(view.type).forEach((leaf) => {
         leaf.detach();
       });
     });
 
     this.visited.forEach((visit) => visit[1].remove());
     if (this.bcStore) {
-      const jugglPlugin = getPlugin(this.app);
+      const jugglPlugin = getPlugin(app);
       if (jugglPlugin) {
         // @ts-ignore
         jugglPlugin.removeStore(this.bcStore);

@@ -15,7 +15,7 @@ export class RelationSuggestor extends EditorSuggest<string> {
   plugin: BCPlugin;
 
   constructor(plugin: BCPlugin) {
-    super(plugin.app);
+    super(app);
     this.plugin = plugin;
   }
 
@@ -61,7 +61,7 @@ export class RelationSuggestor extends EditorSuggest<string> {
     const trig = plugin.settings.relSuggestorTrigger;
     const { start, end, editor } = context;
 
-    const replacement = suggestion + (isInsideYaml(plugin.app) ? ": " : ":: ") + '[[';
+    const replacement = suggestion + (isInsideYaml(app) ? ": " : ":: ") + '[[';
     editor.replaceRange(
       replacement,
       { ch: start.ch + 1 - trig.length, line: start.line },

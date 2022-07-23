@@ -1,16 +1,14 @@
-import { App, FuzzyMatch, FuzzySuggestModal, Notice } from "obsidian";
+import { FuzzyMatch, FuzzySuggestModal, Notice } from "obsidian";
 import { HierarchyNoteManipulator } from "./HierarchyNoteManipulator";
 import type { BCSettings } from "../../interfaces";
 import type BCPlugin from "../../main";
 
 export class HierarchyNoteSelectorModal extends FuzzySuggestModal<string> {
-  app: App;
   plugin: BCPlugin;
   settings: BCSettings;
 
-  constructor(app: App, plugin: BCPlugin) {
+  constructor(plugin: BCPlugin) {
     super(app);
-    this.app = app;
     this.plugin = plugin;
     this.settings = this.plugin.settings;
   }
@@ -27,7 +25,6 @@ export class HierarchyNoteSelectorModal extends FuzzySuggestModal<string> {
     ) {
       this.close();
       new HierarchyNoteManipulator(
-        this.app,
         this.plugin,
         hierarchyNotes[0]
       ).open();
@@ -61,7 +58,7 @@ export class HierarchyNoteSelectorModal extends FuzzySuggestModal<string> {
   }
 
   onChooseItem(item: string, evt: MouseEvent | KeyboardEvent): void {
-    new HierarchyNoteManipulator(this.app, this.plugin, item).open();
+    new HierarchyNoteManipulator(this.plugin, item).open();
     this.close();
   }
 }

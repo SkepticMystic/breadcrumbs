@@ -17,7 +17,7 @@
   export let sortedTrails: string[][];
   export let plugin: BCPlugin;
 
-  const { settings, app, mainG } = plugin;
+  const { settings, mainG } = plugin;
   const { userHiers, gridHeatmap, heatmapColour, gridDefaultDepth } = settings;
 
   const activeLeafView = app.workspace.activeLeaf.view;

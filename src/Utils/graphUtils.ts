@@ -240,7 +240,7 @@ export function getSubCloseSub(
   return closedSub;
 }
 
-export function buildObsGraph(app: App): MultiGraph {
+export function buildObsGraph(): MultiGraph {
   const ObsG = new MultiGraph();
   const { resolvedLinks, unresolvedLinks } = app.metadataCache;
 

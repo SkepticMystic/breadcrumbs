@@ -1,12 +1,10 @@
 <script lang="ts">
-  import type { App } from "obsidian";
   import { hoverPreview, openOrSwitch } from "obsidian-community-lib";
   import FaInfo from "svelte-icons/fa/FaInfo.svelte";
   import type BCPlugin from "../main";
   import type DucksView from "../Views/DucksView";
 
   export let plugin: BCPlugin;
-  export let app: App;
   export let ducksView: DucksView;
 
   const { mainG } = plugin;

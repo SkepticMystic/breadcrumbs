@@ -1,4 +1,4 @@
-import { App, Modal, TFile } from "obsidian";
+import { Modal, TFile } from "obsidian";
 import ModifyHNItemComp from "../../Components/ModifyHNItemComp.svelte";
 import type BCPlugin from "../../main";
 
@@ -17,7 +17,6 @@ export class ModifyHierItemModal extends Modal {
   rel: "up" | "same" | "down";
 
   constructor(
-    app: App,
     plugin: BCPlugin,
     hnItem: HNItem,
     file: TFile,

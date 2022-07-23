@@ -15,7 +15,7 @@ export default class DucksView extends ItemView {
   async onload(): Promise<void> {
     super.onload();
     await this.plugin.saveSettings();
-    this.app.workspace.onLayoutReady(async () => {
+    app.workspace.onLayoutReady(async () => {
       await this.draw();
     });
   }
@@ -30,7 +30,7 @@ export default class DucksView extends ItemView {
   // TODO Duck icon
   icon = DUCK_ICON;
 
-  async onOpen(): Promise<void> {}
+  async onOpen(): Promise<void> { }
 
   onClose(): Promise<void> {
     this.view?.$destroy();
@@ -42,7 +42,7 @@ export default class DucksView extends ItemView {
 
     this.view = new Ducks({
       target: this.contentEl,
-      props: { plugin: this.plugin, app: this.app, ducksView: this },
+      props: { plugin: this.plugin, ducksView: this },
     });
   }
 }

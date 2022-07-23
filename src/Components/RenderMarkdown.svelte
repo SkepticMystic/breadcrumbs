@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { App, MarkdownRenderer } from "obsidian";
+  import { MarkdownRenderer } from "obsidian";
   import { onMount } from "svelte";
 
   export let path: string;
-  export let app: App;
 
   async function getContent(note: string) {
     const file = app.metadataCache.getFirstLinkpathDest(note, "");

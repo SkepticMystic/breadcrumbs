@@ -2,7 +2,7 @@ import type { MultiGraph } from "graphology";
 import type { IJugglSettings, JugglLayouts } from "juggl-api";
 import type { LogLevel } from "loglevel";
 import type { DateTime } from "luxon";
-import type { App, Constructor, Pos, TFile } from "obsidian";
+import type { Constructor, Pos, TFile } from "obsidian";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
@@ -281,7 +281,7 @@ declare module "obsidian" {
   interface App {
     plugins: {
       plugins: {
-        dataview: {
+        dataview?: {
           api: {
             page: (page: string) => dvFrontmatterCache;
             pages: (query: string) => { values: dvFrontmatterCache[] };

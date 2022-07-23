@@ -13,7 +13,7 @@ export function addTrailViewSettings(
   plugin: BCPlugin,
   viewDetails: HTMLDetailsElement
 ) {
-  const { settings, app } = plugin;
+  const { settings } = plugin;
   const trailDetails = subDetails("Trail/Grid/Juggl", viewDetails);
 
   new Setting(trailDetails)

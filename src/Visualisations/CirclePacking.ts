@@ -1,14 +1,13 @@
 import * as d3 from "d3";
 import type Graph from "graphology";
-import type { App, TFile } from "obsidian";
+import type { TFile } from "obsidian";
 import type { AdjListItem, d3Link, d3Node } from "../interfaces";
 import { bfsAdjList, dfsFlatAdjList, VisModal } from "./VisModal";
 import { openOrSwitch } from "obsidian-community-lib";
-import {getCurrFile} from "../Utils/ObsidianUtils";
+import { getCurrFile } from "../Utils/ObsidianUtils";
 
 export const circlePacking = (
   graph: Graph,
-  app: App,
   currFile: TFile,
   modal: VisModal,
   width: number,

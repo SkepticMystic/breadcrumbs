@@ -14,7 +14,7 @@
 
 //   async onload(): Promise<void> {
 //     super.onload();
-//     this.app.workspace.onLayoutReady(() => {
+//     app.workspace.onLayoutReady(() => {
 //       setTimeout(
 //         async () => await this.draw(),
 //         this.plugin.settings.dvWaitTime

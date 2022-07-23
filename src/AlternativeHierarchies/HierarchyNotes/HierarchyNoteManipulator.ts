@@ -1,6 +1,5 @@
 import { error, info } from "loglevel";
 import {
-  App,
   FuzzyMatch,
   FuzzySuggestModal,
   ListItemCache,
@@ -20,7 +19,6 @@ interface HNItem {
 }
 
 export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
-  app: App;
   plugin: BCPlugin;
   settings: BCSettings;
   hierNoteName: string;
@@ -28,9 +26,8 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
   listItems: ListItemCache[];
   file: TFile;
 
-  constructor(app: App, plugin: BCPlugin, hierNoteName: string) {
+  constructor(plugin: BCPlugin, hierNoteName: string) {
     super(app);
-    this.app = app;
     this.plugin = plugin;
     this.settings = this.plugin.settings;
     this.hierNoteName = hierNoteName;
@@ -47,7 +44,6 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
   }
 
   async onOpen(): Promise<void> {
-    const { app } = this;
     this.setPlaceholder("HN Manipulator");
     this.setInstructions([
       { command: "Shift + Enter", purpose: "Jump to item" },
@@ -103,7 +99,7 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
     try {
       this.lines.splice(item.lineNo, 1);
       this.listItems.splice(item.lineNo, 1);
-      await this.app.vault.modify(this.file, this.lines.join("\n"));
+      await app.vault.modify(this.file, this.lines.join("\n"));
       new Notice("Item deleted Succesfully");
     } catch (err) {
       error(err);
@@ -119,7 +115,7 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
       evt.key == "Enter" &&
       evt.shiftKey
     ) {
-      const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const view = app.workspace.getActiveViewOfType(MarkdownView);
       const { editor } = view ?? {};
       if (!editor) return;
       //@ts-ignore
@@ -136,7 +132,6 @@ export class HierarchyNoteManipulator extends FuzzySuggestModal<HNItem> {
       }
 
       new ModifyHierItemModal(
-        this.app,
         this.plugin,
         item,
         this.file,
