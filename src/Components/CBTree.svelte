@@ -38,14 +38,13 @@
             <summary>
               <span
                 class="internal-link"
-                on:click={async (e) => await openOrSwitch(app, link, e)}
+                on:click={async (e) => await openOrSwitch(link, e)}
                 on:mouseover={(e) => hoverPreview(e, activeLeafView, link)}
               >
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <a
-                  class="internal-link {isInVault(app, link)
-                    ? ''
-                    : 'is-unresolved'}">{dropDendron(link, settings)}</a
+                  class="internal-link {isInVault(link) ? '' : 'is-unresolved'}"
+                  >{dropDendron(link, settings)}</a
                 >
               </span>
             </summary>
@@ -57,15 +56,11 @@
           <pre class="indent">{indent + "-"}</pre>
           <span
             class="internal-link"
-            on:click={async (e) => await openOrSwitch(app, link, e)}
+            on:click={async (e) => await openOrSwitch(link, e)}
             on:mouseover={(e) => hoverPreview(e, activeLeafView, link)}
           >
             <!-- svelte-ignore a11y-missing-attribute -->
-            <a
-              class="internal-link {isInVault(app, link)
-                ? ''
-                : 'is-unresolved'}"
-            >
+            <a class="internal-link {isInVault(link) ? '' : 'is-unresolved'}">
               {dropDendron(link, settings)}
             </a>
           </span>

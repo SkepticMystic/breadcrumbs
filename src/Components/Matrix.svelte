@@ -50,7 +50,7 @@
                   <li>
                     <div
                       class="{cls} {implied ?? ''}"
-                      on:click={async (e) => await openOrSwitch(app, to, e)}
+                      on:click={async (e) => await openOrSwitch(to, e)}
                       on:mouseover={(event) =>
                         hoverPreview(event, matrixView, to)}
                       aria-label={alt ? to : ""}
@@ -82,7 +82,7 @@
                   >
                     <div
                       class="{cls} {implied ?? ''}"
-                      on:click={async (e) => await openOrSwitch(app, to, e)}
+                      on:click={async (e) => await openOrSwitch(to, e)}
                       on:mouseover={(e) => hoverPreview(e, matrixView, to)}
                       aria-label={(alt ? `${to}\n` : "") +
                         (parent ? "↑ " + parent : "")}

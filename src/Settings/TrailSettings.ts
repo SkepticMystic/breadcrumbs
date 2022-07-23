@@ -165,7 +165,7 @@ export function addTrailViewSettings(
         const splits = splitAndTrim(text.getValue());
         if (
           splits[0] === undefined ||
-          splits.every((index) => isInVault(app, index))
+          splits.every((index) => isInVault(index))
         ) {
           settings.indexNotes = splits;
           await plugin.saveSettings();

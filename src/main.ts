@@ -20,7 +20,6 @@ import {
   DUCK_ICON_SVG,
   DUCK_VIEW,
   MATRIX_VIEW,
-  // STATS_VIEW,
   TRAIL_ICON,
   TRAIL_ICON_SVG,
   TREE_VIEW,
@@ -154,7 +153,7 @@ export default class BCPlugin extends Plugin {
       }
 
       for (const { openOnLoad, type, constructor } of this.VIEWS)
-        if (openOnLoad) await openView(app, type, constructor);
+        if (openOnLoad) await openView(type, constructor);
 
       if (showBCs) await drawTrail(this);
       this.registerActiveLeafChangeEvent();
@@ -191,7 +190,7 @@ export default class BCPlugin extends Plugin {
         //@ts-ignore
         checkCallback: async (checking: boolean) => {
           if (checking) return app.workspace.getLeavesOfType(type).length === 0;
-          await openView(app, type, constructor);
+          await openView(type, constructor);
         },
       });
     }

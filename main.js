@@ -2653,12 +2653,11 @@ async function copy(content, success = () => new obsidian.Notice("Copied to clip
 }
 /**
  * Check if `noteName` is the name of a note that exists in the vault.
- * @param  {App} app
  * @param  {string} noteName Basename of the note to search for.
  * @param  {string} [sourcePath=""] Optional file path to start searching from. Default is the current file.
  * @returns boolean
  */
-const isInVault = (app, noteName, sourcePath = "") => !!app.metadataCache.getFirstLinkpathDest(noteName, sourcePath);
+const isInVault = (noteName, sourcePath = "") => !!app.metadataCache.getFirstLinkpathDest(noteName, sourcePath);
 /**
  * When hovering a link going to `to`, show the Obsidian hover-preview of that note.
  *
@@ -2671,7 +2670,7 @@ const isInVault = (app, noteName, sourcePath = "") => !!app.metadataCache.getFir
  */
 function hoverPreview(event, view, to) {
     const targetEl = event.target;
-    view.app.workspace.trigger("hover-link", {
+    app.workspace.trigger("hover-link", {
         event,
         source: view.getViewType(),
         hoverParent: view,
@@ -2681,12 +2680,11 @@ function hoverPreview(event, view, to) {
 }
 /**
  * Create a new markdown note named `newName` in the user's preffered new-note-folder.
- * @param  {App} app
  * @param  {string} newName Name of new note (with or without '.md')
  * @param  {string} [currFilePath=""] File path of the current note. Use an empty string if there is no active file.
  * @returns {Promise<TFile>} new TFile
  */
-async function createNewMDNote(app, newName, currFilePath = "") {
+async function createNewMDNote(newName, currFilePath = "") {
     const newFileFolder = app.fileManager.getNewFileParent(currFilePath).path;
     const newFilePath = obsidian.normalizePath(`${newFileFolder}${newFileFolder === "/" ? "" : "/"}${addMD(newName)}`);
     return await app.vault.create(newFilePath, "");
@@ -2697,22 +2695,21 @@ async function createNewMDNote(app, newName, currFilePath = "") {
  * @returns {string} noteName with '.md' on the end.
  */
 const addMD = (noteName) => {
-    return noteName.endsWith(".md") ? noteName : noteName + ".md";
+    return noteName.match(/\.MD$|\.md$/m) ? noteName : noteName + ".md";
 };
 /**
  * When clicking a link, check if that note is already open in another leaf, and switch to that leaf, if so. Otherwise, open the note in a new pane.
- * @param  {App} app
  * @param  {string} dest Name of note to open. If you want to open a non-md note, be sure to add the file extension.
  * @param  {MouseEvent} event
  * @param  {{createNewFile:boolean}} [options={createNewFile:true}] Whether or not to create `dest` file if it doesn't exist. If `false`, simply return from the function.
  * @returns Promise
  */
-async function openOrSwitch(app, dest, event, options = { createNewFile: true }) {
+async function openOrSwitch(dest, event, options = { createNewFile: true }) {
     const { workspace } = app;
     let destFile = app.metadataCache.getFirstLinkpathDest(dest, "");
     // If dest doesn't exist, make it
     if (!destFile && options.createNewFile) {
-        destFile = await createNewMDNote(app, dest);
+        destFile = await createNewMDNote(dest);
     }
     else if (!destFile && !options.createNewFile)
         return;
@@ -2738,18 +2735,18 @@ async function openOrSwitch(app, dest, event, options = { createNewFile: true })
         const leaf = event.ctrlKey || event.getModifierState("Meta")
             ? workspace.splitActiveLeaf()
             : workspace.getUnpinnedLeaf();
+        //@ts-expect-error
         await leaf.openFile(destFile, { active: true, mode });
     }
 }
 /**
  * Open your view on the chosen `side` if it isn't already open
- * @param  {App} app
  * @param  {string} viewType
  * @param  {Constructor<YourView>} viewClass The class constructor of your view
  * @param  {"left"|"right"} [side="right"]
  * @returns {Promise<YourView>} The opened view
  */
-async function openView(app, viewType, viewClass, side = "right") {
+async function openView(viewType, viewClass, side = "right") {
     let leaf = null;
     for (leaf of app.workspace.getLeavesOfType(viewType)) {
         if (leaf.view instanceof viewClass) {
@@ -2772,24 +2769,22 @@ async function openView(app, viewType, viewClass, side = "right") {
  * Check if `app.metadataCache.ResolvedLinks` have fully initalised.
  *
  * Used with {@link waitForResolvedLinks}.
- * @param {App} app
  * @param  {number} noFiles Number of files in your vault.
  * @returns {boolean}
  */
-function resolvedLinksComplete(app, noFiles) {
+function resolvedLinksComplete(noFiles) {
     const { resolvedLinks } = app.metadataCache;
     return Object.keys(resolvedLinks).length === noFiles;
 }
 /**
  * Wait for `app.metadataCache.ResolvedLinks` to have fully initialised.
- * @param {App} app
  * @param  {number} [delay=1000] Number of milliseconds to wait between each check.
  * @param {number} [max=50] Maximum number of iterations to check before throwing an error and breaking out of the loop.
  */
-async function waitForResolvedLinks(app, delay = 1000, max = 50) {
+async function waitForResolvedLinks(delay = 1000, max = 50) {
     const noFiles = app.vault.getMarkdownFiles().length;
     let i = 0;
-    while (!resolvedLinksComplete(app, noFiles) && i < max) {
+    while (!resolvedLinksComplete(noFiles) && i < max) {
         await wait(delay);
         i++;
     }
@@ -5315,7 +5310,7 @@ async function waitForCache(plugin) {
         await waitForResolvedLinks(app);
     }
 }
-const linkClass = (to, realQ = true) => `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
+const linkClass = (to, realQ = true) => `internal-link BC-Link ${isInVault(to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
 const getDVApi = (plugin) => { var _a; return (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
 function isInsideYaml() {
     const { workspace, metadataCache } = app;
@@ -14359,7 +14354,7 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
                 const { otherNotes, subFolders } = getSubsFromFolder(currFolder);
                 const folderNote = currFolder.name;
                 const targets = otherNotes.map(getDVBasename);
-                // if (!isInVault(app, folderNote, folderNote)) continue;
+                // if (!isInVault( folderNote, folderNote)) continue;
                 const sourceOrder = 9999; // getSourceOrder(altFile);
                 const targetOrder = 9999; //  getTargetOrder(frontms, basename);
                 const parentFolderNote = currFolder.parent.name;
@@ -14685,7 +14680,7 @@ function create_each_block_1$6(ctx) {
 			t1 = space();
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(app, /*to*/ ctx[10], /*real*/ ctx[9]) + " BC-prev" + " svelte-11g23nm"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*to*/ ctx[10], /*real*/ ctx[9]) + " BC-prev" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -14709,7 +14704,7 @@ function create_each_block_1$6(ctx) {
 			if (dirty & /*prev*/ 2 && t0_value !== (t0_value = /*field*/ ctx[8] + "")) set_data(t0, t0_value);
 			if (dirty & /*prev*/ 2 && t2_value !== (t2_value = /*to*/ ctx[10] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*prev*/ 2 && div_class_value !== (div_class_value = "" + (linkClass(app, /*to*/ ctx[10], /*real*/ ctx[9]) + " BC-prev" + " svelte-11g23nm"))) {
+			if (dirty & /*prev*/ 2 && div_class_value !== (div_class_value = "" + (linkClass(/*to*/ ctx[10], /*real*/ ctx[9]) + " BC-prev" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -14751,7 +14746,7 @@ function create_each_block$9(ctx) {
 			strong = element("strong");
 			t2 = text(t2_value);
 			t3 = space();
-			attr(div, "class", div_class_value = "" + (linkClass(app, /*to*/ ctx[10], /*real*/ ctx[9]) + " BC-next" + " svelte-11g23nm"));
+			attr(div, "class", div_class_value = "" + (linkClass(/*to*/ ctx[10], /*real*/ ctx[9]) + " BC-next" + " svelte-11g23nm"));
 		},
 		m(target, anchor) {
 			insert(target, div, anchor);
@@ -14775,7 +14770,7 @@ function create_each_block$9(ctx) {
 			if (dirty & /*next*/ 1 && t0_value !== (t0_value = /*to*/ ctx[10] + "")) set_data(t0, t0_value);
 			if (dirty & /*next*/ 1 && t2_value !== (t2_value = /*field*/ ctx[8] + "")) set_data(t2, t2_value);
 
-			if (dirty & /*next*/ 1 && div_class_value !== (div_class_value = "" + (linkClass(app, /*to*/ ctx[10], /*real*/ ctx[9]) + " BC-next" + " svelte-11g23nm"))) {
+			if (dirty & /*next*/ 1 && div_class_value !== (div_class_value = "" + (linkClass(/*to*/ ctx[10], /*real*/ ctx[9]) + " BC-next" + " svelte-11g23nm"))) {
 				attr(div, "class", div_class_value);
 			}
 		},
@@ -14848,7 +14843,7 @@ function create_fragment$m(ctx) {
 			}
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*linkClass, app, prev, openOrSwitch, hoverPreview, activeLeafView*/ 6) {
+			if (dirty & /*linkClass, prev, openOrSwitch, hoverPreview, activeLeafView*/ 6) {
 				each_value_1 = /*prev*/ ctx[1];
 				let i;
 
@@ -14871,7 +14866,7 @@ function create_fragment$m(ctx) {
 				each_blocks_1.length = each_value_1.length;
 			}
 
-			if (dirty & /*linkClass, app, next, openOrSwitch, hoverPreview, activeLeafView*/ 5) {
+			if (dirty & /*linkClass, next, openOrSwitch, hoverPreview, activeLeafView*/ 5) {
 				each_value = /*next*/ ctx[0];
 				let i;
 
@@ -14911,9 +14906,9 @@ function instance$m($$self, $$props, $$invalidate) {
 	let { next } = $$props;
 	let { prev } = $$props;
 	const activeLeafView = app.workspace.activeLeaf.view;
-	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const click_handler = async (to, e) => await openOrSwitch(to, e);
 	const mouseover_handler = (to, e) => hoverPreview(e, activeLeafView, to);
-	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
+	const click_handler_1 = async (to, e) => await openOrSwitch(to, e);
 	const mouseover_handler_1 = (to, e) => hoverPreview(e, activeLeafView, to);
 
 	$$self.$$set = $$props => {
@@ -14993,7 +14988,7 @@ function create_each_block_1$5(ctx) {
 			div0 = element("div");
 			t0 = text(t0_value);
 			t1 = space();
-			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(app, /*value*/ ctx[27])) + " svelte-c6w3ih"));
+			attr(div0, "class", div0_class_value = "" + (null_to_empty(linkClass(/*value*/ ctx[27])) + " svelte-c6w3ih"));
 			attr(div1, "class", div1_class_value = "BC-trail-grid-item " + (/*value*/ ctx[27] === "" ? "BC-filler" : "") + " svelte-c6w3ih");
 
 			attr(div1, "style", div1_style_value = "\r\n              grid-area: " + (/*first*/ ctx[28] + 1) + " / " + (/*i*/ ctx[26] + 1) + " /\r\n                  " + (/*last*/ ctx[29] + 2) + " / " + (/*i*/ ctx[26] + 2) + ";\r\n              " + (/*gridHeatmap*/ ctx[6]
@@ -15019,7 +15014,7 @@ function create_each_block_1$5(ctx) {
 			ctx = new_ctx;
 			if (dirty[0] & /*allRuns, plugin*/ 17 && t0_value !== (t0_value = (getAlt(/*value*/ ctx[27], /*plugin*/ ctx[0]) ?? dropDendron(/*value*/ ctx[27], /*settings*/ ctx[5])) + "")) set_data(t0, t0_value);
 
-			if (dirty[0] & /*allRuns*/ 16 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(app, /*value*/ ctx[27])) + " svelte-c6w3ih"))) {
+			if (dirty[0] & /*allRuns*/ 16 && div0_class_value !== (div0_class_value = "" + (null_to_empty(linkClass(/*value*/ ctx[27])) + " svelte-c6w3ih"))) {
 				attr(div0, "class", div0_class_value);
 			}
 
@@ -15274,7 +15269,7 @@ function instance$l($$self, $$props, $$invalidate) {
 
 	let slicedTrails = sortedTrails;
 	const toColour = value => heatmapColour + Math.round(children[value] * 200 + 55).toString(16);
-	const click_handler = async (value, e) => await openOrSwitch(app, value, e);
+	const click_handler = async (value, e) => await openOrSwitch(value, e);
 	const mouseover_handler = (value, e) => hoverPreview(e, activeLeafView, value);
 	const click_handler_1 = () => $$invalidate(1, depth -= 1);
 	const click_handler_2 = () => $$invalidate(1, depth += 1);
@@ -15385,7 +15380,7 @@ function create_else_block$3(ctx) {
 			insert(target, each_1_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*trailSeperator, trailsToShow, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 186) {
+			if (dirty & /*trailSeperator, trailsToShow, openOrSwitch, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 186) {
 				each_value_1 = /*trail*/ ctx[13];
 				let i;
 
@@ -15651,7 +15646,7 @@ function create_fragment$k(ctx) {
 			if (if_block) if_block.m(span, null);
 		},
 		p(ctx, [dirty]) {
-			if (dirty & /*noPathMessage, trailsToShow, trailSeperator, openOrSwitch, app, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 250) {
+			if (dirty & /*noPathMessage, trailsToShow, trailSeperator, openOrSwitch, hoverPreview, view, getAlt, plugin, dropDendron, settings*/ 250) {
 				each_value = /*trailsToShow*/ ctx[3];
 				let i;
 
@@ -15706,7 +15701,7 @@ function instance$k($$self, $$props, $$invalidate) {
 	const { view } = app.workspace.activeLeaf;
 	let { showAll, noPathMessage, trailSeperator } = settings;
 	let trail_length = showAll;
-	const click_handler = async (crumb, e) => await openOrSwitch(app, crumb, e);
+	const click_handler = async (crumb, e) => await openOrSwitch(crumb, e);
 	const mouseover_handler = (crumb, e) => hoverPreview(e, view, crumb);
 	const click_handler_1 = () => $$invalidate(2, trail_length = getTrailLength(trail_length));
 
@@ -34397,7 +34392,7 @@ function create_if_block_4(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty & /*hierSquares, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 45) {
+			if (dirty & /*hierSquares, rlLeaf, openOrSwitch, hoverPreview, matrixView, dropPathNDendron, settings*/ 45) {
 				each_value_3 = /*realItems*/ ctx[18];
 				let i;
 
@@ -34555,7 +34550,7 @@ function create_if_block_1$3(ctx) {
 				if_block = null;
 			}
 
-			if (dirty & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings*/ 111) {
+			if (dirty & /*treatCurrNodeAsImpliedSibling, hierSquares, currFile, rlLeaf, openOrSwitch, hoverPreview, matrixView, dropPathNDendron, settings*/ 111) {
 				each_value_2 = /*impliedItems*/ ctx[17];
 				let i;
 
@@ -34785,7 +34780,7 @@ function create_each_block$6(ctx) {
 			append(div, t);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 255) {
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 255) {
 				each_value_1 = /*squares*/ ctx[13];
 				let i;
 
@@ -34865,7 +34860,7 @@ function create_fragment$g(ctx) {
 			if (dirty & /*matrixView*/ 4) matrixbuttons_changes.matrixView = /*matrixView*/ ctx[2];
 			matrixbuttons.$set(matrixbuttons_changes);
 
-			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, app, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 255) {
+			if (dirty & /*hierSquares, treatCurrNodeAsImpliedSibling, currFile, rlLeaf, openOrSwitch, hoverPreview, matrixView, dropPathNDendron, settings, showRelationType, showImpliedRelations*/ 255) {
 				each_value = /*hierSquares*/ ctx[0];
 				let i;
 
@@ -34921,9 +34916,9 @@ function instance$g($$self, $$props, $$invalidate) {
 	const { plugin } = matrixView;
 	const { settings } = plugin;
 	const { showImpliedRelations, rlLeaf, treatCurrNodeAsImpliedSibling, showRelationType } = settings;
-	const click_handler = async (to, e) => await openOrSwitch(app, to, e);
+	const click_handler = async (to, e) => await openOrSwitch(to, e);
 	const mouseover_handler = (to, event) => hoverPreview(event, matrixView, to);
-	const click_handler_1 = async (to, e) => await openOrSwitch(app, to, e);
+	const click_handler_1 = async (to, e) => await openOrSwitch(to, e);
 	const mouseover_handler_1 = (to, e) => hoverPreview(e, matrixView, to);
 
 	$$self.$$set = $$props => {
@@ -36015,7 +36010,7 @@ function create_if_block$2(ctx) {
 	};
 }
 
-// (47:6) {:else}
+// (46:6) {:else}
 function create_else_block$1(ctx) {
 	let div;
 	let pre;
@@ -36050,7 +36045,7 @@ function create_else_block$1(ctx) {
 			t2 = text(t2_value);
 			t3 = space();
 			attr(pre, "class", "indent svelte-1df5nr5");
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(app, /*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5");
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5");
 			attr(span, "class", "internal-link");
 		},
 		m(target, anchor) {
@@ -36077,7 +36072,7 @@ function create_else_block$1(ctx) {
 			if (dirty & /*lines*/ 1 && t0_value !== (t0_value = /*indent*/ ctx[17] + "-" + "")) set_data(t0, t0_value);
 			if (dirty & /*lines*/ 1 && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(app, /*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5")) {
+			if (dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -36137,7 +36132,7 @@ function create_if_block_1$1(ctx) {
 			create_component(rendermarkdown.$$.fragment);
 			t4 = space();
 			attr(pre, "class", "indent svelte-1df5nr5");
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(app, /*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5");
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5");
 			attr(span, "class", "internal-link");
 			details.open = /*content*/ ctx[7] === "open";
 			attr(details, "class", "svelte-1df5nr5");
@@ -36171,7 +36166,7 @@ function create_if_block_1$1(ctx) {
 			if ((!current || dirty & /*lines*/ 1) && t0_value !== (t0_value = /*indent*/ ctx[17] + "")) set_data(t0, t0_value);
 			if ((!current || dirty & /*lines*/ 1) && t2_value !== (t2_value = dropDendron(/*link*/ ctx[18], /*settings*/ ctx[5]) + "")) set_data(t2, t2_value);
 
-			if (!current || dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(app, /*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5")) {
+			if (!current || dirty & /*lines*/ 1 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*link*/ ctx[18]) ? "" : "is-unresolved") + " svelte-1df5nr5")) {
 				attr(a, "class", a_class_value);
 			}
 
@@ -36298,7 +36293,7 @@ function create_fragment$d(ctx) {
 		p(ctx, [dirty]) {
 			if (/*title*/ ctx[6] !== false) if_block.p(ctx, dirty);
 
-			if (dirty & /*content, lines, openOrSwitch, app, hoverPreview, activeLeafView, isInVault, dropDendron, settings, meetsConditions, froms, min, max*/ 687) {
+			if (dirty & /*content, lines, openOrSwitch, hoverPreview, activeLeafView, isInVault, dropDendron, settings, meetsConditions, froms, min, max*/ 687) {
 				each_value = /*lines*/ ctx[0];
 				let i;
 
@@ -36366,9 +36361,9 @@ function instance$d($$self, $$props, $$invalidate) {
 	const { settings } = plugin;
 	const { title, content, dir } = parsedSource;
 	const activeLeafView = app.workspace.activeLeaf.view;
-	const click_handler = async (link, e) => await openOrSwitch(app, link, e);
+	const click_handler = async (link, e) => await openOrSwitch(link, e);
 	const mouseover_handler = (link, e) => hoverPreview(e, activeLeafView, link);
-	const click_handler_1 = async (link, e) => await openOrSwitch(app, link, e);
+	const click_handler_1 = async (link, e) => await openOrSwitch(link, e);
 	const mouseover_handler_1 = (link, e) => hoverPreview(e, activeLeafView, link);
 
 	$$self.$$set = $$props => {
@@ -38474,7 +38469,7 @@ function addMatrixViewSettings(plugin, viewDetails) {
         settings.rlLeaf = value;
         await plugin.saveSettings();
         app.workspace.detachLeavesOfType(MATRIX_VIEW);
-        await openView(app, MATRIX_VIEW, MatrixView, value ? "right" : "left");
+        await openView(app, MATRIX_VIEW, MatrixView);
     }));
 }
 
@@ -38852,7 +38847,7 @@ function addTrailViewSettings(plugin, viewDetails) {
         text.inputEl.onblur = async () => {
             const splits = splitAndTrim(text.getValue());
             if (splits[0] === undefined ||
-                splits.every((index) => isInVault(app, index))) {
+                splits.every((index) => isInVault(index))) {
                 settings.indexNotes = splits;
                 await plugin.saveSettings();
             }
@@ -39427,7 +39422,7 @@ function create_fragment$4(ctx) {
 				input1.checked = /*include*/ ctx[2];
 			}
 
-			if (dirty & /*openOrSwitch, app, ducks, hoverPreview, ducksView*/ 9) {
+			if (dirty & /*openOrSwitch, ducks, hoverPreview, ducksView*/ 9) {
 				each_value = /*ducks*/ ctx[3];
 				let i;
 
@@ -39496,7 +39491,7 @@ function instance$4($$self, $$props, $$invalidate) {
 		$$invalidate(2, include);
 	}
 
-	const click_handler = async (duck, e) => await openOrSwitch(app, duck, e);
+	const click_handler = async (duck, e) => await openOrSwitch(duck, e);
 	const mouseover_handler = (duck, e) => hoverPreview(e, ducksView, duck);
 
 	$$self.$$set = $$props => {
@@ -39869,11 +39864,11 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[11](/*line*/ ctx[14], ...args);
+		return /*click_handler_2*/ ctx[10](/*line*/ ctx[14], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[12](/*line*/ ctx[14], ...args);
+		return /*mouseover_handler*/ ctx[11](/*line*/ ctx[14], ...args);
 	}
 
 	return {
@@ -39887,11 +39882,7 @@ function create_if_block(ctx) {
 			t2 = text(t2_value);
 			t3 = space();
 			attr(pre, "class", "svelte-8j6nux");
-
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*app*/ ctx[7], /*line*/ ctx[14][1])
-			? ""
-			: "is-unresolved") + " svelte-8j6nux");
-
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*line*/ ctx[14][1]) ? "" : "is-unresolved") + " svelte-8j6nux");
 			attr(span, "class", "internal-link");
 		},
 		m(target, anchor) {
@@ -39918,9 +39909,7 @@ function create_if_block(ctx) {
 			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[14][0] + "-" + "")) set_data(t0, t0_value);
 			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*lines*/ 32 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*app*/ ctx[7], /*line*/ ctx[14][1])
-			? ""
-			: "is-unresolved") + " svelte-8j6nux")) {
+			if (dirty & /*lines*/ 32 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*line*/ ctx[14][1]) ? "" : "is-unresolved") + " svelte-8j6nux")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -40036,7 +40025,7 @@ function create_fragment$1(ctx) {
 			attr(button, "aria-label", "Refresh Stats View (also refreshes Breadcrumbs Index)");
 			attr(button, "class", "svelte-8j6nux");
 			attr(select, "class", "dropdown");
-			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[10].call(select));
+			if (/*dir*/ ctx[2] === void 0) add_render_callback(() => /*select_change_handler*/ ctx[9].call(select));
 			attr(div, "class", "BC-downs svelte-8j6nux");
 		},
 		m(target, anchor) {
@@ -40063,9 +40052,9 @@ function create_fragment$1(ctx) {
 
 			if (!mounted) {
 				dispose = [
-					listen(span, "click", /*click_handler*/ ctx[8]),
-					listen(button, "click", /*click_handler_1*/ ctx[9]),
-					listen(select, "change", /*select_change_handler*/ ctx[10])
+					listen(span, "click", /*click_handler*/ ctx[7]),
+					listen(button, "click", /*click_handler_1*/ ctx[8]),
+					listen(select, "change", /*select_change_handler*/ ctx[9])
 				];
 
 				mounted = true;
@@ -40127,7 +40116,7 @@ function create_fragment$1(ctx) {
 				select_option(select, /*dir*/ ctx[2]);
 			}
 
-			if (dirty & /*openOrSwitch, app, lines, hoverPreview, view, isInVault, dropDendron, settings*/ 226) {
+			if (dirty & /*openOrSwitch, lines, hoverPreview, view, isInVault, dropDendron, settings*/ 98) {
 				each_value = /*lines*/ ctx[5];
 				let i;
 
@@ -40213,7 +40202,7 @@ function instance$1($$self, $$props, $$invalidate) {
 		$$invalidate(2, dir);
 	}
 
-	const click_handler_2 = async (line, e) => await openOrSwitch(app, line[1], e);
+	const click_handler_2 = async (line, e) => await openOrSwitch(line[1], e);
 	const mouseover_handler = (line, e) => hoverPreview(e, view, line[1]);
 
 	$$self.$$set = $$props => {
@@ -40241,7 +40230,6 @@ function instance$1($$self, $$props, $$invalidate) {
 		frozen,
 		lines,
 		settings,
-		app,
 		click_handler,
 		click_handler_1,
 		select_change_handler,
@@ -60685,7 +60673,7 @@ text {
         .attr("d", arc);
     const step = 104;
     const nodeClick = (event, dest) => {
-        openOrSwitch(app, dest, event);
+        openOrSwitch(dest, event);
         modal.close();
     };
     svg
@@ -60807,7 +60795,7 @@ const circlePacking = (graph, currFile, modal, width, height) => {
     node.attr("aria-label", (d) => d.name);
     const nodeClick = (event, dest) => {
         getCurrFile();
-        openOrSwitch(app, dest, event);
+        openOrSwitch(dest, event);
         modal.close();
     };
     node.on("click", (event, d) => {
@@ -61170,7 +61158,7 @@ const forceDirectedG = (graph, currFile, modal, width, height) => {
         .call(drag(simulation));
     node.attr("aria-label", (d) => d.name);
     const nodeClick = (event, dest) => {
-        openOrSwitch(app, dest, event);
+        openOrSwitch(dest, event);
         modal.close();
     };
     node.on("click", (event, d) => {
@@ -61662,7 +61650,7 @@ const tidyTree = (graph, currFile, modal, width, height) => {
         return d.data.data.name;
     });
     const nodeClick = (event, dest) => {
-        openOrSwitch(app, dest, event);
+        openOrSwitch(dest, event);
         modal.close();
     };
     node.on("click", (event, d) => {
@@ -61756,7 +61744,7 @@ const treeMap = (graph, currFile, modal, width, height) => {
     //     );
     //   // .text((d) => d);
     const nodeClick = (event, dest) => {
-        openOrSwitch(app, dest, event);
+        openOrSwitch(dest, event);
         modal.close();
     };
     leaf.on("click", (event, d) => {
@@ -62355,7 +62343,7 @@ class BCPlugin extends obsidian.Plugin {
             }
             for (const { openOnLoad, type, constructor } of this.VIEWS)
                 if (openOnLoad)
-                    await openView(app, type, constructor);
+                    await openView(type, constructor);
             if (showBCs)
                 await drawTrail(this);
             this.registerActiveLeafChangeEvent();
@@ -62389,7 +62377,7 @@ class BCPlugin extends obsidian.Plugin {
                 checkCallback: async (checking) => {
                     if (checking)
                         return app.workspace.getLeavesOfType(type).length === 0;
-                    await openView(app, type, constructor);
+                    await openView(type, constructor);
                 },
             });
         }

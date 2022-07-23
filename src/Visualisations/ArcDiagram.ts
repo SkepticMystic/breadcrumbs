@@ -121,7 +121,7 @@ text {
   const step = 104;
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    openOrSwitch(app, dest, event);
+    openOrSwitch(dest, event);
     modal.close();
   };
 

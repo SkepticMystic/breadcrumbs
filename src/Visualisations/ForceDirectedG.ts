@@ -173,7 +173,7 @@ export const forceDirectedG = (
   node.attr("aria-label", (d: d3Node) => d.name);
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    openOrSwitch(app, dest, event);
+    openOrSwitch(dest, event);
     modal.close();
   };
   node.on("click", (event: MouseEvent, d: d3Node) => {

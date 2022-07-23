@@ -94,7 +94,7 @@ export const tidyTree = (
   });
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    openOrSwitch(app, dest, event);
+    openOrSwitch(dest, event);
     modal.close();
   };
   node.on("click", (event: MouseEvent, d) => {

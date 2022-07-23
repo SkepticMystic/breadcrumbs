@@ -75,10 +75,10 @@
               grid-area: {first + 1} / {i + 1} /
                   {last + 2} / {i + 2};
               {gridHeatmap ? `background-color: ${toColour(value)}` : ''}"
-          on:click={async (e) => await openOrSwitch(app, value, e)}
+          on:click={async (e) => await openOrSwitch(value, e)}
           on:mouseover={(e) => hoverPreview(e, activeLeafView, value)}
         >
-          <div class={linkClass(app, value)}>
+          <div class={linkClass(value)}>
             {getAlt(value, plugin) ?? dropDendron(value, settings)}
           </div>
         </div>

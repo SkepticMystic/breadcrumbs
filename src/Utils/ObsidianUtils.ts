@@ -146,7 +146,7 @@ export async function waitForCache(plugin: BCPlugin) {
 }
 
 export const linkClass = (to: string, realQ = true) =>
-  `internal-link BC-Link ${isInVault(app, to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
+  `internal-link BC-Link ${isInVault(to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"
   }`;
 
 export const getDVApi = (plugin: BCPlugin) =>

@@ -92,7 +92,7 @@ export const treeMap = (
   //   // .text((d) => d);
 
   const nodeClick = (event: MouseEvent, dest: string) => {
-    openOrSwitch(app, dest, event);
+    openOrSwitch(dest, event);
     modal.close();
   };
   leaf.on("click", (event: MouseEvent, d) => {

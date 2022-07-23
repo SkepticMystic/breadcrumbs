@@ -15,7 +15,7 @@
   import { dropDendron } from "../Utils/generalUtils";
   import { dfsAllPaths, getSubInDirs } from "../Utils/graphUtils";
   import type TreeView from "../Views/TreeView";
-  import {getCurrFile} from "../Utils/ObsidianUtils";
+  import { getCurrFile } from "../Utils/ObsidianUtils";
 
   export let plugin: BCPlugin;
   export let view: TreeView;
@@ -84,14 +84,12 @@
         <pre>{line[0] + "-"}</pre>
         <span
           class="internal-link"
-          on:click={async (e) => await openOrSwitch(app, line[1], e)}
+          on:click={async (e) => await openOrSwitch(line[1], e)}
           on:mouseover={(e) => hoverPreview(e, view, line[1])}
         >
           <!-- svelte-ignore a11y-missing-attribute -->
-          <a
-            class="internal-link {isInVault(app, line[1])
-              ? ''
-              : 'is-unresolved'}">{dropDendron(line[1], settings)}</a
+          <a class="internal-link {isInVault(line[1]) ? '' : 'is-unresolved'}"
+            >{dropDendron(line[1], settings)}</a
           >
         </span>
       </div>

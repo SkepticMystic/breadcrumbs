@@ -110,7 +110,7 @@ export function addFolderNotesToGraph(
         const folderNote = currFolder.name;
         const targets = otherNotes.map(getDVBasename);
 
-        // if (!isInVault(app, folderNote, folderNote)) continue;
+        // if (!isInVault( folderNote, folderNote)) continue;
 
         const sourceOrder = 9999; // getSourceOrder(altFile);
         const targetOrder = 9999; //  getTargetOrder(frontms, basename);

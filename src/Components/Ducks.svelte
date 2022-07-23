@@ -49,7 +49,7 @@
 
   {#each ducks as duck}
     <div
-      on:click={async (e) => await openOrSwitch(app, duck, e)}
+      on:click={async (e) => await openOrSwitch(duck, e)}
       on:mouseover={(e) => hoverPreview(e, ducksView, duck)}
     >
       <!-- svelte-ignore a11y-missing-attribute -->

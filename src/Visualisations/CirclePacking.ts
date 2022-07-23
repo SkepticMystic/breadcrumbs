@@ -81,7 +81,7 @@ export const circlePacking = (
 
   const nodeClick = (event: MouseEvent, dest: string) => {
     const currFile = getCurrFile();
-    openOrSwitch(app, dest, event);
+    openOrSwitch(dest, event);
     modal.close();
   };
   node.on("click", (event: MouseEvent, d: d3Node) => {

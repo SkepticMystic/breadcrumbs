@@ -35,7 +35,7 @@
           {#each trail as crumb, i}
             <span
               class="internal-link BC-Link"
-              on:click={async (e) => await openOrSwitch(app, crumb, e)}
+              on:click={async (e) => await openOrSwitch(crumb, e)}
               on:mouseover={(e) => hoverPreview(e, view, crumb)}
             >
               {getAlt(crumb, plugin) ?? dropDendron(crumb, settings)}

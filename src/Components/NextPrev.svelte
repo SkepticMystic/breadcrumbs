@@ -16,8 +16,8 @@
     <span>
       {#each prev as { field, real, to }}
         <div
-          class="{linkClass(app, to, real)} BC-prev"
-          on:click={async (e) => await openOrSwitch(app, to, e)}
+          class="{linkClass(to, real)} BC-prev"
+          on:click={async (e) => await openOrSwitch(to, e)}
           on:mouseover={(e) => hoverPreview(e, activeLeafView, to)}
         >
           <strong>{field}</strong>
@@ -30,8 +30,8 @@
     <span>
       {#each next as { field, real, to }}
         <div
-          class="{linkClass(app, to, real)} BC-next"
-          on:click={async (e) => await openOrSwitch(app, to, e)}
+          class="{linkClass(to, real)} BC-next"
+          on:click={async (e) => await openOrSwitch(to, e)}
           on:mouseover={(e) => hoverPreview(e, activeLeafView, to)}
         >
           {to} <strong>{field}</strong>
