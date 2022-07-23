@@ -17,6 +17,7 @@
     "paths": {
       "src": ["src/*"]
     },
+    "outDir": "dist",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "lib": ["ES2019", "DOM"]
