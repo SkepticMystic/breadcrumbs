@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.4.1...3.5.0) (2022-07-23)
+
+
+### Features
+
+* **CreateIndex:** :sparkles: Option to change indent character(s) ([#421](https://github.com/SkepticMystic/breadcrumbs/issues/421)) ([1262c17](https://github.com/SkepticMystic/breadcrumbs/commit/1262c179ace6336b1e5d5ac2ddb13386f88d1db1))
+
 ### [3.4.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.4.0...3.4.1) (2022-06-25)
 
 ## [3.4.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.3.2...3.4.0) (2022-06-25)
