@@ -1,6 +1,6 @@
 import { DropdownComponent, Setting } from "obsidian";
 import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
-import type { Relations, visTypes } from "../interfaces";
+import type { Relations, VisType } from "../interfaces";
 import type BCPlugin from "../main";
 import { subDetails } from "./BreadcrumbsSettingTab";
 
@@ -15,12 +15,12 @@ export function addVisModalSettings(
     .setName("Default Visualisation Type")
     .setDesc("Which visualisation to show by default")
     .addDropdown((cb: DropdownComponent) => {
-      VISTYPES.forEach((option: visTypes) => {
+      VISTYPES.forEach((option: VisType) => {
         cb.addOption(option, option);
       });
       cb.setValue(settings.visGraph);
 
-      cb.onChange(async (value: visTypes) => {
+      cb.onChange(async (value: VisType) => {
         settings.visGraph = value;
         await plugin.saveSettings();
       });

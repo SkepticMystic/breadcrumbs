@@ -1,7 +1,7 @@
 <script lang="ts">
   import { warn } from "loglevel";
   import { ALLUNLINKED, REAlCLOSED, RELATIONS, VISTYPES } from "../constants";
-  import type { VisGraphs, visTypes } from "../interfaces";
+  import type { VisGraphs, VisType } from "../interfaces";
   import {
     closeImpliedLinks,
     getSubInDirs,
@@ -110,7 +110,7 @@
   ];
 
   const types: {
-    [vis in visTypes]: (...args: any[]) => void;
+    [vis in VisType]: (...args: any[]) => void;
   } = {
     "Force Directed Graph": forceDirectedG,
     "Tidy Tree": tidyTree,
@@ -123,7 +123,7 @@
     "Radial Tree": radialTree,
   };
 
-  function draw(type: visTypes) {
+  function draw(type: VisType) {
     if (!document.querySelector(".d3-graph")) {
       setTimeout(() => {
         document.querySelector(".d3-graph")?.empty();
@@ -143,7 +143,7 @@
     }
   }
 
-  $: draw(selectors[0].val as visTypes);
+  $: draw(selectors[0].val as VisType);
 </script>
 
 <div>

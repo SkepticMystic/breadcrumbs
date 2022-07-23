@@ -2,9 +2,7 @@ import type {
   BCSettings,
   Directions,
   RealNImplied,
-  Relations,
   UserHier,
-  visTypes,
 } from "./interfaces";
 import type { IJugglSettings } from "juggl-api";
 
@@ -34,7 +32,7 @@ export const TRAIL_LENGTHS = [
   'All'
 ]
 
-export const VISTYPES: visTypes[] = [
+export const VISTYPES = [
   "Force Directed Graph",
   "Tidy Tree",
   "Circle Packing",
@@ -44,7 +42,7 @@ export const VISTYPES: visTypes[] = [
   "Tree Map",
   "Icicle",
   "Radial Tree",
-];
+] as const;
 
 /* All 5 possible directions. */
 export const DIRECTIONS = ["up", "same", "down", "next", "prev"] as const;
@@ -59,7 +57,7 @@ export const ARROW_DIRECTIONS: { [dir in Directions]: string } = {
   next: "→",
   prev: "←",
 };
-export const RELATIONS: Relations[] = ["Parent", "Sibling", "Child"];
+export const RELATIONS = ["Parent", "Sibling", "Child"] as const;
 export const REAlCLOSED = ["Real", "Closed"];
 export const ALLUNLINKED = ["All", "No Unlinked"];
 export const CODEBLOCK_TYPES = ["tree", "juggl"];

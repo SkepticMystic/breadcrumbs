@@ -7,6 +7,8 @@ import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
   DIRECTIONS,
+  RELATIONS,
+  VISTYPES,
 } from "./constants";
 import type DucksView from "./Views/DucksView";
 import type MatrixView from "./Views/MatrixView";
@@ -108,7 +110,7 @@ export interface BCSettings {
   trimDendronNotes: boolean;
   useAllMetadata: boolean;
   userHiers: UserHier[];
-  visGraph: visTypes;
+  visGraph: VisType;
   visRelation: Relations;
   visClosed: string;
   visAll: string;
@@ -144,9 +146,7 @@ export type UserHier = {
 export type CodeblockType = typeof CODEBLOCK_TYPES[number];
 export type CodeblockFields = typeof CODEBLOCK_FIELDS[number];
 
-export type MyView = MatrixView | DucksView |
-  // StatsView | 
-  TreeView;
+export type MyView = MatrixView | DucksView | TreeView;
 export type ViewInfo = {
   plain: string;
   type: string;
@@ -227,7 +227,7 @@ export interface d3Graph {
   links: d3Link[];
 }
 
-export type Relations = "Parent" | "Sibling" | "Child";
+export type Relations = typeof RELATIONS[number];
 
 export type VisGraphs = {
   [relation in Relations]: {
@@ -237,16 +237,7 @@ export type VisGraphs = {
   };
 };
 
-export type visTypes =
-  | "Force Directed Graph"
-  | "Tidy Tree"
-  | "Circle Packing"
-  | "Edge Bundling"
-  | "Arc Diagram"
-  | "Sunburst"
-  | "Tree Map"
-  | "Icicle"
-  | "Radial Tree";
+export type VisType = typeof VISTYPES[number]
 
 export type HierData = {
   [dir in Directions]: {
