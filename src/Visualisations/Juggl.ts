@@ -292,15 +292,17 @@ export function createJugglTrail(
         const closed = getReflexiveClosure(sub, plugin.settings.userHiers);
         const subClosed = getSubInDirs(closed, "down");
 
+
+        const { createIndexIndent } = plugin.settings
         const allPaths = dfsAllPaths(subClosed, source);
-        const index = createIndex(allPaths, false);
+        const index = createIndex(allPaths, false, createIndexIndent);
         const lines = index
           .split("\n")
           .map((line) => {
-            const pair = line.split("- ");
-            return pair.slice(1).join("- ");
+            const [indent, ...content] = line.split("- ");
+            return content.join("- ");
           })
-          .filter((pair) => pair && pair !== "");
+          .filter((pair) => pair);
         let depthMapDown = createDepthMap(allPaths, source);
         const maxDepthDown = Math.max(...Object.values(depthMapDown));
 

@@ -21,6 +21,7 @@
   export let view: TreeView;
 
   const { settings, app, closedG } = plugin;
+  const { createIndexIndent } = settings;
 
   let dir: Directions = "down";
   let frozen = false;
@@ -37,7 +38,7 @@
   $: {
     const downG = getSubInDirs(closedG, dir);
     const allPaths = dfsAllPaths(downG, basename);
-    const index = createIndex(allPaths, false);
+    const index = createIndex(allPaths, false, createIndexIndent);
     info({ allPaths, index });
 
     lines = indexToLinePairs(index);

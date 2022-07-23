@@ -3,7 +3,7 @@ import { info } from "loglevel";
 import { copy } from "obsidian-community-lib/dist/utils";
 import type BCPlugin from "../main";
 import { dfsAllPaths, getSinks, getSubInDirs } from "../Utils/graphUtils";
-import {getCurrFile, makeWiki} from "../Utils/ObsidianUtils";
+import { getCurrFile, makeWiki } from "../Utils/ObsidianUtils";
 
 /**
  * Returns a copy of `index`, doesn't mutate.
@@ -11,12 +11,15 @@ import {getCurrFile, makeWiki} from "../Utils/ObsidianUtils";
  */
 export function addAliasesToIndex(plugin: BCPlugin, index: string) {
   const { aliasesInIndex } = plugin.settings;
-  const copy = index.slice();
-  const lines = copy.split("\n");
-  for (let line of lines) {
-    if (aliasesInIndex) {
-      const note = line.split("- ")[1];
+
+  const lines = index.slice().split("\n");
+
+  if (aliasesInIndex) {
+    for (let line of lines) {
+      const [indent, ...content] = line.split("- ");
+      const note = content.join("- ");
       if (!note) continue;
+
       const currFile = app.metadataCache.getFirstLinkpathDest(note, "");
 
       if (currFile !== null) {
@@ -43,14 +46,15 @@ export function addAliasesToIndex(plugin: BCPlugin, index: string) {
  */
 export function createIndex(
   allPaths: string[][],
-  asWikilinks: boolean
+  asWikilinks: boolean,
+  indent = "  "
 ): string {
   let index = "";
   const copy = cloneDeep(allPaths);
   const reversed = copy.map((path) => path.reverse());
   reversed.forEach((path) => path.shift());
 
-  const indent = "  ";
+  const realIndent = indent === '\\t' ? '\t' : indent;
 
   const visited: {
     [node: string]: /** The depths at which `node` was visited */ number[];
@@ -66,7 +70,7 @@ export function createIndex(
         visited[currNode].includes(depth)
       ) continue
       else {
-        index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode
+        index += `${realIndent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode
           }\n`;
 
         if (!visited.hasOwnProperty(currNode)) visited[currNode] = [];
@@ -79,12 +83,12 @@ export function createIndex(
 
 export async function copyLocalIndex(plugin: BCPlugin) {
   const { settings, closedG } = plugin;
-  const { wikilinkIndex } = settings;
+  const { wikilinkIndex, createIndexIndent } = settings;
   const { basename } = getCurrFile()
 
   const onlyDowns = getSubInDirs(closedG, "down");
   const allPaths = dfsAllPaths(onlyDowns, basename);
-  const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex));
+  const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex, createIndexIndent));
 
   info({ index });
   await copy(index);
@@ -92,7 +96,7 @@ export async function copyLocalIndex(plugin: BCPlugin) {
 
 export async function copyGlobalIndex(plugin: BCPlugin) {
   const { settings, closedG } = plugin;
-  const { wikilinkIndex } = settings;
+  const { wikilinkIndex, createIndexIndent } = settings;
 
   const onlyDowns = getSubInDirs(closedG, "down");
   const onlyUps = getSubInDirs(closedG, "up");
@@ -104,7 +108,7 @@ export async function copyGlobalIndex(plugin: BCPlugin) {
     globalIndex += terminal + "\n";
     const allPaths = dfsAllPaths(onlyDowns, terminal);
     globalIndex +=
-      addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex)) + "\n";
+      addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex, createIndexIndent)) + "\n";
   });
 
   info({ globalIndex });
@@ -118,8 +122,8 @@ export const indexToLinePairs = (
   index
     .split("\n")
     .map((line) => {
-      const pair = line.split("- ");
-      return [flat ? "" : pair[0], pair.slice(1).join("- ")] as [
+      const [indent, ...content] = line.split("- ");
+      return [flat ? "" : indent, content.join("- ")] as [
         string,
         string
       ];

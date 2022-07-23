@@ -329,6 +329,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
   alphaSortAsc: true,
   altLinkFields: [],
   CSVPaths: "",
+  createIndexIndent: '  ',
   dateFormat: "YYYY-MM-DD",
   dateNoteFormat: "yyyy-MM-dd",
   dateNoteField: "next",

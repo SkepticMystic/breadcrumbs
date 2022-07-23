@@ -24,6 +24,21 @@ export function addCreateIndexSettings(
     );
 
   new Setting(createIndexDetails)
+    .setName("Indent Character")
+    .setDesc(
+      fragWithHTML(
+        'The character(s) used to indent the index. These can be anything you want, but will usually be either spaces or tabs. Enter <code>\\t</code> to use tabs.'
+      ))
+    .addText((text) => {
+      text
+        .setValue(settings.createIndexIndent)
+        .onChange(async (value) => {
+          settings.createIndexIndent = value;
+          await plugin.saveSettings();
+        })
+    })
+
+  new Setting(createIndexDetails)
     .setName("Show aliases of notes in index")
     .setDesc("Show the aliases of each note in brackets.\n✅ = yes, ❌ = no.")
     .addToggle((toggle) =>

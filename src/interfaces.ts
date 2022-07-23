@@ -22,6 +22,7 @@ export interface BCSettings {
   alphaSortAsc: boolean;
   altLinkFields: string[];
   CSVPaths: string;
+  createIndexIndent: string
   dvWaitTime: number;
   dataviewNoteField: string;
   debugMode: DebugLevel;

@@ -51,8 +51,8 @@ export class BCAPI implements BCAPII {
     g = this.mainG
   ) => dfsAllPaths(g, fromNode);
 
-  public createIndex = (allPaths: string[][], wikilinks = false) =>
-    createIndex(allPaths, wikilinks);
+  public createIndex = (allPaths: string[][], wikilinks = false, indent = '  ') =>
+    createIndex(allPaths, wikilinks, indent);
 
   public getMatrixNeighbours = (
     fromNode = getCurrFile()?.basename

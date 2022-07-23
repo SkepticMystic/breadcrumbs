@@ -18,7 +18,7 @@ import { createJuggl } from "./Visualisations/Juggl";
 
 export function getCodeblockCB(plugin: BCPlugin) {
   const { settings, db } = plugin;
-  const { userHiers } = settings;
+  const { userHiers, createIndexIndent } = settings;
 
   return (
     source: string,
@@ -45,7 +45,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
       if (!isNaN(maxNum)) max = maxNum;
     }
 
-    
+
     const currFile = app.metadataCache.getFirstLinkpathDest(
       ctx.sourcePath,
       ""
@@ -77,7 +77,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
 
 
     const allPaths = dfsAllPaths(subClosed, basename);
-    const index = createIndex(allPaths, false);
+    const index = createIndex(allPaths, false, createIndexIndent);
     info({ allPaths, index });
 
     const lines = indexToLinePairs(index, flat);

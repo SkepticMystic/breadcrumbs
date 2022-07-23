@@ -3056,6 +3056,7 @@ const DEFAULT_SETTINGS = {
     alphaSortAsc: true,
     altLinkFields: [],
     CSVPaths: "",
+    createIndexIndent: '  ',
     dateFormat: "YYYY-MM-DD",
     dateNoteFormat: "yyyy-MM-dd",
     dateNoteField: "next",
@@ -32955,11 +32956,11 @@ var lodash = createCommonjsModule(function (module, exports) {
 function addAliasesToIndex(plugin, index) {
     var _a, _b, _c, _d;
     const { aliasesInIndex } = plugin.settings;
-    const copy = index.slice();
-    const lines = copy.split("\n");
-    for (let line of lines) {
-        if (aliasesInIndex) {
-            const note = line.split("- ")[1];
+    const lines = index.slice().split("\n");
+    if (aliasesInIndex) {
+        for (let line of lines) {
+            const [indent, ...content] = line.split("- ");
+            const note = content.join("- ");
             if (!note)
                 continue;
             const currFile = app.metadataCache.getFirstLinkpathDest(note, "");
@@ -32982,12 +32983,12 @@ function addAliasesToIndex(plugin, index) {
  * @param {boolean} asWikilinks - Whether to use wikilinks instead of plain text.
  * @returns A string.
  */
-function createIndex(allPaths, asWikilinks) {
+function createIndex(allPaths, asWikilinks, indent = "  ") {
     let index = "";
     const copy = lodash.cloneDeep(allPaths);
     const reversed = copy.map((path) => path.reverse());
     reversed.forEach((path) => path.shift());
-    const indent = "  ";
+    const realIndent = indent === '\\t' ? '\t' : indent;
     const visited = {};
     reversed.forEach((path) => {
         for (let depth = 0; depth < path.length; depth++) {
@@ -32997,7 +32998,7 @@ function createIndex(allPaths, asWikilinks) {
                 visited[currNode].includes(depth))
                 continue;
             else {
-                index += `${indent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}\n`;
+                index += `${realIndent.repeat(depth)}- ${asWikilinks ? makeWiki(currNode) : currNode}\n`;
                 if (!visited.hasOwnProperty(currNode))
                     visited[currNode] = [];
                 visited[currNode].push(depth);
@@ -33008,17 +33009,17 @@ function createIndex(allPaths, asWikilinks) {
 }
 async function copyLocalIndex(plugin) {
     const { settings, closedG } = plugin;
-    const { wikilinkIndex } = settings;
+    const { wikilinkIndex, createIndexIndent } = settings;
     const { basename } = getCurrFile();
     const onlyDowns = getSubInDirs(closedG, "down");
     const allPaths = dfsAllPaths(onlyDowns, basename);
-    const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex));
+    const index = addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex, createIndexIndent));
     loglevel.info({ index });
     await copy(index);
 }
 async function copyGlobalIndex(plugin) {
     const { settings, closedG } = plugin;
-    const { wikilinkIndex } = settings;
+    const { wikilinkIndex, createIndexIndent } = settings;
     const onlyDowns = getSubInDirs(closedG, "down");
     const onlyUps = getSubInDirs(closedG, "up");
     const sinks = getSinks(onlyUps);
@@ -33027,7 +33028,7 @@ async function copyGlobalIndex(plugin) {
         globalIndex += terminal + "\n";
         const allPaths = dfsAllPaths(onlyDowns, terminal);
         globalIndex +=
-            addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex)) + "\n";
+            addAliasesToIndex(plugin, createIndex(allPaths, wikilinkIndex, createIndexIndent)) + "\n";
     });
     loglevel.info({ globalIndex });
     await copy(globalIndex);
@@ -33035,8 +33036,8 @@ async function copyGlobalIndex(plugin) {
 const indexToLinePairs = (index, flat = false) => index
     .split("\n")
     .map((line) => {
-    const pair = line.split("- ");
-    return [flat ? "" : pair[0], pair.slice(1).join("- ")];
+    const [indent, ...content] = line.split("- ");
+    return [flat ? "" : indent, content.join("- ")];
 })
     .filter((pair) => pair[1] !== "");
 
@@ -33515,15 +33516,16 @@ function createJugglTrail(plugin, target, paths, source, args) {
                 const sub = getSubInDirs(plugin.mainG, "down", "up");
                 const closed = getReflexiveClosure(sub, plugin.settings.userHiers);
                 const subClosed = getSubInDirs(closed, "down");
+                const { createIndexIndent } = plugin.settings;
                 const allPaths = dfsAllPaths(subClosed, source);
-                const index = createIndex(allPaths, false);
+                const index = createIndex(allPaths, false, createIndexIndent);
                 const lines = index
                     .split("\n")
                     .map((line) => {
-                    const pair = line.split("- ");
-                    return pair.slice(1).join("- ");
+                    const [indent, ...content] = line.split("- ");
+                    return content.join("- ");
                 })
-                    .filter((pair) => pair && pair !== "");
+                    .filter((pair) => pair);
                 let depthMapDown = createDepthMap(allPaths, source);
                 const maxDepthDown = Math.max(...Object.values(depthMapDown));
                 depthDown = new JugglDepth({
@@ -35186,7 +35188,7 @@ class BCAPI {
         this.getSubInDirs = (dirs, g = this.mainG) => getSubInDirs(g, ...dirs);
         this.getSubForFields = (fields, g = this.mainG) => getSubForFields(g, fields);
         this.dfsAllPaths = (fromNode, g) => { var _a; if (fromNode === void 0) { fromNode = (_a = getCurrFile()) === null || _a === void 0 ? void 0 : _a.basename; } if (g === void 0) { g = this.mainG; } return dfsAllPaths(g, fromNode); };
-        this.createIndex = (allPaths, wikilinks = false) => createIndex(allPaths, wikilinks);
+        this.createIndex = (allPaths, wikilinks = false, indent = '  ') => createIndex(allPaths, wikilinks, indent);
         this.getMatrixNeighbours = (fromNode) => { var _a; if (fromNode === void 0) { fromNode = (_a = getCurrFile()) === null || _a === void 0 ? void 0 : _a.basename; } return getMatrixNeighbours(this.plugin, fromNode); };
         this.getOppDir = (dir) => getOppDir(dir);
         this.getOppFields = (field) => {
@@ -36418,7 +36420,7 @@ class CBTree extends SvelteComponent {
 
 function getCodeblockCB(plugin) {
     const { settings, db } = plugin;
-    const { userHiers } = settings;
+    const { userHiers, createIndexIndent } = settings;
     return (source, el, ctx) => {
         var _a;
         db.start2G("Codeblock");
@@ -36464,7 +36466,7 @@ function getCodeblockCB(plugin) {
         const subFields = fields !== null && fields !== void 0 ? fields : getFields(userHiers);
         const subClosed = getSubForFields(getSubInDirs(closed, dir), subFields);
         const allPaths = dfsAllPaths(subClosed, basename);
-        const index = createIndex(allPaths, false);
+        const index = createIndex(allPaths, false, createIndexIndent);
         loglevel.info({ allPaths, index });
         const lines = indexToLinePairs(index, flat);
         switch (parsedSource.type) {
@@ -36959,6 +36961,17 @@ function addCreateIndexSettings(plugin, cmdsDetails) {
         settings.wikilinkIndex = value;
         await plugin.saveSettings();
     }));
+    new obsidian.Setting(createIndexDetails)
+        .setName("Indent Character")
+        .setDesc(fragWithHTML('The character(s) used to indent the index. These can be anything you want, but will usually be either spaces or tabs. Enter <code>\\t</code> to use tabs.'))
+        .addText((text) => {
+        text
+            .setValue(settings.createIndexIndent)
+            .onChange(async (value) => {
+            settings.createIndexIndent = value;
+            await plugin.saveSettings();
+        });
+    });
     new obsidian.Setting(createIndexDetails)
         .setName("Show aliases of notes in index")
         .setDesc("Show the aliases of each note in brackets.\n✅ = yes, ❌ = no.")
@@ -39754,17 +39767,17 @@ function add_css() {
 
 function get_each_context$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[14] = list[i];
+	child_ctx[15] = list[i];
 	return child_ctx;
 }
 
 function get_each_context_1$1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[17] = list[i];
+	child_ctx[18] = list[i];
 	return child_ctx;
 }
 
-// (48:2) {:else}
+// (49:2) {:else}
 function create_else_block(ctx) {
 	let fafire;
 	let current;
@@ -39793,7 +39806,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (46:2) {#if frozen}
+// (47:2) {#if frozen}
 function create_if_block_1(ctx) {
 	let faregsnowflake;
 	let current;
@@ -39822,10 +39835,10 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (64:2) {#each DIRECTIONS as direction}
+// (65:2) {#each DIRECTIONS as direction}
 function create_each_block_1$1(ctx) {
 	let option;
-	let t_value = /*direction*/ ctx[17] + "";
+	let t_value = /*direction*/ ctx[18] + "";
 	let t;
 	let option_value_value;
 
@@ -39833,7 +39846,7 @@ function create_each_block_1$1(ctx) {
 		c() {
 			option = element("option");
 			t = text(t_value);
-			option.__value = option_value_value = /*direction*/ ctx[17];
+			option.__value = option_value_value = /*direction*/ ctx[18];
 			option.value = option.__value;
 		},
 		m(target, anchor) {
@@ -39847,16 +39860,16 @@ function create_each_block_1$1(ctx) {
 	};
 }
 
-// (71:4) {#if line.length > 1}
+// (72:4) {#if line.length > 1}
 function create_if_block(ctx) {
 	let div;
 	let pre;
-	let t0_value = /*line*/ ctx[14][0] + "-" + "";
+	let t0_value = /*line*/ ctx[15][0] + "-" + "";
 	let t0;
 	let t1;
 	let span;
 	let a;
-	let t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "";
+	let t2_value = dropDendron(/*line*/ ctx[15][1], /*settings*/ ctx[6]) + "";
 	let t2;
 	let a_class_value;
 	let t3;
@@ -39864,11 +39877,11 @@ function create_if_block(ctx) {
 	let dispose;
 
 	function click_handler_2(...args) {
-		return /*click_handler_2*/ ctx[10](/*line*/ ctx[14], ...args);
+		return /*click_handler_2*/ ctx[10](/*line*/ ctx[15], ...args);
 	}
 
 	function mouseover_handler(...args) {
-		return /*mouseover_handler*/ ctx[11](/*line*/ ctx[14], ...args);
+		return /*mouseover_handler*/ ctx[11](/*line*/ ctx[15], ...args);
 	}
 
 	return {
@@ -39882,7 +39895,7 @@ function create_if_block(ctx) {
 			t2 = text(t2_value);
 			t3 = space();
 			attr(pre, "class", "svelte-8j6nux");
-			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*line*/ ctx[14][1]) ? "" : "is-unresolved") + " svelte-8j6nux");
+			attr(a, "class", a_class_value = "internal-link " + (isInVault(/*line*/ ctx[15][1]) ? "" : "is-unresolved") + " svelte-8j6nux");
 			attr(span, "class", "internal-link");
 		},
 		m(target, anchor) {
@@ -39906,10 +39919,10 @@ function create_if_block(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[14][0] + "-" + "")) set_data(t0, t0_value);
-			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[14][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
+			if (dirty & /*lines*/ 32 && t0_value !== (t0_value = /*line*/ ctx[15][0] + "-" + "")) set_data(t0, t0_value);
+			if (dirty & /*lines*/ 32 && t2_value !== (t2_value = dropDendron(/*line*/ ctx[15][1], /*settings*/ ctx[6]) + "")) set_data(t2, t2_value);
 
-			if (dirty & /*lines*/ 32 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*line*/ ctx[14][1]) ? "" : "is-unresolved") + " svelte-8j6nux")) {
+			if (dirty & /*lines*/ 32 && a_class_value !== (a_class_value = "internal-link " + (isInVault(/*line*/ ctx[15][1]) ? "" : "is-unresolved") + " svelte-8j6nux")) {
 				attr(a, "class", a_class_value);
 			}
 		},
@@ -39921,10 +39934,10 @@ function create_if_block(ctx) {
 	};
 }
 
-// (70:2) {#each lines as line}
+// (71:2) {#each lines as line}
 function create_each_block$1(ctx) {
 	let if_block_anchor;
-	let if_block = /*line*/ ctx[14].length > 1 && create_if_block(ctx);
+	let if_block = /*line*/ ctx[15].length > 1 && create_if_block(ctx);
 
 	return {
 		c() {
@@ -39936,7 +39949,7 @@ function create_each_block$1(ctx) {
 			insert(target, if_block_anchor, anchor);
 		},
 		p(ctx, dirty) {
-			if (/*line*/ ctx[14].length > 1) {
+			if (/*line*/ ctx[15].length > 1) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -40172,6 +40185,7 @@ function instance$1($$self, $$props, $$invalidate) {
 	let { plugin } = $$props;
 	let { view } = $$props;
 	const { settings, app, closedG } = plugin;
+	const { createIndexIndent } = settings;
 	let dir = "down";
 	let frozen = false;
 	let { basename } = getCurrFile();
@@ -40215,7 +40229,7 @@ function instance$1($$self, $$props, $$invalidate) {
 			{
 				const downG = getSubInDirs(closedG, dir);
 				const allPaths = dfsAllPaths(downG, basename);
-				const index = createIndex(allPaths, false);
+				const index = createIndex(allPaths, false, createIndexIndent);
 				loglevel.info({ allPaths, index });
 				$$invalidate(5, lines = indexToLinePairs(index));
 			}
