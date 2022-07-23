@@ -163,7 +163,7 @@ export function createJuggl(
 
     const bcStore = new BCStore(
       plugin.mainG,
-      plugin.app.metadataCache,
+      app.metadataCache,
       depthMap
     );
     const stores: IJugglStores = {

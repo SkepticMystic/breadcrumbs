@@ -52,7 +52,7 @@
     "juggl-api": "github:HEmile/juggl-api",
     "loglevel": "^1.8.0",
     "luxon": "^2.3.0",
-    "obsidian-community-lib": "^2.0.1",
+    "obsidian-community-lib": "^2.0.2",
     "svelte": "3.35.0",
     "svelte-icons": "^2.1.0",
     "yaml": "^2.0.0-10"

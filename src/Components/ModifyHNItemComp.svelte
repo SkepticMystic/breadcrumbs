@@ -1,7 +1,6 @@
 <script lang="ts">
   import { error } from "console";
   import { Notice, TFile } from "obsidian";
-  import { onMount } from "svelte";
   import type { ModifyHierItemModal } from "../AlternativeHierarchies/HierarchyNotes/ModifyHierItemModal";
   import { ARROW_DIRECTIONS } from "../constants";
   import type { BCSettings } from "../interfaces";
@@ -21,7 +20,7 @@
   let inputEl: HTMLInputElement;
 
   //@ts-ignore
-  let newItem = modal.app.workspace.activeLeaf.view.file.basename;
+  let newItem = app.workspace.activeLeaf.view.file.basename;
 
   const buildNewItem = (
     newItem: string,
@@ -92,7 +91,7 @@
         return;
       } else {
         try {
-          const content = await modal.app.vault.read(file);
+          const content = await app.vault.read(file);
           const lines = content.split("\n");
           const lineNo = rel === "up" ? hnItem.lineNo : hnItem.lineNo + 1;
 
@@ -104,7 +103,7 @@
               : hnItem.depth;
 
           lines.splice(lineNo, 0, buildNewItem(newItem, depth));
-          await modal.app.vault.modify(file, lines.join("\n"));
+          await app.vault.modify(file, lines.join("\n"));
           modal.close();
         } catch (err) {
           error(err);

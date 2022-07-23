@@ -13,7 +13,7 @@ export async function getCSVRows(plugin: BCPlugin) {
 
   const fullPath = normalizePath(CSVPaths);
 
-  const content = await plugin.app.vault.adapter.read(fullPath);
+  const content = await app.vault.adapter.read(fullPath);
   const lines = content.split("\n");
 
   const headers = lines[0].split(",").map((head) => head.trim());

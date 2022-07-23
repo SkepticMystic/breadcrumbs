@@ -33,6 +33,6 @@ export async function jumpToFirstDir(plugin: BCPlugin, dir: Directions) {
     return;
   }
 
-  const toFile = plugin.app.metadataCache.getFirstLinkpathDest(toNode, "");
-  await plugin.app.workspace.activeLeaf.openFile(toFile);
+  const toFile = app.metadataCache.getFirstLinkpathDest(toNode, "");
+  await app.workspace.activeLeaf.openFile(toFile);
 }

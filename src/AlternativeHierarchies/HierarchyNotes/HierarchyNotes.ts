@@ -6,10 +6,10 @@ import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
 import { getFieldInfo, getFields, getOppDir, getOppFields } from "../../Utils/HierUtils";
 
 export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
-  const { listItems } = plugin.app.metadataCache.getFileCache(file);
+  const { listItems } = app.metadataCache.getFileCache(file);
   if (!listItems) return [];
 
-  const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
+  const lines = (await app.vault.cachedRead(file)).split("\n");
 
   const hierarchyNoteItems: HierarchyNoteItem[] = [];
 

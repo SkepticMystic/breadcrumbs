@@ -141,7 +141,7 @@ export function addGeneralSettings(plugin: BCPlugin, containerEl: HTMLElement) {
       })
     );
 
-  if (plugin.app.plugins.plugins.dataview !== undefined) {
+  if (app.plugins.plugins.dataview !== undefined) {
     new Setting(generalDetails)
       .setName("Dataview Wait Time")
       .setDesc(

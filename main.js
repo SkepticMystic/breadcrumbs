@@ -5311,7 +5311,7 @@ async function waitForCache(plugin) {
     }
 }
 const linkClass = (to, realQ = true) => `internal-link BC-Link ${isInVault(to) ? "" : "is-unresolved"} ${realQ ? "" : "BC-Implied"}`;
-const getDVApi = (plugin) => { var _a; return (_a = plugin.app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
+const getDVApi = (plugin) => { var _a; return (_a = app.plugins.plugins.dataview) === null || _a === void 0 ? void 0 : _a.api; };
 function isInsideYaml() {
     const { workspace, metadataCache } = app;
     const { activeLeaf } = workspace;
@@ -5704,7 +5704,7 @@ async function getCSVRows(plugin) {
     if (CSVPaths === "")
         return CSVRows;
     const fullPath = obsidian.normalizePath(CSVPaths);
-    const content = await plugin.app.vault.adapter.read(fullPath);
+    const content = await app.vault.adapter.read(fullPath);
     const lines = content.split("\n");
     const headers = lines[0].split(",").map((head) => head.trim());
     lines.slice(1).forEach((row) => {
@@ -5733,7 +5733,7 @@ function addCSVCrumbs(g, CSVRows, dir, field) {
 function addDataviewNotesToGraph(plugin, eligableAlts, frontms, mainG) {
     const { settings } = plugin;
     const { userHiers, dataviewNoteField } = settings;
-    const dv = getDVApi(plugin);
+    const dv = getDVApi();
     if (!dv && eligableAlts.length) {
         new obsidian.Notice(DATAVIEW_MISSING);
         return;
@@ -14376,10 +14376,10 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
 }
 
 async function getHierarchyNoteItems(plugin, file) {
-    const { listItems } = plugin.app.metadataCache.getFileCache(file);
+    const { listItems } = app.metadataCache.getFileCache(file);
     if (!listItems)
         return [];
-    const lines = (await plugin.app.vault.cachedRead(file)).split("\n");
+    const lines = (await app.vault.cachedRead(file)).split("\n");
     const hierarchyNoteItems = [];
     const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
     const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
@@ -32962,9 +32962,9 @@ function addAliasesToIndex(plugin, index) {
             const note = line.split("- ")[1];
             if (!note)
                 continue;
-            const currFile = plugin.app.metadataCache.getFirstLinkpathDest(note, "");
+            const currFile = app.metadataCache.getFirstLinkpathDest(note, "");
             if (currFile !== null) {
-                const cache = plugin.app.metadataCache.getFileCache(currFile);
+                const cache = app.metadataCache.getFileCache(currFile);
                 const alias = (_b = (_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : [];
                 const aliases = (_d = (_c = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _c === void 0 ? void 0 : _c.aliases) !== null && _d !== void 0 ? _d : [];
                 const allAliases = [...[alias].flat(3), ...[aliases].flat(3)];
@@ -33408,7 +33408,7 @@ function createJuggl(plugin, target, initialNodes, args, depthMap = null) {
             if (key in args && args[key] === undefined)
                 args[key] = JUGGL_CB_DEFAULTS[key];
         }
-        const bcStore = new BCStore(plugin.mainG, plugin.app.metadataCache, depthMap);
+        const bcStore = new BCStore(plugin.mainG, app.metadataCache, depthMap);
         const stores = {
             coreStore: bcStore,
             dataStores: [bcStore],
@@ -33857,7 +33857,7 @@ async function drawTrail(plugin) {
 
 function getDVMetadataCache(plugin, files) {
     const { db } = plugin;
-    const api = getDVApi(plugin);
+    const api = getDVApi();
     db.start1G("getDVMetadataCache");
     const frontms = files.map((file) => api.page(file.path));
     db.end1G({ frontms });
@@ -35033,7 +35033,7 @@ class MatrixView extends obsidian.ItemView {
         if (!altLinkFields.length)
             return null;
         // dv First
-        const dv = getDVApi(plugin);
+        const dv = getDVApi();
         if (dv) {
             const page = dv.page(node);
             if (!page)
@@ -35213,7 +35213,7 @@ function add_css$8() {
 	append(document.head, style);
 }
 
-// (22:2) {#if rel === "up"}
+// (21:2) {#if rel === "up"}
 function create_if_block_2$1(ctx) {
 	let if_block_anchor;
 
@@ -35254,7 +35254,7 @@ function create_if_block_2$1(ctx) {
 	};
 }
 
-// (25:4) {:else}
+// (24:4) {:else}
 function create_else_block$2(ctx) {
 	let div;
 	let pre;
@@ -35282,7 +35282,7 @@ function create_else_block$2(ctx) {
 	};
 }
 
-// (23:4) {#if hnItem.depth === 0}
+// (22:4) {#if hnItem.depth === 0}
 function create_if_block_3(ctx) {
 	let div;
 
@@ -35301,7 +35301,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (46:27) 
+// (45:27) 
 function create_if_block_1$2(ctx) {
 	let div;
 	let pre;
@@ -35329,7 +35329,7 @@ function create_if_block_1$2(ctx) {
 	};
 }
 
-// (40:2) {#if rel === "same"}
+// (39:2) {#if rel === "same"}
 function create_if_block$3(ctx) {
 	let div;
 	let pre;
@@ -35546,7 +35546,7 @@ function instance$f($$self, $$props, $$invalidate) {
 	let inputEl;
 
 	//@ts-ignore
-	let newItem = modal.app.workspace.activeLeaf.view.file.basename;
+	let newItem = app.workspace.activeLeaf.view.file.basename;
 
 	const buildNewItem = (newItem, depth = hnItem.depth, preview = false) => `${(" ").repeat(Math.round(depth / (preview ? 2 : 1)))}- ${preview ? newItem || "<Empty>" : makeWiki(newItem)}`;
 
@@ -35573,7 +35573,7 @@ function instance$f($$self, $$props, $$invalidate) {
 			return;
 		} else {
 			try {
-				const content = await modal.app.vault.read(file);
+				const content = await app.vault.read(file);
 				const lines = content.split("\n");
 				const lineNo = rel === "up" ? hnItem.lineNo : hnItem.lineNo + 1;
 
@@ -35582,7 +35582,7 @@ function instance$f($$self, $$props, $$invalidate) {
 				: rel === "down" ? hnItem.depth + 4 : hnItem.depth;
 
 				lines.splice(lineNo, 0, buildNewItem(newItem, depth));
-				await modal.app.vault.modify(file, lines.join("\n"));
+				await app.vault.modify(file, lines.join("\n"));
 				modal.close();
 			} catch(err) {
 				console$1.error(err);
@@ -35791,8 +35791,8 @@ class HierarchyNoteSelectorModal extends obsidian.FuzzySuggestModal {
         if (hierarchyNotes.length == 1 && hierarchyNotes[0].endsWith("/")) {
             // this is a folder
             let folder = hierarchyNotes[0].slice(0, -1);
-            if (this.plugin.app.plugins.plugins.dataview != undefined) {
-                let pages = this.plugin.app.plugins.plugins.dataview.api.pages(`"${folder}"`);
+            if (app.plugins.plugins.dataview != undefined) {
+                let pages = app.plugins.plugins.dataview.api.pages(`"${folder}"`);
                 return pages.values.map((page) => page.file.path);
             }
             else {
@@ -36439,7 +36439,7 @@ function getCodeblockCB(plugin) {
             if (!isNaN(maxNum))
                 max = maxNum;
         }
-        const currFile = plugin.app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
+        const currFile = app.metadataCache.getFirstLinkpathDest(ctx.sourcePath, "");
         const { basename } = currFile;
         let froms = undefined;
         if (from !== undefined) {
@@ -36541,7 +36541,7 @@ function codeblockError(plugin, parsedSource) {
     if (content !== undefined && content !== "open" && content !== "closed")
         err += `<code>content: ${content}</code> is not a valid value. It has to be <code>open</code> or <code>closed</code>, or leave the entire line out.</br>`;
     if (from !== undefined &&
-        !plugin.app.plugins.enabledPlugins.has("dataview")) {
+        !app.plugins.enabledPlugins.has("dataview")) {
         err += `Dataview must be enabled to use <code>from</code>.</br>`;
     }
     if (implied !== undefined && implied !== false)
@@ -36599,8 +36599,8 @@ async function jumpToFirstDir(plugin, dir) {
         new obsidian.Notice(`No note was found in ${dir} given the limited fields allowed: ${limitJumpToFirstFields.join(", ")}`);
         return;
     }
-    const toFile = plugin.app.metadataCache.getFirstLinkpathDest(toNode, "");
-    await plugin.app.workspace.activeLeaf.openFile(toFile);
+    const toFile = app.metadataCache.getFirstLinkpathDest(toNode, "");
+    await app.workspace.activeLeaf.openFile(toFile);
 }
 
 const resolveThreadingNameTemplate = (template, currFile, field, dir, dateFormat) => template
@@ -36744,7 +36744,7 @@ async function writeBCsToAllFiles(plugin) {
             if (window.confirm("For real, please make a back up before.")) {
                 const notice = new obsidian.Notice("Operation Started");
                 const problemFiles = [];
-                for (const file of plugin.app.vault.getMarkdownFiles()) {
+                for (const file of app.vault.getMarkdownFiles()) {
                     try {
                         await writeBCToFile(plugin, file);
                     }
@@ -37135,7 +37135,7 @@ function addGeneralSettings(plugin, containerEl) {
         settings.relSuggestorTrigger = value;
         await plugin.saveSettings();
     }));
-    if (plugin.app.plugins.plugins.dataview !== undefined) {
+    if (app.plugins.plugins.dataview !== undefined) {
         new obsidian.Setting(generalDetails)
             .setName("Dataview Wait Time")
             .setDesc('Enter an integer number of seconds to wait for the Dataview Index to load. The larger your vault, the longer it will take. The default is 5 seconds.')
@@ -38789,7 +38789,7 @@ function addTrailViewSettings(plugin, viewDetails) {
             await drawTrail(plugin);
         });
     });
-    if (plugin.app.plugins.plugins.juggl !== undefined) {
+    if (app.plugins.plugins.juggl !== undefined) {
         viewsToShow.addToggle((toggle) => {
             toggle
                 .setTooltip("Juggl view")

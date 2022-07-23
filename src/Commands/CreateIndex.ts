@@ -17,10 +17,10 @@ export function addAliasesToIndex(plugin: BCPlugin, index: string) {
     if (aliasesInIndex) {
       const note = line.split("- ")[1];
       if (!note) continue;
-      const currFile = plugin.app.metadataCache.getFirstLinkpathDest(note, "");
+      const currFile = app.metadataCache.getFirstLinkpathDest(note, "");
 
       if (currFile !== null) {
-        const cache = plugin.app.metadataCache.getFileCache(currFile);
+        const cache = app.metadataCache.getFileCache(currFile);
 
         const alias: string[] = cache?.frontmatter?.alias ?? [];
         const aliases: string[] = cache?.frontmatter?.aliases ?? [];

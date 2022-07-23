@@ -91,7 +91,7 @@ export function addTrailViewSettings(
         });
     })
 
-  if (plugin.app.plugins.plugins.juggl !== undefined) {
+  if (app.plugins.plugins.juggl !== undefined) {
     viewsToShow.addToggle((toggle) => {
       toggle
         .setTooltip("Juggl view")

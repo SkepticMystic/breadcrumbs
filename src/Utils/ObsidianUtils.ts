@@ -150,7 +150,7 @@ export const linkClass = (to: string, realQ = true) =>
   }`;
 
 export const getDVApi = (plugin: BCPlugin) =>
-  plugin.app.plugins.plugins.dataview?.api;
+  app.plugins.plugins.dataview?.api;
 
 export function isInsideYaml(): boolean | null {
   const { workspace, metadataCache } = app;

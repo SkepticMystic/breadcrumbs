@@ -38,8 +38,8 @@ export class HierarchyNoteSelectorModal extends FuzzySuggestModal<string> {
     if (hierarchyNotes.length == 1 && hierarchyNotes[0].endsWith("/")) {
       // this is a folder
       let folder = hierarchyNotes[0].slice(0, -1);
-      if (this.plugin.app.plugins.plugins.dataview != undefined) {
-        let pages = this.plugin.app.plugins.plugins.dataview.api.pages(
+      if (app.plugins.plugins.dataview != undefined) {
+        let pages = app.plugins.plugins.dataview.api.pages(
           `"${folder}"`
         );
         return pages.values.map((page) => page.file.path);

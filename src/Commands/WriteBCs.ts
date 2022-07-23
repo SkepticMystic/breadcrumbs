@@ -61,7 +61,7 @@ export async function writeBCsToAllFiles(plugin: BCPlugin) {
       if (window.confirm("For real, please make a back up before.")) {
         const notice = new Notice("Operation Started");
         const problemFiles = [];
-        for (const file of plugin.app.vault.getMarkdownFiles()) {
+        for (const file of app.vault.getMarkdownFiles()) {
           try {
             await writeBCToFile(plugin, file);
           } catch (e) {

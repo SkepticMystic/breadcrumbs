@@ -46,7 +46,7 @@ export function getCodeblockCB(plugin: BCPlugin) {
     }
 
     
-    const currFile = plugin.app.metadataCache.getFirstLinkpathDest(
+    const currFile = app.metadataCache.getFirstLinkpathDest(
       ctx.sourcePath,
       ""
     );
@@ -187,7 +187,7 @@ function codeblockError(plugin: BCPlugin, parsedSource: ParsedCodeblock) {
 
   if (
     from !== undefined &&
-    !plugin.app.plugins.enabledPlugins.has("dataview")
+    !app.plugins.enabledPlugins.has("dataview")
   ) {
     err += `Dataview must be enabled to use <code>from</code>.</br>`;
   }
