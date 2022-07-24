@@ -5491,7 +5491,12 @@ function removeCycles(g, startNode) {
     graphologyTraversal.dfsFromNode(copy, startNode, (n) => {
         copy.forEachOutNeighbor(n, (t) => {
             if (t === prevNode && copy.hasEdge(t, prevNode)) {
-                copy.dropEdge(t, prevNode);
+                try {
+                    copy.dropEdge(t, prevNode);
+                }
+                catch (error) {
+                    console.error(t, prevNode, error);
+                }
             }
         });
         prevNode = n;
@@ -33894,19 +33899,15 @@ function unproxy(item) {
 }
 /**
  * Given a `dvCache[field]` value, parse the link(s) out of it
- * @param  {string|string[]|string[][]|dvLink|dvLink[]|Pos|TFile} value
- * @param  {BCSettings} settings
+ * @param {string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile} value
  */
 function parseFieldValue(value) {
-    if (value === undefined)
+    if (!value)
         return [];
     const parsed = [];
     try {
-        const rawValuesPreFlat = value;
-        if (!rawValuesPreFlat)
-            return [];
-        if (typeof rawValuesPreFlat === "string") {
-            const splits = rawValuesPreFlat.match(splitLinksRegex);
+        if (typeof value === "string") {
+            const splits = value.match(splitLinksRegex);
             if (splits !== null) {
                 const linkNames = splits.map((link) => getBaseFromMDPath(link.match(dropHeaderOrAlias)[1]));
                 parsed.push(...linkNames);

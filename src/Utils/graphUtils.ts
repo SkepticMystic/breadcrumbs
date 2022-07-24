@@ -220,7 +220,8 @@ export function removeCycles(g: Graph, startNode: string) {
   dfsFromNode(copy, startNode, (n) => {
     copy.forEachOutNeighbor(n, (t) => {
       if (t === prevNode && copy.hasEdge(t, prevNode)) {
-        copy.dropEdge(t, prevNode);
+        try { copy.dropEdge(t, prevNode) }
+        catch (error) { console.error(t, prevNode, error) }
       }
     });
 
