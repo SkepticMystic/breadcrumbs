@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.5.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.5.0...3.5.1) (2022-07-24)
+
+
+### Bug Fixes
+
+* :bug: Catch errors when removing cycles ([563129c](https://github.com/SkepticMystic/breadcrumbs/commit/563129c89a5ca832b080b99fc2015dcdda769f67))
+* No need to use alternative getFile API (fix [#416](https://github.com/SkepticMystic/breadcrumbs/issues/416)) ([e3e4418](https://github.com/SkepticMystic/breadcrumbs/commit/e3e4418bef38a478bda1b12d687bd075a9ff3b8b))
+
 ## [3.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.4.1...3.5.0) (2022-07-23)
 
 
