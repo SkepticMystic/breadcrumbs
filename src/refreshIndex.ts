@@ -106,19 +106,19 @@ function unproxy(item: RawValue) {
 
 /**
  * Given a `dvCache[field]` value, parse the link(s) out of it
- * @param  {string|string[]|string[][]|dvLink|dvLink[]|Pos|TFile} value
- * @param  {BCSettings} settings
+ * @param {string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile} value
  */
 function parseFieldValue(
   value: string | string[] | string[][] | dvLink | dvLink[] | Pos | TFile
 ) {
-  if (value === undefined) return [];
+  if (!value) return [];
+
   const parsed: string[] = [];
   try {
-    const rawValuesPreFlat = value;
-    if (!rawValuesPreFlat) return [];
-    if (typeof rawValuesPreFlat === "string") {
-      const splits = rawValuesPreFlat.match(splitLinksRegex);
+
+    if (typeof value === "string") {
+      const splits = value.match(splitLinksRegex);
+
       if (splits !== null) {
         const linkNames = splits.map((link) =>
           getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
@@ -127,11 +127,11 @@ function parseFieldValue(
       }
     } else {
       const rawValues: RawValue[] = [value].flat(4);
-
       debug(...rawValues);
 
       rawValues.forEach((rawItem) => {
         if (!rawItem) return;
+
         const unProxied = unproxy(rawItem);
         unProxied.forEach((value) => {
           if (typeof value === "string" || typeof value === "number") {
