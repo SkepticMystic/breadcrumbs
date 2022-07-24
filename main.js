@@ -33875,6 +33875,7 @@ function getObsMetadataCache(plugin, files) {
     db.end1G({ frontms });
     return frontms;
 }
+const isDVProxy = (item) => typeof item.defaultComparator === "function";
 /**
  * Keep unwrapping a proxied item until it isn't one anymore
  * @param  {RawValue} item
@@ -33884,18 +33885,10 @@ function unproxy(item) {
     const queue = [item];
     while (queue.length) {
         const currItem = queue.shift();
-        // @ts-ignore
-        if (typeof currItem.defaultComparator === "function") {
-            const possibleUnproxied = Object.assign({}, currItem);
-            const { values } = possibleUnproxied;
-            if (values)
-                queue.push(...values);
-            else
-                unproxied.push(possibleUnproxied);
-        }
-        else {
+        if (isDVProxy(currItem))
+            queue.push(...currItem.values);
+        else
             unproxied.push(currItem);
-        }
     }
     return unproxied;
 }

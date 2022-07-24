@@ -84,28 +84,25 @@ function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
   return frontms;
 }
 
+const isDVProxy = (item: RawValue) => typeof item.defaultComparator === "function"
+
 /**
  * Keep unwrapping a proxied item until it isn't one anymore
  * @param  {RawValue} item
  */
 function unproxy(item: RawValue) {
   const unproxied = [];
-
   const queue = [item];
+
   while (queue.length) {
     const currItem = queue.shift();
-    // @ts-ignore
-    if (typeof currItem.defaultComparator === "function") {
-      const possibleUnproxied = Object.assign({}, currItem);
-      const { values } = possibleUnproxied;
-      if (values) queue.push(...values);
-      else unproxied.push(possibleUnproxied);
-    } else {
-      unproxied.push(currItem);
-    }
+
+    if (isDVProxy(currItem)) queue.push(...currItem.values);
+    else unproxied.push(currItem);
   }
   return unproxied;
 }
+
 
 /**
  * Given a `dvCache[field]` value, parse the link(s) out of it
