@@ -5189,7 +5189,7 @@ function escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
-const getCurrFile = () => { var _a; return (_a = app.workspace.getActiveFile()) !== null && _a !== void 0 ? _a : app.workspace.getMostRecentlyActiveFile(); };
+const getCurrFile = () => app.workspace.getActiveFile();
 /**
  * Get basename from a **Markdown** `path`
  * @param  {string} path

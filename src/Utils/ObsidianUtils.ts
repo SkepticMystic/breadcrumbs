@@ -14,7 +14,7 @@ import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
 
-export const getCurrFile = (): TFile | null => app.workspace.getActiveFile() ?? app.workspace.getMostRecentlyActiveFile()
+export const getCurrFile = (): TFile | null => app.workspace.getActiveFile()
 
 /**
  * Get basename from a **Markdown** `path`
