@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/3.5.1...3.6.0) (2022-07-25)
+
+
+### Features
+
+* **Hierarchy Note:** :sparkles: Option to make the hierarchy note the parent of all top-level items in that hierarchy note (fix [#398](https://github.com/SkepticMystic/breadcrumbs/issues/398)) ([a005409](https://github.com/SkepticMystic/breadcrumbs/commit/a005409afe5e5872dfd3b584a3108d79b717da01))
+
 ### [3.5.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.5.0...3.5.1) (2022-07-24)
 
 
