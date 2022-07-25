@@ -1,13 +1,16 @@
 import type { MultiGraph } from "graphology";
 import type { TFile } from "obsidian";
+import { getDVBasename, getSettings } from "../../Utils/ObsidianUtils";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
-import type BCPlugin from "../../main";
 import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
 import { getFieldInfo, getFields, getOppDir, getOppFields } from "../../Utils/HierUtils";
 
-export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
+export async function getHierarchyNoteItems(file: TFile) {
   const { listItems } = app.metadataCache.getFileCache(file);
   if (!listItems) return [];
+
+  const basename = getDVBasename(file)
+  const { hierarchyNoteIsParent } = getSettings();
 
   const lines = (await app.vault.cachedRead(file)).split("\n");
 
@@ -38,7 +41,7 @@ export async function getHierarchyNoteItems(plugin: BCPlugin, file: TFile) {
     } else {
       hierarchyNoteItems.push({
         note,
-        parent: null,
+        parent: hierarchyNoteIsParent ? basename : null,
         field,
       });
     }
@@ -76,7 +79,7 @@ export function addHNsToGraph(
           field: targetField,
         });
       }
-      
+
       addEdgeIfNot(mainG, parent, note, {
         dir: oppDir,
         field: oppField,

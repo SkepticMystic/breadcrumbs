@@ -253,7 +253,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
             if (child instanceof TFile) {
               addHNsToGraph(
                 settings,
-                await getHierarchyNoteItems(plugin, child),
+                await getHierarchyNoteItems(child),
                 mainG
               );
             }
@@ -263,7 +263,7 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
           if (file)
             addHNsToGraph(
               settings,
-              await getHierarchyNoteItems(plugin, file),
+              await getHierarchyNoteItems(file),
               mainG
             );
         }

@@ -14,6 +14,8 @@ import type { MetaeditApi } from "../interfaces";
 import type BCPlugin from "../main";
 import { splitAndTrim } from "./generalUtils";
 
+export const getSettings = () => app.plugins.plugins.breadcrumbs.settings
+
 export const getCurrFile = (): TFile | null => app.workspace.getActiveFile()
 
 /**

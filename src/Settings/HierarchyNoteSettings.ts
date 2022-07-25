@@ -36,6 +36,19 @@ export function addHierarchyNoteSettings(
     });
 
   new Setting(hierarchyNoteDetails)
+    .setName('Hierarchy note is parent of top-level items')
+    .setDesc('Should the actual hierarchy note be treated as the parent of all the top-level items in the list? ✅ = Yes, ❌ = No')
+    .addToggle((toggle) => {
+      toggle
+        .setValue(settings.hierarchyNoteIsParent)
+        .onChange(async (value) => {
+          settings.hierarchyNoteIsParent = value
+          await plugin.saveSettings();
+          await refreshIndex(plugin);
+        })
+    })
+
+  new Setting(hierarchyNoteDetails)
     .setName("Default Hierarchy Note Field")
     .setDesc(
       fragWithHTML(

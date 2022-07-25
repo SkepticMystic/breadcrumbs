@@ -3,6 +3,7 @@ import type { IJugglSettings, JugglLayouts } from "juggl-api";
 import type { LogLevel } from "loglevel";
 import type { DateTime } from "luxon";
 import type { Constructor, Pos, TFile } from "obsidian";
+import type BCPlugin from "./main";
 import type {
   CODEBLOCK_FIELDS,
   CODEBLOCK_TYPES,
@@ -41,6 +42,7 @@ export interface BCSettings {
   gridHeatmap: boolean;
   heatmapColour: string;
   hierarchyNotes: string[];
+  hierarchyNoteIsParent: boolean;
   HNUpField: string;
   /** WARNING: The defaults for this feature are all `false`! */
   impliedRelations: {
@@ -284,6 +286,7 @@ declare module "obsidian" {
           api: MetaeditApi;
         };
         juggl: { settings: { typedLinkPrefix: string } };
+        breadcrumbs: BCPlugin
       };
       enabledPlugins: { has: (plugin: string) => boolean };
     };

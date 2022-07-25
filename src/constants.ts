@@ -353,6 +353,7 @@ export const DEFAULT_SETTINGS: BCSettings = {
     "--text-accent"
   ),
   hierarchyNotes: [""],
+  hierarchyNoteIsParent: false,
   HNUpField: "",
   indexNotes: [""],
   namingSystemField: "",

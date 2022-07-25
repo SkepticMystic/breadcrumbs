@@ -3078,6 +3078,7 @@ const DEFAULT_SETTINGS = {
     gridHeatmap: false,
     heatmapColour: getComputedStyle(document.body).getPropertyValue("--text-accent"),
     hierarchyNotes: [""],
+    hierarchyNoteIsParent: false,
     HNUpField: "",
     indexNotes: [""],
     namingSystemField: "",
@@ -5189,6 +5190,7 @@ function escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
+const getSettings = () => app.plugins.plugins.breadcrumbs.settings;
 const getCurrFile = () => app.workspace.getActiveFile();
 /**
  * Get basename from a **Markdown** `path`
@@ -14381,10 +14383,12 @@ function addFolderNotesToGraph(plugin, folderNotes, frontms, mainG) {
     });
 }
 
-async function getHierarchyNoteItems(plugin, file) {
+async function getHierarchyNoteItems(file) {
     const { listItems } = app.metadataCache.getFileCache(file);
     if (!listItems)
         return [];
+    const basename = getDVBasename(file);
+    const { hierarchyNoteIsParent } = getSettings();
     const lines = (await app.vault.cachedRead(file)).split("\n");
     const hierarchyNoteItems = [];
     const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
@@ -14409,7 +14413,7 @@ async function getHierarchyNoteItems(plugin, file) {
         else {
             hierarchyNoteItems.push({
                 note,
-                parent: null,
+                parent: hierarchyNoteIsParent ? basename : null,
                 field,
             });
         }
@@ -34012,14 +34016,14 @@ async function buildMainG(plugin) {
                         continue;
                     for (const child of folder.children) {
                         if (child instanceof obsidian.TFile) {
-                            addHNsToGraph(settings, await getHierarchyNoteItems(plugin, child), mainG);
+                            addHNsToGraph(settings, await getHierarchyNoteItems(child), mainG);
                         }
                     }
                 }
                 else {
                     const file = app.metadataCache.getFirstLinkpathDest(noteOrFolder, "");
                     if (file)
-                        addHNsToGraph(settings, await getHierarchyNoteItems(plugin, file), mainG);
+                        addHNsToGraph(settings, await getHierarchyNoteItems(file), mainG);
                 }
             }
         }
@@ -37177,6 +37181,18 @@ function addHierarchyNoteSettings(plugin, alternativeHierarchyDetails) {
             settings.hierarchyNotes = splits;
             await plugin.saveSettings();
         };
+    });
+    new obsidian.Setting(hierarchyNoteDetails)
+        .setName('Hierarchy note is parent of top-level items')
+        .setDesc('Should the actual hierarchy note be treated as the parent of all the top-level items in the list? ✅ = Yes, ❌ = No')
+        .addToggle((toggle) => {
+        toggle
+            .setValue(settings.hierarchyNoteIsParent)
+            .onChange(async (value) => {
+            settings.hierarchyNoteIsParent = value;
+            await plugin.saveSettings();
+            await refreshIndex(plugin);
+        });
     });
     new obsidian.Setting(hierarchyNoteDetails)
         .setName("Default Hierarchy Note Field")
