@@ -236,7 +236,7 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       //   })
       // }
 
-      view.querySelector("div.cm-contentContainer")?.firstChild?.before(trailDiv)
+      view.querySelector("div.cm-contentContainer")?.before(trailDiv)
 
     }
 
