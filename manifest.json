@@ -1,7 +1,7 @@
 {
   "id": "breadcrumbs",
   "name": "Breadcrumbs",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "minAppVersion": "0.15.2",
   "description": "Visualise & navigate your vault's structure",
   "author": "SkepticMystic",
