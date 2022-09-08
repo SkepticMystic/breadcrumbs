@@ -33737,7 +33737,7 @@ function getTrailLength(curr, offset = 1) {
     return TRAIL_LENGTHS[index < 0 ? TRAIL_LENGTHS.length + index : index];
 }
 async function drawTrail(plugin) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     try {
         const { settings, db, mainG } = plugin;
         const { showBCs, noPathMessage, respectReadableLineLength, showTrail, showGrid, showJuggl, showPrevNext, showBCsInEditLPMode, } = settings;
@@ -33830,7 +33830,7 @@ async function drawTrail(plugin) {
             //     banner.style.height = '0px'
             //   })
             // }
-            (_e = (_d = view.querySelector("div.cm-contentContainer")) === null || _d === void 0 ? void 0 : _d.firstChild) === null || _e === void 0 ? void 0 : _e.before(trailDiv);
+            (_d = view.querySelector("div.cm-contentContainer")) === null || _d === void 0 ? void 0 : _d.before(trailDiv);
         }
         trailDiv.empty();
         if (settings.indexNotes.includes(basename)) {
