@@ -1,7 +1,7 @@
 import "obsidian";
 import { DataviewApi } from "obsidian-dataview";
 
-declare module "obsidian" {
+declare module obsidian {
   interface App {
     plugins: {
       enabledPlugins: Set<string>;
