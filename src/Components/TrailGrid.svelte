@@ -6,37 +6,19 @@
   import type BCPlugin from "../main";
   import {
     dropDendron,
-    normalise,
     padArray,
     runs,
     transpose,
   } from "../Utils/generalUtils";
-  import { getReflexiveClosure, getSubInDirs } from "../Utils/graphUtils";
   import { getAlt, linkClass } from "../Utils/ObsidianUtils";
 
   export let sortedTrails: string[][];
   export let plugin: BCPlugin;
 
-  const { settings, mainG } = plugin;
-  const { userHiers, gridHeatmap, heatmapColour, gridDefaultDepth } = settings;
+  const { settings } = plugin;
+  const { gridDefaultDepth } = settings;
 
   const activeLeafView = app.workspace.activeLeaf.view;
-
-  const allCells = [...new Set(sortedTrails.flat())];
-
-  const closedParents = getReflexiveClosure(
-    getSubInDirs(mainG, "up", "down"),
-    userHiers
-  );
-
-  const children: { [cell: string]: number } = {};
-  allCells.forEach((cell) => (children[cell] = closedParents.outDegree(cell)));
-
-  const normalisedData = normalise(Object.values(children));
-  allCells.forEach((cell, i) => {
-    children[cell] = normalisedData[i];
-  });
-
   const maxLength = sortedTrails.last().length;
 
   // Use the user setting to limit the initial depth
@@ -55,9 +37,6 @@
 
   $: transposedTrails = transpose(paddedTrails);
   $: allRuns = transposedTrails.map(runs);
-
-  const toColour = (value: string) =>
-    heatmapColour + Math.round(children[value] * 200 + 55).toString(16);
 </script>
 
 <div class="BC-grid-wrapper">
@@ -69,12 +48,12 @@
   >
     {#each transposedTrails as col, i}
       {#each allRuns[i] as { value, first, last }}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <div
           class="BC-trail-grid-item {value === '' ? 'BC-filler' : ''}"
           style="
               grid-area: {first + 1} / {i + 1} /
-                  {last + 2} / {i + 2};
-              {gridHeatmap ? `background-color: ${toColour(value)}` : ''}"
+                  {last + 2} / {i + 2};"
           on:click={async (e) => await openOrSwitch(value, e)}
           on:mouseover={(e) => hoverPreview(e, activeLeafView, value)}
         >
