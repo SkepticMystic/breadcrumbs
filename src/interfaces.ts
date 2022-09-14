@@ -39,8 +39,6 @@ export interface BCSettings {
   fieldSuggestor: boolean;
   filterImpliedSiblingsOfDifferentTypes: boolean;
   gridDefaultDepth: number;
-  gridHeatmap: boolean;
-  heatmapColour: string;
   hierarchyNotes: string[];
   hierarchyNoteIsParent: boolean;
   HNUpField: string;

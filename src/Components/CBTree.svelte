@@ -36,6 +36,7 @@
           <pre class="indent">{indent}</pre>
           <details open={content === "open"}>
             <summary>
+              <!-- svelte-ignore a11y-mouse-events-have-key-events -->
               <span
                 class="internal-link"
                 on:click={async (e) => await openOrSwitch(link, e)}
@@ -54,6 +55,7 @@
       {:else}
         <div>
           <pre class="indent">{indent + "-"}</pre>
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <span
             class="internal-link"
             on:click={async (e) => await openOrSwitch(link, e)}

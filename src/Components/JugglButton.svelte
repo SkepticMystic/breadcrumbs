@@ -1,12 +1,18 @@
 <script lang="ts">
-    export let icon;
-    $: renderedIcon = icon;
-    export let onClick;
-    export let disabled = false;
-    export let title;
+  export let icon;
+  export let onClick: () => void;
+  export let disabled = false;
+  export let title = "";
+
+  $: renderedIcon = icon;
 </script>
 
-
-<button type="button" class="juggl-button" on:click={onClick} aria-label={title} {disabled}>
-    {renderedIcon}
+<button
+  type="button"
+  class="juggl-button"
+  on:click={onClick}
+  aria-label={title}
+  {disabled}
+>
+  {renderedIcon}
 </button>

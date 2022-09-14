@@ -1,9 +1,11 @@
 import { PluginSettingTab, Setting } from "obsidian";
-import { addDataviewSettings } from "./DataviewNoteSettings";
+import { drawTrail } from "src/Views/TrailView";
 import KoFi from "../Components/KoFi.svelte";
 import type BCPlugin from "../main";
 import { addCreateIndexSettings } from "./CreateIndexSettings";
 import { addCSVSettings } from "./CSVSettings";
+import { addDataviewSettings } from "./DataviewNoteSettings";
+import { addDateNoteSettings } from "./DateNoteSettings";
 import { addDebuggingsSettings } from "./DebuggingSettings";
 import { addDendronSettings } from "./DendronSettings";
 import { addGeneralSettings } from "./GeneralSettings";
@@ -17,10 +19,8 @@ import { addRelationSettings } from "./RelationSettings";
 import { addTagNoteSettings } from "./TagNoteSettings";
 import { addThreadingSettings } from "./ThreadingSettings";
 import { addTrailViewSettings } from "./TrailSettings";
-import { addTreeViewSettings } from "./TreeViewSettings";
 import { addVisModalSettings } from "./VisModalSettings";
 import { addWriteBCsSettings } from "./WriteBCsSettings";
-import { addDateNoteSettings } from "./DateNoteSettings";
 
 export const fragWithHTML = (html: string) =>
   createFragment((frag) => (frag.createDiv().innerHTML = html));
@@ -58,7 +58,17 @@ export class BCSettingTab extends PluginSettingTab {
 
     new Setting(viewDetails)
       .setName("Open Views by Default")
-      .setDesc("Choose which of the views to open onload")
+      .setDesc(fragWithHTML("Choose which of the views to open onload<br/>Order is: Trail/Grid/Juggl, Matrix, Ducks, Tree"))
+      .addToggle((toggle) =>
+        toggle
+          .setTooltip("Trail/Grid/Juggl")
+          .setValue(settings.showBCs)
+          .onChange(async (value) => {
+            settings.showBCs = value;
+            await plugin.saveSettings();
+            await drawTrail(plugin);
+          })
+      )
       .addToggle((toggle) => {
         toggle
           .setTooltip("Matrix View")

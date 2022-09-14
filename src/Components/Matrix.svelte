@@ -48,6 +48,8 @@
               <ol>
                 {#each realItems as { alt, cls, implied, to }}
                   <li>
+                    <!-- svelte-ignore a11y-unknown-aria-attribute -->
+                    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                     <div
                       class="{cls} {implied ?? ''}"
                       on:click={async (e) => await openOrSwitch(to, e)}
@@ -80,6 +82,8 @@
                       ? 'BC-active-note'
                       : ''}"
                   >
+                    <!-- svelte-ignore a11y-unknown-aria-attribute -->
+                    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                     <div
                       class="{cls} {implied ?? ''}"
                       on:click={async (e) => await openOrSwitch(to, e)}

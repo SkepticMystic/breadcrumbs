@@ -348,10 +348,6 @@ export const DEFAULT_SETTINGS: BCSettings = {
   limitWriteBCCheckboxes: [],
   CHECKBOX_STATES_OVERWRITTEN: false,
   gridDefaultDepth: 25,
-  gridHeatmap: false,
-  heatmapColour: getComputedStyle(document.body).getPropertyValue(
-    "--text-accent"
-  ),
   hierarchyNotes: [""],
   hierarchyNoteIsParent: false,
   HNUpField: "",

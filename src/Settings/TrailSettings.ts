@@ -17,17 +17,6 @@ export function addTrailViewSettings(
   const trailDetails = subDetails("Trail/Grid/Juggl", viewDetails);
 
   new Setting(trailDetails)
-    .setName("Show Breadcrumbs")
-    .setDesc("Show a set of different views at the top of the current note.")
-    .addToggle((toggle) =>
-      toggle.setValue(settings.showBCs).onChange(async (value) => {
-        settings.showBCs = value;
-        await plugin.saveSettings();
-        await drawTrail(plugin);
-      })
-    );
-
-  new Setting(trailDetails)
     .setName("Show Breadcrumbs in Edit/Live-Preview Mode")
     .setDesc(
       "It always shows in preview mode, but should it also show in the other two?"
@@ -120,34 +109,6 @@ export function addTrailViewSettings(
       }
     })
 
-
-  new Setting(trailDetails)
-    .setName("Grid view heatmap")
-    .setDesc(
-      "Change the background colour of Grid View squares based on the number of children leaving that note."
-    )
-    .addToggle((toggle) =>
-      toggle
-        .setValue(settings.gridHeatmap)
-        .onChange(async (value) => {
-          settings.gridHeatmap = value;
-          await plugin.saveSettings();
-          await drawTrail(plugin);
-        })
-    );
-
-  const heatmapColour = trailDetails.createDiv({ cls: 'setting-item-name', text: 'Heatmap colour' });
-  heatmapColour.createEl("input", {
-    type: "color",
-    value: settings.heatmapColour,
-    attr: { style: 'display: block;' }
-  }, (el) => {
-    el.addEventListener("change", async () => {
-      settings.heatmapColour = el.value;
-      await plugin.saveSettings();
-      await drawTrail(plugin);
-    });
-  });
 
   new Setting(trailDetails)
     .setName("Index Note(s)")
