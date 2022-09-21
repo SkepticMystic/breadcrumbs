@@ -14,17 +14,17 @@
 }
 
 /* fakecss:C:/Users/rossk/OneDrive/1D Personal/Programming/Obsidian Plugins/breadcrumbs-test-vault/.obsidian/plugins/breadcrumbs/src/Components/TrailGrid.esbuild-svelte-fake-css */
-div.BC-grid-wrapper.svelte-c6w3ih.svelte-c6w3ih {
+div.BC-grid-wrapper.svelte-rrkswg.svelte-rrkswg {
   position: relative;
 }
-div.BC-trail-grid.svelte-c6w3ih.svelte-c6w3ih {
+div.BC-trail-grid.svelte-rrkswg.svelte-rrkswg {
   border: 2px solid var(--background-modifier-border);
-  display: grid;
+  display: grid !important;
   align-items: stretch;
   width: auto;
   height: auto;
 }
-.BC-grid-options.svelte-c6w3ih.svelte-c6w3ih {
+.BC-grid-options.svelte-rrkswg.svelte-rrkswg {
   position: absolute;
   top: 0px;
   right: 0px;
@@ -37,23 +37,23 @@ div.BC-trail-grid.svelte-c6w3ih.svelte-c6w3ih {
   overflow-wrap: normal;
   overflow: hidden;
 }
-div.BC-grid-options.svelte-c6w3ih.svelte-c6w3ih:hover {
+div.BC-grid-options.svelte-rrkswg.svelte-rrkswg:hover {
   padding: 5px;
   width: fit-content;
 }
-div.BC-grid-options.svelte-c6w3ih:hover .BC-grid-options-icon.svelte-c6w3ih {
+div.BC-grid-options.svelte-rrkswg:hover .BC-grid-options-icon.svelte-rrkswg {
   display: none;
 }
-.BC-grid-options-options.svelte-c6w3ih.svelte-c6w3ih {
+.BC-grid-options-options.svelte-rrkswg.svelte-rrkswg {
   display: none;
 }
-div.BC-grid-options.svelte-c6w3ih:hover .BC-grid-options-options.svelte-c6w3ih {
+div.BC-grid-options.svelte-rrkswg:hover .BC-grid-options-options.svelte-rrkswg {
   display: unset;
 }
-.BC-depth-button.svelte-c6w3ih.svelte-c6w3ih {
+.BC-depth-button.svelte-rrkswg.svelte-rrkswg {
   padding: 3px 5px;
 }
-div.BC-trail-grid-item.svelte-c6w3ih.svelte-c6w3ih {
+div.BC-trail-grid-item.svelte-rrkswg.svelte-rrkswg {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--background-modifier-border);
@@ -62,7 +62,7 @@ div.BC-trail-grid-item.svelte-c6w3ih.svelte-c6w3ih {
   padding: 2px;
   font-size: smaller;
 }
-div.BC-trail-grid-item.BC-filler.svelte-c6w3ih.svelte-c6w3ih {
+div.BC-trail-grid-item.BC-filler.svelte-rrkswg.svelte-rrkswg {
   opacity: 0.7;
 }
 

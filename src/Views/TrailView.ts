@@ -197,7 +197,10 @@ export async function drawTrail(plugin: BCPlugin): Promise<void> {
       attr: {
         style:
           (mode !== "preview" ? `max-width: ${max_width};` : "") +
-          "margin: 0 auto; width: 100%;",
+          "margin: 0 auto;" +
+          `${respectReadableLineLength
+            ? 'width: var(--file-line-width);'
+            : 'width: 100%'}`,
       },
     });
 

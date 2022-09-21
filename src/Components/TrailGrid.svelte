@@ -44,7 +44,7 @@
     class="BC-trail-grid"
     style="
       grid-template-columns: {'1fr '.repeat(transposedTrails.length)};
-      grid-template-rows: {'1fr '.repeat(slicedTrails.length)}"
+      grid-template-rows: {'1fr '.repeat(slicedTrails.length)};"
   >
     {#each transposedTrails as col, i}
       {#each allRuns[i] as { value, first, last }}
@@ -147,11 +147,4 @@
   div.BC-trail-grid-item.BC-filler {
     opacity: 0.7;
   }
-
-  /* .dot {
-    height: 5px;
-    width: 5px;
-    border-radius: 50%;
-    display: inline-block;
-  } */
 </style>

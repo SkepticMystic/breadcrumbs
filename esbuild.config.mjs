@@ -39,6 +39,7 @@ esbuild
     format: "cjs",
     plugins: [
       sveltePlugin({
+        compilerOptions: { css: true },
         preprocess: sveltePreprocess(),
       }),
     ],
