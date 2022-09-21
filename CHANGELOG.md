@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.3](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.2...3.6.3) (2022-09-21)
+
+
+### Bug Fixes
+
+* Bundle Svelte CSS ([7e4ba44](https://github.com/SkepticMystic/breadcrumbs/commit/7e4ba448166ff2942bfcb8eccfbc718f7227f4e9))
+
 ### [3.6.2](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.1...3.6.2) (2022-09-14)
 
 ### [3.6.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.0...3.6.1) (2022-09-08)
