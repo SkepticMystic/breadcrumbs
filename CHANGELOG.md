@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.4](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.3...3.6.4) (2022-10-25)
+
+
+### Bug Fixes
+
+* Typo in settings ([84a2fa3](https://github.com/SkepticMystic/breadcrumbs/commit/84a2fa37fd89eabf2e55da6e9f6dece9e9e4b61c))
+
 ### [3.6.3](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.2...3.6.3) (2022-09-21)
 
 
