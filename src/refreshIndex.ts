@@ -1,8 +1,6 @@
 import { MultiGraph } from "graphology";
 import { debug, error } from "loglevel";
 import { normalizePath, Notice, Pos, TFile, TFolder } from "obsidian";
-import { wait } from "obsidian-community-lib";
-import { addSiblingsFromSameParent, addSiblingsParentIsParent, addAuntsUncles, addCousins, addStructuralEquivalenceSiblings } from "./Relations";
 import { addCSVCrumbs, getCSVRows } from "./AlternativeHierarchies/CSVCrumbs";
 import { addDataviewNotesToGraph } from "./AlternativeHierarchies/DataviewNotes";
 import { addDateNotesToGraph } from "./AlternativeHierarchies/DateNotes";
@@ -10,11 +8,11 @@ import { addDendronNotesToGraph } from "./AlternativeHierarchies/DendronNotes";
 import { addFolderNotesToGraph } from "./AlternativeHierarchies/FolderNotes";
 import {
   addHNsToGraph,
-  getHierarchyNoteItems,
+  getHierarchyNoteItems
 } from "./AlternativeHierarchies/HierarchyNotes/HierarchyNotes";
 import {
   addJugglLinksToGraph,
-  getJugglLinks,
+  getJugglLinks
 } from "./AlternativeHierarchies/JugglLinks";
 import { addLinkNotesToGraph } from "./AlternativeHierarchies/LinkNotes";
 import { addRegexNotesToGraph } from "./AlternativeHierarchies/RegexNotes";
@@ -23,51 +21,44 @@ import { addTraverseNotesToGraph } from "./AlternativeHierarchies/TraverseNotes"
 import {
   BC_ALTS,
   BC_DV_NOTE,
-  BC_FOLDER_NOTE,
-  BC_I_AUNT,
-  BC_I_COUSIN,
-  BC_I_PARENT,
-  BC_I_SIBLING_1,
-  BC_I_SIBLING_2,
-  BC_LINK_NOTE,
+  BC_FOLDER_NOTE, BC_LINK_NOTE,
   BC_REGEX_NOTE,
   BC_TAG_NOTE,
   BC_TRAVERSE_NOTE,
   dropHeaderOrAlias,
-  splitLinksRegex,
+  splitLinksRegex
 } from "./constants";
 import type {
-  BCSettings,
   dvFrontmatterCache,
   dvLink,
-  RawValue,
+  RawValue
 } from "./interfaces";
 import type BCPlugin from "./main";
+import { addAuntsUncles, addCousins, addSiblingsFromSameParent, addSiblingsParentIsParent, addStructuralEquivalenceSiblings } from "./Relations";
 import {
-  addEdgeIfNot,
   addNodesIfNot,
   buildObsGraph,
   getReflexiveClosure,
   getSourceOrder,
   getTargetOrder,
-  populateMain,
+  populateMain
 } from "./Utils/graphUtils";
-import { fallbackField, getFieldInfo, iterateHiers } from "./Utils/HierUtils";
+import { iterateHiers } from "./Utils/HierUtils";
 import {
   getBaseFromMDPath,
   getDVApi,
-  getDVBasename,
+  getDVBasename
 } from "./Utils/ObsidianUtils";
 import { drawTrail } from "./Views/TrailView";
 
-function getDVMetadataCache(plugin: BCPlugin, files: TFile[]) {
+function getDVMetadataCache(plugin: BCPlugin) {
   const { db } = plugin;
   const api = getDVApi(plugin);
+
   db.start1G("getDVMetadataCache");
-
-  const frontms = files.map((file) => api.page(file.path));
-
+  const frontms = api.pages().values
   db.end1G({ frontms });
+
   return frontms;
 }
 
@@ -113,6 +104,7 @@ function parseFieldValue(
 ) {
   if (!value) return [];
 
+
   const parsed: string[] = [];
   try {
 
@@ -120,9 +112,7 @@ function parseFieldValue(
       const splits = value.match(splitLinksRegex);
 
       if (splits !== null) {
-        const linkNames = splits.map((link) =>
-          getBaseFromMDPath(link.match(dropHeaderOrAlias)[1])
-        );
+        const linkNames = splits.map((link) => getBaseFromMDPath(link.match(dropHeaderOrAlias)[1]));
         parsed.push(...linkNames);
       }
     } else {
@@ -178,15 +168,15 @@ export async function buildMainG(plugin: BCPlugin): Promise<MultiGraph> {
     const dvQ = app.plugins.enabledPlugins.has("dataview");
 
     let frontms: dvFrontmatterCache[] = dvQ
-      ? getDVMetadataCache(plugin, files)
+      ? getDVMetadataCache(plugin)
       : getObsMetadataCache(plugin, files);
 
-    if (frontms.some((frontm) => frontm === undefined)) {
-      await wait(2000);
-      frontms = dvQ
-        ? getDVMetadataCache(plugin, files)
-        : getObsMetadataCache(plugin, files);
-    }
+    // if (frontms.some((frontm) => frontm === undefined)) {
+    //   await wait(2000);
+    //   frontms = dvQ
+    //     ? getDVMetadataCache(plugin)
+    //     : getObsMetadataCache(plugin, files);
+    // }
 
     const CSVRows = CSVPaths !== "" ? await getCSVRows(plugin) : [];
 

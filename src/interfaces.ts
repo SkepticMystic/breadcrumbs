@@ -276,7 +276,7 @@ declare module "obsidian" {
         dataview?: {
           api: {
             page: (page: string) => dvFrontmatterCache;
-            pages: (query: string) => { values: dvFrontmatterCache[] };
+            pages: (query?: string) => { values: dvFrontmatterCache[] };
             pagePaths: (query?: string) => { values: string[] };
           };
         };

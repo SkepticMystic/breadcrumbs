@@ -25,7 +25,7 @@
 
   let dir: Directions = "down";
   let frozen = false;
-  let { basename } = getCurrFile();
+  let { basename } = getCurrFile() ?? {};
 
   plugin.registerEvent(
     app.workspace.on("active-leaf-change", () => {
@@ -36,8 +36,8 @@
 
   let lines: [string, string][];
   $: {
-    const downG = getSubInDirs(closedG, dir);
-    const allPaths = dfsAllPaths(downG, basename);
+    const dirG = getSubInDirs(closedG, dir);
+    const allPaths = dfsAllPaths(dirG, basename);
     const index = createIndex(allPaths, false, createIndexIndent);
     info({ allPaths, index });
 

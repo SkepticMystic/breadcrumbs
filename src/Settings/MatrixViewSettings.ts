@@ -78,7 +78,7 @@ export function addMatrixViewSettings(
     });
 
   new Setting(MLViewDetails)
-    .setName("Enable Alpahebtical Sorting")
+    .setName("Enable Alphabetical Sorting")
     .setDesc(
       "By default, items in the Matrix view are sorted by the order they appear in your notes. Toggle this on to enable alphabetical sorting."
     )

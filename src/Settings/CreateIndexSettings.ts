@@ -17,10 +17,12 @@ export function addCreateIndexSettings(
       )
     )
     .addToggle((toggle) =>
-      toggle.setValue(settings.wikilinkIndex).onChange(async (value) => {
-        settings.wikilinkIndex = value;
-        await plugin.saveSettings();
-      })
+      toggle
+        .setValue(settings.wikilinkIndex)
+        .onChange(async (value) => {
+          settings.wikilinkIndex = value;
+          await plugin.saveSettings();
+        })
     );
 
   new Setting(createIndexDetails)
@@ -42,9 +44,11 @@ export function addCreateIndexSettings(
     .setName("Show aliases of notes in index")
     .setDesc("Show the aliases of each note in brackets.\n✅ = yes, ❌ = no.")
     .addToggle((toggle) =>
-      toggle.setValue(settings.aliasesInIndex).onChange(async (value) => {
-        settings.aliasesInIndex = value;
-        await plugin.saveSettings();
-      })
+      toggle
+        .setValue(settings.aliasesInIndex)
+        .onChange(async (value) => {
+          settings.aliasesInIndex = value;
+          await plugin.saveSettings();
+        })
     );
 }
