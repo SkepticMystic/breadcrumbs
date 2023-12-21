@@ -9,33 +9,31 @@ export async function getHierarchyNoteItems(file: TFile) {
   const { listItems } = app.metadataCache.getFileCache(file);
   if (!listItems) return [];
 
-  const basename = getDVBasename(file)
+  const basename = getDVBasename(file);
   const { hierarchyNoteIsParent } = getSettings();
 
   const lines = (await app.vault.cachedRead(file)).split("\n");
 
   const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
-  const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
-  const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-  const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+  const lineReg = new RegExp(/^\s*[+*-](?:\s+(?<field>.+?))?\s+\[\[(?<note>.+?)\]\]/);
 
   for (const item of listItems) {
     const line = lines[item.position.start.line];
 
-    const afterBulletCurr = afterBulletReg.exec(line)[1];
-    const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
-    let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
+    const results = lineReg.exec(line);
+    if (!results) continue;
+    const { field, note } = results.groups;
 
     const { parent } = item;
     if (parent >= 0) {
-      const parentNote = lines[parent];
-      const afterBulletParent = afterBulletReg.exec(parentNote)[1];
-      const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
+      const parentResults = lineReg.exec(lines[parent]);
+      if (!parentResults) continue;
+      const { note: parentNote } = parentResults.groups;
 
       hierarchyNoteItems.push({
         note,
-        parent: dropWikiParent,
+        parent: parentNote,
         field,
       });
     } else {
