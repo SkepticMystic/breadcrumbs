@@ -1,13 +1,20 @@
 import type { MultiGraph } from "graphology";
-import type { TFile } from "obsidian";
+import type { ListItemCache, TFile } from "obsidian";
 import { getDVBasename, getSettings } from "../../Utils/ObsidianUtils";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
 import { getFieldInfo, getFields, getOppDir, getOppFields } from "../../Utils/HierUtils";
+import { BC_HIERARCHY_NOTE_NEXT, BC_HIERARCHY_NOTE_PREV } from "../../constants";
+
+// match a line that contains a node in the hierarchy
+const lineReg = new RegExp(/^\s*[+*-](?:\s+(?<field>.+?))?\s+\[\[(?<note>.+?)\]\]/);
 
 export async function getHierarchyNoteItems(file: TFile) {
-  const { listItems } = app.metadataCache.getFileCache(file);
+  const { listItems, frontmatter } = app.metadataCache.getFileCache(file);
   if (!listItems) return [];
+
+  const nextField: string | undefined = frontmatter[BC_HIERARCHY_NOTE_NEXT];
+  const prevField: string | undefined = frontmatter[BC_HIERARCHY_NOTE_PREV];
 
   const basename = getDVBasename(file);
   const { hierarchyNoteIsParent } = getSettings();
@@ -16,20 +23,22 @@ export async function getHierarchyNoteItems(file: TFile) {
 
   const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
-  const lineReg = new RegExp(/^\s*[+*-](?:\s+(?<field>.+?))?\s+\[\[(?<note>.+?)\]\]/);
-
+  let prevItem: ListItemCache | null = null;
+  let prevNote: string | null = null;
   for (const item of listItems) {
+    // ensure this list item is a valid node in the hierarchy
     const line = lines[item.position.start.line];
-
     const results = lineReg.exec(line);
     if (!results) continue;
     const { field, note } = results.groups;
 
+    // add its parent using the provided field
+    // if no parent is found then add it to the root file if that setting is enabled
     const { parent } = item;
     if (parent >= 0) {
-      const parentResults = lineReg.exec(lines[parent]);
-      if (!parentResults) continue;
-      const { note: parentNote } = parentResults.groups;
+      const matches = lineReg.exec(lines[parent]);
+      if (!matches) continue;
+      const { note: parentNote } = matches.groups;
 
       hierarchyNoteItems.push({
         note,
@@ -43,7 +52,29 @@ export async function getHierarchyNoteItems(file: TFile) {
         field,
       });
     }
+
+    // add the neighbours in the list
+    if (prevItem && prevItem.parent === item.parent) {
+      if (nextField) {
+        hierarchyNoteItems.push({
+          note: prevNote,
+          parent: note,
+          field: nextField,
+        });
+      }
+      if (prevField) {
+        hierarchyNoteItems.push({
+          note,
+          parent: prevNote,
+          field: prevField,
+        });
+      }
+    }
+
+    prevItem = item;
+    prevNote = note;
   }
+
   return hierarchyNoteItems;
 }
 
