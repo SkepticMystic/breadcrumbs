@@ -23,8 +23,12 @@ export async function getHierarchyNoteItems(file: TFile) {
 
   const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
-  let prevItem: ListItemCache | null = null;
-  let prevNote: string | null = null;
+  // map from each parent to the last visited of its direct children
+  let prevItemInGroup: Record<number, {
+    item: ListItemCache;
+    note: string;
+  } | null> = {};
+
   for (const item of listItems) {
     // ensure this list item is a valid node in the hierarchy
     const line = lines[item.position.start.line];
@@ -54,10 +58,11 @@ export async function getHierarchyNoteItems(file: TFile) {
     }
 
     // add the neighbours in the list
-    if (prevItem && prevItem.parent === item.parent) {
+    const prevItem = prevItemInGroup[item.parent];
+    if (prevItem) {
       if (nextField) {
         hierarchyNoteItems.push({
-          note: prevNote,
+          note: prevItem.note,
           parent: note,
           field: nextField,
         });
@@ -65,14 +70,16 @@ export async function getHierarchyNoteItems(file: TFile) {
       if (prevField) {
         hierarchyNoteItems.push({
           note,
-          parent: prevNote,
+          parent: prevItem.note,
           field: prevField,
         });
       }
     }
 
-    prevItem = item;
-    prevNote = note;
+    prevItemInGroup[item.parent] = {
+      item,
+      note,
+    };
   }
 
   return hierarchyNoteItems;
