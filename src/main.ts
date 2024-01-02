@@ -140,6 +140,13 @@ export default class BCPlugin extends Plugin {
     addIcon(DUCK_ICON, DUCK_ICON_SVG);
     addIcon(TRAIL_ICON, TRAIL_ICON_SVG);
 
+    // addRibbonIcon must be before waitForCache(this); Otherwise the Ribbon configuration in Appearance/Ribbon menu/Manage is lost at every restart
+    this.addRibbonIcon(
+      addFeatherIcon("tv") as string,
+      "Breadcrumbs Visualisation",
+      () => new VisModal(this).open()
+    );
+
     await waitForCache(this);
     this.mainG = await buildMainG(this);
     this.closedG = buildClosedG(this);
@@ -262,12 +269,6 @@ export default class BCPlugin extends Plugin {
         callback: async () => await thread(this, field),
       });
     });
-
-    this.addRibbonIcon(
-      addFeatherIcon("tv") as string,
-      "Breadcrumbs Visualisation",
-      () => new VisModal(this).open()
-    );
 
     this.registerMarkdownCodeBlockProcessor(
       "breadcrumbs",
