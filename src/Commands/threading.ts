@@ -143,6 +143,7 @@ export async function thread(plugin: BCPlugin, field: string) {
     ? app.workspace.getLeaf(true)
     : app.workspace.activeLeaf;
 
+  //@ts-ignore
   await leaf.openFile(newFile, { active: true, mode: "source" });
 
   if (templatePath) {

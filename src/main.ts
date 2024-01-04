@@ -134,7 +134,12 @@ export default class BCPlugin extends Plugin {
     ];
 
     for (const { constructor, type } of this.VIEWS) {
-      this.registerView(type, (leaf) => new constructor(leaf, this));
+      this.registerView(
+        type,
+        (leaf) =>
+          //@ts-ignore
+          new constructor(leaf, this)
+      );
     }
 
     addIcon(DUCK_ICON, DUCK_ICON_SVG);

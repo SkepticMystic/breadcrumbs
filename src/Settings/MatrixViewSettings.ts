@@ -162,7 +162,6 @@ export function addMatrixViewSettings(
         await plugin.saveSettings();
         app.workspace.detachLeavesOfType(MATRIX_VIEW);
         await openView(
-          app,
           MATRIX_VIEW,
           MatrixView,
           value ? "right" : "left"

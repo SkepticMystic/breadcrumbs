@@ -143,7 +143,7 @@ export async function waitForCache(plugin: BCPlugin) {
       basename = getCurrFile()?.basename;
     }
   } else {
-    await waitForResolvedLinks(app);
+    await waitForResolvedLinks();
   }
 }
 

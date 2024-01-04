@@ -75,6 +75,7 @@ function getObsMetadataCache(plugin: BCPlugin, files: TFile[]) {
   return frontms;
 }
 
+//@ts-ignore
 const isDVProxy = (item: RawValue) => typeof item.defaultComparator === "function"
 
 /**
@@ -88,6 +89,7 @@ function unproxy(item: RawValue) {
   while (queue.length) {
     const currItem = queue.shift();
 
+    //@ts-ignore
     if (isDVProxy(currItem)) queue.push(...currItem.values);
     else unproxied.push(currItem);
   }

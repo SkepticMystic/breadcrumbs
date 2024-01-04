@@ -88,7 +88,7 @@ export const JUGGL_CB_DEFAULTS: IJugglSettings = {
   layout: "force-directed",
   limit: 250,
   mergeEdges: true,
-  metaKeyHover: true,
+  // metaKeyHover: true,
   mode: "workspace",
   navigator: true,
   openWithShift: false,
