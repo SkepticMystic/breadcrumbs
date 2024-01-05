@@ -1,41 +1,52 @@
 import type { MultiGraph } from "graphology";
-import type { TFile } from "obsidian";
+import type { ListItemCache, TFile } from "obsidian";
 import { getDVBasename, getSettings } from "../../Utils/ObsidianUtils";
 import type { BCSettings, HierarchyNoteItem } from "../../interfaces";
 import { addEdgeIfNot, addNodesIfNot } from "../../Utils/graphUtils";
 import { getFieldInfo, getFields, getOppDir, getOppFields } from "../../Utils/HierUtils";
+import { BC_HIERARCHY_NOTE_NEXT, BC_HIERARCHY_NOTE_PREV } from "../../constants";
+
+// match a line that contains a node in the hierarchy
+const lineReg = new RegExp(/^\s*[+*-](?:\s+(?<field>.+?))?\s+\[\[(?<note>.+?)\]\]/);
 
 export async function getHierarchyNoteItems(file: TFile) {
-  const { listItems } = app.metadataCache.getFileCache(file);
+  const { listItems, frontmatter } = app.metadataCache.getFileCache(file);
   if (!listItems) return [];
 
-  const basename = getDVBasename(file)
+  const nextField: string | undefined = frontmatter[BC_HIERARCHY_NOTE_NEXT];
+  const prevField: string | undefined = frontmatter[BC_HIERARCHY_NOTE_PREV];
+
+  const basename = getDVBasename(file);
   const { hierarchyNoteIsParent } = getSettings();
 
   const lines = (await app.vault.cachedRead(file)).split("\n");
 
   const hierarchyNoteItems: HierarchyNoteItem[] = [];
 
-  const afterBulletReg = new RegExp(/\s*[+*-]\s(.*$)/);
-  const dropWikiLinksReg = new RegExp(/\[\[(.*?)\]\]/);
-  const fieldReg = new RegExp(/(.*?)\[\[.*?\]\]/);
+  // map from each parent to the last visited of its direct children
+  let prevItemInGroup: Record<number, {
+    item: ListItemCache;
+    note: string;
+  } | null> = {};
 
   for (const item of listItems) {
+    // ensure this list item is a valid node in the hierarchy
     const line = lines[item.position.start.line];
+    const results = lineReg.exec(line);
+    if (!results) continue;
+    const { field, note } = results.groups;
 
-    const afterBulletCurr = afterBulletReg.exec(line)[1];
-    const note = dropWikiLinksReg.exec(afterBulletCurr)[1];
-    let field = fieldReg.exec(afterBulletCurr)[1].trim() || null;
-
+    // add its parent using the provided field
+    // if no parent is found then add it to the root file if that setting is enabled
     const { parent } = item;
     if (parent >= 0) {
-      const parentNote = lines[parent];
-      const afterBulletParent = afterBulletReg.exec(parentNote)[1];
-      const dropWikiParent = dropWikiLinksReg.exec(afterBulletParent)[1];
+      const matches = lineReg.exec(lines[parent]);
+      if (!matches) continue;
+      const { note: parentNote } = matches.groups;
 
       hierarchyNoteItems.push({
         note,
-        parent: dropWikiParent,
+        parent: parentNote,
         field,
       });
     } else {
@@ -45,7 +56,32 @@ export async function getHierarchyNoteItems(file: TFile) {
         field,
       });
     }
+
+    // add the neighbours in the list
+    const prevItem = prevItemInGroup[item.parent];
+    if (prevItem) {
+      if (nextField) {
+        hierarchyNoteItems.push({
+          note: prevItem.note,
+          parent: note,
+          field: nextField,
+        });
+      }
+      if (prevField) {
+        hierarchyNoteItems.push({
+          note,
+          parent: prevItem.note,
+          field: prevField,
+        });
+      }
+    }
+
+    prevItemInGroup[item.parent] = {
+      item,
+      note,
+    };
   }
+
   return hierarchyNoteItems;
 }
 
