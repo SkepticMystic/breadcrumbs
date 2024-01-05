@@ -61,7 +61,7 @@ export class RelationSuggestor extends EditorSuggest<string> {
     const trig = plugin.settings.relSuggestorTrigger;
     const { start, end, editor } = context;
 
-    const replacement = suggestion + (isInsideYaml(app) ? ": " : ":: ") + '[[';
+    const replacement = suggestion + (isInsideYaml() ? ": " : ":: ") + '[[';
     editor.replaceRange(
       replacement,
       { ch: start.ch + 1 - trig.length, line: start.line },
