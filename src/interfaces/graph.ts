@@ -18,8 +18,7 @@ export type BreadcrumbsEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			// TODO: Flesh out the implied_kind type
-			implied_kind: string;
+			implied_kind: "opposite";
 	  }
 );
 

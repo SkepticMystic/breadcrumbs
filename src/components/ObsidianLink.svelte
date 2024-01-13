@@ -6,16 +6,18 @@
 	export let path: string;
 	export let resolved: boolean;
 	export let plugin: BreadcrumbsPlugin;
+
+	let no_ext = drop_ext(path);
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<span
+<a
 	class="internal-link"
 	class:is-unresolved={!resolved}
+	href={no_ext}
+	data-href={no_ext}
 	on:click={() => {
 		plugin.app.workspace.openLinkText(path, $active_file_store?.path ?? "");
 	}}
 >
-	{drop_ext(path)}
-</span>
+	{no_ext}
+</a>
