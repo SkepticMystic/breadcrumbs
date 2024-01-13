@@ -1,0 +1,10 @@
+/*
+
+Pre-tailwind compiled styles;
+Outputs to /styles.css, for Obsidian to use.
+
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
