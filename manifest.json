@@ -1,10 +1,11 @@
 {
-  "id": "breadcrumbs",
-  "name": "Breadcrumbs",
-  "version": "3.6.11",
-  "minAppVersion": "0.15.2",
-  "description": "Visualise & navigate your vault's structure",
-  "author": "SkepticMystic",
-  "authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
-  "isDesktopOnly": false
+	"id": "breadcrumbs",
+	"name": "Breadcrumbs",
+	"version": "4.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Add structured hierarchies to your notes",
+	"author": "SkepticMystic",
+	"authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
+	"fundingUrl": "https://ko-fi.com/skepticmystic",
+	"isDesktopOnly": false
 }
