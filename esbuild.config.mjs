@@ -1,7 +1,7 @@
-import esbuild from "esbuild";
-import process from "process";
 import builtins from "builtin-modules";
-import sveltePlugin from "esbuild-svelte";
+import esbuild from "esbuild";
+import esbuildSvelte from "esbuild-svelte";
+import process from "process";
 import sveltePreprocess from "svelte-preprocess";
 
 const banner = `/*
@@ -12,47 +12,46 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = process.argv[2] === "production";
 
-const context = await esbuild
-  .context({
-    banner: {
-      js: banner,
-    },
-    entryPoints: ["src/main.ts"],
-    mainFields: ["svelte", "browser", "module", "main"],
-    bundle: true,
-    external: [
-      "obsidian",
-      "electron",
-      "@codemirror/autocomplete",
-      "@codemirror/collab",
-      "@codemirror/commands",
-      "@codemirror/language",
-      "@codemirror/lint",
-      "@codemirror/search",
-      "@codemirror/state",
-      "@codemirror/view",
-      "@lezer/common",
-      "@lezer/highlight",
-      "@lezer/lr",
-      ...builtins,
-    ],
-    format: "cjs",
-    plugins: [
-      sveltePlugin({
-        compilerOptions: { css: true },
-        preprocess: sveltePreprocess(),
-      }),
-    ],
-    target: "es2018",
-    logLevel: "info",
-    sourcemap: prod ? false : "inline",
-    treeShaking: true,
-    outfile: "main.js",
-  })
+const context = await esbuild.context({
+	banner: {
+		js: banner,
+	},
+	// TODO: Update this entryPoint after moving main.ts to src/main.ts
+	entryPoints: ["main.ts"],
+	bundle: true,
+	external: [
+		"obsidian",
+		"electron",
+		"@codemirror/autocomplete",
+		"@codemirror/collab",
+		"@codemirror/commands",
+		"@codemirror/language",
+		"@codemirror/lint",
+		"@codemirror/search",
+		"@codemirror/state",
+		"@codemirror/view",
+		"@lezer/common",
+		"@lezer/highlight",
+		"@lezer/lr",
+		...builtins,
+	],
+	format: "cjs",
+	target: "es2018",
+	logLevel: "info",
+	sourcemap: prod ? false : "inline",
+	treeShaking: true,
+	outfile: "main.js",
+	plugins: [
+		esbuildSvelte({
+			compilerOptions: { css: true },
+			preprocess: sveltePreprocess(),
+		}),
+	],
+});
 
 if (prod) {
-  await context.rebuild();
-  process.exit(0);
+	await context.rebuild();
+	process.exit(0);
 } else {
-  await context.watch();
+	await context.watch();
 }

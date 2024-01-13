@@ -1,19 +1,23 @@
+# vscode
+.vscode 
+
 # Intellij
 *.iml
 .idea
 
 # npm
 node_modules
-package-lock.json
 
-# build
-*.js.map
+# Don't include the compiled main.js file in the repo.
+# They should be uploaded to GitHub releases instead.
+# TODO: Untrack main.js (I didn't originally ignore it)
+main.js
+
+# Exclude sourcemaps
+*.map
 
 # obsidian
 data.json
 
-# Tests
-
-*.received.*
-test/*.js
-src/**/*.js
+# Exclude macOS Finder (System Explorer) View States
+.DS_Store
