@@ -24,21 +24,52 @@ export const get_opposite_direction = (dir: Direction): Direction => {
 	}
 };
 
-export const get_opposite_fields = (
+export const get_field_hierarchy = (
 	hierarchies: Hierarchy[],
 	field: string
 ) => {
-	const opposite_fields: string[] = [];
+	let dir: Direction | null = null;
+	let fields: string[] | null = null;
+	let hierarchy_i: number | null = null;
 
-	for (const hierarchy of hierarchies) {
-		for (const dir of DIRECTIONS) {
-			const fields = hierarchy[dir];
+	outer: for (const [i, hierarchy] of hierarchies.entries()) {
+		for (const direction of DIRECTIONS) {
+			const hierarchy_fields = hierarchy[direction];
+			if (hierarchy_fields.includes(field)) {
+				dir = direction;
+				hierarchy_i = i;
+				fields = hierarchy_fields;
 
-			if (fields.includes(field)) {
-				opposite_fields.push(...hierarchy[get_opposite_direction(dir)]);
+				// We've found the hierarchy, so we can break out of both loops
+				break outer;
 			}
 		}
 	}
 
-	return opposite_fields;
+	if (hierarchy_i === null || dir === null || fields === null) {
+		return null;
+	}
+
+	return {
+		dir,
+		fields,
+		hierarchy_i,
+	};
+};
+
+export const get_opposite_fields = (
+	hierarchies: Hierarchy[],
+	field: string
+) => {
+	const field_hierarchy = get_field_hierarchy(hierarchies, field);
+
+	if (field_hierarchy) {
+		const { dir, hierarchy_i } = field_hierarchy;
+
+		const opposite_dir = get_opposite_direction(dir);
+
+		return hierarchies[hierarchy_i][opposite_dir];
+	}
+
+	return [];
 };

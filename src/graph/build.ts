@@ -1,7 +1,11 @@
 import { MultiGraph } from "graphology";
-import type BreadcrumbsPlugin from "src/main";
 import type { BreadcrumbsGraph } from "src/interfaces/graph";
-import { get_opposite_fields } from "src/utils/hierarchies";
+import type BreadcrumbsPlugin from "src/main";
+import {
+	get_field_hierarchy,
+	get_opposite_direction,
+	get_opposite_fields,
+} from "src/utils/hierarchies";
 
 /** "Extension" system. Takes in current state of plugin & graph, and adds to the graph */
 type GraphBuilder = (
@@ -10,13 +14,20 @@ type GraphBuilder = (
 ) => BreadcrumbsGraph;
 
 const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
-	// Add the source: "frontmatter:link" edges while we're here
-	const all_files = plugin.app.vault.getMarkdownFiles();
-
-	all_files.forEach((source_file) => {
+	plugin.app.vault.getMarkdownFiles().forEach((source_file) => {
 		const source_cache = plugin.app.metadataCache.getFileCache(source_file);
 
 		source_cache?.frontmatterLinks?.forEach((target_link) => {
+			const field = target_link.key;
+
+			const field_hierarchy = get_field_hierarchy(
+				plugin.settings.hierarchies,
+				field
+			);
+			if (!field_hierarchy) {
+				return console.log("No field hierarchy found for:", field);
+			}
+
 			const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				target_link.link,
 				source_file.path
@@ -25,8 +36,9 @@ const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
 			if (target_file) {
 				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
 				graph.addDirectedEdge(source_file.path, target_file.path, {
+					field,
 					explicit: true,
-					field: target_link.key,
+					dir: field_hierarchy.dir,
 					source: "frontmatter:link",
 				});
 			} else {
@@ -39,8 +51,9 @@ const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
 					source_file.path,
 					unresolved_target_path,
 					{
+						field,
 						explicit: true,
-						field: target_link.key,
+						dir: field_hierarchy.dir,
 						source: "frontmatter:link",
 					}
 				);
@@ -74,6 +87,7 @@ const add_implied_opposite: GraphBuilder = (graph, plugin) => {
 				explicit: false,
 				field: opposite_field,
 				implied_kind: "opposite",
+				dir: get_opposite_direction(attr.dir),
 			});
 		});
 
@@ -89,8 +103,6 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 
 	// Or should we rather add nodes as the come up?
 	all_files.forEach((file) => {
-		// Add all the nodes first
-		console.log("adding node:", file.path);
 		graph.addNode(file.path, { resolved: true });
 	});
 
@@ -101,7 +113,9 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	console.log("all nodes:", graph.nodes());
 	console.log(
 		"all edges:",
-		graph.mapEdges((_, attr, source, target) => `${source} -> ${target}`)
+		graph.mapEdges(
+			(_, _attr, source_id, target_id) => `${source_id} -> ${target_id}`
+		)
 	);
 	return graph;
 };
