@@ -1,5 +1,5 @@
 import { MultiGraph } from "graphology";
-import type BreadcrumbsPlugin from "main";
+import type BreadcrumbsPlugin from "src/main";
 import type { BreadcrumbsGraph } from "src/interfaces/graph";
 import { get_opposite_fields } from "src/utils/hierarchies";
 

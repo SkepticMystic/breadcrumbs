@@ -1,4 +1,4 @@
-import BreadcrumbsPlugin from "main";
+import BreadcrumbsPlugin from "src/main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import MatrixComponent from "src/components/Matrix.svelte";
 import { VIEW_IDS } from "src/const/views";

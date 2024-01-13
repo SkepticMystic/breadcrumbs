@@ -16,8 +16,7 @@ const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	// TODO: Update this entryPoint after moving main.ts to src/main.ts
-	entryPoints: ["main.ts"],
+	entryPoints: ["src/main.ts"],
 	bundle: true,
 	external: [
 		"obsidian",

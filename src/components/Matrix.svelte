@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type BreadcrumbsPlugin from "main";
+	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { drop_ext } from "src/utils/paths";
 

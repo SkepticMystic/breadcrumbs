@@ -8,7 +8,6 @@ import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
 
-// TODO: Move this to src/main.ts
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
 	graph!: BreadcrumbsGraph;

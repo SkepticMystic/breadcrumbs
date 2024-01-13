@@ -1,4 +1,4 @@
-import type BreadcrumbsPlugin from "main";
+import type BreadcrumbsPlugin from "src/main";
 import { App, PluginSettingTab } from "obsidian";
 import HierchySettings from "src/components/HierarchySettings.svelte";
 

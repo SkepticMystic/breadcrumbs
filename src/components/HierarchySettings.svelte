@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type BreadcrumbsPlugin from "main";
+	import type BreadcrumbsPlugin from "src/main";
 	import { ARROW_DIRECTIONS, DIRECTIONS } from "src/const/hierarchies";
 	import { swap_items } from "src/utils/arrays";
 	import { blank_hierarchy } from "src/utils/hierarchies";
