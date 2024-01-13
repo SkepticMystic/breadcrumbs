@@ -1,23 +1,26 @@
 import type { MultiGraph } from "graphology";
 
+type BreadcrumbsNodeAttributes = {
+	/** .md file exists  */
+	resolved: boolean;
+};
+
 type BreadcrumbsEdgeAttributes = {
-	// The "kind" of link (from user hierarchies)
+	/** The hierarchy field  */
 	field: string;
 } & (
 	| {
-			real: true;
+			explicit: true;
 			source: "frontmatter:link" | "dataview:inline";
 	  }
 	| {
-			real: false;
+			explicit: false;
 			// TODO: Flesh out the implied_kind type
 			implied_kind: string;
 	  }
 );
 
 export type BreadcrumbsGraph = MultiGraph<
-	// NodeAttributes
-	{},
-	// EdgeAttributes
+	BreadcrumbsNodeAttributes,
 	BreadcrumbsEdgeAttributes
 >;

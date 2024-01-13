@@ -30,7 +30,7 @@
 				<span>
 					{attr.field}:
 					<span class="internal-link">{drop_ext(target)}</span>
-					{attr.real ? "real" : "implied"}
+					{attr.explicit ? "real" : "implied"}
 				</span>
 			{/each}
 		</div>

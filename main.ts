@@ -1,7 +1,7 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
-import { rebuildGraph } from "src/graph/build";
+import { rebuild_graph } from "src/graph/build";
 import type { BreadcrumbsGraph } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
@@ -19,9 +19,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
-		// Stores
-		active_file_store.set(this.app.workspace.getActiveFile());
-
 		// Events
 		this.registerEvent(
 			this.app.workspace.on("file-open", async (file) => {
@@ -29,10 +26,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 			})
 		);
 
-		// NOTE: Build graph _before_ showing any views
-		// TESTING
-		this.graph = rebuildGraph(this);
-		// TESTING
+		this.app.workspace.onLayoutReady(() => {
+			// Stores
+			active_file_store.set(this.app.workspace.getActiveFile());
+
+			this.graph = rebuild_graph(this);
+		});
 
 		// Views
 		this.registerView(
@@ -48,6 +47,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// });
 
 		// Commands
+		this.addCommand({
+			id: "breadcrumbs:rebuild-graph",
+			name: "Rebuild graph",
+			callback: () => (this.graph = rebuild_graph(this)),
+		});
 		this.addCommand({
 			id: "breadcrumbs:open-matrix-view",
 			name: "Open matrix view",
