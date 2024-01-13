@@ -36,12 +36,12 @@
 						{@const out_edges = all_out_edges.filter(
 							(edge) =>
 								edge.attr.dir === dir &&
-								hierarchy[dir].includes(edge.attr.field),
+								hierarchy.dirs[dir].includes(edge.attr.field),
 						)}
 
 						<div class="flex flex-col gap-1">
 							<span class="text-lg font-semibold">
-								{hierarchy[dir].join(", ")}
+								{hierarchy.dirs[dir].join(", ")}
 							</span>
 
 							<div class="flex flex-col">

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type BreadcrumbsPlugin from "src/main";
 	import { ARROW_DIRECTIONS, DIRECTIONS } from "src/const/hierarchies";
+	import type BreadcrumbsPlugin from "src/main";
 	import { swap_items } from "src/utils/arrays";
 	import { blank_hierarchy } from "src/utils/hierarchies";
 	import { split_and_trim } from "src/utils/strings";
@@ -16,6 +16,7 @@
 	}
 </script>
 
+<!-- TODO: Add in implied_relationships editor -->
 <div>
 	<div class="BC-Buttons">
 		<button
@@ -48,7 +49,7 @@
 			<details class="BC-Hier-Details">
 				<summary>
 					<span>
-						{DIRECTIONS.map((dir) => hier[dir].join(", "))
+						{DIRECTIONS.map((dir) => hier.dirs[dir].join(", "))
 							.map((fields) => `(${fields})`)
 							.join(" ")}
 					</span>
@@ -99,9 +100,9 @@
 								type="text"
 								size="20"
 								name={dir}
-								value={hier[dir]?.join(", ") ?? ""}
+								value={hier.dirs[dir]?.join(", ") ?? ""}
 								on:change={async (e) => {
-									hierarchies[i][dir] = split_and_trim(
+									hierarchies[i].dirs[dir] = split_and_trim(
 										e.currentTarget.value,
 									);
 

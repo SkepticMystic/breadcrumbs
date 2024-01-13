@@ -1,17 +1,8 @@
 import { MultiGraph } from "graphology";
-import type { BreadcrumbsGraph } from "src/interfaces/graph";
+import type { BreadcrumbsGraph, GraphBuilder } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import {
-	get_field_hierarchy,
-	get_opposite_direction,
-	get_opposite_fields,
-} from "src/utils/hierarchies";
-
-/** "Extension" system. Takes in current state of plugin & graph, and adds to the graph */
-type GraphBuilder = (
-	graph: BreadcrumbsGraph,
-	plugin: BreadcrumbsPlugin
-) => BreadcrumbsGraph;
+import { get_field_hierarchy } from "src/utils/hierarchies";
+import { implied_relationships } from "./implied_relationships";
 
 const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
 	plugin.app.vault.getMarkdownFiles().forEach((source_file) => {
@@ -40,6 +31,7 @@ const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
 					explicit: true,
 					dir: field_hierarchy.dir,
 					source: "frontmatter:link",
+					hierarchy_i: field_hierarchy.hierarchy_i,
 				});
 			} else {
 				// It's an unresolved link, so we add a node for it
@@ -55,41 +47,12 @@ const add_frontmatter_links: GraphBuilder = (graph, plugin) => {
 						explicit: true,
 						dir: field_hierarchy.dir,
 						source: "frontmatter:link",
+						hierarchy_i: field_hierarchy.hierarchy_i,
 					}
 				);
 			}
 		});
 	});
-
-	return graph;
-};
-
-const add_implied_opposite: GraphBuilder = (graph, plugin) => {
-	// NOTE: Rather than directly forEachOutEdge, we map over them to "freeze" the existing ones, then add edges (to avoid infite loop)
-	graph
-		.mapOutEdges((_edge_id, attr, source, target) => ({
-			attr,
-			source,
-			target,
-		}))
-		.forEach(({ attr, source, target }) => {
-			const opposite_field = get_opposite_fields(
-				plugin.settings.hierarchies,
-				attr.field
-			).at(0);
-
-			if (!opposite_field) {
-				console.log("No opposite field found for:", attr.field);
-				return;
-			}
-
-			graph.addDirectedEdge(target, source, {
-				explicit: false,
-				field: opposite_field,
-				implied_kind: "opposite",
-				dir: get_opposite_direction(attr.dir),
-			});
-		});
 
 	return graph;
 };
@@ -108,7 +71,11 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 
 	add_frontmatter_links(graph, plugin);
 
-	add_implied_opposite(graph, plugin);
+	// Implied relationships
+	Object.entries(implied_relationships).forEach(([kind, fn]) => {
+		console.log("Running implied_relationship:", kind);
+		fn(graph, plugin);
+	});
 
 	console.log("all nodes:", graph.nodes());
 	console.log(

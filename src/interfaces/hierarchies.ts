@@ -1,3 +1,9 @@
-import type { DIRECTIONS, Direction } from "src/const/hierarchies";
+import type { Direction } from "src/const/hierarchies";
 
-export type Hierarchy = Record<Direction, string[]>;
+export type Hierarchy = {
+	dirs: Record<Direction, string[]>;
+	implied_relationships: {
+		self_is_sibling: boolean;
+		opposite_direction: boolean;
+	};
+};

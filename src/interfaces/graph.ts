@@ -1,5 +1,7 @@
 import type { MultiGraph } from "graphology";
 import type { Direction } from "src/const/hierarchies";
+import type BreadcrumbsPlugin from "src/main";
+import type { Hierarchy } from "./hierarchies";
 
 export type BreadcrumbsNodeAttributes = {
 	/** .md file exists  */
@@ -7,10 +9,12 @@ export type BreadcrumbsNodeAttributes = {
 };
 
 export type BreadcrumbsEdgeAttributes = {
-	/** The hierarchy field  */
-	field: string;
+	/** The hierarchy index */
+	hierarchy_i: number;
 	/** The direction of the field in the hierarchy */
 	dir: Direction;
+	/** The hierarchy field  */
+	field: string;
 } & (
 	| {
 			explicit: true;
@@ -18,7 +22,7 @@ export type BreadcrumbsEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			implied_kind: "opposite";
+			implied_kind: keyof Hierarchy["implied_relationships"];
 	  }
 );
 
@@ -26,6 +30,12 @@ export type BreadcrumbsGraph = MultiGraph<
 	BreadcrumbsNodeAttributes,
 	BreadcrumbsEdgeAttributes
 >;
+
+/** "Extension" system. Takes in current state of plugin & graph, and adds to the graph */
+export type GraphBuilder = (
+	graph: BreadcrumbsGraph,
+	plugin: BreadcrumbsPlugin
+) => BreadcrumbsGraph;
 
 export type GraphNode = {
 	id: string;
