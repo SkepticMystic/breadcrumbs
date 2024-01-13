@@ -1,4 +1,10 @@
-import { TFile } from "obsidian";
+import { App, TFile } from "obsidian";
 import { writable } from "svelte/store";
 
-export const active_file_store = writable<TFile | null>(null);
+const store = writable<TFile | null>(null);
+
+export const active_file_store = {
+	...store,
+
+	refresh: (app: App) => store.set(app.workspace.getActiveFile()),
+};

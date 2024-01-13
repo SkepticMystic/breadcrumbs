@@ -26,8 +26,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		);
 
 		this.app.workspace.onLayoutReady(() => {
-			// Stores
-			active_file_store.set(this.app.workspace.getActiveFile());
+			active_file_store.refresh(this.app);
 
 			this.graph = rebuild_graph(this);
 		});
@@ -38,18 +37,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 			(leaf) => new MatrixView(leaf, this)
 		);
 
-		/// Redraw any open views, now that the graph is built and views are registered
-		// const all_views = this.app.workspace.getLeavesOfType(VIEW_IDS.matrix);
-
-		// all_views.forEach((view) => {
-		// 	view.open();
-		// });
-
 		// Commands
 		this.addCommand({
 			id: "breadcrumbs:rebuild-graph",
 			name: "Rebuild graph",
-			callback: () => (this.graph = rebuild_graph(this)),
+			callback: () => {
+				active_file_store.refresh(this.app);
+
+				this.graph = rebuild_graph(this);
+			},
 		});
 		this.addCommand({
 			id: "breadcrumbs:open-matrix-view",
