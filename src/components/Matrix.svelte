@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { drop_ext } from "src/utils/paths";
+	import ObsidianLink from "./ObsidianLink.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -12,9 +12,17 @@
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.graph.mapOutEdges(
 					$active_file_store.path,
-					(_edge_id, attr, _source_id, target_id) => ({
+					(
+						_edge_id,
+						attr,
+						_source_id,
+						target_id,
+						_source_attr,
+						target_attr,
+					) => ({
 						attr,
 						target_id,
+						target_attr,
 					}),
 				)
 			: [];
@@ -25,22 +33,14 @@
 <div class="markdown-rendered">
 	{#if out_edges.length}
 		<div id="bc-matrix-items">
-			{#each out_edges as { attr, target_id }}
+			{#each out_edges as { attr, target_id, target_attr }}
 				<span>
-					{attr.field}:
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<span
-						class="internal-link"
-						on:click={() => {
-							plugin.app.workspace.openLinkText(
-								target_id,
-								$active_file_store?.path ?? "",
-							);
-						}}
-					>
-						{drop_ext(target_id)}
-					</span>
+					<span class="font-semibold">{attr.field}</span>:
+					<ObsidianLink
+						{plugin}
+						path={target_id}
+						resolved={target_attr.resolved}
+					/>
 					{attr.explicit ? "real" : "implied"}
 				</span>
 			{/each}
