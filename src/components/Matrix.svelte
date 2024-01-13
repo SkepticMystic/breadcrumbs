@@ -11,11 +11,10 @@
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.graph.mapOutEdges(
-					$active_file_store?.path,
-					(_edge_id, attr, source, target) => ({
+					$active_file_store.path,
+					(_edge_id, attr, _source_id, target_id) => ({
 						attr,
-						source,
-						target,
+						target_id,
 					}),
 				)
 			: [];
@@ -26,10 +25,22 @@
 <div class="markdown-rendered">
 	{#if out_edges.length}
 		<div id="bc-matrix-items">
-			{#each out_edges as { attr, target }}
+			{#each out_edges as { attr, target_id }}
 				<span>
 					{attr.field}:
-					<span class="internal-link">{drop_ext(target)}</span>
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<span
+						class="internal-link"
+						on:click={() => {
+							plugin.app.workspace.openLinkText(
+								target_id,
+								$active_file_store?.path ?? "",
+							);
+						}}
+					>
+						{drop_ext(target_id)}
+					</span>
 					{attr.explicit ? "real" : "implied"}
 				</span>
 			{/each}
