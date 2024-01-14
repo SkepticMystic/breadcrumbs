@@ -9,6 +9,7 @@ import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
 import { dataview_plugin } from "./external/dataview";
 import { migrate_old_settings } from "./settings/migration";
+import { draw_page_views_on_active_note } from "./views/page";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	graph!: BreadcrumbsGraph;
@@ -29,6 +30,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-open", async (file) => {
 				active_file_store.set(file);
+
+				draw_page_views_on_active_note(this);
+
 			})
 		);
 

@@ -1,4 +1,5 @@
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import { blank_hierarchy } from "src/utils/hierarchies";
 
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	hierarchies: [
@@ -10,10 +11,18 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				next: ["next"],
 				prev: ["prev"],
 			},
-			implied_relationships: {
-				opposite_direction: true,
-				self_is_sibling: false,
-			},
+			implied_relationships: blank_hierarchy().implied_relationships,
 		},
 	],
+
+	views: {
+		page: {
+			trail: {
+				enabled: true,
+			},
+		},
+		side: {
+			matrix: {},
+		},
+	},
 };

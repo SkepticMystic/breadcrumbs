@@ -4,6 +4,7 @@ import type {
 	GraphEdge,
 } from "src/interfaces/graph";
 
+/** Wraps the arguments of a graphology.EdgeIterator callback into an object */
 export const objectify_edge_mapper =
 	<R>(
 		cb: (edge: GraphEdge) => R
