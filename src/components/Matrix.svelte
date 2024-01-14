@@ -53,7 +53,12 @@
 											resolved={target_attr.resolved}
 										/>
 
-										<span class="font-mono">
+										<span
+											class="font-mono"
+											aria-label={attr.explicit
+												? attr.source
+												: attr.implied_kind}
+										>
 											({attr.explicit ? "x" : "i"})
 										</span>
 									</div>
