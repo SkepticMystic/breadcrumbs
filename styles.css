@@ -45,6 +45,10 @@ Outputs to /styles.css, for Obsidian to use.
   display: flex
 }
 
+.grid {
+  display: grid
+}
+
 .flex-col {
   flex-direction: column
 }

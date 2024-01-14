@@ -29,10 +29,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// Events
 		this.registerEvent(
 			this.app.workspace.on("file-open", async (file) => {
+				console.log("file-open");
+
 				active_file_store.set(file);
 
+				// FIXME: This sometimes triggers before the graph is ready
 				draw_page_views_on_active_note(this);
-
 			})
 		);
 
@@ -49,20 +51,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				(leaf) => new MatrixView(leaf, this)
 			);
 
-			// console.log("Test traversal");
-
-			// const path_upwards: Partial<GraphEdge>[] = [];
-
-			// traverse_graph.depth_first(
-			// 	this.graph,
-			// 	get(active_file_store)?.path!,
-			// 	({ source_id, target_id, attr }) => {
-			// 		path_upwards.push({ source_id, target_id, attr });
-			// 	},
-			// 	(e) => e.attr.dir === "up"
-			// );
-
-			// console.log(path_upwards);
+			draw_page_views_on_active_note(this);
 		});
 
 		// Commands
@@ -95,6 +84,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 	/** Refresh active_file_store, then rebuild_graph */
 	refresh() {
+		console.log("bc.refresh");
+
 		const start_ms = Date.now();
 
 		const notice = new Notice("Rebuilding graph");

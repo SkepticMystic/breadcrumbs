@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 
 	views: {
 		page: {
-			trail: {
+			grid: {
 				enabled: true,
 			},
 		},

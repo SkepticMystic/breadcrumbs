@@ -5,7 +5,7 @@ export interface BreadcrumbsSettings {
 
 	views: {
 		page: {
-			trail: {
+			grid: {
 				enabled: boolean;
 			};
 		};
