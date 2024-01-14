@@ -31,7 +31,7 @@
 	{#key all_out_edges}
 		<div class="flex flex-col">
 			{#each plugin.settings.hierarchies as hierarchy}
-				<div class="border flex flex-col gap-4 p-2">
+				<div class="flex flex-col gap-4 p-2">
 					{#each DIRECTIONS as dir}
 						{@const out_edges = all_out_edges.filter(
 							(edge) =>
@@ -62,6 +62,8 @@
 						</div>
 					{/each}
 				</div>
+
+				<hr />
 			{/each}
 		</div>
 	{/key}

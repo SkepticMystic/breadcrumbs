@@ -9,10 +9,15 @@ export const blank_hierarchy = (): Hierarchy => ({
 		next: [""],
 		prev: [""],
 	},
+	// NOTE: In a "blank" hierarchy, should everything be off, or should it be reasonable defaults?
 	implied_relationships: {
-		self_is_sibling: false,
-		// TODO: In a "blank" hierarchy, should everything be off, or should it be reasonable defaults?
 		opposite_direction: true,
+		self_is_sibling: false,
+		parents_sibling_is_parent: false,
+		cousing_is_sibling: false,
+		same_parent_is_sibling: false,
+		same_sibling_is_sibling: false,
+		siblings_parent_is_parent: false,
 	},
 });
 

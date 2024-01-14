@@ -13,6 +13,7 @@
 <a
 	class="internal-link"
 	class:is-unresolved={!resolved}
+	class:BC-active-note={$active_file_store?.path === path}
 	href={no_ext}
 	data-href={no_ext}
 	on:click={() => {

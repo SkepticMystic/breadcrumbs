@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ARROW_DIRECTIONS, DIRECTIONS } from "src/const/hierarchies";
 	import type BreadcrumbsPlugin from "src/main";
+	import { ImpliedRelationshipsSettingsModal } from "src/modals/ImpliedRelationshipsSettingsModal";
 	import { swap_items } from "src/utils/arrays";
 	import { blank_hierarchy } from "src/utils/hierarchies";
 	import { split_and_trim } from "src/utils/strings";
@@ -16,7 +17,6 @@
 	}
 </script>
 
-<!-- TODO: Add in implied_relationships editor -->
 <div>
 	<div class="BC-Buttons">
 		<button
@@ -85,6 +85,19 @@
 							}}
 						>
 							X
+						</button>
+
+						<button
+							aria-label="Hierarchy Settings"
+							on:click={async () => {
+								new ImpliedRelationshipsSettingsModal(
+									plugin.app,
+									plugin,
+									i,
+								).open();
+							}}
+						>
+							S
 						</button>
 					</span>
 				</summary>

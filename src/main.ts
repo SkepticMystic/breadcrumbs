@@ -7,12 +7,11 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
-import type { Hierarchy } from "./interfaces/hierarchies";
-import { blank_hierarchy } from "./utils/hierarchies";
+import { migrate_old_settings } from "./settings/migration";
 
 export default class BreadcrumbsPlugin extends Plugin {
-	settings!: BreadcrumbsSettings;
 	graph!: BreadcrumbsGraph;
+	settings!: BreadcrumbsSettings;
 
 	async onload() {
 		console.log("loading breadcrumbs");
@@ -21,21 +20,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		await this.loadSettings();
 
 		/// Migrations
-
-		// Hierarchies used to just be the Record<Direction, string[]>, but now that's wrapped in an object
-		if (
-			this.settings.hierarchies.at(0) &&
-			this.settings.hierarchies.at(0)!.dirs === undefined
-		) {
-			this.settings.hierarchies = this.settings.hierarchies.map(
-				(hierarchy) => ({
-					...blank_hierarchy(),
-					dirs: hierarchy as unknown as Hierarchy["dirs"],
-				})
-			);
-
-			await this.saveSettings();
-		}
+		await migrate_old_settings(this);
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
