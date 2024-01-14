@@ -8,3 +8,8 @@ export const swap_items = <T>(i: number, j: number, arr: T[]) => {
 
 	return arr;
 };
+
+export const ensure_array = <T>(maybe_array: T | T[]): T[] => {
+	if (Array.isArray(maybe_array)) return maybe_array;
+	return [maybe_array];
+};

@@ -1,7 +1,7 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
-import { rebuild_graph } from "src/graph/build";
+import { rebuild_graph } from "src/graph/builders";
 import type { BreadcrumbsGraph } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
@@ -91,13 +91,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 	/** Refresh active_file_store, then rebuild_graph */
 	refresh() {
-		console.log("bc.refresh");
+		const start_ms = Date.now();
+
+		const notice = new Notice("Rebuilding graph");
 
 		// Rebuild the graph
 		this.graph = rebuild_graph(this);
 
 		// _Then_ react
 		active_file_store.refresh(this.app);
+
+		const duration_ms = Date.now() - start_ms;
+		notice.setMessage(`Done in ${duration_ms}ms`);
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views

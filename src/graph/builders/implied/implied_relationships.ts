@@ -4,7 +4,7 @@ import {
 	fallback_field_format,
 	get_opposite_direction,
 } from "src/utils/hierarchies";
-import { objectify_edge_mapper } from "./objectify_mappers";
+import { objectify_edge_mapper } from "../../objectify_mappers";
 
 const opposite_direction: GraphBuilder = (graph, plugin) => {
 	// NOTE: Rather than directly forEachOutEdge, we map over them to "freeze" the existing ones, then add edges (to avoid infite loop)
@@ -60,7 +60,7 @@ const self_is_sibling: GraphBuilder = (graph, plugin) => {
 	return graph;
 };
 
-export const implied_relationships: Record<
+export const add_implied_relationships: Record<
 	keyof Hierarchy["implied_relationships"],
 	GraphBuilder
 > = {

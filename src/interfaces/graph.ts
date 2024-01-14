@@ -18,7 +18,7 @@ export type BreadcrumbsEdgeAttributes = {
 } & (
 	| {
 			explicit: true;
-			source: "frontmatter:link" | "dataview:inline";
+			source: "frontmatter_link" | "dataview_inline";
 	  }
 	| {
 			explicit: false;
