@@ -62,7 +62,6 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	const graph: BreadcrumbsGraph = new MultiGraph();
 
 	const all_files = plugin.app.vault.getMarkdownFiles();
-	console.log("all_files:", all_files);
 
 	// Or should we rather add nodes as the come up?
 	all_files.forEach((file) => {
@@ -73,16 +72,15 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 
 	// Implied relationships
 	Object.entries(implied_relationships).forEach(([kind, fn]) => {
-		console.log("Running implied_relationship:", kind);
 		fn(graph, plugin);
 	});
 
-	console.log("all nodes:", graph.nodes());
-	console.log(
-		"all edges:",
-		graph.mapEdges(
-			(_, _attr, source_id, target_id) => `${source_id} -> ${target_id}`
-		)
-	);
+	// console.log("all nodes:", graph.nodes());
+	// console.log(
+	// 	"all edges:",
+	// 	graph.mapEdges(
+	// 		(_, _attr, source_id, target_id) => `${source_id} -> ${target_id}`
+	// 	)
+	// );
 	return graph;
 };

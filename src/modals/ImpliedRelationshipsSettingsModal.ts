@@ -1,7 +1,5 @@
 import { App, MarkdownRenderer, Modal, Setting } from "obsidian";
-import { rebuild_graph } from "src/graph/build";
 import type BreadcrumbsPlugin from "src/main";
-import { active_file_store } from "src/stores/active_file";
 
 export class ImpliedRelationshipsSettingsModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -39,8 +37,7 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		const save = async () => {
 			await plugin.saveSettings();
 
-			plugin.graph = rebuild_graph(plugin);
-			active_file_store.refresh(this.app);
+			plugin.refresh();
 		};
 
 		new Setting(contentEl)

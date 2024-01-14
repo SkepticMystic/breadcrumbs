@@ -7,6 +7,7 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
+import { dataview_plugin } from "./external/dataview";
 import { migrate_old_settings } from "./settings/migration";
 
 export default class BreadcrumbsPlugin extends Plugin {
@@ -31,28 +32,42 @@ export default class BreadcrumbsPlugin extends Plugin {
 			})
 		);
 
-		this.app.workspace.onLayoutReady(() => {
-			active_file_store.refresh(this.app);
+		this.app.workspace.onLayoutReady(async () => {
+			console.log("onLayoutReady");
 
-			this.graph = rebuild_graph(this);
+			await dataview_plugin.await_if_enabled(this);
+
+			this.refresh();
+
+			// Views
+			this.registerView(
+				VIEW_IDS.matrix,
+				(leaf) => new MatrixView(leaf, this)
+			);
+
+			// console.log("Test traversal");
+
+			// const path_upwards: Partial<GraphEdge>[] = [];
+
+			// traverse_graph.depth_first(
+			// 	this.graph,
+			// 	get(active_file_store)?.path!,
+			// 	({ source_id, target_id, attr }) => {
+			// 		path_upwards.push({ source_id, target_id, attr });
+			// 	},
+			// 	(e) => e.attr.dir === "up"
+			// );
+
+			// console.log(path_upwards);
 		});
-
-		// Views
-		this.registerView(
-			VIEW_IDS.matrix,
-			(leaf) => new MatrixView(leaf, this)
-		);
 
 		// Commands
 		this.addCommand({
 			id: "breadcrumbs:rebuild-graph",
 			name: "Rebuild graph",
-			callback: () => {
-				active_file_store.refresh(this.app);
-
-				this.graph = rebuild_graph(this);
-			},
+			callback: () => this.refresh(),
 		});
+
 		this.addCommand({
 			id: "breadcrumbs:open-matrix-view",
 			name: "Open matrix view",
@@ -72,6 +87,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	/** Refresh active_file_store, then rebuild_graph */
+	refresh() {
+		console.log("bc.refresh");
+
+		// Rebuild the graph
+		this.graph = rebuild_graph(this);
+
+		// _Then_ react
+		active_file_store.refresh(this.app);
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
