@@ -2,6 +2,7 @@ import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
 	BreadcrumbsEdgeAttributes,
+	BreadcrumbsNodeAttributes,
 	GraphBuilder,
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
@@ -25,6 +26,14 @@ const frontmatter_link: GraphBuilder = (graph, plugin) => {
 	// Then add the edges
 	all_files.forEach((source_file) => {
 		const source_cache = plugin.app.metadataCache.getFileCache(source_file);
+
+		// Add aliases to existing nodes
+		const aliases = source_cache?.frontmatter?.aliases as
+			| string[]
+			| undefined;
+		if (aliases) {
+			graph.setNodeAttribute(source_file.path, "aliases", aliases);
+		}
 
 		source_cache?.frontmatterLinks?.forEach((target_link) => {
 			// Using the List type of properties, the field is returned as <field>.<index>
@@ -89,7 +98,10 @@ const dataview_inline: GraphBuilder = (graph, plugin) => {
 
 	// First add all nodes
 	pages.forEach((page) => {
-		graph.addNode(page.file.path, { resolved: true });
+		const attr: BreadcrumbsNodeAttributes = { resolved: true };
+		if (page.aliases) attr.aliases = page.aliases;
+
+		graph.addNode(page.file.path, attr);
 	});
 
 	// Then add the edges

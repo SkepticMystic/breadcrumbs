@@ -6,6 +6,7 @@ import type { Hierarchy } from "./hierarchies";
 export type BreadcrumbsNodeAttributes = {
 	/** .md file exists  */
 	resolved: boolean;
+	aliases?: string[];
 };
 
 export type BreadcrumbsEdgeAttributes = {
@@ -34,7 +35,7 @@ export type BreadcrumbsGraph = MultiGraph<
 /** "Extension" system. Takes in current state of plugin & graph, and adds to the graph */
 export type GraphBuilder = (
 	graph: BreadcrumbsGraph,
-	plugin: BreadcrumbsPlugin
+	plugin: BreadcrumbsPlugin,
 ) => BreadcrumbsGraph;
 
 export type GraphNode = {
