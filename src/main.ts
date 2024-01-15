@@ -1,3 +1,4 @@
+import { MultiGraph } from "graphology";
 import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -10,7 +11,6 @@ import { MatrixView } from "src/views/matrix";
 import { dataview_plugin } from "./external/dataview";
 import { migrate_old_settings } from "./settings/migration";
 import { draw_page_views_on_active_note } from "./views/page";
-import { MultiGraph } from "graphology";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -27,24 +27,23 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
-		// Events
-		this.registerEvent(
-			this.app.workspace.on("file-open", async (file) => {
-				console.log("file-open");
-
-				active_file_store.set(file);
-
-				// FIXME: This sometimes triggers before the graph is ready
-				draw_page_views_on_active_note(this);
-			}),
-		);
-
 		this.app.workspace.onLayoutReady(async () => {
 			console.log("onLayoutReady");
 
 			await dataview_plugin.await_if_enabled(this);
 
 			this.refresh();
+
+			// Events
+			this.registerEvent(
+				this.app.workspace.on("file-open", async (file) => {
+					console.log("file-open");
+
+					active_file_store.set(file);
+
+					draw_page_views_on_active_note(this);
+				}),
+			);
 
 			// Views
 			this.registerView(
