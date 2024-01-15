@@ -50,8 +50,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 				VIEW_IDS.matrix,
 				(leaf) => new MatrixView(leaf, this),
 			);
-
-			draw_page_views_on_active_note(this);
 		});
 
 		// Commands
@@ -95,6 +93,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// _Then_ react
 		active_file_store.refresh(this.app);
+
+		draw_page_views_on_active_note(this);
 
 		const duration_ms = Date.now() - start_ms;
 		notice.setMessage(`Done in ${duration_ms}ms`);

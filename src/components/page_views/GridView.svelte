@@ -8,17 +8,24 @@
 		gather_by_runs,
 		transpose,
 	} from "src/utils/arrays";
-	import { Path } from "src/utils/paths";
 
 	export let plugin: BreadcrumbsPlugin;
 
 	const paths = $active_file_store
-		? traverse_graph.get_traversal_paths(
-				traverse_graph.depth_first,
-				plugin.graph,
-				$active_file_store.path,
-				(e) => e.attr.dir === "up",
-			)
+		? plugin.settings.hierarchies
+				.map((_hierarchy, i) =>
+					traverse_graph.get_traversal_paths(
+						traverse_graph.depth_first,
+						plugin.graph,
+						$active_file_store!.path,
+						(edge) =>
+							edge.attr.dir === "up" &&
+							// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
+							edge.attr.hierarchy_i === i,
+					),
+				)
+				.flat()
+				.sort((a, b) => b.length - a.length)
 		: [];
 
 	const reversed = paths.map((path) => [...path].reverse());
