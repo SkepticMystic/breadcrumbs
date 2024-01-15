@@ -11,9 +11,9 @@ type Traverser = (
 	start_node: string,
 	callback: (
 		current_stack_item: StackItem,
-		filtered_out_edges: GraphEdge[]
+		filtered_out_edges: GraphEdge[],
 	) => void,
-	edge_filter?: (edge: GraphEdge) => boolean
+	edge_filter?: (edge: GraphEdge) => boolean,
 ) => void;
 
 const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
@@ -24,7 +24,7 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	const stack: StackItem[] = graph
 		.mapOutEdges(
 			start_node,
-			objectify_edge_mapper((e) => e)
+			objectify_edge_mapper((e) => e),
 		)
 		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)))
 		.map((edge) => ({
@@ -37,7 +37,6 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	while (stack.length > 0) {
 		const stack_item = stack.pop()!;
 		const current_edge = stack_item.path.last()!;
-		console.log("current_edge:", stringify_edge(current_edge));
 
 		if (visited.has(current_edge.id)) continue;
 		else visited.add(current_edge.id);
@@ -45,10 +44,10 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 		const filtered_out_edges = graph
 			.mapOutEdges(
 				current_edge.target_id,
-				objectify_edge_mapper((e) => e)
+				objectify_edge_mapper((e) => e),
 			)
 			.filter(
-				(e) => !is_self_loop(e) && (!edge_filter || edge_filter(e))
+				(e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)),
 			);
 
 		// Act on the current stack item
@@ -66,7 +65,7 @@ const get_traversal_paths = (
 	traverser: Traverser,
 	graph: BreadcrumbsGraph,
 	start_node: string,
-	edge_filter?: (edge: GraphEdge) => boolean
+	edge_filter?: (edge: GraphEdge) => boolean,
 ) => {
 	const paths: GraphEdge[][] = [];
 
@@ -75,11 +74,10 @@ const get_traversal_paths = (
 		start_node,
 		({ path }, filtered_out_edges) => {
 			if (!filtered_out_edges.length) {
-				console.log("pushing path", path);
 				paths.push(path);
 			}
 		},
-		edge_filter
+		edge_filter,
 	);
 
 	return paths;

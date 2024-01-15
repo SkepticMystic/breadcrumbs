@@ -6,7 +6,7 @@ import type {
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { ensure_ext } from "src/utils/paths";
+import { Path } from "src/utils/paths";
 
 const frontmatter_link: GraphBuilder = (graph, plugin) => {
 	// NOTE: Dataview handles it's own links _and_ frontmatter links
@@ -34,16 +34,16 @@ const frontmatter_link: GraphBuilder = (graph, plugin) => {
 
 			const field_hierarchy = get_field_hierarchy(
 				plugin.settings.hierarchies,
-				field
+				field,
 			);
 			if (!field_hierarchy) {
 				return console.log("No field hierarchy found for:", field);
 			}
 
-			const target_path = ensure_ext(target_link.link, ".md");
+			const target_path = Path.ensure_ext(target_link.link, ".md");
 			const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				target_path,
-				source_file.path
+				source_file.path,
 			);
 
 			if (target_file) {
@@ -84,7 +84,6 @@ const dataview_inline: GraphBuilder = (graph, plugin) => {
 		console.warn("Dataview API not found");
 		return graph;
 	}
-	console.log("dataview_api", dataview_api);
 
 	const pages = dataview_api.pages().values as IDataview.Page[];
 
@@ -104,21 +103,23 @@ const dataview_inline: GraphBuilder = (graph, plugin) => {
 
 			const field_hierarchy = get_field_hierarchy(
 				plugin.settings.hierarchies,
-				field
+				field,
 			);
 			if (!field_hierarchy) {
 				return console.log("No field hierarchy found for:", field);
 			}
 
 			// page[field]: Link | Link[]
-			const target_links = ensure_is_array(page[field]) as IDataview.Link[];
+			const target_links = ensure_is_array(
+				page[field],
+			) as IDataview.Link[];
 
 			target_links.forEach((target_link) => {
-				const target_path = ensure_ext(target_link.path, ".md");
+				const target_path = Path.ensure_ext(target_link.path, ".md");
 				const target_file =
 					plugin.app.metadataCache.getFirstLinkpathDest(
 						target_path,
-						source_file.path
+						source_file.path,
 					);
 
 				if (target_file) {

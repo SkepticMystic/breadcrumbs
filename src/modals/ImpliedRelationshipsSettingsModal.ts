@@ -29,7 +29,6 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 
 		const render_mermaid_diagram = (diagram_string: string) => {
 			const code = "```mermaid\n" + diagram_string + "\n```";
-			console.log("rendering mermaid diagram", code);
 
 			MarkdownRenderer.render(this.app, code, contentEl, "", plugin);
 		};
@@ -50,18 +49,18 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.self_is_sibling = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
-      Me -.->|same| Me`
+      Me -.->|same| Me`,
 		);
 
 		new Setting(contentEl)
 			.setName("Opposite Direction")
 			.setDesc(
-				"An explicit relationship in one direction implies the opposite direction."
+				"An explicit relationship in one direction implies the opposite direction.",
 			)
 			.addToggle((tg) =>
 				tg
@@ -70,13 +69,13 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.opposite_direction = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
       A -->|up| B
-      B -.->|down| A`
+      B -.->|down| A`,
 		);
 
 		new Setting(contentEl)
@@ -89,14 +88,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.same_parent_is_sibling = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
       Me -->|up| Dad
       Sister -->|up| Dad
-      Me <-.->|same| Sister`
+      Me <-.->|same| Sister`,
 		);
 
 		new Setting(contentEl)
@@ -109,14 +108,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.same_sibling_is_sibling = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
       Me -->|same| Sister
       Me -->|same| Brother
-      Sister <-.->|same| Brother`
+      Sister <-.->|same| Brother`,
 		);
 
 		new Setting(contentEl)
@@ -129,14 +128,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.siblings_parent_is_parent = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
       Sister -->|up| Dad
       Sister <-->|same| Me
-      Me -.->|up| Dad`
+      Me -.->|up| Dad`,
 		);
 
 		new Setting(contentEl)
@@ -149,14 +148,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.parents_sibling_is_parent = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
 			`flowchart LR
       Me -->|up| Dad
       Dad -->|same| Uncle
-      Me -.->|up| Uncle`
+      Me -.->|up| Uncle`,
 		);
 
 		new Setting(contentEl)
@@ -169,7 +168,7 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 						implied_relationships.cousing_is_sibling = val;
 
 						await save();
-					})
+					}),
 			);
 
 		render_mermaid_diagram(
@@ -177,7 +176,7 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       Me -->|up| Dad
       Dad -->|same| Uncle
       Uncle -->|down| Cousin
-      Me <-.->|same| Cousin`
+      Me <-.->|same| Cousin`,
 		);
 
 		new Setting(contentEl).addButton((btn) =>
@@ -186,7 +185,7 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					this.close();
-				})
+				}),
 		);
 	}
 

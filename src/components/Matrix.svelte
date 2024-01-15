@@ -23,8 +23,6 @@
 					) => ({ attr, target_id, target_attr }),
 				)
 			: [];
-
-	$: console.log("out_edges", all_out_edges);
 </script>
 
 <div class="markdown-rendered">
@@ -51,8 +49,8 @@
 											{plugin}
 											path={target_id}
 											resolved={target_attr.resolved}
-											path_keep_options={plugin
-												.settings.views.side.matrix
+											path_keep_options={plugin.settings
+												.views.side.matrix
 												.path_keep_options}
 										/>
 

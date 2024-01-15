@@ -35,17 +35,17 @@
 		gather_by_runs(col, (e) => (e ? e.target_id : null)),
 	);
 
-	console.log(
-		"col_runs",
-		col_runs.map((run) =>
-			run.map(
-				(r) =>
-					`${r?.value ? Path.keep(r?.value) : r?.value}: ${
-						r?.first
-					} - ${r?.last}`,
-			),
-		),
-	);
+	// console.log(
+	// 	"col_runs",
+	// 	col_runs.map((run) =>
+	// 		run.map(
+	// 			(r) =>
+	// 				`${r?.value ? Path.keep(r?.value) : r?.value}: ${
+	// 					r?.first
+	// 				} - ${r?.last}`,
+	// 		),
+	// 	),
+	// );
 </script>
 
 <div
