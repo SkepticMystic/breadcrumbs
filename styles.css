@@ -49,6 +49,10 @@ Outputs to /styles.css, for Obsidian to use.
   display: grid
 }
 
+.w-full {
+  width: 100%
+}
+
 .grow {
   flex-grow: 1
 }
@@ -73,6 +77,10 @@ Outputs to /styles.css, for Obsidian to use.
   gap: 0.25rem
 }
 
+.gap-3 {
+  gap: 0.75rem
+}
+
 .gap-4 {
   gap: 1rem
 }
@@ -87,6 +95,14 @@ Outputs to /styles.css, for Obsidian to use.
 
 .p-2 {
   padding: 0.5rem
+}
+
+.text-left {
+  text-align: left
+}
+
+.text-right {
+  text-align: right
 }
 
 .font-mono {

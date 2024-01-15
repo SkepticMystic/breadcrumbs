@@ -80,3 +80,25 @@ export const gather_by_runs = <I, V extends Primitive>(
 
 	return runs;
 };
+
+export const group_by = <T extends P, S extends string, P = T>(
+	list: T[],
+	get_value: (item: T) => S,
+	project: (item: T) => P = (item) => item as P,
+) => {
+	const grouped: Partial<Record<S, P[]>> = {};
+
+	list.forEach((item) => {
+		const key = get_value(item);
+		// WARN: Doesn't group undefined values
+		if (key === undefined) return;
+
+		const group = grouped[key];
+		const projected = project(item);
+
+		if (!group) grouped[key] = [projected];
+		else group.push(projected);
+	});
+
+	return grouped;
+};

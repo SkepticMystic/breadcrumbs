@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ObsidianLink from "src/components/ObsidianLink.svelte";
 	import { traverse_graph } from "src/graph/traverse";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
@@ -8,6 +7,7 @@
 		gather_by_runs,
 		transpose,
 	} from "src/utils/arrays";
+	import EdgeLink from "../EdgeLink.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -70,11 +70,10 @@
 				grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
 			>
 				{#if edge}
-					<ObsidianLink
+					<EdgeLink
+						{edge}
 						{plugin}
 						cls="p-1 grow flex justify-center items-center"
-						path={edge.target_id}
-						resolved={edge.target_attr.resolved}
 						path_keep_options={plugin.settings.views.page.grid
 							.path_keep_options}
 					/>

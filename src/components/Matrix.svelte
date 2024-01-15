@@ -2,7 +2,7 @@
 	import { DIRECTIONS } from "src/const/hierarchies";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import ObsidianLink from "./ObsidianLink.svelte";
+	import EdgeLink from "./EdgeLink.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -43,12 +43,11 @@
 							</span>
 
 							<div class="flex flex-col">
-								{#each out_edges as { attr, target_id, target_attr }}
+								{#each out_edges as edge}
 									<div class="flex justify-between">
-										<ObsidianLink
+										<EdgeLink
+											{edge}
 											{plugin}
-											path={target_id}
-											resolved={target_attr.resolved}
 											path_keep_options={plugin.settings
 												.views.side.matrix
 												.path_keep_options}
@@ -56,11 +55,11 @@
 
 										<span
 											class="font-mono"
-											aria-label={attr.explicit
-												? attr.source
-												: attr.implied_kind}
+											aria-label={edge.attr.explicit
+												? edge.attr.source
+												: edge.attr.implied_kind}
 										>
-											({attr.explicit ? "x" : "i"})
+											({edge.attr.explicit ? "x" : "i"})
 										</span>
 									</div>
 								{/each}

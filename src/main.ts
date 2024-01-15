@@ -74,6 +74,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData(),
 		);
+
+		console.log("settings", this.settings);
 	}
 
 	async saveSettings() {

@@ -24,6 +24,13 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 					folder: false,
 				},
 			},
+			prev_next: {
+				enabled: true,
+				path_keep_options: {
+					ext: false,
+					folder: false,
+				},
+			},
 		},
 		side: {
 			matrix: {

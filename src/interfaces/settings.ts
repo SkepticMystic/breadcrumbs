@@ -14,6 +14,10 @@ export interface BreadcrumbsSettings {
 				enabled: boolean;
 				path_keep_options: PathKeepOptions;
 			};
+			prev_next: {
+				enabled: boolean;
+				path_keep_options: PathKeepOptions;
+			};
 		};
 		side: {
 			matrix: {
