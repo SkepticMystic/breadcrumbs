@@ -49,8 +49,20 @@ Outputs to /styles.css, for Obsidian to use.
   display: grid
 }
 
+.grow {
+  flex-grow: 1
+}
+
 .flex-col {
   flex-direction: column
+}
+
+.items-center {
+  align-items: center
+}
+
+.justify-center {
+  justify-content: center
 }
 
 .justify-between {
@@ -67,6 +79,10 @@ Outputs to /styles.css, for Obsidian to use.
 
 .border {
   border-width: 1px
+}
+
+.p-1 {
+  padding: 0.25rem
 }
 
 .p-2 {

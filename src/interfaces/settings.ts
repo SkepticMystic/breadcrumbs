@@ -1,5 +1,10 @@
 import type { Hierarchy } from "./hierarchies";
 
+export type PathKeepOptions = {
+	ext: boolean;
+	folder: boolean;
+};
+
 export interface BreadcrumbsSettings {
 	hierarchies: Hierarchy[];
 
@@ -7,10 +12,13 @@ export interface BreadcrumbsSettings {
 		page: {
 			grid: {
 				enabled: boolean;
+				path_keep_options: PathKeepOptions;
 			};
 		};
 		side: {
-			matrix: {};
+			matrix: {
+				path_keep_options: PathKeepOptions;
+			};
 		};
 	};
 }

@@ -4,7 +4,7 @@ import type {
 	BreadcrumbsEdgeAttributes,
 	GraphBuilder,
 } from "src/interfaces/graph";
-import { ensure_array } from "src/utils/arrays";
+import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { ensure_ext } from "src/utils/paths";
 
@@ -111,7 +111,7 @@ const dataview_inline: GraphBuilder = (graph, plugin) => {
 			}
 
 			// page[field]: Link | Link[]
-			const target_links = ensure_array(page[field]) as IDataview.Link[];
+			const target_links = ensure_is_array(page[field]) as IDataview.Link[];
 
 			target_links.forEach((target_link) => {
 				const target_path = ensure_ext(target_link.path, ".md");

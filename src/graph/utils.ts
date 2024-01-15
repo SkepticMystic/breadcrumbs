@@ -1,27 +1,26 @@
 import type { GraphEdge } from "src/interfaces/graph";
-import { drop_folder_ext } from "src/utils/paths";
+import type { PathKeepOptions } from "src/interfaces/settings";
+import { Path } from "src/utils/paths";
 
 export const is_self_loop = (edge: GraphEdge) =>
 	edge.source_id === edge.target_id;
 
 export const stringify_edge = (
 	edge: GraphEdge,
-	options?: { keep_folder_ext?: boolean; edge_id?: boolean }
+	options?: {
+		rtl?: boolean;
+		edge_id?: boolean;
+		path_keep_options?: PathKeepOptions;
+	},
 ) => {
-	const source_id = options?.keep_folder_ext
-		? edge.source_id
-		: drop_folder_ext(edge.source_id);
+	const source_id = Path.keep(edge.source_id, options?.path_keep_options);
+	const target_id = Path.keep(edge.target_id, options?.path_keep_options);
 
-	const target_id = options?.keep_folder_ext
-		? edge.target_id
-		: drop_folder_ext(edge.target_id);
+	const edge_id = options?.edge_id ? `(${edge.id})` : null;
 
-	return [
-		source_id,
-		"->",
-		target_id,
-		options?.edge_id ? `(${edge.id})` : null,
-	]
-		.filter(Boolean)
-		.join(" ");
+	const list = options?.rtl
+		? [target_id, "<-", source_id, edge_id]
+		: [source_id, "->", target_id, edge_id];
+
+	return list.filter(Boolean).join(" ");
 };

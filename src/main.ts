@@ -10,10 +10,11 @@ import { MatrixView } from "src/views/matrix";
 import { dataview_plugin } from "./external/dataview";
 import { migrate_old_settings } from "./settings/migration";
 import { draw_page_views_on_active_note } from "./views/page";
+import { MultiGraph } from "graphology";
 
 export default class BreadcrumbsPlugin extends Plugin {
-	graph!: BreadcrumbsGraph;
 	settings!: BreadcrumbsSettings;
+	graph: BreadcrumbsGraph = new MultiGraph();
 
 	async onload() {
 		console.log("loading breadcrumbs");

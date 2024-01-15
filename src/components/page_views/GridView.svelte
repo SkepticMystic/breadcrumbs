@@ -1,9 +1,14 @@
 <script lang="ts">
 	import ObsidianLink from "src/components/ObsidianLink.svelte";
 	import { traverse_graph } from "src/graph/traverse";
-	import { stringify_edge } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import {
+		ensure_square_array,
+		gather_by_runs,
+		transpose,
+	} from "src/utils/arrays";
+	import { Path } from "src/utils/paths";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -16,39 +21,64 @@
 			)
 		: [];
 
-	console.log(
-		"pretty paths",
-		paths.map((path) => path.map((edge) => stringify_edge(edge))),
+	const reversed = paths.map((path) => [...path].reverse());
+
+	const square = ensure_square_array(reversed, null, true);
+	// console.log(
+	// 	"pretty square",
+	// 	square.map((path) =>
+	// 		path.map((e) => (e ? stringify_edge(e, { rtl: true }) : null)),
+	// 	),
+	// );
+
+	const col_runs = transpose(square).map((col) =>
+		gather_by_runs(col, (e) => (e ? e.target_id : null)),
 	);
 
-	// const square = ensure_square_array(paths_upwards, null, true);
-	// console.log("square", square);
-
-	// const transposed = transpose(square);
-	// console.log("transposed", transposed);
-
-	const reversed = paths.map((path) => [...path].reverse());
-	console.log("reversed", reversed);
+	console.log(
+		"col_runs",
+		col_runs.map((run) =>
+			run.map(
+				(r) =>
+					`${r?.value ? Path.keep(r?.value) : r?.value}: ${
+						r?.first
+					} - ${r?.last}`,
+			),
+		),
+	);
 </script>
 
 <div
 	class="grid"
-	style="grid-template-rows: {'1fr '.repeat(paths.length)};
-         grid-template-columns: {'1fr '.repeat(paths[0].length)};"
+	style="grid-template-rows: {'1fr '.repeat(square.length)};
+         grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
-	{#each reversed as row}
-		{#each row as edge, j}
-			{#if edge}
-				<div class="grid-item">
-					{#if edge}
-						<ObsidianLink
-							{plugin}
-							path={edge.target_id}
-							resolved={edge.target_attr.resolved}
-						/>
-					{/if}
-				</div>
-			{/if}
+	{#each col_runs as col, j}
+		{#each col as { first, last }}
+			{@const edge = square[first][j]}
+
+			<div
+				class="BC-grid-item flex"
+				style="
+				grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
+			>
+				{#if edge}
+					<ObsidianLink
+						{plugin}
+						cls="p-1 grow flex justify-center items-center"
+						path={edge.target_id}
+						resolved={edge.target_attr.resolved}
+						path_keep_options={plugin.settings.views.page.grid
+							.path_keep_options}
+					/>
+				{/if}
+			</div>
 		{/each}
 	{/each}
 </div>
+
+<style>
+	.BC-grid-item {
+		border: 1px solid var(--background-modifier-border);
+	}
+</style>

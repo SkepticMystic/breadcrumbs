@@ -51,6 +51,9 @@
 											{plugin}
 											path={target_id}
 											resolved={target_attr.resolved}
+											path_keep_options={plugin
+												.settings.views.side.matrix
+												.path_keep_options}
 										/>
 
 										<span
