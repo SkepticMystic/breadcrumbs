@@ -35,7 +35,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 				// FIXME: This sometimes triggers before the graph is ready
 				draw_page_views_on_active_note(this);
-			})
+			}),
 		);
 
 		this.app.workspace.onLayoutReady(async () => {
@@ -48,7 +48,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// Views
 			this.registerView(
 				VIEW_IDS.matrix,
-				(leaf) => new MatrixView(leaf, this)
+				(leaf) => new MatrixView(leaf, this),
 			);
 
 			draw_page_views_on_active_note(this);
@@ -74,7 +74,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			await this.loadData()
+			await this.loadData(),
 		);
 	}
 
