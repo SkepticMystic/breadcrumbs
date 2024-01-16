@@ -19,24 +19,27 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		page: {
 			grid: {
 				enabled: true,
-				path_keep_options: {
+				show_node_options: {
 					ext: false,
 					folder: false,
+					alias: false,
 				},
 			},
 			prev_next: {
 				enabled: true,
-				path_keep_options: {
+				show_node_options: {
 					ext: false,
 					folder: false,
+					alias: false,
 				},
 			},
 		},
 		side: {
 			matrix: {
-				path_keep_options: {
+				show_node_options: {
 					ext: false,
 					folder: true,
+					alias: false,
 				},
 			},
 		},

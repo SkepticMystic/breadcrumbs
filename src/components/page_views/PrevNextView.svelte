@@ -30,8 +30,8 @@
 					{edge}
 					{plugin}
 					cls="grow"
-					path_keep_options={plugin.settings.views.page.prev_next
-						.path_keep_options}
+					show_node_options={plugin.settings.views.page.prev_next
+						.show_node_options}
 				/>
 			</div>
 		{/each}
@@ -44,8 +44,8 @@
 					{edge}
 					{plugin}
 					cls="grow"
-					path_keep_options={plugin.settings.views.page.prev_next
-						.path_keep_options}
+					show_node_options={plugin.settings.views.page.prev_next
+						.show_node_options}
 				/>
 
 				<span class="BC-field">{edge.attr.field}</span>

@@ -74,8 +74,8 @@
 						{edge}
 						{plugin}
 						cls="p-1 grow flex justify-center items-center"
-						path_keep_options={plugin.settings.views.page.grid
-							.path_keep_options}
+						show_node_options={plugin.settings.views.page.grid
+							.show_node_options}
 					/>
 				{/if}
 			</div>

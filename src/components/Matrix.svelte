@@ -49,9 +49,9 @@
 										<EdgeLink
 											{edge}
 											{plugin}
-											path_keep_options={plugin.settings
+											show_node_options={plugin.settings
 												.views.side.matrix
-												.path_keep_options}
+												.show_node_options}
 										/>
 
 										<span

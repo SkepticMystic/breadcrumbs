@@ -1,4 +1,4 @@
-import type { PathKeepOptions } from "src/interfaces/settings";
+import type { ShowNodeOptions } from "src/interfaces/settings";
 
 const ensure_ext = (path: string, ext: string = ".md") =>
 	path.endsWith(ext) ? path : path + ext;
@@ -8,7 +8,10 @@ const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");
 const drop_folder = (path: string) => path.split("/").pop()!;
 
 /** Pass in which components you want to *keep*, the rest will be dropped */
-const keep = (path: string, options?: Partial<PathKeepOptions>) => {
+const show = (
+	path: string,
+	options?: Partial<Pick<ShowNodeOptions, "ext" | "folder">>,
+) => {
 	let output = path.slice();
 
 	if (!options?.folder) {
@@ -28,5 +31,5 @@ export const Path = {
 	drop_ext,
 	drop_folder,
 
-	keep,
+	show,
 };

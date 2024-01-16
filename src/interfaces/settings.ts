@@ -1,8 +1,9 @@
 import type { Hierarchy } from "./hierarchies";
 
-export type PathKeepOptions = {
+export type ShowNodeOptions = {
 	ext: boolean;
 	folder: boolean;
+	alias: boolean;
 };
 
 export interface BreadcrumbsSettings {
@@ -12,16 +13,16 @@ export interface BreadcrumbsSettings {
 		page: {
 			grid: {
 				enabled: boolean;
-				path_keep_options: PathKeepOptions;
+				show_node_options: ShowNodeOptions;
 			};
 			prev_next: {
 				enabled: boolean;
-				path_keep_options: PathKeepOptions;
+				show_node_options: ShowNodeOptions;
 			};
 		};
 		side: {
 			matrix: {
-				path_keep_options: PathKeepOptions;
+				show_node_options: ShowNodeOptions;
 			};
 		};
 	};
