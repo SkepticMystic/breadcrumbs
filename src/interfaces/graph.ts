@@ -24,7 +24,7 @@ export type BCEdgeAttributes = {
 			explicit: true;
 			source: // Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
 			// The two are not distinguished, because Dataview doesn't distinguish them
-			"typed_link";
+			"typed_link" | "tag_note";
 	  }
 	| {
 			explicit: false;

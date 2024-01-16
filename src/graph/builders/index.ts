@@ -1,7 +1,7 @@
 import { MultiGraph } from "graphology";
 import type { BCGraph, BCNodeAttributes } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { add_real_relationships } from "./explicit";
+import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_relationships } from "./implied";
 
@@ -35,8 +35,11 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	// Add initial nodes
 	add_initial_nodes(graph, all_files);
 
+	// TODO: Each GraphBuilder should gather and return any errors on the way
+	// For example, if a file has the `BC-tag-note-field` key, but the value isn't valid, we can surface that
+
 	// Real relationships
-	Object.entries(add_real_relationships).forEach(([kind, fn]) => {
+	Object.entries(add_explicit_edges).forEach(([kind, fn]) => {
 		fn(graph, plugin, all_files);
 	});
 

@@ -56,7 +56,7 @@
 </script>
 
 <div
-	class="grid"
+	class="markdown-rendered grid"
 	style="grid-template-rows: {'1fr '.repeat(square.length)};
          grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >

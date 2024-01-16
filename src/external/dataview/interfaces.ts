@@ -12,7 +12,11 @@ export declare namespace IDataview {
 
 	export type Page = {
 		aliases: string[] | null;
-		file: TFile;
+		file: TFile & {
+			// NOTE: Other fields are not fully fleshed out.
+			// I generally add them as I need
+			tags: { values: string[] };
+		};
 	} & {
 		[
 			key: string
