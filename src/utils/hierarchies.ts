@@ -38,7 +38,7 @@ export const get_opposite_direction = (dir: Direction): Direction => {
 
 export const get_field_hierarchy = (
 	hierarchies: Hierarchy[],
-	field: string
+	field: string,
 ) => {
 	let dir: Direction | null = null;
 	let fields: string[] | null = null;
@@ -76,5 +76,3 @@ export const get_field_hierarchy = (
 		implied_relationships,
 	};
 };
-
-export const fallback_field_format = (dir: Direction) => `<${dir}>`;

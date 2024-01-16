@@ -10,6 +10,7 @@
 		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
+		// TODO: Hook into the app.vault events to add/remove the nodes/edges
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.graph.mapOutEdges(
 					$active_file_store.path,
@@ -28,13 +29,13 @@
 <div class="markdown-rendered">
 	{#key all_out_edges}
 		<div class="flex flex-col">
-			{#each plugin.settings.hierarchies as hierarchy}
+			{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
 				<div class="flex flex-col gap-4 p-2">
 					{#each DIRECTIONS as dir}
 						{@const out_edges = all_out_edges.filter(
 							(edge) =>
 								edge.attr.dir === dir &&
-								hierarchy.dirs[dir].includes(edge.attr.field),
+								edge.attr.hierarchy_i === hierarchy_i,
 						)}
 
 						<div class="flex flex-col gap-1">

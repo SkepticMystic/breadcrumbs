@@ -15,8 +15,10 @@ export type BreadcrumbsEdgeAttributes = {
 	hierarchy_i: number;
 	/** The direction of the field in the hierarchy */
 	dir: Direction;
-	/** The hierarchy field  */
-	field: string;
+	/** The hierarchy field
+	 * null if the implied edge has no opposite field
+	 */
+	field: string | null;
 } & (
 	| {
 			explicit: true;

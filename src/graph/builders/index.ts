@@ -14,16 +14,16 @@ const add_initial_nodes = (graph: BreadcrumbsGraph, all_files: AllFiles) => {
 			graph.addNode(file.path, { resolved: true });
 		});
 	} else {
-		all_files.dataview.forEach((file) => {
+		all_files.dataview.forEach((page) => {
 			const node_attr: BreadcrumbsNodeAttributes = {
 				resolved: true,
 			};
 
-			if (file.aliases) {
-				node_attr.aliases = file.aliases;
+			if (page.aliases) {
+				node_attr.aliases = page.aliases;
 			}
 
-			graph.addNode(file.path, node_attr);
+			graph.addNode(page.file.path, node_attr);
 		});
 	}
 };
