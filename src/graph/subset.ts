@@ -1,12 +1,12 @@
 import { MultiGraph } from "graphology";
-import type { BreadcrumbsGraph, GraphEdge } from "src/interfaces/graph";
+import type { BCGraph, GraphEdge } from "src/interfaces/graph";
 
 /** Returns a new graph with all the _nodes_ of the previous, but only a subset of the edges */
 export const graph_edge_subset = (
-	graph: BreadcrumbsGraph,
+	graph: BCGraph,
 	edge_filter: (edge: GraphEdge) => boolean
 ) => {
-	const new_graph = new MultiGraph() as BreadcrumbsGraph;
+	const new_graph = new MultiGraph() as BCGraph;
 
 	graph.forEachNode((id, attr) => new_graph.addNode(id, attr));
 

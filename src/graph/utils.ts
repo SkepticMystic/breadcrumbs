@@ -1,5 +1,5 @@
 import type {
-	BreadcrumbsNodeAttributes,
+	BCNodeAttributes,
 	GraphEdge,
 } from "src/interfaces/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
@@ -10,7 +10,7 @@ export const is_self_loop = (edge: GraphEdge) =>
 
 export const stringify_node = (
 	node_id: string,
-	node_attr: BreadcrumbsNodeAttributes,
+	node_attr: BCNodeAttributes,
 	options?: {
 		show_node_options?: ShowNodeOptions;
 	},

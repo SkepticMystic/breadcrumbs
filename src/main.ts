@@ -3,7 +3,7 @@ import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
-import type { BreadcrumbsGraph } from "src/interfaces/graph";
+import type { BCGraph } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
@@ -14,7 +14,7 @@ import { draw_page_views_on_active_note } from "./views/page";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
-	graph: BreadcrumbsGraph = new MultiGraph();
+	graph: BCGraph = new MultiGraph();
 
 	async onload() {
 		console.log("loading breadcrumbs");

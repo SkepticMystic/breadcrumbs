@@ -1,6 +1,6 @@
 import type {
-	BreadcrumbsEdgeAttributes,
-	BreadcrumbsNodeAttributes,
+	BCEdgeAttributes,
+	BCNodeAttributes,
 	GraphEdge,
 } from "src/interfaces/graph";
 
@@ -10,11 +10,11 @@ export const objectify_edge_mapper =
 		cb: (edge: GraphEdge) => R
 	): ((
 		edge_id: string,
-		attr: BreadcrumbsEdgeAttributes,
+		attr: BCEdgeAttributes,
 		source_id: string,
 		target_id: string,
-		source_attr: BreadcrumbsNodeAttributes,
-		target_attr: BreadcrumbsNodeAttributes,
+		source_attr: BCNodeAttributes,
+		target_attr: BCNodeAttributes,
 		undirected: boolean
 	) => R) =>
 	(

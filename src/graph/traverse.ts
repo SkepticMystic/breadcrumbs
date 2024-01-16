@@ -1,4 +1,4 @@
-import type { BreadcrumbsGraph, GraphEdge } from "src/interfaces/graph";
+import type { BCGraph, GraphEdge } from "src/interfaces/graph";
 import { objectify_edge_mapper } from "./objectify_mappers";
 import { is_self_loop, stringify_edge } from "./utils";
 
@@ -7,7 +7,7 @@ type StackItem = {
 };
 
 type Traverser = (
-	graph: BreadcrumbsGraph,
+	graph: BCGraph,
 	start_node: string,
 	callback: (
 		current_stack_item: StackItem,
@@ -63,7 +63,7 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 
 const get_traversal_paths = (
 	traverser: Traverser,
-	graph: BreadcrumbsGraph,
+	graph: BCGraph,
 	start_node: string,
 	edge_filter?: (edge: GraphEdge) => boolean,
 ) => {

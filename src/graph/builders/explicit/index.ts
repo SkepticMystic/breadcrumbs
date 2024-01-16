@@ -1,5 +1,5 @@
 import type {
-	BreadcrumbsEdgeAttributes,
+	BCEdgeAttributes,
 	GraphBuilder,
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
@@ -129,7 +129,7 @@ const typed_link: GraphBuilder = (graph, plugin, all_files) => {
 };
 
 export const add_real_relationships: Record<
-	Extract<BreadcrumbsEdgeAttributes, { explicit: true }>["source"],
+	Extract<BCEdgeAttributes, { explicit: true }>["source"],
 	GraphBuilder
 > = {
 	// NOTE: The order matters, as the `typed_link` builder adds the initial nodes

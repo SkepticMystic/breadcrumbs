@@ -1,21 +1,18 @@
 import { MultiGraph } from "graphology";
-import type {
-	BreadcrumbsGraph,
-	BreadcrumbsNodeAttributes,
-} from "src/interfaces/graph";
+import type { BCGraph, BCNodeAttributes } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { add_real_relationships } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_relationships } from "./implied";
 
-const add_initial_nodes = (graph: BreadcrumbsGraph, all_files: AllFiles) => {
+const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
 		all_files.obsidian.forEach((file) => {
 			graph.addNode(file.path, { resolved: true });
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
-			const node_attr: BreadcrumbsNodeAttributes = {
+			const node_attr: BCNodeAttributes = {
 				resolved: true,
 			};
 
@@ -30,7 +27,7 @@ const add_initial_nodes = (graph: BreadcrumbsGraph, all_files: AllFiles) => {
 
 export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	// Make a new graph, instead of mutating the old one
-	const graph: BreadcrumbsGraph = new MultiGraph();
+	const graph: BCGraph = new MultiGraph();
 
 	// Get once, send to all builders
 	const all_files = get_all_files(plugin.app);
