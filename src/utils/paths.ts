@@ -1,6 +1,6 @@
 import type { PathKeepOptions } from "src/interfaces/settings";
 
-const ensure_ext = (path: string, ext: string) =>
+const ensure_ext = (path: string, ext: string = ".md") =>
 	path.endsWith(ext) ? path : path + ext;
 
 const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");

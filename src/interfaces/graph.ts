@@ -1,5 +1,6 @@
 import type { MultiGraph } from "graphology";
 import type { Direction } from "src/const/hierarchies";
+import type { ObsidianOrDataviewFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { Hierarchy } from "./hierarchies";
 
@@ -19,7 +20,9 @@ export type BreadcrumbsEdgeAttributes = {
 } & (
 	| {
 			explicit: true;
-			source: "frontmatter_link" | "dataview_inline";
+			source: // Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
+			// The two are not distinguished, because Dataview doesn't distinguish them
+			"typed_link";
 	  }
 	| {
 			explicit: false;
@@ -36,6 +39,7 @@ export type BreadcrumbsGraph = MultiGraph<
 export type GraphBuilder = (
 	graph: BreadcrumbsGraph,
 	plugin: BreadcrumbsPlugin,
+	obsidian_or_dataview_files: ObsidianOrDataviewFiles,
 ) => BreadcrumbsGraph;
 
 export type GraphNode = {

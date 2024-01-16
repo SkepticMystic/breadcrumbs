@@ -14,6 +14,9 @@ export declare namespace IDataview {
 		aliases: string[] | null;
 		file: TFile;
 	} & {
-		[key: string]: Link | Link[];
+		[
+			key: string
+		]: // Add a type that's _not_ a Link, so that TS shouts if we don't check
+		string | Link | Link[];
 	};
 }
