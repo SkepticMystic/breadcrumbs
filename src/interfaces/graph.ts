@@ -1,6 +1,6 @@
 import type { MultiGraph } from "graphology";
 import type { Direction } from "src/const/hierarchies";
-import type { ObsidianOrDataviewFiles } from "src/graph/builders/explicit/files";
+import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { Hierarchy } from "./hierarchies";
 
@@ -39,7 +39,7 @@ export type BreadcrumbsGraph = MultiGraph<
 export type GraphBuilder = (
 	graph: BreadcrumbsGraph,
 	plugin: BreadcrumbsPlugin,
-	obsidian_or_dataview_files: ObsidianOrDataviewFiles,
+	all_files: AllFiles,
 ) => BreadcrumbsGraph;
 
 export type GraphNode = {

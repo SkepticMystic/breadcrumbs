@@ -120,6 +120,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 					? workspace.getLeftLeaf(false)
 					: workspace.getRightLeaf(false);
 
+			if (!leaf) {
+				console.log("bc.activateView: no leaf found");
+				return;
+			}
+
 			await leaf.setViewState({ type: view_id, active: true });
 		}
 
