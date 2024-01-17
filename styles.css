@@ -49,6 +49,10 @@ Outputs to /styles.css, for Obsidian to use.
   display: grid
 }
 
+.contents {
+  display: contents
+}
+
 .w-full {
   width: 100%
 }

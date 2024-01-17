@@ -1,10 +1,11 @@
 import { MultiGraph } from "graphology";
-import type { BCGraph, GraphEdge } from "src/interfaces/graph";
+import type { BCEdge, BCGraph } from "./MyMultiGraph";
 
+// TODO: unused
 /** Returns a new graph with all the _nodes_ of the previous, but only a subset of the edges */
 export const graph_edge_subset = (
 	graph: BCGraph,
-	edge_filter: (edge: GraphEdge) => boolean
+	edge_filter: (edge: BCEdge) => boolean,
 ) => {
 	const new_graph = new MultiGraph() as BCGraph;
 
@@ -18,7 +19,7 @@ export const graph_edge_subset = (
 			target_id,
 			source_attr,
 			target_attr,
-			undirected
+			undirected,
 		) => {
 			if (
 				edge_filter({
@@ -33,7 +34,7 @@ export const graph_edge_subset = (
 			) {
 				new_graph.addDirectedEdge(source_id, target_id, attr);
 			}
-		}
+		},
 	);
 
 	return new_graph;

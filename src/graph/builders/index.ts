@@ -1,6 +1,5 @@
-import { MultiGraph } from "graphology";
-import type { BCGraph, BCNodeAttributes } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
+import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_relationships } from "./implied";
@@ -17,7 +16,8 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 			};
 
 			if (page.aliases) {
-				node_attr.aliases = page.aliases;
+				// TODO: Test this change to .file.aliases
+				node_attr.aliases = page.file.aliases.values;
 			}
 
 			graph.addNode(page.file.path, node_attr);
@@ -27,7 +27,7 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 
 export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	// Make a new graph, instead of mutating the old one
-	const graph: BCGraph = new MultiGraph();
+	const graph = new BCGraph();
 
 	// Get once, send to all builders
 	const all_files = get_all_files(plugin.app);

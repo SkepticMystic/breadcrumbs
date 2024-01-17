@@ -1,9 +1,9 @@
-import type { BCGraph, GraphEdge } from "src/interfaces/graph";
+import type { BCEdge, BCGraph } from "./MyMultiGraph";
 import { objectify_edge_mapper } from "./objectify_mappers";
-import { is_self_loop, stringify_edge } from "./utils";
+import { is_self_loop } from "./utils";
 
 type StackItem = {
-	path: GraphEdge[];
+	path: BCEdge[];
 };
 
 type Traverser = (
@@ -11,9 +11,9 @@ type Traverser = (
 	start_node: string,
 	callback: (
 		current_stack_item: StackItem,
-		filtered_out_edges: GraphEdge[],
+		filtered_out_edges: BCEdge[],
 	) => void,
-	edge_filter?: (edge: GraphEdge) => boolean,
+	edge_filter?: (edge: BCEdge) => boolean,
 ) => void;
 
 const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
@@ -61,13 +61,13 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	}
 };
 
-const get_traversal_paths = (
+const all_paths = (
 	traverser: Traverser,
 	graph: BCGraph,
 	start_node: string,
-	edge_filter?: (edge: GraphEdge) => boolean,
+	edge_filter?: (edge: BCEdge) => boolean,
 ) => {
-	const paths: GraphEdge[][] = [];
+	const paths: BCEdge[][] = [];
 
 	traverser(
 		graph,
@@ -85,5 +85,5 @@ const get_traversal_paths = (
 
 export const traverse_graph = {
 	depth_first,
-	get_traversal_paths,
+	all_paths,
 };

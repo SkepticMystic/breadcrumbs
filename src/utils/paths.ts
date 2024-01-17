@@ -1,8 +1,11 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { ensure_ends_with } from "./strings";
 
-const ensure_ext = (path: string, ext: string = ".md") =>
-	ensure_ends_with(path, ext);
+const ensure_ext = (
+	path: string,
+	/** _Just_ the extension, no '.' */
+	ext: string = "md",
+) => ensure_ends_with(path, "." + ext);
 
 const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");
 

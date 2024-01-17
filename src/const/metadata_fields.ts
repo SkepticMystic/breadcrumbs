@@ -1,5 +1,6 @@
 const METADATA_FIELDS_LIST = [
-	"BC-tag-note",
+	// BREAKING: 17-01-2024 - This used to be called "BC-tag-note"
+	"BC-tag-note-tag",
 	"BC-tag-note-field",
 	"BC-tag-note-exact",
 ] as const;
@@ -7,7 +8,7 @@ const METADATA_FIELDS_LIST = [
 export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
 
 export const META_FIELD = {
-	"tag-note": "BC-tag-note",
+	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
 } satisfies Record<string, MetadataField>;

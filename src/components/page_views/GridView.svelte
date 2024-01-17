@@ -14,7 +14,7 @@
 	const paths = $active_file_store
 		? plugin.settings.hierarchies
 				.map((_hierarchy, i) =>
-					traverse_graph.get_traversal_paths(
+					traverse_graph.all_paths(
 						traverse_graph.depth_first,
 						plugin.graph,
 						$active_file_store!.path,

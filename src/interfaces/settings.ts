@@ -9,6 +9,14 @@ export type ShowNodeOptions = {
 export interface BreadcrumbsSettings {
 	hierarchies: Hierarchy[];
 
+	explicit_edge_sources: {
+		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
+		// The two are not distinguished, because Dataview doesn't distinguish them
+		typed_link: {};
+		tag_note: {};
+		list_note: {};
+	};
+
 	views: {
 		page: {
 			grid: {

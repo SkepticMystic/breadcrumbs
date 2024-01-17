@@ -35,7 +35,7 @@ export const _add_explicit_edges_typed_link: GraphBuilder = (
 				return console.log("No field hierarchy found for:", field);
 			}
 
-			const target_path = Path.ensure_ext(target_link.link, ".md");
+			const target_path = Path.ensure_ext(target_link.link);
 			const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				target_path,
 				source_file.path,

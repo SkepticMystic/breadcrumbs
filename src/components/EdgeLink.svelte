@@ -1,11 +1,11 @@
 <script lang="ts">
 	import ObsidianLink from "src/components/ObsidianLink.svelte";
 	import { stringify_node } from "src/graph/utils";
-	import type { GraphEdge } from "src/interfaces/graph";
+	import type { BCEdge } from "src/interfaces/graph";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import BreadcrumbsPlugin from "src/main";
 
-	export let edge: Pick<GraphEdge, "attr" | "target_id" | "target_attr">;
+	export let edge: Pick<BCEdge, "attr" | "target_id" | "target_attr">;
 	export let plugin: BreadcrumbsPlugin;
 	export let show_node_options: ShowNodeOptions;
 	export let cls = "";

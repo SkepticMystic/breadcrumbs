@@ -1,12 +1,9 @@
-import type {
-	BCNodeAttributes,
-	GraphEdge,
-} from "src/interfaces/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Path } from "src/utils/paths";
+import type { BCEdge, BCNodeAttributes } from "./MyMultiGraph";
 
-export const is_self_loop = (edge: GraphEdge) =>
-	edge.source_id === edge.target_id;
+// TODO: Maybe this can be put on BCGraph instead?
+export const is_self_loop = (edge: BCEdge) => edge.source_id === edge.target_id;
 
 export const stringify_node = (
 	node_id: string,
@@ -20,7 +17,7 @@ export const stringify_node = (
 		: Path.show(node_id, options?.show_node_options);
 
 export const stringify_edge = (
-	edge: GraphEdge,
+	edge: BCEdge,
 	options?: {
 		rtl?: boolean;
 		edge_id?: boolean;

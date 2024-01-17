@@ -1,13 +1,13 @@
 import type {
+	BCEdge,
 	BCEdgeAttributes,
 	BCNodeAttributes,
-	GraphEdge,
-} from "src/interfaces/graph";
+} from "./MyMultiGraph";
 
 /** Wraps the arguments of a graphology.EdgeIterator callback into an object */
 export const objectify_edge_mapper =
 	<R>(
-		cb: (edge: GraphEdge) => R
+		cb: (edge: BCEdge) => R,
 	): ((
 		edge_id: string,
 		attr: BCEdgeAttributes,
@@ -15,7 +15,7 @@ export const objectify_edge_mapper =
 		target_id: string,
 		source_attr: BCNodeAttributes,
 		target_attr: BCNodeAttributes,
-		undirected: boolean
+		undirected: boolean,
 	) => R) =>
 	(
 		edge_id,
@@ -24,7 +24,7 @@ export const objectify_edge_mapper =
 		target_id,
 		source_attr,
 		target_attr,
-		undirected
+		undirected,
 	) =>
 		cb({
 			id: edge_id,

@@ -3,7 +3,7 @@ import { META_FIELD } from "src/const/metadata_fields";
 import type { GraphBuilder } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { fail, log_result, succ } from "src/utils/result";
+import { fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
 
 const get_tag_note_info = (
@@ -14,7 +14,7 @@ const get_tag_note_info = (
 		return fail(undefined);
 	}
 
-	const raw_tag = metadata[META_FIELD["tag-note"]];
+	const raw_tag = metadata[META_FIELD["tag-note-tag"]];
 	if (!raw_tag) {
 		return fail(undefined);
 	} else if (typeof raw_tag !== "string") {
@@ -80,7 +80,7 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 			source_cache?.frontmatter,
 		);
 		if (!tag_note_info.ok) {
-			if (tag_note_info.error) log_result(tag_note_info, "tag_note_info");
+			if (tag_note_info.error) tag_note_info.log("tag_note_info");
 
 			return;
 		}
@@ -103,8 +103,6 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 		// NOTE: Problem, Dataview unwinds nested tags...
 		// So if a note only has #foo/bar, we'll get #foo and #foo/bar here
 		source_file.tags.values.forEach((tag) => {
-			console.log("source has tag", tag);
-
 			if (!tag_paths_map.get(tag)?.push(source_file.path)) {
 				tag_paths_map.set(tag, [source_file.path]);
 			}
@@ -112,7 +110,7 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 
 		const tag_note_info = get_tag_note_info(plugin, page);
 		if (!tag_note_info.ok) {
-			if (tag_note_info.error) log_result(tag_note_info, "tag_note_info");
+			if (tag_note_info.error) tag_note_info.log("tag_note_info");
 
 			return;
 		}
