@@ -16,7 +16,6 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 			};
 
 			if (page.aliases) {
-				// TODO: Test this change to .file.aliases
 				node_attr.aliases = page.file.aliases.values;
 			}
 

@@ -100,9 +100,8 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
 
-		// NOTE: Problem, Dataview unwinds nested tags...
-		// So if a note only has #foo/bar, we'll get #foo and #foo/bar here
-		source_file.tags.values.forEach((tag) => {
+		// NOTE: We make sure to use etags, not tags (which are unwound)
+		source_file.etags.values.forEach((tag) => {
 			if (!tag_paths_map.get(tag)?.push(source_file.path)) {
 				tag_paths_map.set(tag, [source_file.path]);
 			}

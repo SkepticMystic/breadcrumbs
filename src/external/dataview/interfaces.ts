@@ -36,7 +36,6 @@ export declare namespace IDataview {
 			// NOTE: Other fields are not fully fleshed out.
 			// I generally add them as I need
 
-			// TODO: Use this field, instead of page.aliases, which is flakey
 			aliases: Proxy<string>;
 
 			/** Possibly misleading name. I interpret it as lall list_items ("- item") in a note
@@ -44,7 +43,6 @@ export declare namespace IDataview {
 			 */
 			lists: Proxy<NoteList>;
 
-			// TODO: Use this instead of tags, which is unwound
 			/** The not-unwound equivalent of `tags` */
 			etags: Proxy<string>;
 			/** WARN: Not just a list of tags in the note. This list contains unwound nested tags.

@@ -3,6 +3,8 @@ import { META_FIELD } from "src/const/metadata_fields";
 import type { GraphBuilder } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
+import { Link } from "src/utils/links";
+import { Path } from "src/utils/paths";
 import { fail, succ } from "src/utils/result";
 
 const get_list_note_info = (
@@ -87,22 +89,29 @@ export const _add_explicit_edges_list_note: GraphBuilder = (
 			const source_link = source_list_item.outlinks.at(0);
 			if (!source_link) return;
 
+			const unsafe_source_path = Path.ensure_ext(source_link.path);
+
 			// FIXME: EVERYWHERE: Dataview.Links aren't the full paths, so we still have to use Obsidian to resolve 'em
-			// This might be the case for Obsidian Links, too
+			//   This might be the case for Obsidian Links, too
+			// Possibly get the corresponding file
 			const source_file = plugin.app.metadataCache.getFirstLinkpathDest(
-				source_link.path,
+				unsafe_source_path,
 				list_note_page.file.path,
 			);
 
 			// TODO: Even this has problems... If the source_link is unresolved,
-			//   we add it to the graph in it's possibly relative form.
+			//   we add it to the graph in it's _possibly relative_ form.
 			//   What if a different GraphBuilder refers to the same relative path, but intends a different absolute path?
 			//   I recall there being an app method to resolve a relative path based on the users settings.
 			//   Basically, we need the path that the unresolved note would resolve to, in the current context.
-			// PROGRESS: It looks like app.fileManager.getNewFileParent should help
-			//   But it always returns the root folder.
-			//   See links.ts for my testing
-			const source_path = source_file?.path ?? source_link.path;
+			// If it's resolved, use that path as is. If not, resolve it from the current context
+			const source_path =
+				source_file?.path ??
+				Link.resolve_to_absolute_path(
+					plugin.app,
+					unsafe_source_path,
+					list_note_page.file.path,
+				);
 
 			// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 			//   NOTE: Don't just use graph.addNode though. A different GraphBuilder may have added it.
@@ -130,6 +139,8 @@ export const _add_explicit_edges_list_note: GraphBuilder = (
 				const target_link = target_list_item.outlinks.at(0);
 				if (!target_link) return;
 
+				const unsafe_target_path = Path.ensure_ext(target_link.path);
+
 				const target_file =
 					plugin.app.metadataCache.getFirstLinkpathDest(
 						target_link.path,
@@ -137,7 +148,14 @@ export const _add_explicit_edges_list_note: GraphBuilder = (
 					);
 
 				// TODO: Same issue as above
-				const target_path = target_file?.path ?? target_link.path;
+				const target_path =
+					target_file?.path ??
+					Link.resolve_to_absolute_path(
+						plugin.app,
+						unsafe_target_path,
+						// Still resolve from the list_note, not the source_note above the target
+						list_note_page.file.path,
+					);
 
 				// It's redundant, but easier to just safe_add_node here on the target
 				// Technically, the next iteration of page.file.lists will add it (as a source)
