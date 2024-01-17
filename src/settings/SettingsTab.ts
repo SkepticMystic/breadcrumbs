@@ -1,6 +1,7 @@
-import type BreadcrumbsPlugin from "src/main";
 import { App, PluginSettingTab } from "obsidian";
-import HierchySettings from "src/components/HierarchySettings.svelte";
+import type BreadcrumbsPlugin from "src/main";
+import { _add_settings_hierarchies } from "./HierarchySettings";
+import { _add_settings_matrix } from "./MatrixSettings";
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
@@ -15,9 +16,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new HierchySettings({
-			target: containerEl,
-			props: { plugin: this.plugin },
-		});
+		_add_settings_hierarchies(this.plugin, containerEl);
+		_add_settings_matrix(this.plugin, containerEl);
 	}
 }
