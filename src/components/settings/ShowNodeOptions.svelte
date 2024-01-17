@@ -4,6 +4,7 @@
 	export let show_node_options: ShowNodeOptions;
 </script>
 
+<!-- NOTE: I've ended up using regular TS and the Obsidian Setting builder for this -->
 <div>
 	<label>
 		<input type="checkbox" bind:checked={show_node_options.folder} />

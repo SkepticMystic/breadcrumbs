@@ -81,7 +81,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	/** Refresh active_file_store, then rebuild_graph */
+	/** rebuild_graph, then react by updating active_file_store and redrawing page_views */
 	refresh() {
 		console.log("bc.refresh");
 
