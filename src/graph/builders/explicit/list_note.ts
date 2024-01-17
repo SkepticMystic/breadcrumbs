@@ -45,8 +45,6 @@ export const _add_explicit_edges_list_note: GraphBuilder = (
 	plugin,
 	all_files,
 ) => {
-	console.log("_add_explicit_edges_list_note");
-
 	all_files.obsidian?.forEach((list_note_file) => {
 		const source_cache =
 			plugin.app.metadataCache.getFileCache(list_note_file);

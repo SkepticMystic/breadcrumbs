@@ -2,7 +2,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
-import { add_implied_relationships } from "./implied";
+import { add_implied_edges } from "./implied";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
@@ -40,11 +40,13 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 
 	// Real relationships
 	Object.entries(add_explicit_edges).forEach(([kind, fn]) => {
+		console.log("add_explicit_edges:", kind);
 		fn(graph, plugin, all_files);
 	});
 
 	// Implied relationships
-	Object.entries(add_implied_relationships).forEach(([kind, fn]) => {
+	Object.entries(add_implied_edges).forEach(([kind, fn]) => {
+		console.log("add_implied_edges:", kind);
 		fn(graph, plugin, all_files);
 	});
 

@@ -1,20 +1,19 @@
-import { MultiGraph } from "graphology";
 import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
-import type { BCGraph } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
 import { dataview_plugin } from "./external/dataview";
+import { BCGraph } from "./graph/MyMultiGraph";
 import { migrate_old_settings } from "./settings/migration";
 import { draw_page_views_on_active_note } from "./views/page";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
-	graph: BCGraph = new MultiGraph();
+	graph = new BCGraph();
 
 	async onload() {
 		console.log("loading breadcrumbs");

@@ -52,7 +52,7 @@ const self_is_sibling: GraphBuilder = (graph, plugin) => {
 	return graph;
 };
 
-export const add_implied_relationships: Record<
+export const add_implied_edges: Record<
 	keyof Hierarchy["implied_relationships"],
 	GraphBuilder
 > = {

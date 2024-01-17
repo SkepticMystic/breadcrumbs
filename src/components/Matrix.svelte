@@ -49,6 +49,7 @@
 										<EdgeLink
 											{edge}
 											{plugin}
+											cls="grow"
 											show_node_options={plugin.settings
 												.views.side.matrix
 												.show_node_options}

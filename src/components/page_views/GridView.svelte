@@ -25,6 +25,8 @@
 					),
 				)
 				.flat()
+				// This basic sorting can break the continuity of the grid-areas.
+				// A better solution would sort the rows to maximise run length.
 				.sort((a, b) => b.length - a.length)
 		: [];
 
@@ -56,7 +58,7 @@
 </script>
 
 <div
-	class="markdown-rendered grid"
+	class="markdown-rendered BC-grid-view grid"
 	style="grid-template-rows: {'1fr '.repeat(square.length)};
          grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
@@ -65,7 +67,7 @@
 			{@const edge = square[first][j]}
 
 			<div
-				class="BC-grid-item flex"
+				class="BC-grid-view-item flex"
 				style="
 				grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
 			>
@@ -84,7 +86,7 @@
 </div>
 
 <style>
-	.BC-grid-item {
+	.BC-grid-view-item {
 		border: 1px solid var(--background-modifier-border);
 	}
 </style>

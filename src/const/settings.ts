@@ -15,6 +15,12 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 	],
 
+	explicit_edge_sources: {
+		tag_note: {},
+		list_note: {},
+		typed_link: {},
+	},
+
 	views: {
 		page: {
 			grid: {

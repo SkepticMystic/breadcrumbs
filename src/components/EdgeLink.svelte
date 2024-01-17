@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ObsidianLink from "src/components/ObsidianLink.svelte";
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { stringify_node } from "src/graph/utils";
-	import type { BCEdge } from "src/interfaces/graph";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import BreadcrumbsPlugin from "src/main";
 
@@ -23,3 +23,5 @@
 	resolved={edge.target_attr.resolved}
 	cls="{cls} {edge.attr.explicit ? 'BC-edge-explicit' : 'BC-edge-implied'}"
 />
+
+<!-- BREAKING: BC-edge-implied used to be BC-implied, I believe -->
