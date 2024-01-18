@@ -1,15 +1,19 @@
 import { Notice } from "obsidian";
 import { META_FIELD } from "src/const/metadata_fields";
-import type { ExplicitEdgeBuilder, GraphError } from "src/interfaces/graph";
+import type {
+	ExplicitEdgeBuilder,
+	GraphBuildError,
+} from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Link } from "src/utils/links";
 import { Path } from "src/utils/paths";
-import { fail, succ } from "src/utils/result";
+import { fail, graph_build_fail, succ } from "src/utils/result";
 
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
+	path: string,
 ) => {
 	if (!metadata) {
 		return fail(undefined);
@@ -19,7 +23,11 @@ const get_list_note_info = (
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {
-		return fail({ msg: "list-note-field is not a string" });
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: "list-note-field is not a string",
+		});
 	}
 
 	const field_hierarchy = get_field_hierarchy(
@@ -27,7 +35,11 @@ const get_list_note_info = (
 		field,
 	);
 	if (!field_hierarchy) {
-		return fail({ msg: "No field hierarchy found" });
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `list-note-field is not a valid BC field: '${field}'`,
+		});
 	}
 
 	const exclude_index = Boolean(
@@ -47,7 +59,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphError[] = [];
+	const errors: GraphBuildError[] = [];
 
 	all_files.obsidian?.forEach(
 		({ file: list_note_file, cache: list_note_cache }) => {
@@ -56,9 +68,10 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			const list_note_info = get_list_note_info(
 				plugin,
 				list_note_cache?.frontmatter,
+				list_note_file.path,
 			);
 			if (!list_note_info.ok) {
-				if (list_note_info.error) list_note_info.log("list_note_info");
+				if (list_note_info.error) errors.push(list_note_info.error);
 				return;
 			} else {
 				new Notice(
@@ -75,9 +88,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	);
 
 	all_files.dataview?.forEach((list_note_page) => {
-		const list_note_info = get_list_note_info(plugin, list_note_page);
+		const list_note_info = get_list_note_info(
+			plugin,
+			list_note_page,
+			list_note_page.file.path,
+		);
 		if (!list_note_info.ok) {
-			if (list_note_info.error) list_note_info.log("list_note_info");
+			if (list_note_info.error) errors.push(list_note_info.error);
 			return;
 		}
 
@@ -149,7 +166,6 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						list_note_page.file.path,
 					);
 
-				// TODO: Same issue as above
 				const target_path =
 					target_file?.path ??
 					Link.resolve_to_absolute_path(

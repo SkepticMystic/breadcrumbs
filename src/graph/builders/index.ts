@@ -1,3 +1,8 @@
+import {
+	EXPLICIT_EDGE_SOURCES,
+	type ExplicitEdgeSource,
+} from "src/const/graph";
+import type { ExplicitEdgeBuilder } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
@@ -47,13 +52,20 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	// TODO: Each GraphBuilder should gather and return any errors on the way
 	// For example, if a file has the `BC-tag-note-field` key, but the value isn't valid, we can surface that
 
-	// Real relationships
-	Object.entries(add_explicit_edges).forEach(([kind, fn]) => {
-		console.log("add_explicit_edges:", kind);
-		fn(graph, plugin, all_files);
-	});
+	// Explicit edges
+	const explicit_edge_results = EXPLICIT_EDGE_SOURCES.reduce(
+		(acc, key) => {
+			const result = add_explicit_edges[key](graph, plugin, all_files);
 
-	// Implied relationships
+			acc[key] = result;
+			return acc;
+		},
+		{} as Record<ExplicitEdgeSource, ReturnType<ExplicitEdgeBuilder>>,
+	);
+
+	console.log("explicit_edge_results:", explicit_edge_results);
+
+	// Implied edges
 	Object.entries(add_implied_edges).forEach(([kind, fn]) => {
 		console.log("add_implied_edges:", kind);
 		fn(graph, plugin, all_files);

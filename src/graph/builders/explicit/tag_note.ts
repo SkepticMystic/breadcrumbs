@@ -1,14 +1,18 @@
 import type { Direction } from "src/const/hierarchies";
 import { META_FIELD } from "src/const/metadata_fields";
-import type { ExplicitEdgeBuilder, GraphError } from "src/interfaces/graph";
+import type {
+	ExplicitEdgeBuilder,
+	GraphBuildError,
+} from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { fail, succ } from "src/utils/result";
+import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
 
 const get_tag_note_info = (
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
+	path: string,
 ) => {
 	if (!metadata) {
 		return fail(undefined);
@@ -18,7 +22,11 @@ const get_tag_note_info = (
 	if (!raw_tag) {
 		return fail(undefined);
 	} else if (typeof raw_tag !== "string") {
-		return fail({ msg: "tag-note is not a string" });
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: "tag-note-tag is not a string",
+		});
 	}
 	const tag = ensure_starts_with(raw_tag, "#");
 
@@ -26,7 +34,11 @@ const get_tag_note_info = (
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {
-		return fail({ msg: "tag-note-field is not a string" });
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: "tag-note-field is not a string",
+		});
 	}
 
 	const field_hierarchy = get_field_hierarchy(
@@ -34,7 +46,11 @@ const get_tag_note_info = (
 		field,
 	);
 	if (!field_hierarchy) {
-		return fail({ msg: "No field hierarchy found" });
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `tag-note-field is not a valid BC field: '${field}'`,
+		});
 	}
 
 	const exact = Boolean(metadata[META_FIELD["tag-note-exact"]]);
@@ -47,7 +63,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphError[] = [];
+	const errors: GraphBuildError[] = [];
 
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go
@@ -64,26 +80,27 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	const tag_paths_map = new Map<string, string[]>();
 
 	all_files.obsidian?.forEach(
-		({ file: source_file, cache: source_cache }) => {
-			if (!source_cache) return;
+		({ file: tag_note_file, cache: tag_note_cache }) => {
+			if (!tag_note_cache) return;
 
-			source_cache?.tags?.forEach(({ tag }) => {
+			// Check if the tag_note itself has an tags for other tags notes
+			tag_note_cache?.tags?.forEach(({ tag }) => {
 				// Quite happy with this trick :)
 				// Try get the existing_paths, and mutate it if it exists
 				// Push returns the new length (guarenteed to be atleast 1 - truthy)
 				// So if will only be false if the key doesn't exist
-				if (!tag_paths_map.get(tag)?.push(source_file.path)) {
-					tag_paths_map.set(tag, [source_file.path]);
+				if (!tag_paths_map.get(tag)?.push(tag_note_file.path)) {
+					tag_paths_map.set(tag, [tag_note_file.path]);
 				}
 			});
 
 			const tag_note_info = get_tag_note_info(
 				plugin,
-				source_cache?.frontmatter,
+				tag_note_cache?.frontmatter,
+				tag_note_file.path,
 			);
 			if (!tag_note_info.ok) {
-				if (tag_note_info.error) tag_note_info.log("tag_note_info");
-
+				if (tag_note_info.error) errors.push(tag_note_info.error);
 				return;
 			}
 
@@ -94,26 +111,29 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				exact,
 				field,
 				dir: field_hierarchy.dir,
-				source_path: source_file.path,
+				source_path: tag_note_file.path,
 				hierarchy_i: field_hierarchy.hierarchy_i,
 			});
 		},
 	);
 
 	all_files.dataview?.forEach((page) => {
-		const source_file = page.file;
+		const tag_note_file = page.file;
 
 		// NOTE: We make sure to use etags, not tags (which are unwound)
-		source_file.etags.values.forEach((tag) => {
-			if (!tag_paths_map.get(tag)?.push(source_file.path)) {
-				tag_paths_map.set(tag, [source_file.path]);
+		tag_note_file.etags.values.forEach((tag) => {
+			if (!tag_paths_map.get(tag)?.push(tag_note_file.path)) {
+				tag_paths_map.set(tag, [tag_note_file.path]);
 			}
 		});
 
-		const tag_note_info = get_tag_note_info(plugin, page);
+		const tag_note_info = get_tag_note_info(
+			plugin,
+			page,
+			tag_note_file.path,
+		);
 		if (!tag_note_info.ok) {
-			if (tag_note_info.error) tag_note_info.log("tag_note_info");
-
+			if (tag_note_info.error) errors.push(tag_note_info.error);
 			return;
 		}
 
@@ -124,7 +144,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 			exact,
 			field,
 			dir: field_hierarchy.dir,
-			source_path: source_file.path,
+			source_path: tag_note_file.path,
 			hierarchy_i: field_hierarchy.hierarchy_i,
 		});
 	});

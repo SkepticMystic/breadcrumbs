@@ -2,8 +2,8 @@ import type { BCGraph } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 
-export type GraphError = {
-	code: string;
+export type GraphBuildError = {
+	code: "invalid_field_value";
 	message: string;
 	path: string;
 };
@@ -14,7 +14,7 @@ export type ExplicitEdgeBuilder = (
 	plugin: BreadcrumbsPlugin,
 	all_files: AllFiles,
 ) => {
-	errors: GraphError[];
+	errors: GraphBuildError[];
 };
 
 export type ImpliedEdgeBuilder = (

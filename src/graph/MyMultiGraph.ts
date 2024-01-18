@@ -1,7 +1,7 @@
 import { MultiGraph } from "graphology";
+import type { ExplicitEdgeSource } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "src/interfaces/hierarchies";
-import type { BreadcrumbsSettings } from "src/interfaces/settings";
 
 export type BCNodeAttributes = {
 	/** .md file exists  */
@@ -21,7 +21,7 @@ export type BCEdgeAttributes = {
 } & (
 	| {
 			explicit: true;
-			source: keyof BreadcrumbsSettings["explicit_edge_sources"];
+			source: ExplicitEdgeSource;
 	  }
 	| {
 			explicit: false;
