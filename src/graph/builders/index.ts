@@ -6,8 +6,17 @@ import { add_implied_edges } from "./implied";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
-		all_files.obsidian.forEach((file) => {
-			graph.addNode(file.path, { resolved: true });
+		all_files.obsidian.forEach(({ file, cache }) => {
+			const node_attr: BCNodeAttributes = {
+				resolved: true,
+			};
+
+			const aliases = cache?.frontmatter?.aliases as unknown;
+			if (Array.isArray(aliases) && aliases.length > 0) {
+				node_attr.aliases = aliases;
+			}
+
+			graph.addNode(file.path, node_attr);
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
@@ -15,8 +24,9 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 				resolved: true,
 			};
 
-			if (page.aliases) {
-				node_attr.aliases = page.file.aliases.values;
+			const aliases = page.file.aliases.values;
+			if (Array.isArray(aliases) && aliases.length > 0) {
+				node_attr.aliases = aliases;
 			}
 
 			graph.addNode(page.file.path, node_attr);

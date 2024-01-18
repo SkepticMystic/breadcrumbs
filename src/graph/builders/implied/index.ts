@@ -1,9 +1,9 @@
-import type { GraphBuilder } from "src/interfaces/graph";
+import type { ImpliedEdgeBuilder } from "src/interfaces/graph";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import { get_opposite_direction } from "src/utils/hierarchies";
 import { objectify_edge_mapper } from "../../objectify_mappers";
 
-const opposite_direction: GraphBuilder = (graph, plugin) => {
+const opposite_direction: ImpliedEdgeBuilder = (graph, plugin) => {
 	// NOTE: Rather than directly forEachOutEdge, we map over them to "freeze" the existing ones,
 	//   then add edges (to avoid infite loop)
 	graph
@@ -31,10 +31,10 @@ const opposite_direction: GraphBuilder = (graph, plugin) => {
 			});
 		});
 
-	return graph;
+	return {};
 };
 
-const self_is_sibling: GraphBuilder = (graph, plugin) => {
+const self_is_sibling: ImpliedEdgeBuilder = (graph, plugin) => {
 	graph.forEachNode((node) => {
 		plugin.settings.hierarchies.forEach((hierarchy, i) => {
 			if (!hierarchy.implied_relationships.self_is_sibling) return;
@@ -49,12 +49,12 @@ const self_is_sibling: GraphBuilder = (graph, plugin) => {
 		});
 	});
 
-	return graph;
+	return {};
 };
 
 export const add_implied_edges: Record<
 	keyof Hierarchy["implied_relationships"],
-	GraphBuilder
+	ImpliedEdgeBuilder
 > = {
 	opposite_direction,
 	self_is_sibling,

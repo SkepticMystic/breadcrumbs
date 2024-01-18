@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { META_FIELD } from "src/const/metadata_fields";
-import type { GraphBuilder } from "src/interfaces/graph";
+import type { ExplicitEdgeBuilder, GraphError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Link } from "src/utils/links";
@@ -42,35 +42,37 @@ const get_list_note_info = (
 	});
 };
 
-export const _add_explicit_edges_list_note: GraphBuilder = (
+export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
 	all_files,
 ) => {
-	all_files.obsidian?.forEach((list_note_file) => {
-		const source_cache =
-			plugin.app.metadataCache.getFileCache(list_note_file);
-		if (!source_cache) return;
+	const errors: GraphError[] = [];
 
-		const list_note_info = get_list_note_info(
-			plugin,
-			source_cache?.frontmatter,
-		);
-		if (!list_note_info.ok) {
-			if (list_note_info.error) list_note_info.log("list_note_info");
-			return;
-		} else {
-			new Notice(
-				"list-notes are not implemented without Dataview enabled",
+	all_files.obsidian?.forEach(
+		({ file: list_note_file, cache: list_note_cache }) => {
+			if (!list_note_cache) return;
+
+			const list_note_info = get_list_note_info(
+				plugin,
+				list_note_cache?.frontmatter,
 			);
-		}
+			if (!list_note_info.ok) {
+				if (list_note_info.error) list_note_info.log("list_note_info");
+				return;
+			} else {
+				new Notice(
+					"list-notes are not implemented without Dataview enabled",
+				);
+			}
 
-		// TODO: Gonna have to read the contents of the file and parse it pretty manually...
-		// Dataview is much easier in this case
-		// source_cache?.listItems?.forEach((list_item) => {
-		// 	list_item;
-		// });
-	});
+			// TODO: Gonna have to read the contents of the file and parse it pretty manually...
+			// Dataview is much easier in this case
+			// list_note_cache?.listItems?.forEach((list_item) => {
+			// 	list_item;
+			// });
+		},
+	);
 
 	all_files.dataview?.forEach((list_note_page) => {
 		const list_note_info = get_list_note_info(plugin, list_note_page);
@@ -171,5 +173,5 @@ export const _add_explicit_edges_list_note: GraphBuilder = (
 		});
 	});
 
-	return graph;
+	return { errors };
 };

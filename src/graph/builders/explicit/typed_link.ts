@@ -1,69 +1,62 @@
-import type { GraphBuilder } from "src/interfaces/graph";
+import type { ExplicitEdgeBuilder, GraphError } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Path } from "src/utils/paths";
 
-export const _add_explicit_edges_typed_link: GraphBuilder = (
+export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
 	all_files,
 ) => {
-	all_files.obsidian?.forEach((source_file) => {
-		const source_cache = plugin.app.metadataCache.getFileCache(source_file);
+	const errors: GraphError[] = [];
 
-		// add_initial_nodes is called outside this builder
-		// If using Obsidian files, we only see the aliases now
-		// So, we add them to the existing nodes
-		const aliases = source_cache?.frontmatter?.aliases as
-			| string[]
-			| undefined;
-		if (aliases) {
-			graph.setNodeAttribute(source_file.path, "aliases", aliases);
-		}
+	all_files.obsidian?.forEach(
+		({ file: source_file, cache: source_cache }) => {
+			source_cache?.frontmatterLinks?.forEach((target_link) => {
+				// Using the List type of properties, the field is returned as <field>.<index>
+				// We only want the field name, so we split on the dot and take the first element
+				// This implies that we can't have a field name with a dot in it...
+				const field = target_link.key.split(".")[0];
 
-		source_cache?.frontmatterLinks?.forEach((target_link) => {
-			// Using the List type of properties, the field is returned as <field>.<index>
-			// We only want the field name, so we split on the dot and take the first element
-			// This implies that we can't have a field name with a dot in it...
-			const field = target_link.key.split(".")[0];
-
-			const field_hierarchy = get_field_hierarchy(
-				plugin.settings.hierarchies,
-				field,
-			);
-			if (!field_hierarchy) {
-				return console.log("No field hierarchy found for:", field);
-			}
-
-			const target_path = Path.ensure_ext(target_link.link);
-			const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
-				target_path,
-				source_file.path,
-			);
-
-			if (target_file) {
-				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-				graph.addDirectedEdge(source_file.path, target_file.path, {
+				const field_hierarchy = get_field_hierarchy(
+					plugin.settings.hierarchies,
 					field,
-					explicit: true,
-					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
-				});
-			} else {
-				// It's an unresolved link, so we add a node for it
-				graph.addNode(target_path, { resolved: false });
+				);
+				if (!field_hierarchy) {
+					return console.log("No field hierarchy found for:", field);
+				}
 
-				graph.addDirectedEdge(source_file.path, target_path, {
-					field,
-					explicit: true,
-					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
-				});
-			}
-		});
-	});
+				const target_path = Path.ensure_ext(target_link.link);
+				const target_file =
+					plugin.app.metadataCache.getFirstLinkpathDest(
+						target_path,
+						source_file.path,
+					);
+
+				if (target_file) {
+					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
+					graph.addDirectedEdge(source_file.path, target_file.path, {
+						field,
+						explicit: true,
+						source: "typed_link",
+						dir: field_hierarchy.dir,
+						hierarchy_i: field_hierarchy.hierarchy_i,
+					});
+				} else {
+					// It's an unresolved link, so we add a node for it
+					graph.addNode(target_path, { resolved: false });
+
+					graph.addDirectedEdge(source_file.path, target_path, {
+						field,
+						explicit: true,
+						source: "typed_link",
+						dir: field_hierarchy.dir,
+						hierarchy_i: field_hierarchy.hierarchy_i,
+					});
+				}
+			});
+		},
+	);
 
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
@@ -126,5 +119,5 @@ export const _add_explicit_edges_typed_link: GraphBuilder = (
 		});
 	});
 
-	return graph;
+	return { errors };
 };

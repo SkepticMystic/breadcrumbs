@@ -1,6 +1,6 @@
 import type { Direction } from "src/const/hierarchies";
 import { META_FIELD } from "src/const/metadata_fields";
-import type { GraphBuilder } from "src/interfaces/graph";
+import type { ExplicitEdgeBuilder, GraphError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, succ } from "src/utils/result";
@@ -42,11 +42,13 @@ const get_tag_note_info = (
 	return succ({ tag, field, exact, field_hierarchy });
 };
 
-export const _add_explicit_edges_tag_note: GraphBuilder = (
+export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
 	all_files,
 ) => {
+	const errors: GraphError[] = [];
+
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go
 	const tag_notes: {
@@ -61,41 +63,42 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 	// From tag, to paths with that tag
 	const tag_paths_map = new Map<string, string[]>();
 
-	all_files.obsidian?.forEach((source_file) => {
-		const source_cache = plugin.app.metadataCache.getFileCache(source_file);
-		if (!source_cache) return;
+	all_files.obsidian?.forEach(
+		({ file: source_file, cache: source_cache }) => {
+			if (!source_cache) return;
 
-		source_cache?.tags?.forEach(({ tag }) => {
-			// Quite happy with this trick :)
-			// Try get the existing_paths, and mutate it if it exists
-			// Push returns the new length (guarenteed to be atleast 1 - truthy)
-			// So if will only be false if the key doesn't exist
-			if (!tag_paths_map.get(tag)?.push(source_file.path)) {
-				tag_paths_map.set(tag, [source_file.path]);
+			source_cache?.tags?.forEach(({ tag }) => {
+				// Quite happy with this trick :)
+				// Try get the existing_paths, and mutate it if it exists
+				// Push returns the new length (guarenteed to be atleast 1 - truthy)
+				// So if will only be false if the key doesn't exist
+				if (!tag_paths_map.get(tag)?.push(source_file.path)) {
+					tag_paths_map.set(tag, [source_file.path]);
+				}
+			});
+
+			const tag_note_info = get_tag_note_info(
+				plugin,
+				source_cache?.frontmatter,
+			);
+			if (!tag_note_info.ok) {
+				if (tag_note_info.error) tag_note_info.log("tag_note_info");
+
+				return;
 			}
-		});
 
-		const tag_note_info = get_tag_note_info(
-			plugin,
-			source_cache?.frontmatter,
-		);
-		if (!tag_note_info.ok) {
-			if (tag_note_info.error) tag_note_info.log("tag_note_info");
+			const { tag, field, exact, field_hierarchy } = tag_note_info.data;
 
-			return;
-		}
-
-		const { tag, field, exact, field_hierarchy } = tag_note_info.data;
-
-		tag_notes.push({
-			tag,
-			exact,
-			field,
-			dir: field_hierarchy.dir,
-			source_path: source_file.path,
-			hierarchy_i: field_hierarchy.hierarchy_i,
-		});
-	});
+			tag_notes.push({
+				tag,
+				exact,
+				field,
+				dir: field_hierarchy.dir,
+				source_path: source_file.path,
+				hierarchy_i: field_hierarchy.hierarchy_i,
+			});
+		},
+	);
 
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
@@ -149,5 +152,5 @@ export const _add_explicit_edges_tag_note: GraphBuilder = (
 		});
 	});
 
-	return graph;
+	return { errors };
 };
