@@ -4,6 +4,7 @@ import type {
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
+import { Link } from "src/utils/links";
 import { Path } from "src/utils/paths";
 
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
@@ -29,35 +30,37 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				);
 				if (!field_hierarchy) return;
 
-				const target_path = Path.ensure_ext(target_link.link);
+				const maybe_resolved_target_path = Path.ensure_ext(
+					target_link.link,
+				);
 				const target_file =
 					plugin.app.metadataCache.getFirstLinkpathDest(
-						target_path,
+						maybe_resolved_target_path,
 						source_file.path,
 					);
 
-				if (target_file) {
-					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-					graph.addDirectedEdge(source_file.path, target_file.path, {
-						field,
-						explicit: true,
-						source: "typed_link",
-						dir: field_hierarchy.dir,
-						hierarchy_i: field_hierarchy.hierarchy_i,
-					});
-				} else {
-					// It's an unresolved link, so we add a node for it
-					// Unresolved nodes don't have aliases
-					graph.addNode(target_path, { resolved: false });
+				const target_path =
+					target_file?.path ??
+					Link.resolve_to_absolute_path(
+						plugin.app,
+						maybe_resolved_target_path,
+						source_file.path,
+					);
 
-					graph.addDirectedEdge(source_file.path, target_path, {
-						field,
-						explicit: true,
-						source: "typed_link",
-						dir: field_hierarchy.dir,
-						hierarchy_i: field_hierarchy.hierarchy_i,
-					});
+				if (!target_file) {
+					// It's an unresolved link, so we add a node for it
+					//   (still using safe_add, as a different builder may have already added it)
+					// Unresolved nodes don't have aliases
+					graph.safe_add_node(target_path, { resolved: false });
 				}
+
+				graph.addDirectedEdge(source_file.path, target_path, {
+					field,
+					explicit: true,
+					source: "typed_link",
+					dir: field_hierarchy.dir,
+					hierarchy_i: field_hierarchy.hierarchy_i,
+				});
 			});
 		},
 	);
@@ -93,34 +96,36 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
 				// So, we ensure it here
-				const target_path = Path.ensure_ext(target_link.path);
+				const maybe_resolved_target_path = Path.ensure_ext(
+					target_link.path,
+				);
 				const target_file =
 					plugin.app.metadataCache.getFirstLinkpathDest(
-						target_path,
+						maybe_resolved_target_path,
 						source_file.path,
 					);
 
-				if (target_file) {
-					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-					graph.addDirectedEdge(source_file.path, target_file.path, {
-						field,
-						explicit: true,
-						source: "typed_link",
-						dir: field_hierarchy.dir,
-						hierarchy_i: field_hierarchy.hierarchy_i,
-					});
-				} else {
+				const target_path =
+					target_file?.path ??
+					Link.resolve_to_absolute_path(
+						plugin.app,
+						maybe_resolved_target_path,
+						source_file.path,
+					);
+
+				if (!target_file) {
 					// It's an unresolved link, so we add a node for it
 					graph.addNode(target_path, { resolved: false });
-
-					graph.addDirectedEdge(source_file.path, target_path, {
-						field,
-						explicit: true,
-						source: "typed_link",
-						dir: field_hierarchy.dir,
-						hierarchy_i: field_hierarchy.hierarchy_i,
-					});
 				}
+
+				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
+				graph.addDirectedEdge(source_file.path, target_path, {
+					field,
+					explicit: true,
+					source: "typed_link",
+					dir: field_hierarchy.dir,
+					hierarchy_i: field_hierarchy.hierarchy_i,
+				});
 			});
 		});
 	});
