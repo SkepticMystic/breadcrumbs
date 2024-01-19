@@ -49,9 +49,6 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	// Add initial nodes
 	add_initial_nodes(graph, all_files);
 
-	// TODO: Each GraphBuilder should gather and return any errors on the way
-	// For example, if a file has the `BC-tag-note-field` key, but the value isn't valid, we can surface that
-
 	// Explicit edges
 	const explicit_edge_results = EXPLICIT_EDGE_SOURCES.reduce(
 		(acc, key) => {

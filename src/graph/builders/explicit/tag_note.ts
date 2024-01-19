@@ -161,6 +161,9 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 					// We know that the tag_note.tag is in the tag_paths_map, so this is safe
 					.flatMap((tag) => tag_paths_map.get(tag)!);
 
+		// Adding these edges is comparatively simple.
+		//   We know the target_path is resolved, since it only gets added to the map
+		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
 			graph.addDirectedEdge(tag_note.source_path, target_path, {
 				explicit: true,

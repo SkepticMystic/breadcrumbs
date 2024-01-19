@@ -1,4 +1,4 @@
-import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -40,7 +40,41 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 					active_file_store.set(file);
 
-					draw_page_views_on_active_note(this);
+					if (file) {
+						draw_page_views_on_active_note(this);
+					}
+				}),
+			);
+
+			this.registerEvent(
+				this.app.vault.on("create", (file) => {
+					console.log("create", file.path);
+					if (file instanceof TFile) {
+						// This isn't perfect, but it stops any "node doesn't exist" errors
+						// The user will have to refresh to add any relevant edges
+						this.graph.safe_add_node(file.path, {
+							resolved: true,
+						});
+					}
+				}),
+			);
+
+			this.registerEvent(
+				this.app.vault.on("rename", (file, old_path) => {
+					console.log("rename", old_path, "->", file.path);
+					if (file instanceof TFile) {
+						this.graph.safe_rename_node(old_path, file.path);
+					}
+				}),
+			);
+
+			this.registerEvent(
+				this.app.vault.on("delete", (file) => {
+					console.log("delete", file.path);
+					if (file instanceof TFile) {
+						// Conveniently drops any relevant edges
+						this.graph.dropNode(file.path);
+					}
 				}),
 			);
 
@@ -87,7 +121,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		const start_ms = Date.now();
 
-		const notice = new Notice("Rebuilding graph");
+		const notice = new Notice("Rebuilding BC graph");
 
 		// Rebuild the graph
 		this.graph = rebuild_graph(this);
@@ -97,8 +131,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		draw_page_views_on_active_note(this);
 
-		const duration_ms = Date.now() - start_ms;
-		notice.setMessage(`Done in ${duration_ms}ms`);
+		notice.setMessage(`Rebuilt BC graph in ${Date.now() - start_ms}ms`);
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views

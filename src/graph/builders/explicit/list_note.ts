@@ -109,20 +109,11 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			if (!source_link) return;
 
 			const unsafe_source_path = Path.ensure_ext(source_link.path);
-
-			// FIXME: EVERYWHERE: Dataview.Links aren't the full paths, so we still have to use Obsidian to resolve 'em
-			//   This might be the case for Obsidian Links, too
-			// Possibly get the corresponding file
 			const source_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				unsafe_source_path,
 				list_note_page.file.path,
 			);
 
-			// TODO: Even this has problems... If the source_link is unresolved,
-			//   we add it to the graph in it's _possibly relative_ form.
-			//   What if a different GraphBuilder refers to the same relative path, but intends a different absolute path?
-			//   I recall there being an app method to resolve a relative path based on the users settings.
-			//   Basically, we need the path that the unresolved note would resolve to, in the current context.
 			// If it's resolved, use that path as is. If not, resolve it from the current context
 			const source_path =
 				source_file?.path ??

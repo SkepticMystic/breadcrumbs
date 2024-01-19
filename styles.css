@@ -45,10 +45,6 @@ Outputs to /styles.css, for Obsidian to use.
   position: absolute
 }
 
-.relative {
-  position: relative
-}
-
 .flex {
   display: flex
 }
