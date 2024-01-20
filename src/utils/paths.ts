@@ -29,7 +29,7 @@ const show = (
 	return output;
 };
 
-export const Path = {
+export const Paths = {
 	ensure_ext,
 
 	drop_ext,

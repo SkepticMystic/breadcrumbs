@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { traverse } from "src/graph/traverse";
+	import { Traverse } from "src/graph/traverse";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import {
@@ -14,8 +14,8 @@
 	const paths = $active_file_store
 		? plugin.settings.hierarchies
 				.map((_hierarchy, i) =>
-					traverse.all_paths(
-						traverse.depth_first,
+					Traverse.all_paths(
+						"depth_first",
 						plugin.graph,
 						$active_file_store!.path,
 						(edge) =>

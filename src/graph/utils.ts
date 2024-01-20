@@ -1,5 +1,5 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
-import { Path } from "src/utils/paths";
+import { Paths } from "src/utils/paths";
 import type { BCEdge, BCNodeAttributes } from "./MyMultiGraph";
 
 // TODO: Maybe this can be put on BCGraph instead?
@@ -14,7 +14,7 @@ export const stringify_node = (
 ) =>
 	options?.show_node_options?.alias && node_attr.aliases?.length
 		? node_attr.aliases.at(0)!
-		: Path.show(node_id, options?.show_node_options);
+		: Paths.show(node_id, options?.show_node_options);
 
 export const stringify_edge = (
 	edge: BCEdge,
@@ -24,8 +24,8 @@ export const stringify_edge = (
 		show_node_options?: ShowNodeOptions;
 	},
 ) => {
-	const source_id = Path.show(edge.source_id, options?.show_node_options);
-	const target_id = Path.show(edge.target_id, options?.show_node_options);
+	const source_id = Paths.show(edge.source_id, options?.show_node_options);
+	const target_id = Paths.show(edge.target_id, options?.show_node_options);
 
 	const edge_id = options?.edge_id ? `(${edge.id})` : null;
 

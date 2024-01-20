@@ -9,7 +9,7 @@ import { MatrixView } from "src/views/matrix";
 import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
-import { traverse } from "./graph/traverse";
+import { Traverse } from "./graph/traverse";
 import { stringify_edge } from "./graph/utils";
 import { migrate_old_settings } from "./settings/migration";
 import { draw_page_views_on_active_note } from "./views/page";
@@ -110,8 +110,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 					const file = this.app.workspace.getActiveFile();
 					if (!file) return;
 
-					const paths = traverse.all_paths(
-						traverse.depth_first,
+					const paths = Traverse.all_paths(
+						"depth_first",
 						this.graph,
 						file.path,
 						(e) => e.attr.dir === "up",
@@ -125,7 +125,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					);
 
 					console.log(
-						traverse.paths_to_index_list(paths, {
+						Traverse.paths_to_index_list(paths, {
 							indent: "\t",
 							link_kind: "wiki",
 							show_node_options: {

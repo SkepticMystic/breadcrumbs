@@ -1,7 +1,7 @@
 <script lang="ts">
 	import BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { Path } from "src/utils/paths";
+	import { Paths } from "src/utils/paths";
 
 	export let path: string;
 	export let display: string;
@@ -9,7 +9,7 @@
 	export let plugin: BreadcrumbsPlugin;
 	export let cls: string = "";
 
-	const no_ext = Path.drop_ext(path);
+	const no_ext = Paths.drop_ext(path);
 </script>
 
 <a

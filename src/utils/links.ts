@@ -39,7 +39,7 @@ const ify = (
 	}
 };
 
-export const Link = {
+export const Links = {
 	ify,
 	resolve_to_absolute_path,
 };

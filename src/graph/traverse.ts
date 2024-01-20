@@ -1,5 +1,5 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
-import { Link } from "src/utils/links";
+import { Links } from "src/utils/links";
 import type { BCEdge, BCGraph } from "./MyMultiGraph";
 import { objectify_edge_mapper } from "./objectify_mappers";
 import { is_self_loop, stringify_node } from "./utils";
@@ -63,15 +63,19 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	}
 };
 
+const alg = {
+	depth_first,
+};
+
 const all_paths = (
-	traverser: Traverser,
+	alg_name: keyof typeof alg,
 	graph: BCGraph,
 	start_node: string,
 	edge_filter?: (edge: BCEdge) => boolean,
 ) => {
 	const paths: BCEdge[][] = [];
 
-	traverser(
+	alg[alg_name](
 		graph,
 		start_node,
 		({ path }, filtered_out_edges) => {
@@ -112,7 +116,8 @@ const paths_to_index_list = (
 					edge.target_attr,
 					{ show_node_options },
 				);
-				const link = Link.ify(edge.target_id, display, {
+
+				const link = Links.ify(edge.target_id, display, {
 					link_kind,
 				});
 
@@ -124,8 +129,8 @@ const paths_to_index_list = (
 	return index;
 };
 
-export const traverse = {
-	depth_first,
+export const Traverse = {
+	alg,
 	all_paths,
 	paths_to_index_list,
 };

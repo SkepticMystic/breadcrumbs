@@ -6,8 +6,8 @@ import type {
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { Link } from "src/utils/links";
-import { Path } from "src/utils/paths";
+import { Links } from "src/utils/links";
+import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
 const get_list_note_info = (
@@ -108,7 +108,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			const source_link = source_list_item.outlinks.at(0);
 			if (!source_link) return;
 
-			const unsafe_source_path = Path.ensure_ext(source_link.path);
+			const unsafe_source_path = Paths.ensure_ext(source_link.path);
 			const source_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				unsafe_source_path,
 				list_note_page.file.path,
@@ -117,7 +117,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			// If it's resolved, use that path as is. If not, resolve it from the current context
 			const source_path =
 				source_file?.path ??
-				Link.resolve_to_absolute_path(
+				Links.resolve_to_absolute_path(
 					plugin.app,
 					unsafe_source_path,
 					list_note_page.file.path,
@@ -149,7 +149,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				const target_link = target_list_item.outlinks.at(0);
 				if (!target_link) return;
 
-				const unsafe_target_path = Path.ensure_ext(target_link.path);
+				const unsafe_target_path = Paths.ensure_ext(target_link.path);
 
 				const target_file =
 					plugin.app.metadataCache.getFirstLinkpathDest(
@@ -159,7 +159,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 				const target_path =
 					target_file?.path ??
-					Link.resolve_to_absolute_path(
+					Links.resolve_to_absolute_path(
 						plugin.app,
 						unsafe_target_path,
 						// Still resolve from the list_note, not the source_note above the target

@@ -4,8 +4,8 @@ import type {
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { Link } from "src/utils/links";
-import { Path } from "src/utils/paths";
+import { Links } from "src/utils/links";
+import { Paths } from "src/utils/paths";
 
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
@@ -30,7 +30,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				);
 				if (!field_hierarchy) return;
 
-				const maybe_resolved_target_path = Path.ensure_ext(
+				const maybe_resolved_target_path = Paths.ensure_ext(
 					target_link.link,
 				);
 				const target_file =
@@ -41,7 +41,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				const target_path =
 					target_file?.path ??
-					Link.resolve_to_absolute_path(
+					Links.resolve_to_absolute_path(
 						plugin.app,
 						maybe_resolved_target_path,
 						source_file.path,
@@ -96,7 +96,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
 				// So, we ensure it here
-				const maybe_resolved_target_path = Path.ensure_ext(
+				const maybe_resolved_target_path = Paths.ensure_ext(
 					target_link.path,
 				);
 				const target_file =
@@ -107,7 +107,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				const target_path =
 					target_file?.path ??
-					Link.resolve_to_absolute_path(
+					Links.resolve_to_absolute_path(
 						plugin.app,
 						maybe_resolved_target_path,
 						source_file.path,
