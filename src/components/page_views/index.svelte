@@ -6,7 +6,7 @@
 	export let plugin: BreadcrumbsPlugin;
 </script>
 
-<div>
+<div class="mb-4">
 	{#if plugin.settings.views.page.grid.enabled}
 		<GridView {plugin} />
 	{/if}

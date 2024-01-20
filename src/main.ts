@@ -36,9 +36,27 @@ export default class BreadcrumbsPlugin extends Plugin {
 			this.refresh();
 
 			// Events
+			/// Workspace
+
+			// NOTE: This is not needed, because layout-change is fired
+			//   when a file is opened, and when switching editor modes
+			// this.registerEvent(
+			// 	this.app.workspace.on("file-open", async (file) => {
+			// 		console.log("file-open");
+
+			// 		active_file_store.set(file);
+
+			// 		if (file) {
+			// 			draw_page_views_on_active_note(this);
+			// 		}
+			// 	}),
+			// );
+
 			this.registerEvent(
-				this.app.workspace.on("file-open", async (file) => {
-					console.log("file-open");
+				this.app.workspace.on("layout-change", () => {
+					console.log("layout-change");
+
+					const file = this.app.workspace.getActiveFile();
 
 					active_file_store.set(file);
 
@@ -48,6 +66,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				}),
 			);
 
+			/// Vault
 			this.registerEvent(
 				this.app.vault.on("create", (file) => {
 					console.log("create", file.path);

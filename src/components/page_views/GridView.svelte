@@ -58,7 +58,7 @@
 </script>
 
 <div
-	class="markdown-rendered BC-grid-view grid"
+	class="BC-grid-view grid"
 	style="grid-template-rows: {'1fr '.repeat(square.length)};
          grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
