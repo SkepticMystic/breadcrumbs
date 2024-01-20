@@ -54,6 +54,8 @@ const get_list_note_info = (
 	});
 };
 
+// TODO: Allow custom fields per list-item
+//   e.g. "- down [[note]]"
 export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	graph,
 	plugin,

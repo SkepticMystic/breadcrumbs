@@ -1,3 +1,4 @@
+import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 import type { BCEdge, BCGraph } from "./MyMultiGraph";
@@ -97,12 +98,14 @@ const paths_to_index_list = (
 		show_node_options,
 	}: {
 		indent: string;
-		link_kind: "none" | "wiki" | "markdown";
+		link_kind: LinkKind;
 		show_node_options: ShowNodeOptions;
 	},
 ) => {
 	let index = "";
 	const visited = new Set<string>();
+
+	const real_indent = indent.replace(/\\t/g, "\t");
 
 	paths.forEach((path) => {
 		path.forEach((edge, depth) => {
@@ -121,7 +124,7 @@ const paths_to_index_list = (
 					link_kind,
 				});
 
-				index += indent.repeat(depth) + `- ${link}\n`;
+				index += real_indent.repeat(depth) + `- ${link}\n`;
 			}
 		});
 	});

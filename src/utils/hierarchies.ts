@@ -76,3 +76,6 @@ export const get_field_hierarchy = (
 		implied_relationships,
 	};
 };
+
+export const stringify_hierarchy = (hierarchy: Hierarchy) =>
+	DIRECTIONS.map((dir) => hierarchy.dirs[dir].join(", ")).join(" | ");

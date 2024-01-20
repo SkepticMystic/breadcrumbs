@@ -9,6 +9,9 @@ export const _add_settings_show_node_options = (
 		get: () => ShowNodeOptions;
 		set: (value: ShowNodeOptions) => void;
 	},
+	options?: {
+		save_and_refresh?: boolean;
+	},
 ) => {
 	let show_node_options = cb.get();
 
@@ -17,6 +20,7 @@ export const _add_settings_show_node_options = (
 		.setDesc("How to display note links");
 
 	setting.addToggle((toggle) => {
+		toggle.toggleEl.before("Folder");
 		toggle
 			.setTooltip("Folder path")
 			.setValue(show_node_options.folder)
@@ -25,12 +29,15 @@ export const _add_settings_show_node_options = (
 
 				cb.set(show_node_options);
 
-				await plugin.saveSettings();
-				plugin.refresh();
+				if (options?.save_and_refresh !== false) {
+					await plugin.saveSettings();
+					plugin.refresh();
+				}
 			});
 	});
 
 	setting.addToggle((toggle) => {
+		toggle.toggleEl.before("Extension");
 		toggle
 			.setTooltip("File extension")
 			.setValue(show_node_options.ext)
@@ -39,12 +46,15 @@ export const _add_settings_show_node_options = (
 
 				cb.set(show_node_options);
 
-				await plugin.saveSettings();
-				plugin.refresh();
+				if (options?.save_and_refresh !== false) {
+					await plugin.saveSettings();
+					plugin.refresh();
+				}
 			});
 	});
 
 	setting.addToggle((toggle) => {
+		toggle.toggleEl.before("Alias");
 		toggle
 			.setTooltip("Alias (first alias, if available)")
 			.setValue(show_node_options.alias)
@@ -53,8 +63,12 @@ export const _add_settings_show_node_options = (
 
 				cb.set(show_node_options);
 
-				await plugin.saveSettings();
-				plugin.refresh();
+				if (options?.save_and_refresh !== false) {
+					await plugin.saveSettings();
+					plugin.refresh();
+				}
 			});
 	});
+
+	return setting;
 };

@@ -57,6 +57,10 @@ Outputs to /styles.css, for Obsidian to use.
   display: contents
 }
 
+.list-item {
+  display: list-item
+}
+
 .w-full {
   width: 100%
 }

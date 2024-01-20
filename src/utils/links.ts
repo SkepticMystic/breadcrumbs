@@ -1,5 +1,6 @@
 import type { App } from "obsidian";
 import path from "path";
+import type { LinkKind } from "src/interfaces/links";
 
 /** Given an unresolved link path, return the absolute path of where it _would_ get created,
  * given the file it would be created in
@@ -21,7 +22,7 @@ const ify = (
 	{
 		link_kind,
 	}: {
-		link_kind: "none" | "wiki" | "markdown";
+		link_kind: LinkKind;
 	},
 ) => {
 	switch (link_kind) {
