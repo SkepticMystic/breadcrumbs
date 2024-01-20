@@ -15,6 +15,31 @@ const resolve_to_absolute_path = (
 	return path.join(folder.path, path.basename(relative_path));
 };
 
+const ify = (
+	path: string,
+	display: string,
+	{
+		link_kind,
+	}: {
+		link_kind: "none" | "wiki" | "markdown";
+	},
+) => {
+	switch (link_kind) {
+		case "none": {
+			return display;
+		}
+		case "wiki": {
+			return display === path ? `[[${path}]]` : `[[${path}|${display}]]`;
+		}
+		case "markdown": {
+			return display === path
+				? `[${path}](${path})`
+				: `[${display}](${path})`;
+		}
+	}
+};
+
 export const Link = {
+	ify,
 	resolve_to_absolute_path,
 };

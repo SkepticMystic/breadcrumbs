@@ -6,8 +6,11 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
+import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
+import { traverse } from "./graph/traverse";
+import { stringify_edge } from "./graph/utils";
 import { migrate_old_settings } from "./settings/migration";
 import { draw_page_views_on_active_note } from "./views/page";
 
@@ -97,6 +100,44 @@ export default class BreadcrumbsPlugin extends Plugin {
 			name: "Open matrix view",
 			callback: () => this.activateView(VIEW_IDS.matrix),
 		});
+
+		if (!PROD) {
+			this.addCommand({
+				id: "breadcrumbs:test-command",
+				name: "Test command",
+				callback: () => {
+					console.log("test command");
+					const file = this.app.workspace.getActiveFile();
+					if (!file) return;
+
+					const paths = traverse.all_paths(
+						traverse.depth_first,
+						this.graph,
+						file.path,
+						(e) => e.attr.dir === "up",
+					);
+					console.log("paths", paths);
+
+					console.log(
+						paths.map((path) =>
+							path.map((edge) => stringify_edge(edge)),
+						),
+					);
+
+					console.log(
+						traverse.paths_to_index_list(paths, {
+							indent: "\t",
+							link_kind: "wiki",
+							show_node_options: {
+								ext: false,
+								alias: true,
+								folder: false,
+							},
+						}),
+					);
+				},
+			});
+		}
 	}
 
 	onunload() {}

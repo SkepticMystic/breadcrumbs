@@ -1,6 +1,8 @@
+import type { ShowNodeOptions } from "src/interfaces/settings";
+import { Link } from "src/utils/links";
 import type { BCEdge, BCGraph } from "./MyMultiGraph";
 import { objectify_edge_mapper } from "./objectify_mappers";
-import { is_self_loop } from "./utils";
+import { is_self_loop, stringify_node } from "./utils";
 
 type StackItem = {
 	path: BCEdge[];
@@ -83,7 +85,47 @@ const all_paths = (
 	return paths;
 };
 
-export const traverse_graph = {
+const paths_to_index_list = (
+	paths: BCEdge[][],
+	{
+		indent,
+		link_kind,
+		show_node_options,
+	}: {
+		indent: string;
+		link_kind: "none" | "wiki" | "markdown";
+		show_node_options: ShowNodeOptions;
+	},
+) => {
+	let index = "";
+	const visited = new Set<string>();
+
+	paths.forEach((path) => {
+		path.forEach((edge, depth) => {
+			const key = `${depth}-${edge.target_id}`;
+
+			if (!visited.has(key)) {
+				visited.add(key);
+
+				const display = stringify_node(
+					edge.target_id,
+					edge.target_attr,
+					{ show_node_options },
+				);
+				const link = Link.ify(edge.target_id, display, {
+					link_kind,
+				});
+
+				index += indent.repeat(depth) + `- ${link}\n`;
+			}
+		});
+	});
+
+	return index;
+};
+
+export const traverse = {
 	depth_first,
 	all_paths,
+	paths_to_index_list,
 };
