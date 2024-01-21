@@ -23,6 +23,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 
 	views: {
 		page: {
+			all: {
+				readable_line_width: true,
+			},
+
 			grid: {
 				enabled: true,
 				show_node_options: {

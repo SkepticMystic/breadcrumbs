@@ -11,7 +11,7 @@ import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
-import { draw_page_views_on_active_note } from "./views/page";
+import { redraw_page_views } from "./views/page";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -56,13 +56,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.workspace.on("layout-change", () => {
 					console.log("layout-change");
 
-					const file = this.app.workspace.getActiveFile();
-
-					active_file_store.set(file);
-
-					if (file) {
-						draw_page_views_on_active_note(this);
-					}
+					this.refresh({ rebuild_graph: false });
 				}),
 			);
 
@@ -154,23 +148,35 @@ export default class BreadcrumbsPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	/** rebuild_graph, then react by updating active_file_store and redrawing page_views */
-	refresh() {
+	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
+	 * Optionally disable any of these steps.
+	 */
+	refresh(options?: {
+		rebuild_graph?: false;
+		active_file_store?: false;
+		redraw_page_views?: false;
+	}) {
 		console.log("bc.refresh");
 
-		const start_ms = Date.now();
-
-		const notice = new Notice("Rebuilding BC graph");
-
 		// Rebuild the graph
-		this.graph = rebuild_graph(this);
+		if (options?.rebuild_graph !== false) {
+			const start_ms = Date.now();
+
+			const notice = new Notice("Rebuilding BC graph");
+
+			this.graph = rebuild_graph(this);
+
+			notice.setMessage(`Rebuilt BC graph in ${Date.now() - start_ms}ms`);
+		}
 
 		// _Then_ react
-		active_file_store.refresh(this.app);
+		if (options?.active_file_store !== false) {
+			active_file_store.refresh(this.app);
+		}
 
-		draw_page_views_on_active_note(this);
-
-		notice.setMessage(`Rebuilt BC graph in ${Date.now() - start_ms}ms`);
+		if (options?.redraw_page_views !== false) {
+			redraw_page_views(this);
+		}
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views

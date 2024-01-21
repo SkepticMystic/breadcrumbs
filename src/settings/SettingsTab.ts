@@ -3,9 +3,13 @@ import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_grid_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
 import { _add_settings_matrix } from "./MatrixSettings";
+import { _add_settings_page_views } from "./PageViewSettings";
+import { _add_settings_prev_next_view } from "./PrevNextSettings";
 
-const make_details_el = (text: string, parent: HTMLElement) =>
-	parent.createEl("details", {}, (d) => d.createEl("summary", { text }));
+const make_details_el = (
+	parent: HTMLElement,
+	o?: { d?: DomElementInfo; s?: DomElementInfo },
+) => parent.createEl("details", o?.d, (d) => d.createEl("summary", o?.s));
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
@@ -16,27 +20,43 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const { containerEl } = this;
+		const { containerEl, plugin } = this;
 
 		containerEl.empty();
 
-		containerEl.createEl("h1", { text: "Breadcrumbs Settings" });
 		containerEl.addClass("BC-settings-tab");
 
-		containerEl.createEl("h2", { text: "Hierarchies" });
-		_add_settings_hierarchies(this.plugin, containerEl);
+		// Hierarchies
+		_add_settings_hierarchies(
+			plugin,
+			make_details_el(containerEl, {
+				s: { cls: "text-xl p-1", text: "Hierarchies" },
+			}),
+		);
 
 		// Views
+		containerEl.createEl("hr");
 		containerEl.createEl("h2", { text: "Views" });
 
 		_add_settings_matrix(
-			this.plugin,
-			make_details_el("Matrix", containerEl),
+			plugin,
+			make_details_el(containerEl, {
+				s: { cls: "text-xl p-1", text: "Matrix" },
+			}),
 		);
 
-		_add_settings_grid_view(
-			this.plugin,
-			make_details_el("Grid", containerEl),
-		);
+		/// Page
+		const page_details = make_details_el(containerEl, {
+			s: { cls: "text-xl p-1", text: "Page" },
+		});
+
+		page_details.createEl("h3", { text: "General" });
+		_add_settings_page_views(plugin, page_details);
+
+		page_details.createEl("h3", { text: "Grid" });
+		_add_settings_grid_view(plugin, page_details);
+
+		page_details.createEl("h3", { text: "Previous/Next" });
+		_add_settings_prev_next_view(plugin, page_details);
 	}
 }

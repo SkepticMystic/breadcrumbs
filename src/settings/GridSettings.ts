@@ -1,6 +1,6 @@
+import { Setting } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
-import { Setting } from "obsidian";
 
 export const _add_settings_grid_view = (
 	plugin: BreadcrumbsPlugin,
@@ -16,7 +16,7 @@ export const _add_settings_grid_view = (
 					plugin.settings.views.page.grid.enabled = value;
 
 					await plugin.saveSettings();
-					plugin.refresh();
+					plugin.refresh({ rebuild_graph: false });
 				});
 		});
 

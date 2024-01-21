@@ -19,6 +19,11 @@ export interface BreadcrumbsSettings {
 
 	views: {
 		page: {
+			/** Constrain max-width to var(--file-line-width) */
+			all: {
+				readable_line_width: boolean;
+			};
+
 			grid: {
 				enabled: boolean;
 				show_node_options: ShowNodeOptions;
