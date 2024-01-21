@@ -84,7 +84,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			// TODO: Gonna have to read the contents of the file and parse it pretty manually...
 			// Dataview is much easier in this case
 			// list_note_cache?.listItems?.forEach((list_item) => {
-			// 	list_item;
+			// 	list_item
 			// });
 		},
 	);

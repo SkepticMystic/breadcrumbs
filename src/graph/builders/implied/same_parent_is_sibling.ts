@@ -19,20 +19,20 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 			)
 			.forEach((up_edge) => {
 				graph
-					.mapOutEdges(
+					.mapInEdges(
 						up_edge.target_id,
 						objectify_edge_mapper((e) => e),
 					)
-					// Get the downward edges from the parent node
+					// Get all the _other_ real edges pointing up into the parent node
 					//   Ensuring they're in the same hierarchy,
-					//   and also don't point back to the current node
 					.filter(
-						(down_edge) =>
-							down_edge.attr.hierarchy_i === hierarchy_i &&
-							down_edge.attr.dir === "down" &&
-							down_edge.target_id !== up_edge.source_id,
+						(other_up_edge) =>
+							other_up_edge.attr.hierarchy_i === hierarchy_i &&
+							other_up_edge.attr.explicit &&
+							other_up_edge.attr.dir === "up" &&
+							other_up_edge.source_id !== up_edge.source_id,
 					)
-					.forEach((down_edge) => {
+					.forEach((other_up_edge) => {
 						// Add a same edge from the og node to the implied sibling
 						// NOTE: This will create two opposing, implied edges between the two nodes
 						//   This kinda works though, since the Matrix will just show what's expected
@@ -40,7 +40,7 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 						//   I'd need to see how those work in graphology
 						graph.addDirectedEdge(
 							up_edge.source_id,
-							down_edge.target_id,
+							other_up_edge.source_id,
 							{
 								hierarchy_i,
 								dir: "same",

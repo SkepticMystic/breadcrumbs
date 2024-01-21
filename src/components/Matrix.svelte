@@ -10,7 +10,6 @@
 		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
-		// TODO: Hook into the app.vault events to add/remove the nodes/edges
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.graph.mapOutEdges(
 					$active_file_store.path,
