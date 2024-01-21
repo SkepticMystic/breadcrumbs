@@ -2,7 +2,7 @@ import { MarkdownView } from "obsidian";
 import PageViews from "src/components/page_views/index.svelte";
 import type BreadcrumbsPlugin from "src/main";
 
-export const draw_page_views_on_active_note = (plugin: BreadcrumbsPlugin) => {
+export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	console.log("draw_page_views_on_active_note");
 
 	const active_markdown_view =
@@ -16,7 +16,16 @@ export const draw_page_views_on_active_note = (plugin: BreadcrumbsPlugin) => {
 	// Ensure the container exists
 	const page_views_el =
 		document.querySelector(".BC-page-views") ??
-		containerEl.createDiv({ cls: "BC-page-views" });
+		containerEl.createDiv({ cls: "BC-page-views w-full mx-auto" });
+
+	// Set the max width
+	// NOTE: Do this _after_ getting the element
+	//   So that if it existed already, it gets updated
+	const max_width = plugin.settings.views.page.all.readable_line_width
+		? "var(--file-line-width)"
+		: "none";
+
+	page_views_el.setAttribute("style", `max-width: ${max_width};`);
 
 	// Clear out any old content
 	page_views_el.empty();
@@ -26,23 +35,17 @@ export const draw_page_views_on_active_note = (plugin: BreadcrumbsPlugin) => {
 
 	if (markdown_view_mode === "preview") {
 		const view_parent = containerEl.querySelector(".markdown-preview-view");
-		if (!view_parent) {
-			return console.log("No view_parent");
-		}
+		if (!view_parent) return console.log("No view_parent");
 
 		view_parent.insertBefore(page_views_el, view_parent.firstChild);
 	} else {
-		// TODO: There's an issue in 'source' mode where BC-page-views
-		//   is constrained by the max-width of .cm-sizer
-		//   I've tried some fancy flex things, like:
-		//   - { flex-shrink: 0; flex-basis: 1000px; }
-		//     (this doesn't work because the container flexes as a column, and flex-basis only applies to the flex-direction. Whereas we want to grow in the row direction)
-		//   - { align-self: center; width: 130% }
-		//     (this one is better, but fails because the page-views then don't shrink beyond this new width)
-		const view_parent = containerEl.querySelector(".cm-sizer");
-		if (!view_parent) {
-			return console.log("No view_parent");
-		}
+		const view_parent = containerEl.querySelector(".cm-scroller");
+		if (!view_parent) return console.log("No view_parent");
+
+		// See here for an in-depth discussion on why it's done this way:
+		// https://discord.com/channels/686053708261228577/931552763467411487/1198377191994564621
+		// But basically, this shouldn't affect anything, and it's by far the easiest way to do it
+		view_parent.addClass("flex-col");
 
 		view_parent.insertBefore(page_views_el, view_parent.firstChild);
 	}
