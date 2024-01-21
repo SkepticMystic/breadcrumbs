@@ -115,7 +115,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				if (!target_file) {
 					// It's an unresolved link, so we add a node for it
-					graph.addNode(target_path, { resolved: false });
+					// But still do it safely, as a previous file may point to the same unresolved node
+					graph.safe_add_node(target_path, { resolved: false });
 				}
 
 				// If the file exists, we should have already added a node for it in the simple loop over all markdown files

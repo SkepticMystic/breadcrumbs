@@ -50,7 +50,7 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		try {
 			this.addNode(id, attr);
 		} catch (error) {
-			console.log("node already exists:", id);
+			// console.log("node already exists:", id);
 		}
 	}
 

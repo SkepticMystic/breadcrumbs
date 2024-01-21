@@ -5,6 +5,7 @@ import {
 import type { ExplicitEdgeBuilder } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
+import { objectify_edge_mapper } from "../objectify_mappers";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_edges } from "./implied";
@@ -63,9 +64,14 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	console.log("explicit_edge_results:", explicit_edge_results);
 
 	// Implied edges
+	const all_real_edges = graph
+		.mapOutEdges(objectify_edge_mapper((e) => e))
+		.filter((e) => e.attr.explicit);
+
 	Object.entries(add_implied_edges).forEach(([kind, fn]) => {
 		console.log("add_implied_edges:", kind);
-		fn(graph, plugin, all_files);
+
+		fn(graph, plugin, all_real_edges);
 	});
 
 	return graph;
