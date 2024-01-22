@@ -16,7 +16,7 @@ type Traverser = (
 		current_stack_item: StackItem,
 		filtered_out_edges: BCEdge[],
 	) => void,
-	edge_filter?: (edge: BCEdge) => boolean,
+	edge_filter?: (edge: BCEdge, depth: number) => boolean,
 ) => void;
 
 const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
@@ -29,7 +29,7 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 			start_node,
 			objectify_edge_mapper((e) => e),
 		)
-		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)))
+		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e, 0)))
 		.map((edge) => ({
 			edge,
 			// NOTE: It's a little redundant to add the start_edge,
@@ -50,7 +50,9 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 				objectify_edge_mapper((e) => e),
 			)
 			.filter(
-				(e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)),
+				(e) =>
+					!is_self_loop(e) &&
+					(!edge_filter || edge_filter(e, stack_item.path.length)),
 			);
 
 		// Act on the current stack item
@@ -72,7 +74,7 @@ const all_paths = (
 	alg_name: keyof typeof alg,
 	graph: BCGraph,
 	start_node: string,
-	edge_filter?: (edge: BCEdge) => boolean,
+	edge_filter?: (edge: BCEdge, depth: number) => boolean,
 ) => {
 	const paths: BCEdge[][] = [];
 

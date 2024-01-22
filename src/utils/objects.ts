@@ -15,6 +15,7 @@ export function deep_merge_objects<T>(obj1: T, obj2: T): T {
 		} else if (val1 === undefined) {
 			result[key] = val2;
 		}
+		// TODO: Somewhere here, I can handle the array case
 	}
 
 	return result;

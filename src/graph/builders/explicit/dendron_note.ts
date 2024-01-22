@@ -1,4 +1,3 @@
-import type { TFile } from "obsidian";
 import path from "path";
 import { META_FIELD } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
@@ -57,17 +56,15 @@ const get_dendron_note_info = (
 const handle_dendron_note = (
 	plugin: BreadcrumbsPlugin,
 	graph: BCGraph,
-	source_file: TFile,
-	dendron_note_metadata: Record<string, unknown> | undefined,
+	source_path: string,
+	source_metadata: Record<string, unknown> | undefined,
 	errors: GraphBuildError[],
 ) => {
 	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
 
 	// NOTE: There are easier ways to do alot of the below.
-	// But the `file` type between obsidian and dataview doesn't have the common fields needed.
-	// So we rebuild from `path`
-	const source_path = source_file.path;
-
+	//   But the `file` type between obsidian and dataview doesn't have the common fields needed.
+	//   So we rebuild from `path`
 	// drop_ext, as the delimiter might be '.'
 	const source_basename_splits = Paths.drop_ext(
 		path.basename(source_path),
@@ -76,7 +73,7 @@ const handle_dendron_note = (
 
 	const dendron_note_info = get_dendron_note_info(
 		plugin,
-		dendron_note_metadata,
+		source_metadata,
 		source_path,
 	);
 	if (!dendron_note_info.ok) {
@@ -104,6 +101,9 @@ const handle_dendron_note = (
 		source_path,
 	);
 
+	// TODO: If !target_file, we can recursively call handle_dendron_note
+	//   To add the unresolved edges along the way
+
 	graph.safe_add_node(target_path, { resolved: Boolean(target_file) });
 
 	const { field, field_hierarchy } = dendron_note_info.data;
@@ -128,11 +128,17 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	}
 
 	all_files.obsidian?.forEach(({ file, cache }) => {
-		handle_dendron_note(plugin, graph, file, cache?.frontmatter, errors);
+		handle_dendron_note(
+			plugin,
+			graph,
+			file.path,
+			cache?.frontmatter,
+			errors,
+		);
 	});
 
 	all_files.dataview?.forEach((page) => {
-		handle_dendron_note(plugin, graph, page.file, page, errors);
+		handle_dendron_note(plugin, graph, page.file.path, page, errors);
 	});
 
 	return { errors };

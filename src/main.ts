@@ -13,6 +13,7 @@ import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
+import { stringify_edge } from "./graph/utils";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -128,6 +129,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 				name: "Test command",
 				callback: () => {
 					console.log("test command");
+
+					console.log(
+						this.graph
+							.get_dir_chains_path(
+								this.app.workspace.getActiveFile()?.path!,
+								["up", "same"],
+								(edge) => edge.attr.explicit,
+							)
+							.map((path) =>
+								path.map((edge) => stringify_edge(edge)),
+							),
+					);
 				},
 			});
 		}

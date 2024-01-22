@@ -3,6 +3,7 @@ import type { ExplicitEdgeSource } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import { objectify_edge_mapper } from "./objectify_mappers";
+import { Traverse } from "./traverse";
 import { is_self_loop } from "./utils";
 
 export type BCNodeAttributes = {
@@ -113,4 +114,37 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 
 		return { old_exists, new_exists };
 	}
+
+	get_dir_chains_path = (
+		start_node: string,
+		dir_chain: Direction[],
+		edge_filter?: (edge: BCEdge) => boolean,
+	) => {
+		const visited_nodes = new Set<string>();
+
+		return (
+			Traverse.all_paths(
+				"depth_first",
+				this,
+				start_node,
+				(edge, depth) => {
+					if (
+						!visited_nodes.has(edge.target_id) &&
+						(!edge_filter || edge_filter(edge)) &&
+						// This will naturally end the path when depth > dir_chain.length
+						edge.attr.dir === dir_chain[depth]
+					) {
+						visited_nodes.add(edge.target_id);
+
+						return true;
+					} else {
+						return false;
+					}
+				},
+			)
+				// Just because dir_chain[depth] doesn't add the edge to the path,
+				//   We still have the filter out the partial paths that got started in that dir_chain
+				.filter((path) => path.length === dir_chain.length)
+		);
+	};
 }
