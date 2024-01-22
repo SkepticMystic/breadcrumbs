@@ -7,6 +7,7 @@ import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Links } from "src/utils/links";
 import { Paths } from "src/utils/paths";
 
+// TODO: Check how date fields are handled
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,

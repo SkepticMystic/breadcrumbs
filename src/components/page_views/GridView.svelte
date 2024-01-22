@@ -11,24 +11,28 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
-	const paths = $active_file_store
-		? plugin.settings.hierarchies
-				.map((_hierarchy, i) =>
-					Traverse.all_paths(
-						"depth_first",
-						plugin.graph,
-						$active_file_store!.path,
-						(edge) =>
-							edge.attr.dir === "up" &&
-							// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
-							edge.attr.hierarchy_i === i,
-					),
-				)
-				.flat()
-				// This basic sorting can break the continuity of the grid-areas.
-				// A better solution would sort the rows to maximise run length.
-				.sort((a, b) => b.length - a.length)
-		: [];
+	const paths =
+		$active_file_store &&
+		// Even tho we ensure the graph is built before the views are registered,
+		// Existing views still try render before the graph is built.
+		plugin.graph.hasNode($active_file_store.path)
+			? plugin.settings.hierarchies
+					.map((_hierarchy, i) =>
+						Traverse.all_paths(
+							"depth_first",
+							plugin.graph,
+							$active_file_store!.path,
+							(edge) =>
+								edge.attr.dir === "up" &&
+								// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
+								edge.attr.hierarchy_i === i,
+						),
+					)
+					.flat()
+					// This basic sorting can break the continuity of the grid-areas.
+					// A better solution would sort the rows to maximise run length.
+					.sort((a, b) => b.length - a.length)
+			: [];
 
 	const reversed = paths.map((path) => [...path].reverse());
 

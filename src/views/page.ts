@@ -27,6 +27,10 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 
 	page_views_el.setAttribute("style", `max-width: ${max_width};`);
 
+	// TODO: Maybe instead of emptying and re-rendering,
+	//   We can ensure the Svelte component has been rendered (if .BC-page-views existed above)
+	//   And rely on Svelte reactivity to update the inners
+	//   While we just move the container to the current note
 	// Clear out any old content
 	page_views_el.empty();
 

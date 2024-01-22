@@ -15,6 +15,13 @@ export interface BreadcrumbsSettings {
 		typed_link: {};
 		tag_note: {};
 		list_note: {};
+		dendron_note: {
+			enabled: boolean;
+			// Should BC-dendron-note-delimiter be a thing too?
+			// With the current setup, it would only apply to a single edge per note
+			delimiter: string;
+			default_field: string;
+		};
 	};
 
 	views: {

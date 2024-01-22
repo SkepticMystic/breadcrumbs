@@ -32,6 +32,7 @@ export declare namespace IDataview {
 	};
 
 	export type Page = {
+		// TODO: This isn't _really_ a TFile.. See dendron_note.ts for examples of missing/different fields
 		file: TFile & {
 			// NOTE: Other fields are not fully fleshed out.
 			// I generally add them as I need
