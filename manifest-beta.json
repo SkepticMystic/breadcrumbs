@@ -1,0 +1,11 @@
+{
+	"id": "breadcrumbs",
+	"name": "Breadcrumbs",
+	"version": "4.0.0-beta",
+	"minAppVersion": "1.0.0",
+	"description": "Add structured hierarchies to your notes",
+	"author": "SkepticMystic",
+	"authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
+	"fundingUrl": "https://ko-fi.com/skepticmystic",
+	"isDesktopOnly": false
+}

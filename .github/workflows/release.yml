@@ -1,3 +1,4 @@
+# SOURCE: https://docs.obsidian.md/Plugins/Releasing/Release+your+plugin+with+GitHub+Actions
 name: Release Obsidian plugin
 
 on:
