@@ -11,6 +11,7 @@ import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
+import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 
 export default class BreadcrumbsPlugin extends Plugin {
@@ -135,10 +136,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData(),
+		this.settings = deep_merge_objects(
+			(await this.loadData()) ?? {},
+			DEFAULT_SETTINGS as any,
 		);
 
 		console.log("settings", this.settings);
