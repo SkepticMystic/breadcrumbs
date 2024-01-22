@@ -5,6 +5,8 @@ import { _add_implied_edges_self_is_sibling } from "./self_is_sibling";
 import { _add_implied_edges_same_parent_is_sibling } from "./same_parent_is_sibling";
 import { _add_implied_edges_parents_sibling_is_parent } from "./parents_sibling_is_parent";
 
+// TODO: Flesh out
+//@ts-expect-error
 export const add_implied_edges: Record<
 	keyof Hierarchy["implied_relationships"],
 	ImpliedEdgeBuilder
