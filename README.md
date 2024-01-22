@@ -1,25 +1,24 @@
 # Breadcrumb Trail
 
-This plugin adds multiple new views to Obsidian.
+See the [wiki](https://breadcrumbs-wiki.onrender.com) for in-depth documentation.
 
-### The [wiki](https://breadcrumbs-wiki.onrender.com) has way more in-depth info on the plugin than this current outdated and limited readme file.
+Join our discussions in [GitHub](https://github.com/SkepticMystic/breadcrumbs/discussions) or [Discord](https://discord.com/channels/686053708261228577/929513881041248266).
 
-Join our discussions in [GitHub](https://github.com/SkepticMystic/breadcrumbs/discussions) or [Discord](https://discord.com/channels/686053708261228577/929513881041248266)! For example, learn how other users [get the most out of Breadcrumbs](https://github.com/SkepticMystic/breadcrumbs/discussions/175 "Getting the most out of Breadcrumbs · Discussion #175 · SkepticMystic/breadcrumbs").
-
-You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md).
+<!-- You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md). -->
 
 ## Basics
 
-Breadcrumbs plugin lets you add hierarchical metadata to your notes and then leverage that structure.
+Breadcrumbs lets you add hierarchical structure to your notes and then leverage that structure.
 
-Use
+The core of Breadcrumbs are the 5 directions:
 
--   up/parent (↑)
--   unordered same/sibling (↔)
--   directional/orderly sibling (previous (←)/next (→))
--   down/child (↓)
+-   up (↑)
+-   same (↔)
+-   previous (←)
+-   next (→)
+-   down (↓)
 
-relationships in your notes. You can name those relationship types anyway you want that best fits your purpose (up/parent/top/high/ancestor/founder/source/foo).
+You can name these whatever you want. For example, you can use `parent`, `sibling`, `child`, `left`, `right`. What matters is the direction behind them.
 
 To get this structure, the plugin requires that you use some type of metadata indicating the hierarchy of notes:
 
