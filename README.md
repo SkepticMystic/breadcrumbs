@@ -14,10 +14,10 @@ Breadcrumbs plugin lets you add hierarchical metadata to your notes and then lev
 
 Use
 
-- up/parent (↑)
-- unordered same/sibling (↔)
-- directional/orderly sibling (previous (←)/next (→))
-- down/child (↓)
+-   up/parent (↑)
+-   unordered same/sibling (↔)
+-   directional/orderly sibling (previous (←)/next (→))
+-   down/child (↓)
 
 relationships in your notes. You can name those relationship types anyway you want that best fits your purpose (up/parent/top/high/ancestor/founder/source/foo).
 
@@ -99,3 +99,15 @@ http://youtube.com/watch?v=AS5Mv6YNmsQ
 ## Feed my coffee problem
 
 If you're so inclined, you can buy me a coffee over here: https://ko-fi.com/skepticmystic :)
+
+## Release
+
+### Prod
+
+### Beta
+
+1. Push all previous changes to the actual project
+2. Bump version in `package.json`
+3. `npm run version:beta` to update `manifest-beta.json` and `versions.json` accordingly
+4. `git tag -a x.x.x-beta -m 'x.x.x-beta'` to tag the build
+5. `git push origin x.x.x-beta` to push the release and trigger the action
