@@ -15,12 +15,13 @@ const get_dendron_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	if (!metadata) {
-		return fail(undefined);
-	}
+	// NOTE: Don't return early here. Dendron notes can be valid without any metadata in them
+	//   We just have to iterate and check each note
+	// if (!metadata) return fail(undefined);
 
 	const field =
-		metadata[META_FIELD["dendron-note-field"]] ??
+		metadata?.[META_FIELD["dendron-note-field"]] ??
+		//   Which is why we have a default_field on dendron_note
 		plugin.settings.explicit_edge_sources.dendron_note.default_field;
 
 	if (!field) {
@@ -101,12 +102,26 @@ const handle_dendron_note = (
 		source_path,
 	);
 
-	// TODO: If !target_file, we can recursively call handle_dendron_note
-	//   To add the unresolved edges along the way
-
-	graph.safe_add_node(target_path, { resolved: Boolean(target_file) });
-
 	const { field, field_hierarchy } = dendron_note_info.data;
+
+	// If !target_file, we can recursively call handle_dendron_note
+	//   To add the unresolved edges along the way
+	if (!target_file) {
+		graph.safe_add_node(target_path, { resolved: false });
+
+		handle_dendron_note(
+			plugin,
+			graph,
+			target_path,
+			// This is really quite elegant :)
+			//   The unresolved note has no BC-dendron field, by definition
+			//   Passing undefined would just use the settings.default field
+			//   But we can propagate the field from the resolved source note, to stay in the same hierarchy
+			{ [META_FIELD["dendron-note-field"]]: field },
+			errors,
+		);
+	}
+
 	graph.addDirectedEdge(source_path, target_path, {
 		field,
 		explicit: true,
