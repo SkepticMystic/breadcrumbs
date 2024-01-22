@@ -10,12 +10,21 @@ export const stringify_node = (
 	node_attr: BCNodeAttributes,
 	options?: {
 		show_node_options?: ShowNodeOptions;
+		trim_basename_delimiter?: string;
 	},
-) =>
-	options?.show_node_options?.alias && node_attr.aliases?.length
-		? node_attr.aliases.at(0)!
-		: Paths.show(node_id, options?.show_node_options);
-
+) => {
+	if (options?.show_node_options?.alias && node_attr.aliases?.length) {
+		return node_attr.aliases.at(0)!;
+	} else if (options?.trim_basename_delimiter) {
+		return Paths.drop_ext(node_id)
+			.split("/")
+			.pop()!
+			.split(options.trim_basename_delimiter)
+			.last()!;
+	} else {
+		return Paths.show(node_id, options?.show_node_options);
+	}
+};
 export const stringify_edge = (
 	edge: BCEdge,
 	options?: {

@@ -21,6 +21,7 @@ export interface BreadcrumbsSettings {
 			// With the current setup, it would only apply to a single edge per note
 			delimiter: string;
 			default_field: string;
+			display_trimmed: boolean;
 		};
 	};
 

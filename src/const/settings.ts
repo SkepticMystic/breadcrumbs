@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			enabled: false,
 			delimiter: ".",
 			default_field: "up",
+			display_trimmed: false,
 		},
 	},
 

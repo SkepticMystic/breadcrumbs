@@ -11,18 +11,27 @@ const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");
 
 const drop_folder = (path: string) => path.split("/").pop()!;
 
+// const update_name = (
+// 	path_str: string,
+// 	callback: (basename: string) => string,
+// ) => {
+// 	const { dir, ext, name } = path.parse(path_str);
+
+// 	return path.join(dir, callback(name) + ext);
+// };
+
 /** Pass in which components you want to *keep*, the rest will be dropped */
 const show = (
 	path: string,
-	options?: Partial<Pick<ShowNodeOptions, "ext" | "folder">>,
+	show_node_options?: Partial<Pick<ShowNodeOptions, "ext" | "folder">>,
 ) => {
 	let output = path.slice();
 
-	if (!options?.folder) {
+	if (!show_node_options?.folder) {
 		output = drop_folder(output);
 	}
 
-	if (!options?.ext) {
+	if (!show_node_options?.ext) {
 		output = drop_ext(output);
 	}
 
@@ -31,6 +40,8 @@ const show = (
 
 export const Paths = {
 	ensure_ext,
+
+	// update_name,
 
 	drop_ext,
 	drop_folder,
