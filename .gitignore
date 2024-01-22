@@ -11,9 +11,7 @@ node_modules
 # Don't include the compiled main.js file in the repo.
 # They should be uploaded to GitHub releases instead.
 main.js
-
-# I'm not sure _what's_ generating this, but it started after adding tailwind, and I don't need it
-main.css
+styles.css
 
 # Exclude sourcemaps
 *.map
