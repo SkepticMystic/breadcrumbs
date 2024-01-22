@@ -19,6 +19,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		tag_note: {},
 		list_note: {},
 		typed_link: {},
+		dendron_note: {
+			enabled: false,
+			delimiter: ".",
+			default_field: "up",
+		},
 	},
 
 	views: {
