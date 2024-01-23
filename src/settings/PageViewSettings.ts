@@ -1,24 +1,22 @@
-import { Setting } from "obsidian";
 import BreadcrumbsPlugin from "src/main";
+import { new_setting } from "src/utils/settings";
+import { redraw_page_views } from "src/views/page";
 
 export const _add_settings_page_views = (
 	plugin: BreadcrumbsPlugin,
 	container_el: HTMLElement,
 ) => {
-	new Setting(container_el)
-		.setName("Readable line width")
-		.setDesc("Limit to the width of the text in the editor")
-		.addToggle((toggle) => {
-			toggle
-				.setValue(plugin.settings.views.page.all.readable_line_width)
-				.onChange(async (value) => {
-					plugin.settings.views.page.all.readable_line_width = value;
+	new_setting(container_el, {
+		name: "Readable line width",
+		desc: "Limit to the width of the text in the editor",
+		toggle: {
+			value: plugin.settings.views.page.all.readable_line_width,
+			cb: async (value) => {
+				plugin.settings.views.page.all.readable_line_width = value;
 
-					await plugin.saveSettings();
-					plugin.refresh({
-						rebuild_graph: false,
-						active_file_store: false,
-					});
-				});
-		});
+				await plugin.saveSettings();
+				redraw_page_views(plugin);
+			},
+		},
+	});
 };

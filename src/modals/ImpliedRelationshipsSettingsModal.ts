@@ -1,5 +1,6 @@
 import { App, MarkdownRenderer, Modal, Setting } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import { new_setting } from "src/utils/settings";
 
 export class ImpliedRelationshipsSettingsModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -39,38 +40,34 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 			plugin.refresh();
 		};
 
-		new Setting(contentEl)
-			.setName("Current Note is Sibling")
-			.setDesc("The current note is it's own implied sibling.")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.self_is_sibling)
-					.onChange(async (val) => {
-						implied_relationships.self_is_sibling = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Current Note is Sibling",
+			desc: "The current note is it's own implied sibling.",
+			toggle: {
+				value: implied_relationships.self_is_sibling,
+				cb: async (val) => {
+					implied_relationships.self_is_sibling = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
       Me -.->|same| Me`,
 		);
 
-		new Setting(contentEl)
-			.setName("Opposite Direction")
-			.setDesc(
-				"An explicit relationship in one direction implies the opposite direction.",
-			)
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.opposite_direction)
-					.onChange(async (val) => {
-						implied_relationships.opposite_direction = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Opposite Direction",
+			desc: "An explicit relationship in one direction implies the opposite direction.",
+			toggle: {
+				value: implied_relationships.opposite_direction,
+				cb: async (val) => {
+					implied_relationships.opposite_direction = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
@@ -78,18 +75,17 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       B -.->|down| A`,
 		);
 
-		new Setting(contentEl)
-			.setName("Same Parent -> Siblings")
-			.setDesc("If two notes share a parent, they are siblings.")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.same_parent_is_sibling)
-					.onChange(async (val) => {
-						implied_relationships.same_parent_is_sibling = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Same Parent -> Siblings",
+			desc: "If two notes share a parent, they are siblings.",
+			toggle: {
+				value: implied_relationships.same_parent_is_sibling,
+				cb: async (val) => {
+					implied_relationships.same_parent_is_sibling = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
@@ -98,18 +94,17 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       Me <-.->|same| Sister`,
 		);
 
-		new Setting(contentEl)
-			.setName("Same Siblings -> Siblings")
-			.setDesc("Treat your siblings' siblings as your siblings")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.same_sibling_is_sibling)
-					.onChange(async (val) => {
-						implied_relationships.same_sibling_is_sibling = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Same Siblings -> Siblings",
+			desc: "Treat your siblings' siblings as your siblings",
+			toggle: {
+				value: implied_relationships.same_sibling_is_sibling,
+				cb: async (val) => {
+					implied_relationships.same_sibling_is_sibling = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
@@ -118,18 +113,17 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       Sister <-.->|same| Brother`,
 		);
 
-		new Setting(contentEl)
-			.setName("Siblings' Parent -> Parent")
-			.setDesc("Your siblings' parents are your parents")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.siblings_parent_is_parent)
-					.onChange(async (val) => {
-						implied_relationships.siblings_parent_is_parent = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Siblings' Parent -> Parent",
+			desc: "Your siblings' parents are your parents",
+			toggle: {
+				value: implied_relationships.siblings_parent_is_parent,
+				cb: async (val) => {
+					implied_relationships.siblings_parent_is_parent = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
@@ -138,18 +132,17 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       Me -.->|up| Dad`,
 		);
 
-		new Setting(contentEl)
-			.setName("Aunt/Uncle")
-			.setDesc("Your parent's siblings are your parents (aunts/uncles)")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.parents_sibling_is_parent)
-					.onChange(async (val) => {
-						implied_relationships.parents_sibling_is_parent = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Aunt/Uncle",
+			desc: "Your parent's siblings are your parents (aunts/uncles)",
+			toggle: {
+				value: implied_relationships.parents_sibling_is_parent,
+				cb: async (val) => {
+					implied_relationships.parents_sibling_is_parent = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR
@@ -158,18 +151,17 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
       Me -.->|up| Uncle`,
 		);
 
-		new Setting(contentEl)
-			.setName("Cousins")
-			.setDesc("Parents' siblings' children are siblings (cousins)")
-			.addToggle((tg) =>
-				tg
-					.setValue(implied_relationships.cousing_is_sibling)
-					.onChange(async (val) => {
-						implied_relationships.cousing_is_sibling = val;
-
-						await save();
-					}),
-			);
+		new_setting(contentEl, {
+			name: "Cousins",
+			desc: "Parents' siblings' children are siblings (cousins)",
+			toggle: {
+				value: implied_relationships.cousing_is_sibling,
+				cb: async (val) => {
+					implied_relationships.cousing_is_sibling = val;
+					await save();
+				},
+			},
+		});
 
 		render_mermaid_diagram(
 			`flowchart LR

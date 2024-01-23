@@ -8,6 +8,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
 import { stringify_hierarchy } from "src/utils/hierarchies";
+import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
 
 export class CreateListIndexModal extends Modal {
@@ -75,44 +76,34 @@ export class CreateListIndexModal extends Modal {
 				});
 			});
 
-		new Setting(contentEl)
-			.setName("Direction")
-			.setDesc("Direction to traverse")
-			.addDropdown((dropdown) => {
-				DIRECTIONS.forEach((dir) => {
-					dropdown.addOption(dir, dir);
-				});
+		new_setting(contentEl, {
+			name: "Direction",
+			desc: "Direction to traverse",
+			select: {
+				options: DIRECTIONS,
+				value: this.options.dir,
+				cb: (value) => (this.options.dir = value),
+			},
+		});
 
-				dropdown.setValue(this.options.dir);
+		new_setting(contentEl, {
+			name: "Link Kind",
+			desc: "Format to use for links",
+			select: {
+				options: LINK_KINDS,
+				value: this.options.link_kind,
+				cb: (value) => (this.options.link_kind = value),
+			},
+		});
 
-				dropdown.onChange((value) => {
-					this.options.dir = value as Direction;
-				});
-			});
-
-		new Setting(contentEl)
-			.setName("Link Kind")
-			.setDesc("Format to use for links")
-			.addDropdown((dropdown) => {
-				LINK_KINDS.forEach((kind) => {
-					dropdown.addOption(kind, kind);
-				});
-
-				dropdown.setValue(this.options.link_kind);
-
-				dropdown.onChange((value) => {
-					this.options.link_kind = value as LinkKind;
-				});
-			});
-
-		new Setting(contentEl)
-			.setName("Indent")
-			.setDesc("Indentation to use for each level")
-			.addText((text) => {
-				text.setValue(this.options.indent).onChange((value) => {
-					this.options.indent = value;
-				});
-			});
+		new_setting(contentEl, {
+			name: "Indent",
+			desc: "Indentation to use for each level",
+			input: {
+				value: this.options.indent,
+				cb: (value) => (this.options.indent = value),
+			},
+		});
 
 		_add_settings_show_node_options(
 			plugin,
