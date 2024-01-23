@@ -10,13 +10,13 @@
 	export let show_node_options: ShowNodeOptions;
 	export let cls = "";
 
-	const dendron_settings = plugin.settings.explicit_edge_sources.dendron_note;
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
 	const display = stringify_node(edge.target_id, edge.target_attr, {
 		show_node_options,
 		trim_basename_delimiter:
-			dendron_settings.enabled && dendron_settings.display_trimmed
-				? dendron_settings.delimiter
+			dendron_note.enabled && dendron_note.display_trimmed
+				? dendron_note.delimiter
 				: undefined,
 	});
 </script>

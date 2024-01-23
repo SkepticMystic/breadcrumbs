@@ -9,11 +9,11 @@ import { MatrixView } from "src/views/matrix";
 import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
+import { stringify_edge } from "./graph/utils";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
-import { stringify_edge } from "./graph/utils";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -169,7 +169,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 		active_file_store?: false;
 		redraw_page_views?: false;
 	}) {
-		console.log("bc.refresh");
+		console.log(
+			"bc.refresh",
+			["rebuild_graph", "active_file_store", "redraw_page_views"]
+				.filter(
+					(key) => options?.[key as keyof typeof options] !== false,
+				)
+				.join(", "),
+		);
 
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {

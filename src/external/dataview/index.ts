@@ -9,7 +9,6 @@ import type BreadcrumbsPlugin from "src/main";
 const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 	new Promise<void>((resolve) => {
 		if (is_enabled(plugin.app)) {
-			// TODO: The docs say the obsidian-dataview lib comes with types... figure that out
 			if (get_api(plugin.app)?.index.initialized) {
 				console.log("dataview index already initialized");
 				resolve();
@@ -22,8 +21,8 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 					() => {
 						console.log("dataview:index-ready");
 						resolve();
-					}
-				)
+					},
+				),
 			);
 		} else {
 			console.log("dataview not enabled");

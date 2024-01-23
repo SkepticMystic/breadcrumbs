@@ -51,7 +51,7 @@ const get_dendron_note_info = (
 
 /** Take in the info of a _potential_ dendron note.
  * Check that it has the delimeter in it's basename
- * Get the field info from the note or default settings (TODO)
+ * Get the field info from the note or default settings
  * Add the directed edge to the target
  */
 const handle_dendron_note = (

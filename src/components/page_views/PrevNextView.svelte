@@ -7,17 +7,21 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
-	const grouped_out_edges = $active_file_store
-		? group_by(
-				plugin.graph
-					.mapOutEdges(
-						$active_file_store?.path,
-						objectify_edge_mapper((e) => e),
-					)
-					.filter((e) => ["prev", "next"].includes(e.attr.dir)),
-				(e) => e.attr.dir,
-			)
-		: null;
+	const grouped_out_edges =
+		$active_file_store &&
+		// Even tho we ensure the graph is built before the views are registered,
+		// Existing views still try render before the graph is built.
+		plugin.graph.hasNode($active_file_store.path)
+			? group_by(
+					plugin.graph
+						.mapOutEdges(
+							$active_file_store.path,
+							objectify_edge_mapper((e) => e),
+						)
+						.filter((e) => ["prev", "next"].includes(e.attr.dir)),
+					(e) => e.attr.dir,
+				)
+			: null;
 </script>
 
 <div class="BC-prev-next-view flex">
