@@ -67,5 +67,15 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		page_details.createEl("h3", { text: "Previous/Next" });
 		_add_settings_prev_next_view(plugin, page_details);
+
+		// Commands
+		containerEl.createEl("hr");
+		containerEl.createEl("h2", { text: "Commands" });
+
+		// TODO
+		// _add_settings_list_index(
+		// 	plugin,
+		// 	make_details_el(containerEl, { s: { text: "List Index" } }),
+		// );
 	}
 }

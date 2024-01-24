@@ -1,3 +1,4 @@
+import type { ListIndex } from "src/commands/list_index";
 import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "./hierarchies";
 
@@ -52,16 +53,22 @@ export interface BreadcrumbsSettings {
 			};
 		};
 	};
+
+	commands: {
+		list_index: {
+			default_options: ListIndex.Options;
+		};
+	};
 }
 
 export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	addDendronNotes: boolean; // MIGRATED
 	addDateNotes: boolean;
-	aliasesInIndex: boolean;
+	aliasesInIndex: boolean; // MIGRATED
 	alphaSortAsc: boolean;
 	altLinkFields: string[];
 	CSVPaths: string;
-	createIndexIndent: string;
+	createIndexIndent: string; // MIGRATED
 	dvWaitTime: number;
 	dataviewNoteField: string;
 	debugMode: 0 | 1 | 2;
@@ -154,5 +161,5 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	// visClosed: string;
 	// visAll: string;
 	writeBCsInline: boolean;
-	wikilinkIndex: boolean;
+	wikilinkIndex: boolean; // MIGRATED
 }>;

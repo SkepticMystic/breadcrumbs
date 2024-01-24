@@ -1,3 +1,4 @@
+import { ListIndex } from "src/commands/list_index";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import type {
 	BreadcrumbsSettings,
@@ -80,6 +81,29 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.views.page.prev_next.enabled = settings.showPrevNext;
 
 		delete settings.showPrevNext;
+	}
+
+	// Commands
+	/// List Index
+	if (
+		settings.wikilinkIndex !== undefined &&
+		settings.aliasesInIndex !== undefined &&
+		settings.createIndexIndent !== undefined
+	) {
+		plugin.settings.commands.list_index.default_options = {
+			...plugin.settings.commands.list_index.default_options,
+
+			indent: settings.createIndexIndent,
+			link_kind: settings.wikilinkIndex ? "wiki" : "none",
+			show_node_options: {
+				...ListIndex.DEFAULT_OPTIONS.show_node_options,
+				alias: settings.aliasesInIndex,
+			},
+		};
+
+		delete settings.wikilinkIndex;
+		delete settings.aliasesInIndex;
+		delete settings.createIndexIndent;
 	}
 
 	await plugin.saveSettings();

@@ -1,3 +1,4 @@
+import { ListIndex } from "src/commands/list_index";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { blank_hierarchy } from "src/utils/hierarchies";
 
@@ -58,6 +59,12 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 					alias: false,
 				},
 			},
+		},
+	},
+
+	commands: {
+		list_index: {
+			default_options: ListIndex.DEFAULT_OPTIONS,
 		},
 	},
 };

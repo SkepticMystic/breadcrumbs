@@ -1,9 +1,7 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
-import { DIRECTIONS, type Direction } from "src/const/hierarchies";
+import { ListIndex } from "src/commands/list_index";
+import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
-import { Traverse } from "src/graph/traverse";
-import type { LinkKind } from "src/interfaces/links";
-import type { ShowNodeOptions } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
@@ -14,29 +12,13 @@ import { get } from "svelte/store";
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
 	active_file: TFile | null = get(active_file_store);
-	options: {
-		indent: string;
-		dir: Direction;
-		link_kind: LinkKind;
-		// -1 means all (no filter)
-		hierarchy_i: number;
-		show_node_options: ShowNodeOptions;
-	} = {
-		dir: "down",
-		indent: "\\t",
-		hierarchy_i: -1,
-		link_kind: "wiki",
-		show_node_options: {
-			ext: false,
-			alias: true,
-			folder: false,
-		},
-	};
+	options: ListIndex.Options;
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app);
 
 		this.plugin = plugin;
+		this.options = plugin.settings.commands.list_index.default_options;
 	}
 
 	onOpen() {
@@ -121,7 +103,12 @@ export class CreateListIndexModal extends Modal {
 				.setCta()
 				.onClick(async () => {
 					console.log("build_list_index", this.options);
-					const list_index = this.build_list_index();
+					const list_index = ListIndex.build(
+						plugin.graph,
+						this.active_file!.path,
+						this.options,
+					);
+
 					console.log("list_index\n", list_index);
 					await navigator.clipboard.writeText(list_index);
 
@@ -131,20 +118,6 @@ export class CreateListIndexModal extends Modal {
 				}),
 		);
 	}
-
-	build_list_index = () =>
-		Traverse.paths_to_index_list(
-			Traverse.all_paths(
-				"depth_first",
-				this.plugin.graph,
-				this.active_file!.path,
-				(e) =>
-					e.attr.dir === this.options.dir &&
-					(this.options.hierarchy_i === -1 ||
-						e.attr.hierarchy_i === this.options.hierarchy_i),
-			),
-			this.options,
-		);
 
 	onClose() {
 		this.contentEl.empty();
