@@ -3,6 +3,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_dendron_note } from "./DendronNoteSettings";
 import { _add_settings_grid_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
+import { _add_settings_list_index } from "./ListIndexSettings";
 import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
@@ -72,10 +73,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.createEl("hr");
 		containerEl.createEl("h2", { text: "Commands" });
 
-		// TODO
-		// _add_settings_list_index(
-		// 	plugin,
-		// 	make_details_el(containerEl, { s: { text: "List Index" } }),
-		// );
+		_add_settings_list_index(
+			plugin,
+			make_details_el(containerEl, { s: { text: "List Index" } }),
+		);
 	}
 }
