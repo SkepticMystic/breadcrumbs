@@ -70,7 +70,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	altLinkFields: string[];
 	CSVPaths: string;
 	createIndexIndent: string; // MIGRATED
-	dvWaitTime: number; // NOT NEEDED
+	// dvWaitTime: number; // NOT NEEDED
 	dataviewNoteField: string;
 	debugMode: 0 | 1 | 2;
 	dendronNoteDelimiter: string; // MIGRATED
@@ -113,7 +113,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	/** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
 	limitWriteBCCheckboxes: string[];
 	limitJumpToFirstFields: string[];
-	CHECKBOX_STATES_OVERWRITTEN: boolean; // NOT NEEDED
+	// CHECKBOX_STATES_OVERWRITTEN: boolean; // NOT NEEDED
 	namingSystemField: string;
 	namingSystemRegex: string;
 	namingSystemSplit: string;
@@ -136,11 +136,11 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	regexNoteField: string;
 	relSuggestorTrigger: string;
 	rlLeaf: boolean;
-	showBCs: boolean;
+	showBCs: boolean; // TODO: What's difference between showBCs and showTrail?
 	showBCsInEditLPMode: boolean;
-	showAll: string;
-	showGrid: boolean;
-	showImpliedRelations: boolean;
+	// showAll: string; // NOT NEEDED, we infer from the enabled field on each page view
+	showGrid: boolean; // MIGRATED
+	// showImpliedRelations: boolean; // NOT NEEDED, can just disable all implied relations
 	showUpInJuggl: boolean;
 	showJuggl: boolean;
 	showPrevNext: boolean; // MIGRATED
@@ -152,9 +152,9 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	threadingTemplate: string;
 	threadingDirTemplates: { [dir in Direction]: string };
 	threadUnderCursor: boolean;
-	trailSeperator: string;
-	treatCurrNodeAsImpliedSibling: boolean;
-	trimDendronNotes: boolean;
+	// trailSeperator: string; // NOT NEEDED, no path view
+	// treatCurrNodeAsImpliedSibling: boolean; // NOT NEEDED, impliedRelations.siblingIdentity covers it
+	trimDendronNotes: boolean; // MIGRATED
 	useAllMetadata: boolean;
 	userHiers: Hierarchy["dirs"][];
 	// visGraph: VisType;

@@ -4,14 +4,21 @@
 	import PrevNextView from "./PrevNextView.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
+
+	const enabled_views = {
+		grid: plugin.settings.views.page.grid.enabled,
+		prev_next: plugin.settings.views.page.prev_next.enabled,
+	};
 </script>
 
-<div class="mb-4">
-	{#if plugin.settings.views.page.grid.enabled}
-		<GridView {plugin} />
-	{/if}
+{#if Object.values(enabled_views).some(Boolean)}
+	<div class="mb-4">
+		{#if enabled_views.grid}
+			<GridView {plugin} />
+		{/if}
 
-	{#if plugin.settings.views.page.prev_next.enabled}
-		<PrevNextView {plugin} />
-	{/if}
-</div>
+		{#if enabled_views.prev_next}
+			<PrevNextView {plugin} />
+		{/if}
+	</div>
+{/if}
