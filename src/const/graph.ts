@@ -3,6 +3,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 	"tag_note",
 	"list_note",
 	"dendron_note",
+	"dataview_note",
 ] as const;
 
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];

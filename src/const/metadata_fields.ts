@@ -8,8 +8,11 @@ const METADATA_FIELDS_LIST = [
 	//   rather, you specified them in settings
 	"BC-list-note-field",
 	"BC-list-note-exclude-index",
-
+	//
 	"BC-dendron-note-field",
+	//
+	"BC-dataview-note-query",
+	"BC-dataview-note-field",
 ] as const;
 
 export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
@@ -23,6 +26,9 @@ export const META_FIELD = {
 	"list-note-exclude-index": "BC-list-note-exclude-index",
 	//
 	"dendron-note-field": "BC-dendron-note-field",
+	//
+	"dataview-note-query": "BC-dataview-note-query",
+	"dataview-note-field": "BC-dataview-note-field",
 } satisfies Record<string, MetadataField>;
 
 if (Object.keys(META_FIELD).length !== METADATA_FIELDS_LIST.length) {
