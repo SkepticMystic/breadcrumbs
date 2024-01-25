@@ -25,37 +25,39 @@
 </script>
 
 <div class="BC-prev-next-view flex">
-	<div class="flex w-full flex-col">
-		{#each grouped_out_edges?.prev ?? [] as edge}
-			<div class="BC-next-prev-item flex gap-3 p-1 text-left">
-				<span class="BC-field">{edge.attr.field}</span>
+	{#if grouped_out_edges?.prev?.length || grouped_out_edges?.next?.length}
+		<div class="flex w-full flex-col">
+			{#each grouped_out_edges?.prev ?? [] as edge}
+				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
+					<span class="BC-field">{edge.attr.field}</span>
 
-				<EdgeLink
-					{edge}
-					{plugin}
-					cls="grow"
-					show_node_options={plugin.settings.views.page.prev_next
-						.show_node_options}
-				/>
-			</div>
-		{/each}
-	</div>
+					<EdgeLink
+						{edge}
+						{plugin}
+						cls="grow"
+						show_node_options={plugin.settings.views.page.prev_next
+							.show_node_options}
+					/>
+				</div>
+			{/each}
+		</div>
 
-	<div class="flex w-full flex-col">
-		{#each grouped_out_edges?.next ?? [] as edge}
-			<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-				<EdgeLink
-					{edge}
-					{plugin}
-					cls="grow"
-					show_node_options={plugin.settings.views.page.prev_next
-						.show_node_options}
-				/>
+		<div class="flex w-full flex-col">
+			{#each grouped_out_edges?.next ?? [] as edge}
+				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
+					<EdgeLink
+						{edge}
+						{plugin}
+						cls="grow"
+						show_node_options={plugin.settings.views.page.prev_next
+							.show_node_options}
+					/>
 
-				<span class="BC-field">{edge.attr.field}</span>
-			</div>
-		{/each}
-	</div>
+					<span class="BC-field">{edge.attr.field}</span>
+				</div>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>

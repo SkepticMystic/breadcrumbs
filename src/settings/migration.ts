@@ -72,8 +72,13 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	//// Grid
 	if (settings.showGrid !== undefined) {
 		plugin.settings.views.page.grid.enabled = settings.showGrid;
-
 		delete settings.showGrid;
+	}
+
+	if (settings.noPathMessage !== undefined) {
+		plugin.settings.views.page.grid.no_path_message =
+			settings.noPathMessage;
+		delete settings.noPathMessage;
 	}
 
 	//// Prev/Next

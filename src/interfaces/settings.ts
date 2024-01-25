@@ -40,6 +40,7 @@ export interface BreadcrumbsSettings {
 
 			grid: {
 				enabled: boolean;
+				no_path_message: string;
 				show_node_options: ShowNodeOptions;
 			};
 			prev_next: {
@@ -69,7 +70,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	altLinkFields: string[];
 	CSVPaths: string;
 	createIndexIndent: string; // MIGRATED
-	dvWaitTime: number;
+	dvWaitTime: number; // NOT NEEDED
 	dataviewNoteField: string;
 	debugMode: 0 | 1 | 2;
 	dendronNoteDelimiter: string; // MIGRATED
@@ -112,12 +113,12 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	/** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
 	limitWriteBCCheckboxes: string[];
 	limitJumpToFirstFields: string[];
-	CHECKBOX_STATES_OVERWRITTEN: boolean;
+	CHECKBOX_STATES_OVERWRITTEN: boolean; // NOT NEEDED
 	namingSystemField: string;
 	namingSystemRegex: string;
 	namingSystemSplit: string;
 	namingSystemEndsWithDelimiter: boolean;
-	noPathMessage: string;
+	noPathMessage: string; // MIGRATED
 	openMatrixOnLoad: boolean;
 	// openStatsOnLoad: boolean;
 	openDuckOnLoad: boolean;

@@ -36,6 +36,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 
 			grid: {
 				enabled: true,
+				no_path_message: "",
 				show_node_options: {
 					ext: false,
 					folder: false,

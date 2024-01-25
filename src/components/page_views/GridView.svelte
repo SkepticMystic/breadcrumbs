@@ -64,29 +64,36 @@
 <div
 	class="BC-grid-view grid"
 	style="grid-template-rows: {'1fr '.repeat(square.length)};
-         grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
+grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
-	{#each col_runs as col, j}
-		{#each col as { first, last }}
-			{@const edge = square[first][j]}
+	{#if paths.length}
+		{#each col_runs as col, j}
+			{#each col as { first, last }}
+				{@const edge = square[first][j]}
 
-			<div
-				class="BC-grid-view-item flex"
-				style="
-				grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
-			>
-				{#if edge}
-					<EdgeLink
-						{edge}
-						{plugin}
-						cls="p-1 grow flex justify-center items-center"
-						show_node_options={plugin.settings.views.page.grid
-							.show_node_options}
-					/>
-				{/if}
-			</div>
+				<div
+					class="BC-grid-view-item flex"
+					style="
+					grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
+				>
+					{#if edge}
+						<EdgeLink
+							{edge}
+							{plugin}
+							cls="p-1 grow flex justify-center items-center"
+							show_node_options={plugin.settings.views.page.grid
+								.show_node_options}
+						/>
+					{/if}
+				</div>
+			{/each}
 		{/each}
-	{/each}
+	{:else}
+		<!-- TODO: Check if this was done differently in old BC -->
+		<p class="BC-grid-view-no-path">
+			{plugin.settings.views.page.grid.no_path_message}
+		</p>
+	{/if}
 </div>
 
 <style>
