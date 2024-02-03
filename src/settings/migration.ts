@@ -19,7 +19,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			...blank_hierarchy().implied_relationships,
 
 			self_is_sibling: settings.impliedRelations.siblingIdentity,
-			cousing_is_sibling: settings.impliedRelations.cousinsIsSibling,
+			cousin_is_sibling: settings.impliedRelations.cousinsIsSibling,
 			same_parent_is_sibling:
 				settings.impliedRelations.sameParentIsSibling,
 			same_sibling_is_sibling:

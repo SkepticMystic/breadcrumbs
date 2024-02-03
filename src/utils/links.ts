@@ -2,6 +2,8 @@ import type { App } from "obsidian";
 import path from "path";
 import type { LinkKind } from "src/interfaces/links";
 
+// TODO: Something seems wrong here... a new note was created in the root of the vault,
+//       even though it used a full path in the link content
 /** Given an unresolved link path, return the absolute path of where it _would_ get created,
  * given the file it would be created in
  */

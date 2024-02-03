@@ -155,9 +155,9 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 			name: "Cousins",
 			desc: "Parents' siblings' children are siblings (cousins)",
 			toggle: {
-				value: implied_relationships.cousing_is_sibling,
+				value: implied_relationships.cousin_is_sibling,
 				cb: async (val) => {
-					implied_relationships.cousing_is_sibling = val;
+					implied_relationships.cousin_is_sibling = val;
 					await save();
 				},
 			},

@@ -14,7 +14,7 @@ export const blank_hierarchy = (): Hierarchy => ({
 		opposite_direction: true,
 		self_is_sibling: false,
 		parents_sibling_is_parent: false,
-		cousing_is_sibling: false,
+		cousin_is_sibling: false,
 		same_parent_is_sibling: false,
 		same_sibling_is_sibling: false,
 		siblings_parent_is_parent: false,
