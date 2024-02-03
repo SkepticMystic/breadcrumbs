@@ -26,9 +26,9 @@
 	{display}
 	path={edge.target_id}
 	resolved={edge.target_attr.resolved}
-	cls="{cls} {edge.attr.explicit ? 'BC-edge-explicit' : 'BC-edge-implied'} "
+	cls="{cls} {edge.attr.explicit
+		? 'BC-edge-explicit'
+		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`} "
 />
-
-<!-- TODO: Add the implied_kind or source. Maybe as a data attribute, but maybe just as a class -->
 
 <!-- BREAKING: BC-edge-implied used to be BC-implied, I believe -->

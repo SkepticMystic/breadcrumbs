@@ -1,5 +1,3 @@
-// TODO: Maybe use this when adding dv fields to the graph
-// parseField
 import {
 	getAPI as get_api,
 	isPluginEnabled as is_enabled,

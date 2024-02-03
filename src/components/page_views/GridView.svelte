@@ -89,7 +89,6 @@ grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 			{/each}
 		{/each}
 	{:else}
-		<!-- TODO: Check if this was done differently in old BC -->
 		<p class="BC-grid-view-no-path">
 			{plugin.settings.views.page.grid.no_path_message}
 		</p>

@@ -2,7 +2,6 @@ import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
 import type { BCEdge, BCNodeAttributes } from "./MyMultiGraph";
 
-// TODO: Maybe this can be put on BCGraph instead?
 export const is_self_loop = (edge: BCEdge) => edge.source_id === edge.target_id;
 
 export const stringify_node = (
