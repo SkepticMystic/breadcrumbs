@@ -10,5 +10,7 @@ export type ICodeblock = {
 		flat: boolean;
 		from?: string;
 		content?: "open" | "closed";
+		sort_by: "default" | "basename";
+		sort_order: 1 | -1;
 	};
 };

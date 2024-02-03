@@ -102,6 +102,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				(leaf) => new MatrixView(leaf, this),
 			);
 
+			// TODO: The codeblock doesn't rerender when changing notes
 			// Codeblocks
 			this.registerMarkdownCodeBlockProcessor(
 				"breadcrumbs",

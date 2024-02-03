@@ -17,6 +17,7 @@ const FIELDS = [
 	"flat",
 	"from",
 	"content",
+	"sort",
 ] as const;
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
@@ -78,12 +79,24 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				// depth: 1-2
 				// depth: 1-
 
-				const [min, max] = value.split("-").map((num) => parseInt(num));
+				const bounds = value.split("-").map((num) => parseInt(num));
 
-				parsed.depth = [
-					Number.isNaN(min) ? 0 : min,
-					Number.isNaN(max) ? Infinity : max,
+				const [min, max] = [
+					Number.isNaN(bounds[0]) ? 0 : bounds[0],
+					Number.isNaN(bounds[1]) ? Infinity : bounds[1],
 				];
+
+				if (min > max) {
+					errors.push({
+						code: "invalid_field_value",
+						message: `Invalid depth: ${value}. Min is greater than max.`,
+						path: key,
+					});
+
+					return (parsed.depth = [0, Infinity]);
+				}
+
+				return (parsed.depth = [min, max] as [number, number]);
 			}
 
 			case "flat": {
@@ -104,6 +117,30 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				}
 
 				return (parsed.content = value);
+			}
+
+			case "sort": {
+				const [sort_by, sort_order] = value.split(" ");
+				if (sort_by !== "basename") {
+					return errors.push({
+						code: "invalid_field_value",
+						message: `Invalid sort_by: ${sort_by}`,
+						path: key,
+					});
+				}
+
+				if (sort_order !== "asc" && sort_order !== "desc") {
+					return errors.push({
+						code: "invalid_field_value",
+						message: `Invalid sort_order: ${sort_order}`,
+						path: key,
+					});
+				}
+
+				parsed.sort_by = sort_by;
+				parsed.sort_order = sort_order === "asc" ? 1 : -1;
+
+				return;
 			}
 
 			default: {
@@ -137,6 +174,9 @@ const get_callback = (plugin: BreadcrumbsPlugin) => {
 				dir: "down",
 				depth: [0, Infinity],
 				flat: false,
+				// I think this is something to do with the Traverse order?
+				sort_by: "default",
+				sort_order: 1,
 			},
 			parsed,
 		);
