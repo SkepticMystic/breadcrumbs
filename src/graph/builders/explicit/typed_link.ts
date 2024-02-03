@@ -1,6 +1,6 @@
 import type {
 	ExplicitEdgeBuilder,
-	GraphBuildError,
+	BreadcrumbsError,
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -8,12 +8,13 @@ import { Links } from "src/utils/links";
 import { Paths } from "src/utils/paths";
 
 // TODO: Check how date fields are handled
+// TODO: I think notes in the root folder are added with a leading /, that shouldnt be
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
 
 	all_files.obsidian?.forEach(
 		({ file: source_file, cache: source_cache }) => {

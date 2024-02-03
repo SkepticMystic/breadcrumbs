@@ -3,7 +3,7 @@ import { META_FIELD } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	ExplicitEdgeBuilder,
-	GraphBuildError,
+	BreadcrumbsError,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -59,7 +59,7 @@ const handle_dendron_note = (
 	graph: BCGraph,
 	source_path: string,
 	source_metadata: Record<string, unknown> | undefined,
-	errors: GraphBuildError[],
+	errors: BreadcrumbsError[],
 ) => {
 	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
 
@@ -136,7 +136,7 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
 
 	if (!plugin.settings.explicit_edge_sources.dendron_note.enabled) {
 		return { errors };

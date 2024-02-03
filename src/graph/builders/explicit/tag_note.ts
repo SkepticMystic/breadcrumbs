@@ -2,7 +2,7 @@ import type { Direction } from "src/const/hierarchies";
 import { META_FIELD } from "src/const/metadata_fields";
 import type {
 	ExplicitEdgeBuilder,
-	GraphBuildError,
+	BreadcrumbsError,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -63,7 +63,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
 
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go

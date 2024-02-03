@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 import { META_FIELD } from "src/const/metadata_fields";
 import type {
 	ExplicitEdgeBuilder,
-	GraphBuildError,
+	BreadcrumbsError,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -61,7 +61,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
 
 	all_files.obsidian?.forEach(
 		({ file: list_note_file, cache: list_note_cache }) => {

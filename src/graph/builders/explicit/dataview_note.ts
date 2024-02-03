@@ -4,7 +4,7 @@ import { dataview_plugin } from "src/external/dataview/index";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
 	ExplicitEdgeBuilder,
-	GraphBuildError,
+	BreadcrumbsError,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -68,7 +68,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	all_files,
 ) => {
 	console.log("dataview_notes");
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
 
 	all_files.obsidian?.forEach(
 		({ file: dataview_note_file, cache: dataview_note_cache }) => {
