@@ -4,7 +4,7 @@ export const new_setting = <SO extends string>(
 	container_el: HTMLElement,
 	config: Partial<{
 		name: string;
-		desc: string;
+		desc: string | DocumentFragment;
 		toggle: {
 			value: boolean;
 			cb: (toggle: boolean) => void;
