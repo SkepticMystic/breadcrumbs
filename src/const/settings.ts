@@ -26,6 +26,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			default_field: "up",
 			display_trimmed: false,
 		},
+		date_note: {
+			enabled: false,
+			date_format: "yyyy-MM-dd",
+			default_field: "next",
+		},
 	},
 
 	views: {

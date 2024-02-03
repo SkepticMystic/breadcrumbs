@@ -21,6 +21,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@tsconfig/svelte": "^5.0.2",
+		"@types/luxon": "^3.4.2",
 		"@types/node": "^20.11.0",
 		"@typescript-eslint/eslint-plugin": "6.18.1",
 		"@typescript-eslint/parser": "6.18.1",
@@ -40,6 +41,7 @@
 		"typescript": "5.3.3"
 	},
 	"dependencies": {
-		"graphology": "^0.25.4"
+		"graphology": "^0.25.4",
+		"luxon": "^3.4.4"
 	}
 }

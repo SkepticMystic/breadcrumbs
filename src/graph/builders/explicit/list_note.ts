@@ -130,9 +130,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			// RE aliases. If it was added in the simple loop, we've handled its aliases already
 			//   If not, then it's not resolved and so it can't have aliases
 			if (!source_file) {
-				graph.safe_add_node(source_path, {
-					resolved: Boolean(source_file),
-				});
+				graph.safe_add_node(source_path, { resolved: false });
 			}
 
 			// Then, add the edge from the list_note itself, to the top-level list_items (if it's not excluded)

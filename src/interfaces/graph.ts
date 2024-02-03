@@ -3,7 +3,10 @@ import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 
 export type BreadcrumbsError = {
-	code: "invalid_field_value";
+	code:
+		| "invalid_field_value"
+		| "invalid_date_format"
+		| "invalid_setting_value";
 	message: string;
 	path: string;
 };

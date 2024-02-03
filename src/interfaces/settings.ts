@@ -29,6 +29,12 @@ export interface BreadcrumbsSettings {
 			default_field: string;
 			display_trimmed: boolean;
 		};
+
+		date_note: {
+			enabled: boolean;
+			date_format: string;
+			default_field: string;
+		};
 	};
 
 	views: {
