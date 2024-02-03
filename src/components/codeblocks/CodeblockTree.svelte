@@ -19,6 +19,8 @@
 				$active_file_store.path,
 				(e) =>
 					e.attr.dir === options.dir &&
+					(!options.dataview_from_paths ||
+						options.dataview_from_paths.includes(e.target_id)) &&
 					(!options.fields ||
 						options.fields.includes(e.attr.field as string)),
 			)

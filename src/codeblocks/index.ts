@@ -7,6 +7,8 @@ import { active_file_store } from "src/stores/active_file";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { get } from "svelte/store";
 import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
+import { dataview_plugin } from "src/external/dataview";
+import type { IDataview } from "src/external/dataview/interfaces";
 
 const FIELDS = [
 	"type",
@@ -15,7 +17,8 @@ const FIELDS = [
 	"fields",
 	"depth",
 	"flat",
-	"from",
+	// BREAKING: This just used to be called 'from'
+	"dataview-from",
 	"content",
 	"sort",
 ] as const;
@@ -31,7 +34,10 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 	const parsed: Partial<ICodeblock["Options"]> = {};
 
 	lines.forEach((line) => {
-		const [key, ...rest] = line.split(":");
+		const [key, ...rest] = line.split(":") as [
+			key: (typeof FIELDS)[number],
+			...rest: string[],
+		];
 		const value = rest.join(":").trim();
 		if (!key || !value) return;
 
@@ -103,8 +109,22 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.flat = value === "true");
 			}
 
-			case "from": {
-				return (parsed.from = value);
+			case "dataview-from": {
+				try {
+					const pages = dataview_plugin
+						.get_api(plugin.app)
+						.pages(value) as IDataview.Page[];
+
+					return (parsed.dataview_from_paths = pages.map(
+						(page) => page.file.path,
+					));
+				} catch (error) {
+					return errors.push({
+						code: "invalid_field_value",
+						message: `Invalid dataview-from: ${value}`,
+						path: key,
+					});
+				}
 			}
 
 			case "content": {
