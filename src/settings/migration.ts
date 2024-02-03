@@ -11,6 +11,8 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	const settings = plugin.settings as BreadcrumbsSettings &
 		OLD_BREADCRUMBS_SETTINGS;
 
+	// TODO: Eventually, uncomment the delete lines to remove old versions
+
 	// Hierarchies
 	/// Hierarchies used to just be the Record<Direction, string[]>, but it's now wrapped in an object
 	/// We can also handle the move of implied_relationships here
@@ -35,8 +37,8 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			implied_relationships,
 		}));
 
-		delete settings.userHiers;
-		delete settings.impliedRelations;
+		// delete settings.userHiers;
+		// delete settings.impliedRelations;
 	}
 
 	// Explicit edge sources
@@ -54,10 +56,10 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			display_trimmed: settings.trimDendronNotes,
 		};
 
-		delete settings.addDendronNotes;
-		delete settings.dendronNoteField;
-		delete settings.trimDendronNotes;
-		delete settings.dendronNoteDelimiter;
+		// delete settings.addDendronNotes;
+		// delete settings.dendronNoteField;
+		// delete settings.trimDendronNotes;
+		// delete settings.dendronNoteDelimiter;
 	}
 
 	// Views
@@ -66,26 +68,26 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.views.page.all.readable_line_width =
 			settings.respectReadableLineLength;
 
-		delete settings.respectReadableLineLength;
+		// delete settings.respectReadableLineLength;
 	}
 
 	//// Grid
 	if (settings.showGrid !== undefined) {
 		plugin.settings.views.page.grid.enabled = settings.showGrid;
-		delete settings.showGrid;
+		// delete settings.showGrid;
 	}
 
 	if (settings.noPathMessage !== undefined) {
 		plugin.settings.views.page.grid.no_path_message =
 			settings.noPathMessage;
-		delete settings.noPathMessage;
+		// delete settings.noPathMessage;
 	}
 
 	//// Prev/Next
 	if (settings.showPrevNext !== undefined) {
 		plugin.settings.views.page.prev_next.enabled = settings.showPrevNext;
 
-		delete settings.showPrevNext;
+		// delete settings.showPrevNext;
 	}
 
 	// Commands
@@ -106,9 +108,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			},
 		};
 
-		delete settings.wikilinkIndex;
-		delete settings.aliasesInIndex;
-		delete settings.createIndexIndent;
+		// delete settings.wikilinkIndex;
+		// delete settings.aliasesInIndex;
+		// delete settings.createIndexIndent;
 	}
 
 	await plugin.saveSettings();
