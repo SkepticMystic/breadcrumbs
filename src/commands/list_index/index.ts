@@ -26,15 +26,17 @@ export namespace ListIndex {
 		start_node: string,
 		options: Options,
 	) =>
-		Traverse.paths_to_index_list(
-			Traverse.all_paths(
-				"depth_first",
-				graph,
-				start_node,
-				(e) =>
-					e.attr.dir === options.dir &&
-					(options.hierarchy_i === -1 ||
-						e.attr.hierarchy_i === options.hierarchy_i),
+		Traverse.flat_paths_to_index_list(
+			Traverse.flatten_all_paths(
+				Traverse.all_paths(
+					"depth_first",
+					graph,
+					start_node,
+					(e) =>
+						e.attr.dir === options.dir &&
+						(options.hierarchy_i === -1 ||
+							e.attr.hierarchy_i === options.hierarchy_i),
+				),
 			),
 			options,
 		);

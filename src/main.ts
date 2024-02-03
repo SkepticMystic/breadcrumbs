@@ -14,6 +14,7 @@ import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
+import { Codeblocks } from "./codeblocks";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -99,6 +100,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 			this.registerView(
 				VIEW_IDS.matrix,
 				(leaf) => new MatrixView(leaf, this),
+			);
+
+			// Codeblocks
+			this.registerMarkdownCodeBlockProcessor(
+				"breadcrumbs",
+				Codeblocks.get_callback(this),
 			);
 		});
 

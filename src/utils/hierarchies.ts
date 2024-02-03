@@ -79,3 +79,6 @@ export const get_field_hierarchy = (
 
 export const stringify_hierarchy = (hierarchy: Hierarchy) =>
 	DIRECTIONS.map((dir) => hierarchy.dirs[dir].join(", ")).join(" | ");
+
+export const get_all_hierarchy_fields = (hierarchies: Hierarchy[]) =>
+	hierarchies.map((hierarchy) => Object.values(hierarchy.dirs)).flat(2);

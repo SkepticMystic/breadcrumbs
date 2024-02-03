@@ -92,8 +92,72 @@ const all_paths = (
 	return paths;
 };
 
-const paths_to_index_list = (
-	paths: BCEdge[][],
+export type NestedEdgePath = {
+	edge: BCEdge;
+	depth: number;
+	children: NestedEdgePath[];
+};
+
+const nest_all_paths = (all_paths: BCEdge[][]) => {
+	const nested_edges: NestedEdgePath[] = [];
+
+	all_paths.forEach((path) => {
+		let current_nest = nested_edges;
+
+		path.forEach((edge, depth) => {
+			// Same criteria to flatten_all_paths
+			// Have we visited this node at this depth?
+			const existing_nest = current_nest.find(
+				(nest) =>
+					nest.edge.target_id === edge.target_id &&
+					nest.depth === depth,
+			);
+
+			if (existing_nest) {
+				current_nest = existing_nest.children;
+			} else {
+				const new_nest = {
+					edge,
+					depth,
+					children: [],
+				};
+
+				current_nest.push(new_nest);
+				current_nest = new_nest.children;
+			}
+		});
+	});
+
+	return nested_edges;
+};
+
+const flatten_all_paths = (paths: BCEdge[][]) => {
+	const visited = new Set<string>();
+	const flattened: {
+		edge: BCEdge;
+		depth: number;
+	}[] = [];
+
+	paths.forEach((path) => {
+		path.forEach((edge, depth) => {
+			const key = `${depth}-${edge.target_id}`;
+
+			if (!visited.has(key)) {
+				visited.add(key);
+
+				flattened.push({ edge, depth });
+			}
+		});
+	});
+
+	return flattened;
+};
+
+const flat_paths_to_index_list = (
+	flat_paths: {
+		edge: BCEdge;
+		depth: number;
+	}[],
 	{
 		indent,
 		link_kind,
@@ -105,30 +169,18 @@ const paths_to_index_list = (
 	},
 ) => {
 	let index = "";
-	const visited = new Set<string>();
-
 	const real_indent = indent.replace(/\\t/g, "\t");
 
-	paths.forEach((path) => {
-		path.forEach((edge, depth) => {
-			const key = `${depth}-${edge.target_id}`;
-
-			if (!visited.has(key)) {
-				visited.add(key);
-
-				const display = stringify_node(
-					edge.target_id,
-					edge.target_attr,
-					{ show_node_options },
-				);
-
-				const link = Links.ify(edge.target_id, display, {
-					link_kind,
-				});
-
-				index += real_indent.repeat(depth) + `- ${link}\n`;
-			}
+	flat_paths.forEach(({ depth, edge }) => {
+		const display = stringify_node(edge.target_id, edge.target_attr, {
+			show_node_options,
 		});
+
+		const link = Links.ify(edge.target_id, display, {
+			link_kind,
+		});
+
+		index += real_indent.repeat(depth) + `- ${link}\n`;
 	});
 
 	return index;
@@ -137,5 +189,7 @@ const paths_to_index_list = (
 export const Traverse = {
 	alg,
 	all_paths,
-	paths_to_index_list,
+	flatten_all_paths,
+	flat_paths_to_index_list,
+	nest_all_paths,
 };
