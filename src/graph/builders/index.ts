@@ -1,8 +1,4 @@
-import {
-	EXPLICIT_EDGE_SOURCES,
-	type ExplicitEdgeSource,
-} from "src/const/graph";
-import type { ExplicitEdgeBuilder } from "src/interfaces/graph";
+import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { objectify_edge_mapper } from "../objectify_mappers";
@@ -40,7 +36,7 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	}
 };
 
-export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
+export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	// Make a new graph, instead of mutating the old one
 	const graph = new BCGraph();
 
@@ -51,15 +47,18 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 	add_initial_nodes(graph, all_files);
 
 	// Explicit edges
-	const explicit_edge_results = EXPLICIT_EDGE_SOURCES.reduce(
-		(acc, key) => {
-			const result = add_explicit_edges[key](graph, plugin, all_files);
-
-			acc[key] = result;
-			return acc;
-		},
-		{} as Record<ExplicitEdgeSource, ReturnType<ExplicitEdgeBuilder>>,
+	console.groupCollapsed("add_explicit_edges");
+	const explicit_edge_results = await Promise.all(
+		EXPLICIT_EDGE_SOURCES.map(async (source) => {
+			const result = await add_explicit_edges[source](
+				graph,
+				plugin,
+				all_files,
+			);
+			return { source, result };
+		}),
 	);
+	console.groupEnd();
 
 	console.log("explicit_edge_results:", explicit_edge_results);
 
@@ -68,11 +67,15 @@ export const rebuild_graph = (plugin: BreadcrumbsPlugin) => {
 		.mapOutEdges(objectify_edge_mapper((e) => e))
 		.filter((e) => e.attr.explicit);
 
+	console.groupCollapsed("add_implied_edges");
 	Object.entries(add_implied_edges).forEach(([kind, fn]) => {
-		console.log("add_implied_edges:", kind);
+		console.group(kind);
 
 		fn(graph, plugin, all_real_edges);
+
+		console.groupEnd();
 	});
+	console.groupEnd();
 
 	return graph;
 };

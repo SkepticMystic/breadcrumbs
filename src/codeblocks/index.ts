@@ -113,9 +113,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				try {
 					const pages = dataview_plugin
 						.get_api(plugin.app)
-						.pages(value) as IDataview.Page[];
+						?.pages(value) as undefined | IDataview.Page[];
 
-					return (parsed.dataview_from_paths = pages.map(
+					return (parsed.dataview_from_paths = pages?.map(
 						(page) => page.file.path,
 					));
 				} catch (error) {

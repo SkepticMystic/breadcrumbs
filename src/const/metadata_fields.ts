@@ -4,6 +4,8 @@ const METADATA_FIELDS_LIST = [
 	"BC-tag-note-field",
 	"BC-tag-note-exact",
 	//
+	"BC-folder-note-field",
+	"BC-folder-note-recurse",
 	// BREAKING: 17-01-2024 - These used to be "Hierarchy Notes". They didn't have a field (I think)
 	//   rather, you specified them in settings
 	"BC-list-note-field",
@@ -21,6 +23,9 @@ export const META_FIELD = {
 	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
+	//
+	"folder-note-field": "BC-folder-note-field",
+	"folder-note-recurse": "BC-folder-note-recurse",
 	//
 	"list-note-field": "BC-list-note-field",
 	"list-note-exclude-index": "BC-list-note-exclude-index",

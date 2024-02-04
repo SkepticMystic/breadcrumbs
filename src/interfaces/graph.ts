@@ -1,6 +1,7 @@
 import type { BCEdge, BCGraph } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
+import type { MaybePromise } from ".";
 
 export type BreadcrumbsError = {
 	code:
@@ -18,9 +19,9 @@ export type ExplicitEdgeBuilder = (
 	graph: BCGraph,
 	plugin: BreadcrumbsPlugin,
 	all_files: AllFiles,
-) => {
+) => MaybePromise<{
 	errors: BreadcrumbsError[];
-};
+}>;
 
 export type ImpliedEdgeBuilder = (
 	graph: BCGraph,

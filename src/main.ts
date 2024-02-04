@@ -172,7 +172,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
 	 * Optionally disable any of these steps.
 	 */
-	refresh(options?: {
+	async refresh(options?: {
 		rebuild_graph?: false;
 		active_file_store?: false;
 		redraw_page_views?: false;
@@ -192,7 +192,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			const notice = new Notice("Rebuilding BC graph");
 
-			this.graph = rebuild_graph(this);
+			this.graph = await rebuild_graph(this);
 
 			notice.setMessage(`Rebuilt BC graph in ${Date.now() - start_ms}ms`);
 		}
