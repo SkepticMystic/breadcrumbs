@@ -62,6 +62,23 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.dendronNoteDelimiter;
 	}
 
+	/// Date notes
+	if (
+		settings.addDateNotes !== undefined &&
+		settings.dateNoteField !== undefined &&
+		settings.dateNoteFormat !== undefined
+	) {
+		plugin.settings.explicit_edge_sources.date_note = {
+			enabled: settings.addDateNotes,
+			default_field: settings.dateNoteField,
+			date_format: settings.dateNoteFormat,
+		};
+
+		// delete settings.addDateNotes;
+		// delete settings.dateNoteField;
+		// delete settings.dateNoteFormat;
+	}
+
 	// SECTION: Views
 	/// Page
 	if (settings.respectReadableLineLength !== undefined) {
@@ -115,7 +132,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	/// Freeze implied edges
 	if (settings.writeBCsInline !== undefined) {
-		plugin.settings.commands.freeze_implied_edges.destination =
+		plugin.settings.commands.freeze_implied_edges.default_options.destination =
 			settings.writeBCsInline ? "dataview-inline" : "frontmatter";
 
 		// delete settings.writeBCsInline;

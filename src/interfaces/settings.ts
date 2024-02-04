@@ -75,31 +75,40 @@ export interface BreadcrumbsSettings {
 }
 
 export type OLD_BREADCRUMBS_SETTINGS = Partial<{
-	addDendronNotes: boolean; // MIGRATED
-	addDateNotes: boolean;
-	aliasesInIndex: boolean; // MIGRATED
-	alphaSortAsc: boolean;
-	altLinkFields: string[];
+	// SECTION: Hierarchies
+	userHiers: Hierarchy["dirs"][];
+
+	// SECTION: explicit_edge_sources
+	addDateNotes: boolean; // MIGRATED
+
 	CSVPaths: string;
-	createIndexIndent: string; // MIGRATED
-	// dvWaitTime: number; // NOT NEEDED
+
 	dataviewNoteField: string;
-	debugMode: 0 | 1 | 2;
+
+	addDendronNotes: boolean; // MIGRATED
 	dendronNoteDelimiter: string; // MIGRATED
 	dendronNoteField: string; // MIGRATED
-	dateFormat: string;
-	dateNoteFormat: string;
-	dateNoteField: string;
+	trimDendronNotes: boolean; // MIGRATED
+
+	dateNoteFormat: string; // MIGRATED
+	dateNoteField: string; // MIGRATED
 	dateNoteAddMonth: string;
 	dateNoteAddYear: string;
-	enableAlphaSort: boolean;
-	enableRelationSuggestor: boolean;
-	fieldSuggestor: boolean;
-	filterImpliedSiblingsOfDifferentTypes: boolean;
-	gridDefaultDepth: number;
-	hierarchyNotes: string[];
-	hierarchyNoteIsParent: boolean;
-	HNUpField: string;
+
+	hierarchyNotes: string[]; // NOT NEEDED - BC-list-note-field
+	hierarchyNoteIsParent: boolean; // NOT NEEDED - BC-list-note-exact
+	HNUpField: string; // NOT NEEDED - BC-list-note-field
+
+	namingSystemField: string;
+	namingSystemRegex: string;
+	namingSystemSplit: string;
+	namingSystemEndsWithDelimiter: boolean;
+
+	regexNoteField: string;
+
+	tagNoteField: string;
+
+	// SECTION: Implied relations
 	/** WARNING: The defaults for this feature are all `false`! */
 	impliedRelations: {
 		/** Has it's own toggle already */
@@ -117,62 +126,104 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 		/** If two separate parents are siblings, their children are cousins */
 		cousinsIsSibling: boolean;
 	}; // MIGRATED
-	indexNotes: string[];
-	// Default layout to use for Juggl view
-	// jugglLayout: JugglLayouts;
+
+	// treatCurrNodeAsImpliedSibling: boolean; // NOT NEEDED, impliedRelations.siblingIdentity covers it
+
+	// SECTION: Views
+	// These two should be one setting, deciding sort_order and sort_by
+	alphaSortAsc: boolean;
+	enableAlphaSort: boolean;
+
 	/** An array of fields going _up_ which **will** be shown in the trail view */
 	limitTrailCheckboxes: string[];
-	/** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
-	limitWriteBCCheckboxes: string[];
-	limitJumpToFirstFields: string[];
-	// CHECKBOX_STATES_OVERWRITTEN: boolean; // NOT NEEDED
-	namingSystemField: string;
-	namingSystemRegex: string;
-	namingSystemSplit: string;
-	namingSystemEndsWithDelimiter: boolean;
+
+	// Default layout to use for Juggl view
+	// jugglLayout: JugglLayouts;
+	parseJugglLinksWithoutJuggl: boolean;
+	showUpInJuggl: boolean;
+	showJuggl: boolean;
+
+	gridDefaultDepth: number;
+
 	noPathMessage: string; // MIGRATED
+
+	rlLeaf: boolean;
 	openMatrixOnLoad: boolean;
 	// openStatsOnLoad: boolean;
 	openDuckOnLoad: boolean;
 	openDownOnLoad: boolean;
-	parseJugglLinksWithoutJuggl: boolean;
-	refreshOnNoteChange: boolean;
-	refreshOnNoteSave: boolean;
+
 	respectReadableLineLength: boolean; // MIGRATED
 	showAllPathsIfNoneToIndexNote: boolean;
+
 	showAllAliases: boolean;
 	showNameOrType: boolean;
 	showRelationType: boolean;
-	showWriteAllBCsCmd: boolean;
+
 	sortByNameShowAlias: boolean;
-	regexNoteField: string;
-	relSuggestorTrigger: string;
-	rlLeaf: boolean;
-	showBCs: boolean; // TODO: What's difference between showBCs and showTrail?
+
+	showTrail: boolean;
+	showBCs: boolean; // ? What's difference between showBCs and showTrail?
 	showBCsInEditLPMode: boolean;
+
 	// showAll: string; // NOT NEEDED, we infer from the enabled field on each page view
 	showGrid: boolean; // MIGRATED
 	// showImpliedRelations: boolean; // NOT NEEDED, can just disable all implied relations
-	showUpInJuggl: boolean;
-	showJuggl: boolean;
+
 	showPrevNext: boolean; // MIGRATED
-	showRefreshNotice: boolean;
-	showTrail: boolean;
+
 	squareDirectionsOrder: (0 | 1 | 2 | 3 | 4)[];
-	tagNoteField: string;
-	threadIntoNewPane: boolean;
-	threadingTemplate: string;
-	threadingDirTemplates: { [dir in Direction]: string };
-	threadUnderCursor: boolean;
+
 	// trailSeperator: string; // NOT NEEDED, no path view
-	// treatCurrNodeAsImpliedSibling: boolean; // NOT NEEDED, impliedRelations.siblingIdentity covers it
-	trimDendronNotes: boolean; // MIGRATED
-	useAllMetadata: boolean;
-	userHiers: Hierarchy["dirs"][];
+
 	// visGraph: VisType;
 	// visRelation: Relations;
 	// visClosed: string;
 	// visAll: string;
-	writeBCsInline: boolean; // MIGRATED
+
+	// SECTION: Commands
+	aliasesInIndex: boolean; // MIGRATED
+	createIndexIndent: string; // MIGRATED
 	wikilinkIndex: boolean; // MIGRATED
+
+	refreshOnNoteChange: boolean;
+	refreshOnNoteSave: boolean;
+
+	showWriteAllBCsCmd: boolean;
+	writeBCsInline: boolean; // MIGRATED
+
+	/** An array of fields in all directions which **will** get written when running `Write implied BCs to file` */
+	limitWriteBCCheckboxes: string[];
+	limitJumpToFirstFields: string[];
+
+	threadIntoNewPane: boolean;
+	threadingTemplate: string;
+	threadingDirTemplates: { [dir in Direction]: string };
+	threadUnderCursor: boolean;
+
+	// SECTION: Not sure?
+	altLinkFields: string[]; // ?
+
+	dateFormat: string; // ?
+
+	filterImpliedSiblingsOfDifferentTypes: boolean; // ? I think this was a plaster on a bug
+
+	indexNotes: string[]; // NOT NEEDED - not going to implement
+
+	// SECTION: Suggestors
+	enableRelationSuggestor: boolean;
+	fieldSuggestor: boolean;
+	relSuggestorTrigger: string;
+
+	// SECTION: Misc
+
+	showRefreshNotice: boolean;
+
+	useAllMetadata: boolean;
+
+	// dvWaitTime: number; // NOT NEEDED
+
+	debugMode: 0 | 1 | 2;
+
+	// CHECKBOX_STATES_OVERWRITTEN: boolean; // NOT NEEDED
 }>;

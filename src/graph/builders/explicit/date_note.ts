@@ -72,7 +72,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			.plus({ days: 1 })
 			.toFormat(date_note_settings.date_format);
 
-		// TODO: Make sure this doesn't add a leading / for root files
 		const next_path =
 			path.join(file.folder, next_basename) + `.${file.ext}`;
 
