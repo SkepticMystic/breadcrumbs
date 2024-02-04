@@ -71,33 +71,39 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			/// Vault
 			this.registerEvent(
-				this.app.vault.on("create", (file) => {
+				this.app.vault.on("create", async (file) => {
 					console.log("create", file.path);
 					if (file instanceof TFile) {
 						// This isn't perfect, but it stops any "node doesn't exist" errors
 						// The user will have to refresh to add any relevant edges
-						this.graph.safe_add_node(file.path, {
-							resolved: true,
-						});
+						this.graph.safe_add_node(file.path, { resolved: true });
+
+						await this.refresh({ rebuild_graph: false });
 					}
 				}),
 			);
 
 			this.registerEvent(
-				this.app.vault.on("rename", (file, old_path) => {
+				this.app.vault.on("rename", async (file, old_path) => {
 					console.log("rename", old_path, "->", file.path);
 					if (file instanceof TFile) {
 						this.graph.safe_rename_node(old_path, file.path);
+
+						await this.refresh({ rebuild_graph: false });
 					}
 				}),
 			);
 
 			this.registerEvent(
-				this.app.vault.on("delete", (file) => {
+				this.app.vault.on("delete", async (file) => {
 					console.log("delete", file.path);
 					if (file instanceof TFile) {
+						// TODO: I think instead of dropping it, we should mark it as unresolved...
+						//   Maybe.. it may depend on what added the node, and the edges in/out of it
 						// Conveniently drops any relevant edges
 						this.graph.dropNode(file.path);
+
+						await this.refresh({ rebuild_graph: false });
 					}
 				}),
 			);
@@ -222,7 +228,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 				? new Notice("Rebuilding graph")
 				: null;
 
+			console.group("rebuild_graph");
 			this.graph = await rebuild_graph(this);
+			console.groupEnd();
 
 			notice?.setMessage(`Rebuilt graph in ${Date.now() - start_ms}ms`);
 		}
@@ -233,7 +241,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		if (options?.redraw_page_views !== false) {
+			console.group("redraw_page_views");
 			redraw_page_views(this);
+			console.groupEnd();
 		}
 	}
 
