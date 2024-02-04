@@ -1,6 +1,9 @@
 import { Setting } from "obsidian";
 
-export const new_setting = <SO extends string>(
+export const new_setting = <
+	SO extends string,
+	CL extends Partial<Record<string, boolean>>,
+>(
 	container_el: HTMLElement,
 	config: Partial<{
 		name: string;
@@ -18,6 +21,10 @@ export const new_setting = <SO extends string>(
 			options: SO[] | readonly SO[] | Record<string, SO>;
 			value: SO;
 			cb: (value: SO) => void;
+		};
+		checklist: {
+			options: CL;
+			cb: (value: CL) => void;
 		};
 	}>,
 ) => {
@@ -58,6 +65,34 @@ export const new_setting = <SO extends string>(
 				.addOptions(options)
 				.setValue(config.select!.value)
 				.onChange(config.select!.cb as any);
+		});
+	} else if (config.checklist) {
+		const checklist_el = setting.controlEl.createEl("div", {
+			attr: { class: "flex gap-3" },
+		});
+
+		let state = { ...config.checklist.options };
+
+		Object.keys(config.checklist.options).forEach((key) => {
+			const attr: DomElementInfo["attr"] = { type: "checkbox" };
+			// NOTE: Only add the property if checked: true
+			//   (HTML doesn't seem to care what the value is, just that it's present)
+			if (config.checklist!.options[key]!) attr.checked = true;
+
+			checklist_el
+				.createEl("label", {
+					text: key,
+					cls: "flex items-center gap-1.5",
+				})
+				.createEl("input", { attr }, (el) => {
+					el.onchange = (e) => {
+						if (!(e.target instanceof HTMLInputElement)) return;
+
+						state[key as keyof CL] = e.target.checked as any;
+
+						config.checklist!.cb(state);
+					};
+				});
 		});
 	}
 

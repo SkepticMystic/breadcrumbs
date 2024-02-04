@@ -17,9 +17,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	],
 
 	explicit_edge_sources: {
-		tag_note: {},
 		list_note: {},
 		typed_link: {},
+		tag_note: {
+			default_field: "up",
+		},
 		dendron_note: {
 			enabled: false,
 			delimiter: ".",
@@ -69,6 +71,15 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	},
 
 	commands: {
+		rebuild_graph: {
+			notify: true,
+
+			trigger: {
+				note_save: false,
+				layout_change: false,
+			},
+		},
+
 		list_index: {
 			default_options: ListIndex.DEFAULT_OPTIONS,
 		},

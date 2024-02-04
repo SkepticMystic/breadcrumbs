@@ -42,6 +42,15 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	}
 
 	// SECTION: Explicit edge sources
+
+	/// Tag note
+	if (settings.tagNoteField !== undefined) {
+		plugin.settings.explicit_edge_sources.tag_note.default_field =
+			settings.tagNoteField;
+
+		// delete settings.tagNoteField;
+	}
+
 	/// Dendron
 	if (
 		settings.addDendronNotes !== undefined &&
@@ -108,6 +117,25 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	}
 
 	// SECTION: Commands
+	/// Rebuild Graph
+	if (
+		settings.showRefreshNotice !== undefined &&
+		settings.refreshOnNoteSave !== undefined &&
+		settings.refreshOnNoteChange !== undefined
+	) {
+		plugin.settings.commands.rebuild_graph.notify =
+			settings.showRefreshNotice;
+
+		plugin.settings.commands.rebuild_graph.trigger = {
+			note_save: settings.refreshOnNoteSave,
+			layout_change: settings.refreshOnNoteChange,
+		};
+
+		// delete settings.showRefreshNotice;
+		// delete settings.refreshOnNoteSave;
+		// delete settings.refreshOnNoteChange;
+	}
+
 	/// List Index
 	if (
 		settings.wikilinkIndex !== undefined &&

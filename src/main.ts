@@ -61,7 +61,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.workspace.on("layout-change", () => {
 					console.log("layout-change");
 
-					this.refresh({ rebuild_graph: false });
+					this.refresh({
+						rebuild_graph:
+							this.settings.commands.rebuild_graph.trigger
+								.layout_change,
+					});
 				}),
 			);
 
@@ -197,9 +201,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 	 * Optionally disable any of these steps.
 	 */
 	async refresh(options?: {
-		rebuild_graph?: false;
-		active_file_store?: false;
-		redraw_page_views?: false;
+		rebuild_graph?: boolean;
+		active_file_store?: boolean;
+		redraw_page_views?: boolean;
 	}) {
 		console.log(
 			"bc.refresh",
@@ -214,11 +218,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 		if (options?.rebuild_graph !== false) {
 			const start_ms = Date.now();
 
-			const notice = new Notice("Rebuilding BC graph");
+			const notice = this.settings.commands.rebuild_graph.notify
+				? new Notice("Rebuilding graph")
+				: null;
 
 			this.graph = await rebuild_graph(this);
 
-			notice.setMessage(`Rebuilt BC graph in ${Date.now() - start_ms}ms`);
+			notice?.setMessage(`Rebuilt graph in ${Date.now() - start_ms}ms`);
 		}
 
 		// _Then_ react

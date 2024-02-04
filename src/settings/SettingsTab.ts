@@ -1,14 +1,15 @@
 import { App, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import { _add_settings_date_note } from "./DateNoteSettings";
 import { _add_settings_dendron_note } from "./DendronNoteSettings";
+import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
 import { _add_settings_grid_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
 import { _add_settings_list_index } from "./ListIndexSettings";
 import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
-import { _add_settings_date_note } from "./DateNoteSettings";
-import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
+import { _add_settings_rebuild_graph } from "./RebuildGraphSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -41,7 +42,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		// Edge Sources
 		containerEl.createEl("hr");
-		containerEl.createEl("h2", { text: "Edge Sources" });
+		containerEl.createEl("h3", { text: "Edge Sources" });
 
 		_add_settings_dendron_note(
 			plugin,
@@ -55,7 +56,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		// Views
 		containerEl.createEl("hr");
-		containerEl.createEl("h2", { text: "Views" });
+		containerEl.createEl("h3", { text: "Views" });
 
 		_add_settings_matrix(
 			plugin,
@@ -67,18 +68,23 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			s: { text: "Page" },
 		});
 
-		page_details.createEl("h3", { text: "General" });
+		page_details.createEl("h5", { text: "General" });
 		_add_settings_page_views(plugin, page_details);
 
-		page_details.createEl("h3", { text: "Grid" });
+		page_details.createEl("h5", { text: "Grid" });
 		_add_settings_grid_view(plugin, page_details);
 
-		page_details.createEl("h3", { text: "Previous/Next" });
+		page_details.createEl("h5", { text: "Previous/Next" });
 		_add_settings_prev_next_view(plugin, page_details);
 
 		// Commands
 		containerEl.createEl("hr");
-		containerEl.createEl("h2", { text: "Commands" });
+		containerEl.createEl("h3", { text: "Commands" });
+
+		_add_settings_rebuild_graph(
+			plugin,
+			make_details_el(containerEl, { s: { text: "Rebuild Graph" } }),
+		);
 
 		_add_settings_list_index(
 			plugin,

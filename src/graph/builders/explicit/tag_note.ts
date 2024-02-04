@@ -30,7 +30,10 @@ const get_tag_note_info = (
 	}
 	const tag = ensure_starts_with(raw_tag, "#");
 
-	const field = metadata[META_FIELD["tag-note-field"]];
+	const field =
+		metadata[META_FIELD["tag-note-field"]] ??
+		plugin.settings.explicit_edge_sources.tag_note.default_field;
+
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {

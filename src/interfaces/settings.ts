@@ -19,7 +19,9 @@ export interface BreadcrumbsSettings {
 		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
 		// The two are not distinguished, because Dataview doesn't distinguish them
 		typed_link: {};
-		tag_note: {};
+		tag_note: {
+			default_field: string;
+		};
 		list_note: {};
 		dendron_note: {
 			enabled: boolean;
@@ -62,6 +64,16 @@ export interface BreadcrumbsSettings {
 	};
 
 	commands: {
+		rebuild_graph: {
+			notify: boolean;
+
+			trigger: {
+				// TODO: Not actually implemented yet
+				note_save: boolean;
+				layout_change: boolean;
+			};
+		};
+
 		list_index: {
 			default_options: ListIndex.Options;
 		};
@@ -76,7 +88,7 @@ export interface BreadcrumbsSettings {
 
 export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	// SECTION: Hierarchies
-	userHiers: Hierarchy["dirs"][];
+	userHiers: Hierarchy["dirs"][]; // MIGRATED
 
 	// SECTION: explicit_edge_sources
 	addDateNotes: boolean; // MIGRATED
@@ -106,7 +118,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 
 	regexNoteField: string;
 
-	tagNoteField: string;
+	tagNoteField: string; // MIGRATED
 
 	// SECTION: Implied relations
 	/** WARNING: The defaults for this feature are all `false`! */
@@ -147,17 +159,19 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 
 	noPathMessage: string; // MIGRATED
 
-	rlLeaf: boolean;
-	openMatrixOnLoad: boolean;
-	// openStatsOnLoad: boolean;
-	openDuckOnLoad: boolean;
-	openDownOnLoad: boolean;
+	// Dunno if I'll add these... Obsidian remembers if they were open,
+	//   and the side they were opened on
+	rlLeaf: boolean; // NOT NEEDED
+	openMatrixOnLoad: boolean; // NOT NEEDED
+	// openStatsOnLoad: boolean; // NOT NEEDED
+	openDuckOnLoad: boolean; // NOT NEEDED
+	openDownOnLoad: boolean; // NOT NEEDED
 
 	respectReadableLineLength: boolean; // MIGRATED
 	showAllPathsIfNoneToIndexNote: boolean;
 
-	showAllAliases: boolean;
-	showNameOrType: boolean;
+	showAllAliases: boolean; // ?
+	showNameOrType: boolean; // ?
 	showRelationType: boolean;
 
 	sortByNameShowAlias: boolean;
@@ -186,8 +200,9 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	createIndexIndent: string; // MIGRATED
 	wikilinkIndex: boolean; // MIGRATED
 
-	refreshOnNoteChange: boolean;
-	refreshOnNoteSave: boolean;
+	refreshOnNoteSave: boolean; // MIGRATED
+	refreshOnNoteChange: boolean; // MIGRATED
+	showRefreshNotice: boolean; // MIGRATED
 
 	showWriteAllBCsCmd: boolean;
 	writeBCsInline: boolean; // MIGRATED
@@ -216,8 +231,6 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	relSuggestorTrigger: string;
 
 	// SECTION: Misc
-
-	showRefreshNotice: boolean;
 
 	useAllMetadata: boolean;
 
