@@ -20,6 +20,8 @@
 	data-href={no_ext}
 	aria-label={path === display ? "" : path}
 	on:click={() => {
+		// TODO: There seems to be an Obsidian issue here...
+		// I try to open /b from /a, but it opens /folder/b
 		plugin.app.workspace.openLinkText(path, $active_file_store?.path ?? "");
 	}}
 >

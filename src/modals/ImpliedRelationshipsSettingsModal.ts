@@ -35,9 +35,7 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		};
 
 		const save = async () => {
-			await plugin.saveSettings();
-
-			plugin.refresh();
+			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
 		};
 
 		new_setting(contentEl, {

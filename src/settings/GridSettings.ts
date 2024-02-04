@@ -13,7 +13,9 @@ export const _add_settings_grid_view = (
 			value: plugin.settings.views.page.grid.enabled,
 			cb: async (value) => {
 				plugin.settings.views.page.grid.enabled = value;
-				await plugin.saveSettings();
+
+				await Promise.all([plugin.saveSettings()]);
+				// Don't await if not rebuilding the graph
 				plugin.refresh({ rebuild_graph: false });
 			},
 		},

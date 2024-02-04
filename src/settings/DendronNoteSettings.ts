@@ -14,8 +14,7 @@ export const _add_settings_dendron_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.dendron_note.enabled =
 					value;
-				plugin.refresh();
-				await plugin.saveSettings();
+				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
 			},
 		},
 	});
@@ -30,8 +29,10 @@ export const _add_settings_dendron_note = (
 				else {
 					plugin.settings.explicit_edge_sources.dendron_note.delimiter =
 						value;
-					plugin.refresh();
-					await plugin.saveSettings();
+					await Promise.all([
+						plugin.refresh(),
+						plugin.saveSettings(),
+					]);
 				}
 			},
 		},
@@ -49,8 +50,7 @@ export const _add_settings_dendron_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.dendron_note.default_field =
 					value;
-				plugin.refresh();
-				await plugin.saveSettings();
+				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
 			},
 		},
 	});
@@ -64,8 +64,7 @@ export const _add_settings_dendron_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.dendron_note.display_trimmed =
 					value;
-				plugin.refresh();
-				await plugin.saveSettings();
+				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
 			},
 		},
 	});

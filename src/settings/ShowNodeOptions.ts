@@ -30,7 +30,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});
@@ -47,7 +48,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});
@@ -64,7 +66,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});

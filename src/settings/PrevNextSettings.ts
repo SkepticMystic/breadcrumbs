@@ -15,7 +15,8 @@ export const _add_settings_prev_next_view = (
 				.onChange(async (value) => {
 					plugin.settings.views.page.prev_next.enabled = value;
 
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding the graph
 					plugin.refresh({
 						rebuild_graph: false,
 						active_file_store: false,

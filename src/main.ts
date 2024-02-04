@@ -38,7 +38,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			await dataview_plugin.await_if_enabled(this);
 
-			this.refresh();
+			await this.refresh();
 
 			// Events
 			/// Workspace
@@ -116,7 +116,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.addCommand({
 			id: "breadcrumbs:rebuild-graph",
 			name: "Rebuild graph",
-			callback: () => this.refresh(),
+			callback: async () => await this.refresh(),
 		});
 
 		this.addCommand({
