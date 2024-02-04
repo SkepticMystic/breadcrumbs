@@ -18,6 +18,8 @@ const resolve_to_absolute_path = (
 	return path.join(folder.path, path.basename(relative_path));
 };
 
+// TODO: Should I be using app.fileManager.generateMarkdownLink here?
+//   I don't think it does 'markdown' links, but use it for wiki
 const ify = (
 	path: string,
 	display: string,

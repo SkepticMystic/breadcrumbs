@@ -87,7 +87,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					// It _should_ be a Link, as we've confirmed the field is in a BC hierarchy
 					// But, just in case, we check that it has a path
 					typeof target_link !== "object" ||
-					!target_link.path
+					!target_link?.path
 				) {
 					return errors.push({
 						code: "invalid_field_value",
