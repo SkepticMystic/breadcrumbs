@@ -65,6 +65,12 @@ export interface BreadcrumbsSettings {
 		list_index: {
 			default_options: ListIndex.Options;
 		};
+
+		freeze_implied_edges: {
+			default_options: {
+				destination: "frontmatter" | "dataview-inline";
+			};
+		};
 	};
 }
 
@@ -167,6 +173,6 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	// visRelation: Relations;
 	// visClosed: string;
 	// visAll: string;
-	writeBCsInline: boolean;
+	writeBCsInline: boolean; // MIGRATED
 	wikilinkIndex: boolean; // MIGRATED
 }>;

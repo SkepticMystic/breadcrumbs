@@ -6,6 +6,9 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
+import { get } from "svelte/store";
+import { Codeblocks } from "./codeblocks";
+import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
@@ -14,7 +17,6 @@ import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
-import { Codeblocks } from "./codeblocks";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -128,6 +130,28 @@ export default class BreadcrumbsPlugin extends Plugin {
 			name: "Create list index",
 			callback: () => {
 				new CreateListIndexModal(this.app, this).open();
+			},
+		});
+
+		this.addCommand({
+			id: "breadcrumbs:freeze-implied-edges-to-note",
+			name: "Freeze implied edges to note",
+			callback: async () => {
+				// TODO: Probably add an intermediate modal to specify options
+				// The whole point is to make implied edges explicit
+				// So once you freeze them, they'll be duplicated
+				// So, in the options modal, you could temporarily enabled/disable certain implied_relations on the hierarchy
+				// preventing duplicates for implied_relations that weren't properly enabled
+				const active_file = get(active_file_store);
+				if (!active_file) return;
+
+				await freeze_implied_edges_to_note(
+					this,
+					active_file,
+					this.settings.commands.freeze_implied_edges.default_options,
+				);
+
+				new Notice("Crumbs to note");
 			},
 		});
 

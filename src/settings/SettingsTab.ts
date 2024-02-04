@@ -8,6 +8,7 @@ import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
 import { _add_settings_date_note } from "./DateNoteSettings";
+import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -82,6 +83,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		_add_settings_list_index(
 			plugin,
 			make_details_el(containerEl, { s: { text: "List Index" } }),
+		);
+
+		_add_settings_freeze_implied_edges(
+			plugin,
+			make_details_el(containerEl, {
+				s: { text: "Freeze Implied Edges" },
+			}),
 		);
 	}
 }

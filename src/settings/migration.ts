@@ -13,7 +13,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	// TODO: Eventually, uncomment the delete lines to remove old versions
 
-	// Hierarchies
+	// SECTION: Hierarchies
 	/// Hierarchies used to just be the Record<Direction, string[]>, but it's now wrapped in an object
 	/// We can also handle the move of implied_relationships here
 	if (settings.userHiers && settings.impliedRelations) {
@@ -41,7 +41,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.impliedRelations;
 	}
 
-	// Explicit edge sources
+	// SECTION: Explicit edge sources
 	/// Dendron
 	if (
 		settings.addDendronNotes !== undefined &&
@@ -62,7 +62,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.dendronNoteDelimiter;
 	}
 
-	// Views
+	// SECTION: Views
 	/// Page
 	if (settings.respectReadableLineLength !== undefined) {
 		plugin.settings.views.page.all.readable_line_width =
@@ -90,7 +90,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.showPrevNext;
 	}
 
-	// Commands
+	// SECTION: Commands
 	/// List Index
 	if (
 		settings.wikilinkIndex !== undefined &&
@@ -111,6 +111,14 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.wikilinkIndex;
 		// delete settings.aliasesInIndex;
 		// delete settings.createIndexIndent;
+	}
+
+	/// Freeze implied edges
+	if (settings.writeBCsInline !== undefined) {
+		plugin.settings.commands.freeze_implied_edges.destination =
+			settings.writeBCsInline ? "dataview-inline" : "frontmatter";
+
+		// delete settings.writeBCsInline;
 	}
 
 	await plugin.saveSettings();

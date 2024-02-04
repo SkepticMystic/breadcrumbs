@@ -72,5 +72,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		list_index: {
 			default_options: ListIndex.DEFAULT_OPTIONS,
 		},
+
+		freeze_implied_edges: {
+			default_options: {
+				destination: "frontmatter",
+			},
+		},
 	},
 };

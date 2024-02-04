@@ -102,3 +102,8 @@ export const group_by = <T extends P, S extends string, P = T>(
 
 	return grouped;
 };
+
+export const remove_duplicates = <T>(arr: T[]): T[] => {
+	const set = new Set(arr);
+	return Array.from(set);
+};
