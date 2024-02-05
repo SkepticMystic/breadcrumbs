@@ -97,14 +97,28 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// delete settings.respectReadableLineLength;
 	}
 
-	//// Grid
+	//// Trail
+	if (settings.showBCs !== undefined) {
+		plugin.settings.views.page.trail.enabled = settings.showBCs;
+		// delete settings.showBCs;
+	}
+
 	if (settings.showGrid !== undefined) {
-		plugin.settings.views.page.grid.enabled = settings.showGrid;
+		plugin.settings.views.page.trail.format = settings.showGrid
+			? "grid"
+			: "path";
+
 		// delete settings.showGrid;
 	}
 
+	if (settings.gridDefaultDepth !== undefined) {
+		plugin.settings.views.page.trail.default_depth =
+			settings.gridDefaultDepth;
+		// delete settings.gridDefaultDepth;
+	}
+
 	if (settings.noPathMessage !== undefined) {
-		plugin.settings.views.page.grid.no_path_message =
+		plugin.settings.views.page.trail.no_path_message =
 			settings.noPathMessage;
 		// delete settings.noPathMessage;
 	}

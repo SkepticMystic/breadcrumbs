@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
-	import GridView from "./GridView.svelte";
+	import GridView from "./TrailView.svelte";
 	import PrevNextView from "./PrevNextView.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
 	const enabled_views = {
-		grid: plugin.settings.views.page.grid.enabled,
+		grid: plugin.settings.views.page.trail.enabled,
 		prev_next: plugin.settings.views.page.prev_next.enabled,
 	};
 </script>

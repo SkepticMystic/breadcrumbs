@@ -46,11 +46,15 @@ export interface BreadcrumbsSettings {
 				readable_line_width: boolean;
 			};
 
-			grid: {
+			trail: {
 				enabled: boolean;
+				default_depth: number;
+				format: "grid" | "path";
+				selection: "all" | "shortest";
 				no_path_message: string;
 				show_node_options: ShowNodeOptions;
 			};
+
 			prev_next: {
 				enabled: boolean;
 				show_node_options: ShowNodeOptions;
@@ -164,7 +168,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	showUpInJuggl: boolean;
 	showJuggl: boolean;
 
-	gridDefaultDepth: number;
+	gridDefaultDepth: number; // MIGRATED
 
 	noPathMessage: string; // MIGRATED
 
@@ -185,8 +189,8 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 
 	sortByNameShowAlias: boolean;
 
-	showTrail: boolean;
-	showBCs: boolean; // ? What's difference between showBCs and showTrail?
+	showTrail: boolean; // NOT NEEDED
+	showBCs: boolean; // MIGRATED
 	showBCsInEditLPMode: boolean;
 
 	// showAll: string; // NOT NEEDED, we infer from the enabled field on each page view

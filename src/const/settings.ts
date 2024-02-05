@@ -47,8 +47,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				readable_line_width: true,
 			},
 
-			grid: {
+			trail: {
 				enabled: true,
+				format: "grid",
+				default_depth: 999,
+				selection: "all",
 				no_path_message: "",
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
