@@ -17,6 +17,7 @@ import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
+import { TreeView } from "./views/tree";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -113,6 +114,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 				VIEW_IDS.matrix,
 				(leaf) => new MatrixView(leaf, this),
 			);
+			this.registerView(
+				VIEW_IDS.tree,
+				(leaf) => new TreeView(leaf, this),
+			);
 
 			// TODO: The codeblock doesn't rerender when changing notes
 			// Codeblocks
@@ -129,10 +134,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 			callback: async () => await this.refresh(),
 		});
 
-		this.addCommand({
-			id: "breadcrumbs:open-matrix-view",
-			name: "Open matrix view",
-			callback: () => this.activateView(VIEW_IDS.matrix),
+		Object.keys(VIEW_IDS).forEach((view_id) => {
+			this.addCommand({
+				id: `breadcrumbs:open-${view_id}-view`,
+				name: `Open ${view_id} view`,
+				callback: () =>
+					this.activateView(
+						VIEW_IDS[view_id as keyof typeof VIEW_IDS],
+					),
+			});
 		});
 
 		this.addCommand({

@@ -5,8 +5,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { Paths } from "src/utils/paths";
-	import FlatEdgeList from "./FlatEdgeList.svelte";
-	import NestedEdgeList from "./NestedEdgeList.svelte";
+	import FlatEdgeList from "../FlatEdgeList.svelte";
+	import NestedEdgeList from "../NestedEdgeList.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -77,12 +77,16 @@
 					{sort}
 					{plugin}
 					nested_edges={Traverse.nest_all_paths(sliced)}
+					show_node_options={plugin.settings.codeblocks
+						.show_node_options}
 				/>
 			{:else}
 				<FlatEdgeList
 					{sort}
 					{plugin}
 					flat_edges={Traverse.flatten_all_paths(sliced)}
+					show_node_options={plugin.settings.codeblocks
+						.show_node_options}
 				/>
 			{/if}
 		{/if}

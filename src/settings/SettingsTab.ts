@@ -1,5 +1,6 @@
 import { App, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import { _add_settings_codeblocks } from "./CodeblockSettings";
 import { _add_settings_date_note } from "./DateNoteSettings";
 import { _add_settings_dendron_note } from "./DendronNoteSettings";
 import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
@@ -10,6 +11,7 @@ import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
 import { _add_settings_rebuild_graph } from "./RebuildGraphSettings";
+import { _add_settings_tree_view } from "./TreeViewSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -63,6 +65,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			make_details_el(containerEl, { s: { text: "Matrix" } }),
 		);
 
+		_add_settings_tree_view(
+			plugin,
+			make_details_el(containerEl, { s: { text: "Tree" } }),
+		);
+
 		/// Page
 		const page_details = make_details_el(containerEl, {
 			s: { text: "Page" },
@@ -96,6 +103,15 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			make_details_el(containerEl, {
 				s: { text: "Freeze Implied Edges" },
 			}),
+		);
+
+		// Codeblocks
+		containerEl.createEl("hr");
+		// containerEl.createEl("h3", { text: "Codeblocks" });
+
+		_add_settings_codeblocks(
+			plugin,
+			make_details_el(containerEl, { s: { text: "Codeblock Settings" } }),
 		);
 	}
 }

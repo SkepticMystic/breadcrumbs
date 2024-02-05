@@ -60,6 +60,11 @@ export interface BreadcrumbsSettings {
 			matrix: {
 				show_node_options: ShowNodeOptions;
 			};
+
+			tree: {
+				default_dir: Direction;
+				show_node_options: ShowNodeOptions;
+			};
 		};
 	};
 
@@ -83,6 +88,10 @@ export interface BreadcrumbsSettings {
 				destination: "frontmatter" | "dataview-inline";
 			};
 		};
+	};
+
+	codeblocks: {
+		show_node_options: ShowNodeOptions;
 	};
 }
 

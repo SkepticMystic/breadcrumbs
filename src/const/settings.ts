@@ -2,6 +2,12 @@ import { ListIndex } from "src/commands/list_index";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { blank_hierarchy } from "src/utils/hierarchies";
 
+const DEFAULT_SHOW_NODE_OPTIONS = {
+	ext: false,
+	folder: false,
+	alias: false,
+};
+
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	hierarchies: [
 		{
@@ -44,28 +50,21 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			grid: {
 				enabled: true,
 				no_path_message: "",
-				show_node_options: {
-					ext: false,
-					folder: false,
-					alias: false,
-				},
+				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 			prev_next: {
 				enabled: true,
-				show_node_options: {
-					ext: false,
-					folder: false,
-					alias: false,
-				},
+				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 		},
 		side: {
 			matrix: {
-				show_node_options: {
-					ext: false,
-					folder: true,
-					alias: false,
-				},
+				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+			},
+
+			tree: {
+				default_dir: "down",
+				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 		},
 	},
@@ -89,5 +88,9 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				destination: "frontmatter",
 			},
 		},
+	},
+
+	codeblocks: {
+		show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 	},
 };

@@ -45,7 +45,7 @@
 	</div>
 
 	<div>
-		{#each hierarchies as hier, i}
+		{#each hierarchies as hier, i (Object.values(hier.dirs).flat())}
 			<details class="BC-Hier-Details">
 				<summary>
 					<span>
