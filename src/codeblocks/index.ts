@@ -9,6 +9,7 @@ import { get } from "svelte/store";
 import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
+import { EDGE_SORT_FIELDS } from "src/const/graph";
 
 const FIELDS = [
 	"type",
@@ -72,7 +73,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 						if (!hierarchy_fields.includes(field)) {
 							errors.push({
 								code: "invalid_field_value",
-								message: `Invalid field: ${field}`,
+								message: `Invalid field: ${field}. Must be one of your hierarchy fields.`,
 								path: key,
 							});
 							return false;
@@ -121,7 +122,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				} catch (error) {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid dataview-from: ${value}`,
+						message: `Invalid dataview-from: ${value}. Must be a valid dataview query.`,
 						path: key,
 					});
 				}
@@ -131,7 +132,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				if (value !== "open" && value !== "closed") {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid content: ${value}`,
+						message: `Invalid content: ${value}. Valid options: open, closed`,
 						path: key,
 					});
 				}
@@ -140,25 +141,28 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "sort": {
-				const [sort_by, sort_order] = value.split(" ");
-				if (sort_by !== "basename") {
+				let [field, order] = value.split(" ");
+
+				if (!EDGE_SORT_FIELDS.includes(field as any)) {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid sort_by: ${sort_by}`,
+						message: `Invalid sort field: ${field}. Valid options: ${EDGE_SORT_FIELDS.join(", ")}`,
 						path: key,
 					});
 				}
 
-				if (sort_order !== "asc" && sort_order !== "desc") {
+				if (order !== "asc" && order !== "desc") {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid sort_order: ${sort_order}`,
+						message: `Invalid sort order: ${order}. Valid options: asc, desc`,
 						path: key,
 					});
 				}
 
-				parsed.sort_by = sort_by;
-				parsed.sort_order = sort_order === "asc" ? 1 : -1;
+				parsed.sort = {
+					field: field as any,
+					order: order === "asc" ? 1 : -1,
+				};
 
 				return;
 			}
@@ -166,7 +170,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			default: {
 				errors.push({
 					code: "invalid_field_value",
-					message: `Invalid field: ${key}`,
+					message: `Invalid codeblock field: ${key}. Valid options: ${FIELDS.join(", ")}`,
 					path: key,
 				});
 			}
@@ -194,9 +198,10 @@ const get_callback = (plugin: BreadcrumbsPlugin) => {
 				dir: "down",
 				depth: [0, Infinity],
 				flat: false,
-				// I think this is something to do with the Traverse order?
-				sort_by: "default",
-				sort_order: 1,
+				sort: {
+					field: "default",
+					order: 1,
+				},
 			},
 			parsed,
 		);

@@ -44,8 +44,6 @@
 		plugin.settings.views.page.trail.default_depth,
 	);
 
-	// TODO: Dedupe these paths. Once sliced shorter than the max,
-	//   some paths are the same, cause their differences have been sliced off
 	$: sliced_paths = selected_paths.map((path) => path.slice(0, depth));
 </script>
 
@@ -53,40 +51,37 @@
 	{#key sliced_paths}
 		{#if sliced_paths.length}
 			<div class="mb-1.5 flex justify-between gap-3">
-				<label>
-					<span>Format:</span>
-					<select
-						bind:value={plugin.settings.views.page.trail.format}
-						on:change={async () => await plugin.saveSettings()}
-					>
-						{#each ["grid", "path"] as format}
-							<option value={format}> {format} </option>
-						{/each}
-					</select>
-				</label>
+				<select
+					bind:value={plugin.settings.views.page.trail.format}
+					on:change={async () => await plugin.saveSettings()}
+				>
+					{#each ["grid", "path"] as format}
+						<option value={format}> {format} </option>
+					{/each}
+				</select>
 
-				<label>
-					<span>Selection:</span>
-					<select
-						bind:value={plugin.settings.views.page.trail.selection}
-						on:change={async () => await plugin.saveSettings()}
-					>
-						{#each ["all", "shortest"] as s}
-							<option value={s}> {s} </option>
-						{/each}
-					</select>
-				</label>
+				<select
+					bind:value={plugin.settings.views.page.trail.selection}
+					on:change={async () => await plugin.saveSettings()}
+				>
+					{#each ["all", "shortest"] as s}
+						<option value={s}> {s} </option>
+					{/each}
+				</select>
 
-				<div>
-					<span>Depth: </span>
+				<div class="flex items-center gap-2">
 					<button
+						title="Decrease depth"
 						disabled={depth <= 1}
 						on:click={() => (depth = Math.max(1, depth - 1))}
 					>
 						-
 					</button>
-					<code>{depth}</code>
+
+					<code title="depth">{depth}</code>
+
 					<button
+						title="Increase depth"
 						disabled={depth >= MAX_DEPTH}
 						on:click={() =>
 							(depth = Math.min(MAX_DEPTH, depth + 1))}

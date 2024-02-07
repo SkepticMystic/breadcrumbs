@@ -9,3 +9,13 @@ export const EXPLICIT_EDGE_SOURCES = [
 ] as const;
 
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];
+
+export const EDGE_SORT_FIELDS = [
+	"default",
+	"basename",
+	"path",
+	"field",
+] as const;
+type EdgeSortField = (typeof EDGE_SORT_FIELDS)[number];
+
+export type EdgeSorter = { field: EdgeSortField; order: 1 | -1 };

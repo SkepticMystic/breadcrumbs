@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
-	import type { BreadcrumbsError, EdgeSorter } from "src/interfaces/graph";
+	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { Paths } from "src/utils/paths";
 	import FlatEdgeList from "../FlatEdgeList.svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
+	import { get_edge_sorter } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -31,24 +31,7 @@
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
-	const sort: EdgeSorter = (() => {
-		switch (options.sort_by) {
-			case "default": {
-				return () => 0;
-			}
-			case "basename": {
-				return (a, b) => {
-					const a_basename = Paths.drop_folder(a.target_id);
-					const b_basename = Paths.drop_folder(b.target_id);
-
-					return (
-						a_basename.localeCompare(b_basename) *
-						options.sort_order
-					);
-				};
-			}
-		}
-	})();
+	const sort = get_edge_sorter(options.sort);
 </script>
 
 <div class="BC-codeblock-tree">

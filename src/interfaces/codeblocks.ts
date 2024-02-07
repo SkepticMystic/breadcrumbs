@@ -1,3 +1,4 @@
+import type { EdgeSorter } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
 
 export type ICodeblock = {
@@ -11,7 +12,6 @@ export type ICodeblock = {
 		flat: boolean;
 		dataview_from_paths?: string[];
 		content?: "open" | "closed";
-		sort_by: "default" | "basename";
-		sort_order: 1 | -1;
+		sort: EdgeSorter;
 	};
 };

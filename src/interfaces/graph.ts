@@ -28,5 +28,3 @@ export type ImpliedEdgeBuilder = (
 	plugin: BreadcrumbsPlugin,
 	all_real_edges: BCEdge[],
 ) => {};
-
-export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
