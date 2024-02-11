@@ -18,7 +18,16 @@ const get_tag_note_info = (
 		return fail(undefined);
 	}
 
-	const raw_tag = metadata[META_FIELD["tag-note-tag"]];
+	let raw_tag = metadata[META_FIELD["tag-note-tag"]];
+	if (!raw_tag) {
+		raw_tag = metadata["BC-tag-note"];
+		if (raw_tag) {
+			console.warn(
+				`DEPRECATED: BC-tag-note is deprecated in favor of ${META_FIELD["tag-note-tag"]}`,
+			);
+		}
+	}
+
 	if (!raw_tag) {
 		return fail(undefined);
 	} else if (typeof raw_tag !== "string") {

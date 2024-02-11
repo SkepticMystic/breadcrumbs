@@ -1,4 +1,5 @@
 import { ListIndex } from "src/commands/list_index";
+import { META_FIELD } from "src/const/metadata_fields";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import type {
 	BreadcrumbsSettings,
@@ -49,6 +50,28 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			settings.tagNoteField;
 
 		// delete settings.tagNoteField;
+	}
+
+	/// List note
+	if (
+		settings.hierarchyNotes !== undefined &&
+		settings.hierarchyNoteIsParent !== undefined &&
+		settings.HNUpField !== undefined
+	) {
+		if (settings.hierarchyNotes.length > 0) {
+			console.warn(
+				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the ${META_FIELD["list-note-field"]} in each hierarchy note.`,
+			);
+		}
+
+		// TODO: Add the list_note default settings
+		// plugin.settings.explicit_edge_sources.list_note = {
+		// 	exact: settings.hierarchyNoteIsParent,
+		// };
+
+		// delete settings.hierarchyNotes;
+		// delete settings.hierarchyNoteIsParent;
+		// delete settings.HNUpField;
 	}
 
 	/// Dendron

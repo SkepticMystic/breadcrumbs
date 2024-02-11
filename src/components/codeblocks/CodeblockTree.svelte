@@ -27,7 +27,6 @@
 		: [];
 
 	const sliced = all_paths.map((path) =>
-		// BREAKING?: I believe the previous behaviour sliced the end exclusively
 		path.slice(options.depth[0], options.depth[1]),
 	);
 

@@ -26,9 +26,7 @@
 	{display}
 	path={edge.target_id}
 	resolved={edge.target_attr.resolved}
-	cls="{cls} {edge.attr.explicit
+	cls="{cls} BC-edge {edge.attr.explicit
 		? 'BC-edge-explicit'
 		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`} "
 />
-
-<!-- BREAKING: BC-edge-implied used to be BC-implied, I believe -->

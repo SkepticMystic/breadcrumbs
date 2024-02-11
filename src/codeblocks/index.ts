@@ -18,7 +18,6 @@ const FIELDS = [
 	"fields",
 	"depth",
 	"flat",
-	// BREAKING: This just used to be called 'from'
 	"dataview-from",
 	"content",
 	"sort",
@@ -110,7 +109,16 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.flat = value === "true");
 			}
 
+			//@ts-ignore: TODO: Remove once everyone has migrated
+			case "from":
 			case "dataview-from": {
+				//@ts-ignore: TODO: Remove once everyone has migrated
+				if (key === "from") {
+					console.warn(
+						"The 'from' field in codeblocks is deprecated in favour of 'dataview-from' instead.",
+					);
+				}
+
 				try {
 					const pages = dataview_plugin
 						.get_api(plugin.app)
