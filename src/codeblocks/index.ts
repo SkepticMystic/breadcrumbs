@@ -208,7 +208,7 @@ const get_callback = (plugin: BreadcrumbsPlugin) => {
 				flat: false,
 				sort: {
 					field: "default",
-					order: 1,
+					order: -1,
 				},
 			},
 			parsed,
