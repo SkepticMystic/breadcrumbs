@@ -159,7 +159,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					});
 				}
 
-				if (order !== "asc" && order !== "desc") {
+				// If an order has been given, but isn't a valid option
+				if (order && order !== "asc" && order !== "desc") {
 					return errors.push({
 						code: "invalid_field_value",
 						message: `Invalid sort order: ${order}. Valid options: asc, desc`,
@@ -169,7 +170,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 
 				parsed.sort = {
 					field: field as any,
-					order: order === "asc" ? 1 : -1,
+					order: order === "desc" ? -1 : 1,
 				};
 
 				return;
