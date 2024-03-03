@@ -149,7 +149,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "sort": {
-				let [field, order] = value.split(" ");
+				const [field, order] = value.split(" ");
 
 				if (!EDGE_SORT_FIELDS.includes(field as any)) {
 					return errors.push({
@@ -163,7 +163,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				if (order && order !== "asc" && order !== "desc") {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid sort order: ${order}. Valid options: asc, desc`,
+						message: `Invalid sort order: ${order}. Valid options: asc, desc, or blank (default is asc).`,
 						path: key,
 					});
 				}
@@ -208,7 +208,7 @@ const get_callback = (plugin: BreadcrumbsPlugin) => {
 				depth: [0, Infinity],
 				flat: false,
 				sort: {
-					field: "default",
+					field: "basename",
 					order: 1,
 				},
 			},
