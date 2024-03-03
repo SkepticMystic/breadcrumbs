@@ -55,7 +55,7 @@ export class BCAPI {
 			(e) =>
 				(!options?.dir || e.attr.dir === options.dir) &&
 				(!options?.field || e.attr.field === options.field) &&
-				(!options?.hierarchy_i ||
+				(options?.hierarchy_i === undefined ||
 					e.attr.hierarchy_i === options.hierarchy_i) &&
 				(options?.explicit === undefined ||
 					e.attr.explicit === options.explicit),
