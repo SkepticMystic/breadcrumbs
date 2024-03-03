@@ -12,5 +12,7 @@ declare module "obsidian" {
 }
 
 declare global {
-	interface Window {}
+	interface Window {
+		BCAPI: import("src/api/index").BCAPI;
+	}
 }

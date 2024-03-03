@@ -18,10 +18,12 @@ import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import { BCAPI } from "./api";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
 	graph = new BCGraph();
+	api!: BCAPI;
 
 	async onload() {
 		console.log("loading breadcrumbs");
@@ -34,6 +36,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
+		// API
+		// NOTE: I think this should be done quite early
+		// Especially before dataview, since the api would get used alot in dv codeblocks
+		this.api = new BCAPI(this);
+
+		window.BCAPI = this.api;
+		this.register(
+			// @ts-ignore: Don't want to make it optional, but still delete on unload
+			() => delete window.BCAPI,
+		);
+
 		this.app.workspace.onLayoutReady(async () => {
 			console.log("onLayoutReady");
 
@@ -43,20 +56,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			// Events
 			/// Workspace
-
-			// NOTE: This is not needed, because layout-change is fired
-			//   when a file is opened, and when switching editor modes
-			// this.registerEvent(
-			// 	this.app.workspace.on("file-open", async (file) => {
-			// 		console.log("file-open");
-
-			// 		active_file_store.set(file);
-
-			// 		if (file) {
-			// 			draw_page_views_on_active_note(this);
-			// 		}
-			// 	}),
-			// );
 
 			this.registerEvent(
 				this.app.workspace.on("layout-change", () => {
