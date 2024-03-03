@@ -11,6 +11,8 @@ export namespace ListIndex {
 		indent: string;
 		link_kind: LinkKind;
 		show_node_options: ShowNodeOptions;
+		// TODO: Add to settings, and CreateListIndexModal
+		// sort: EdgeSortId;
 	};
 
 	export const DEFAULT_OPTIONS: Options = {

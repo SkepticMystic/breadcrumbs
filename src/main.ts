@@ -7,8 +7,10 @@ import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
 import { get } from "svelte/store";
+import { BCAPI } from "./api";
 import { Codeblocks } from "./codeblocks";
 import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
+import { get_graph_stats } from "./commands/stats";
 import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
@@ -18,7 +20,6 @@ import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import { BCAPI } from "./api";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -149,6 +150,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 			name: "Create list index",
 			callback: () => {
 				new CreateListIndexModal(this.app, this).open();
+			},
+		});
+
+		this.addCommand({
+			id: "breadcrumbs:graph-stats",
+			name: "Print graph stats",
+			callback: () => {
+				const stats = get_graph_stats(this.graph);
+
+				console.log(stats);
+				new Notice(JSON.stringify(stats, null, 2));
 			},
 		});
 
