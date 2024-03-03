@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { BCEdge } from "src/graph/MyMultiGraph";
-	import type { EdgeSorter } from "src/interfaces/graph";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "./EdgeLink.svelte";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
+	import type { EdgeSorter } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let show_node_options: ShowNodeOptions;

@@ -18,4 +18,4 @@ export const EDGE_SORT_FIELDS = [
 ] as const;
 type EdgeSortField = (typeof EDGE_SORT_FIELDS)[number];
 
-export type EdgeSorter = { field: EdgeSortField; order: 1 | -1 };
+export type EdgeSortId = { field: EdgeSortField; order: 1 | -1 };

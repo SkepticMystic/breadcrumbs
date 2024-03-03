@@ -1,4 +1,4 @@
-import type { EdgeSorter } from "src/const/graph";
+import type { EdgeSortId } from "src/const/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
 import type { BCEdge, BCNodeAttributes } from "./MyMultiGraph";
@@ -62,9 +62,12 @@ export const dedupe_edges = (edges: BCEdge[]) => {
 	return [...map.values()];
 };
 
-export const get_edge_sorter: (
-	_: EdgeSorter,
-) => (a: BCEdge, b: BCEdge) => number = ({ field, order }) => {
+export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
+
+export const get_edge_sorter: (_: EdgeSortId) => EdgeSorter = ({
+	field,
+	order,
+}) => {
 	switch (field) {
 		case "default": {
 			return (_a, _b) => order;
