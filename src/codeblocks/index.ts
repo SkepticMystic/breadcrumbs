@@ -1,5 +1,8 @@
 import type { MarkdownPostProcessorContext } from "obsidian";
+import { EDGE_SORT_FIELDS } from "src/const/graph";
 import { DIRECTIONS, type Direction } from "src/const/hierarchies";
+import { dataview_plugin } from "src/external/dataview";
+import type { IDataview } from "src/external/dataview/interfaces";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
@@ -7,9 +10,6 @@ import { active_file_store } from "src/stores/active_file";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { get } from "svelte/store";
 import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
-import { dataview_plugin } from "src/external/dataview";
-import type { IDataview } from "src/external/dataview/interfaces";
-import { EDGE_SORT_FIELDS } from "src/const/graph";
 
 const FIELDS = [
 	"type",
@@ -21,6 +21,7 @@ const FIELDS = [
 	"dataview-from",
 	"content",
 	"sort",
+	"field-prefix",
 ] as const;
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
@@ -176,6 +177,10 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return;
 			}
 
+			case "field-prefix": {
+				return (parsed.field_prefix = Boolean(value));
+			}
+
 			default: {
 				errors.push({
 					code: "invalid_field_value",
@@ -211,7 +216,7 @@ const get_callback = (plugin: BreadcrumbsPlugin) => {
 					field: "basename",
 					order: 1,
 				},
-			},
+			} satisfies ICodeblock["Options"],
 			parsed,
 		);
 		console.log("resolved codeblock options", options);

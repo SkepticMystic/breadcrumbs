@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
+	import { get_edge_sorter } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import FlatEdgeList from "../FlatEdgeList.svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
-	import { get_edge_sorter } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -58,6 +58,7 @@
 				<NestedEdgeList
 					{sort}
 					{plugin}
+					field_prefix={options.field_prefix}
 					nested_edges={Traverse.nest_all_paths(sliced)}
 					show_node_options={plugin.settings.codeblocks
 						.show_node_options}
@@ -66,6 +67,7 @@
 				<FlatEdgeList
 					{sort}
 					{plugin}
+					field_prefix={options.field_prefix}
 					flat_edges={Traverse.flatten_all_paths(sliced)}
 					show_node_options={plugin.settings.codeblocks
 						.show_node_options}

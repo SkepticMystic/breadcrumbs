@@ -8,7 +8,6 @@ import { _add_implied_edges_self_is_sibling } from "./self_is_sibling";
 import { _add_implied_edges_cousin_is_sibling } from "./cousin_is_sibling";
 import { _add_implied_edges_siblings_parent_is_parent } from "./siblings_parent_is_parent";
 
-// TODO: Flesh out
 export const add_implied_edges: Record<
 	keyof Hierarchy["implied_relationships"],
 	ImpliedEdgeBuilder

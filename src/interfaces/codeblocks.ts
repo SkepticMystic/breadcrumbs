@@ -13,5 +13,6 @@ export type ICodeblock = {
 		dataview_from_paths?: string[];
 		content?: "open" | "closed";
 		sort: EdgeSorter;
+		field_prefix?: boolean;
 	};
 };
