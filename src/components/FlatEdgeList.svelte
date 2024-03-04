@@ -19,7 +19,7 @@
 		<!-- TODO: Possibly flex this for the span -->
 		<li>
 			{#if field_prefix}
-				<span class="BC-field">{nested.edge.attr.field}: </span>
+				<span class="BC-field">{nested.edge.attr.field}</span>
 			{/if}
 
 			<EdgeLink {plugin} edge={nested.edge} {show_node_options} />
