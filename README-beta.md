@@ -30,7 +30,7 @@ This tells Breadcrumbs that the "parent" of the current note is "A", and that it
 
 #### Dataview Links
 
-If you have the [Dataview](TODO) plugin enabled, you can use their format of metadata as well. In the _content_ of a note:
+If you have the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled, you can use their format of metadata as well. In the _content_ of a note:
 
 ```
 parent:: [[A]]

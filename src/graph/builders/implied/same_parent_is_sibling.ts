@@ -38,7 +38,7 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 						//   This kinda works though, since the Matrix will just show what's expected
 						//   But maybe these could be undirected edges instead?
 						//   I'd need to see how those work in graphology
-						graph.addDirectedEdge(
+						graph.safe_add_directed_edge(
 							up_edge.source_id,
 							other_up_edge.source_id,
 							{

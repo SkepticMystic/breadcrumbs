@@ -122,7 +122,7 @@ const handle_dendron_note = (
 		);
 	}
 
-	graph.addDirectedEdge(source_path, target_path, {
+	graph.safe_add_directed_edge(source_path, target_path, {
 		field,
 		explicit: true,
 		source: "dendron_note",

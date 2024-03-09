@@ -56,7 +56,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					graph.safe_add_node(target_path, { resolved: false });
 				}
 
-				graph.addDirectedEdge(source_file.path, target_path, {
+				graph.safe_add_directed_edge(source_file.path, target_path, {
 					field,
 					explicit: true,
 					source: "typed_link",
@@ -122,7 +122,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				}
 
 				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-				graph.addDirectedEdge(source_file.path, target_path, {
+				graph.safe_add_directed_edge(source_file.path, target_path, {
 					field,
 					explicit: true,
 					source: "typed_link",

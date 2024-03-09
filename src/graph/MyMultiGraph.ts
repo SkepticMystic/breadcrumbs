@@ -115,6 +115,25 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		return { old_exists, new_exists };
 	}
 
+	make_edge_id = (
+		source_id: string,
+		target_id: string,
+		attr: BCEdgeAttributes,
+	) =>
+		`${source_id}|${target_id}|${attr.hierarchy_i}|${attr.dir}|${attr.field}|${attr.explicit ? "explicit|" + attr.source : "implied|" + attr.implied_kind}`;
+
+	safe_add_directed_edge = (
+		source_id: string,
+		target_id: string,
+		attr: BCEdgeAttributes,
+	) => {
+		const edge_id = this.make_edge_id(source_id, target_id, attr);
+
+		if (!this.hasDirectedEdge(edge_id)) {
+			this.addDirectedEdgeWithKey(edge_id, source_id, target_id, attr);
+		}
+	};
+
 	get_dir_chains_path = (
 		start_node: string,
 		dir_chain: Direction[],

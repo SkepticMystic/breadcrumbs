@@ -25,8 +25,7 @@ export class CreateListIndexModal extends Modal {
 		// TODO: Rather don't show the command at all
 		if (!this.active_file) {
 			new Notice("No active file");
-			this.close();
-			return;
+			return this.close();
 		}
 
 		const { contentEl, plugin } = this;

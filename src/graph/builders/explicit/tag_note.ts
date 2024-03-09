@@ -177,7 +177,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		//   We know the target_path is resolved, since it only gets added to the map
 		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
-			graph.addDirectedEdge(tag_note.source_path, target_path, {
+			graph.safe_add_directed_edge(tag_note.source_path, target_path, {
 				explicit: true,
 				dir: tag_note.dir,
 				source: "tag_note",

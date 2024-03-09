@@ -22,13 +22,17 @@ export const _add_implied_edges_cousin_is_sibling: ImpliedEdgeBuilder = (
 				)
 				.forEach((path) => {
 					console.log("path", path);
-					graph.addDirectedEdge(source_id, path.last()!.target_id, {
-						dir: "same",
-						hierarchy_i,
-						explicit: false,
-						implied_kind: "cousin_is_sibling",
-						field: hierarchy.dirs["same"].at(0) ?? null,
-					});
+					graph.safe_add_directed_edge(
+						source_id,
+						path.last()!.target_id,
+						{
+							dir: "same",
+							hierarchy_i,
+							explicit: false,
+							implied_kind: "cousin_is_sibling",
+							field: hierarchy.dirs["same"].at(0) ?? null,
+						},
+					);
 				});
 		});
 	});

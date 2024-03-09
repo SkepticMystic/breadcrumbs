@@ -149,7 +149,7 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 					if (path === file.path) return;
 
 					// We know path is resolved
-					graph.addDirectedEdge(file.path, path, {
+					graph.safe_add_directed_edge(file.path, path, {
 						dir: data.dir,
 						explicit: true,
 						field: data.field,

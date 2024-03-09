@@ -3,8 +3,8 @@ import { META_FIELD } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
-	ExplicitEdgeBuilder,
 	BreadcrumbsError,
+	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -119,7 +119,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 		pages.forEach((page) => {
 			// NOTE: I _believe_ we don't need to even safe_add_node, since dv will only return resolved notes
-			graph.addDirectedEdge(
+			graph.safe_add_directed_edge(
 				dataview_note_page.file.path,
 				page.file.path,
 				{

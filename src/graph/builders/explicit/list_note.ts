@@ -138,11 +138,15 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				!list_note_info.data.exclude_index &&
 				source_list_item.position.start.col === 0
 			) {
-				graph.addDirectedEdge(list_note_page.file.path, source_path, {
-					explicit: true,
-					source: "list_note",
-					...list_note_info.data,
-				});
+				graph.safe_add_directed_edge(
+					list_note_page.file.path,
+					source_path,
+					{
+						explicit: true,
+						source: "list_note",
+						...list_note_info.data,
+					},
+				);
 			}
 
 			source_list_item.children.forEach((target_list_item) => {
@@ -171,7 +175,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				// But then I'd need to break up the iteration to first gather all sources, then handle the targets
 				graph.safe_add_node(target_path, { resolved: false });
 
-				graph.addDirectedEdge(source_path, target_path, {
+				graph.safe_add_directed_edge(source_path, target_path, {
 					explicit: true,
 					source: "list_note",
 					...list_note_info.data,

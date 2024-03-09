@@ -84,7 +84,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			graph.safe_add_node(next_path, { resolved: false });
 		}
 
-		graph.addDirectedEdge(file.path, next_path, {
+		graph.safe_add_directed_edge(file.path, next_path, {
 			explicit: true,
 			source: "date_note",
 			dir: field_hierarchy.dir,

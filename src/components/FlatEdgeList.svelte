@@ -16,7 +16,6 @@
 
 <ul>
 	{#each flat_edges.sort((a, b) => sort(a.edge, b.edge)) as nested}
-		<!-- TODO: Possibly flex this for the span -->
 		<li>
 			{#if field_prefix}
 				<span class="BC-field">{nested.edge.attr.field}</span>

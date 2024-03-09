@@ -20,7 +20,7 @@ export const _add_implied_edges_siblings_parent_is_parent: ImpliedEdgeBuilder =
 					)
 					.forEach((path) => {
 						console.log("path", path);
-						graph.addDirectedEdge(
+						graph.safe_add_directed_edge(
 							source_id,
 							path.last()!.target_id,
 							{

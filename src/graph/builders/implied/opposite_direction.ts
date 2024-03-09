@@ -16,7 +16,7 @@ export const _add_implied_edges_opposite_direction: ImpliedEdgeBuilder = (
 			.forEach((e) => {
 				const opposite_direction = get_opposite_direction(e.attr.dir);
 
-				graph.addDirectedEdge(e.target_id, e.source_id, {
+				graph.safe_add_directed_edge(e.target_id, e.source_id, {
 					hierarchy_i,
 					explicit: false,
 					dir: opposite_direction,

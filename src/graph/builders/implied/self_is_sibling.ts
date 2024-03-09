@@ -8,7 +8,7 @@ export const _add_implied_edges_self_is_sibling: ImpliedEdgeBuilder = (
 		if (!hierarchy.implied_relationships.self_is_sibling) return;
 
 		graph.forEachNode((node) => {
-			graph.addDirectedEdge(node, node, {
+			graph.safe_add_directed_edge(node, node, {
 				hierarchy_i,
 				dir: "same",
 				explicit: false,
