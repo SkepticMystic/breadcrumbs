@@ -1,7 +1,11 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
-import type { BCEdge, BCNodeAttributes } from "./MyMultiGraph";
+import type {
+	BCEdge,
+	BCEdgeAttributes,
+	BCNodeAttributes,
+} from "./MyMultiGraph";
 
 export const is_self_loop = (edge: BCEdge) => edge.source_id === edge.target_id;
 
@@ -43,23 +47,6 @@ export const stringify_edge = (
 		: [source_id, "->", target_id, edge_id];
 
 	return list.filter(Boolean).join(" ");
-};
-
-export const dedupe_edges = (edges: BCEdge[]) => {
-	const map = new Map<string, BCEdge>();
-
-	for (const e of edges) {
-		// I believe this is enough to uniquely identify an edge
-		//   going from source to target, explicitly, with a given field.
-		//   field implies dir & hierarchy, so we don't need those.
-		const key = `${e.source_id}-${e.target_id}-${e.attr.explicit}-${e.attr.field}`;
-
-		if (!map.has(key)) {
-			map.set(key, e);
-		}
-	}
-
-	return [...map.values()];
 };
 
 export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
@@ -104,3 +91,17 @@ export const get_edge_sorter: (_: EdgeSortId) => EdgeSorter = ({
 		}
 	}
 };
+
+// TODO: Actually use where needed
+// NOTE: Technically the source and implied_kind fields could be implemented here, but missions for now
+export const has_edge_attrs = (
+	edge: BCEdge,
+	attrs: Partial<
+		Pick<BCEdgeAttributes, "dir" | "explicit" | "field" | "hierarchy_i">
+	>,
+) =>
+	(attrs.hierarchy_i === undefined ||
+		edge.attr.hierarchy_i === attrs.hierarchy_i) &&
+	(attrs.dir === undefined || edge.attr.dir === attrs.dir) &&
+	(attrs.field === undefined || edge.attr.field === attrs.field) &&
+	(attrs.explicit === undefined || edge.attr.explicit === attrs.explicit);
