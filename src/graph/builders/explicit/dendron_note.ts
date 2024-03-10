@@ -2,8 +2,8 @@ import path from "path";
 import { META_FIELD } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
-	ExplicitEdgeBuilder,
 	BreadcrumbsError,
+	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";

@@ -137,8 +137,15 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		source_id: string,
 		target_id: string,
 		attr: BCEdgeAttributes,
-	) =>
-		`${source_id}|${target_id}|${attr.hierarchy_i}|${attr.dir}|${attr.field}|${attr.explicit ? "explicit|" + attr.source : "implied|" + attr.implied_kind}`;
+	) => `${source_id}|${attr.field}|${target_id}`;
+	// NOTE: These fields are redundant. The `field` field defines which hierarchy_i and dir is chosen anyway,
+	//   so it's not adding any extra information to the dedupe key
+	// |${attr.hierarchy_i}|${attr.dir}
+	// NOTE: These fields shouldn't actually dedupe an edge... I think what the user would consider an edge to be the same
+	//   even if it was added for different reasons, but still to and from the same nodes, using the same field.
+	//   Consider the commands/freeze-crumbs/index.md note as an example. If these fields were included, the implied relations would still show
+	//   even tho there are now frozen real relations serving the exact same purpose.
+	// |${attr.explicit ? "explicit|" + attr.source : "implied|" + attr.implied_kind}
 
 	safe_add_directed_edge = (
 		source_id: string,

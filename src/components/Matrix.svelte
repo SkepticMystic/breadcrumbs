@@ -57,7 +57,7 @@
 										<span
 											class="font-mono"
 											aria-label={edge.attr.explicit
-												? `soure:${edge.attr.source}`
+												? `source:${edge.attr.source}`
 												: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
 										>
 											({edge.attr.explicit ? "x" : "i"})
