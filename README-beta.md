@@ -1,3 +1,5 @@
+<!-- TODO: Publish -->
+
 # Breadcrumbs
 
 Breadcrumbs is an Obsidian plugin that lets you add structured hierarchy to your notes, then view/traverse that structure in various ways.
@@ -7,7 +9,7 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
 I will break down the process into two pieces:
 
 1. Building the graph
-2. Leveraging it
+2. Using the graph
 
 ## Building the Breadcrumbs graph
 
@@ -41,7 +43,7 @@ This creates the same structure as the [frontmatter links](#frontmatter-links) m
 
 #### Other Sources
 
-Breadcrumbs offers many other ways to add edges. The rest are a little more complicated, but are also more **powerful** and **automated**. In summary, Breadcrumbs can leverage the existing stucture of your: _Tags_, _Folders_, _Date notes_, _Dendron naming_, and more. See the [wiki page on Edge Sources](TODO) for more details.
+Breadcrumbs offers many other ways to add edges. The rest are a little more complicated, but are also more **powerful** and **automated**. Briefly, Breadcrumbs can leverage the existing stucture of your: _Tags_, _Folders_, _Date notes_, _Dendron naming_, and more. See the [wiki page on Edge Sources](TODO) for more details.
 
 ### Implied Relationships
 
@@ -50,6 +52,7 @@ By adding edges to the Breadcrumbs graph, you've created various explicit relati
 But you've also created some _implied_ relationships. For example, if A is the _parent_ of B, then it's _implied_ that B is the **child** of A! This _kind_ of implied relationship is called the "opposite direction" implied relation. There are many other kinds, including "If A and B both have the same _parent_, then they must be **siblings**". Breadcrumbs automatically detects, and adds these implied relationships to the graph. Again, refer to the [wiki page on Implied Relationships](TODO) for more info.
 
 > [!NOTE] Each kind of implied relationship is completely _optional_, and can be toggled in the settings.
+> Furthermore, not only can you enable/disable each kind of implied relation, you can change how many _rounds_ to go through to detect them! This is useful to add implied relations _based on other implied relations_. Setting rounds to `0` disables that kind. Setting it to `1` will add that kind of implied relation, only considering _real_ edges. Setting it to `2` will add that kind of implied relation, considering _real_ edges and _previously added_ implied edges. And so on.
 
 ## Leveraging the Breadcrumbs graph
 
@@ -80,6 +83,8 @@ The Previous/Next View shows the immediate `previous` and `next` neighbours of t
 
 The Matrix View shows up on the side of the editor, and shows the immediate neighbours of the current note (in all 5 directions).
 
+On the right side of each link, you'll see either `(x)` or `(i)`, indicating if that edge is _explicit_ or _implied_. However over the icon to see the _source_ of real edges, and the _kind_ of implied edges (as well as the round they were added in).
+
 #### Tree View
 
 The Tree View shows up on the side of the editor, and shows all path going in a _chosen direction_ from the current note. It is similar to the [Trail View](#trail-view), but you can choose which direction to traverse.
@@ -91,6 +96,17 @@ Breadcrumbs adds a few commands to the command palette.
 #### Create Index from Note
 
 This command builds a nested markdown list of all paths in a given direction from the current note. It then copies this list to the clipboard.
+
+For example:
+
+```md
+-   [[A]]
+    -   [[B]]
+        -   [[C]]
+    -   [[D]]
+-   [[E]]
+    -   [[F]]
+```
 
 #### Write Breadcrumbs to File
 
@@ -112,6 +128,18 @@ sort: basename desc # optional
 ```
 
 The above example would render a markdown list of all paths going _down_ from the current note, up to a depth of 3, sorted by the basename of the notes, in descending order.
+
+The full list of options includes:
+
+-   `type`: tree
+-   `dir`: Filter edges by direction
+-   `fields`: Filter edges by field # optional
+-   `title`: Add title to codeblock # optional
+-   `depth`: (number:optional)-(number:optional) # optional
+-   `flat`: true|false flatten the nested results # optional
+-   `dataview-from`: Filter edges by a Dataview FROM query # optional
+-   `sort`: (basename|path|field) (asc|desc) sort results # optional
+-   `field-prefix`: true|false show the field before each list item # optional
 
 ### API
 
