@@ -1,6 +1,13 @@
 import { App, MarkdownRenderer, Modal, Setting } from "obsidian";
+import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
+
+const ROUNDS = Array.from(
+	// +1 to include 0 rounds
+	{ length: IMPLIED_RELATIONSHIP_MAX_ROUNDS + 1 },
+	(_, i) => String(i),
+);
 
 export class ImpliedRelationshipsSettingsModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -24,8 +31,8 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		});
 
 		contentEl.createEl("p", {
-			text: `Here you can toggle on/off different types of implied relationships. 
-      All of your explicit (real) relationships will still show, but you can choose which implied ones get filled in.`,
+			text: `Here you can change which implied relationships get added to the Breadcrumbs graph.
+For each relationship, choose the number of _rounds_ to run. Zero (0) rounds disables the relation. One (1) round runs it once, only considering real relations added before. Two (2) rounds runs it twice, considering real relations and implied relations added in the first round. And so on.`,
 		});
 
 		const render_mermaid_diagram = (diagram_string: string) => {
@@ -41,10 +48,11 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Current Note is Sibling",
 			desc: "The current note is it's own implied sibling.",
-			toggle: {
-				value: implied_relationships.self_is_sibling,
+			select: {
+				options: ROUNDS,
+				value: String(implied_relationships.self_is_sibling.rounds),
 				cb: async (val) => {
-					implied_relationships.self_is_sibling = val;
+					implied_relationships.self_is_sibling.rounds = Number(val);
 					await save();
 				},
 			},
@@ -58,10 +66,12 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Opposite Direction",
 			desc: "An explicit relationship in one direction implies the opposite direction.",
-			toggle: {
-				value: implied_relationships.opposite_direction,
+			select: {
+				options: ROUNDS,
+				value: String(implied_relationships.opposite_direction.rounds),
 				cb: async (val) => {
-					implied_relationships.opposite_direction = val;
+					implied_relationships.opposite_direction.rounds =
+						Number(val);
 					await save();
 				},
 			},
@@ -76,10 +86,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Same Parent -> Siblings",
 			desc: "If two notes share a parent, they are siblings.",
-			toggle: {
-				value: implied_relationships.same_parent_is_sibling,
+			select: {
+				options: ROUNDS,
+				value: String(
+					implied_relationships.same_parent_is_sibling.rounds,
+				),
 				cb: async (val) => {
-					implied_relationships.same_parent_is_sibling = val;
+					implied_relationships.same_parent_is_sibling.rounds =
+						Number(val);
 					await save();
 				},
 			},
@@ -95,10 +109,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Same Siblings -> Siblings",
 			desc: "Treat your siblings' siblings as your siblings",
-			toggle: {
-				value: implied_relationships.same_sibling_is_sibling,
+			select: {
+				options: ROUNDS,
+				value: String(
+					implied_relationships.same_sibling_is_sibling.rounds,
+				),
 				cb: async (val) => {
-					implied_relationships.same_sibling_is_sibling = val;
+					implied_relationships.same_sibling_is_sibling.rounds =
+						Number(val);
 					await save();
 				},
 			},
@@ -114,10 +132,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Siblings' Parent -> Parent",
 			desc: "Your siblings' parents are your parents",
-			toggle: {
-				value: implied_relationships.siblings_parent_is_parent,
+			select: {
+				options: ROUNDS,
+				value: String(
+					implied_relationships.siblings_parent_is_parent.rounds,
+				),
 				cb: async (val) => {
-					implied_relationships.siblings_parent_is_parent = val;
+					implied_relationships.siblings_parent_is_parent.rounds =
+						Number(val);
 					await save();
 				},
 			},
@@ -133,10 +155,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Aunt/Uncle",
 			desc: "Your parent's siblings are your parents (aunts/uncles)",
-			toggle: {
-				value: implied_relationships.parents_sibling_is_parent,
+			select: {
+				options: ROUNDS,
+				value: String(
+					implied_relationships.parents_sibling_is_parent.rounds,
+				),
 				cb: async (val) => {
-					implied_relationships.parents_sibling_is_parent = val;
+					implied_relationships.parents_sibling_is_parent.rounds =
+						Number(val);
 					await save();
 				},
 			},
@@ -152,10 +178,12 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 		new_setting(contentEl, {
 			name: "Cousins",
 			desc: "Parents' siblings' children are siblings (cousins)",
-			toggle: {
-				value: implied_relationships.cousin_is_sibling,
+			select: {
+				options: ROUNDS,
+				value: String(implied_relationships.cousin_is_sibling.rounds),
 				cb: async (val) => {
-					implied_relationships.cousin_is_sibling = val;
+					implied_relationships.cousin_is_sibling.rounds =
+						Number(val);
 					await save();
 				},
 			},

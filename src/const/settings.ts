@@ -2,6 +2,8 @@ import { ListIndex } from "src/commands/list_index";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { blank_hierarchy } from "src/utils/hierarchies";
 
+export const IMPLIED_RELATIONSHIP_MAX_ROUNDS = 10;
+
 const DEFAULT_SHOW_NODE_OPTIONS = {
 	ext: false,
 	folder: false,

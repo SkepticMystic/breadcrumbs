@@ -4,18 +4,25 @@ import type { ImpliedEdgeBuilder } from "src/interfaces/graph";
 export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 	graph,
 	plugin,
-	all_real_edges,
+	{ round },
 ) => {
 	plugin.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
-		if (!hierarchy.implied_relationships.same_parent_is_sibling) {
-			return;
+		if (
+			hierarchy.implied_relationships.same_parent_is_sibling.rounds <
+			round
+		) {
+			return {};
 		}
 
 		// Get all the edges going up from the current node, in the current hierarchy
-		all_real_edges
+		graph
+			.mapOutEdges(objectify_edge_mapper((e) => e))
 			.filter(
 				(e) =>
-					e.attr.hierarchy_i === hierarchy_i && e.attr.dir === "up",
+					e.attr.dir === "up" &&
+					e.attr.hierarchy_i === hierarchy_i &&
+					// Consider real edges & implied edges created in a previous round
+					(e.attr.explicit || e.attr.round < round),
 			)
 			.forEach((up_edge) => {
 				graph
@@ -27,10 +34,12 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 					//   Ensuring they're in the same hierarchy,
 					.filter(
 						(other_up_edge) =>
+							other_up_edge.source_id !== up_edge.source_id &&
 							other_up_edge.attr.hierarchy_i === hierarchy_i &&
-							other_up_edge.attr.explicit &&
 							other_up_edge.attr.dir === "up" &&
-							other_up_edge.source_id !== up_edge.source_id,
+							// Consider real edges & implied edges created in a previous round
+							(other_up_edge.attr.explicit ||
+								other_up_edge.attr.round < round),
 					)
 					.forEach((other_up_edge) => {
 						// Add a same edge from the og node to the implied sibling
@@ -42,6 +51,7 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 							up_edge.source_id,
 							other_up_edge.source_id,
 							{
+								round,
 								hierarchy_i,
 								dir: "same",
 								explicit: false,

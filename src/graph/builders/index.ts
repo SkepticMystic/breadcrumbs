@@ -1,7 +1,7 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
+import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
-import { objectify_edge_mapper } from "../objectify_mappers";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_edges } from "./implied";
@@ -59,22 +59,20 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		}),
 	);
 	console.groupEnd();
-
 	console.log("explicit_edge_results:", explicit_edge_results);
 
-	// Implied edges
-	const all_real_edges = graph
-		.mapOutEdges(objectify_edge_mapper((e) => e))
-		.filter((e) => e.attr.explicit);
-
 	console.groupCollapsed("add_implied_edges");
-	Object.entries(add_implied_edges).forEach(([kind, fn]) => {
-		console.group(kind);
+	for (let round = 1; round <= IMPLIED_RELATIONSHIP_MAX_ROUNDS; round++) {
+		console.group(`round ${round}`);
 
-		fn(graph, plugin, all_real_edges);
+		Object.entries(add_implied_edges).forEach(([kind, fn]) => {
+			console.group(kind);
+			fn(graph, plugin, { round });
+			console.groupEnd();
+		});
 
 		console.groupEnd();
-	});
+	}
 	console.groupEnd();
 
 	return graph;

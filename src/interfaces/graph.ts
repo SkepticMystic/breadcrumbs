@@ -1,4 +1,4 @@
-import type { BCEdge, BCGraph } from "src/graph/MyMultiGraph";
+import type { BCGraph } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
@@ -26,5 +26,5 @@ export type ExplicitEdgeBuilder = (
 export type ImpliedEdgeBuilder = (
 	graph: BCGraph,
 	plugin: BreadcrumbsPlugin,
-	all_real_edges: BCEdge[],
+	options: { round: number },
 ) => {};
