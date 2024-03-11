@@ -8,6 +8,7 @@ import { active_file_store } from "src/stores/active_file";
 import { stringify_hierarchy } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
+import EdgeSortIdSelector from "src/components/settings/EdgeSortIdSelector.svelte";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -84,6 +85,13 @@ export class CreateListIndexModal extends Modal {
 				value: this.options.indent,
 				cb: (value) => (this.options.indent = value),
 			},
+		});
+
+		new EdgeSortIdSelector({
+			target: contentEl,
+			props: { edge_sort_id: this.options.edge_sort_id },
+		}).$on("select", (e) => {
+			this.options.edge_sort_id = e.detail;
 		});
 
 		_add_settings_show_node_options(

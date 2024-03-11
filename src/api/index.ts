@@ -7,6 +7,7 @@ import {
 import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
 import { objectify_edge_mapper } from "src/graph/objectify_mappers";
 import { Traverse } from "src/graph/traverse";
+import type { Hierarchy } from "src/interfaces/hierarchies";
 import { active_file_store } from "src/stores/active_file";
 import {
 	get_field_hierarchy,
@@ -14,7 +15,6 @@ import {
 } from "src/utils/hierarchies";
 import { get } from "svelte/store";
 import type BCPlugin from "../main";
-import type { Hierarchy } from "src/interfaces/hierarchies";
 
 export class BCAPI {
 	plugin: BCPlugin;
@@ -67,7 +67,6 @@ export class BCAPI {
 
 	public nest_all_paths = Traverse.nest_all_paths;
 	public flatten_all_paths = Traverse.flatten_all_paths;
-	public flat_paths_to_index_list = Traverse.flat_paths_to_index_list;
 
 	public create_list_index = (
 		start_node = get(active_file_store)?.path,

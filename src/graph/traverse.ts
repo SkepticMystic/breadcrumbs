@@ -1,9 +1,6 @@
-import type { LinkKind } from "src/interfaces/links";
-import type { ShowNodeOptions } from "src/interfaces/settings";
-import { Links } from "src/utils/links";
 import type { BCEdge, BCGraph } from "./MyMultiGraph";
 import { objectify_edge_mapper } from "./objectify_mappers";
-import { is_self_loop, stringify_node } from "./utils";
+import { is_self_loop, type EdgeSorter } from "./utils";
 
 type StackItem = {
 	path: BCEdge[];
@@ -140,7 +137,9 @@ const flatten_all_paths = (paths: BCEdge[][]) => {
 
 	paths.forEach((path) => {
 		path.forEach((edge, depth) => {
-			const key = `${depth}-${edge.target_id}`;
+			// TODO: Check the logic of this key change
+			// Have we visited a target from a particular source at this depth?
+			const key = `${depth}-${edge.source_id}-${edge.target_id}`;
 
 			if (!visited.has(key)) {
 				visited.add(key);
@@ -153,43 +152,39 @@ const flatten_all_paths = (paths: BCEdge[][]) => {
 	return flattened;
 };
 
-const flat_paths_to_index_list = (
-	flat_paths: {
-		edge: BCEdge;
-		depth: number;
-	}[],
-	{
-		indent,
-		link_kind,
-		show_node_options,
-	}: {
-		indent: string;
-		link_kind: LinkKind;
-		show_node_options: ShowNodeOptions;
-	},
+// const flatten_nested_paths = (nested_paths: NestedEdgePath[]) => {
+// 	const flattened: {
+// 		edge: BCEdge;
+// 		depth: number;
+// 	}[] = [];
+
+// 	nested_paths.forEach((nested_path) => {
+// 		flattened.push({ edge: nested_path.edge, depth: nested_path.depth });
+// 		flattened.push(...flatten_nested_paths(nested_path.children));
+// 	});
+
+// 	return flattened;
+// };
+
+/** Sort a nested list of paths on a per-depth level.
+ * Mutates the input.
+ */
+const sort_nested_paths = (
+	nested_paths: NestedEdgePath[],
+	sorter: EdgeSorter,
 ) => {
-	let index = "";
-	const real_indent = indent.replace(/\\t/g, "\t");
-
-	flat_paths.forEach(({ depth, edge }) => {
-		const display = stringify_node(edge.target_id, edge.target_attr, {
-			show_node_options,
-		});
-
-		const link = Links.ify(edge.target_id, display, {
-			link_kind,
-		});
-
-		index += real_indent.repeat(depth) + `- ${link}\n`;
+	nested_paths.forEach((nested_path) => {
+		nested_path.children = sort_nested_paths(nested_path.children, sorter);
 	});
 
-	return index;
+	return nested_paths.sort((a, b) => sorter(a.edge, b.edge));
 };
 
 export const Traverse = {
 	alg,
 	all_paths,
 	flatten_all_paths,
-	flat_paths_to_index_list,
+	// flatten_nested_paths,
 	nest_all_paths,
+	sort_nested_paths,
 };

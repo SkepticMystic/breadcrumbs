@@ -79,6 +79,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 						// The user will have to refresh to add any relevant edges
 						this.graph.safe_add_node(file.path, { resolved: true });
 
+						// TODO: Check if the layout-change event triggers this anyway
 						await this.refresh({ rebuild_graph: false });
 					}
 				}),
@@ -90,6 +91,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					if (file instanceof TFile) {
 						this.graph.safe_rename_node(old_path, file.path);
 
+						// TODO: Check if the layout-change event triggers this anyway
 						await this.refresh({ rebuild_graph: false });
 					}
 				}),
@@ -104,6 +106,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 						// Conveniently drops any relevant edges
 						this.graph.dropNode(file.path);
 
+						// TODO: Check if the layout-change event triggers this anyway
 						await this.refresh({ rebuild_graph: false });
 					}
 				}),

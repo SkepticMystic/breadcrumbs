@@ -1,4 +1,5 @@
 import { Setting } from "obsidian";
+import EdgeSortIdSelector from "src/components/settings/EdgeSortIdSelector.svelte";
 import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
 import type BreadcrumbsPlugin from "src/main";
@@ -75,6 +76,18 @@ export const _add_settings_list_index = (
 				await plugin.saveSettings();
 			},
 		},
+	});
+
+	new EdgeSortIdSelector({
+		target: contentEl,
+		props: {
+			edge_sort_id:
+				settings.commands.list_index.default_options.edge_sort_id,
+		},
+	}).$on("select", async (e) => {
+		settings.commands.list_index.default_options.edge_sort_id = e.detail;
+
+		await plugin.saveSettings();
 	});
 
 	_add_settings_show_node_options(plugin, contentEl, {
