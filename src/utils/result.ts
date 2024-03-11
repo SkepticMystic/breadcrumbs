@@ -6,18 +6,12 @@ export const succ = <S>(data: S): Result<S, never> => ({
 	data,
 
 	log: (prefix?: string) => console.log(`${prefix ?? ""} data ${data}`),
-
-	data_or: () => data,
-	error_or: (or) => or,
 });
 export const fail = <F>(error: F): Result<never, F> => ({
 	ok: false,
 	error,
 
 	log: (prefix?: string) => console.log(`${prefix ?? ""} error ${error}`),
-
-	data_or: (or) => or,
-	error_or: () => error,
 });
 
 export const graph_build_fail = (error: BreadcrumbsError) => fail(error);
