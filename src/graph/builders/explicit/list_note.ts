@@ -1,8 +1,9 @@
 import { Notice } from "obsidian";
 import { META_FIELD } from "src/const/metadata_fields";
+import type { IDataview } from "src/external/dataview/interfaces";
 import type {
-	ExplicitEdgeBuilder,
 	BreadcrumbsError,
+	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -51,6 +52,42 @@ const get_list_note_info = (
 		exclude_index,
 		dir: field_hierarchy.dir,
 		hierarchy_i: field_hierarchy.hierarchy_i,
+	});
+};
+
+// - field [[note]]
+// NOTE: The char ranges in the capture group need to align witht eh allowed chars in a BC field
+const FIELD_OVERRIDE_REGEX = /^\s*[-+*]\s*\b([-\w\s]+)\b/;
+
+/** Check if a given list item tries to override the note's list-note field.
+ * If it does, resolve the field and return it. If not, return the default field (or undefined to indicate to use the default).
+ */
+const resolve_field_override = (
+	plugin: BreadcrumbsPlugin,
+	list_item: IDataview.NoteList,
+	path: string,
+) => {
+	const field_override = list_item.text.match(FIELD_OVERRIDE_REGEX)?.[1];
+	// No override, use the list_note_info field
+	if (!field_override) return succ(undefined);
+
+	const resolved_field_hierarchy = get_field_hierarchy(
+		plugin.settings.hierarchies,
+		field_override,
+	);
+
+	if (!resolved_field_hierarchy) {
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `Field override is not a valid BC field: ${field_override}. Line: ${list_item.position.start.line}`,
+		});
+	}
+
+	return succ({
+		field: field_override,
+		dir: resolved_field_hierarchy.dir,
+		hierarchy_i: resolved_field_hierarchy.hierarchy_i,
 	});
 };
 
@@ -106,7 +143,6 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 		list_note_page.file.lists.values.forEach((source_list_item) => {
 			// If there are no links on the line, ignore it.
 			// I guess this is a way to add "comments" to the hierarchy?
-			// Maybe it can be used to override options for subsequent children? e.g. "- field:down"
 			const source_link = source_list_item.outlinks.at(0);
 			if (!source_link) return;
 
@@ -138,13 +174,27 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				!list_note_info.data.exclude_index &&
 				source_list_item.position.start.col === 0
 			) {
+				// Override top-level field
+				const source_field_hierarchy = resolve_field_override(
+					plugin,
+					source_list_item,
+					list_note_page.file.path,
+				);
+
+				if (!source_field_hierarchy.ok) {
+					if (source_field_hierarchy.error) {
+						errors.push(source_field_hierarchy.error);
+					}
+					return;
+				}
+
 				graph.safe_add_directed_edge(
 					list_note_page.file.path,
 					source_path,
 					{
 						explicit: true,
 						source: "list_note",
-						...list_note_info.data,
+						...(source_field_hierarchy.data ?? list_note_info.data),
 					},
 				);
 			}
@@ -152,6 +202,19 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			source_list_item.children.forEach((target_list_item) => {
 				const target_link = target_list_item.outlinks.at(0);
 				if (!target_link) return;
+
+				const target_field_hierarchy = resolve_field_override(
+					plugin,
+					target_list_item,
+					list_note_page.file.path,
+				);
+
+				if (!target_field_hierarchy.ok) {
+					if (target_field_hierarchy.error) {
+						errors.push(target_field_hierarchy.error);
+					}
+					return;
+				}
 
 				const unsafe_target_path = Paths.ensure_ext(target_link.path);
 
@@ -173,12 +236,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				// It's redundant, but easier to just safe_add_node here on the target
 				// Technically, the next iteration of page.file.lists will add it (as a source)
 				// But then I'd need to break up the iteration to first gather all sources, then handle the targets
+				// This way we can guarentee the target exists
 				graph.safe_add_node(target_path, { resolved: false });
 
 				graph.safe_add_directed_edge(source_path, target_path, {
 					explicit: true,
 					source: "list_note",
-					...list_note_info.data,
+					...(target_field_hierarchy.data ?? list_note_info.data),
 				});
 			});
 		});
