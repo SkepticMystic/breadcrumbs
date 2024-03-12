@@ -55,9 +55,9 @@ const get_list_note_info = (
 	});
 };
 
-// - field [[note]]
-// NOTE: The char ranges in the capture group need to align witht eh allowed chars in a BC field
-const FIELD_OVERRIDE_REGEX = /^\s*[-+*]\s*\b([-\w\s]+)\b/;
+// Fortmat: `field [[note]]` (no -+* prefix)
+// NOTE: The char ranges in the capture group need to align with the allowed chars in a BC field
+const FIELD_OVERRIDE_REGEX = /^\s*([-\w\s]+)\b/;
 
 /** Check if a given list item tries to override the note's list-note field.
  * If it does, resolve the field and return it. If not, return the default field (or undefined to indicate to use the default).

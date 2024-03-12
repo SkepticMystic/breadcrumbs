@@ -55,7 +55,8 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 				plugin,
 				all_files,
 			);
-			return { source, result };
+
+			return { source, ...result };
 		}),
 	);
 	console.groupEnd();
