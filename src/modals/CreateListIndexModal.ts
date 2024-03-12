@@ -1,5 +1,6 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
+import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
 import type BreadcrumbsPlugin from "src/main";
@@ -8,7 +9,6 @@ import { active_file_store } from "src/stores/active_file";
 import { stringify_hierarchy } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
-import EdgeSortIdSelector from "src/components/settings/EdgeSortIdSelector.svelte";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -87,7 +87,7 @@ export class CreateListIndexModal extends Modal {
 			},
 		});
 
-		new EdgeSortIdSelector({
+		new EdgeSortIdSettingItem({
 			target: contentEl,
 			props: { edge_sort_id: this.options.edge_sort_id },
 		}).$on("select", (e) => {

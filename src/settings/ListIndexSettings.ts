@@ -1,5 +1,5 @@
 import { Setting } from "obsidian";
-import EdgeSortIdSelector from "src/components/settings/EdgeSortIdSelector.svelte";
+import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
 import type BreadcrumbsPlugin from "src/main";
@@ -78,7 +78,7 @@ export const _add_settings_list_index = (
 		},
 	});
 
-	new EdgeSortIdSelector({
+	new EdgeSortIdSettingItem({
 		target: contentEl,
 		props: {
 			edge_sort_id:
