@@ -68,7 +68,7 @@ export const gather_by_runs = <I, V extends Primitive>(
 	}[] = [];
 
 	for (let i = 0; i < arr.length; i++) {
-		const last_run = runs.last();
+		const last_run = runs.at(-1);
 		const value = get_value(arr[i]);
 
 		if (last_run && last_run.value === value) {

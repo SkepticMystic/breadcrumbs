@@ -1,37 +1,92 @@
-import assert from "node:assert";
-import test from "node:test";
-// import { Traverse } from "../../src/graph/traverse";
+import { BCGraph } from "src/graph/MyMultiGraph";
+import { Traverse } from "src/graph/traverse";
+import { _mock_edge } from "tests/__mocks__/graph";
+import { describe, expect, test } from "vitest";
 
-// const graph = new BCGraph();
+describe("all_paths", () => {
+	test("straight-line", (t) => {
+		const graph = new BCGraph({
+			edges: [
+				_mock_edge("a", "b", {}),
+				_mock_edge("b", "c", {}),
+				_mock_edge("c", "d", {}),
+			],
+		});
 
-// graph.addDirectedEdge("a", "b");
-// graph.addDirectedEdge("a", "c");
-// graph.addDirectedEdge("b", "d");
-// graph.addDirectedEdge("c", "d");
+		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
+			(path) =>
+				path.map((e) => ({
+					source_id: e.source_id,
+					target_id: e.target_id,
+				})),
+		);
 
-// test("adds two numbers correctly", () => {
-// 	const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
-// 		(path) =>
-// 			path.map((edge) => ({
-// 				source_id: edge.source_id,
-// 				target_id: edge.target_id,
-// 			})),
-// 	);
+		expect(all_paths).toEqual([
+			[
+				{ source_id: "a", target_id: "b" },
+				{ source_id: "b", target_id: "c" },
+				{ source_id: "c", target_id: "d" },
+			],
+		]);
+	});
 
-// 	assert(true);
-// 	[
-// 		[
-// 			{ source_id: "a", target_id: "b" },
-// 			{ source_id: "b", target_id: "d" },
-// 		],
-// 		[
-// 			{ source_id: "a", target_id: "c" },
-// 			{ source_id: "c", target_id: "d" },
-// 		],
-// 	];
-// });
+	test("fork", (t) => {
+		const graph = new BCGraph({
+			edges: [
+				_mock_edge("a", "b", {}),
+				_mock_edge("b", "c", {}),
+				_mock_edge("b", "d", {}),
+			],
+		});
 
-test("synchronous passing test", (t) => {
-	// This test passes because it does not throw an exception.
-	assert.strictEqual(1, 1);
+		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
+			(path) =>
+				path.map((e) => ({
+					source_id: e.source_id,
+					target_id: e.target_id,
+				})),
+		);
+
+		expect(all_paths).toEqual([
+			[
+				{ source_id: "a", target_id: "b" },
+				{ source_id: "b", target_id: "d" },
+			],
+			[
+				{ source_id: "a", target_id: "b" },
+				{ source_id: "b", target_id: "c" },
+			],
+		]);
+	});
+
+	// TODO: Self-loop
+
+	test("loop", (t) => {
+		const graph = new BCGraph({
+			edges: [
+				_mock_edge("a", "b", {}),
+				_mock_edge("b", "c", {}),
+				_mock_edge("c", "b", {}),
+			],
+		});
+
+		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
+			(path) =>
+				path.map((e) => ({
+					source_id: e.source_id,
+					target_id: e.target_id,
+				})),
+		);
+
+		expect(all_paths).toEqual([
+			[
+				{ source_id: "a", target_id: "b" },
+				{ source_id: "b", target_id: "c" },
+				{ source_id: "c", target_id: "b" },
+				// Then Stop! don't loop back to c then b, and so on
+			],
+		]);
+	});
+
+	// TODO: Different hierarchies shouldn't contribute to the same path
 });

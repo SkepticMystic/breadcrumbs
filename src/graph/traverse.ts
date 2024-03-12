@@ -28,7 +28,6 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 		)
 		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e, 0)))
 		.map((edge) => ({
-			edge,
 			// NOTE: It's a little redundant to add the start_edge,
 			//    but it makes the code simpler (e.g. GridView)
 			path: [edge],
@@ -36,10 +35,14 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 
 	while (stack.length > 0) {
 		const stack_item = stack.pop()!;
-		const current_edge = stack_item.path.last()!;
+		const current_edge = stack_item.path.at(-1)!;
 
-		if (visited.has(current_edge.id)) continue;
-		else visited.add(current_edge.id);
+		// TODO: Now that we check visited in filtered_out_edges, is this redundant?
+		if (visited.has(current_edge.id)) {
+			continue;
+		} else {
+			visited.add(current_edge.id);
+		}
 
 		const filtered_out_edges = graph
 			.mapOutEdges(
@@ -49,6 +52,8 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 			.filter(
 				(e) =>
 					!is_self_loop(e) &&
+					// In the case of a loop of more than one node
+					!visited.has(e.id) &&
 					(!edge_filter || edge_filter(e, stack_item.path.length)),
 			);
 
@@ -79,6 +84,12 @@ const all_paths = (
 		graph,
 		start_node,
 		({ path }, filtered_out_edges) => {
+			// console.log(
+			// 	"path",
+			// 	path.map((e) => e.id),
+			// 	"filtered_out_edges",
+			// 	filtered_out_edges.map((e) => e.id),
+			// );
 			if (!filtered_out_edges.length) {
 				paths.push(path);
 			}

@@ -1,6 +1,6 @@
-export const split_and_trim = (str: string, delimiter?: string): string[] => {
+export const split_and_trim = (str: string, delimiter = ","): string[] => {
 	if (!str || str === "") return [];
-	else return str.split(delimiter ?? ",").map((str) => str.trim());
+	else return str.split(delimiter).map((str) => str.trim());
 };
 
 export const ensure_starts_with = (str: string, prefix: string): string =>

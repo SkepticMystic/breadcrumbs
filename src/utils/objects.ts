@@ -1,3 +1,6 @@
+/** For each field in obj1, if it's defined, keep it. If not, merge in the corresponding field in obj2.
+ * If both fields are objects, merge them recursively.
+ */
 export function deep_merge_objects<T>(obj1: T, obj2: T): T {
 	const result = { ...obj1 } as T;
 

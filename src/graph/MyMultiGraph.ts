@@ -49,8 +49,34 @@ export type BCEdge = {
 };
 
 export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
-	constructor() {
+	constructor(
+		/** Generally only for testing purposes, to quickly init a graph */
+		input?: {
+			nodes?: { id: string; attr: BCNodeAttributes }[];
+			edges?: {
+				source_id: string;
+				target_id: string;
+				attr: BCEdgeAttributes;
+			}[];
+		},
+	) {
 		super();
+
+		if (input) {
+			input.nodes?.forEach(({ id, attr }) =>
+				this.safe_add_node(id, attr),
+			);
+			input.edges?.forEach((edge) => {
+				this.safe_add_node(edge.source_id, { resolved: true });
+				this.safe_add_node(edge.target_id, { resolved: true });
+
+				this.safe_add_directed_edge(
+					edge.source_id,
+					edge.target_id,
+					edge.attr,
+				);
+			});
+		}
 	}
 
 	safe_add_node(id: string, attr: BCNodeAttributes) {
