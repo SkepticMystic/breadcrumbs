@@ -150,14 +150,7 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 	/** Uniquely identify an edge based on its:
 	 * - source_id
 	 * - target_id
-	 * - hierarchy_i
-	 * - dir
 	 * - field
-	 * - explicit
-	 * - source (if explicit)
-	 * - implied_kind (if implied)
-	 *
-	 * But NOT it's round number
 	 */
 	make_edge_id = (
 		source_id: string,

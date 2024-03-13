@@ -117,7 +117,7 @@ export namespace ListIndex {
 								e.attr.hierarchy_i === options.hierarchy_i),
 					),
 				),
-				get_edge_sorter(options.edge_sort_id),
+				get_edge_sorter(options.edge_sort_id, graph),
 			),
 			options,
 		);

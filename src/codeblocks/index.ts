@@ -1,5 +1,8 @@
 import type { MarkdownPostProcessorContext } from "obsidian";
-import { EDGE_SORT_FIELDS } from "src/const/graph";
+import {
+	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
+	SIMPLE_EDGE_SORT_FIELDS,
+} from "src/const/graph";
 import { DIRECTIONS, type Direction } from "src/const/hierarchies";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
@@ -152,10 +155,18 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			case "sort": {
 				const [field, order] = value.split(" ");
 
-				if (!EDGE_SORT_FIELDS.includes(field as any)) {
+				if (
+					!SIMPLE_EDGE_SORT_FIELDS.includes(field as any) &&
+					!COMPLEX_EDGE_SORT_FIELD_PREFIXES.some((f) =>
+						field.startsWith(f + ":"),
+					)
+				) {
 					return errors.push({
 						code: "invalid_field_value",
-						message: `Invalid sort field: ${field}. Valid options: ${EDGE_SORT_FIELDS.join(", ")}`,
+						message: `Invalid sort field: ${field}. Valid options: ${SIMPLE_EDGE_SORT_FIELDS.map((f) => `"${f}"`).join(", ")}, or a complex field prefixed with: ${COMPLEX_EDGE_SORT_FIELD_PREFIXES.map(
+							(f) => `"${f}"`,
+						).join(", ")}`,
+
 						path: key,
 					});
 				}

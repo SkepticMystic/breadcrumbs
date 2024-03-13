@@ -1,11 +1,16 @@
-import type { EdgeSortId } from "src/const/graph";
+import {
+	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
+	type EdgeSortId,
+} from "src/const/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
 import type {
 	BCEdge,
 	BCEdgeAttributes,
+	BCGraph,
 	BCNodeAttributes,
 } from "./MyMultiGraph";
+import { objectify_edge_mapper } from "./objectify_mappers";
 
 export const is_self_loop = (edge: BCEdge) => edge.source_id === edge.target_id;
 
@@ -51,10 +56,10 @@ export const stringify_edge = (
 
 export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
 
-export const get_edge_sorter: (_: EdgeSortId) => EdgeSorter = ({
-	field,
-	order,
-}) => {
+export const get_edge_sorter: (_: EdgeSortId, graph: BCGraph) => EdgeSorter = (
+	{ field, order },
+	graph,
+) => {
 	switch (field) {
 		case "default": {
 			return (_a, _b) => order;
@@ -88,6 +93,61 @@ export const get_edge_sorter: (_: EdgeSortId) => EdgeSorter = ({
 
 				return a_field.localeCompare(b_field) * order;
 			};
+		}
+
+		default: {
+			// Rather check externally, so this should never happen
+			if (
+				!COMPLEX_EDGE_SORT_FIELD_PREFIXES.some((f) =>
+					field.startsWith(f + ":"),
+				)
+			) {
+				throw new Error(`Invalid sort field: ${field}`);
+			}
+
+			switch (field.split(":")[0]) {
+				case "neighbour": {
+					const neighbour_field = field.split(":", 2).at(1);
+					const cache: Record<string, BCEdge | undefined> = {};
+
+					return (a, b) => {
+						const [a_neighbour, b_neighbour] = [
+							(cache[a.target_id] ??= graph
+								.mapOutEdges(
+									a.target_id,
+									objectify_edge_mapper((e) => e),
+								)
+								.filter((e) => e.attr.field === neighbour_field)
+								.at(0)),
+							(cache[b.target_id] ??= graph
+								.mapOutEdges(
+									b.target_id,
+									objectify_edge_mapper((e) => e),
+								)
+								.filter((e) => e.attr.field === neighbour_field)
+								.at(0)),
+						];
+
+						if (!a_neighbour || !b_neighbour) {
+							return a_neighbour
+								? order
+								: b_neighbour
+									? -order
+									: 0;
+						} else {
+							return (
+								a_neighbour.target_id.localeCompare(
+									b_neighbour.target_id,
+								) * order
+							);
+						}
+					};
+				}
+
+				default: {
+					return (_a, _b) => order;
+				}
+			}
 		}
 	}
 };

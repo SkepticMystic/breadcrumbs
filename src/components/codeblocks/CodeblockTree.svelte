@@ -30,7 +30,7 @@
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
-	const sort = get_edge_sorter(options.sort);
+	const sort = get_edge_sorter(options.sort, plugin.graph);
 </script>
 
 <div class="BC-codeblock-tree">

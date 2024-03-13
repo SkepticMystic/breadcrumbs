@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { EDGE_SORT_FIELDS, type EdgeSortId } from "src/const/graph";
+	import { SIMPLE_EDGE_SORT_FIELDS, type EdgeSortId } from "src/const/graph";
 	import { createEventDispatcher } from "svelte";
 	import SettingItem from "./SettingItem.svelte";
 
@@ -17,7 +17,7 @@
 		bind:value={edge_sort_id.field}
 		on:select={() => dispatch("select", edge_sort_id)}
 	>
-		{#each EDGE_SORT_FIELDS as field}
+		{#each SIMPLE_EDGE_SORT_FIELDS as field}
 			<option value={field}>{field}</option>
 		{/each}
 	</select>
