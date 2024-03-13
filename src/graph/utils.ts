@@ -129,10 +129,12 @@ export const get_edge_sorter: (_: EdgeSortId, graph: BCGraph) => EdgeSorter = (
 						];
 
 						if (!a_neighbour || !b_neighbour) {
+							// NOTE: This puts the node with no neighbours last
+							// Which makes sense, I think. It simulates a traversal, where the node with no neighbours is the end of the path
 							return a_neighbour
-								? order
+								? -order
 								: b_neighbour
-									? -order
+									? order
 									: 0;
 						} else {
 							return (
