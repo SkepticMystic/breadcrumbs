@@ -11,10 +11,8 @@ import { BCAPI } from "./api";
 import { Codeblocks } from "./codeblocks";
 import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { get_graph_stats } from "./commands/stats";
-import { PROD } from "./const";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
-import { stringify_edge } from "./graph/utils";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
@@ -188,28 +186,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 				new Notice("Crumbs to note");
 			},
 		});
-
-		if (!PROD) {
-			this.addCommand({
-				id: "breadcrumbs:test-command",
-				name: "Test command",
-				callback: () => {
-					console.log("test command");
-
-					console.log(
-						this.graph
-							.get_dir_chains_path(
-								this.app.workspace.getActiveFile()?.path!,
-								["up", "same"],
-								(edge) => edge.attr.explicit,
-							)
-							.map((path) =>
-								path.map((edge) => stringify_edge(edge)),
-							),
-					);
-				},
-			});
-		}
 	}
 
 	onunload() {}
