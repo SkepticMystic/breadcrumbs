@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { debounce } from "obsidian";
 	import { ARROW_DIRECTIONS, DIRECTIONS } from "src/const/hierarchies";
 	import type BreadcrumbsPlugin from "src/main";
 	import { ImpliedRelationshipsSettingsModal } from "src/modals/ImpliedRelationshipsSettingsModal";
@@ -119,8 +120,8 @@
 										e.currentTarget.value,
 									);
 
-									// TODO: Debounce this?
-									await update();
+									// TODO: test this debounce
+									debounce(update, 500)();
 								}}
 							/>
 						</div>

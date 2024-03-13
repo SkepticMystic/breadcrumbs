@@ -148,7 +148,7 @@ const flatten_all_paths = (paths: BCEdge[][]) => {
 
 	paths.forEach((path) => {
 		path.forEach((edge, depth) => {
-			// TODO: Check the logic of this key change
+			// TODO: Check the logic of this key change (I added source_id as well)
 			// Have we visited a target from a particular source at this depth?
 			const key = `${depth}-${edge.source_id}-${edge.target_id}`;
 

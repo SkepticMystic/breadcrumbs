@@ -22,6 +22,7 @@
 	on:click={() => {
 		// TODO: There seems to be an Obsidian issue here...
 		// I try to open /b from /a, but it opens /folder/b
+		// TODO: I think #511 comes from here. I think the third of fourth agurment should change if a second window is open
 		plugin.app.workspace.openLinkText(path, $active_file_store?.path ?? "");
 	}}
 >

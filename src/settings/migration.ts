@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_FIELD } from "src/const/metadata_fields";
 import type { Hierarchy } from "src/interfaces/hierarchies";
@@ -110,7 +111,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.explicit_edge_sources.tag_note.default_field =
 			old.tagNoteField;
 
-		// delete settings.tagNoteField;
+		delete old.tagNoteField;
 	}
 
 	/// List note
@@ -120,19 +121,14 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.HNUpField !== undefined
 	) {
 		if (old.hierarchyNotes.length > 0) {
-			console.warn(
-				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the ${META_FIELD["list-note-field"]} in each hierarchy note.`,
+			new Notice(
+				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_FIELD["list-note-field"]}" field in each hierarchy note.`,
 			);
 		}
 
-		// TODO: Add the list_note default settings
-		// plugin.settings.explicit_edge_sources.list_note = {
-		// 	exact: settings.hierarchyNoteIsParent,
-		// };
-
-		// delete settings.hierarchyNotes;
-		// delete settings.hierarchyNoteIsParent;
-		// delete settings.HNUpField;
+		delete old.HNUpField;
+		delete old.hierarchyNotes;
+		delete old.hierarchyNoteIsParent;
 	}
 
 	/// Dendron
@@ -149,10 +145,10 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			display_trimmed: old.trimDendronNotes,
 		};
 
-		// delete settings.addDendronNotes;
-		// delete settings.dendronNoteField;
-		// delete settings.trimDendronNotes;
-		// delete settings.dendronNoteDelimiter;
+		delete old.addDendronNotes;
+		delete old.dendronNoteField;
+		delete old.trimDendronNotes;
+		delete old.dendronNoteDelimiter;
 	}
 
 	/// Date notes
@@ -167,9 +163,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			date_format: old.dateNoteFormat,
 		};
 
-		// delete settings.addDateNotes;
-		// delete settings.dateNoteField;
-		// delete settings.dateNoteFormat;
+		delete old.addDateNotes;
+		delete old.dateNoteField;
+		delete old.dateNoteFormat;
 	}
 
 	// SECTION: Views
@@ -178,13 +174,13 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.views.page.all.readable_line_width =
 			old.respectReadableLineLength;
 
-		// delete settings.respectReadableLineLength;
+		delete old.respectReadableLineLength;
 	}
 
 	//// Trail
 	if (old.showBCs !== undefined) {
 		plugin.settings.views.page.trail.enabled = old.showBCs;
-		// delete settings.showBCs;
+		delete old.showBCs;
 	}
 
 	if (old.showGrid !== undefined) {
@@ -192,24 +188,24 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			? "grid"
 			: "path";
 
-		// delete settings.showGrid;
+		delete old.showGrid;
 	}
 
 	if (old.gridDefaultDepth !== undefined) {
 		plugin.settings.views.page.trail.default_depth = old.gridDefaultDepth;
-		// delete settings.gridDefaultDepth;
+		delete old.gridDefaultDepth;
 	}
 
 	if (old.noPathMessage !== undefined) {
 		plugin.settings.views.page.trail.no_path_message = old.noPathMessage;
-		// delete settings.noPathMessage;
+		delete old.noPathMessage;
 	}
 
 	//// Prev/Next
 	if (old.showPrevNext !== undefined) {
 		plugin.settings.views.page.prev_next.enabled = old.showPrevNext;
 
-		// delete settings.showPrevNext;
+		delete old.showPrevNext;
 	}
 
 	// SECTION: Commands
@@ -226,9 +222,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			layout_change: old.refreshOnNoteChange,
 		};
 
-		// delete settings.showRefreshNotice;
-		// delete settings.refreshOnNoteSave;
-		// delete settings.refreshOnNoteChange;
+		delete old.showRefreshNotice;
+		delete old.refreshOnNoteSave;
+		delete old.refreshOnNoteChange;
 	}
 
 	/// List Index
@@ -248,9 +244,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			},
 		};
 
-		// delete settings.wikilinkIndex;
-		// delete settings.aliasesInIndex;
-		// delete settings.createIndexIndent;
+		delete old.wikilinkIndex;
+		delete old.aliasesInIndex;
+		delete old.createIndexIndent;
 	}
 
 	/// Freeze implied edges
@@ -258,7 +254,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.commands.freeze_implied_edges.default_options.destination =
 			old.writeBCsInline ? "dataview-inline" : "frontmatter";
 
-		// delete settings.writeBCsInline;
+		delete old.writeBCsInline;
 	}
 
 	await plugin.saveSettings();
