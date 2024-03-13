@@ -82,9 +82,7 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 	safe_add_node(id: string, attr: BCNodeAttributes) {
 		try {
 			this.addNode(id, attr);
-		} catch (error) {
-			// console.log("node already exists:", id);
-		}
+		} catch (error) {}
 	}
 
 	safe_rename_node(old_id: string, new_id: string) {

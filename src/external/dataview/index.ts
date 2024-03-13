@@ -16,10 +16,7 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 				plugin.app.metadataCache.on(
 					//@ts-ignore: It's there if dataview is enabled
 					"dataview:index-ready",
-					() => {
-						console.log("dataview:index-ready");
-						resolve();
-					},
+					() => resolve(),
 				),
 			);
 		} else {

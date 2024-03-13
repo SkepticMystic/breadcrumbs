@@ -1,4 +1,4 @@
-import type { TFile } from "obsidian";
+import { TFile } from "obsidian";
 import type { BCEdge } from "src/graph/MyMultiGraph";
 import { objectify_edge_mapper } from "src/graph/objectify_mappers";
 import { is_self_loop } from "src/graph/utils";
@@ -7,10 +7,8 @@ import type BreadcrumbsPlugin from "src/main";
 import { ensure_is_array, group_by, remove_duplicates } from "src/utils/arrays";
 
 const linkify_edge = (plugin: BreadcrumbsPlugin, edge: BCEdge) => {
-	const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
-		edge.target_id,
-		"", // target_id is a full path
-	);
+	// target_id is a full path
+	const target_file = plugin.app.vault.getAbstractFileByPath(edge.target_id);
 
 	if (!target_file) {
 		// NOTE: Wait... by definition, the target file points to the source.
@@ -18,7 +16,7 @@ const linkify_edge = (plugin: BreadcrumbsPlugin, edge: BCEdge) => {
 		// I think one of the edge builders relies on this question, as well
 		console.log("unresolved target", edge.target_id);
 		return `[[${edge.target_id}]]`;
-	} else {
+	} else if (target_file instanceof TFile) {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,
 			edge.source_id,
@@ -46,8 +44,6 @@ export const freeze_implied_edges_to_note = async (
 				// If field === null, we don't have an opposite field to freeze to
 				e.attr.field !== null,
 		);
-
-	console.log("implied_edges", implied_edges);
 
 	const implied_edges_by_field = group_by(
 		implied_edges,
@@ -80,18 +76,17 @@ export const freeze_implied_edges_to_note = async (
 		}
 
 		case "dataview-inline": {
-			const dataview_fields: string[] = [];
+			const dataview_fields = Object.keys(implied_edges_by_field).map(
+				(field) => {
+					const links = implied_edges_by_field[field]!.map((e) =>
+						linkify_edge(plugin, e),
+					);
 
-			Object.keys(implied_edges_by_field).forEach((field) => {
-				const edges = implied_edges_by_field[field]!;
+					return `${field}:: ${links.join(", ")}`;
+				},
+			);
 
-				const links = edges.map((e) => linkify_edge(plugin, e));
-
-				dataview_fields.push(`${field}:: ${links.join(", ")}`);
-			});
-
-			console.log("dataview_fields", dataview_fields);
-
+			// NOTE: Just appends for now
 			await plugin.app.vault.process(source_file, (content) => {
 				content += "\n\n" + dataview_fields.join("\n");
 

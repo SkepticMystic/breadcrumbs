@@ -67,7 +67,6 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	console.log("dataview_notes");
 	const errors: BreadcrumbsError[] = [];
 
 	all_files.obsidian?.forEach(
@@ -109,7 +108,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			pages = dataview_plugin.get_api()!.pages(query)
 				.values as IDataview.Page[];
 		} catch (error) {
-			console.log(error);
+			console.log("dataview-note DV API error", error);
 			return errors.push({
 				code: "invalid_field_value",
 				path: dataview_note_page.file.path,

@@ -161,7 +161,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				const stats = get_graph_stats(this.graph);
 
 				console.log(stats);
-				new Notice(JSON.stringify(stats, null, 2));
+				new Notice("Graph stats printed to console");
 			},
 		});
 
@@ -183,7 +183,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					this.settings.commands.freeze_implied_edges.default_options,
 				);
 
-				new Notice("Crumbs to note");
+				new Notice("Implied edges frozen to note");
 			},
 		});
 	}
@@ -196,7 +196,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			DEFAULT_SETTINGS as any,
 		);
 
-		console.log("settings", this.settings);
+		console.log("bc.loadsettings", this.settings);
 	}
 
 	async saveSettings() {
