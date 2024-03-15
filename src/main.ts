@@ -198,9 +198,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 		this.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
 			DIRECTIONS.forEach((dir) => {
+				const fields = hierarchy.dirs[dir];
+				if (!fields.length) return;
+
 				this.addCommand({
 					id: `breadcrumbs:jump-to-first-neighbour-field:${hierarchy_i}-${dir}`,
-					name: `Jump to first neighbour by field:${hierarchy.dirs[dir]}`,
+					name: `Jump to first neighbour by field:${fields.join(",")}`,
 					callback: () =>
 						jump_to_neighbour(this, {
 							attr: { hierarchy_i, dir },
