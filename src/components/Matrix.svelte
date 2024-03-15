@@ -25,52 +25,63 @@
 			: [];
 </script>
 
-<div class="markdown-rendered">
+<div class="markdown-rendered BC-matrix-view flex flex-col">
 	{#key all_out_edges}
-		<div class="flex flex-col">
-			{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
-				<div class="flex flex-col gap-4 p-2">
-					{#each DIRECTIONS as dir}
-						{@const out_edges = all_out_edges.filter(
-							(edge) =>
-								edge.attr.dir === dir &&
-								edge.attr.hierarchy_i === hierarchy_i,
-						)}
+		{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
+			{@const hierarchy_out_edges = all_out_edges.filter(
+				(edge) => edge.attr.hierarchy_i === hierarchy_i,
+			)}
 
-						<div class="flex flex-col gap-1">
-							<span class="text-lg font-semibold">
-								{hierarchy.dirs[dir].join(", ")}
-							</span>
+			<div
+				class="BC-matrix-view-hierarchy flex flex-col gap-4 p-2 {hierarchy_out_edges.length ===
+				0
+					? 'BC-empty'
+					: ''}"
+			>
+				{#each DIRECTIONS as dir}
+					{@const out_edges = hierarchy_out_edges.filter(
+						(edge) => edge.attr.dir === dir,
+					)}
 
-							<div class="flex flex-col">
-								{#each out_edges as edge}
-									<div class="flex justify-between">
-										<EdgeLink
-											{edge}
-											{plugin}
-											cls="grow"
-											show_node_options={plugin.settings
-												.views.side.matrix
-												.show_node_options}
-										/>
+					<div
+						class="BC-matrix-view-dir flex flex-col gap-1 {out_edges.length ===
+						0
+							? 'BC-empty'
+							: ''}"
+					>
+						<span class="text-lg font-semibold">
+							{hierarchy.dirs[dir].join(", ")}
+						</span>
 
-										<span
-											class="font-mono"
-											aria-label={edge.attr.explicit
-												? `source:${edge.attr.source}`
-												: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
-										>
-											({edge.attr.explicit ? "x" : "i"})
-										</span>
-									</div>
-								{/each}
-							</div>
+						<div class="flex flex-col">
+							{#each out_edges as edge}
+								<div class="flex justify-between">
+									<EdgeLink
+										{edge}
+										{plugin}
+										cls="grow"
+										show_node_options={plugin.settings.views
+											.side.matrix.show_node_options}
+									/>
+
+									<span
+										class="font-mono"
+										aria-label={edge.attr.explicit
+											? `source:${edge.attr.source}`
+											: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
+									>
+										({edge.attr.explicit ? "x" : "i"})
+									</span>
+								</div>
+							{/each}
 						</div>
-					{/each}
-				</div>
+					</div>
+				{/each}
 
-				<hr />
-			{/each}
-		</div>
+				{#if plugin.settings.hierarchies.length !== hierarchy_i + 1}
+					<hr />
+				{/if}
+			</div>
+		{/each}
 	{/key}
 </div>
