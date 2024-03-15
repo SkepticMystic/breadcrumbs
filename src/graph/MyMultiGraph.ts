@@ -179,6 +179,8 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		}
 	};
 
+	// TODO: This should be on a field level, not dir
+	// This could unlock inter-hierarchy chains! Like [spouse, sibling] -> sibling-in-law
 	get_dir_chains_path = (
 		start_node: string,
 		dir_chain: Direction[],

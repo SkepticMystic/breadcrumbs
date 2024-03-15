@@ -30,6 +30,8 @@
 									options.dataview_from_paths.includes(
 										e.target_id,
 									)) &&
+								// TODO: Now that the hierarchies are traversed separately, I don't think we need to fields option anymore...
+								// It was just a bandaid to achieve this effect. But separate traversal is the intended behaviour, that's the whole point of hierarchies.
 								(!options.fields ||
 									options.fields.includes(
 										e.attr.field as string,

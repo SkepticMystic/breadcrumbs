@@ -56,11 +56,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// Events
 			/// Workspace
 
+			// TODO: This doesn't trigger on tab-change
+			// Find a different event to hook into
 			this.registerEvent(
-				this.app.workspace.on("layout-change", () => {
+				this.app.workspace.on("layout-change", async () => {
 					console.log("layout-change");
 
-					this.refresh({
+					await this.refresh({
 						rebuild_graph:
 							this.settings.commands.rebuild_graph.trigger
 								.layout_change,
@@ -70,42 +72,39 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			/// Vault
 			this.registerEvent(
-				this.app.vault.on("create", async (file) => {
-					console.log("create", file.path);
+				this.app.vault.on("create", (file) => {
+					console.log("on.create:", file.path);
 					if (file instanceof TFile) {
 						// This isn't perfect, but it stops any "node doesn't exist" errors
 						// The user will have to refresh to add any relevant edges
 						this.graph.safe_add_node(file.path, { resolved: true });
 
-						// TODO: Check if the layout-change event triggers this anyway
-						await this.refresh({ rebuild_graph: false });
+						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
 					}
 				}),
 			);
 
 			this.registerEvent(
-				this.app.vault.on("rename", async (file, old_path) => {
-					console.log("rename", old_path, "->", file.path);
+				this.app.vault.on("rename", (file, old_path) => {
+					console.log("on.rename:", old_path, "->", file.path);
 					if (file instanceof TFile) {
 						this.graph.safe_rename_node(old_path, file.path);
 
-						// TODO: Check if the layout-change event triggers this anyway
-						await this.refresh({ rebuild_graph: false });
+						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
 					}
 				}),
 			);
 
 			this.registerEvent(
-				this.app.vault.on("delete", async (file) => {
-					console.log("delete", file.path);
+				this.app.vault.on("delete", (file) => {
+					console.log("on.delete:", file.path);
 					if (file instanceof TFile) {
 						// TODO: I think instead of dropping it, we should mark it as unresolved...
 						//   Maybe.. it may depend on what added the node, and the edges in/out of it
 						// Conveniently drops any relevant edges
 						this.graph.dropNode(file.path);
 
-						// TODO: Check if the layout-change event triggers this anyway
-						await this.refresh({ rebuild_graph: false });
+						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
 					}
 				}),
 			);
@@ -241,7 +240,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		if (options?.redraw_page_views !== false) {
-			console.group("redraw_page_views");
+			console.groupCollapsed("redraw_page_views");
 			redraw_page_views(this);
 			console.groupEnd();
 		}
