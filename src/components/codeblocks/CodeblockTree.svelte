@@ -12,19 +12,32 @@
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 
-	const all_paths = $active_file_store
-		? Traverse.all_paths(
-				"depth_first",
-				plugin.graph,
-				$active_file_store.path,
-				(e) =>
-					e.attr.dir === options.dir &&
-					(!options.dataview_from_paths ||
-						options.dataview_from_paths.includes(e.target_id)) &&
-					(!options.fields ||
-						options.fields.includes(e.attr.field as string)),
-			)
-		: [];
+	const all_paths =
+		$active_file_store &&
+		// Even tho we ensure the graph is built before the views are registered,
+		// Existing views still try render before the graph is built.
+		plugin.graph.hasNode($active_file_store.path)
+			? plugin.settings.hierarchies
+					.map((_hierarchy, i) =>
+						Traverse.all_paths(
+							"depth_first",
+							plugin.graph,
+							$active_file_store!.path,
+							(e) =>
+								e.attr.hierarchy_i === i &&
+								e.attr.dir === options.dir &&
+								(!options.dataview_from_paths ||
+									options.dataview_from_paths.includes(
+										e.target_id,
+									)) &&
+								(!options.fields ||
+									options.fields.includes(
+										e.attr.field as string,
+									)),
+						),
+					)
+					.flat()
+			: [];
 
 	const sliced = all_paths.map((path) =>
 		path.slice(options.depth[0], options.depth[1]),

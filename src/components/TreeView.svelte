@@ -51,9 +51,11 @@
 
 	<div class="BC-tree-view-items">
 		{#key nested_edges}
+			<!-- TODO: Could add field_prefix here, but it's hardcoded off for now -->
 			<NestedEdgeList
 				{plugin}
 				{nested_edges}
+				field_prefix={false}
 				sort={(a, b) => a.target_id.localeCompare(b.target_id)}
 				show_node_options={plugin.settings.views.side.tree
 					.show_node_options}
