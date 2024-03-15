@@ -210,8 +210,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
 	}) {
+		console.group("bc.refresh");
+
 		console.log(
-			"bc.refresh",
 			["rebuild_graph", "active_file_store", "redraw_page_views"]
 				.filter(
 					(key) => options?.[key as keyof typeof options] !== false,
@@ -244,6 +245,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 			redraw_page_views(this);
 			console.groupEnd();
 		}
+
+		console.groupEnd();
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views

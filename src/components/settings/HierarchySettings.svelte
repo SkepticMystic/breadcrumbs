@@ -10,6 +10,7 @@
 	export let plugin: BreadcrumbsPlugin;
 
 	let hierarchies = [...plugin.settings.hierarchies];
+	const opens = hierarchies.map(() => false);
 
 	async function update() {
 		plugin.settings.hierarchies = hierarchies;
@@ -47,8 +48,10 @@
 
 	<div>
 		{#each hierarchies as hier, i (Object.values(hier.dirs).flat())}
-			<details class="BC-Hier-Details">
-				<summary>
+			<details class="BC-Hier-Details" open={opens[i]}>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<summary on:click={() => (opens[i] = !opens[i])}>
 					<span>
 						{DIRECTIONS.map((dir) => hier.dirs[dir].join(", "))
 							.map((fields) => `(${fields})`)
