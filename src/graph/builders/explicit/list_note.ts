@@ -144,6 +144,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			const source_link = source_list_item.outlinks.at(0);
 			if (!source_link) return;
 
+			// TODO: Check if source_link.path is full or not. If it is, we can use getAbstractFileByPath
 			const unsafe_source_path = Paths.ensure_ext(source_link.path);
 			const source_file = plugin.app.metadataCache.getFirstLinkpathDest(
 				unsafe_source_path,

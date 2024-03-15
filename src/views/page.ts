@@ -11,6 +11,7 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 		return console.log("No active markdown view");
 	}
 
+	const markdown_view_mode = active_markdown_view.getMode();
 	const { containerEl } = active_markdown_view;
 
 	// Ensure the container exists
@@ -35,7 +36,6 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	page_views_el.empty();
 
 	// Move it to the right place
-	const markdown_view_mode = active_markdown_view.getMode();
 
 	if (markdown_view_mode === "preview") {
 		const view_parent = containerEl.querySelector(".markdown-preview-view");

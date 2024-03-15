@@ -97,10 +97,8 @@ const handle_dendron_note = (
 
 	const target_path = `${target_folder}${target_basename}${path.extname(source_path)}`;
 
-	const target_file = plugin.app.metadataCache.getFirstLinkpathDest(
-		target_path,
-		source_path,
-	);
+	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
+	const target_file = plugin.app.vault.getAbstractFileByPath(target_path);
 
 	const { field, field_hierarchy } = dendron_note_info.data;
 

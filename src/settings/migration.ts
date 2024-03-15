@@ -13,8 +13,6 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	const old = plugin.settings as BreadcrumbsSettings &
 		OLD_BREADCRUMBS_SETTINGS;
 
-	// TODO: Eventually, uncomment the delete lines to remove old versions
-
 	// SECTION: Hierarchies
 	/// Hierarchies used to just be the Record<Direction, string[]>, but it's now wrapped in an object
 	/// We can also handle the move of implied_relationships here
