@@ -10,7 +10,9 @@ import { get } from "svelte/store";
 import { BCAPI } from "./api";
 import { Codeblocks } from "./codeblocks";
 import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
+import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
+import { DIRECTIONS } from "./const/hierarchies";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
@@ -184,6 +186,27 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 				new Notice("Implied edges frozen to note");
 			},
+		});
+
+		// Jump to first neighbour
+		DIRECTIONS.forEach((dir) => {
+			this.addCommand({
+				id: `breadcrumbs:jump-to-first-neighbour-dir:${dir}`,
+				name: `Jump to first neigbour in direction:${dir}`,
+				callback: () => jump_to_neighbour(this, { attr: { dir } }),
+			});
+		});
+		this.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
+			DIRECTIONS.forEach((dir) => {
+				this.addCommand({
+					id: `breadcrumbs:jump-to-first-neighbour-field:${hierarchy_i}-${dir}`,
+					name: `Jump to first neighbour by field:${hierarchy.dirs[dir]}`,
+					callback: () =>
+						jump_to_neighbour(this, {
+							attr: { hierarchy_i, dir },
+						}),
+				});
+			});
 		});
 	}
 
