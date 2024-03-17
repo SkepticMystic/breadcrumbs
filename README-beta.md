@@ -41,9 +41,140 @@ child:: [[B]], [[C]]
 
 This creates the same structure as the [frontmatter links](#frontmatter-links) method above.
 
-#### Other Sources
+#### Tag Notes
 
-Breadcrumbs offers many other ways to add edges. The rest are a little more complicated, but are also more **powerful** and **automated**. Briefly, Breadcrumbs can leverage the existing stucture of your: _Tags_, _Folders_, _Date notes_, _Dendron naming_, and more. See the [wiki page on Edge Sources](TODO) for more details.
+_Tag Notes_ allow you to leverage your existing tag structure.
+
+You can turn a note into a tag note by adding the following to your frontmatter:
+
+```yaml
+BC-tag-note-tag: "#tag"
+BC-tag-note-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields. This will tell Breadcrumbs to find all notes with the tag `#tag`, and add edges from the current note to those taggs notes using the field you specify.
+
+##### `BC-tag-note-exact`
+
+If you want to only add edges to notes that _exactly_ match the tag, you can add the `BC-tag-note-exact` field to the frontmatter of the tag note.
+
+```yaml
+BC-tag-note-exact: true
+```
+
+If you don't add this field, Breadcrumbs will add edges to all notes that _contain_ the tag. e.g. `#tag/child` contains `#tag`.
+
+#### List Notes
+
+_List Notes_ allow you to leverage your existing bullet list structure.
+
+You can turn a note into a list note by adding the following to your frontmatter:
+
+```yaml
+BC-list-note-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields.
+
+The structure of a List Note is as follows:
+
+```md
+-   [[A]]
+    -   [[B]]
+        -   [[C]]
+    -   [[D]]
+```
+
+In this example, `A` is the parent of `B` and `D`, and `B` is the parent of `C` (assuming the field you used is `parent`).
+
+##### `BC-list-note-exclude`
+
+By default, the list note itself links to the top-level list items. You can exclude this behaviour by adding the `BC-list-note-exclude` field to the frontmatter of the list note.
+
+```yaml
+BC-list-note-exclude: true
+```
+
+##### `BC-list-note-neighbour-field`
+
+Normally, only the parent/child relationships are added. But you can also add edges based on the _neighbours_ of each list item. This is useful for adding sibling/next/prev relationships.
+
+```yaml
+BC-list-note-neighbour-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields.
+
+In the example above, this would add edges from `B` to `D`.
+
+#### Dendron Notes
+
+If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names.
+
+You can enable denron notes globally in the settings, under Dendron Notes. Flip the toggle on, choose a field to point `up` with, and tell Breadcrumbs which delimiter you use (generally a period, `.`).
+
+For example, if you have the following notes:
+
+-   `A`
+-   `A.B`
+-   `A.B.C`
+
+Breadcrumbs will add edges from `A` to `A.B`, and from `A.B` to `A.B.C`.
+
+#### Dataview Note
+
+_Dataview Notes_ allow you to use the [Dataview plugin](TODO) query engine to add edges to the graph.
+
+You can turn a note into a dataview note by adding the following to your frontmatter:
+
+```yaml
+BC-dataview-note-query: <query>
+BC-dataview-note-field: <field>
+```
+
+Where `<query>` is a valid Dataview query, and `<field>` is one of your Breadcrumbs fields.
+
+Breadrumbs will ask Dataview for all notes that match the query, and add edges from the current note to those notes using the field you specify.
+
+#### Date Notes
+
+_Date Notes_ allow you to leverage your existing daily notes structure.
+
+You can enable Date Notes globally in the settings, under Date Notes. Flip the toggle on, choose a field to point `up` with, and tell Breadcrumbs what date format you use for your daily notes (e.g. `YYYY-MM-DD`).
+
+For example, if you have the following notes:
+
+-   `2022-01-01`
+-   `2022-01-02`
+-   `2022-01-03`
+
+Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, and from `2022-01-02` to `2022-01-03` using the field you specify.
+
+> [!NOTE] Refer to the Luxon documentation for the full list of date formats: https://moment.github.io/luxon/#/parsing?id=table-of-tokens.
+
+#### Folder Notes
+
+_Folder Notes_ allow you to leverage your existing folder structure.
+
+You can turn a note into a folder note by adding the following to your frontmatter:
+
+```yaml
+BC-folder-note-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields.
+
+Breadcrumbs will add edges from the current note to all _other_ notes in the same folder, using the field you specify.
+
+##### `BC-folder-note-recurse`
+
+By default, Breadcrumbs will only add edges to notes in the _immediate_ folder. If you want to add edges to notes in _all_ subfolders, you can add the `BC-folder-note-recurse` field to the frontmatter of the folder note.
+
+```yaml
+BC-folder-note-recurse: true
+```
+
+> [!NOTE] This doesn't _nest_ notes. It effectively flattens your folder structure into one level. So notes in subfolders will still be added as children of the top-level folder note, not as children of the notes in the subfolders.
 
 ### Implied Relationships
 
