@@ -44,11 +44,11 @@ const get_list_note_info = (
 		});
 	}
 
-	const next_field = metadata[META_FIELD["list-note-next-field"]];
+	const neighbour_field = metadata[META_FIELD["list-note-neighbour-field"]];
 
-	const next_field_hierarchy =
-		next_field && typeof next_field === "string"
-			? get_field_hierarchy(plugin.settings.hierarchies, next_field)
+	const neighbour_hierarchy =
+		neighbour_field && typeof neighbour_field === "string"
+			? get_field_hierarchy(plugin.settings.hierarchies, neighbour_field)
 			: null;
 
 	const exclude_index = Boolean(
@@ -60,11 +60,11 @@ const get_list_note_info = (
 		exclude_index,
 		dir: field_hierarchy.dir,
 		hierarchy_i: field_hierarchy.hierarchy_i,
-		next: next_field_hierarchy
+		neighbour: neighbour_hierarchy
 			? {
-					field: next_field as string,
-					dir: next_field_hierarchy.dir,
-					hierarchy_i: next_field_hierarchy.hierarchy_i,
+					dir: neighbour_hierarchy.dir,
+					field: neighbour_field as string,
+					hierarchy_i: neighbour_hierarchy.hierarchy_i,
 				}
 			: undefined,
 	});
@@ -135,7 +135,7 @@ const process_list_item = ({
 };
 
 /** If a few conditions are met, add an edge from the current list item to the _next_ one on the same level */
-const handle_next_list_item = ({
+const handle_neighbour_list_item = ({
 	graph,
 	plugin,
 	source_path,
@@ -153,41 +153,42 @@ const handle_next_list_item = ({
 		{ ok: true }
 	>;
 }) => {
-	const [source_list_item, next_list_item] = [
+	const source_list_item =
 		// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
-		list_note_page.file.lists.values[source_list_item_i],
-		list_note_page.file.lists.values.at(source_list_item_i + 1),
-	];
+		list_note_page.file.lists.values[source_list_item_i];
 
-	if (
-		!next_list_item ||
-		!list_note_info.data.next ||
-		next_list_item.position.start.col !==
-			source_list_item.position.start.col
-	) {
+	const neighbour_list_item =
+		// Find the next list item on the same level
+		list_note_page.file.lists.values.find(
+			(item, i) =>
+				i > source_list_item_i &&
+				item.position.start.col === source_list_item.position.start.col,
+		);
+
+	if (!neighbour_list_item || !list_note_info.data.neighbour) {
 		return;
 	}
 
-	const next_link = next_list_item.outlinks.at(0);
-	if (!next_link) return;
+	const neighbour_link = neighbour_list_item.outlinks.at(0);
+	if (!neighbour_link) return;
 
 	const [path, file] = process_list_item({
 		plugin,
 		list_note_page,
-		list_item_link: next_link,
+		list_item_link: neighbour_link,
 	});
 
 	if (!file) {
 		graph.safe_add_node(path, { resolved: false });
 	}
 
-	// NOTE: Currently no support for field overrides for next-fields
+	// NOTE: Currently no support for field overrides for neighbour-fields
 	graph.safe_add_directed_edge(source_path, path, {
 		explicit: true,
 		source: "list_note",
-		dir: list_note_info.data.next.dir,
-		field: list_note_info.data.next.field,
-		hierarchy_i: list_note_info.data.next.hierarchy_i,
+		dir: list_note_info.data.neighbour.dir,
+		field: list_note_info.data.neighbour.field,
+		hierarchy_i: list_note_info.data.neighbour.hierarchy_i,
 	});
 };
 
@@ -290,7 +291,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 				// NOTE: The logic of this function is _just_ complicated enough to warrent a separate function
 				// to prevent multiple levels of if statement nesting
-				handle_next_list_item({
+				handle_neighbour_list_item({
 					graph,
 					plugin,
 					source_path,
