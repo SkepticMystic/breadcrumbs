@@ -1,99 +1,407 @@
-# Breadcrumb Trail
+# Breadcrumbs
 
-See the [wiki](https://breadcrumbs-wiki.onrender.com) for in-depth documentation.
+Breadcrumbs is an Obsidian plugin that lets you add structured hierarchy to your notes, then view/traverse that structure in various ways.
 
-Join our discussions in [GitHub](https://github.com/SkepticMystic/breadcrumbs/discussions) or [Discord](https://discord.com/channels/686053708261228577/929513881041248266).
+Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _direction_ to them). You tell Breadcrumbs about the structure of your notes, it builds this directed graph, and then lets you visualise and navigate the graph.
 
-<!-- You can find the changelog [here](https://github.com/SkepticMystic/breadcrumbs/blob/master/CHANGELOG.md). -->
+## Hierarchies
 
-## Basics
+The starting point of Breadcrumbs is your hierarchies, which are the _directed fields_ you'll use to structure your notes. You can have as many hierarchies as you like, and they'll all run separately from each other.
 
-Breadcrumbs lets you add hierarchical structure to your notes and then leverage that structure.
-
-The core of Breadcrumbs are the 5 directions:
-
--   up (↑)
--   same (↔)
--   previous (←)
--   next (→)
--   down (↓)
-
-You can name these whatever you want. For example, you can use `parent`, `sibling`, `child`, `left`, `right`. What matters is the direction behind them.
-
-To get this structure, the plugin requires that you use some type of metadata indicating the hierarchy of notes:
-
-1. Frontmatter field. This is a field in the yaml format at the very top of your note. For example the `me.md` file could have the following frontmatter:
+A basic hierarchy could be:
 
 ```
+up: parent
+down: child
+same: sibling
+prev: before
+next: after
+```
+
+On the left are the unchangeable directions, and on the right are the fields you'll use to structure your notes. You can change the fields to whatever you like, but the directions are fixed.
+
+Using these _fields_, you can now start adding edges to your Breadcrumbs graph. For example the `[[Father]]` note could have a `child` field pointing to `[[Me]]`, and `[[Me]]` could have a `parent` field pointing to `[[Mother]]`.
+
+## Building the Breadcrumbs graph
+
+### Edge Sources
+
+There are many ways to add directed edges to the graph - what I call "Edge Sources". I'll start with the most basic, manual approach.
+
+#### Frontmatter Links
+
+In the YAML frontmatter of your note, you can add key/value pairs indicating a directed link to another note:
+
+```yaml
 ---
-parent: [[dad]]
-parent: [[mom]]
-sibling: [[sister Lara]]
-child: [[child Andre]]
+parent: "[[A]]"
+child: ["[[B]]", "[[C]]"]
 ---
 ```
 
-2. Inline (must use the [Dataview](https://github.com/blacksmithgu/obsidian-dataview#data) plugin), among the normal text like this:
+This tells Breadcrumbs that the "parent" of the current note is "A", and that its two "children" are "B" and "C".
+
+#### Dataview Links
+
+If you have the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled, you can use their format of metadata as well. In the _content_ of a note:
 
 ```
-Punching is a very effective MMA technique (sibling:: [ [[Kicking]], [[Elbowing]], [[Kneeing]] ], parent:: [[Striking]])
+parent:: [[A]]
+child:: [[B]], [[C]]
 ```
 
-(notice the double colon for the Dataview inline metadata).
+This creates the same structure as the [frontmatter links](#frontmatter-links) method above.
 
-3. You can combine both approaches as well. For example your `Course. 101 - Basics of Financing.md` file might have the following content:
+#### Tag Notes
 
+_Tag Notes_ allow you to leverage your existing tag structure. You can turn a note into a tag note by adding the following to your frontmatter:
+
+```yaml
+BC-tag-note-tag: "#tag"
+BC-tag-note-field: <field>
 ```
+
+Where `<field>` is one of your Breadcrumbs fields. This will tell Breadcrumbs to find all notes with the tag `#tag`, and add edges from the current note to those tagged notes using the field you specify.
+
+##### `BC-tag-note-exact`
+
+If you want to only add edges to notes that _exactly_ match the tag, you can add the `BC-tag-note-exact` field to the frontmatter of the tag note.
+
+```yaml
+BC-tag-note-exact: true
+```
+
+If you don't add this field, Breadcrumbs will add edges to all notes that _contain_ the tag. e.g. `#tag/child` contains `#tag`.
+
+#### List Notes
+
+_List Notes_ allow you to leverage your existing bullet list structure. You can turn a note into a list note by adding the following to your frontmatter:
+
+```yaml
+BC-list-note-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields.
+
+The structure of a List Note is as follows:
+
+```md
+-   [[A]]
+    -   [[B]]
+        -   [[C]]
+    -   [[D]]
+```
+
+In this example, `A` is the parent of `B` and `D`, and `B` is the parent of `C` (assuming the field you used is `parent`).
+
+##### Field Overrides
+
+By default, each item in the list will use the `BC-list-note-field` value to add edges. But you can override this on a per-item basis by adding the field _before_ the link.
+
+```md
 ---
-up: [[Year 2022 courses]]
-same: [[Course. 103 - Basics of Programming]]
+BC-list-note-field: down
 ---
-# Course. 101 - Basics of Financing
-This course teaches the basics of financing. It contains several sub-areas:
-- down:: [[101 - Basics of Financing. Lectures]]
-- down:: [[101 - Basics of Financing. Group work]]
-- down:: [[101 - Basics of Financing. Essay]]
 
-Next:: [[Course. 201 - Advanced Financing]]
+-   [[A]]
+    -   [[B]]
+        -   child [[C]]
 ```
 
-## Matrix/List view
+In this example, `A` -down-> `B`, but `B` -child-> `C`.
 
-This view shows the current note's parents, siblings, and children in either of the following styles:
+##### `BC-list-note-exclude`
 
-![image](https://user-images.githubusercontent.com/70717676/123402846-75a67f80-d5a8-11eb-8230-75c37441f122.png)
+By default, the list note itself links to the top-level list items. You can exclude this behaviour by adding the `BC-list-note-exclude` field to the frontmatter of the list note.
 
-![image](https://user-images.githubusercontent.com/70717676/123402852-77704300-d5a8-11eb-8f56-c4eb3ca23e02.png)
+```yaml
+BC-list-note-exclude: true
+```
 
-To open the view in your sidebar, run the command `Breadcrumbs: Open View` from the Command Palette (`Ctrl+P`).
+##### `BC-list-note-neighbour-field`
 
-## Breadcrumbs Trail view
+Normally, only the parent/child relationships are added. But you can also add edges based on the _neighbours_ of each list item. This is useful for adding sibling/next/prev relationships.
 
-This view shows a trail of notes from the top of your vault down to your current note:
+```yaml
+BC-list-note-neighbour-field: <field>
+```
 
-![image](https://user-images.githubusercontent.com/70717676/123403044-a8507800-d5a8-11eb-9669-33148021b6fa.png)
+Where `<field>` is one of your Breadcrumbs fields.
 
-Using this structure that you impose, you can use the breadcrumb trail to visualise the path back to your parent note.
+In the example above, this would add edges from `B` to `D`.
 
-# Juggl view
+#### Dendron Notes
 
-The [Juggl plugin](https://juggl.io/) is [tightly integrated](https://juggl.io/Features/Breadcrumbs+integration) with Breadcrumbs, such as with the Juggl view that can automatically be added above your current note:
+If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. You can enable denron notes globally in the settings, under Dendron Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs which delimiter you use (generally a period, `.`).
 
-![](https://i.imgur.com/roOYVhl.png)
+For example, if you have the following notes:
 
-## Videos
+-   `A`
+-   `A.B`
+-   `A.B.C`
 
-### Latest tutorial as of 2022-01-02
+Breadcrumbs will add edges from `A` to `A.B`, and from `A.B` to `A.B.C` using the field you specify.
 
-[![image|100](https://user-images.githubusercontent.com/70717676/147882843-bbb28103-a3a4-4dfd-8077-d8a1524f86a3.png)](https://www.youtube.com/watch?v=N4QmszBRu9I&ab_channel=ObsidianCommunityTalks)
+##### Display Trimmed
 
-### Video going in-depth into Threading feature, by @blizzingout
+In the Denron Notes settings, you can also choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
 
-http://youtube.com/watch?v=AS5Mv6YNmsQ
+#### Dataview Note
 
-### First video about Breadcrumbs
+_Dataview Notes_ allow you to use the [Dataview plugin](https://github.com/blacksmithgu/obsidian-dataview) query engine to add edges to the graph. You can turn a note into a dataview note by adding the following to your frontmatter:
 
-[![image](https://user-images.githubusercontent.com/70717676/147882889-cc38e14a-555a-433e-b500-71f159d49354.png)](https://www.youtube.com/watch?v=DXXB7fHcArg)
+```yaml
+BC-dataview-note-query: <query>
+BC-dataview-note-field: <field>
+```
+
+Where `<query>` is a valid Dataview query, and `<field>` is one of your Breadcrumbs fields. Breadrumbs will ask Dataview for all notes that match the query, and add edges from the current note to those notes using the field you specify.
+
+For example, the following query will add child edges from the current note to all notes that contain the tag `#tag` and are in the folder "Folder":
+
+```yaml
+BC-dataview-note-query: "#tag" AND "Folder"
+BC-dataview-note-field: child
+```
+
+#### Date Notes
+
+_Date Notes_ allow you to leverage your existing daily notes structure. You can enable Date Notes globally in the settings, under Date Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs what date format you use for your daily notes (e.g. `YYYY-MM-DD`). For example, if you have the following notes:
+
+-   `2022-01-01`
+-   `2022-01-02`
+-   `2022-01-03`
+
+Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, and from `2022-01-02` to `2022-01-03` using the field you specify.
+
+> [!TIP]
+> Refer to the Luxon documentation for the full list of date formats: https://moment.github.io/luxon/#/parsing?id=table-of-tokens.
+
+#### Folder Notes
+
+_Folder Notes_ allow you to leverage your existing folder structure. You can turn a note into a folder note by adding the following to your frontmatter:
+
+```yaml
+BC-folder-note-field: <field>
+```
+
+Where `<field>` is one of your Breadcrumbs fields. Breadcrumbs will add edges from the current note to all _other_ notes in the same folder, using the field you specify.
+
+##### `BC-folder-note-recurse`
+
+By default, Breadcrumbs will only add edges to notes in the _immediate_ folder. If you want to add edges to notes in _all_ subfolders, you can add the `BC-folder-note-recurse` field to the frontmatter of the folder note.
+
+```yaml
+BC-folder-note-recurse: true
+```
+
+> [!IMPORTANT]
+> This doesn't create _nested_ edges. It effectively flattens your folder structure into one level, so notes in subfolders will still be added as children of the _top-level_ folder note, not as children of the notes in the subfolders.
+
+### Implied Relationships
+
+By adding edges to the Breadcrumbs graph, you've created various explicit relationships: "Note A is the _parent_ of note B", or "note C has 3 _children_: D, E, and F". But you've also created some _implied_ relationships. For example, if A is the _parent_ of B, then it's _implied_ that B is the **child** of A! This _kind_ of implied relationship is called the "opposite direction" implied relation. There are many other kinds, including "If A and B both have the same _parent_, then they must be **siblings**". Breadcrumbs automatically detects, and adds these implied relationships to the graph.
+
+Each kind of implied relationship is completely _optional_, and can be toggled on a hierarchy-level in the settings. Furthermore, not only can you enable/disable each kind of implied relation, you can change how many _rounds_ to go through to detect them! This is useful to add implied relations _based on other implied relations_. Setting rounds to `0` disables that kind. Setting it to `1` will add that kind of implied relation, only considering _real_ edges. Setting it to `2` will add that kind of implied relation, considering _real_ edges and _previously added_ implied edges. And so on.
+
+<!-- TODO: Picture -->
+
+#### Transitive Implied Relations
+
+This category of implied relations can be thought of as a _chain_ of fields which collapse down to one field. For example, if A is the _parent_ of B, and B is the _parent_ of C, then it's _implied_ that A is the **grandparent** of C. This is a _transitive_ implied relation. Or, in a more general syntax, `[up, up] -> up` (a chain of two `up` fields collapses down to one `up` field between the start and end nodes).
+
+##### Same Sibling is Sibling
+
+If A and B both share the same _sibling_, mark them as **siblings** as well.
+
+`[same, same] -> same`
+
+##### Siblings Parent is Parent
+
+If A and B are _siblings_, then make A's **parent** B's **parent** as well.
+
+`[same, up] -> up`
+
+##### Parents Sibling is Parent
+
+If A's _parent_ is B, and B is the _sibling_ of C, then make C the **parent** of A.
+
+`[up, same] -> up`
+
+##### Cousin is Sibling
+
+If A and B are _cousins_, mark them as **siblings**.
+
+`[up, same, down] -> same`
+
+#### Other Implied Relations
+
+##### Self is Sibling
+
+This implied relation makes every note its own sibling. This is useful for always showing the current note in the various visualisations.
+
+##### Opposite Direction
+
+If A is the _parent_ of B, then it's _implied_ that B is the **child** of A. The mapping of opposite directions is as follows:
+
+-   `up` -> `down`
+-   `down` -> `up`
+-   `same` -> `same`
+-   `prev` -> `next`
+-   `next` -> `prev`
+
+##### Same Parent is Sibling
+
+If A and B both have the same _parent_, mark them as **siblings**.
+
+## Leveraging the Breadcrumbs graph
+
+### Views
+
+Once you've built the graph, you can view it in various ways.
+
+#### Page View
+
+The Page View appears at the top of the current note. It shows _multiple_ subviews: Trail View, and Previous/Next View.
+
+##### Trail View
+
+The Trail View shows all paths going _up_ from the current note. It can show the paths in a _grid_ or a _path_ list, but the underlying data is the same. The following other options can also be configured:
+
+-   Whether to show _all_ paths, or just the _shortest_ path.
+-   A maximum _depth_ of the paths. If the paths go longer than the max depth, slice them off.
+
+##### Previous/Next View
+
+The Previous/Next View shows the immediate `previous` and `next` neighbours of the current note.
+
+#### Matrix View
+
+The Matrix View shows up on the side of the editor, and shows the immediate neighbours of the current note (in all 5 directions).
+
+On the right side of each link, you'll see either `(x)` or `(i)`, indicating if that edge is _explicit_ or _implied_. However over the icon to see the _source_ of real edges, and the _kind_ of implied edges (as well as the _round_ they were added in).
+
+#### Tree View
+
+The Tree View shows up on the side of the editor, and shows all path going in a _chosen direction_ from the current note. It is similar to the [Trail View](#trail-view), but you can choose which direction to traverse.
+
+### Commands
+
+Breadcrumbs adds a few commands to the command palette.
+
+#### Create List Index from Note
+
+This command builds a nested markdown list of all paths in a given direction from the current note. It then copies this list to the clipboard.
+
+For example:
+
+```md
+-   [[A]]
+    -   [[B]]
+        -   [[C]]
+    -   [[D]]
+-   [[E]]
+    -   [[F]]
+```
+
+> [!TIP]
+> The output format matches the required format for the [List Note](#list-notes) edge source. So you can paste this list into a note, and then use it as a List Note.
+
+#### Freeze Breadcrumbs to File
+
+This command takes all the _implied_ edges leaving the current note, and makes them explicit by writing them to the file in the format you choose (either as [frontmatter links](#frontmatter-links), or [Dataview links](#dataview-links)).
+
+### Codeblocks
+
+Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)). The basic syntax is:
+
+```yaml
+type: tree
+dir: down
+depth: 0-3
+sort: basename desc
+```
+
+The above example would render a markdown list of all paths going _down_ from the current note, up to a depth of 3, sorted by the basename of the notes, in descending order.
+
+#### Fields
+
+##### `type`
+
+`type?: tree`
+
+How to visualise the results.
+
+##### `dir`
+
+`dir?: up|down|same|prev|next`
+
+Filter edges by a given direction
+
+##### `fields`
+
+`fields?: string`
+
+Filter edges by a list of fields (comma-separated)
+
+##### `title`
+
+`title?: string`
+
+Add a title above the codeblock
+
+##### `depth`
+
+`depth?: number-number`
+
+Filter edges by a depth range. For example:
+
+-   `1-3` would show all paths between 1 and 3 levels deep.
+-   `3-` would show all paths 3 levels deep and deeper.
+-   `-3` would show all paths 3 levels deep and shallower.
+
+##### `flat`
+
+`flat?: true|false`
+
+Flatten the nested results into a flat list.
+
+##### `dataview-from`
+
+`dataview-from?: string`
+
+Filter edges by a [Dataview](http://blacksmithgu.github.io/obsidian-dataview/) query.
+
+##### `sort`
+
+`sort?: <field> (asc|desc)`
+
+Used to sort the results. The available fields are:
+
+-   `basename` sorts by the basename of the note.
+-   `path` sorts by the full path of the note.
+-   `field` sorts by the field value of the note.
+
+There are more complex sort fields as well:
+
+-   `neighbour:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
+    -   Useful for sorting by the `next` neighbour.
+
+##### `field-prefix`
+
+`field-prefix?: true|false`
+
+Show the edge's field before each list item.
+
+### API
+
+Breadcrumbs exposes a simple API for other plugins to use.
+
+You can access the API off the window object, like so:
+
+```javascript
+window.BCAPI;
+```
 
 ## Feed my coffee problem
 
@@ -110,3 +418,5 @@ If you're so inclined, you can buy me a coffee over here: https://ko-fi.com/skep
 3. `npm run version:beta` to update `manifest-beta.json` and `versions.json` accordingly
 4. `git tag -a x.x.x-beta -m 'x.x.x-beta'` to tag the build
 5. `git push origin x.x.x-beta` to push the release and trigger the action
+
+Or, do steps 3-5 in one go with `npm run release:beta`
