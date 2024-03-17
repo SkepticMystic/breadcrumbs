@@ -6,16 +6,11 @@ import { objectify_edge_mapper } from "./objectify_mappers";
 import { Traverse } from "./traverse";
 import { is_self_loop } from "./utils";
 
-export type BCNodeAttributes =
-	| {
-			/** .md file exists  */
-			resolved: true;
-	  }
-	| {
-			/** .md file does not exist */
-			resolved: false;
-			aliases?: string[];
-	  };
+export type BCNodeAttributes = {
+	/** .md file exists  */
+	resolved: boolean;
+	aliases?: string[];
+};
 
 export type BCEdgeAttributes = {
 	/** The hierarchy index */
