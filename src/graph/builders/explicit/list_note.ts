@@ -157,13 +157,34 @@ const handle_neighbour_list_item = ({
 		// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
 		list_note_page.file.lists.values[source_list_item_i];
 
-	const neighbour_list_item =
-		// Find the next list item on the same level
-		list_note_page.file.lists.values.find(
-			(item, i) =>
-				i > source_list_item_i &&
-				item.position.start.col === source_list_item.position.start.col,
-		);
+	// Not only do I need to find the next one on the same level,
+	// But I also need to make sure there isn't a higher-level list item in between
+	// e.g.
+	// - A
+	//   - B
+	//   - C
+	// - D
+	//   - E
+	//
+	// If I'm at B, I need to find C, but not D
+
+	let neighbour_list_item: IDataview.NoteList | undefined;
+	for (
+		let i = source_list_item_i + 1;
+		i < list_note_page.file.lists.values.length;
+		i++
+	) {
+		const item = list_note_page.file.lists.values[i];
+
+		if (item.position.start.col < source_list_item.position.start.col) {
+			break;
+		} else if (
+			item.position.start.col === source_list_item.position.start.col
+		) {
+			neighbour_list_item = item;
+			break;
+		}
+	}
 
 	if (!neighbour_list_item || !list_note_info.data.neighbour) {
 		return;
