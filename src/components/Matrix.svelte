@@ -26,6 +26,8 @@
 </script>
 
 <div class="markdown-rendered BC-matrix-view flex flex-col">
+	<!-- TODO: Add EdgeSortIdSelector to change sort order on the fly (related #407) -->
+
 	{#key all_out_edges}
 		{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
 			{@const hierarchy_out_edges = all_out_edges.filter(
