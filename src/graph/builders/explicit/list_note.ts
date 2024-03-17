@@ -153,12 +153,11 @@ const handle_next_list_item = ({
 		{ ok: true }
 	>;
 }) => {
-	const [source_list_item, next_list_item] =
-		list_note_page.file.lists.values.slice(
-			// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
-			source_list_item_i,
-			source_list_item_i + 1,
-		);
+	const [source_list_item, next_list_item] = [
+		// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
+		list_note_page.file.lists.values[source_list_item_i],
+		list_note_page.file.lists.values.at(source_list_item_i + 1),
+	];
 
 	if (
 		!next_list_item ||
@@ -184,9 +183,9 @@ const handle_next_list_item = ({
 
 	// NOTE: Currently no support for field overrides for next-fields
 	graph.safe_add_directed_edge(source_path, path, {
-		dir: "next",
 		explicit: true,
 		source: "list_note",
+		dir: list_note_info.data.next.dir,
 		field: list_note_info.data.next.field,
 		hierarchy_i: list_note_info.data.next.hierarchy_i,
 	});
