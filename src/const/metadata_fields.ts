@@ -5,7 +5,9 @@ const METADATA_FIELDS_LIST = [
 	//
 	"BC-folder-note-field",
 	"BC-folder-note-recurse",
+	//
 	"BC-list-note-field",
+	"BC-list-note-next-field",
 	"BC-list-note-exclude-index",
 	//
 	"BC-dendron-note-field",
@@ -25,6 +27,7 @@ export const META_FIELD = {
 	"folder-note-recurse": "BC-folder-note-recurse",
 	//
 	"list-note-field": "BC-list-note-field",
+	"list-note-next-field": "BC-list-note-next-field",
 	"list-note-exclude-index": "BC-list-note-exclude-index",
 	//
 	"dendron-note-field": "BC-dendron-note-field",

@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
 import { META_FIELD } from "src/const/metadata_fields";
 import type { IDataview } from "src/external/dataview/interfaces";
+import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -43,6 +44,13 @@ const get_list_note_info = (
 		});
 	}
 
+	const next_field = metadata[META_FIELD["list-note-next-field"]];
+
+	const next_field_hierarchy =
+		next_field && typeof next_field === "string"
+			? get_field_hierarchy(plugin.settings.hierarchies, next_field)
+			: null;
+
 	const exclude_index = Boolean(
 		metadata[META_FIELD["list-note-exclude-index"]],
 	);
@@ -52,6 +60,13 @@ const get_list_note_info = (
 		exclude_index,
 		dir: field_hierarchy.dir,
 		hierarchy_i: field_hierarchy.hierarchy_i,
+		next: next_field_hierarchy
+			? {
+					field: next_field as string,
+					dir: next_field_hierarchy.dir,
+					hierarchy_i: next_field_hierarchy.hierarchy_i,
+				}
+			: undefined,
 	});
 };
 
@@ -88,6 +103,92 @@ const resolve_field_override = (
 		field: field_override,
 		dir: resolved_field_hierarchy.dir,
 		hierarchy_i: resolved_field_hierarchy.hierarchy_i,
+	});
+};
+
+// TODO: Generalise this to accept the link path and the list_note_page.path instead
+const process_list_item = ({
+	plugin,
+	list_item_link,
+	list_note_page,
+}: {
+	plugin: BreadcrumbsPlugin;
+	list_item_link: IDataview.Link;
+	list_note_page: IDataview.Page;
+}) => {
+	const unsafe_path = Paths.ensure_ext(list_item_link.path);
+	const file = plugin.app.metadataCache.getFirstLinkpathDest(
+		list_item_link.path,
+		list_note_page.file.path,
+	);
+
+	const path =
+		file?.path ??
+		Links.resolve_to_absolute_path(
+			plugin.app,
+			unsafe_path,
+			// Still resolve from the list_note, not the source_note above the target
+			list_note_page.file.path,
+		);
+
+	return [path, file] as const;
+};
+
+/** If a few conditions are met, add an edge from the current list item to the _next_ one on the same level */
+const handle_next_list_item = ({
+	graph,
+	plugin,
+	source_path,
+	list_note_page,
+	list_note_info,
+	source_list_item_i,
+}: {
+	graph: BCGraph;
+	source_path: string;
+	plugin: BreadcrumbsPlugin;
+	source_list_item_i: number;
+	list_note_page: IDataview.Page;
+	list_note_info: Extract<
+		ReturnType<typeof get_list_note_info>,
+		{ ok: true }
+	>;
+}) => {
+	const [source_list_item, next_list_item] =
+		list_note_page.file.lists.values.slice(
+			// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
+			source_list_item_i,
+			source_list_item_i + 1,
+		);
+
+	if (
+		!next_list_item ||
+		!list_note_info.data.next ||
+		next_list_item.position.start.col !==
+			source_list_item.position.start.col
+	) {
+		return;
+	}
+
+	const next_link = next_list_item.outlinks.at(0);
+	if (!next_link) return;
+
+	const [path, file] = process_list_item({
+		plugin,
+		list_note_page,
+		list_item_link: next_link,
+	});
+
+	if (!file) {
+		graph.safe_add_node(path, { resolved: false });
+	}
+
+	// NOTE: Currently no support for field overrides for next-fields
+	graph.safe_add_directed_edge(source_path, path, {
+		dir: "next",
+		explicit: true,
+		source: "list_note",
+		field: list_note_info.data.next.field,
+		hierarchy_i: list_note_info.data.next.hierarchy_i,
 	});
 };
 
@@ -138,113 +239,104 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 		// There are two possible approaches here. Dataview represents the list both flat and recursively
 		// 1. We could write some fancy recursive function to handle each item and its children
 		// 2. We could just loop over each "list", treating it as a list item with one level of children
-		list_note_page.file.lists.values.forEach((source_list_item) => {
-			// If there are no links on the line, ignore it.
-			// I guess this is a way to add "comments" to the hierarchy?
-			const source_link = source_list_item.outlinks.at(0);
-			if (!source_link) return;
+		list_note_page.file.lists.values.forEach(
+			(source_list_item, source_list_item_i) => {
+				// If there are no links on the line, ignore it.
+				const source_link = source_list_item.outlinks.at(0);
+				if (!source_link) return;
 
-			// TODO: Check if source_link.path is full or not. If it is, we can use getAbstractFileByPath
-			const unsafe_source_path = Paths.ensure_ext(source_link.path);
-			const source_file = plugin.app.metadataCache.getFirstLinkpathDest(
-				unsafe_source_path,
-				list_note_page.file.path,
-			);
-
-			// If it's resolved, use that path as is. If not, resolve it from the current context
-			const source_path =
-				source_file?.path ??
-				Links.resolve_to_absolute_path(
-					plugin.app,
-					unsafe_source_path,
-					list_note_page.file.path,
-				);
-
-			// The node wouldn't have been added in the simple_loop if it wasn't resolved.
-			//   NOTE: Don't just use graph.addNode though. A different GraphBuilder may have added it.
-			// RE aliases. If it was added in the simple loop, we've handled its aliases already
-			//   If not, then it's not resolved and so it can't have aliases
-			if (!source_file) {
-				graph.safe_add_node(source_path, { resolved: false });
-			}
-
-			// Then, add the edge from the list_note itself, to the top-level list_items (if it's not excluded)
-			if (
-				!list_note_info.data.exclude_index &&
-				source_list_item.position.start.col === 0
-			) {
-				// Override top-level field
-				const source_field_hierarchy = resolve_field_override(
+				const [source_path, source_file] = process_list_item({
 					plugin,
-					source_list_item,
-					list_note_page.file.path,
-				);
+					list_note_page,
+					list_item_link: source_link,
+				});
 
-				if (!source_field_hierarchy.ok) {
-					if (source_field_hierarchy.error) {
-						errors.push(source_field_hierarchy.error);
-					}
-					return;
+				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
+				//   NOTE: Don't just use graph.addNode though. A different GraphBuilder may have added it.
+				if (!source_file) {
+					graph.safe_add_node(source_path, { resolved: false });
 				}
 
-				graph.safe_add_directed_edge(
-					list_note_page.file.path,
+				// Then, add the edge from the list_note itself, to the top-level list_items (if it's not excluded)
+				// This works for all top-level list-items, not just the first :)
+				if (
+					!list_note_info.data.exclude_index &&
+					source_list_item.position.start.col === 0
+				) {
+					// Override top-level field
+					const source_field_hierarchy = resolve_field_override(
+						plugin,
+						source_list_item,
+						list_note_page.file.path,
+					);
+
+					if (!source_field_hierarchy.ok) {
+						if (source_field_hierarchy.error) {
+							errors.push(source_field_hierarchy.error);
+						}
+						return;
+					}
+
+					graph.safe_add_directed_edge(
+						list_note_page.file.path,
+						source_path,
+						{
+							explicit: true,
+							source: "list_note",
+							...(source_field_hierarchy.data ??
+								list_note_info.data),
+						},
+					);
+				}
+
+				// NOTE: The logic of this function is _just_ complicated enough to warrent a separate function
+				// to prevent multiple levels of if statement nesting
+				handle_next_list_item({
+					graph,
+					plugin,
 					source_path,
-					{
+					list_note_info,
+					list_note_page,
+					source_list_item_i,
+				});
+
+				source_list_item.children.forEach((target_list_item) => {
+					const target_link = target_list_item.outlinks.at(0);
+					if (!target_link) return;
+
+					const target_field_hierarchy = resolve_field_override(
+						plugin,
+						target_list_item,
+						list_note_page.file.path,
+					);
+
+					if (!target_field_hierarchy.ok) {
+						if (target_field_hierarchy.error) {
+							errors.push(target_field_hierarchy.error);
+						}
+						return;
+					}
+
+					const [target_path] = process_list_item({
+						plugin,
+						list_note_page,
+						list_item_link: target_link,
+					});
+
+					// It's redundant, but easier to just safe_add_node here on the target
+					// Technically, the next iteration of page.file.lists will add it (as a source)
+					// But then I'd need to break up the iteration to first gather all sources, then handle the targets
+					// This way we can guarentee the target exists
+					graph.safe_add_node(target_path, { resolved: false });
+
+					graph.safe_add_directed_edge(source_path, target_path, {
 						explicit: true,
 						source: "list_note",
-						...(source_field_hierarchy.data ?? list_note_info.data),
-					},
-				);
-			}
-
-			source_list_item.children.forEach((target_list_item) => {
-				const target_link = target_list_item.outlinks.at(0);
-				if (!target_link) return;
-
-				const target_field_hierarchy = resolve_field_override(
-					plugin,
-					target_list_item,
-					list_note_page.file.path,
-				);
-
-				if (!target_field_hierarchy.ok) {
-					if (target_field_hierarchy.error) {
-						errors.push(target_field_hierarchy.error);
-					}
-					return;
-				}
-
-				const unsafe_target_path = Paths.ensure_ext(target_link.path);
-
-				const target_file =
-					plugin.app.metadataCache.getFirstLinkpathDest(
-						target_link.path,
-						list_note_page.file.path,
-					);
-
-				const target_path =
-					target_file?.path ??
-					Links.resolve_to_absolute_path(
-						plugin.app,
-						unsafe_target_path,
-						// Still resolve from the list_note, not the source_note above the target
-						list_note_page.file.path,
-					);
-
-				// It's redundant, but easier to just safe_add_node here on the target
-				// Technically, the next iteration of page.file.lists will add it (as a source)
-				// But then I'd need to break up the iteration to first gather all sources, then handle the targets
-				// This way we can guarentee the target exists
-				graph.safe_add_node(target_path, { resolved: false });
-
-				graph.safe_add_directed_edge(source_path, target_path, {
-					explicit: true,
-					source: "list_note",
-					...(target_field_hierarchy.data ?? list_note_info.data),
+						...(target_field_hierarchy.data ?? list_note_info.data),
+					});
 				});
-			});
-		});
+			},
+		);
 	});
 
 	return { errors };
