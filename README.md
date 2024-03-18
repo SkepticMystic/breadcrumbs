@@ -241,11 +241,29 @@ If A's _parent_ is B, and B is the _sibling_ of C, then make C the **parent** of
 
 `[up, same] -> up`
 
+#### Siblings Parent is Parent
+
+If A and B both have the same _parent_, mark them as **siblings**.
+
+`[up, down] -> same`
+
 #### Cousin is Sibling
 
 If A and B are _cousins_, mark them as **siblings**.
 
 `[up, same, down] -> same`
+
+#### Custom Transitive Relations
+
+Using this format of `[chain] -> closing-field`, you can create fully customised transitive relations. For example, if you have a `grandparent` field, you could add the following:
+
+`[parent, parent] -> grandparent`
+
+Or if you have a `sibling-in-law` field, you could add the following:
+
+`[spouse, sibling] -> sibling-in-law`
+
+The crucial difference between these and the built-in transitive relations are that the custom ones can use fields from _any_ hierarchy! As with regular implied relations, you can choose how many _rounds_ to run these for.
 
 ### Other Implied Relations
 
@@ -262,10 +280,6 @@ If A is the _parent_ of B, then it's _implied_ that B is the **child** of A. The
 -   `same` -> `same`
 -   `prev` -> `next`
 -   `next` -> `prev`
-
-#### Same Parent is Sibling
-
-If A and B both have the same _parent_, mark them as **siblings**.
 
 # Leveraging the Breadcrumbs graph
 
