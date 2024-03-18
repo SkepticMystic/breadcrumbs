@@ -12,13 +12,15 @@ export const _add_implied_edges_siblings_parent_is_parent: ImpliedEdgeBuilder =
 
 			graph.forEachNode((source_id) => {
 				graph
-					.get_dir_chains_path(
+					.get_attrs_chain_path(
 						source_id,
-						["same", "up"],
+						[
+							{ hierarchy_i, dir: "same" },
+							{ hierarchy_i, dir: "up" },
+						],
 						(e) =>
 							// Don't include the current source_id in the path
 							e.target_id !== source_id &&
-							e.attr.hierarchy_i === hierarchy_i &&
 							// Consider real edges & implied edges created in a previous round
 							(e.attr.explicit || e.attr.round < round),
 					)

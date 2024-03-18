@@ -13,6 +13,7 @@ export const _add_implied_edges_opposite_direction: ImpliedEdgeBuilder = (
 			return {};
 		}
 
+		// TODO: Transform this to a transitive chain
 		graph
 			.mapOutEdges(objectify_edge_mapper((e) => e))
 			.filter(

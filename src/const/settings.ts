@@ -43,6 +43,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 	},
 
+	custom_implied_relations: {
+		transitive: [],
+	},
+
 	views: {
 		page: {
 			all: {

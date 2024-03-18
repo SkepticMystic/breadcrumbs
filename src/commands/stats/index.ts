@@ -1,7 +1,6 @@
 import type { ExplicitEdgeSource } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
-import type { BCGraph } from "src/graph/MyMultiGraph";
-import type { Hierarchy } from "src/interfaces/hierarchies";
+import type { BCEdgeAttributes, BCGraph } from "src/graph/MyMultiGraph";
 
 type GraphStats = {
 	nodes: {
@@ -32,7 +31,10 @@ type GraphStats = {
 		}>;
 
 		implied_kind: Partial<{
-			[key in keyof Hierarchy["implied_relationships"]]: number;
+			[key in Extract<
+				BCEdgeAttributes,
+				{ explicit: false }
+			>["implied_kind"]]: number;
 		}>;
 	};
 };

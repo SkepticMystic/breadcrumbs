@@ -14,6 +14,7 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 			return {};
 		}
 
+		// TODO: Transform this to a transitive chain
 		// Get all the edges going up from the current node, in the current hierarchy
 		graph
 			.mapOutEdges(objectify_edge_mapper((e) => e))

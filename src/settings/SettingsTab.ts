@@ -1,18 +1,19 @@
 import { App, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
 import { _add_settings_codeblocks } from "./CodeblockSettings";
 import { _add_settings_date_note } from "./DateNoteSettings";
 import { _add_settings_dendron_note } from "./DendronNoteSettings";
 import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
+import { _add_settings_trail_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
 import { _add_settings_list_index } from "./ListIndexSettings";
 import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
 import { _add_settings_rebuild_graph } from "./RebuildGraphSettings";
-import { _add_settings_tree_view } from "./TreeViewSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
-import { _add_settings_trail_view } from "./GridSettings";
+import { _add_settings_tree_view } from "./TreeViewSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -42,6 +43,15 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			plugin,
 			make_details_el(containerEl, { s: { text: "Hierarchies" } }),
 		);
+
+		// Custom Implied Relations
+		containerEl.createEl("hr");
+		containerEl.createEl("h3", { text: "Custom Implied Relations" });
+
+		new TransitiveImpliedRelations({
+			props: { plugin },
+			target: make_details_el(containerEl, { s: { text: "Transitive" } }),
+		});
 
 		// Edge Sources
 		containerEl.createEl("hr");

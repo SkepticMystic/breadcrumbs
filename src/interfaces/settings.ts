@@ -1,5 +1,6 @@
 import type { ListIndex } from "src/commands/list_index";
 import type { Direction } from "src/const/hierarchies";
+import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
 import type { Hierarchy } from "./hierarchies";
 
 export type ShowNodeOptions = {
@@ -14,6 +15,15 @@ export interface BreadcrumbsSettings {
 	// V4_MIGRATED: boolean;
 
 	hierarchies: Hierarchy[];
+
+	custom_implied_relations: {
+		transitive: {
+			rounds: number;
+			chain: Partial<BCEdgeAttributes>[];
+			/** The transitive closure field */
+			close_field: string;
+		}[];
+	};
 
 	explicit_edge_sources: {
 		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note

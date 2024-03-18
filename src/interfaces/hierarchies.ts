@@ -5,6 +5,7 @@ export type Hierarchy = {
 	implied_relationships: {
 		self_is_sibling: { rounds: number };
 		opposite_direction: { rounds: number };
+		// TODO: Deprecate the following in favour of custom_transitive relations
 		cousin_is_sibling: { rounds: number };
 		same_parent_is_sibling: { rounds: number };
 		same_sibling_is_sibling: { rounds: number };

@@ -4,7 +4,7 @@ import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import { objectify_edge_mapper } from "./objectify_mappers";
 import { Traverse } from "./traverse";
-import { is_self_loop } from "./utils";
+import { has_edge_attrs, is_self_loop } from "./utils";
 
 export type BCNodeAttributes = {
 	/** .md file exists  */
@@ -28,7 +28,9 @@ export type BCEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			implied_kind: keyof Hierarchy["implied_relationships"];
+			implied_kind:
+				| keyof Hierarchy["implied_relationships"]
+				| `custom_transitive:${string}`;
 			/** Which round of implied_building this edge got added in.
 			 * Starts at 1 - you can think of real edges as being added in round 0.
 			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
@@ -179,11 +181,10 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		}
 	};
 
-	// TODO: This should be on a field level, not dir
-	// This could unlock inter-hierarchy chains! Like [spouse, sibling] -> sibling-in-law
-	get_dir_chains_path = (
+	/** Find aall paths of nodes connected by edges that pair-wise match the attrs in the chain */
+	get_attrs_chain_path = (
 		start_node: string,
-		dir_chain: Direction[],
+		attr_chain: Partial<BCEdgeAttributes>[],
 		edge_filter?: (edge: BCEdge) => boolean,
 	) => {
 		const visited_nodes = new Set<string>();
@@ -197,8 +198,8 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 					if (
 						!visited_nodes.has(edge.target_id) &&
 						(!edge_filter || edge_filter(edge)) &&
-						// This will naturally end the path when depth > dir_chain.length
-						edge.attr.dir === dir_chain[depth]
+						// This will naturally end the path when depth > field_chain.length
+						has_edge_attrs(edge, attr_chain[depth])
 					) {
 						visited_nodes.add(edge.target_id);
 
@@ -208,9 +209,9 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 					}
 				},
 			)
-				// Just because dir_chain[depth] doesn't add the edge to the path,
-				//   We still have the filter out the partial paths that got started in that dir_chain
-				.filter((path) => path.length === dir_chain.length)
+				// Just because field_chain[depth] doesn't add the edge to the path,
+				//   We still have the filter out the partial paths that got started in that field_chain
+				.filter((path) => path.length === attr_chain.length)
 		);
 	};
 }
