@@ -334,6 +334,10 @@ For example:
 > [!TIP]
 > The output format matches the required format for the [List Note](#list-notes) edge source. So you can paste this list into a note, and then use it as a List Note.
 
+### Jump to First Neighbour
+
+These commands let you quickly jump around your Breadcrumgs graph. For each of the 5 directions, and each individual field in your hierarchies, there is a command to jump to the first neighbour in that direction/field.
+
 ### Freeze Breadcrumbs to File
 
 This command takes all the _implied_ edges leaving the current note, and makes them explicit by writing them to the file in the format you choose (either as [frontmatter links](#frontmatter-links), or [Dataview links](#dataview-links)).
