@@ -1,11 +1,10 @@
 import type {
-	ExplicitEdgeBuilder,
 	BreadcrumbsError,
+	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { Links } from "src/utils/links";
-import { Paths } from "src/utils/paths";
+import { resolve_relative_target_path } from "src/utils/obsidian";
 
 // TODO: Check how date fields are handled
 // TODO: I think notes in the root folder are added with a leading /, that shouldnt be
@@ -32,22 +31,11 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				);
 				if (!field_hierarchy) return;
 
-				const maybe_resolved_target_path = Paths.ensure_ext(
+				const [target_path, target_file] = resolve_relative_target_path(
+					plugin.app,
 					target_link.link,
+					source_file.path,
 				);
-				const target_file =
-					plugin.app.metadataCache.getFirstLinkpathDest(
-						maybe_resolved_target_path,
-						source_file.path,
-					);
-
-				const target_path =
-					target_file?.path ??
-					Links.resolve_to_absolute_path(
-						plugin.app,
-						maybe_resolved_target_path,
-						source_file.path,
-					);
 
 				if (!target_file) {
 					// It's an unresolved link, so we add a node for it
@@ -98,22 +86,10 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						});
 					}
 
-					// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
-					// So, we ensure it here
-					const maybe_resolved_target_path = Paths.ensure_ext(
-						target_link.path,
-					);
-					const target_file =
-						plugin.app.metadataCache.getFirstLinkpathDest(
-							maybe_resolved_target_path,
-							source_file.path,
-						);
-
-					const target_path =
-						target_file?.path ??
-						Links.resolve_to_absolute_path(
+					const [target_path, target_file] =
+						resolve_relative_target_path(
 							plugin.app,
-							maybe_resolved_target_path,
+							target_link.path,
 							source_file.path,
 						);
 

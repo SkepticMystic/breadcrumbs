@@ -8,8 +8,7 @@ import type {
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
-import { Links } from "src/utils/links";
-import { Paths } from "src/utils/paths";
+import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
 const get_list_note_info = (
@@ -106,34 +105,6 @@ const resolve_field_override = (
 	});
 };
 
-// TODO: Generalise this to accept the link path and the list_note_page.path instead
-const process_list_item = ({
-	plugin,
-	list_item_link,
-	list_note_page,
-}: {
-	plugin: BreadcrumbsPlugin;
-	list_item_link: IDataview.Link;
-	list_note_page: IDataview.Page;
-}) => {
-	const unsafe_path = Paths.ensure_ext(list_item_link.path);
-	const file = plugin.app.metadataCache.getFirstLinkpathDest(
-		list_item_link.path,
-		list_note_page.file.path,
-	);
-
-	const path =
-		file?.path ??
-		Links.resolve_to_absolute_path(
-			plugin.app,
-			unsafe_path,
-			// Still resolve from the list_note, not the source_note above the target
-			list_note_page.file.path,
-		);
-
-	return [path, file] as const;
-};
-
 /** If a few conditions are met, add an edge from the current list item to the _next_ one on the same level */
 const handle_neighbour_list_item = ({
 	graph,
@@ -193,11 +164,11 @@ const handle_neighbour_list_item = ({
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
 	if (!neighbour_link) return;
 
-	const [path, file] = process_list_item({
-		plugin,
-		list_note_page,
-		list_item_link: neighbour_link,
-	});
+	const [path, file] = resolve_relative_target_path(
+		plugin.app,
+		neighbour_link.path,
+		list_note_page.file.path,
+	);
 
 	if (!file) {
 		graph.safe_add_node(path, { resolved: false });
@@ -266,11 +237,11 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				const source_link = source_list_item.outlinks.at(0);
 				if (!source_link) return;
 
-				const [source_path, source_file] = process_list_item({
-					plugin,
-					list_note_page,
-					list_item_link: source_link,
-				});
+				const [source_path, source_file] = resolve_relative_target_path(
+					plugin.app,
+					source_link.path,
+					list_note_page.file.path,
+				);
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				//   NOTE: Don't just use graph.addNode though. A different GraphBuilder may have added it.
@@ -338,11 +309,11 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						return;
 					}
 
-					const [target_path] = process_list_item({
-						plugin,
-						list_note_page,
-						list_item_link: target_link,
-					});
+					const [target_path] = resolve_relative_target_path(
+						plugin.app,
+						target_link.path,
+						list_note_page.file.path,
+					);
 
 					// It's redundant, but easier to just safe_add_node here on the target
 					// Technically, the next iteration of page.file.lists will add it (as a source)
