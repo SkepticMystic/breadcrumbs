@@ -81,55 +81,61 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 			);
 			if (!field_hierarchy) return;
 
-			// page[field]: Link | Link[]
-			ensure_is_array(page[field]).forEach((target_link) => {
-				if (
-					// It _should_ be a Link, as we've confirmed the field is in a BC hierarchy
-					// But, just in case, we check that it has a path
-					typeof target_link !== "object" ||
-					!target_link?.path
-				) {
-					return errors.push({
-						code: "invalid_field_value",
-						message: `Invalid field value for '${field}'`,
-						path: source_file.path,
-					});
-				}
+			// page[field]: Link | Link[] | Link[][]
+			ensure_is_array(page[field])
+				.flat()
+				.forEach((target_link) => {
+					if (
+						// It _should_ be a Link, as we've confirmed the field is in a BC hierarchy
+						// But, just in case, we check that it has a path
+						typeof target_link !== "object" ||
+						!target_link?.path
+					) {
+						return errors.push({
+							code: "invalid_field_value",
+							message: `Invalid field value for '${field}'`,
+							path: source_file.path,
+						});
+					}
 
-				// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
-				// So, we ensure it here
-				const maybe_resolved_target_path = Paths.ensure_ext(
-					target_link.path,
-				);
-				const target_file =
-					plugin.app.metadataCache.getFirstLinkpathDest(
-						maybe_resolved_target_path,
-						source_file.path,
+					// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
+					// So, we ensure it here
+					const maybe_resolved_target_path = Paths.ensure_ext(
+						target_link.path,
 					);
+					const target_file =
+						plugin.app.metadataCache.getFirstLinkpathDest(
+							maybe_resolved_target_path,
+							source_file.path,
+						);
 
-				const target_path =
-					target_file?.path ??
-					Links.resolve_to_absolute_path(
-						plugin.app,
-						maybe_resolved_target_path,
+					const target_path =
+						target_file?.path ??
+						Links.resolve_to_absolute_path(
+							plugin.app,
+							maybe_resolved_target_path,
+							source_file.path,
+						);
+
+					if (!target_file) {
+						// It's an unresolved link, so we add a node for it
+						// But still do it safely, as a previous file may point to the same unresolved node
+						graph.safe_add_node(target_path, { resolved: false });
+					}
+
+					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
+					graph.safe_add_directed_edge(
 						source_file.path,
+						target_path,
+						{
+							field,
+							explicit: true,
+							source: "typed_link",
+							dir: field_hierarchy.dir,
+							hierarchy_i: field_hierarchy.hierarchy_i,
+						},
 					);
-
-				if (!target_file) {
-					// It's an unresolved link, so we add a node for it
-					// But still do it safely, as a previous file may point to the same unresolved node
-					graph.safe_add_node(target_path, { resolved: false });
-				}
-
-				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-				graph.safe_add_directed_edge(source_file.path, target_path, {
-					field,
-					explicit: true,
-					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
 				});
-			});
 		});
 	});
 
