@@ -18,7 +18,11 @@ export const jump_to_neighbour = async (
 			active_file.path,
 			objectify_edge_mapper((e) => e),
 		)
-		.filter((e) => has_edge_attrs(e, options.attr));
+		.filter(
+			(e) =>
+				has_edge_attrs(e, options.attr) &&
+				e.target_id !== active_file.path,
+		);
 
 	if (!matches.length) {
 		new Notice("No matches found");

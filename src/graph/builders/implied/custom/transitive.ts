@@ -46,7 +46,9 @@ export const _add_implied_edges_custom_transitive = (
 						dir: field_hierarchy.dir,
 						field: transitive.close_field,
 						hierarchy_i: field_hierarchy.hierarchy_i,
-						implied_kind: `custom_transitive:${transitive.chain.join(",")} -> ${transitive.close_field}`,
+						implied_kind: `custom_transitive:${stringify_transitive_relation(
+							transitive,
+						)}`,
 					},
 				);
 			});
@@ -54,3 +56,21 @@ export const _add_implied_edges_custom_transitive = (
 
 	return {};
 };
+
+// TODO: Move this to a util file
+// TODO: Use this in place of the hardcoded implied relation strings (same_sibling_is_sibling, etc.)
+export const stringify_transitive_relation = (
+	transitive: BreadcrumbsSettings["custom_implied_relations"]["transitive"][number],
+) =>
+	`[${transitive.chain
+		.map((attr) => {
+			const fields: string[] = [];
+
+			if (attr.dir) fields.push(`dir:${attr.dir}`);
+			if (attr.field) fields.push(`field:${attr.field}`);
+			if (attr.hierarchy_i !== undefined)
+				fields.push(`hierarchy_i:${attr.hierarchy_i}`);
+
+			return fields.join("|");
+		})
+		.join(", ")}] -> ${transitive.close_field}`;

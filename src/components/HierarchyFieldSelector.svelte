@@ -10,16 +10,18 @@
 
 <select
 	bind:value={field}
-	on:select={() => {
+	on:change={() => {
 		dispatch("select", field);
 		field = undefined;
 	}}
 >
-	<option value={undefined}></option>
+	<option value={undefined}>Select Field</option>
 
 	{#each hierarchies as hierarchy}
 		{#each Object.values(hierarchy.dirs).flat() as field}
-			<option value={field}>{field}</option>
+			{#if field}
+				<option value={field}>{field}</option>
+			{/if}
 		{/each}
 	{/each}
 </select>

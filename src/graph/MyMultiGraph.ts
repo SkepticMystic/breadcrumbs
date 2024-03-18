@@ -195,11 +195,15 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 				this,
 				start_node,
 				(edge, depth) => {
+					// NOTE: The path could go on for arbitrarily long, but the chain could have a shorter length
+					const chain_item = attr_chain.at(depth);
+
 					if (
 						!visited_nodes.has(edge.target_id) &&
 						(!edge_filter || edge_filter(edge)) &&
 						// This will naturally end the path when depth > field_chain.length
-						has_edge_attrs(edge, attr_chain[depth])
+						chain_item &&
+						has_edge_attrs(edge, chain_item)
 					) {
 						visited_nodes.add(edge.target_id);
 
