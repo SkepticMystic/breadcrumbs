@@ -6,7 +6,7 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
 
 -   [Hierarchies](#hierarchies)
 -   [Building the Breadcrumbs graph](#building-the-breadcrumbs-graph)
-    -   [Edge Sources](#edge-sources)
+    -   [Edge Sources](#explicit-edge-sources)
     -   [Implied Relationships](#implied-relationships)
 -   [Leveraging the Breadcrumbs graph](#leveraging-the-breadcrumbs-graph)
     -   [Views](#views)
@@ -35,7 +35,9 @@ Using these _fields_, you can now start adding edges to your Breadcrumbs graph. 
 
 # Building the Breadcrumbs graph
 
-## Edge Sources
+There are two broad ways of building the graph, or adding edges. The first are the _explicit edge sources_, and the other are the various _implied relationships_ that build on the explicit edges.
+
+## Explicit Edge Sources
 
 There are many ways to add directed edges to the graph - what I call "Edge Sources". I'll start with the most basic, manual approach.
 
@@ -143,7 +145,7 @@ In the example above, this would add edges from `B` to `D`.
 
 ### Dendron Notes
 
-If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. You can enable denron notes globally in the settings, under Dendron Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs which delimiter you use (generally a period, `.`).
+If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. You can enable dendron notes globally in the settings, under Dendron Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs which delimiter you use (generally a period, `.`).
 
 For example, if you have the following notes:
 
@@ -155,7 +157,7 @@ Breadcrumbs will add edges from `A` to `A.B`, and from `A.B` to `A.B.C` using th
 
 #### Display Trimmed
 
-In the Denron Notes settings, you can also choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
+In the Dendron Notes settings, you can also choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
 
 ### Dataview Note
 
@@ -166,7 +168,7 @@ BC-dataview-note-query: <query>
 BC-dataview-note-field: <field>
 ```
 
-Where `<query>` is a valid Dataview query, and `<field>` is one of your Breadcrumbs fields. Breadrumbs will ask Dataview for all notes that match the query, and add edges from the current note to those notes using the field you specify.
+Where `<query>` is a valid Dataview query, and `<field>` is one of your Breadcrumbs fields. Breadcrumbs will ask Dataview for all notes that match the query, and add edges from the current note to those notes using the field you specify.
 
 For example, the following query will add child edges from the current note to all notes that contain the tag `#tag` and are in the folder "Folder":
 
