@@ -97,7 +97,7 @@ BC-regex-note-field: <field>
 
 Where `<regex>` is a valid JavaScript regex (without the surrounding `/`), and `<field>` is one of your Breadcrumbs fields. This will tell Breadcrumbs to find all notes that match the regex (using the _full path_ of the note), and add edges from the regex note to the matches using the field you specify.
 
-> [!INFO]
+> [!NOTE]
 > The `BC-regex-note-regex` value gets passed directly to the Javascript [`RegExp`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) constructor.
 
 #### `BC-regex-note-flags`
