@@ -79,7 +79,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					if (file instanceof TFile) {
 						// This isn't perfect, but it stops any "node doesn't exist" errors
 						// The user will have to refresh to add any relevant edges
-						this.graph.safe_add_node(file.path, { resolved: true });
+						this.graph.upsert_node(file.path, { resolved: true });
 
 						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
 					}

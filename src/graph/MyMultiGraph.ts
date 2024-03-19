@@ -84,7 +84,25 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 	safe_add_node(id: string, attr: BCNodeAttributes) {
 		try {
 			this.addNode(id, attr);
-		} catch (error) {}
+			return true;
+		} catch (error) {
+			return false;
+		}
+	}
+
+	/** Upsert a node by it's id (path). If it exists, patch attr, else addNode */
+	upsert_node(id: string, attr: BCNodeAttributes) {
+		if (this.hasNode(id)) {
+			Object.keys(attr).forEach((key) => {
+				this.setNodeAttribute(
+					id,
+					key as keyof BCNodeAttributes,
+					attr[key as keyof BCNodeAttributes],
+				);
+			});
+		} else {
+			this.addNode(id, attr);
+		}
 	}
 
 	safe_rename_node(old_id: string, new_id: string) {
