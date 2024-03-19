@@ -34,7 +34,7 @@
 
 <div class="markdown-rendered BC-tree-view">
 	<div class="BC-tree-view-controls flex justify-between">
-		<!-- TODO(#407): Add EdgeSortIdSelector to change sort order on the fly -->
+		<!-- TODO(#407, #261): Add EdgeSortIdSelector to change sort order on the fly -->
 		<span></span>
 
 		<label>
