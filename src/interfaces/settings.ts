@@ -47,6 +47,10 @@ export interface BreadcrumbsSettings {
 			date_format: string;
 			default_field: string;
 		};
+
+		regex_note: {
+			default_field: string;
+		};
 	};
 
 	views: {

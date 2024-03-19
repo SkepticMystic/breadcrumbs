@@ -6,6 +6,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 	"dataview_note",
 	"date_note",
 	"folder_note",
+	"regex_note",
 ] as const;
 
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];

@@ -30,6 +30,9 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		tag_note: {
 			default_field: "up",
 		},
+		regex_note: {
+			default_field: "up",
+		},
 		dendron_note: {
 			enabled: false,
 			delimiter: ".",

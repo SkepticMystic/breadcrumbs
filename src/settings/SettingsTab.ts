@@ -12,6 +12,7 @@ import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
 import { _add_settings_rebuild_graph } from "./RebuildGraphSettings";
+import { _add_settings_regex_note } from "./RegexNoteSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
 
@@ -60,6 +61,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		_add_settings_tag_note(
 			plugin,
 			make_details_el(containerEl, { s: { text: "Tag Notes" } }),
+		);
+
+		_add_settings_regex_note(
+			plugin,
+			make_details_el(containerEl, { s: { text: "Regex Notes" } }),
 		);
 
 		_add_settings_dendron_note(
@@ -127,7 +133,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		_add_settings_codeblocks(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Codeblock Settings" } }),
+			make_details_el(containerEl, { s: { text: "Codeblocks" } }),
 		);
 	}
 }

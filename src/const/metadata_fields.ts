@@ -3,6 +3,9 @@ const METADATA_FIELDS_LIST = [
 	"BC-tag-note-field",
 	"BC-tag-note-exact",
 	//
+	"BC-regex-note-regex",
+	"BC-regex-note-field",
+	//
 	"BC-folder-note-field",
 	"BC-folder-note-recurse",
 	//
@@ -22,6 +25,9 @@ export const META_FIELD = {
 	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
+	//
+	"regex-note-regex": "BC-regex-note-regex",
+	"regex-note-field": "BC-regex-note-field",
 	//
 	"folder-note-field": "BC-folder-note-field",
 	"folder-note-recurse": "BC-folder-note-recurse",
