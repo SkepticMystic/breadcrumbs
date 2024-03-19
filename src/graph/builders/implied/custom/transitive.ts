@@ -63,14 +63,13 @@ export const stringify_transitive_relation = (
 	transitive: BreadcrumbsSettings["custom_implied_relations"]["transitive"][number],
 ) =>
 	`[${transitive.chain
-		.map((attr) => {
-			const fields: string[] = [];
-
-			if (attr.dir) fields.push(`dir:${attr.dir}`);
-			if (attr.field) fields.push(`field:${attr.field}`);
-			if (attr.hierarchy_i !== undefined)
-				fields.push(`hierarchy_i:${attr.hierarchy_i}`);
-
-			return fields.join("|");
-		})
+		.map((attr) =>
+			new URLSearchParams(
+				Object.entries(attr).map(([k, v]) => [
+					k,
+					// NOTE: The undefined case shouldn't happen, but TS is technically correct to say an undefined value could be there
+					v?.toString() ?? "",
+				]),
+			).toString(),
+		)
 		.join(", ")}] -> ${transitive.close_field}`;

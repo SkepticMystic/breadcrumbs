@@ -5,7 +5,10 @@ import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_edges } from "./implied";
-import { _add_implied_edges_custom_transitive } from "./implied/custom/transitive";
+import {
+	_add_implied_edges_custom_transitive,
+	stringify_transitive_relation,
+} from "./implied/custom/transitive";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
@@ -76,7 +79,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		plugin.settings.custom_implied_relations.transitive.forEach(
 			(transitive) => {
 				console.group(
-					`custom_transitive:${transitive.chain.join(",")} -> ${transitive.close_field}`,
+					`custom_transitive:${stringify_transitive_relation(
+						transitive,
+					)}`,
 				);
 				_add_implied_edges_custom_transitive(
 					graph,
