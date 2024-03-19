@@ -28,10 +28,19 @@ const get_regex_note_info = (
 		});
 	}
 
+	const flags = metadata[META_FIELD["regex-note-flags"]];
+	if (flags && typeof flags !== "string") {
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: "regex-note-flags is not a string",
+		});
+	}
+
 	let regex: RegExp;
 	try {
-		regex = new RegExp(regex_str);
-		console.log(path, "regex: ", regex);
+		regex = new RegExp(regex_str, (flags || "") as string);
+		console.log("regex_note regex: ", { path, regex });
 	} catch (e) {
 		return graph_build_fail({
 			path,
