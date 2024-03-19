@@ -13,7 +13,6 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
     -   [Commands](#commands)
     -   [Codeblocks](#codeblocks)
     -   [API](#api)
--   [Feed my coffee problem](#feed-my-coffee-problem)
 
 # Hierarchies
 
