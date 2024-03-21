@@ -1,4 +1,5 @@
 import { objectify_edge_mapper } from "src/graph/objectify_mappers";
+import { has_edge_attrs } from "src/graph/utils";
 import type { ImpliedEdgeBuilder } from "src/interfaces/graph";
 
 export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
@@ -17,11 +18,10 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 		// TODO: Transform this to a transitive chain
 		// Get all the edges going up from the current node, in the current hierarchy
 		graph
-			.mapOutEdges(objectify_edge_mapper((e) => e))
+			.get_out_edges()
 			.filter(
 				(e) =>
-					e.attr.dir === "up" &&
-					e.attr.hierarchy_i === hierarchy_i &&
+					has_edge_attrs(e, { dir: "up", hierarchy_i }) &&
 					// Consider real edges & implied edges created in a previous round
 					(e.attr.explicit || e.attr.round < round),
 			)
@@ -35,9 +35,11 @@ export const _add_implied_edges_same_parent_is_sibling: ImpliedEdgeBuilder = (
 					//   Ensuring they're in the same hierarchy,
 					.filter(
 						(other_up_edge) =>
+							has_edge_attrs(other_up_edge, {
+								dir: "up",
+								hierarchy_i,
+							}) &&
 							other_up_edge.source_id !== up_edge.source_id &&
-							other_up_edge.attr.hierarchy_i === hierarchy_i &&
-							other_up_edge.attr.dir === "up" &&
 							// Consider real edges & implied edges created in a previous round
 							(other_up_edge.attr.explicit ||
 								other_up_edge.attr.round < round),

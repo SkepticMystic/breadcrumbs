@@ -1,5 +1,3 @@
-import { objectify_edge_mapper } from "src/graph/objectify_mappers";
-import { is_self_loop } from "src/graph/utils";
 import type { ImpliedEdgeBuilder } from "src/interfaces/graph";
 import { get_opposite_direction } from "src/utils/hierarchies";
 
@@ -15,7 +13,7 @@ export const _add_implied_edges_opposite_direction: ImpliedEdgeBuilder = (
 
 		// TODO: Transform this to a transitive chain
 		graph
-			.mapOutEdges(objectify_edge_mapper((e) => e))
+			.get_out_edges()
 			.filter(
 				(e) =>
 					// NOTE: Don't need to check for a self-loop, because the implied edge would have the same edge.id as the original edge

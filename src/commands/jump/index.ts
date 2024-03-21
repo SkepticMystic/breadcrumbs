@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
-import { objectify_edge_mapper } from "src/graph/objectify_mappers";
 import { has_edge_attrs } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
 import { active_file_store } from "src/stores/active_file";
@@ -14,10 +13,7 @@ export const jump_to_neighbour = async (
 	if (!active_file) return;
 
 	const matches = plugin.graph
-		.mapOutEdges(
-			active_file.path,
-			objectify_edge_mapper((e) => e),
-		)
+		.get_out_edges(active_file.path)
 		.filter(
 			(e) =>
 				has_edge_attrs(e, options.attr) &&

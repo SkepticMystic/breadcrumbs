@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
+	import { has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
@@ -13,15 +14,16 @@
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.settings.hierarchies
-					.map((_hierarchy, i) =>
+					.map((_hierarchy, hierarchy_i) =>
 						Traverse.all_paths(
 							"depth_first",
 							plugin.graph,
 							$active_file_store!.path,
 							(edge) =>
-								edge.attr.dir === "up" &&
-								// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
-								edge.attr.hierarchy_i === i,
+								has_edge_attrs(edge, {
+									dir: "up",
+									hierarchy_i,
+								}),
 						),
 					)
 					.flat()

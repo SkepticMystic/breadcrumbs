@@ -1,5 +1,4 @@
 import type { BCEdge, BCGraph } from "./MyMultiGraph";
-import { objectify_edge_mapper } from "./objectify_mappers";
 import { is_self_loop, type EdgeSorter } from "./utils";
 
 type StackItem = {
@@ -22,10 +21,7 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 
 	// Initial stack contains the filtered_out_edges of the start_node
 	const stack: StackItem[] = graph
-		.mapOutEdges(
-			start_node,
-			objectify_edge_mapper((e) => e),
-		)
+		.get_out_edges(start_node)
 		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e, 0)))
 		.map((edge) => ({
 			// NOTE: It's a little redundant to add the start_edge,
@@ -45,10 +41,7 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 		}
 
 		const filtered_out_edges = graph
-			.mapOutEdges(
-				current_edge.target_id,
-				objectify_edge_mapper((e) => e),
-			)
+			.get_out_edges(current_edge.target_id)
 			.filter(
 				(e) =>
 					!is_self_loop(e) &&

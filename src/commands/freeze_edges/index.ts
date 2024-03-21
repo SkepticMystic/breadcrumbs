@@ -1,6 +1,5 @@
 import { TFile } from "obsidian";
 import type { BCEdge } from "src/graph/MyMultiGraph";
-import { objectify_edge_mapper } from "src/graph/objectify_mappers";
 import { is_self_loop } from "src/graph/utils";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
@@ -31,19 +30,14 @@ export const freeze_implied_edges_to_note = async (
 	source_file: TFile,
 	options: BreadcrumbsSettings["commands"]["freeze_implied_edges"]["default_options"],
 ) => {
-	const implied_edges = plugin.graph
-		.mapOutEdges(
-			source_file.path,
-			objectify_edge_mapper((e) => e),
-		)
-		.filter(
-			(e) =>
-				!e.attr.explicit &&
-				// Don't freeze a note to itself (self_is_sibling)
-				!is_self_loop(e) &&
-				// If field === null, we don't have an opposite field to freeze to
-				e.attr.field !== null,
-		);
+	const implied_edges = plugin.graph.get_out_edges(source_file.path).filter(
+		(e) =>
+			!e.attr.explicit &&
+			// Don't freeze a note to itself (self_is_sibling)
+			!is_self_loop(e) &&
+			// If field === null, we don't have an opposite field to freeze to
+			e.attr.field !== null,
+	);
 
 	const implied_edges_by_field = group_by(
 		implied_edges,

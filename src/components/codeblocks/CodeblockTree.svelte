@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
-	import { get_edge_sorter } from "src/graph/utils";
+	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
@@ -18,24 +18,18 @@
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
 			? plugin.settings.hierarchies
-					.map((_hierarchy, i) =>
+					.map((_hierarchy, hierarchy_i) =>
 						Traverse.all_paths(
 							"depth_first",
 							plugin.graph,
 							$active_file_store!.path,
 							(e) =>
-								e.attr.hierarchy_i === i &&
-								e.attr.dir === options.dir &&
-								(!options.dataview_from_paths ||
-									options.dataview_from_paths.includes(
-										e.target_id,
-									)) &&
-								// TODO: Now that the hierarchies are traversed separately, I don't think we need to fields option anymore...
-								// It was just a bandaid to achieve this effect. But separate traversal is the intended behaviour, that's the whole point of hierarchies.
-								(!options.fields ||
-									options.fields.includes(
-										e.attr.field as string,
-									)),
+								has_edge_attrs(e, {
+									hierarchy_i,
+									dir: options.dir,
+									$or_fields: options.fields,
+									$or_target_ids: options.dataview_from_paths,
+								}),
 						),
 					)
 					.flat()

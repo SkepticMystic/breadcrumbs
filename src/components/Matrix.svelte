@@ -1,44 +1,42 @@
 <script lang="ts">
+	import type { EdgeSortId } from "src/const/graph";
 	import { DIRECTIONS } from "src/const/hierarchies";
+	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import EdgeLink from "./EdgeLink.svelte";
+	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
+
+	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
 
 	$: all_out_edges =
 		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
-			? plugin.graph.mapOutEdges(
-					$active_file_store.path,
-					(
-						_edge_id,
-						attr,
-						_source_id,
-						target_id,
-						_source_attr,
-						target_attr,
-					) => ({ attr, target_id, target_attr }),
-				)
+			? plugin.graph.get_out_edges($active_file_store.path)
 			: [];
+
+	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
 
 <div class="markdown-rendered BC-matrix-view flex flex-col">
-	<!-- TODO: Add EdgeSortIdSelector to change sort order on the fly (related #407) -->
+	<EdgeSortIdSelector bind:edge_sort_id />
 
-	{#key all_out_edges}
+	<!-- TODO: Check if the second condition is necessary -->
+	{#key all_out_edges || edge_sort_id}
 		{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
-			{@const hierarchy_out_edges = all_out_edges.filter(
-				(edge) => edge.attr.hierarchy_i === hierarchy_i,
+			{@const hierarchy_out_edges = all_out_edges.filter((e) =>
+				has_edge_attrs(e, { hierarchy_i }),
 			)}
 
 			{#if hierarchy_out_edges.length}
 				<div class="BC-matrix-view-hierarchy flex flex-col gap-4">
 					{#each DIRECTIONS as dir}
-						{@const out_edges = hierarchy_out_edges.filter(
-							(edge) => edge.attr.dir === dir,
+						{@const out_edges = hierarchy_out_edges.filter((e) =>
+							has_edge_attrs(e, { dir }),
 						)}
 
 						{#if out_edges.length}
@@ -48,7 +46,7 @@
 								</span>
 
 								<div class="flex flex-col">
-									{#each out_edges as edge}
+									{#each out_edges.sort(sort) as edge}
 										<div class="flex justify-between">
 											<EdgeLink
 												{edge}
@@ -59,16 +57,13 @@
 													.show_node_options}
 											/>
 
-											<span
-												class="font-mono"
+											<code
 												aria-label={edge.attr.explicit
 													? `source:${edge.attr.source}`
 													: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
 											>
-												({edge.attr.explicit
-													? "x"
-													: "i"})
-											</span>
+												{edge.attr.explicit ? "x" : "i"}
+											</code>
 										</div>
 									{/each}
 								</div>

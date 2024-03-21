@@ -125,10 +125,7 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 				old_id,
 				objectify_edge_mapper((e) => e),
 			);
-			const old_out_edges = this.mapOutEdges(
-				old_id,
-				objectify_edge_mapper((e) => e),
-			);
+			const old_out_edges = this.get_out_edges(old_id);
 
 			// Drop the old node (conveniently, this also drops the old edges)
 			this.dropNode(old_id);
@@ -198,6 +195,14 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 			return false;
 		}
 	};
+
+	get_out_edges = (node_id?: string) =>
+		node_id
+			? this.mapOutEdges(
+					node_id,
+					objectify_edge_mapper((e) => e),
+				)
+			: this.mapOutEdges(objectify_edge_mapper((e) => e));
 
 	/** Find aall paths of nodes connected by edges that pair-wise match the attrs in the chain */
 	get_attrs_chain_path = (

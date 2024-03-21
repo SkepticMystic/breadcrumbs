@@ -19,7 +19,12 @@ export const SIMPLE_EDGE_SORT_FIELDS = [
 ] as const;
 type SimpleEdgeSortField = (typeof SIMPLE_EDGE_SORT_FIELDS)[number];
 
-export const COMPLEX_EDGE_SORT_FIELD_PREFIXES = ["neighbour"] as const;
+export const COMPLEX_EDGE_SORT_FIELD_PREFIXES = [
+	// BREAKING: rather use neighbour-field
+	"neighbour",
+	"neighbour-field",
+	"neighbour-dir",
+] as const;
 export type ComplexEdgeSortFieldPrefix =
 	(typeof COMPLEX_EDGE_SORT_FIELD_PREFIXES)[number];
 

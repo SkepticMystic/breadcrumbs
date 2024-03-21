@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { objectify_edge_mapper } from "src/graph/objectify_mappers";
 	import BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { group_by } from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
+	import { has_edge_attrs } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -14,11 +14,10 @@
 		plugin.graph.hasNode($active_file_store.path)
 			? group_by(
 					plugin.graph
-						.mapOutEdges(
-							$active_file_store.path,
-							objectify_edge_mapper((e) => e),
-						)
-						.filter((e) => ["prev", "next"].includes(e.attr.dir)),
+						.get_out_edges($active_file_store.path)
+						.filter((e) =>
+							has_edge_attrs(e, { $or_dirs: ["prev", "next"] }),
+						),
 					(e) => e.attr.dir,
 				)
 			: null;
