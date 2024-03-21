@@ -1,6 +1,6 @@
 {
 	"name": "breadcrumbs",
-	"version": "4.0.43-beta",
+	"version": "4.0.44-beta",
 	"description": "Add structured hierarchies to your Obsidian vault",
 	"main": "main.js",
 	"scripts": {
