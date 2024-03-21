@@ -4,9 +4,11 @@
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import { pick } from "src/utils/objects";
+	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
-	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
 	import RebuildGraphButton from "./RebuildGraphButton.svelte";
+	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -66,16 +68,41 @@
 														.show_node_options}
 												/>
 
-												<code
-													aria-label={edge.attr
-														.explicit
-														? `source:${edge.attr.source}`
-														: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
+												<div
+													class="tree-item-flair-outer"
 												>
-													({edge.attr.explicit
-														? "x"
-														: "i"})
-												</code>
+													<span
+														class="tree-item-flair font-mono"
+														aria-label={edge.attr
+															.explicit
+															? url_search_params(
+																	pick(
+																		edge.attr,
+																		[
+																			"source",
+																		],
+																	),
+																).toString()
+															: url_search_params(
+																	pick(
+																		edge.attr,
+																		[
+																			"implied_kind",
+																			"round",
+																		],
+																	),
+																)
+																	.toString()
+																	.replace(
+																		/&/g,
+																		"\n",
+																	)}
+													>
+														({edge.attr.explicit
+															? "x"
+															: "i"})
+													</span>
+												</div>
 											</div>
 										{/each}
 									{/key}
