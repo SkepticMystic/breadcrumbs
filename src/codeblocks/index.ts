@@ -6,6 +6,7 @@ import {
 import { DIRECTIONS, type Direction } from "src/const/hierarchies";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
+import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
@@ -13,7 +14,6 @@ import { active_file_store } from "src/stores/active_file";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { get } from "svelte/store";
 import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
-import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 
 const FIELDS = [
 	"type",
@@ -142,6 +142,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				}
 			}
 
+			// TODO: Actually implement
 			case "content": {
 				if (value !== "open" && value !== "closed") {
 					return errors.push({
@@ -197,7 +198,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					message: `The 'field-prefix' field is deprecated. Use 'show-attributes' instead.`,
 				});
 
-				return (parsed.field_prefix = Boolean(value));
+				return;
 			}
 
 			case "show-attributes": {
@@ -209,7 +210,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 							errors.push({
 								path: key,
 								code: "invalid_field_value",
-								message: `Invalid show-attributes: ${attr}. Must be one of your edge attributes.`,
+								message: `Invalid show-attributes: ${attr}. Valid options: ${EDGE_ATTRIBUTES.join(
+									", ",
+								)}`,
 							});
 							return false;
 						} else {

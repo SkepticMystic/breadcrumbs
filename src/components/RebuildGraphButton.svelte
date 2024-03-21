@@ -5,6 +5,6 @@
 	export let plugin: BreadcrumbsPlugin;
 </script>
 
-<button title="Rebuild Graph" on:click={() => plugin.refresh()}>
+<button aria-label="Rebuild Graph" on:click={() => plugin.refresh()}>
 	<RotateCcw size="12" />
 </button>

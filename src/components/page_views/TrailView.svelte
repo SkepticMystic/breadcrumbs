@@ -76,18 +76,19 @@
 				<div class="flex items-center gap-1">
 					<button
 						class="aspect-square text-lg"
-						title="Decrease depth"
+						aria-label="Decrease max depth"
 						disabled={depth <= 1}
 						on:click={() => (depth = Math.max(1, depth - 1))}
 					>
 						-
 					</button>
 
-					<span class="font-mono" title="depth">{depth}</span>
+					<span class="font-mono" aria-label="Max depth">{depth}</span
+					>
 
 					<button
 						class="aspect-square text-lg"
-						title="Increase depth"
+						aria-label="Increase max depth"
 						disabled={depth >= MAX_DEPTH}
 						on:click={() =>
 							(depth = Math.min(MAX_DEPTH, depth + 1))}
