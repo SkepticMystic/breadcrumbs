@@ -5,19 +5,20 @@ import type BreadcrumbsPlugin from "src/main";
 export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	console.log("draw_page_views_on_active_note");
 
-	const active_markdown_view =
+	const markdown_view =
 		plugin.app.workspace.getActiveViewOfType(MarkdownView);
-	if (!active_markdown_view) {
+	if (!markdown_view) {
 		return console.log("No active markdown view");
 	}
 
-	const markdown_view_mode = active_markdown_view.getMode();
-	const { containerEl } = active_markdown_view;
+	const markdown_view_mode = markdown_view.getMode();
 
-	// Ensure the container exists
+	// Ensure the container exists _on the current page_, leaving other pages' containers alone
 	const page_views_el =
-		document.querySelector(".BC-page-views") ??
-		containerEl.createDiv({ cls: "BC-page-views w-full mx-auto" });
+		markdown_view.containerEl.querySelector(".BC-page-views") ??
+		markdown_view.containerEl.createDiv({
+			cls: "BC-page-views w-full mx-auto",
+		});
 
 	// Set the max width
 	// NOTE: Do this _after_ getting the element
@@ -25,7 +26,6 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	const max_width = plugin.settings.views.page.all.readable_line_width
 		? "var(--file-line-width)"
 		: "none";
-
 	page_views_el.setAttribute("style", `max-width: ${max_width};`);
 
 	// TODO: Maybe instead of emptying and re-rendering,
@@ -36,14 +36,16 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	page_views_el.empty();
 
 	// Move it to the right place
-
 	if (markdown_view_mode === "preview") {
-		const view_parent = containerEl.querySelector(".markdown-preview-view");
+		const view_parent = markdown_view.containerEl.querySelector(
+			".markdown-preview-view",
+		);
 		if (!view_parent) return console.log("No view_parent");
 
 		view_parent.insertBefore(page_views_el, view_parent.firstChild);
 	} else {
-		const view_parent = containerEl.querySelector(".cm-scroller");
+		const view_parent =
+			markdown_view.containerEl.querySelector(".cm-scroller");
 		if (!view_parent) return console.log("No view_parent");
 
 		// See here for an in-depth discussion on why it's done this way:
