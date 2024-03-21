@@ -2,6 +2,7 @@ import type { BCGraph } from "src/graph/MyMultiGraph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
+import { url_search_params } from "src/utils/url";
 
 export const _add_implied_edges_custom_transitive = (
 	graph: BCGraph,
@@ -63,13 +64,5 @@ export const stringify_transitive_relation = (
 	transitive: BreadcrumbsSettings["custom_implied_relations"]["transitive"][number],
 ) =>
 	`[${transitive.chain
-		.map((attr) =>
-			new URLSearchParams(
-				Object.entries(attr).map(([k, v]) => [
-					k,
-					// NOTE: The undefined case shouldn't happen, but TS is technically correct to say an undefined value could be there
-					v?.toString() ?? "",
-				]),
-			).toString(),
-		)
+		.map((attr) => url_search_params(attr))
 		.join(", ")}] -> ${transitive.close_field}`;
