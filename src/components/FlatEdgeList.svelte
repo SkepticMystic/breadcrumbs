@@ -1,27 +1,37 @@
 <script lang="ts">
 	import type { BCEdge } from "src/graph/MyMultiGraph";
+	import { type EdgeSorter } from "src/graph/utils";
+	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { untyped_pick } from "src/utils/objects";
+	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
-	import type { ICodeblock } from "src/interfaces/codeblocks";
-	import type { EdgeSorter } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let show_node_options: ShowNodeOptions;
 	export let flat_edges: { edge: BCEdge; depth: number }[] = [];
-	export let field_prefix: ICodeblock["Options"]["field_prefix"];
+	export let show_attributes: ICodeblock["Options"]["show_attributes"];
 
 	export let sort: EdgeSorter;
 </script>
 
 <ul>
 	{#each flat_edges.sort((a, b) => sort(a.edge, b.edge)) as nested}
-		<li>
-			{#if field_prefix}
-				<span class="BC-field">{nested.edge.attr.field}</span>
-			{/if}
-
+		<li class="flex justify-between">
 			<EdgeLink {plugin} edge={nested.edge} {show_node_options} />
+
+			{#if show_attributes?.length}
+				<div class="tree-item-flair-outer">
+					<span class="BC-field tree-item-flair">
+						{url_search_params(
+							untyped_pick(nested.edge.attr, show_attributes),
+						)
+							.toString()
+							.replace(/&/g, " ")}
+					</span>
+				</div>
+			{/if}
 		</li>
 	{/each}
 </ul>

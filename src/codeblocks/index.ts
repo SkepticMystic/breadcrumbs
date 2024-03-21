@@ -13,6 +13,7 @@ import { active_file_store } from "src/stores/active_file";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { get } from "svelte/store";
 import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
+import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 
 const FIELDS = [
 	"type",
@@ -25,6 +26,7 @@ const FIELDS = [
 	"content",
 	"sort",
 	"field-prefix",
+	"show-attributes",
 ] as const;
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
@@ -55,9 +57,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			case "dir": {
 				if (!DIRECTIONS.includes(value as Direction)) {
 					return errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid dir: ${value}`,
-						path: key,
 					});
 				}
 
@@ -75,9 +77,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					.filter((field) => {
 						if (!hierarchy_fields.includes(field)) {
 							errors.push({
+								path: key,
 								code: "invalid_field_value",
 								message: `Invalid field: ${field}. Must be one of your hierarchy fields.`,
-								path: key,
 							});
 							return false;
 						} else return true;
@@ -98,9 +100,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 
 				if (min > max) {
 					errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid depth: ${value}. Min is greater than max.`,
-						path: key,
 					});
 
 					return (parsed.depth = [0, Infinity]);
@@ -133,9 +135,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					));
 				} catch (error) {
 					return errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid dataview-from: ${value}. Must be a valid dataview query.`,
-						path: key,
 					});
 				}
 			}
@@ -143,9 +145,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			case "content": {
 				if (value !== "open" && value !== "closed") {
 					return errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid content: ${value}. Valid options: open, closed`,
-						path: key,
 					});
 				}
 
@@ -162,21 +164,20 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					)
 				) {
 					return errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid sort field: ${field}. Valid options: ${SIMPLE_EDGE_SORT_FIELDS.map((f) => `"${f}"`).join(", ")}, or a complex field prefixed with: ${COMPLEX_EDGE_SORT_FIELD_PREFIXES.map(
 							(f) => `"${f}"`,
 						).join(", ")}`,
-
-						path: key,
 					});
 				}
 
 				// If an order has been given, but isn't a valid option
 				if (order && order !== "asc" && order !== "desc") {
 					return errors.push({
+						path: key,
 						code: "invalid_field_value",
 						message: `Invalid sort order: ${order}. Valid options: asc, desc, or blank (default is asc).`,
-						path: key,
 					});
 				}
 
@@ -188,15 +189,40 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return;
 			}
 
+			// TODO: Remove once everyone has migrated
 			case "field-prefix": {
+				errors.push({
+					path: key,
+					code: "deprecated_field",
+					message: `The 'field-prefix' field is deprecated. Use 'show-attributes' instead.`,
+				});
+
 				return (parsed.field_prefix = Boolean(value));
+			}
+
+			case "show-attributes": {
+				return (parsed.show_attributes = value
+					.split(",")
+					.map((attr) => attr.trim())
+					.filter((attr) => {
+						if (!EDGE_ATTRIBUTES.includes(attr as any)) {
+							errors.push({
+								path: key,
+								code: "invalid_field_value",
+								message: `Invalid show-attributes: ${attr}. Must be one of your edge attributes.`,
+							});
+							return false;
+						} else {
+							return true;
+						}
+					}) as any);
 			}
 
 			default: {
 				errors.push({
+					path: key,
 					code: "invalid_field_value",
 					message: `Invalid codeblock field: ${key}. Valid options: ${FIELDS.join(", ")}`,
-					path: key,
 				});
 			}
 		}

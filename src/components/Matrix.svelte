@@ -33,8 +33,7 @@
 		/>
 	</div>
 
-	<!-- TODO: Check if the second condition is necessary -->
-	{#key all_out_edges || edge_sort_id}
+	{#key all_out_edges}
 		{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
 			{@const hierarchy_out_edges = all_out_edges.filter((e) =>
 				has_edge_attrs(e, { hierarchy_i }),
@@ -54,28 +53,32 @@
 								</span>
 
 								<div class="flex flex-col">
-									{#each out_edges.sort(sort) as edge}
-										<div class="flex justify-between">
-											<EdgeLink
-												{edge}
-												{plugin}
-												cls="grow"
-												show_node_options={plugin
-													.settings.views.side.matrix
-													.show_node_options}
-											/>
+									{#key edge_sort_id}
+										{#each out_edges.sort(sort) as edge}
+											<div class="flex justify-between">
+												<EdgeLink
+													{edge}
+													{plugin}
+													cls="grow"
+													show_node_options={plugin
+														.settings.views.side
+														.matrix
+														.show_node_options}
+												/>
 
-											<code
-												aria-label={edge.attr.explicit
-													? `source:${edge.attr.source}`
-													: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
-											>
-												({edge.attr.explicit
-													? "x"
-													: "i"})
-											</code>
-										</div>
-									{/each}
+												<code
+													aria-label={edge.attr
+														.explicit
+														? `source:${edge.attr.source}`
+														: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
+												>
+													({edge.attr.explicit
+														? "x"
+														: "i"})
+												</code>
+											</div>
+										{/each}
+									{/key}
 								</div>
 							</div>
 						{/if}

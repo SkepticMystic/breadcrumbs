@@ -23,3 +23,14 @@ export function deep_merge_objects<T>(obj1: T, obj2: T): T {
 
 	return result;
 }
+
+export const untyped_pick = <
+	T extends Record<string, unknown>,
+	K extends string,
+>(
+	obj: T,
+	keys: K[],
+) =>
+	Object.fromEntries(
+		Object.entries(obj).filter(([key]) => keys.includes(key as K)),
+	);

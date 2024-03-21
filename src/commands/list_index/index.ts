@@ -62,7 +62,6 @@ export namespace ListIndex {
 		return index;
 	};
 
-	// TODO: Write unit tests to confirm this does the same thing as flat_paths_to_list_index above
 	const nested_paths_to_list_index = (
 		nested_paths: NestedEdgePath[],
 		{

@@ -67,7 +67,7 @@
 				<NestedEdgeList
 					{sort}
 					{plugin}
-					field_prefix={options.field_prefix}
+					show_attributes={options.show_attributes}
 					nested_edges={Traverse.nest_all_paths(sliced)}
 					show_node_options={plugin.settings.codeblocks
 						.show_node_options}
@@ -76,7 +76,7 @@
 				<FlatEdgeList
 					{sort}
 					{plugin}
-					field_prefix={options.field_prefix}
+					show_attributes={options.show_attributes}
 					flat_edges={Traverse.flatten_all_paths(sliced)}
 					show_node_options={plugin.settings.codeblocks
 						.show_node_options}

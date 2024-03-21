@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { ChevronDown, ChevronRight } from "lucide-svelte";
 	import type { NestedEdgePath } from "src/graph/traverse";
-	import type { EdgeSorter } from "src/graph/utils";
+	import { type EdgeSorter } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { untyped_pick } from "src/utils/objects";
+	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let nested_edges: NestedEdgePath[];
 	export let show_node_options: ShowNodeOptions;
-	export let field_prefix: ICodeblock["Options"]["field_prefix"];
+	export let show_attributes: ICodeblock["Options"]["show_attributes"];
 
 	export let sort: EdgeSorter;
 
@@ -30,18 +32,24 @@
 				</div>
 			{/if}
 
-			<div class="flex gap-2">
-				{#if field_prefix}
-					<span class="BC-field"> {nested.edge.attr.field}</span>
-				{/if}
+			<EdgeLink
+				cls="tree-item-inner"
+				{plugin}
+				edge={nested.edge}
+				{show_node_options}
+			/>
 
-				<EdgeLink
-					cls="tree-item-inner"
-					{plugin}
-					edge={nested.edge}
-					{show_node_options}
-				/>
-			</div>
+			{#if show_attributes?.length}
+				<div class="tree-item-flair-outer">
+					<span class="BC-field tree-item-flair">
+						{url_search_params(
+							untyped_pick(nested.edge.attr, show_attributes),
+						)
+							.toString()
+							.replace(/&/g, " ")}
+					</span>
+				</div>
+			{/if}
 		</summary>
 
 		{#if nested.children.length}
@@ -49,7 +57,7 @@
 				<svelte:self
 					{sort}
 					{plugin}
-					{field_prefix}
+					{show_attributes}
 					nested_edges={nested.children}
 				/>
 			</div>

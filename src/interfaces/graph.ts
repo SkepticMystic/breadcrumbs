@@ -5,6 +5,7 @@ import type { MaybePromise } from ".";
 
 export type BreadcrumbsError = {
 	code:
+		| "deprecated_field"
 		| "invalid_field_value"
 		| "invalid_date_format"
 		| "invalid_setting_value";

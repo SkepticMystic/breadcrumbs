@@ -12,6 +12,16 @@ export type BCNodeAttributes = {
 	aliases?: string[];
 };
 
+export const EDGE_ATTRIBUTES = [
+	"hierarchy_i",
+	"dir",
+	"field",
+	"explicit",
+	"source",
+	"implied_kind",
+	"round",
+] as const;
+
 export type BCEdgeAttributes = {
 	/** The hierarchy index */
 	hierarchy_i: number;

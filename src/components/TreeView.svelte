@@ -56,13 +56,13 @@
 
 	<div class="BC-tree-view-items">
 		{#key nested_edges || sort}
-			<!-- TODO: Could add field_prefix here, but it's hardcoded off for now -->
 			{#if nested_edges.length}
+				<!-- TODO: Could show_attributes here, but it's hardcoded off for now -->
 				<NestedEdgeList
 					{sort}
 					{plugin}
 					{nested_edges}
-					field_prefix={false}
+					show_attributes={undefined}
 					show_node_options={plugin.settings.views.side.tree
 						.show_node_options}
 				/>

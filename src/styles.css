@@ -16,3 +16,8 @@ Outputs to /styles.css, for Obsidian to use.
 .text-error {
 	color: var(--text-error);
 }
+
+/* Hide the last hr in the Matrix View */
+.BC-matrix-view hr:last-child {
+	display: none;
+}
