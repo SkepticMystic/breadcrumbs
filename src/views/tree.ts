@@ -20,8 +20,7 @@ export class TreeView extends ItemView {
 		return "Tree view";
 	}
 
-	// TODO
-	// icon =
+	icon = "tree-pine";
 
 	async onOpen() {
 		const container = this.containerEl.children[1];

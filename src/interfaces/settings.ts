@@ -64,7 +64,7 @@ export interface BreadcrumbsSettings {
 				enabled: boolean;
 				default_depth: number;
 				format: "grid" | "path";
-				selection: "all" | "shortest";
+				selection: "all" | "shortest" | "longest";
 				no_path_message: string;
 				show_node_options: ShowNodeOptions;
 			};

@@ -42,7 +42,7 @@ export const _add_settings_trail_view = (
 		desc: "How to select the path(s) to display in the trail view",
 		select: {
 			value: plugin.settings.views.page.trail.selection,
-			options: ["all", "shortest"],
+			options: ["all", "shortest", "longest"],
 			cb: async (value) => {
 				plugin.settings.views.page.trail.selection = value;
 

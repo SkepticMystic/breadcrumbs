@@ -37,7 +37,9 @@
 			? all_paths
 			: plugin.settings.views.page.trail.selection === "shortest"
 				? all_paths.slice(-1)
-				: [[]];
+				: plugin.settings.views.page.trail.selection === "longest"
+					? all_paths.slice(0, 1)
+					: [[]];
 
 	$: MAX_DEPTH = Math.max(0, ...selected_paths.map((p) => p.length));
 
@@ -66,13 +68,14 @@
 					bind:value={plugin.settings.views.page.trail.selection}
 					on:change={async () => await plugin.saveSettings()}
 				>
-					{#each ["all", "shortest"] as s}
+					{#each ["all", "shortest", "longest"] as s}
 						<option value={s}> {s} </option>
 					{/each}
 				</select>
 
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-1">
 					<button
+						class="aspect-square text-lg"
 						title="Decrease depth"
 						disabled={depth <= 1}
 						on:click={() => (depth = Math.max(1, depth - 1))}
@@ -80,9 +83,10 @@
 						-
 					</button>
 
-					<code title="depth">{depth}</code>
+					<span class="font-mono" title="depth">{depth}</span>
 
 					<button
+						class="aspect-square text-lg"
 						title="Increase depth"
 						disabled={depth >= MAX_DEPTH}
 						on:click={() =>

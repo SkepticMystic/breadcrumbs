@@ -8,3 +8,11 @@ Outputs to /styles.css, for Obsidian to use.
 /* @tailwind base; */
 @tailwind components;
 @tailwind utilities;
+
+.text-faint {
+	color: var(--text-faint);
+}
+
+.text-error {
+	color: var(--text-error);
+}

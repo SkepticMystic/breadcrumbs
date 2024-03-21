@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { stringify_transitive_relation } from "src/graph/builders/implied/custom/transitive";
 	import type BreadcrumbsPlugin from "src/main";
-	import HierarchyFieldSelector from "../HierarchyFieldSelector.svelte";
+	import HierarchyFieldSelector from "../selector/HierarchyFieldSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 

@@ -20,8 +20,7 @@ export class MatrixView extends ItemView {
 		return "Matrix view";
 	}
 
-	// TODO
-	// icon =
+	icon = "blinds";
 
 	async onOpen() {
 		const container = this.containerEl.children[1];

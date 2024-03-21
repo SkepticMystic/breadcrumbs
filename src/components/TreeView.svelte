@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Compass } from "lucide-svelte";
 	import type { EdgeSortId } from "src/const/graph";
 	import { type Direction } from "src/const/hierarchies";
 	import { Traverse } from "src/graph/traverse";
@@ -6,6 +7,7 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import NestedEdgeList from "./NestedEdgeList.svelte";
+	import RebuildGraphButton from "./RebuildGraphButton.svelte";
 	import DirectionSelector from "./selector/DirectionSelector.svelte";
 	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
 
@@ -38,24 +40,22 @@
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
 
-<div class="markdown-rendered BC-tree-view">
-	<div class="BC-tree-view-controls flex justify-between">
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>
-			<span>Direction:</span>
+<div class="markdown-rendered BC-tree-view -mt-2">
+	<div class="nav-header flex flex-wrap justify-between gap-2">
+		<RebuildGraphButton {plugin} />
+
+		<div class="flex items-center gap-1">
+			<span class="flex items-center" aria-label="Change direction">
+				<Compass size="20" />
+			</span>
 			<DirectionSelector bind:dir />
-		</label>
-		<!-- svelte-ignore a11y-label-has-associated-control -->
-		<label>
-			<span>Sort by:</span>
-			<EdgeSortIdSelector bind:edge_sort_id />
-		</label>
+		</div>
+
+		<EdgeSortIdSelector bind:edge_sort_id />
 	</div>
 
-	<hr class="mb-2 mt-3" />
-
 	<div class="BC-tree-view-items">
-		{#key nested_edges}
+		{#key nested_edges || sort}
 			<!-- TODO: Could add field_prefix here, but it's hardcoded off for now -->
 			{#if nested_edges.length}
 				<NestedEdgeList
@@ -67,7 +67,7 @@
 						.show_node_options}
 				/>
 			{:else}
-				<p class="text-gray-500">No paths found</p>
+				<p class="text-faint">No paths found</p>
 			{/if}
 		{/key}
 	</div>

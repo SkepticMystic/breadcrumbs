@@ -6,6 +6,7 @@
 	import { active_file_store } from "src/stores/active_file";
 	import EdgeLink from "./EdgeLink.svelte";
 	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
+	import RebuildGraphButton from "./RebuildGraphButton.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -22,8 +23,15 @@
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
 
-<div class="markdown-rendered BC-matrix-view flex flex-col">
-	<EdgeSortIdSelector bind:edge_sort_id />
+<div class="markdown-rendered BC-matrix-view -mt-2">
+	<div class="nav-header flex flex-wrap justify-between gap-2">
+		<RebuildGraphButton {plugin} />
+
+		<EdgeSortIdSelector
+			exclude_fields={["field", "neighbour-dir:", "neighbour-field:"]}
+			bind:edge_sort_id
+		/>
+	</div>
 
 	<!-- TODO: Check if the second condition is necessary -->
 	{#key all_out_edges || edge_sort_id}
@@ -62,7 +70,9 @@
 													? `source:${edge.attr.source}`
 													: `kind:${edge.attr.implied_kind} round:${edge.attr.round}`}
 											>
-												{edge.attr.explicit ? "x" : "i"}
+												({edge.attr.explicit
+													? "x"
+													: "i"})
 											</code>
 										</div>
 									{/each}

@@ -12,7 +12,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];
 
 export const SIMPLE_EDGE_SORT_FIELDS = [
-	"default",
+	"implicit",
 	"basename",
 	"path",
 	"field",

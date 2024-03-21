@@ -61,7 +61,7 @@ export const get_edge_sorter: (
 	graph: BCGraph,
 ) => EdgeSorter = (sort, graph) => {
 	switch (sort.field) {
-		case "default": {
+		case "implicit": {
 			return (_a, _b) => sort.order;
 		}
 

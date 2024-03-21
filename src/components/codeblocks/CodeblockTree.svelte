@@ -44,7 +44,7 @@
 
 <div class="BC-codeblock-tree">
 	{#if errors.length}
-		<h3 class="text-red-500">Breadcrumbs Codeblock Errors</h3>
+		<h3 class="text-error">Breadcrumbs Codeblock Errors</h3>
 
 		<ul class="BC-codeblock-tree-errors">
 			{#each errors as error}
