@@ -2,7 +2,6 @@
 > Breadcrumbs has recently been rewritten from scratch, and is available in the V4 beta (downloadable via the Obsidian BRAT plugin). If you're an existing user, see here for more info about the changes: https://github.com/SkepticMystic/breadcrumbs/blob/master/V4.md.
 > The following documentation has been rewritten for V4.
 
-
 Breadcrumbs is an Obsidian plugin that lets you add structured hierarchy to your notes, then view/traverse that structure in various ways.
 
 Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _direction_ to them). You tell Breadcrumbs about the structure of your notes, it builds this directed graph, and then lets you visualise and navigate the graph.
@@ -391,31 +390,31 @@ The above example would render a markdown list of all paths going _down_ from th
 
 #### `type`
 
-`type?: tree`
+Type: `type?: tree`
 
 How to visualise the results.
 
 #### `dir`
 
-`dir?: up|down|same|prev|next`
+Type: `dir?: up|down|same|prev|next`
 
 Filter edges by a given direction
 
 #### `fields`
 
-`fields?: string`
+Type: `fields?: string`
 
 Filter edges by a list of fields (comma-separated)
 
 #### `title`
 
-`title?: string`
+Type: `title?: string`
 
 Add a title above the codeblock
 
 #### `depth`
 
-`depth?: number-number`
+Type: `depth?: number-number`
 
 Filter edges by a depth range. For example:
 
@@ -425,19 +424,19 @@ Filter edges by a depth range. For example:
 
 #### `flat`
 
-`flat?: true|false`
+Type: `flat?: true|false`
 
 Flatten the nested results into a flat list.
 
 #### `dataview-from`
 
-`dataview-from?: string`
+Type: `dataview-from?: string`
 
 Filter edges by a [Dataview](http://blacksmithgu.github.io/obsidian-dataview/) query.
 
 #### `sort`
 
-`sort?: <field> (asc|desc)`
+Type: `sort?: <field> (asc|desc)`
 
 Used to sort the results. The available fields are:
 
@@ -450,11 +449,19 @@ There are more complex sort fields as well:
 -   `neighbour:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
     -   Useful for sorting by the `next` neighbour.
 
-#### `field-prefix`
+#### `show-attributes`
 
-`field-prefix?: true|false`
+Type: `show-attributes?: string[]`
 
-Show the edge's field before each list item.
+Show specific attributes about each item in the tree. Give a comma-separated list of values. Options include:
+
+-   `hierarchy_i`: Which hierarchy the edge is from.
+-   `dir`: The direction of the edge.
+-   `field`: The field of the edge.
+-   `explicit`: Whether the edge is explicit or implied.
+-   `source`: The [source](#explicit-edge-sources) of the edge.
+-   `implied_kind`: The kind of [implied relation](#implied-relationships) the edge is.
+-   `round`: The round the implied edge was added in.
 
 ## API
 
