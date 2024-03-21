@@ -84,8 +84,8 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		);
 
 		new_setting(contentEl, {
-			name: "Same Parent -> Siblings",
-			desc: "If two notes share a parent, they are siblings.",
+			name: "Parent's Child -> Sibling",
+			desc: "Your parent's children are your siblings",
 			select: {
 				options: ROUNDS,
 				value: String(
@@ -102,7 +102,7 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		render_mermaid_diagram(
 			`flowchart LR
       Me -->|up| Dad
-      Sister -->|up| Dad
+      Dad -->|down| Sister
       Me <-.->|same| Sister`,
 		);
 

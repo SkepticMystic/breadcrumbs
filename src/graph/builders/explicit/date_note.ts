@@ -75,9 +75,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		const next_path =
 			path.join(file.folder, next_basename) + `.${file.ext}`;
 
-		// TODO: I needed to use this instead of getFirstLinkpathDest, since next_path is a full path,
-		// and we don't want to match a potentnial relative path
-		// This may need to be changed on other builders
+		// NOTE: We have a full path, so we can go straight to the file without the given source_path
 		const next_file = plugin.app.vault.getAbstractFileByPath(next_path);
 
 		if (!next_file) {

@@ -123,7 +123,6 @@
 										e.currentTarget.value,
 									);
 
-									// TODO: test this debounce
 									debounce(update, 500)();
 								}}
 							/>

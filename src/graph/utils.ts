@@ -206,7 +206,7 @@ export type EdgeAttrFilters = Partial<
 		$or_dirs: Direction[];
 		$or_target_ids: string[];
 	}>;
-// TODO: Actually use where needed
+
 // NOTE: Technically the source and implied_kind fields could be implemented here, but missions for now
 export const has_edge_attrs = (edge: BCEdge, attrs?: EdgeAttrFilters) =>
 	attrs === undefined ||
