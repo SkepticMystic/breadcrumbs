@@ -10,7 +10,7 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
 
 -   [Hierarchies](#hierarchies)
 -   [Building the Breadcrumbs graph](#building-the-breadcrumbs-graph)
-    -   [Edge Sources](#explicit-edge-sources)
+    -   [Explicit Edge Sources](#explicit-edge-sources)
     -   [Implied Relationships](#implied-relationships)
 -   [Leveraging the Breadcrumbs graph](#leveraging-the-breadcrumbs-graph)
     -   [Views](#views)
@@ -20,9 +20,7 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
 
 # Hierarchies
 
-The starting point of Breadcrumbs is the hierarchy system, which determine the _directed fields_ you'll use to structure your notes. You can have as many hierarchies as you like, and they'll all run separately from each other.
-
-A basic hierarchy could be:
+The starting point of Breadcrumbs is the hierarchy system, which determine the _directed fields_ you'll use to structure your notes. You can have as many hierarchies as you like, and they'll all run separately from each other. A basic hierarchy could be:
 
 ```
 up: parent
@@ -33,8 +31,9 @@ next: after
 ```
 
 On the left are the unchangeable directions, and on the right are the fields you'll use to structure your notes. You can change the fields to whatever you like, but the directions are fixed.
-
 Using these _fields_, you can now start adding edges to your Breadcrumbs graph. For example the `[[Father]]` note could have a `child` field pointing to `[[Me]]`, and `[[Me]]` could have a `parent` field pointing to `[[Mother]]`.
+
+[![](https://mermaid.ink/img/pako:eNoljjEOgzAMRa8SeQIJhtItQ6eqU1naNYuVmBKVJMhNVFWIu9eApy-_Z-svYJMj0DBM6WtH5KzuDxOVzKm6YR6Ja9W2yo5-chIuqqt6qg-j28iMTDHv6Fz1ab-ABgJxQO_k87LJBgQEMqAlOuS3ARNX8bDk9PxFCzpzoQbK7DDT1eOLMYAecPrIlpzPifuj6t54_QNKMzn8?type=png)](https://mermaid.live/edit#pako:eNoljjEOgzAMRa8SeQIJhtItQ6eqU1naNYuVmBKVJMhNVFWIu9eApy-_Z-svYJMj0DBM6WtH5KzuDxOVzKm6YR6Ja9W2yo5-chIuqqt6qg-j28iMTDHv6Fz1ab-ABgJxQO_k87LJBgQEMqAlOuS3ARNX8bDk9PxFCzpzoQbK7DDT1eOLMYAecPrIlpzPifuj6t54_QNKMzn8)
 
 # Building the Breadcrumbs graph
 
@@ -42,7 +41,7 @@ There are two broad ways of building the graph, or adding edges. The first are t
 
 ## Explicit Edge Sources
 
-There are many ways to add directed edges to the graph - what I call "Edge Sources". I'll start with the most basic, manual approach.
+There are many ways to add directed edges to the graph. I'll start with the most basic, manual approach.
 
 ### Frontmatter Links
 
@@ -56,6 +55,8 @@ child: ["[[B]]", "[[C]]"]
 ```
 
 This tells Breadcrumbs that the "parent" of the current note is "A", and that its two "children" are "B" and "C".
+
+[![](https://mermaid.ink/img/pako:eNotjj8LwjAUxL9KeIOk0A7-mTIIaldddMzySF5tsElKfEWk9Lub1t503O84bgQTLYGCposf02Ji8ah1EFlbeYtMhagq0WOiwNkdxU6eipXPxLSuswvYy3MhNuIgLyuHEjwlj87m-XHONHBLnjSobC2mlwYdptzDgeP9GwwoTgOVMPQWmWqHz4QeVIPdO6dkHcd0_f9dbk8_SUc5Cw?type=png)](https://mermaid.live/edit#pako:eNotjj8LwjAUxL9KeIOk0A7-mTIIaldddMzySF5tsElKfEWk9Lub1t503O84bgQTLYGCposf02Ji8ah1EFlbeYtMhagq0WOiwNkdxU6eipXPxLSuswvYy3MhNuIgLyuHEjwlj87m-XHONHBLnjSobC2mlwYdptzDgeP9GwwoTgOVMPQWmWqHz4QeVIPdO6dkHcd0_f9dbk8_SUc5Cw)
 
 ### Dataview Links
 
@@ -125,9 +126,7 @@ _List Notes_ allow you to leverage your existing bullet list structure. You can 
 BC-list-note-field: <field>
 ```
 
-Where `<field>` is one of your Breadcrumbs fields.
-
-The structure of a List Note is as follows:
+Where `<field>` is one of your Breadcrumbs fields. The structure of a List Note is as follows:
 
 ```md
 -   [[A]]
@@ -136,7 +135,9 @@ The structure of a List Note is as follows:
     -   [[D]]
 ```
 
-In this example, `A` is the parent of `B` and `D`, and `B` is the parent of `C` (assuming the field you used is `parent`).
+In this example, `A` goes down to `B` and `D`, and `B`goes down to `C` (assuming the field you used is `down`).
+
+[![](https://mermaid.ink/img/pako:eNpVjzEPgjAQhf9Kc1NJYBB16WCiMqKDrl0u9NBG2ppyhBjCf7fKxC3v8uXlvbwJmmAIFLRdGJsnRhb1TXuRbiNr27O4BqZMFIUwYfRJD6KUxzXYytMa7OQ5W0LKFd_LKoMcHEWH1qTW6efSwE9ypEGl12B8adB-Tj4cONw_vgHFcaAchrdBpsriI6ID1WLXJ0rGcoiXZcZ_zfwFMOY_Hg?type=png)](https://mermaid.live/edit#pako:eNpVjzEPgjAQhf9Kc1NJYBB16WCiMqKDrl0u9NBG2ppyhBjCf7fKxC3v8uXlvbwJmmAIFLRdGJsnRhb1TXuRbiNr27O4BqZMFIUwYfRJD6KUxzXYytMa7OQ5W0LKFd_LKoMcHEWH1qTW6efSwE9ypEGl12B8adB-Tj4cONw_vgHFcaAchrdBpsriI6ID1WLXJ0rGcoiXZcZ_zfwFMOY_Hg)
 
 #### Field Overrides
 
@@ -148,11 +149,12 @@ BC-list-note-field: down
 ---
 
 -   [[A]]
-    -   [[B]]
-        -   child [[C]]
+    -   child [[B]]
 ```
 
-In this example, `A` -down-> `B`, but `B` -child-> `C`.
+In this example, `List Note` -down-> `A`, but `A` -child-> `B`.
+
+[![](https://mermaid.ink/img/pako:eNoljjELwjAUhP9KeFML7aBuGQTFsTromuWR92qDTSLpK0VK_7sx3nLHx3HcCjYSg4Z-jIsdMInq7iaorF3VuUnULQrXqm0VxSVkP6p9dSrADm6kQg7VuYYGPCePjvLa-pswIAN7NqBzJEwvAyZsuYezxMcnWNCSZm5gfhMKXxw-E3rQPY5TpkxOYrr-75WX2xezITYI?type=png)](https://mermaid.live/edit#pako:eNoljjELwjAUhP9KeFML7aBuGQTFsTromuWR92qDTSLpK0VK_7sx3nLHx3HcCjYSg4Z-jIsdMInq7iaorF3VuUnULQrXqm0VxSVkP6p9dSrADm6kQg7VuYYGPCePjvLa-pswIAN7NqBzJEwvAyZsuYezxMcnWNCSZm5gfhMKXxw-E3rQPY5TpkxOYrr-75WX2xezITYI)
 
 #### `BC-list-note-exclude`
 
@@ -161,6 +163,8 @@ By default, the list note itself links to the top-level list items. You can excl
 ```yaml
 BC-list-note-exclude: true
 ```
+
+[![](https://mermaid.ink/img/pako:eNpVjj0LwjAQhv9KuCmBdvFjySCoHXXRNcuRXG2xSSQmFCn9754fS9_lXh4ejncCGx2BhnaIo-0wZXG6mCA4K7lXoq6Fi2PguxNreViCjTyqv7vgW9koqMBT8tg7fj59LAO5I08GNFeH6W7AhJk9LDleX8GCzqlQBeXhMFPT4y2hB93i8GRKrs8xnX9rv6PnN462OCA?type=png)](https://mermaid.live/edit#pako:eNpVjj0LwjAQhv9KuCmBdvFjySCoHXXRNcuRXG2xSSQmFCn9754fS9_lXh4ejncCGx2BhnaIo-0wZXG6mCA4K7lXoq6Fi2PguxNreViCjTyqv7vgW9koqMBT8tg7fj59LAO5I08GNFeH6W7AhJk9LDleX8GCzqlQBeXhMFPT4y2hB93i8GRKrs8xnX9rv6PnN462OCA)
 
 #### `BC-list-note-neighbour-field`
 
@@ -172,7 +176,9 @@ BC-list-note-neighbour-field: <field>
 
 Where `<field>` is one of your Breadcrumbs fields.
 
-In the example above, this would add edges from `B` to `D`.
+In the first List Note example above, this would add edges from `B` to `D`.
+
+[![](https://mermaid.ink/img/pako:eNpVz7EOgjAQBuBXaW4qCQyCLh1MVEZ00LVLQw9tpK0pR9AQ3t0iLtxyly-Xy_0j1F4jCGhaP9QPFYhVV-lYrA2vTEfs4gkTlmVM-8HFvmc5P6yh4Mc1bPkpWY7kK9_x8u_F7A7ftDikYDFYZXR8ZZxXJNADLUoQcdQqPCVIN8U91ZO_fVwNgkKPKfQvrQhLo-5BWRCNaruoqA35cF6y_SJOX71eRAE?type=png)](https://mermaid.live/edit#pako:eNpVz7EOgjAQBuBXaW4qCQyCLh1MVEZ00LVLQw9tpK0pR9AQ3t0iLtxyly-Xy_0j1F4jCGhaP9QPFYhVV-lYrA2vTEfs4gkTlmVM-8HFvmc5P6yh4Mc1bPkpWY7kK9_x8u_F7A7ftDikYDFYZXR8ZZxXJNADLUoQcdQqPCVIN8U91ZO_fVwNgkKPKfQvrQhLo-5BWRCNaruoqA35cF6y_SJOX71eRAE)
 
 ### Dendron Notes
 
@@ -184,11 +190,15 @@ For example, if you have the following notes:
 -   `A.B`
 -   `A.B.C`
 
-Breadcrumbs will add edges from `A` to `A.B`, and from `A.B` to `A.B.C` using the field you specify.
+Breadcrumbs will add edges from `A.B.C` to `A.B` to `A` using the field you specify.
+
+[![](https://mermaid.ink/img/pako:eNpNjjELwjAQhf9KuKmFtqBuGYSqoy66ZjmSqw02TTkTREr_u1ddfMPj8fHueDPY6Ag0dEN82R45qfPVjEq0Kdrm0BxLVdcqT-J7tV3RP9gVbQkVBOKA3smbeb01kHoKZEBLdMgPA2ZcpIc5xdt7tKATZ6ogTw4TnTzeGQPoDoenUHI-Rb78dn3nLR98sTJV?type=png)](https://mermaid.live/edit#pako:eNpNjjELwjAQhf9KuKmFtqBuGYSqoy66ZjmSqw02TTkTREr_u1ddfMPj8fHueDPY6Ag0dEN82R45qfPVjEq0Kdrm0BxLVdcqT-J7tV3RP9gVbQkVBOKA3smbeb01kHoKZEBLdMgPA2ZcpIc5xdt7tKATZ6ogTw4TnTzeGQPoDoenUHI-Rb78dn3nLR98sTJV)
 
 #### Display Trimmed
 
 In the Dendron Notes settings, you can also choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
+
+[![](https://mermaid.ink/img/pako:eNpNTrsOwjAQ-5XoplRqB2DLgMRjhAXWLKfkSiOapDoSIVT13zlgwYNlW76TZ3DZExjox_x0A3JRp4tNSrDSh0Z1naqT8Fat9f7fbvSugRYiccTg5cH8ubJQBopkwYj0yHcLNi3Sw1ry9ZUcmMKVWqiTx0LHgDfGCKbH8SEp-VAyn3-LvsOWN5a3MQc?type=png)](https://mermaid.live/edit#pako:eNpNTrsOwjAQ-5XoplRqB2DLgMRjhAXWLKfkSiOapDoSIVT13zlgwYNlW76TZ3DZExjox_x0A3JRp4tNSrDSh0Z1naqT8Fat9f7fbvSugRYiccTg5cH8ubJQBopkwYj0yHcLNi3Sw1ry9ZUcmMKVWqiTx0LHgDfGCKbH8SEp-VAyn3-LvsOWN5a3MQc)
 
 ### Dataview Note
 
@@ -218,6 +228,8 @@ _Date Notes_ allow you to leverage your existing daily notes structure. You can 
 
 Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, and from `2022-01-02` to `2022-01-03` using the field you specify.
 
+[![](https://mermaid.ink/img/pako:eNpVjjELwjAQhf9KuMlCC226ZXBy1EXXLEdztcUmKfGCSul_99SheDy4477H4y3QRUdgoJ_ioxswsTqebVAyzU7XWld1IypUValAT5a9V3oj-p-0G2kLKMFT8jg6yV8-oRZ4IE8WjJwO082CDav4MHO8vEIHhlOmEvLskOkw4jWhB9PjdJcvuZFjOv0Kf3uvb3hzN54?type=png)](https://mermaid.live/edit#pako:eNpVjjELwjAQhf9KuMlCC226ZXBy1EXXLEdztcUmKfGCSul_99SheDy4477H4y3QRUdgoJ_ioxswsTqebVAyzU7XWld1IypUValAT5a9V3oj-p-0G2kLKMFT8jg6yV8-oRZ4IE8WjJwO082CDav4MHO8vEIHhlOmEvLskOkw4jWhB9PjdJcvuZFjOv0Kf3uvb3hzN54)
+
 > [!TIP]
 > Refer to the Luxon documentation for the full list of date formats: https://moment.github.io/luxon/#/parsing?id=table-of-tokens.
 
@@ -231,6 +243,8 @@ BC-folder-note-field: <field>
 
 Where `<field>` is one of your Breadcrumbs fields. Breadcrumbs will add edges from the current note to all _other_ notes in the same folder, using the field you specify.
 
+[![](https://mermaid.ink/img/pako:eNo1jjELwkAMhf9KyCAWWkTdbhCUrk463hKa1B727iReqVL63z2VviXvJeHxTdhEFjTY9nFsOtIE19oGyNqu29iz6MYFllcBVQUcx5DnAXbL7VjACvZLOhVYohf15Dh3Tt8ii6kTLxZNtkx6t2jDnP9oSPHyDg2apIOUODyYktSObkoeTUv9M2-FXYp6_kP-WOcP2Ns5uQ?type=png)](https://mermaid.live/edit#pako:eNo1jjELwkAMhf9KyCAWWkTdbhCUrk463hKa1B727iReqVL63z2VviXvJeHxTdhEFjTY9nFsOtIE19oGyNqu29iz6MYFllcBVQUcx5DnAXbL7VjACvZLOhVYohf15Dh3Tt8ii6kTLxZNtkx6t2jDnP9oSPHyDg2apIOUODyYktSObkoeTUv9M2-FXYp6_kP-WOcP2Ns5uQ)
+
 #### `BC-folder-note-recurse`
 
 By default, Breadcrumbs will only add edges to notes in the _immediate_ folder. If you want to add edges to notes in _all_ subfolders, you can add the `BC-folder-note-recurse` field to the frontmatter of the folder note.
@@ -238,6 +252,8 @@ By default, Breadcrumbs will only add edges to notes in the _immediate_ folder. 
 ```yaml
 BC-folder-note-recurse: true
 ```
+
+[![](https://mermaid.ink/img/pako:eNo1j08LwjAMxb9KyUEcbIh_Tj0Ijl096bGXuGSuuLbStUwZ--526nLJ-yWB9zJC7YhBQtO5oW7RB3GtlBWptuvGdcR-oy3xKxNFIcgNNvWj2C27UyZWYr9QOdNhoT7e_gozyMGwN6gpeY2zgYLQsmEFMklC_1Cg7JTuMAZ3edsaZPCRc4hPwsCVxrtHA7LBrk9TJh2cP__Cf3-YPpJbQaU?type=png)](https://mermaid.live/edit#pako:eNo1j08LwjAMxb9KyUEcbIh_Tj0Ijl096bGXuGSuuLbStUwZ--526nLJ-yWB9zJC7YhBQtO5oW7RB3GtlBWptuvGdcR-oy3xKxNFIcgNNvWj2C27UyZWYr9QOdNhoT7e_gozyMGwN6gpeY2zgYLQsmEFMklC_1Cg7JTuMAZ3edsaZPCRc4hPwsCVxrtHA7LBrk9TJh2cP__Cf3-YPpJbQaU)
 
 > [!IMPORTANT]
 > This doesn't create _nested_ edges. It effectively flattens your folder structure into one level, so notes in subfolders will still be added as children of the _top-level_ folder note, not as children of the notes in the subfolders.
