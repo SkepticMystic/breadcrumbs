@@ -260,15 +260,17 @@ BC-folder-note-recurse: true
 
 ## Implied Relationships
 
-By adding edges to the Breadcrumbs graph, you've created various explicit relationships: "Note A is the _parent_ of note B", or "note C has 3 _children_: D, E, and F". But you've also created some _implied_ relationships. For example, if A is the _parent_ of B, then it's _implied_ that B is the **child** of A! This _kind_ of implied relationship is called the "opposite direction" implied relation. There are many other kinds, including "If A and B both have the same _parent_, then they must be **siblings**". Breadcrumbs automatically detects, and adds these implied relationships to the graph.
+By adding edges to the Breadcrumbs graph, you've created various explicit relationships: "Note A is the _parent_ of note B", or "note C has 3 _children_: D, E, and F". But you've also created some _implied_ relationships. For example, if A is the _parent_ of B, then it's _implied_ that B is the **child** of A! This _kind_ of implied relationship is called the "opposite direction" implied relation.
 
-Each kind of implied relationship is completely _optional_, and can be toggled on a hierarchy-level in the settings. Furthermore, not only can you enable/disable each kind of implied relation, you can change how many _rounds_ to go through to detect them! This is useful to add implied relations _based on other implied relations_. Setting rounds to `0` disables that kind. Setting it to `1` will add that kind of implied relation, only considering _real_ edges. Setting it to `2` will add that kind of implied relation, considering _real_ edges and _previously added_ implied edges. And so on.
+[![](https://mermaid.ink/img/pako:eNoljjELgzAUhP9KeJMFFXTM0Ek6tUu7ZnkkTxNqorwmlCL-977Wm467j-M2sIsj0DDOy9t65Kyud5OUqKsGLJPPxCfVNGpFppTFnVVfXTB7yQ-wV02rrA-zU620HdQQiSMGJ7vbjzEgeCQDWqxDfhowaRcOS14en2RBZy5UQ1kdZhoCTowR9IjzS1JyIS98O47-_-5fKyI5vg?type=png)](https://mermaid.live/edit#pako:eNoljjELgzAUhP9KeJMFFXTM0Ek6tUu7ZnkkTxNqorwmlCL-977Wm467j-M2sIsj0DDOy9t65Kyud5OUqKsGLJPPxCfVNGpFppTFnVVfXTB7yQ-wV02rrA-zU620HdQQiSMGJ7vbjzEgeCQDWqxDfhowaRcOS14en2RBZy5UQ1kdZhoCTowR9IjzS1JyIS98O47-_-5fKyI5vg)
 
-<!-- TODO: Picture -->
+There are many other kinds, including "If A and B both have the same _parent_, then they must be **siblings**". Breadcrumbs automatically detects, and adds these implied relationships to the graph. Each kind of implied relationship is completely _optional_, and can be toggled on a hierarchy-level in the settings.
 
 ### Transitive Implied Relations
 
-This category of implied relations can be thought of as a _chain_ of fields which collapse down to one field. For example, if A is the _parent_ of B, and B is the _parent_ of C, then it's _implied_ that A is the **grandparent** of C. This is a _transitive_ implied relation. Or, in a more general syntax, `[up, up] -> up` (a chain of two `up` fields collapses down to one `up` field between the start and end nodes).
+This category of implied relations can be thought of as a _chain_ of fields which collapse down to one field. For example, if A is the _parent_ of B, and B is the _parent_ of C, then it's _implied_ that A is the **grandparent** of C. This is a _transitive_ implied relation. Or, in a more general syntax, `[parent, parent] -> grandparent` (a chain of two `parent` fields collapses down to one `grandparent` field between the start and end nodes).
+
+[![](https://mermaid.ink/img/pako:eNpdjzELg0AMhf_KkUlBBe12Q6dCl7q06y3Bi1Xq3Uk8KUX87421Q2mmx8uXPN4CTbAEGtohPJsOOarL1XglUyY1pSrP1YhMPoo6qiqpQ-yI0x2p_taH5MzobYs_TKnyQt03-wsWGwgZOGKHvZXsZSMNyJEjA1qkRX4YMH4VDucYbi_fgI48UwbzaDHSqUd56kC3OEziku1j4Hov8-m0vgFP_ERG?type=png)](https://mermaid.live/edit#pako:eNpdjzELg0AMhf_KkUlBBe12Q6dCl7q06y3Bi1Xq3Uk8KUX87421Q2mmx8uXPN4CTbAEGtohPJsOOarL1XglUyY1pSrP1YhMPoo6qiqpQ-yI0x2p_taH5MzobYs_TKnyQt03-wsWGwgZOGKHvZXsZSMNyJEjA1qkRX4YMH4VDucYbi_fgI48UwbzaDHSqUd56kC3OEziku1j4Hov8-m0vgFP_ERG)
 
 #### Same Sibling is Sibling
 
@@ -288,7 +290,7 @@ If A's _parent_ is B, and B is the _sibling_ of C, then make C the **parent** of
 
 `[up, same] -> up`
 
-#### Siblings Parent is Parent
+#### Parents Child is Sibling
 
 If A and B both have the same _parent_, mark them as **siblings**.
 
@@ -318,15 +320,41 @@ The crucial difference between these and the built-in transitive relations are t
 
 This implied relation makes every note its own sibling. This is useful for always showing the current note in the various visualisations.
 
+[![](https://mermaid.ink/img/pako:eNoljsEKwjAQRH9l2ZOFttBrDoLgUS96zWVJtjbYJLLdIKX03406p2F4A29Dlz2jwXHObzeRKFxuNkHNcDg10PWwUGTouyMM2GJkiRR8PWxfyqJOHNmiqdWTPC3atFeOiub7mhwalcItlpcn5XOgh1BEM9K81JV90CzXv8FPZP8AlCsuGA?type=png)](https://mermaid.live/edit#pako:eNoljsEKwjAQRH9l2ZOFttBrDoLgUS96zWVJtjbYJLLdIKX03406p2F4A29Dlz2jwXHObzeRKFxuNkHNcDg10PWwUGTouyMM2GJkiRR8PWxfyqJOHNmiqdWTPC3atFeOiub7mhwalcItlpcn5XOgh1BEM9K81JV90CzXv8FPZP8AlCsuGA)
+
 #### Opposite Direction
 
-If A is the _parent_ of B, then it's _implied_ that B is the **child** of A. The mapping of opposite directions is as follows:
+If A is the _parent_ of B, then it's _implied_ that B is the **child** of A.
+
+[![](https://mermaid.ink/img/pako:eNolTsEKgzAU-5XHOymooMceBhs7zst27eXRPqfMttK1yBD_fW8zhxCSELKhCZZR4TCH1YwUE9zu2oOgLc4l1DXkRfgEXXEpj6CDugEbVg-N-C1W6Dg6mqzMbL-KxjSyY41KpKX40qj9Lj3KKTw-3qBKMXOFebGU-DrRM5JDNdD8FpftlELsj1__e_sXqicywg?type=png)](https://mermaid.live/edit#pako:eNolTsEKgzAU-5XHOymooMceBhs7zst27eXRPqfMttK1yBD_fW8zhxCSELKhCZZR4TCH1YwUE9zu2oOgLc4l1DXkRfgEXXEpj6CDugEbVg-N-C1W6Dg6mqzMbL-KxjSyY41KpKX40qj9Lj3KKTw-3qBKMXOFebGU-DrRM5JDNdD8FpftlELsj1__e_sXqicywg)
+
+The mapping of opposite directions is as follows:
 
 -   `up` -> `down`
 -   `down` -> `up`
 -   `same` -> `same`
 -   `prev` -> `next`
 -   `next` -> `prev`
+
+### Implied Relation Rounds
+
+Not only can you enable/disable each kind of implied relation, you can change how many _rounds_ to go through to detect them. This is useful to add implied relations _based on other implied relations_.
+
+-   Setting rounds to `0` disables that kind.
+-   Setting it to `1` will add that kind of implied relation, only considering _explicit_ edges.
+-   Setting it to `2` will add that kind of implied relation again, considering _explicit_ edges and _previously added_ implied edges. And so on...
+
+#### Example
+
+Say you have the following explicit edges (two notes pointing `up` to their parent):
+
+[![](https://mermaid.ink/img/pako:eNpVTrEKwjAU_JXwphbaQd0yCIqjBdE1yyN5tcEmKc8XREr_3WgnbziOu-O4GWxyBBr6Mb3sgCzqfDVRFWyqQ63aVuWp8F5tqwsyRanXdFcd_1JoIBAH9K6Mzd-OARkokAFdpEN-GDBxKT3Mkm7vaEELZ2ogTw6FTh7vjAF0j-OzuOS8JO7Wd7-TywfrETSq?type=png)](https://mermaid.live/edit#pako:eNpVTrEKwjAU_JXwphbaQd0yCIqjBdE1yyN5tcEmKc8XREr_3WgnbziOu-O4GWxyBBr6Mb3sgCzqfDVRFWyqQ63aVuWp8F5tqwsyRanXdFcd_1JoIBAH9K6Mzd-OARkokAFdpEN-GDBxKT3Mkm7vaEELZ2ogTw6FTh7vjAF0j-OzuOS8JO7Wd7-TywfrETSq)
+
+If you have the [Parents' Child is Sibling](#parents-child-is-sibling) relation enabled, you may expect `A` and `B` to be marked as siblings, since they share the same parent. But in this example, they won't since there isn't a chain of `[up, down]` between the two. Instead, they both point `up`. To achieve the same effect, we can use the [Opposite Direction](#opposite-direction) relation to add the `down` edges we need:
+
+[![](https://mermaid.ink/img/pako:eNptj8EKwjAQRH9l2VMLbaHtLQdB8agges1laba22CQlJhQp_XejOQnOYRneDCyzYmcVo8B-sks3kPNwukoDUXW2z6EsIczx7qDJLuTY-DylbXb4SRNtoKxA2cVAFWH9D7ZYoGanaVTx7fqpSPQDa5YoolXkHhKl2WKPgre3l-lQeBe4wDAr8nwc6e5Io-hpekbKavTWndOO75ztDatEPl4?type=png)](https://mermaid.live/edit#pako:eNptj8EKwjAQRH9l2VMLbaHtLQdB8agges1laba22CQlJhQp_XejOQnOYRneDCyzYmcVo8B-sks3kPNwukoDUXW2z6EsIczx7qDJLuTY-DylbXb4SRNtoKxA2cVAFWH9D7ZYoGanaVTx7fqpSPQDa5YoolXkHhKl2WKPgre3l-lQeBe4wDAr8nwc6e5Io-hpekbKavTWndOO75ztDatEPl4)
+
+Now there is a chain of `[up, down]` between `A` and `B` (`A -up-> Parent -down-> B)`. But, because the `down` edge is implied, we have to increase the _rounds_ of the Parents' Child is Sibling relation to `2` to detect it. If it was only on `1`, then it wouldn't consider the implied edges added by the Opposite Direction relation.
 
 # Leveraging the Breadcrumbs graph
 
