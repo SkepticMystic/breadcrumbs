@@ -1,6 +1,7 @@
 import { App, MarkdownRenderer, Modal, Setting } from "obsidian";
 import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
+import { Mermaid } from "src/utils/mermaid";
 import { new_setting } from "src/utils/settings";
 
 const ROUNDS = Array.from(
@@ -59,8 +60,13 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Me -.->|same| Me`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Me",
+					attr: { explicit: false, field: "same" },
+				},
+			]),
 		);
 
 		new_setting(contentEl, {
@@ -78,9 +84,21 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      A -->|up| B
-      B -.->|down| A`,
+			Mermaid.from_edges(
+				[
+					{
+						source_id: "A",
+						target_id: "B",
+						attr: { explicit: true, field: "up" },
+					},
+					{
+						source_id: "B",
+						target_id: "A",
+						attr: { explicit: false, field: "down" },
+					},
+				],
+				{ direction: "LR" },
+			),
 		);
 
 		new_setting(contentEl, {
@@ -100,10 +118,23 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Me -->|up| Dad
-      Dad -->|down| Sister
-      Me <-.->|same| Sister`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Dad",
+					attr: { explicit: true, field: "up" },
+				},
+				{
+					source_id: "Dad",
+					target_id: "Sister",
+					attr: { explicit: true, field: "down" },
+				},
+				{
+					source_id: "Me",
+					target_id: "Sister",
+					attr: { explicit: false, field: "same" },
+				},
+			]),
 		);
 
 		new_setting(contentEl, {
@@ -123,10 +154,23 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Me -->|same| Sister
-      Me -->|same| Brother
-      Sister <-.->|same| Brother`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Sister",
+					attr: { explicit: true, field: "same" },
+				},
+				{
+					source_id: "Sister",
+					target_id: "Brother",
+					attr: { explicit: true, field: "same" },
+				},
+				{
+					source_id: "Me",
+					target_id: "Brother",
+					attr: { explicit: false, field: "same" },
+				},
+			]),
 		);
 
 		new_setting(contentEl, {
@@ -146,10 +190,23 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Sister -->|up| Dad
-      Sister <-->|same| Me
-      Me -.->|up| Dad`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Sister",
+					attr: { explicit: true, field: "same" },
+				},
+				{
+					source_id: "Sister",
+					target_id: "Dad",
+					attr: { explicit: true, field: "up" },
+				},
+				{
+					source_id: "Me",
+					target_id: "Dad",
+					attr: { explicit: false, field: "up" },
+				},
+			]),
 		);
 
 		new_setting(contentEl, {
@@ -169,10 +226,23 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Me -->|up| Dad
-      Dad -->|same| Uncle
-      Me -.->|up| Uncle`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Dad",
+					attr: { explicit: true, field: "up" },
+				},
+				{
+					source_id: "Dad",
+					target_id: "Uncle",
+					attr: { explicit: true, field: "same" },
+				},
+				{
+					source_id: "Me",
+					target_id: "Uncle",
+					attr: { explicit: false, field: "up" },
+				},
+			]),
 		);
 
 		new_setting(contentEl, {
@@ -190,11 +260,28 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 		});
 
 		render_mermaid_diagram(
-			`flowchart LR
-      Me -->|up| Dad
-      Dad -->|same| Uncle
-      Uncle -->|down| Cousin
-      Me <-.->|same| Cousin`,
+			Mermaid.from_edges([
+				{
+					source_id: "Me",
+					target_id: "Dad",
+					attr: { explicit: true, field: "up" },
+				},
+				{
+					source_id: "Dad",
+					target_id: "Uncle",
+					attr: { explicit: true, field: "same" },
+				},
+				{
+					source_id: "Uncle",
+					target_id: "Cousin",
+					attr: { explicit: true, field: "down" },
+				},
+				{
+					source_id: "Me",
+					target_id: "Cousin",
+					attr: { explicit: false, field: "same" },
+				},
+			]),
 		);
 
 		new Setting(contentEl).addButton((btn) =>
