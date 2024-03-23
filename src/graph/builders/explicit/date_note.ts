@@ -24,7 +24,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		errors.push({
 			code: "invalid_setting_value",
 			message: `date_note.default_field is not a valid BC field: '${date_note_settings.default_field}'`,
-			path: "",
+			path: "settings.explicit_edge_sources.date_note.default_field",
 		});
 
 		return { errors };
@@ -63,19 +63,23 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	});
 
 	date_note_files.forEach((file) => {
+		// Check if the file's basename is a valid date in the given format
 		const date = DateTime.fromFormat(
 			file.basename,
 			date_note_settings.date_format,
 		);
 		if (!date.isValid) return;
 
+		// TODO: Here's where I could implement a setting like, next_one_or_resolved
+		//   Which either goes one day ahead max (whether it exists or not), or goes to the next existing file (up to some max iterations)
 		// If the date could be _parsed_, then it should be able to be _formatted_
 		const next_basename = date
 			.plus({ days: 1 })
 			.toFormat(date_note_settings.date_format);
 
 		const next_path =
-			path.join(file.folder, next_basename) + `.${file.ext}`;
+			path.join(file.folder === "/" ? "" : file.folder, next_basename) +
+			`.${file.ext}`;
 
 		// NOTE: We have a full path, so we can go straight to the file without the given source_path
 		const next_file = plugin.app.vault.getAbstractFileByPath(next_path);

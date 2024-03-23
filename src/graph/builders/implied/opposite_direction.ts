@@ -11,7 +11,7 @@ export const _add_implied_edges_opposite_direction: ImpliedEdgeBuilder = (
 			return {};
 		}
 
-		// TODO: Transform this to a transitive chain
+		// NOTE: This _could_ be a transitive chain, but it's much more elgant to use opposite_direction
 		graph
 			.get_out_edges()
 			.filter(

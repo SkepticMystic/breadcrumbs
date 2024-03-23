@@ -4,11 +4,7 @@ import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
 
 export type BreadcrumbsError = {
-	code:
-		| "deprecated_field"
-		| "invalid_field_value"
-		| "invalid_date_format"
-		| "invalid_setting_value";
+	code: "deprecated_field" | "invalid_field_value" | "invalid_setting_value";
 	message: string;
 	path: string;
 };

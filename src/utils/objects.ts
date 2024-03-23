@@ -10,8 +10,8 @@ export function deep_merge_objects<T>(obj1: T, obj2: T): T {
 
 		if (
 			typeof val1 === "object" &&
-			!Array.isArray(val1) &&
 			typeof val2 === "object" &&
+			!Array.isArray(val1) &&
 			!Array.isArray(val2)
 		) {
 			result[key] = deep_merge_objects(val1, val2);
