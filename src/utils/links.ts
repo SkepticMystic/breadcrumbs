@@ -15,7 +15,11 @@ const resolve_to_absolute_path = (
 ) => {
 	const folder = app.fileManager.getNewFileParent(source_path, relative_path);
 
-	return path.join(folder.path, path.basename(relative_path));
+	// NOTE: We don't want the leading /. If the new folder is root, we want an empty string
+	return path.join(
+		folder.path === "/" ? "" : folder.path,
+		path.basename(relative_path),
+	);
 };
 
 // TODO: Should I be using app.fileManager.generateMarkdownLink here?

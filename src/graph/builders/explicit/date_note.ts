@@ -44,7 +44,9 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			ext: file.extension,
 			path: file.path,
 			basename: file.basename,
-			// TODO: Why would this be undefined?
+			// Not sure why would this be undefined?
+			//   I tested and a file in the root of the vault still has a parent
+			//   _it's_ parent is null, but that only happens if "file" is actually a folder
 			folder: file.parent?.path ?? "",
 		});
 	});

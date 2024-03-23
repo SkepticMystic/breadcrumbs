@@ -7,7 +7,6 @@ import { get_field_hierarchy } from "src/utils/hierarchies";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 
 // TODO: Check how date fields are handled
-// TODO: I think notes in the root folder are added with a leading /, that shouldnt be
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
