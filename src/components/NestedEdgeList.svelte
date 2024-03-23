@@ -44,9 +44,7 @@
 					<span class="BC-field tree-item-flair">
 						{url_search_params(
 							untyped_pick(nested.edge.attr, show_attributes),
-						)
-							.toString()
-							.replace(/&/g, " ")}
+						)}
 					</span>
 				</div>
 			{/if}

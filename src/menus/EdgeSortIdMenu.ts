@@ -4,33 +4,42 @@ import { DIRECTIONS } from "src/const/hierarchies";
 
 const ORDERS = [1, -1] as const;
 
-const is_checked = (value: EdgeSortId, check: EdgeSortId) =>
-	value.field === check.field && value.order === check.order;
-
 export const EdgeSortIdMenu = ({
 	cb,
 	value,
 	exclude_fields,
 }: {
-	cb: (_: EdgeSortId) => void;
 	value: EdgeSortId;
+	cb: (_: EdgeSortId) => void;
 	exclude_fields?: EdgeSortId["field"][];
 }) => {
 	const menu = new Menu();
 
+	ORDERS.forEach((order) => {
+		menu.addItem((item) =>
+			item
+				.setTitle(`Order: ${order === 1 ? "asc" : "desc"}`)
+				.setChecked(value.order === order)
+				.onClick(() => {
+					value.order = order;
+					cb(value);
+				}),
+		);
+	});
+
+	menu.addSeparator();
+
 	SIMPLE_EDGE_SORT_FIELDS.filter((f) => !exclude_fields?.includes(f)).forEach(
 		(field) => {
-			ORDERS.forEach((order) => {
-				menu.addItem((item) =>
-					item
-						.setTitle(field + (order === 1 ? " (asc)" : " (desc)"))
-						.setChecked(is_checked(value, { field, order }))
-						.onClick(() => {
-							value = { field, order };
-							cb(value);
-						}),
-				);
-			});
+			menu.addItem((item) =>
+				item
+					.setTitle("Field: " + field)
+					.setChecked(value.field === field)
+					.onClick(() => {
+						value.field = field;
+						cb(value);
+					}),
+			);
 		},
 	);
 
@@ -38,19 +47,17 @@ export const EdgeSortIdMenu = ({
 
 	if (!exclude_fields?.includes("neighbour-dir:")) {
 		DIRECTIONS.forEach((dir) => {
-			ORDERS.forEach((order) => {
-				const field = `neighbour-dir:${dir}` as const;
+			const field = `neighbour-dir:${dir}` as const;
 
-				menu.addItem((item) =>
-					item
-						.setTitle(field + (order === 1 ? " (asc)" : " (desc)"))
-						.setChecked(is_checked(value, { field, order }))
-						.onClick(() => {
-							value = { field, order };
-							cb(value);
-						}),
-				);
-			});
+			menu.addItem((item) =>
+				item
+					.setTitle("Field: " + field)
+					.setChecked(value.field === field)
+					.onClick(() => {
+						value.field = field;
+						cb(value);
+					}),
+			);
 		});
 	}
 

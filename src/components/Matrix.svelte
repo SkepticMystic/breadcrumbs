@@ -4,7 +4,7 @@
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { pick } from "src/utils/objects";
+	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
 	import RebuildGraphButton from "./RebuildGraphButton.svelte";
@@ -26,13 +26,19 @@
 </script>
 
 <div class="markdown-rendered BC-matrix-view -mt-2">
-	<div class="nav-header flex flex-wrap justify-between gap-2">
-		<RebuildGraphButton {plugin} />
+	<div class="nav-header">
+		<div class="nav-buttons-container">
+			<RebuildGraphButton
+				cls="clickable-icon nav-action-button"
+				{plugin}
+			/>
 
-		<EdgeSortIdSelector
-			exclude_fields={["field", "neighbour-dir:", "neighbour-field:"]}
-			bind:edge_sort_id
-		/>
+			<EdgeSortIdSelector
+				cls="clickable-icon nav-action-button"
+				exclude_fields={["field", "neighbour-dir:", "neighbour-field:"]}
+				bind:edge_sort_id
+			/>
+		</div>
 	</div>
 
 	{#key all_out_edges}
@@ -57,51 +63,41 @@
 								<div class="flex flex-col">
 									{#key edge_sort_id}
 										{#each out_edges.sort(sort) as edge}
-											<div class="flex justify-between">
-												<EdgeLink
-													{edge}
-													{plugin}
-													cls="grow"
-													show_node_options={plugin
-														.settings.views.side
-														.matrix
-														.show_node_options}
-												/>
-
+											<div class="tree-item">
 												<div
-													class="tree-item-flair-outer"
+													class="tree-item-self is-clickable"
 												>
-													<span
-														class="tree-item-flair font-mono"
-														aria-label={edge.attr
-															.explicit
-															? url_search_params(
-																	pick(
-																		edge.attr,
-																		[
-																			"source",
-																		],
-																	),
-																).toString()
-															: url_search_params(
-																	pick(
-																		edge.attr,
-																		[
-																			"implied_kind",
-																			"round",
-																		],
-																	),
-																)
-																	.toString()
-																	.replace(
-																		/&/g,
-																		"\n",
-																	)}
+													<EdgeLink
+														{edge}
+														{plugin}
+														cls="grow tree-item-inner"
+														show_node_options={plugin
+															.settings.views.side
+															.matrix
+															.show_node_options}
+													/>
+
+													<div
+														class="tree-item-flair-outer"
 													>
-														({edge.attr.explicit
-															? "x"
-															: "i"})
-													</span>
+														<span
+															class="tree-item-flair font-mono"
+															aria-label={url_search_params(
+																untyped_pick(
+																	edge.attr,
+																	[
+																		"source",
+																		"implied_kind",
+																		"round",
+																	],
+																),
+															)}
+														>
+															({edge.attr.explicit
+																? "x"
+																: "i"})
+														</span>
+													</div>
 												</div>
 											</div>
 										{/each}
