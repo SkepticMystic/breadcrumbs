@@ -101,10 +101,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("delete", (file) => {
 					console.log("on.delete:", file.path);
 					if (file instanceof TFile) {
-						// TODO: I think instead of dropping it, we should mark it as unresolved...
-						//   Maybe.. it may depend on what added the node, and the edges in/out of it
-						// Conveniently drops any relevant edges
-						this.graph.dropNode(file.path);
+						// NOTE: Instead of dropping it, we mark it as unresolved.
+						//   There are pros and cons to both, but unresolving it is less intense.
+						//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
+						//   So it's not perfect. Rebuilding the graph is the only way to be sure.
+						this.graph.setNodeAttribute(
+							file.path,
+							"resolved",
+							false,
+						);
 
 						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
 					}
