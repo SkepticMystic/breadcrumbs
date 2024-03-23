@@ -57,9 +57,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			// Events
 			/// Workspace
-
-			// TODO: This doesn't trigger on tab-change
-			// Find a different event to hook into
 			this.registerEvent(
 				this.app.workspace.on("layout-change", async () => {
 					console.log("layout-change");
@@ -238,11 +235,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
 	 * Optionally disable any of these steps.
 	 */
-	async refresh(options?: {
+	refresh = async (options?: {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
-	}) {
+	}) => {
 		console.group("bc.refresh");
 
 		console.log(
@@ -262,10 +259,30 @@ export default class BreadcrumbsPlugin extends Plugin {
 				: null;
 
 			console.group("rebuild_graph");
-			this.graph = await rebuild_graph(this);
+			const rebuild_results = await rebuild_graph(this);
+			this.graph = rebuild_results.graph;
 			console.groupEnd();
 
-			notice?.setMessage(`Rebuilt graph in ${Date.now() - start_ms}ms`);
+			const explicit_edge_errors =
+				rebuild_results.explicit_edge_results.filter(
+					(result) => result.errors.length,
+				);
+			notice?.setMessage(
+				[
+					`Rebuilt graph in ${Date.now() - start_ms}ms`,
+
+					explicit_edge_errors.length
+						? "\nErrors (see console for more info):"
+						: null,
+
+					...explicit_edge_errors.map(
+						({ errors, source }) =>
+							`${source}: ${errors.length} errors`,
+					),
+				]
+					.filter(Boolean)
+					.join("\n"),
+			);
 		}
 
 		// _Then_ react
@@ -280,7 +297,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		console.groupEnd();
-	}
+	};
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {

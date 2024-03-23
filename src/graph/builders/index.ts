@@ -97,5 +97,5 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	}
 	console.groupEnd();
 
-	return graph;
+	return { graph, explicit_edge_results };
 };
