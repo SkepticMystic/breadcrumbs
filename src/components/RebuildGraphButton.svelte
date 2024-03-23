@@ -3,8 +3,13 @@
 	import type BreadcrumbsPlugin from "src/main";
 
 	export let plugin: BreadcrumbsPlugin;
+	export let cls = "";
 </script>
 
-<button aria-label="Rebuild Graph" on:click={() => plugin.refresh()}>
+<button
+	class={cls}
+	aria-label="Rebuild Graph"
+	on:click={() => plugin.refresh()}
+>
 	<RotateCcw size="12" />
 </button>

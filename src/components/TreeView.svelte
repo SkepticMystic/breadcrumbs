@@ -5,11 +5,11 @@
 	import { Traverse } from "src/graph/traverse";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
+	import { DirectionSelectorMenu } from "src/menus/DirectionSelectorMenu";
+	import { EdgeSortIdMenu } from "src/menus/EdgeSortIdMenu";
 	import { active_file_store } from "src/stores/active_file";
 	import NestedEdgeList from "./NestedEdgeList.svelte";
 	import RebuildGraphButton from "./RebuildGraphButton.svelte";
-	import DirectionSelector from "./selector/DirectionSelector.svelte";
-	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -44,14 +44,31 @@
 	<div class="nav-header flex flex-wrap justify-between gap-2">
 		<RebuildGraphButton {plugin} />
 
-		<div class="flex items-center gap-1">
+		<button
+			on:click={(e) => {
+				DirectionSelectorMenu({
+					value: dir,
+					cb: (value) => (dir = value),
+				}).showAtMouseEvent(e);
+			}}
+		>
 			<span class="flex items-center" aria-label="Change direction">
 				<Compass size="20" />
 			</span>
-			<DirectionSelector bind:dir />
-		</div>
 
-		<EdgeSortIdSelector bind:edge_sort_id />
+			<span>{dir}</span>
+		</button>
+
+		<button
+			on:click={(e) => {
+				EdgeSortIdMenu({
+					value: edge_sort_id,
+					cb: (value) => (edge_sort_id = value),
+				}).showAtMouseEvent(e);
+			}}
+		>
+			Sort
+		</button>
 	</div>
 
 	<div class="BC-tree-view-items">
