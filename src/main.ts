@@ -8,7 +8,7 @@ import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
 import { get } from "svelte/store";
 import { BCAPI } from "./api";
-import { Codeblocks } from "./codeblocks";
+import { CodeblockMDRC } from "./codeblocks/MDRC";
 import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
@@ -126,11 +126,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 				(leaf) => new TreeView(leaf, this),
 			);
 
-			// TODO: The codeblock doesn't rerender when changing notes
 			// Codeblocks
 			this.registerMarkdownCodeBlockProcessor(
 				"breadcrumbs",
-				Codeblocks.get_callback(this),
+				(source, el, ctx) => {
+					const mdrc = new CodeblockMDRC(this, el, source);
+					ctx.addChild(mdrc);
+				},
 			);
 		});
 

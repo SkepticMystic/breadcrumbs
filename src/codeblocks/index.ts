@@ -1,4 +1,3 @@
-import type { MarkdownPostProcessorContext } from "obsidian";
 import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	SIMPLE_EDGE_SORT_FIELDS,
@@ -10,10 +9,7 @@ import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { active_file_store } from "src/stores/active_file";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
-import { get } from "svelte/store";
-import CodeblockTree from "../components/codeblocks/CodeblockTree.svelte";
 
 const FIELDS = [
 	"type",
@@ -234,45 +230,25 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 	return { parsed, errors };
 };
 
-const get_callback = (plugin: BreadcrumbsPlugin) => {
-	return (
-		source: string,
-		el: HTMLElement,
-		ctx: MarkdownPostProcessorContext,
-	) => {
-		const active_file = get(active_file_store);
-		if (!active_file) return;
-
-		const { parsed, errors } = parse_source(plugin, source);
-		if (errors.length) console.log("codeblock errors", errors);
-
-		const options: ICodeblock["Options"] = Object.assign(
-			{
-				type: "tree",
-				dir: "down",
-				depth: [0, Infinity],
-				flat: false,
-				sort: {
-					field: "basename",
-					order: 1,
-				},
-			} satisfies ICodeblock["Options"],
-			parsed,
-		);
-		console.log("resolved codeblock options", options);
-
-		new CodeblockTree({
-			target: el,
-			props: {
-				plugin,
-				options,
-				errors,
+const resolve_options = (
+	parsed: ReturnType<typeof parse_source>["parsed"],
+): ICodeblock["Options"] =>
+	Object.assign(
+		{
+			type: "tree",
+			dir: "down",
+			depth: [0, Infinity],
+			flat: false,
+			sort: {
+				field: "basename",
+				order: 1,
 			},
-		});
-	};
-};
+		} satisfies ICodeblock["Options"],
+		parsed,
+	);
 
 export const Codeblocks = {
 	FIELDS,
-	get_callback,
+	parse_source,
+	resolve_options,
 };
