@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-svelte";
+	import { ICON_SIZE } from "src/const";
 	import { type EdgeSortId } from "src/const/graph";
 	import { EdgeSortIdMenu } from "src/menus/EdgeSortIdMenu";
 
@@ -10,10 +11,7 @@
 
 <button
 	class="flex gap-1 {cls}"
-	aria-label="Change sort field/order. Currently: {edge_sort_id.field} ({edge_sort_id.order ===
-	1
-		? 'asc'
-		: 'desc'})"
+	aria-label="Change sort field/order"
 	on:click={(e) => {
 		EdgeSortIdMenu({
 			exclude_fields,
@@ -23,8 +21,8 @@
 	}}
 >
 	{#if edge_sort_id.order === 1}
-		<ArrowUpNarrowWide size="16" />
+		<ArrowUpNarrowWide size={ICON_SIZE} />
 	{:else}
-		<ArrowDownWideNarrow size="16" />
+		<ArrowDownWideNarrow size={ICON_SIZE} />
 	{/if}
 </button>

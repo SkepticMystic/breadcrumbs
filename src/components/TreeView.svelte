@@ -10,11 +10,15 @@
 	import NestedEdgeList from "./NestedEdgeList.svelte";
 	import RebuildGraphButton from "./RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
+	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
+	import ShowAttributesSelectorMenu from "./selector/ShowAttributesSelectorMenu.svelte";
+	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 
 	let dir: Direction = plugin.settings.views.side.tree.default_dir;
 	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
+	let show_attributes: EdgeAttribute[] = [];
 
 	$: nested_edges =
 		$active_file_store &&
@@ -48,6 +52,18 @@
 				{plugin}
 			/>
 
+			<EdgeSortIdSelector
+				cls="clickable-icon nav-action-button"
+				exclude_fields={[]}
+				bind:edge_sort_id
+			/>
+
+			<ShowAttributesSelectorMenu
+				exclude_attributes={["dir"]}
+				cls="clickable-icon nav-action-button"
+				bind:show_attributes
+			/>
+
 			<button
 				class="clickable-icon nav-action-button flex items-center gap-2"
 				aria-label="Change direction"
@@ -57,28 +73,21 @@
 						cb: (value) => (dir = value),
 					}).showAtMouseEvent(e)}
 			>
-				<Compass size="20" />
+				<Compass size={ICON_SIZE} />
 
 				<span>{dir}</span>
 			</button>
-
-			<EdgeSortIdSelector
-				cls="clickable-icon nav-action-button"
-				exclude_fields={[]}
-				bind:edge_sort_id
-			/>
 		</div>
 	</div>
 
 	<div class="BC-tree-view-items">
 		{#key nested_edges || sort}
 			{#if nested_edges.length}
-				<!-- TODO: Could show_attributes here, but it's hardcoded off for now -->
 				<NestedEdgeList
 					{sort}
 					{plugin}
 					{nested_edges}
-					show_attributes={undefined}
+					{show_attributes}
 					show_node_options={plugin.settings.views.side.tree
 						.show_node_options}
 				/>

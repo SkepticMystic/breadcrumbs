@@ -22,7 +22,7 @@ export const EDGE_ATTRIBUTES = [
 	"round",
 ] as const;
 
-export type EdgeAttribute = typeof (EDGE_ATTRIBUTES[number])
+export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
 export type BCEdgeAttributes = {
 	/** The hierarchy index */

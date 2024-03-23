@@ -1,6 +1,10 @@
 <script lang="ts">
 	import type { EdgeSortId } from "src/const/graph";
 	import { DIRECTIONS } from "src/const/hierarchies";
+	import {
+		EDGE_ATTRIBUTES,
+		type EdgeAttribute,
+	} from "src/graph/MyMultiGraph";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
@@ -9,10 +13,21 @@
 	import EdgeLink from "./EdgeLink.svelte";
 	import RebuildGraphButton from "./RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
+	import ShowAttributesSelectorMenu from "./selector/ShowAttributesSelectorMenu.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
 	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
+
+	const exclude_attributes: EdgeAttribute[] = [
+		"hierarchy_i",
+		"dir",
+		"field",
+		"explicit",
+	];
+	let show_attributes: EdgeAttribute[] = EDGE_ATTRIBUTES.slice().filter(
+		(attr) => !exclude_attributes.includes(attr),
+	);
 
 	$: all_out_edges =
 		$active_file_store &&
@@ -37,6 +52,13 @@
 				cls="clickable-icon nav-action-button"
 				exclude_fields={["field", "neighbour-dir:", "neighbour-field:"]}
 				bind:edge_sort_id
+			/>
+
+			<!-- We can exclude alot of attrs, since they're implied by other info on the Matrix -->
+			<ShowAttributesSelectorMenu
+				cls="clickable-icon nav-action-button"
+				{exclude_attributes}
+				bind:show_attributes
 			/>
 		</div>
 	</div>
@@ -85,11 +107,7 @@
 															aria-label={url_search_params(
 																untyped_pick(
 																	edge.attr,
-																	[
-																		"source",
-																		"implied_kind",
-																		"round",
-																	],
+																	show_attributes,
 																),
 															)}
 														>

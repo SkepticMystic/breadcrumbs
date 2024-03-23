@@ -8,6 +8,7 @@
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
+	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let nested_edges: NestedEdgePath[];
@@ -25,9 +26,9 @@
 			{#if nested.children.length}
 				<div class="tree-item-icon collapse-icon">
 					{#if opens[i]}
-						<ChevronDown size="12" />
+						<ChevronDown size={ICON_SIZE} />
 					{:else}
-						<ChevronRight size="12" />
+						<ChevronRight size={ICON_SIZE} />
 					{/if}
 				</div>
 			{/if}
