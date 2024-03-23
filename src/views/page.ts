@@ -33,8 +33,11 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 
 	// Move it to the right place
 	if (markdown_view_mode === "preview") {
+		// NOTE: Embedded notes also match ".markdown-preview-view", so instead
+		//   we ensure the immediate parent is ".markdown-reading-view", which doesn't
+		//   exist on embedded notes
 		const view_parent = markdown_view.containerEl.querySelector(
-			".markdown-preview-view",
+			".markdown-reading-view > .markdown-preview-view",
 		);
 		if (!view_parent) return console.log("No view_parent");
 
