@@ -1,11 +1,19 @@
 <script lang="ts">
-	import { debounce } from "obsidian";
+	import {
+		ArrowDown,
+		ArrowUp,
+		PlusIcon,
+		SettingsIcon,
+		Trash2Icon,
+	} from "lucide-svelte";
+	import { ICON_SIZE } from "src/const";
 	import { ARROW_DIRECTIONS, DIRECTIONS } from "src/const/hierarchies";
 	import type BreadcrumbsPlugin from "src/main";
 	import { ImpliedRelationshipsSettingsModal } from "src/modals/ImpliedRelationshipsSettingsModal";
 	import { swap_items } from "src/utils/arrays";
 	import { blank_hierarchy } from "src/utils/hierarchies";
 	import { split_and_trim } from "src/utils/strings";
+	import ChevronOpener from "../ChevronOpener.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -19,119 +27,128 @@
 	}
 </script>
 
-<div>
-	<div class="BC-Buttons">
+<div class="">
+	<div class="mb-2 flex gap-1">
 		<button
 			aria-label="Add New Hierarchy"
 			on:click={async () =>
 				(hierarchies = [...hierarchies, blank_hierarchy()])}
 		>
-			<div class="icon">
-				<!-- <FaPlus /> --> +
-			</div>
+			<PlusIcon size={ICON_SIZE} />
 		</button>
 
 		<button
 			aria-label="Reset All Hierarchies"
 			on:click={async () => {
-				if (window.confirm("Are you sure?")) {
+				if (
+					window.confirm(
+						"Are you sure you want to reset all hierarchies?",
+					)
+				) {
 					hierarchies = [];
 					await update();
+					await plugin.refresh();
 				}
 			}}
 		>
-			<div class="icon">
-				<!-- <FaRegTrashAlt /> --> X
-			</div>
+			<Trash2Icon size={ICON_SIZE} />
 		</button>
 	</div>
 
-	<div>
-		{#each hierarchies as hier, i (Object.values(hier.dirs).flat())}
-			<details class="BC-Hier-Details" open={opens[i]}>
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<summary on:click={() => (opens[i] = !opens[i])}>
+	{#each hierarchies as hier, i (Object.values(hier.dirs).flat())}
+		<details class="BC-Hier-Details rounded p-2" open={opens[i]}>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<summary
+				class="flex items-center justify-between"
+				on:click={() => (opens[i] = !opens[i])}
+			>
+				<div class="flex items-center gap-2">
+					<ChevronOpener open={opens[i]} />
+
 					<span>
 						{DIRECTIONS.map((dir) => hier.dirs[dir].join(", "))
 							.map((fields) => `(${fields})`)
 							.join(" ")}
 					</span>
-
-					<span class="BC-Buttons">
-						<button
-							aria-label="Swap with Hierarchy Above"
-							on:click={async () => {
-								hierarchies = swap_items(i, i - 1, hierarchies);
-								await update();
-							}}
-						>
-							↑
-						</button>
-
-						<button
-							aria-label="Swap with Hierarchy Below"
-							on:click={async () => {
-								hierarchies = swap_items(i, i + 1, hierarchies);
-								await update();
-							}}
-						>
-							↓
-						</button>
-
-						<button
-							aria-label="Remove Hierarchy"
-							on:click={async () => {
-								// NOTE: In future, if any setting depends on a hierarchy, we'll need to update that setting here.
-
-								hierarchies.splice(i, 1);
-								await update();
-							}}
-						>
-							X
-						</button>
-
-						<button
-							aria-label="Hierarchy Settings"
-							on:click={async () => {
-								new ImpliedRelationshipsSettingsModal(
-									plugin.app,
-									plugin,
-									i,
-								).open();
-							}}
-						>
-							S
-						</button>
-					</span>
-				</summary>
-
-				<div>
-					{#each DIRECTIONS as dir}
-						<div>
-							<label class="BC-Arrow-Label" for={dir}>
-								{ARROW_DIRECTIONS[dir]}
-							</label>
-
-							<input
-								type="text"
-								size="20"
-								name={dir}
-								value={hier.dirs[dir]?.join(", ") ?? ""}
-								on:change={async (e) => {
-									hierarchies[i].dirs[dir] = split_and_trim(
-										e.currentTarget.value,
-									);
-
-									debounce(update, 500)();
-								}}
-							/>
-						</div>
-					{/each}
 				</div>
-			</details>
-		{/each}
-	</div>
+
+				<span class="pb-1">
+					<button
+						aria-label="Hierarchy Settings"
+						on:click={async () => {
+							new ImpliedRelationshipsSettingsModal(
+								plugin.app,
+								plugin,
+								i,
+							).open();
+						}}
+					>
+						<SettingsIcon size={ICON_SIZE} />
+					</button>
+
+					<button
+						aria-label="Remove Hierarchy"
+						on:click={async () => {
+							// NOTE: In future, if any setting depends on a hierarchy, we'll need to update that setting here.
+
+							hierarchies.splice(i, 1);
+
+							await update();
+							await plugin.refresh();
+						}}
+					>
+						<Trash2Icon size={ICON_SIZE} />
+					</button>
+
+					<button
+						aria-label="Swap with Hierarchy Below"
+						on:click={async () => {
+							hierarchies = swap_items(i, i + 1, hierarchies);
+							await update();
+						}}
+					>
+						<ArrowDown size={ICON_SIZE} />
+					</button>
+
+					<button
+						aria-label="Swap with Hierarchy Above"
+						on:click={async () => {
+							hierarchies = swap_items(i, i - 1, hierarchies);
+							await update();
+						}}
+					>
+						<ArrowUp size={ICON_SIZE} />
+					</button>
+				</span>
+			</summary>
+
+			<div>
+				{#each DIRECTIONS as dir}
+					<div>
+						<label class="BC-Arrow-Label">
+							{ARROW_DIRECTIONS[dir]}
+						</label>
+
+						<input
+							type="text"
+							size="20"
+							name={dir}
+							value={hier.dirs[dir]?.join(", ") ?? ""}
+							on:blur={async (e) => {
+								hierarchies[i].dirs[dir] = split_and_trim(
+									e.currentTarget.value,
+								);
+
+								await update();
+								await plugin.refresh();
+							}}
+						/>
+					</div>
+				{/each}
+			</div>
+		</details>
+	{/each}
 </div>
 
 <style>
@@ -139,21 +156,11 @@
 		display: inline-block;
 		width: 20px !important;
 	}
-	div.BC-Buttons {
-		padding-bottom: 5px;
-	}
 
 	details.BC-Hier-Details {
 		border: 1px solid var(--background-modifier-border);
-		border-radius: 10px;
-		padding: 10px 5px 10px 10px;
-		margin-bottom: 15px;
 	}
 	.BC-Hier-Details summary::marker {
 		font-size: 10px;
-	}
-
-	.BC-Hier-Details summary button {
-		float: right;
 	}
 </style>

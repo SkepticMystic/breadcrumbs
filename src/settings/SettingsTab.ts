@@ -19,10 +19,29 @@ import { _add_settings_tree_view } from "./TreeViewSettings";
 const make_details_el = (
 	parent: HTMLElement,
 	o?: { d?: DomElementInfo; s?: DomElementInfo },
-) =>
-	parent.createEl("details", o?.d, (d) =>
-		d.createEl("summary", { cls: "text-xl p-1", ...o?.s }),
-	);
+) => {
+	let details: HTMLDetailsElement;
+	let summary: HTMLElement;
+	let children: HTMLDivElement;
+
+	details = parent.createEl("details", {
+		cls: "tree-item",
+		...o?.d,
+	});
+
+	summary = details.createEl("summary", {
+		cls: "text-xl p-1 tree-item-self is-clickable",
+		...o?.s,
+	});
+
+	children = details.createEl("div", { cls: "tree-item-children pl-4" });
+
+	return {
+		details,
+		summary,
+		children,
+	};
+};
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
@@ -42,7 +61,8 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		// Hierarchies
 		_add_settings_hierarchies(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Hierarchies" } }),
+			make_details_el(containerEl, { s: { text: "> Hierarchies" } })
+				.children,
 		);
 
 		// Custom Implied Relations
@@ -51,7 +71,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		new TransitiveImpliedRelations({
 			props: { plugin },
-			target: make_details_el(containerEl, { s: { text: "Transitive" } }),
+			target: make_details_el(containerEl, {
+				s: { text: "> Transitive" },
+			}).children,
 		});
 
 		// Edge Sources
@@ -60,22 +82,26 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		_add_settings_tag_note(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Tag Notes" } }),
+			make_details_el(containerEl, { s: { text: "> Tag Notes" } })
+				.children,
 		);
 
 		_add_settings_regex_note(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Regex Notes" } }),
+			make_details_el(containerEl, { s: { text: "> Regex Notes" } })
+				.children,
 		);
 
 		_add_settings_dendron_note(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Dendron Notes" } }),
+			make_details_el(containerEl, { s: { text: "> Dendron Notes" } })
+				.children,
 		);
 
 		_add_settings_date_note(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Date Notes" } }),
+			make_details_el(containerEl, { s: { text: "> Date Notes" } })
+				.children,
 		);
 
 		// Views
@@ -84,13 +110,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		_add_settings_matrix(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Matrix" } }),
+			make_details_el(containerEl, { s: { text: "> Matrix" } }).children,
 		);
 
 		/// Page
 		const page_details = make_details_el(containerEl, {
-			s: { text: "Page" },
-		});
+			s: { text: "> Page" },
+		}).children;
 
 		page_details.createEl("h5", { text: "General" });
 		_add_settings_page_views(plugin, page_details);
@@ -103,7 +129,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		_add_settings_tree_view(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Tree" } }),
+			make_details_el(containerEl, { s: { text: "> Tree" } }).children,
 		);
 
 		// Commands
@@ -112,28 +138,31 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		_add_settings_rebuild_graph(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Rebuild Graph" } }),
+			make_details_el(containerEl, { s: { text: "> Rebuild Graph" } })
+				.children,
 		);
 
 		_add_settings_list_index(
 			plugin,
-			make_details_el(containerEl, { s: { text: "List Index" } }),
+			make_details_el(containerEl, { s: { text: "> List Index" } })
+				.children,
 		);
 
 		_add_settings_freeze_implied_edges(
 			plugin,
 			make_details_el(containerEl, {
-				s: { text: "Freeze Implied Edges" },
-			}),
+				s: { text: "> Freeze Implied Edges" },
+			}).children,
 		);
 
 		// Codeblocks
 		containerEl.createEl("hr");
-		// containerEl.createEl("h3", { text: "Codeblocks" });
+		// containerEl.createEl("h3", { text: "> Codeblocks" });
 
 		_add_settings_codeblocks(
 			plugin,
-			make_details_el(containerEl, { s: { text: "Codeblocks" } }),
+			make_details_el(containerEl, { s: { text: "> Codeblocks" } })
+				.children,
 		);
 	}
 }

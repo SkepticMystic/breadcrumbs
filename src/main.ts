@@ -277,7 +277,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 					...explicit_edge_errors.map(
 						({ errors, source }) =>
-							`${source}: ${errors.length} errors`,
+							`- ${source}: ${errors.length} errors`,
 					),
 				]
 					.filter(Boolean)

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { ChevronDown, ChevronRight } from "lucide-svelte";
 	import type { NestedEdgePath } from "src/graph/traverse";
 	import { type EdgeSorter } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
@@ -7,8 +6,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
+	import ChevronOpener from "./ChevronOpener.svelte";
 	import EdgeLink from "./EdgeLink.svelte";
-	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let nested_edges: NestedEdgePath[];
@@ -25,11 +24,7 @@
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if nested.children.length}
 				<div class="tree-item-icon collapse-icon">
-					{#if opens[i]}
-						<ChevronDown size={ICON_SIZE} />
-					{:else}
-						<ChevronRight size={ICON_SIZE} />
-					{/if}
+					<ChevronOpener open={opens[i]} />
 				</div>
 			{/if}
 
