@@ -10,6 +10,13 @@ export const ShowAttributesSelectorMenu = ({
 	cb: (_: EdgeAttribute[]) => void;
 	exclude_attributes?: EdgeAttribute[];
 }) => {
+	// Remove any excluded items in the initial value
+	// This makes it cleaner to pass in EDGE_ATTRIBUTES as the starter, then immediately exclude some
+	if (exclude_attributes?.length) {
+		value = value.filter((v) => !exclude_attributes?.includes(v));
+		cb(value);
+	}
+
 	const menu = new Menu();
 
 	const add_item = (attr: EdgeAttribute) => {

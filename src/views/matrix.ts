@@ -1,6 +1,6 @@
 import BreadcrumbsPlugin from "src/main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import MatrixComponent from "src/components/Matrix.svelte";
+import MatrixComponent from "src/components/side_views/Matrix.svelte";
 import { VIEW_IDS } from "src/const/views";
 
 export class MatrixView extends ItemView {
