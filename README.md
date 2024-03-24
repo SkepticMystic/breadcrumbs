@@ -43,7 +43,11 @@ There are two broad ways of building the graph, or adding edges. The first are t
 
 There are many ways to add directed edges to the graph. I'll start with the most basic, manual approach.
 
-### Frontmatter Links
+### Typed Links
+
+_Typed links_ are the most basic, manual way to add edges to the graph. They can be added in two ways.
+
+#### Frontmatter Links
 
 In the YAML frontmatter of your note, you can add key/value pairs indicating a directed link to another note:
 
@@ -58,7 +62,7 @@ This tells Breadcrumbs that the "parent" of the current note is "A", and that it
 
 [![](https://mermaid.ink/img/pako:eNotjj8LwjAUxL9KeIOk0A7-mTIIaldddMzySF5tsElKfEWk9Lub1t503O84bgQTLYGCposf02Ji8ah1EFlbeYtMhagq0WOiwNkdxU6eipXPxLSuswvYy3MhNuIgLyuHEjwlj87m-XHONHBLnjSobC2mlwYdptzDgeP9GwwoTgOVMPQWmWqHz4QeVIPdO6dkHcd0_f9dbk8_SUc5Cw?type=png)](https://mermaid.live/edit#pako:eNotjj8LwjAUxL9KeIOk0A7-mTIIaldddMzySF5tsElKfEWk9Lub1t503O84bgQTLYGCposf02Ji8ah1EFlbeYtMhagq0WOiwNkdxU6eipXPxLSuswvYy3MhNuIgLyuHEjwlj87m-XHONHBLnjSobC2mlwYdptzDgeP9GwwoTgOVMPQWmWqHz4QeVIPdO6dkHcd0_f9dbk8_SUc5Cw)
 
-### Dataview Links
+#### Dataview Links
 
 If you have the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled, you can use their format of metadata as well. In the _content_ of a note:
 
@@ -68,6 +72,14 @@ child:: [[B]], [[C]]
 ```
 
 This creates the same structure as the [frontmatter links](#frontmatter-links) method above.
+
+##### Markdown Links
+
+If you have Dataview enabled, Breadcrumbs will automatically detect and add edges from _markdown links_. These take the following format:
+
+```md
+field:: [note name](path/to/note.md)
+```
 
 ### Tag Notes
 
@@ -491,10 +503,12 @@ Used to sort the results. The available fields are:
 -   `basename` sorts by the basename of the note.
 -   `path` sorts by the full path of the note.
 -   `field` sorts by the field value of the note.
+-   `explicit` sorts by the explicitness of the edge.
+    -   Uses `source` as a tiebreaker for explicit edges, and `implied_kind` for implied edges.
 
 There are more complex sort fields as well:
 
--   `neighbour:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
+-   `neighbour-field:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
     -   Useful for sorting by the `next` neighbour.
 
 #### `show-attributes`
