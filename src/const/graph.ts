@@ -12,10 +12,15 @@ export const EXPLICIT_EDGE_SOURCES = [
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];
 
 export const SIMPLE_EDGE_SORT_FIELDS = [
-	"implicit",
+	// The order they were added to the graph
+	// Hidden because I don't think anyone really cares about that order
+	// "graph",
 	"basename",
 	"path",
 	"field",
+	// Whether the edge is explicit or not
+	// Uses source and implied_kind as tie-breakers for explicit == true and false, respectively
+	"explicit",
 ] as const;
 type SimpleEdgeSortField = (typeof SIMPLE_EDGE_SORT_FIELDS)[number];
 

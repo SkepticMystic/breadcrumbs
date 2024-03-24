@@ -192,7 +192,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			},
 		});
 
-		// Jump to first neighbour
+		/// Jump to first neighbour
 		DIRECTIONS.forEach((dir) => {
 			this.addCommand({
 				id: `breadcrumbs:jump-to-first-neighbour-dir:${dir}`,

@@ -7,6 +7,14 @@
 	export let show_attributes: EdgeAttribute[];
 	export let exclude_attributes: EdgeAttribute[] = [];
 	export let cls = "";
+
+	// Remove any excluded items in the initial value
+	// This makes it cleaner to pass in EDGE_ATTRIBUTES as the starter, then immediately exclude some
+	if (exclude_attributes?.length) {
+		show_attributes = show_attributes.filter(
+			(v) => !exclude_attributes?.includes(v),
+		);
+	}
 </script>
 
 <button

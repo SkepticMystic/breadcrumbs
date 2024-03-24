@@ -61,10 +61,6 @@ export const get_edge_sorter: (
 	graph: BCGraph,
 ) => EdgeSorter = (sort, graph) => {
 	switch (sort.field) {
-		case "implicit": {
-			return (_a, _b) => sort.order;
-		}
-
 		case "path": {
 			return (a, b) => {
 				const [a_field, b_field] = [a.target_id, b.target_id];
@@ -92,6 +88,26 @@ export const get_edge_sorter: (
 				];
 
 				return a_field.localeCompare(b_field) * sort.order;
+			};
+		}
+
+		case "explicit": {
+			return (a, b) => {
+				if (a.attr.explicit === true && b.attr.explicit === true) {
+					return (
+						a.attr.source.localeCompare(b.attr.source) * sort.order
+					);
+				} else if (
+					a.attr.explicit === false &&
+					b.attr.explicit === false
+				) {
+					return (
+						a.attr.implied_kind.localeCompare(b.attr.implied_kind) *
+						sort.order
+					);
+				} else {
+					return a.attr.explicit ? sort.order : -sort.order;
+				}
 			};
 		}
 
