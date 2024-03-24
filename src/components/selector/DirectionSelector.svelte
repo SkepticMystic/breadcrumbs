@@ -4,7 +4,7 @@
 	export let dir: Direction;
 </script>
 
-<select bind:value={dir}>
+<select class="dropdown" bind:value={dir}>
 	{#each DIRECTIONS as dir}
 		<option value={dir}>{dir}</option>
 	{/each}

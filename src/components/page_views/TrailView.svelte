@@ -56,6 +56,7 @@
 		{#if sliced_paths.length}
 			<div class="mb-1.5 flex justify-between gap-3">
 				<select
+					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.format}
 					on:change={async () => await plugin.saveSettings()}
 				>
@@ -65,6 +66,7 @@
 				</select>
 
 				<select
+					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.selection}
 					on:change={async () => await plugin.saveSettings()}
 				>
@@ -83,8 +85,9 @@
 						-
 					</button>
 
-					<span class="font-mono" aria-label="Max depth">{depth}</span
-					>
+					<span class="font-mono" aria-label="Max depth">
+						{depth}
+					</span>
 
 					<button
 						class="aspect-square text-lg"

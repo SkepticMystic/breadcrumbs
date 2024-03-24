@@ -9,6 +9,7 @@
 </script>
 
 <select
+	class="dropdown"
 	bind:value={field}
 	on:change={() => {
 		dispatch("select", field);
