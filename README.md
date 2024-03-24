@@ -126,9 +126,9 @@ BC-regex-note-flags: <flags>
 
 Where `<flags>` is a string of any combination of `g`, `i`, and `m` (for global, case-insensitive, and multi-line, respectively). e.g. `gim` would add all three flags.
 
-#### Settings
+#### Regex Note Settings
 
-Under Breadcrumbs settings, you can choose a default BC-field to use when only `BC-regex-note-regex` is present. This is useful if you have a _lot_ of regex notes, and don't want to add the `BC-regex-note-field` to each one.
+-   **Default field**: Choose a fallback field to use when only `BC-regex-note-regex` is present. This is useful if you have a _lot_ of regex notes, and don't want to add the `BC-regex-note-field` to each one.
 
 ### List Notes
 
@@ -194,9 +194,7 @@ In the first List Note example above, this would add edges from `B` to `D`.
 
 ### Dendron Notes
 
-If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. You can enable dendron notes globally in the settings, under Dendron Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs which delimiter you use (generally a period, `.`).
-
-For example, if you have the following notes:
+If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. For example, if you have the following notes:
 
 -   `A`
 -   `A.B`
@@ -206,11 +204,12 @@ Breadcrumbs will add edges from `A.B.C` to `A.B` to `A` using the field you spec
 
 [![](https://mermaid.ink/img/pako:eNpNjjELwjAQhf9KuKmFtqBuGYSqoy66ZjmSqw02TTkTREr_u1ddfMPj8fHueDPY6Ag0dEN82R45qfPVjEq0Kdrm0BxLVdcqT-J7tV3RP9gVbQkVBOKA3smbeb01kHoKZEBLdMgPA2ZcpIc5xdt7tKATZ6ogTw4TnTzeGQPoDoenUHI-Rb78dn3nLR98sTJV?type=png)](https://mermaid.live/edit#pako:eNpNjjELwjAQhf9KuKmFtqBuGYSqoy66ZjmSqw02TTkTREr_u1ddfMPj8fHueDPY6Ag0dEN82R45qfPVjEq0Kdrm0BxLVdcqT-J7tV3RP9gVbQkVBOKA3smbeb01kHoKZEBLdMgPA2ZcpIc5xdt7tKATZ6ogTw4TnTzeGQPoDoenUHI-Rb78dn3nLR98sTJV)
 
-#### Display Trimmed
+#### Dendron Note Settings
 
-In the Dendron Notes settings, you can also choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
-
-[![](https://mermaid.ink/img/pako:eNpNTrsOwjAQ-5XoplRqB2DLgMRjhAXWLKfkSiOapDoSIVT13zlgwYNlW76TZ3DZExjox_x0A3JRp4tNSrDSh0Z1naqT8Fat9f7fbvSugRYiccTg5cH8ubJQBopkwYj0yHcLNi3Sw1ry9ZUcmMKVWqiTx0LHgDfGCKbH8SEp-VAyn3-LvsOWN5a3MQc?type=png)](https://mermaid.live/edit#pako:eNpNTrsOwjAQ-5XoplRqB2DLgMRjhAXWLKfkSiOapDoSIVT13zlgwYNlW76TZ3DZExjox_x0A3JRp4tNSrDSh0Z1naqT8Fat9f7fbvSugRYiccTg5cH8ubJQBopkwYj0yHcLNi3Sw1ry9ZUcmMKVWqiTx0LHgDfGCKbH8SEp-VAyn3-LvsOWN5a3MQc)
+-   **Enable**: Toggle Dendron notes on or off.
+-   **Field**: Choose the field to use for the edges.
+-   **Delimiter**: Choose the delimiter you use in your Dendron notes. This is generally a period (`.`), but can be anything you like.
+-   **Display Trimmed**: Choose to display the trimmed note name. This will remove the prefix from the note name, so `A.B.C` will be displayed as `C`.
 
 ### Dataview Note
 
@@ -232,18 +231,24 @@ BC-dataview-note-field: child
 
 ### Date Notes
 
-_Date Notes_ allow you to leverage your existing daily notes structure. You can enable Date Notes globally in the settings, under Date Notes. Flip the toggle on, choose a field to add edges with, and tell Breadcrumbs what date format you use for your daily notes (e.g. `YYYY-MM-DD`). For example, if you have the following notes:
+_Date Notes_ allow you to leverage your existing daily notes structure. You can enable Date Notes globally in the settings, under Date Notes. For example, if you have the following notes:
 
 -   `2022-01-01`
 -   `2022-01-02`
 -   `2022-01-03`
 
-Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, and from `2022-01-02` to `2022-01-03` using the field you specify.
+Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, to `2022-01-03` using the field you specify.
 
 [![](https://mermaid.ink/img/pako:eNpVjjELwjAQhf9KuMlCC226ZXBy1EXXLEdztcUmKfGCSul_99SheDy4477H4y3QRUdgoJ_ioxswsTqebVAyzU7XWld1IypUValAT5a9V3oj-p-0G2kLKMFT8jg6yV8-oRZ4IE8WjJwO082CDav4MHO8vEIHhlOmEvLskOkw4jWhB9PjdJcvuZFjOv0Kf3uvb3hzN54?type=png)](https://mermaid.live/edit#pako:eNpVjjELwjAQhf9KuMlCC226ZXBy1EXXLEdztcUmKfGCSul_99SheDy4477H4y3QRUdgoJ_ioxswsTqebVAyzU7XWld1IypUValAT5a9V3oj-p-0G2kLKMFT8jg6yV8-oRZ4IE8WjJwO082CDav4MHO8vEIHhlOmEvLskOkw4jWhB9PjdJcvuZFjOv0Kf3uvb3hzN54)
 
 > [!TIP]
 > Refer to the Luxon documentation for the full list of date formats: https://moment.github.io/luxon/#/parsing?id=table-of-tokens.
+
+#### Date Note Settings
+
+-   **Enable**: Toggle Date Notes on or off.
+-   **Field**: Choose the field to use for the edges.
+-   **Date Format**: Choose the date format you use for your daily notes (e.g. `YYYY-MM-DD`).
 
 ### Folder Notes
 
@@ -384,14 +389,30 @@ The Page View appears at the top of the current note. It shows _multiple_ subvie
 
 #### Trail View
 
-The Trail View shows all paths going _up_ from the current note. It can show the paths in a _grid_ or a _path_ list, but the underlying data is the same. The following other options can also be configured:
+The Trail View shows all paths going _up_ from the current note.
 
--   Whether to show _all_ paths, or just the _shortest_ path.
--   A maximum _depth_ of the paths. If the paths go longer than the max depth, slice them off.
+##### Trail View Settings
+
+-   **Enable**: Show/hide the Trail View at the top of your notes.
+-   **Format**: Show the results in a Path/Grid format (the underlying data is still the same).
+-   **Path Selection**: Show all paths, or only the shortest/longest path.
+-   **Depth**: A maximum _depth_ of the paths. If the paths go longer than the max depth, slice them off.
+-   **No Path Message**: The message to show when there are no paths to show. Leave blank to show nothing.
 
 #### Previous/Next View
 
 The Previous/Next View shows the immediate `previous` and `next` neighbours of the current note.
+
+##### Previous/Next View Settings
+
+-   **Enable**: Show/hide the Previous/Next View at the top of your notes.
+
+#### Page View Settings
+
+Settings common to the Page View as a whole:
+
+-   **Sticky**: Keep the Page View visible as you scroll down a note.
+-   **Readable Line Width**: Keep the Page View's width inline with the width of a note.
 
 ### Matrix View
 
@@ -403,11 +424,30 @@ On the right side of each link, you'll see either `(x)` or `(i)`, indicating if 
 
 The Tree View shows up on the side of the editor, and shows all path going in a _chosen direction_ from the current note. It is similar to the [Trail View](#trail-view), but you can choose which direction to traverse.
 
+#### Tree View Settings
+
+-   **Default Direction**: Choose the default direction to traverse in the Tree View.
+
+### View Settings
+
+Settings common to **all** Views:
+
+-   **Note Display Options**: Decide how to present a note path. Toggle the Folder, Extension, and Alias on/off (customisable per-view).
+
 ## Commands
 
 Breadcrumbs adds a few commands to the command palette.
 
-### Create List Index from Note
+### Rebuild Graph
+
+This command rebuilds the Breadcrumbs graph. This is useful if you've made changes to your notes, and want to see them reflected in the graph.
+
+#### Rebuild Graph Settings
+
+-   **Notify on Rebuild**: Show a notification when the graph is rebuilt. The notification will show a summary of any errors that occurred during the rebuild.
+-   **Triggers**: Choose to automatically run the command when you change notes, or when you save a note.
+
+### Create List Index
 
 This command builds a nested markdown list of all paths in a given direction from the current note. It then copies this list to the clipboard.
 
@@ -425,13 +465,24 @@ For example:
 > [!TIP]
 > The output format matches the required format for the [List Note](#list-notes) edge source. So you can paste this list into a note, and then use it as a List Note.
 
+#### Create List Index Settings
+
+-   **Hierarchy**: Choose the hierarchy to use for the list. "All" will traverse all hierarchies (while still keeping the paths separate).
+-   **Direction**: Choose the direction to traverse in the list.
+-   **Link Kind**: Choose the kind of links to use in the list. Options include "wiki", "markdown", and "none".
+-   **Indent**: Choose the string to use for indentation in the list (e.g. ` `, `\t`).
+
 ### Jump to First Neighbour
 
 These commands let you quickly jump around your Breadcrumgs graph. For each of the 5 directions, and each individual field in your hierarchies, there is a command to jump to the first neighbour in that direction/field.
 
 ### Freeze Breadcrumbs to File
 
-This command takes all the _implied_ edges leaving the current note, and makes them explicit by writing them to the file in the format you choose (either as [frontmatter links](#frontmatter-links), or [Dataview links](#dataview-links)).
+This command takes all the _implied_ edges leaving the current note, and makes them explicit by writing them to the file in the format you choose.
+
+#### Freeze Breadcrumbs Settings
+
+-   **Destination**: Choose where to write the edges to. Either as [frontmatter links](#frontmatter-links), or [Dataview links](#dataview-links).
 
 ## Codeblocks
 
