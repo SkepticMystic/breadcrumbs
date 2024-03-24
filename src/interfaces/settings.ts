@@ -55,8 +55,9 @@ export interface BreadcrumbsSettings {
 
 	views: {
 		page: {
-			/** Constrain max-width to var(--file-line-width) */
 			all: {
+				sticky: boolean;
+				/** Constrain max-width to var(--file-line-width) */
 				readable_line_width: boolean;
 			};
 

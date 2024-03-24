@@ -21,3 +21,10 @@ Outputs to /styles.css, for Obsidian to use.
 .BC-matrix-view hr:last-child {
 	display: none;
 }
+
+.BC-page-views.BC-page-views-sticky {
+	z-index: 50;
+	position: sticky;
+	top: calc(var(--file-margins) * -1);
+	background-color: var(--background-primary);
+}

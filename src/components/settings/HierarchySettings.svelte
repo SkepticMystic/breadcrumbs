@@ -126,7 +126,7 @@
 			<div>
 				{#each DIRECTIONS as dir}
 					<div>
-						<label class="BC-Arrow-Label">
+						<label class="BC-Arrow-Label" for={dir}>
 							{ARROW_DIRECTIONS[dir]}
 						</label>
 

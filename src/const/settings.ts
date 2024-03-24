@@ -53,6 +53,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	views: {
 		page: {
 			all: {
+				sticky: false,
 				readable_line_width: true,
 			},
 

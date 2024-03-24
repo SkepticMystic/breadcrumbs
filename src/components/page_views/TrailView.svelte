@@ -106,7 +106,7 @@
 			{:else if plugin.settings.views.page.trail.format === "path"}
 				<TrailViewPath {plugin} all_paths={sliced_paths} />
 			{/if}
-		{:else}
+		{:else if plugin.settings.views.page.trail.no_path_message}
 			<p class="BC-trail-view-no-path">
 				{plugin.settings.views.page.trail.no_path_message}
 			</p>

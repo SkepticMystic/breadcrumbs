@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
-	import GridView from "./TrailView.svelte";
 	import PrevNextView from "./PrevNextView.svelte";
+	import GridView from "./TrailView.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 

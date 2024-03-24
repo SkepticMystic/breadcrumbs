@@ -28,6 +28,12 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 		: "none";
 	page_views_el.setAttribute("style", `max-width: ${max_width};`);
 
+	// Stickyness
+	page_views_el.classList.toggle(
+		"BC-page-views-sticky",
+		plugin.settings.views.page.all.sticky,
+	);
+
 	// Clear out any old content
 	page_views_el.empty();
 
