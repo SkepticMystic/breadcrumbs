@@ -6,6 +6,8 @@ import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 
+const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
+
 // TODO: Check how date fields are handled
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
@@ -57,6 +59,9 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
 
+		// Instead of iterating all keys, I could use the hierarchy fields...
+		// Is that better or worse? Chances are, there are more page-fields than hierarchy fields,
+		// so that would take longer
 		Object.keys(page).forEach((field) => {
 			// NOTE: Implies that a hierarchy field can't be in this list,
 			//   But Dataview probably enforces that anyway
@@ -72,12 +77,22 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 			ensure_is_array(page[field])
 				.flat()
 				.forEach((target_link) => {
-					if (
-						// It _should_ be a Link, as we've confirmed the field is in a BC hierarchy
-						// But, just in case, we check that it has a path
-						typeof target_link !== "object" ||
-						!target_link?.path
+					let unsafe_target_path: string | undefined;
+
+					if (typeof target_link === "string") {
+						// Try parse as a markdown link [](), grabbing the path out of the 2nd match
+						unsafe_target_path =
+							target_link.match(MARKDOWN_LINK_REGEX)?.[2];
+					} else if (
+						typeof target_link === "object" &&
+						target_link?.path
 					) {
+						unsafe_target_path = target_link.path;
+					} else {
+						console.log("Invalid target_link type", target_link);
+					}
+
+					if (!unsafe_target_path) {
 						return errors.push({
 							code: "invalid_field_value",
 							message: `Invalid field value for '${field}'`,
@@ -88,7 +103,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					const [target_path, target_file] =
 						resolve_relative_target_path(
 							plugin.app,
-							target_link.path,
+							unsafe_target_path,
 							source_file.path,
 						);
 
