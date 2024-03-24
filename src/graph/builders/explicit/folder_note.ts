@@ -1,5 +1,6 @@
 import type { Direction } from "src/const/hierarchies";
 import { META_FIELD } from "src/const/metadata_fields";
+import { FolderNotePlugin } from "src/external/folder_note_plugin";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -96,10 +97,15 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 		data: FolderNoteData;
 	}[] = [];
 
+	// TODO: Do I need to be checking enabled first?
+	const FolderNoteAPI =
+		FolderNotePlugin.is_enabled(plugin) && FolderNotePlugin.get_api(plugin);
+	if (!FolderNoteAPI) {
+		return { errors };
+	}
+
 	all_files.obsidian?.forEach(
 		({ file: folder_note_file, cache: folder_note_cache }) => {
-			if (!folder_note_cache) return;
-
 			const folder_note_info = get_folder_note_info(
 				plugin,
 				folder_note_cache?.frontmatter,
@@ -140,24 +146,49 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 		});
 	});
 
+	if (!folder_notes.length) return { errors };
+
 	await Promise.all(
-		folder_notes.map(({ data, file }) =>
+		folder_notes.map((folder_note) =>
 			iterate_folder_files(
 				plugin,
-				file.folder,
-				(path) => {
-					if (path === file.path) return;
+				folder_note.file.folder,
+				(target_path) => {
+					if (target_path === folder_note.file.path) return;
+
+					const source_file =
+						FolderNoteAPI.getFolderNote(target_path);
+					console.log(
+						"source_file",
+						source_file,
+						target_path,
+						folder_note.file.path,
+					);
+
+					if (!source_file) {
+						errors.push({
+							path: target_path,
+							code: "no_folder_note",
+							message: "No folder-note found",
+						});
+
+						return;
+					}
 
 					// We know path is resolved
-					graph.safe_add_directed_edge(file.path, path, {
-						dir: data.dir,
-						explicit: true,
-						field: data.field,
-						source: "folder_note",
-						hierarchy_i: data.hierarchy_i,
-					});
+					graph.safe_add_directed_edge(
+						source_file.path,
+						target_path,
+						{
+							dir: folder_note.data.dir,
+							explicit: true,
+							field: folder_note.data.field,
+							source: "folder_note",
+							hierarchy_i: folder_note.data.hierarchy_i,
+						},
+					);
 				},
-				data.recurse,
+				folder_note.data.recurse,
 			),
 		),
 	);
