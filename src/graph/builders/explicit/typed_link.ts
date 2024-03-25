@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -8,7 +9,6 @@ import { resolve_relative_target_path } from "src/utils/obsidian";
 
 const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
 
-// TODO: Check how date fields are handled
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
@@ -88,6 +88,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						target_link?.path
 					) {
 						unsafe_target_path = target_link.path;
+					} else if (target_link instanceof DateTime) {
+						// NOTE: The original, unparsed value is no longer available
 					} else {
 						console.log("Invalid target_link type", target_link);
 					}
