@@ -90,6 +90,13 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						unsafe_target_path = target_link.path;
 					} else if (target_link instanceof DateTime) {
 						// NOTE: The original, unparsed value is no longer available
+						// So we just skip it for now
+						console.log(
+							"Ignoring DateTime value for field:",
+							field,
+						);
+
+						return;
 					} else {
 						console.log("Invalid target_link type", target_link);
 					}
