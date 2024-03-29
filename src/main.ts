@@ -69,6 +69,16 @@ export default class BreadcrumbsPlugin extends Plugin {
 				}),
 			);
 
+			this.registerEvent(
+				this.app.workspace.on("active-leaf-change", async () => {
+					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
+					this.refresh({
+						rebuild_graph: false,
+						redraw_page_views: false,
+					});
+				}),
+			);
+
 			/// Vault
 			this.registerEvent(
 				this.app.vault.on("create", (file) => {
