@@ -19,6 +19,8 @@
 	class:BC-active-note={$active_file_store?.path === path}
 	href={no_ext}
 	data-href={no_ext}
+	rel="noopener"
+	target="_blank"
 	aria-label={// Previously checked if path === display
 	// But I think we should only show the label if the folder/basename is different,
 	// not just the extension
@@ -34,7 +36,6 @@
 			path,
 			$active_file_store?.path ?? "",
 			Keymap.isModEvent(e),
-			{ group: plugin.app.workspace.getLeaf(false) },
 		);
 	}}
 >
