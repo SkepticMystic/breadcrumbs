@@ -11,8 +11,8 @@
 </script>
 
 <a
-	data-href={no_ext}
-	href={no_ext}
+	data-href={path}
+	href={path}
 	class="internal-link {cls}"
 	class:is-unresolved={!resolved}
 	class:BC-active-note={$active_file_store?.path === path}
