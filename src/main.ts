@@ -70,7 +70,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 			);
 
 			this.registerEvent(
-				this.app.workspace.on("active-leaf-change", async () => {
+				this.app.workspace.on("active-leaf-change", async (leaf) => {
+					// We don't want this to trigger when changing focus into one of the BC views.
+					// This causes the component to rerender and drop any clicks that were made to get there.
+					if (
+						Object.values(VIEW_IDS).includes(
+							leaf?.getViewState().type ?? "",
+						)
+					) {
+						return;
+					}
+
 					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
 					this.refresh({
 						rebuild_graph: false,
