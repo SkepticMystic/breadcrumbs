@@ -25,13 +25,13 @@
 	// But I think we should only show the label if the folder/basename is different,
 	// not just the extension
 	no_ext === display ? "" : path}
-	on:click={(e) => {
+	on:click={async (e) => {
 		// NOTE: We openLinkText from vault root, since it's a full path already
 		// TODO: I think #511 comes from here. Test if this does what is expected:
 		//  - If only one leaf is open, open the link in that leaf
 		//  - If multiple leaves are open, open in the active leaf
 		//  - If another window is open, open in the active window
-		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
+		await plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
 	}}
 >
 	{display}
