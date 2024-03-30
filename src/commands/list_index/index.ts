@@ -1,6 +1,6 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
-import type { BCEdge, BCGraph } from "src/graph/MyMultiGraph";
+import type { BCGraph } from "src/graph/MyMultiGraph";
 import { Traverse, type NestedEdgePath } from "src/graph/traverse";
 import { get_edge_sorter, stringify_node } from "src/graph/utils";
 import type { LinkKind } from "src/interfaces/links";
@@ -29,70 +29,29 @@ export namespace ListIndex {
 		show_node_options: { ext: false, alias: true, folder: false },
 	};
 
-	const flat_paths_to_list_index = (
-		flat_paths: {
-			edge: BCEdge;
-			depth: number;
-		}[],
-		{
-			indent,
-			link_kind,
-			show_node_options,
-		}: {
-			indent: string;
-			link_kind: LinkKind;
-			show_node_options: ShowNodeOptions;
-		},
-	) => {
-		let index = "";
-		const real_indent = indent.replace(/\\t/g, "\t");
-
-		flat_paths.forEach(({ depth, edge }) => {
-			const display = stringify_node(edge.target_id, edge.target_attr, {
-				show_node_options,
-			});
-
-			const link = Links.ify(edge.target_id, display, {
-				link_kind,
-			});
-
-			index += real_indent.repeat(depth) + `- ${link}\n`;
-		});
-
-		return index;
-	};
-
 	const nested_paths_to_list_index = (
 		nested_paths: NestedEdgePath[],
-		{
-			indent,
-			link_kind,
-			show_node_options,
-		}: {
+		options: {
 			indent: string;
 			link_kind: LinkKind;
 			show_node_options: ShowNodeOptions;
 		},
 	) => {
 		let index = "";
-		const real_indent = indent.replace(/\\t/g, "\t");
+		const real_indent = options.indent.replace(/\\t/g, "\t");
 
 		nested_paths.forEach(({ children, depth, edge }) => {
 			const display = stringify_node(edge.target_id, edge.target_attr, {
-				show_node_options,
+				show_node_options: options.show_node_options,
 			});
 
 			const link = Links.ify(edge.target_id, display, {
-				link_kind,
+				link_kind: options.link_kind,
 			});
 
 			index += real_indent.repeat(depth) + `- ${link}\n`;
 
-			index += nested_paths_to_list_index(children, {
-				indent,
-				link_kind,
-				show_node_options,
-			});
+			index += nested_paths_to_list_index(children, options);
 		});
 
 		return index;

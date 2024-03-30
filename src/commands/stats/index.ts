@@ -36,6 +36,10 @@ type GraphStats = {
 				{ explicit: false }
 			>["implied_kind"]]: number;
 		}>;
+
+		round: Partial<{
+			[key: string]: number;
+		}>;
 	};
 };
 
@@ -46,6 +50,7 @@ export const get_graph_stats = (graph: BCGraph) => {
 		},
 
 		edges: {
+			round: {},
 			field: {},
 			source: {},
 			explicit: {},
@@ -61,27 +66,30 @@ export const get_graph_stats = (graph: BCGraph) => {
 			(stats.nodes.resolved[resolved] || 0) + 1;
 	}
 
-	for (const { attributes } of graph.edgeEntries()) {
-		stats.edges.hierarchy_i[attributes.hierarchy_i] =
-			(stats.edges.hierarchy_i[attributes.hierarchy_i] || 0) + 1;
+	for (const { attributes: attr } of graph.edgeEntries()) {
+		stats.edges.hierarchy_i[attr.hierarchy_i] =
+			(stats.edges.hierarchy_i[attr.hierarchy_i] || 0) + 1;
 
-		stats.edges.direction[attributes.dir] =
-			(stats.edges.direction[attributes.dir] || 0) + 1;
+		stats.edges.direction[attr.dir] =
+			(stats.edges.direction[attr.dir] || 0) + 1;
 
-		stats.edges.field[attributes.field ?? "null"] =
-			(stats.edges.field[attributes.field ?? "null"] || 0) + 1;
+		stats.edges.field[attr.field ?? "null"] =
+			(stats.edges.field[attr.field ?? "null"] || 0) + 1;
 
-		if (attributes.explicit) {
-			stats.edges.source[attributes.source] =
-				(stats.edges.source[attributes.source] || 0) + 1;
-		} else {
-			stats.edges.implied_kind[attributes.implied_kind] =
-				(stats.edges.implied_kind[attributes.implied_kind] || 0) + 1;
-		}
-
-		const explicit = String(attributes.explicit);
+		const explicit = String(attr.explicit);
 		stats.edges.explicit[explicit] =
 			(stats.edges.explicit[explicit] || 0) + 1;
+
+		if (attr.explicit) {
+			stats.edges.source[attr.source] =
+				(stats.edges.source[attr.source] || 0) + 1;
+		} else {
+			stats.edges.implied_kind[attr.implied_kind] =
+				(stats.edges.implied_kind[attr.implied_kind] || 0) + 1;
+
+			const round = String(attr.round);
+			stats.edges.round[round] = (stats.edges.round[round] || 0) + 1;
+		}
 	}
 
 	return stats;
