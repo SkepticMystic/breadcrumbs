@@ -1,6 +1,6 @@
-import type { App } from "obsidian";
-import path from "path";
+import { type App } from "obsidian";
 import type { LinkKind } from "src/interfaces/links";
+import { Paths } from "./paths";
 
 // TODO: Something seems wrong here... a new note was created in the root of the vault,
 //       even though it used a full path in the link content
@@ -15,10 +15,9 @@ const resolve_to_absolute_path = (
 ) => {
 	const folder = app.fileManager.getNewFileParent(source_path, relative_path);
 
-	// NOTE: We don't want the leading /. If the new folder is root, we want an empty string
-	return path.join(
+	return Paths.join(
 		folder.path === "/" ? "" : folder.path,
-		path.basename(relative_path),
+		Paths.basename(relative_path),
 	);
 };
 

@@ -1,4 +1,3 @@
-import path from "path";
 import { META_FIELD } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
@@ -68,7 +67,7 @@ const handle_dendron_note = (
 	//   So we rebuild from `path`
 	// drop_ext, as the delimiter might be '.'
 	const source_basename_splits = Paths.drop_ext(
-		path.basename(source_path),
+		Paths.basename(source_path),
 	).split(delimiter);
 	if (source_basename_splits.length === 1) return;
 
@@ -95,7 +94,7 @@ const handle_dendron_note = (
 				""
 			: target_folder_splits.join("/") + "/";
 
-	const target_path = `${target_folder}${target_basename}${path.extname(source_path)}`;
+	const target_path = `${target_folder}${target_basename}${Paths.extname(source_path)}`;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
 	const target_file = plugin.app.vault.getAbstractFileByPath(target_path);

@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
-import path from "path";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { get_field_hierarchy } from "src/utils/hierarchies";
+import { Paths } from "src/utils/paths";
 
 export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	graph,
@@ -78,7 +78,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			.toFormat(date_note_settings.date_format);
 
 		const next_path =
-			path.join(file.folder === "/" ? "" : file.folder, next_basename) +
+			Paths.join(file.folder === "/" ? "" : file.folder, next_basename) +
 			`.${file.ext}`;
 
 		// NOTE: We have a full path, so we can go straight to the file without the given source_path

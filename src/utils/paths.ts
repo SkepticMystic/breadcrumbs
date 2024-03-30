@@ -1,3 +1,4 @@
+import { normalizePath } from "obsidian";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { ensure_ends_with } from "./strings";
 
@@ -9,7 +10,13 @@ const ensure_ext = (
 
 const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");
 
+const extname = (path: string) => path.split(".").pop()!;
+
 const drop_folder = (path: string) => path.split("/").pop()!;
+
+const basename = (path: string) => path.split("/").pop()!;
+
+const join = (...paths: string[]) => normalizePath(paths.join("/"));
 
 // const update_name = (
 // 	path_str: string,
@@ -40,11 +47,14 @@ const show = (
 
 export const Paths = {
 	ensure_ext,
+	extname,
+	basename,
 
 	// update_name,
 
 	drop_ext,
 	drop_folder,
 
+	join,
 	show,
 };
