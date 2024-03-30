@@ -7,7 +7,7 @@ const ensure_ext = (
 	ext: string = "md",
 ) => ensure_ends_with(path, "." + ext);
 
-const drop_ext = (path: string) => path.replace(/\.[^/.]+$/, "");
+const drop_ext = (path: string) => path.split(".").slice(0, -1).join(".");
 
 const extname = (path: string) => path.split(".").pop()!;
 

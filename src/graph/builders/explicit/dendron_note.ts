@@ -94,7 +94,7 @@ const handle_dendron_note = (
 				""
 			: target_folder_splits.join("/") + "/";
 
-	const target_path = `${target_folder}${target_basename}${Paths.extname(source_path)}`;
+	const target_path = `${target_folder}${target_basename}.${Paths.extname(source_path)}`;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
 	const target_file = plugin.app.vault.getAbstractFileByPath(target_path);
