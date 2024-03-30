@@ -107,3 +107,21 @@ export const remove_duplicates = <T>(arr: T[]): T[] => {
 	const set = new Set(arr);
 	return Array.from(set);
 };
+
+export const remove_duplicates_by = <T, V>(
+	arr: T[],
+	get_value: (item: T) => V,
+): T[] => {
+	const set = new Set<V>();
+	const unique: T[] = [];
+
+	arr.forEach((item) => {
+		const value = get_value(item);
+		if (set.has(value)) return;
+
+		set.add(value);
+		unique.push(item);
+	});
+
+	return unique;
+};
