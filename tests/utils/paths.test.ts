@@ -28,6 +28,16 @@ describe("drop_ext", () => {
 	});
 });
 
+describe("extname", () => {
+	test("should get ext", (t) => {
+		t.expect(Paths.extname(path)).toBe("md");
+	});
+
+	test("should return arg if no ext", (t) => {
+		t.expect(Paths.extname("folder/note")).toBe("folder/note");
+	});
+});
+
 describe("drop_folder", () => {
 	test("should drop folder", (t) => {
 		t.expect(Paths.drop_folder(path)).toBe("note.md");
@@ -35,6 +45,26 @@ describe("drop_folder", () => {
 
 	test("shouldn't drop if no folder", (t) => {
 		t.expect(Paths.drop_folder("note.md")).toBe("note.md");
+	});
+});
+
+describe("basename", () => {
+	test("should get basename", (t) => {
+		t.expect(Paths.basename(path)).toBe("note.md");
+	});
+
+	test("shouldn't drop if no folder", (t) => {
+		t.expect(Paths.basename("note.md")).toBe("note.md");
+	});
+});
+
+describe("join", () => {
+	test("should join paths", (t) => {
+		t.expect(Paths.join("folder", "note.md")).toBe(path);
+	});
+
+	test("should remove extra slashes", (t) => {
+		t.expect(Paths.join("folder/", "/note.md")).toBe(path);
 	});
 });
 
