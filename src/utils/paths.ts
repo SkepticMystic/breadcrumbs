@@ -1,4 +1,3 @@
-import { normalizePath } from "obsidian";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { ensure_ends_with } from "./strings";
 
@@ -16,7 +15,7 @@ const drop_folder = (path: string) => path.split("/").pop()!;
 
 const basename = (path: string) => path.split("/").pop()!;
 
-const join = (...paths: string[]) => normalizePath(paths.join("/"));
+const join = (...paths: string[]) => paths.join("/").replace(/\/+/g, "/");
 
 // const update_name = (
 // 	path_str: string,

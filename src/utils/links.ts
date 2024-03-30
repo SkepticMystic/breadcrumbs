@@ -1,4 +1,4 @@
-import { type App } from "obsidian";
+import type { App } from "obsidian";
 import type { LinkKind } from "src/interfaces/links";
 import { Paths } from "./paths";
 
