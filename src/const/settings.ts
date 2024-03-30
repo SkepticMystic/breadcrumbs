@@ -43,6 +43,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			enabled: false,
 			date_format: "yyyy-MM-dd",
 			default_field: "next",
+			stretch_to_existing: false,
 		},
 	},
 

@@ -46,6 +46,11 @@ export interface BreadcrumbsSettings {
 			enabled: boolean;
 			date_format: string;
 			default_field: string;
+			// If there is a gap from one day to another, should the "next" note be the unresolved one in one day
+			//  or the next resolved note?
+			// e.g. 2024-03-30 -> 2024-03-31 (unresolved)
+			// vs   2024-03-30 -> 2024-04-01 (resolved)
+			stretch_to_existing: boolean;
 		};
 
 		regex_note: {

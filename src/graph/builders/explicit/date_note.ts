@@ -35,12 +35,20 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		path: string;
 		folder: string;
 		basename: string;
+		date: DateTime<true>;
 	}[] = [];
 
 	// Basically just converting the two all_files into a common format of their basic fields...
 	// Maybe generalise this?
 	all_files.obsidian?.forEach(({ file }) => {
+		const date = DateTime.fromFormat(
+			file.basename,
+			date_note_settings.date_format,
+		);
+		if (!date.isValid) return;
+
 		date_note_files.push({
+			date,
 			ext: file.extension,
 			path: file.path,
 			basename: file.basename,
@@ -51,51 +59,56 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		});
 	});
 
-	all_files.dataview?.forEach((date_note_page) => {
-		const file = date_note_page.file;
-
-		date_note_files.push({
-			ext: file.ext,
-			path: file.path,
-			basename: file.name,
-			folder: file.folder,
-		});
-	});
-
-	date_note_files.forEach((file) => {
-		// Check if the file's basename is a valid date in the given format
+	all_files.dataview?.forEach(({ file }) => {
 		const date = DateTime.fromFormat(
-			file.basename,
+			file.name,
 			date_note_settings.date_format,
 		);
 		if (!date.isValid) return;
 
-		// TODO: Here's where I could implement a setting like, next_one_or_resolved
-		//   Which either goes one day ahead max (whether it exists or not), or goes to the next existing file (up to some max iterations)
-		// If the date could be _parsed_, then it should be able to be _formatted_
-		const next_basename = date
-			.plus({ days: 1 })
-			.toFormat(date_note_settings.date_format);
-
-		const next_path =
-			Paths.join(file.folder === "/" ? "" : file.folder, next_basename) +
-			`.${file.ext}`;
-
-		// NOTE: We have a full path, so we can go straight to the file without the given source_path
-		const next_file = plugin.app.vault.getAbstractFileByPath(next_path);
-
-		if (!next_file) {
-			graph.safe_add_node(next_path, { resolved: false });
-		}
-
-		graph.safe_add_directed_edge(file.path, next_path, {
-			explicit: true,
-			source: "date_note",
-			dir: field_hierarchy.dir,
-			field: date_note_settings.default_field,
-			hierarchy_i: field_hierarchy.hierarchy_i,
+		date_note_files.push({
+			date,
+			ext: file.ext,
+			path: file.path,
+			folder: file.folder,
+			basename: file.name,
 		});
 	});
+
+	date_note_files
+		.sort((a, b) => a.date.toMillis() - b.date.toMillis())
+		.forEach((date_note, i) => {
+			const basename_plus_one_day = date_note.date
+				.plus({ days: 1 })
+				.toFormat(date_note_settings.date_format);
+
+			const stretched_basename = date_note_settings.stretch_to_existing
+				? date_note_files.at(i + 1)?.basename
+				: null;
+
+			const target_basename = date_note_settings.stretch_to_existing
+				? stretched_basename ?? basename_plus_one_day
+				: basename_plus_one_day;
+
+			const target_path =
+				Paths.join(date_note.folder, target_basename) +
+				`.${date_note.ext}`;
+
+			// NOTE: We have a full path, so we can go straight to the file without the given source_path
+			const target_file =
+				plugin.app.vault.getAbstractFileByPath(target_path);
+			if (!target_file) {
+				graph.safe_add_node(target_path, { resolved: false });
+			}
+
+			graph.safe_add_directed_edge(date_note.path, target_path, {
+				explicit: true,
+				source: "date_note",
+				dir: field_hierarchy.dir,
+				field: date_note_settings.default_field,
+				hierarchy_i: field_hierarchy.hierarchy_i,
+			});
+		});
 
 	return { errors };
 };

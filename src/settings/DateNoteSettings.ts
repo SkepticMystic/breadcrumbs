@@ -60,4 +60,18 @@ export const _add_settings_date_note = (
 			},
 		},
 	});
+
+	new_setting(containerEl, {
+		name: "Stretch to Existing",
+		desc: "If there is a gap from one day to another, should the next note be the unresolved one in one day or should it 'stretch' to the next resolved (existing) note?",
+		toggle: {
+			value: plugin.settings.explicit_edge_sources.date_note
+				.stretch_to_existing,
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.date_note.stretch_to_existing =
+					value;
+				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+			},
+		},
+	});
 };
