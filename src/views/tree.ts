@@ -1,7 +1,7 @@
-import BreadcrumbsPlugin from "src/main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import TreeViewComponent from "src/components/TreeView.svelte";
 import { VIEW_IDS } from "src/const/views";
+import BreadcrumbsPlugin from "src/main";
 
 export class TreeView extends ItemView {
 	plugin: BreadcrumbsPlugin;
@@ -21,6 +21,7 @@ export class TreeView extends ItemView {
 	}
 
 	icon = "tree-pine";
+	navigation = true;
 
 	async onOpen() {
 		const container = this.containerEl.children[1];

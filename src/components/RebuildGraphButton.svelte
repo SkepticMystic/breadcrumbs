@@ -10,7 +10,7 @@
 <button
 	class={cls}
 	aria-label="Rebuild Graph"
-	on:click={() => plugin.refresh()}
+	on:click={async () => await plugin.refresh()}
 >
 	<RotateCcw size={ICON_SIZE} />
 </button>
