@@ -28,7 +28,7 @@
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
 
-<div class="markdown-rendered BC-matrix-view -mt-2">
+<div class="markdown-rendered BC-matrix-view">
 	<div class="nav-header">
 		<div class="nav-buttons-container">
 			<RebuildGraphButton
@@ -62,8 +62,8 @@
 					<MatrixHierarchy
 						{plugin}
 						{hierarchy}
-						{hierarchy_out_edges}
 						{show_attributes}
+						{hierarchy_out_edges}
 						{sort}
 					/>
 

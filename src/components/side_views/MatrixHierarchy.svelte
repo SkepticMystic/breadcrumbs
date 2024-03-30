@@ -22,7 +22,9 @@
 		)}
 
 		{#if out_edges.length}
-			<div class="BC-matrix-view-dir flex flex-col gap-1">
+			<div
+				class="BC-matrix-view-dir BC-matrix-view-dir-{dir} flex flex-col gap-1"
+			>
 				<span class="text-lg font-semibold">
 					{hierarchy.dirs[dir].join(", ")}
 				</span>

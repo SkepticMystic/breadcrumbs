@@ -13,6 +13,7 @@
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import ShowAttributesSelectorMenu from "./selector/ShowAttributesSelectorMenu.svelte";
 	import { ICON_SIZE } from "src/const";
+	import { url_search_params } from "src/utils/url";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -93,7 +94,7 @@
 				/>
 			{:else}
 				<p class="text-faint">
-					No paths found in dir={dir}
+					No paths found in {url_search_params({ dir })}
 				</p>
 			{/if}
 		{/key}

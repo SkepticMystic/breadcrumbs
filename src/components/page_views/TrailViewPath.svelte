@@ -2,6 +2,8 @@
 	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "../EdgeLink.svelte";
+	import { url_search_params } from "src/utils/url";
+	import { untyped_pick } from "src/utils/objects";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let all_paths: BCEdge[][];
@@ -17,9 +19,13 @@
 					{#if j !== 0}
 						<span
 							class="BC-trail-view-item-separator"
-							aria-label="{edge.attr.explicit
-								? edge.attr.source
-								: edge.attr.implied_kind}: {edge.attr.dir}"
+							aria-label={url_search_params(
+								untyped_pick(edge.attr, [
+									"source",
+									"implied_kind",
+									"round",
+								]),
+							)}
 						></span>
 					{/if}
 
