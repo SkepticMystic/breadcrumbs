@@ -33,7 +33,7 @@
 		"esbuild": "0.19.11",
 		"esbuild-svelte": "^0.8.0",
 		"npm-run-all": "^4.1.5",
-		"obsidian": "^1.4.11",
+		"obsidian": "^1.5.7-1",
 		"obsidian-dataview": "^0.5.64",
 		"prettier": "^3.2.2",
 		"prettier-plugin-svelte": "^3.1.2",
