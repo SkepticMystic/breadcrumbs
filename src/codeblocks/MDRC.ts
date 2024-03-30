@@ -22,8 +22,6 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	async onload(): Promise<void> {
 		console.log("CodeblockMDRC.load");
 
-		this.containerEl.empty();
-
 		const { parsed, errors } = Codeblocks.parse_source(
 			this.plugin,
 			this.source,
@@ -33,6 +31,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		const options = Codeblocks.resolve_options(parsed);
 		console.log("resolved codeblock options", options);
 
+		this.containerEl.empty();
 		this.component = new CodeblockTree({
 			target: this.containerEl,
 			props: {

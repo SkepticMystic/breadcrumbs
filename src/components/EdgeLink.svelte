@@ -22,7 +22,6 @@
 </script>
 
 <ObsidianLink
-	{plugin}
 	{display}
 	path={edge.target_id}
 	resolved={edge.target_attr.resolved}
