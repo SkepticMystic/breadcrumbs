@@ -21,7 +21,6 @@ export class MatrixView extends ItemView {
 	}
 
 	icon = "blinds";
-	navigation = true;
 
 	async onOpen() {
 		const container = this.containerEl.children[1];

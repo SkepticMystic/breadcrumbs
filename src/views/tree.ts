@@ -21,7 +21,6 @@ export class TreeView extends ItemView {
 	}
 
 	icon = "tree-pine";
-	navigation = true;
 
 	async onOpen() {
 		const container = this.containerEl.children[1];
