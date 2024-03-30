@@ -71,13 +71,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.workspace.on("active-leaf-change", async (leaf) => {
-					// We don't want this to trigger when changing focus into one of the BC views.
-					// This causes the component to rerender and drop any clicks that were made to get there.
-					if (
-						Object.values(VIEW_IDS).includes(
-							leaf?.getViewState().type ?? "",
-						)
-					) {
+					// NOTE: We only want to refresh the store when changing to another md note
+					if (leaf?.getViewState().type !== "markdown") {
 						return;
 					}
 
