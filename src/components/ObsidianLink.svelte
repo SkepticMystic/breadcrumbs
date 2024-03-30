@@ -26,17 +26,12 @@
 	// not just the extension
 	no_ext === display ? "" : path}
 	on:click={(e) => {
-		// TODO: There seems to be an Obsidian issue here...
-		// I try to open /b from /a, but it opens /folder/b
+		// NOTE: We openLinkText from vault root, since it's a full path already
 		// TODO: I think #511 comes from here. Test if this does what is expected:
 		//  - If only one leaf is open, open the link in that leaf
 		//  - If multiple leaves are open, open in the active leaf
 		//  - If another window is open, open in the active window
-		plugin.app.workspace.openLinkText(
-			path,
-			$active_file_store?.path ?? "",
-			Keymap.isModEvent(e),
-		);
+		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
 	}}
 >
 	{display}
