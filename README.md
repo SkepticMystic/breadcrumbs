@@ -249,6 +249,7 @@ Breadcrumbs will add edges from `2022-01-01` to `2022-01-02`, to `2022-01-03` us
 -   **Enable**: Toggle Date Notes on or off.
 -   **Field**: Choose the field to use for the edges.
 -   **Date Format**: Choose the date format you use for your daily notes (e.g. `YYYY-MM-DD`).
+-   **Stretch to Existing**: If there is a gap from one day to another, should the next note be the unresolved one in _one day_ or should it "stretch" to the next resolved (existing) note?
 
 ### Folder Notes
 
