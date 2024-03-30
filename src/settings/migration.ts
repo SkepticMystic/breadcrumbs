@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_FIELD } from "src/const/metadata_fields";
+import { DEFAULT_SETTINGS } from "src/const/settings";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import type {
 	BreadcrumbsSettings,
@@ -159,6 +160,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			enabled: old.addDateNotes,
 			default_field: old.dateNoteField,
 			date_format: old.dateNoteFormat,
+			stretch_to_existing:
+				DEFAULT_SETTINGS.explicit_edge_sources.date_note
+					.stretch_to_existing,
 		};
 
 		delete old.addDateNotes;
