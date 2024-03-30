@@ -1,5 +1,5 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
-import { ensure_ends_with } from "./strings";
+import { ensure_ends_with, ensure_not_starts_with } from "./strings";
 
 const ensure_ext = (
 	path: string,
@@ -15,7 +15,8 @@ const drop_folder = (path: string) => path.split("/").pop()!;
 
 const basename = (path: string) => path.split("/").pop()!;
 
-const join = (...paths: string[]) => paths.join("/").replace(/\/+/g, "/");
+const join = (...paths: string[]) =>
+	ensure_not_starts_with(paths.join("/").replace(/\/+/g, "/"), "/");
 
 // const update_name = (
 // 	path_str: string,
