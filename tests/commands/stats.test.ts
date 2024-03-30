@@ -57,6 +57,9 @@ describe("get_graph_stats", () => {
 				implied_kind: {
 					cousin_is_sibling: 1,
 				},
+				round: {
+					"1": 1,
+				},
 			},
 		});
 	});
