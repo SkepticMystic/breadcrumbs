@@ -103,6 +103,20 @@ export const group_by = <T extends P, S extends string, P = T>(
 	return grouped;
 };
 
+/** Run an array-level projection on an already grouped record */
+export const group_projection = <T, S extends string, P>(
+	grouped: Partial<Record<S, T[]>>,
+	projector: (items: T[]) => P,
+) => {
+	const projected: Partial<Record<S, P>> = {};
+
+	Object.entries(grouped).forEach(([key, items]) => {
+		projected[key as S] = projector(items as T[]);
+	});
+
+	return projected;
+};
+
 export const remove_duplicates = <T>(arr: T[]): T[] => {
 	const set = new Set(arr);
 	return Array.from(set);

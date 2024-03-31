@@ -9,6 +9,8 @@ export type ShowNodeOptions = {
 	alias: boolean;
 };
 
+export type CrumbDestination = "frontmatter" | "dataview-inline";
+
 export interface BreadcrumbsSettings {
 	// Once I've reach settings parity with old BC, I can add this flag to skip over all the checks in migrate_old_settings
 	// But for now, as I add new (old) settings, I don't want to skip migrating them
@@ -117,7 +119,7 @@ export interface BreadcrumbsSettings {
 
 		freeze_implied_edges: {
 			default_options: {
-				destination: "frontmatter" | "dataview-inline";
+				destination: CrumbDestination;
 			};
 		};
 	};

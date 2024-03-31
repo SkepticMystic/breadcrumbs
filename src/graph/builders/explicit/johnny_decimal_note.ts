@@ -129,6 +129,7 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	const { delimiter } =
 		plugin.settings.explicit_edge_sources.johnny_decimal_note;
 
+	// This regex is actually less strict than the real Johnny Decimal system
 	// Match a delimiter-separated list of chars and nums, followed by a space or the delimiter at the end
 	const regex = new RegExp(`^([\\w\\d\\${delimiter}]+)(\\s|\\${delimiter}$)`);
 
