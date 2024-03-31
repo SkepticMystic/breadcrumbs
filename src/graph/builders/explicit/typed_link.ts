@@ -39,8 +39,6 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				);
 
 				if (!target_file) {
-					// It's an unresolved link, so we add a node for it
-					//   (still using safe_add, as a different builder may have already added it)
 					// Unresolved nodes don't have aliases
 					graph.safe_add_node(target_path, { resolved: false });
 				}

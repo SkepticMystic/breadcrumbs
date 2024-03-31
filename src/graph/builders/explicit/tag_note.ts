@@ -14,9 +14,7 @@ const get_tag_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	if (!metadata) {
-		return fail(undefined);
-	}
+	if (!metadata) return fail(undefined);
 
 	let raw_tag = metadata[META_FIELD["tag-note-tag"]];
 	if (!raw_tag) {
@@ -34,7 +32,7 @@ const get_tag_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "tag-note-tag is not a string",
+			message: `tag-note-tag is not a string: '${raw_tag}'`,
 		});
 	}
 	const tag = ensure_starts_with(raw_tag, "#");
@@ -49,7 +47,7 @@ const get_tag_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "tag-note-field is not a string",
+			message: `tag-note-field is not a string: '${field}'`,
 		});
 	}
 
@@ -95,12 +93,12 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		({ file: tag_note_file, cache: tag_note_cache }) => {
 			if (!tag_note_cache) return;
 
-			// Check if the tag_note itself has an tags for other tags notes
+			// Check if the tag_note itself has any tags for other tags notes
 			tag_note_cache?.tags?.forEach(({ tag }) => {
 				// Quite happy with this trick :)
 				// Try get the existing_paths, and mutate it if it exists
 				// Push returns the new length (guarenteed to be atleast 1 - truthy)
-				// So if will only be false if the key doesn't exist
+				// So it will only be false if the key doesn't exist
 				if (!tag_paths_map.get(tag)?.push(tag_note_file.path)) {
 					tag_paths_map.set(tag, [tag_note_file.path]);
 				}
@@ -161,14 +159,14 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		});
 	});
 
-	const tag_path_keys = [...tag_paths_map.keys()];
+	const all_tags = [...tag_paths_map.keys()];
 
 	tag_notes.forEach((tag_note) => {
 		// Here we implement optional "sub-tag" support
 		// If the tag-note-tag is #foo, and a target note has the tag #foo/bar, then we add an edge
 		const target_paths = tag_note.exact
 			? tag_paths_map.get(tag_note.tag)
-			: tag_path_keys
+			: all_tags
 					.filter((tag) => tag.startsWith(tag_note.tag))
 					// We know that the tag_note.tag is in the tag_paths_map, so this is safe
 					.flatMap((tag) => tag_paths_map.get(tag)!);

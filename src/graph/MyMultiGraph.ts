@@ -216,7 +216,7 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 				)
 			: this.mapOutEdges(objectify_edge_mapper((e) => e));
 
-	/** Find aall paths of nodes connected by edges that pair-wise match the attrs in the chain */
+	/** Find all paths of nodes connected by edges that pair-wise match the attrs in the chain */
 	get_attrs_chain_path = (
 		start_node: string,
 		attr_chain: Partial<BCEdgeAttributes>[],

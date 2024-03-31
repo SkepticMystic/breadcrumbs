@@ -12,9 +12,7 @@ const get_regex_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	if (!metadata) {
-		return fail(undefined);
-	}
+	if (!metadata) return fail(undefined);
 
 	// NOTE: Check for a regex first, then the field, since there may be a default and we would do more work than necessary before failing if there is no regex
 	const regex_str = metadata[META_FIELD["regex-note-regex"]];
@@ -24,7 +22,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "regex-note-regex is not a string",
+			message: `regex-note-regex is not a string: '${regex_str}'`,
 		});
 	}
 
@@ -33,14 +31,13 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "regex-note-flags is not a string",
+			message: `regex-note-flags is not a string: '${flags}'`,
 		});
 	}
 
 	let regex: RegExp;
 	try {
 		regex = new RegExp(regex_str, (flags || "") as string);
-		console.log("regex_note regex: ", { path, regex });
 	} catch (e) {
 		return graph_build_fail({
 			path,
@@ -59,7 +56,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "regex-note-field is not a string",
+			message: `regex-note-field is not a string: '${field}'`,
 		});
 	}
 

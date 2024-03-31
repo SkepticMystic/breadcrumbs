@@ -27,7 +27,7 @@ const get_list_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "list-note-field is not a string",
+			message: `list-note-field is not a string: '${field}'`,
 		});
 	}
 
@@ -124,8 +124,11 @@ const handle_neighbour_list_item = ({
 		{ ok: true }
 	>;
 }) => {
+	// If there is no neighbour field, don't bother
+	if (!list_note_info.data.neighbour) return;
+
+	// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
 	const source_list_item =
-		// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
 		list_note_page.file.lists.values[source_list_item_i];
 
 	// Not only do I need to find the next one on the same level,
@@ -157,9 +160,7 @@ const handle_neighbour_list_item = ({
 		}
 	}
 
-	if (!neighbour_list_item || !list_note_info.data.neighbour) {
-		return;
-	}
+	if (!neighbour_list_item) return;
 
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
 	if (!neighbour_link) return;
@@ -244,7 +245,6 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				);
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
-				//   NOTE: Don't just use graph.addNode though. A different GraphBuilder may have added it.
 				if (!source_file) {
 					graph.safe_add_node(source_path, { resolved: false });
 				}
@@ -309,17 +309,20 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						return;
 					}
 
-					const [target_path] = resolve_relative_target_path(
-						plugin.app,
-						target_link.path,
-						list_note_page.file.path,
-					);
+					const [target_path, target_file] =
+						resolve_relative_target_path(
+							plugin.app,
+							target_link.path,
+							list_note_page.file.path,
+						);
 
 					// It's redundant, but easier to just safe_add_node here on the target
 					// Technically, the next iteration of page.file.lists will add it (as a source)
 					// But then I'd need to break up the iteration to first gather all sources, then handle the targets
 					// This way we can guarentee the target exists
-					graph.safe_add_node(target_path, { resolved: false });
+					if (!target_file) {
+						graph.safe_add_node(target_path, { resolved: false });
+					}
 
 					graph.safe_add_directed_edge(source_path, target_path, {
 						explicit: true,

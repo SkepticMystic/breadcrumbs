@@ -45,13 +45,11 @@ export const stringify_edge = (
 	const source_id = Paths.show(edge.source_id, options?.show_node_options);
 	const target_id = Paths.show(edge.target_id, options?.show_node_options);
 
-	const edge_id = options?.edge_id ? `(${edge.id})` : null;
-
 	const list = options?.rtl
-		? [target_id, "<-", source_id, edge_id]
-		: [source_id, "->", target_id, edge_id];
+		? [target_id, `<-${edge.attr.field}-`, source_id]
+		: [source_id, `-${edge.attr.field}->`, target_id];
 
-	return list.filter(Boolean).join(" ");
+	return list.join(" ");
 };
 
 export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;

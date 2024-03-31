@@ -82,17 +82,15 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				.plus({ days: 1 })
 				.toFormat(date_note_settings.date_format);
 
-			const stretched_basename = date_note_settings.stretch_to_existing
-				? date_note_files.at(i + 1)?.basename
-				: null;
-
 			const target_basename = date_note_settings.stretch_to_existing
-				? stretched_basename ?? basename_plus_one_day
+				? date_note_files.at(i + 1)?.basename ?? basename_plus_one_day
 				: basename_plus_one_day;
 
-			const target_path =
-				Paths.join(date_note.folder, target_basename) +
-				`.${date_note.ext}`;
+			const target_path = Paths.build(
+				date_note.folder,
+				target_basename,
+				date_note.ext,
+			);
 
 			// NOTE: We have a full path, so we can go straight to the file without the given source_path
 			const target_file =

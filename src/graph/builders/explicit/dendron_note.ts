@@ -29,7 +29,7 @@ const get_dendron_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "dendron-note-field is not a string",
+			message: `dendron-note-field is not a string: '${field}'`,
 		});
 	}
 
@@ -83,18 +83,13 @@ const handle_dendron_note = (
 		return;
 	}
 
-	// Go one note up
-	const target_basename = source_basename_splits.slice(0, -1).join(delimiter);
-
-	const target_folder_splits = source_path.split("/").slice(0, -1);
-	const target_folder =
-		// Check if it's in the root folder
-		target_folder_splits.length === 0
-			? // Nodes are added as their full path, but without the leading /
-				""
-			: target_folder_splits.join("/") + "/";
-
-	const target_path = `${target_folder}${target_basename}.${Paths.extname(source_path)}`;
+	const target_path = Paths.build(
+		// Use the same folder as the source
+		source_path.split("/").slice(0, -1).join("/"),
+		// Go one note up
+		source_basename_splits.slice(0, -1).join(delimiter),
+		"md",
+	);
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
 	const target_file = plugin.app.vault.getAbstractFileByPath(target_path);

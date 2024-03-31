@@ -21,9 +21,7 @@ const get_folder_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ): Result<FolderNoteData, BreadcrumbsError | undefined> => {
-	if (!metadata) {
-		return fail(undefined);
-	}
+	if (!metadata) return fail(undefined);
 
 	const field = metadata[META_FIELD["folder-note-field"]];
 	if (!field) {
@@ -32,7 +30,7 @@ const get_folder_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: "folder-note-field is not a string",
+			message: `folder-note-field is not a string: '${field}'`,
 		});
 	}
 
@@ -145,11 +143,11 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 			iterate_folder_files(
 				plugin,
 				file.folder,
-				(path) => {
-					if (path === file.path) return;
+				(target_path) => {
+					if (target_path === file.path) return;
 
 					// We know path is resolved
-					graph.safe_add_directed_edge(file.path, path, {
+					graph.safe_add_directed_edge(file.path, target_path, {
 						dir: data.dir,
 						explicit: true,
 						field: data.field,

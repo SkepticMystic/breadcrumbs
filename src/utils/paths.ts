@@ -13,10 +13,18 @@ const extname = (path: string) => path.split(".").pop()!;
 
 const drop_folder = (path: string) => path.split("/").pop()!;
 
+/** Keeps .ext */
 const basename = (path: string) => path.split("/").pop()!;
 
 const join = (...paths: string[]) =>
 	ensure_not_starts_with(paths.join("/").replace(/\/+/g, "/"), "/");
+
+const build = (
+	folder: string,
+	basename: string,
+	/** _Just_ extname, no period */
+	ext: string,
+) => ensure_ext(join(folder, basename), ext);
 
 // const update_name = (
 // 	path_str: string,
@@ -56,5 +64,6 @@ export const Paths = {
 	drop_folder,
 
 	join,
+	build,
 	show,
 };
