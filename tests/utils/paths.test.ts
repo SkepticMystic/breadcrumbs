@@ -68,6 +68,16 @@ describe("join", () => {
 	});
 });
 
+describe("build", () => {
+	test("should build path", (t) => {
+		t.expect(Paths.build("folder", "note", "md")).toBe(path);
+	});
+
+	test("Handle double slash", (t) => {
+		t.expect(Paths.build("folder/", "/note", "md")).toBe(path);
+	});
+});
+
 describe("show", () => {
 	test("should drop ext and folder by default", (t) => {
 		t.expect(Paths.show(path)).toBe("note");
