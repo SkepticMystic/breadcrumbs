@@ -32,7 +32,9 @@ export interface BreadcrumbsSettings {
 		tag_note: {
 			default_field: string;
 		};
-		list_note: {};
+		list_note: {
+			default_neighbour_field: string;
+		};
 		dendron_note: {
 			enabled: boolean;
 			// Should BC-dendron-note-delimiter be a thing too?

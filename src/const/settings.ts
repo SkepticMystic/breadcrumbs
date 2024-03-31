@@ -25,8 +25,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	],
 
 	explicit_edge_sources: {
-		list_note: {},
 		typed_link: {},
+		list_note: {
+			// Disabled by default
+			default_neighbour_field: "",
+		},
 		tag_note: {
 			default_field: "up",
 		},

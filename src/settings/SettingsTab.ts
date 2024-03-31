@@ -8,6 +8,7 @@ import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings
 import { _add_settings_trail_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
 import { _add_settings_list_index } from "./ListIndexSettings";
+import { _add_settings_list_note } from "./ListNoteSettings";
 import { _add_settings_matrix } from "./MatrixSettings";
 import { _add_settings_page_views } from "./PageViewSettings";
 import { _add_settings_prev_next_view } from "./PrevNextSettings";
@@ -83,6 +84,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		_add_settings_tag_note(
 			plugin,
 			make_details_el(containerEl, { s: { text: "> Tag Notes" } })
+				.children,
+		);
+
+		_add_settings_list_note(
+			plugin,
+			make_details_el(containerEl, { s: { text: "> List Notes" } })
 				.children,
 		);
 

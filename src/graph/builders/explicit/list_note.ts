@@ -43,7 +43,9 @@ const get_list_note_info = (
 		});
 	}
 
-	const neighbour_field = metadata[META_FIELD["list-note-neighbour-field"]];
+	const neighbour_field =
+		metadata[META_FIELD["list-note-neighbour-field"]] ??
+		plugin.settings.explicit_edge_sources.list_note.default_neighbour_field;
 
 	const neighbour_hierarchy =
 		neighbour_field && typeof neighbour_field === "string"
