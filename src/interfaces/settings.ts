@@ -44,6 +44,12 @@ export interface BreadcrumbsSettings {
 			display_trimmed: boolean;
 		};
 
+		johnny_decimal_note: {
+			enabled: boolean;
+			delimiter: string;
+			default_field: string;
+		};
+
 		date_note: {
 			enabled: boolean;
 			date_format: string;

@@ -11,3 +11,6 @@ export const ensure_ends_with = (str: string, suffix: string): string =>
 
 export const ensure_not_starts_with = (str: string, prefix: string): string =>
 	str.startsWith(prefix) ? str.slice(prefix.length) : str;
+
+export const ensure_not_ends_with = (str: string, suffix: string): string =>
+	str.endsWith(suffix) ? str.slice(0, -suffix.length) : str;

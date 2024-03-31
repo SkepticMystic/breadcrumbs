@@ -3,6 +3,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 	"tag_note",
 	"list_note",
 	"dendron_note",
+	"johnny_decimal_note",
 	"dataview_note",
 	"date_note",
 	"folder_note",

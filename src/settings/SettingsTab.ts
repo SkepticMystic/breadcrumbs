@@ -7,6 +7,7 @@ import { _add_settings_dendron_note } from "./DendronNoteSettings";
 import { _add_settings_freeze_implied_edges } from "./FreezeImpliedEdgesSettings";
 import { _add_settings_trail_view } from "./GridSettings";
 import { _add_settings_hierarchies } from "./HierarchySettings";
+import { _add_settings_johnny_decimal_note } from "./JohnnyDecimalSettings";
 import { _add_settings_list_index } from "./ListIndexSettings";
 import { _add_settings_list_note } from "./ListNoteSettings";
 import { _add_settings_matrix } from "./MatrixSettings";
@@ -93,6 +94,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 				.children,
 		);
 
+		_add_settings_date_note(
+			plugin,
+			make_details_el(containerEl, { s: { text: "> Date Notes" } })
+				.children,
+		);
+
 		_add_settings_regex_note(
 			plugin,
 			make_details_el(containerEl, { s: { text: "> Regex Notes" } })
@@ -105,10 +112,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 				.children,
 		);
 
-		_add_settings_date_note(
+		_add_settings_johnny_decimal_note(
 			plugin,
-			make_details_el(containerEl, { s: { text: "> Date Notes" } })
-				.children,
+			make_details_el(containerEl, {
+				s: { text: "> Johnny Decimal Notes" },
+			}).children,
 		);
 
 		// Views

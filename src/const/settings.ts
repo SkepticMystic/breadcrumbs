@@ -42,6 +42,11 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			default_field: "up",
 			display_trimmed: false,
 		},
+		johnny_decimal_note: {
+			enabled: false,
+			delimiter: ".",
+			default_field: "up",
+		},
 		date_note: {
 			enabled: false,
 			date_format: "yyyy-MM-dd",

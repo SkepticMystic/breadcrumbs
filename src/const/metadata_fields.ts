@@ -16,6 +16,8 @@ const METADATA_FIELDS_LIST = [
 	//
 	"BC-dendron-note-field",
 	//
+	"BC-johnny-decimal-note-field",
+	//
 	"BC-dataview-note-query",
 	"BC-dataview-note-field",
 ] as const;
@@ -39,6 +41,8 @@ export const META_FIELD = {
 	"list-note-exclude-index": "BC-list-note-exclude-index",
 	//
 	"dendron-note-field": "BC-dendron-note-field",
+	//
+	"johnny-decimal-note-field": "BC-johnny-decimal-note-field",
 	//
 	"dataview-note-query": "BC-dataview-note-query",
 	"dataview-note-field": "BC-dataview-note-field",
