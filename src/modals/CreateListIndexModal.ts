@@ -109,7 +109,8 @@ export class CreateListIndexModal extends Modal {
 				.setButtonText("Build & Copy to Clipboard")
 				.setCta()
 				.onClick(async () => {
-					console.log("build_list_index options", this.options);
+					plugin.log.debug("build_list_index options", this.options);
+
 					const list_index = ListIndex.build(
 						plugin.graph,
 						this.active_file!.path,

@@ -26,7 +26,8 @@ const linkify_edge = (
 		// NOTE: Wait... by definition, the target file points to the source.
 		// Can it be the case that an _unresolved_ target has an explicit edge?
 		// I think one of the edge builders relies on this question, as well
-		console.log("unresolved target", target_id);
+		plugin.log.info("unresolved target", target_id);
+
 		return `[[${target_id}]]`;
 	} else if (target_file instanceof TFile) {
 		return plugin.app.fileManager.generateMarkdownLink(
@@ -80,7 +81,8 @@ export const drop_crumbs = async (
 							frontmatter[field] = links;
 						}
 					});
-					console.log("frontmatter", frontmatter);
+
+					plugin.log.debug("frontmatter", frontmatter);
 				},
 			);
 			break;

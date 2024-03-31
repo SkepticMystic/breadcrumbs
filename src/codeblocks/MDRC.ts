@@ -20,16 +20,16 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	}
 
 	async onload(): Promise<void> {
-		console.log("CodeblockMDRC.load");
+		this.plugin.log.debug("CodeblockMDRC.load");
 
 		const { parsed, errors } = Codeblocks.parse_source(
 			this.plugin,
 			this.source,
 		);
-		if (errors.length) console.log("codeblock errors", errors);
+		if (errors.length) this.plugin.log.warn("codeblock errors", errors);
 
 		const options = Codeblocks.resolve_options(parsed);
-		console.log("resolved codeblock options", options);
+		this.plugin.log.debug("resolved codeblock options", options);
 
 		this.containerEl.empty();
 		this.component = new CodeblockTree({
@@ -43,7 +43,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	}
 
 	onunload(): void {
-		console.log("CodeblockMDRC.unload");
+		this.plugin.log.debug("CodeblockMDRC.unload");
 
 		this.component?.$destroy();
 	}

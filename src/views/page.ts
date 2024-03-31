@@ -3,12 +3,12 @@ import PageViews from "src/components/page_views/index.svelte";
 import type BreadcrumbsPlugin from "src/main";
 
 export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
-	console.log("draw_page_views_on_active_note");
+	plugin.log.debug("redraw_page_views");
 
 	const markdown_view =
 		plugin.app.workspace.getActiveViewOfType(MarkdownView);
 	if (!markdown_view) {
-		return console.log("No active markdown view");
+		return plugin.log.info("redraw_page_views: No active markdown view");
 	}
 
 	const markdown_view_mode = markdown_view.getMode();
@@ -45,13 +45,15 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 		const view_parent = markdown_view.containerEl.querySelector(
 			".markdown-reading-view > .markdown-preview-view",
 		);
-		if (!view_parent) return console.log("No view_parent");
+		if (!view_parent)
+			return plugin.log.info("redraw_page_views: No view_parent");
 
 		view_parent.insertBefore(page_views_el, view_parent.firstChild);
 	} else {
 		const view_parent =
 			markdown_view.containerEl.querySelector(".cm-scroller");
-		if (!view_parent) return console.log("No view_parent");
+		if (!view_parent)
+			return plugin.log.info("redraw_page_views: No view_parent");
 
 		// See here for an in-depth discussion on why it's done this way:
 		// https://discord.com/channels/686053708261228577/931552763467411487/1198377191994564621

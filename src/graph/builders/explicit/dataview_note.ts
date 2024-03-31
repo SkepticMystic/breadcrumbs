@@ -108,7 +108,8 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			pages = dataview_plugin.get_api()!.pages(query)
 				.values as IDataview.Page[];
 		} catch (error) {
-			console.log("dataview-note DV API error", error);
+			plugin.log.warn("dataview-note DV API error", error);
+
 			return errors.push({
 				code: "invalid_field_value",
 				path: dataview_note_page.file.path,

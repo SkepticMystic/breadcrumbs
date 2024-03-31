@@ -1,8 +1,8 @@
 import type { Direction } from "src/const/hierarchies";
 import { META_FIELD } from "src/const/metadata_fields";
 import type {
-	ExplicitEdgeBuilder,
 	BreadcrumbsError,
+	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
@@ -20,7 +20,7 @@ const get_tag_note_info = (
 	if (!raw_tag) {
 		raw_tag = metadata["BC-tag-note"];
 		if (raw_tag) {
-			console.warn(
+			plugin.log.warn(
 				`DEPRECATED: BC-tag-note is deprecated in favor of ${META_FIELD["tag-note-tag"]}`,
 			);
 		}

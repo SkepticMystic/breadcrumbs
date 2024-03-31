@@ -89,14 +89,15 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					} else if (target_link instanceof DateTime) {
 						// NOTE: The original, unparsed value is no longer available
 						// So we just skip it for now
-						console.log(
-							"Ignoring DateTime value for field:",
-							field,
-						);
+						plugin.log.debug("Ignoring DateTime for field:", field);
 
 						return;
 					} else {
-						console.log("Invalid target_link type", target_link);
+						// warn because we know it's a BC field, with a definitely invalid value
+						plugin.log.warn(
+							"Invalid target_link type",
+							target_link,
+						);
 					}
 
 					if (!unsafe_target_path) {

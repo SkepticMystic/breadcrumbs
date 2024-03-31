@@ -20,7 +20,7 @@ export const _add_implied_edges_custom_transitive = (
 	);
 	if (!field_hierarchy) {
 		// TODO: This seems like justification enough for ImpliedEdgeBuilders to return an errors array like the explicit ones
-		console.warn(
+		plugin.log.warn(
 			`Couldn't find hierarchy for transitive.close_field: ${transitive.close_field}`,
 		);
 		return {};

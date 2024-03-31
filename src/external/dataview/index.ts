@@ -8,7 +8,7 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 	new Promise<void>((resolve) => {
 		if (is_enabled(plugin.app)) {
 			if (get_api(plugin.app)?.index.initialized) {
-				console.log("dataview index already initialized");
+				plugin.log.debug("dataview index already initialized");
 				resolve();
 			}
 
@@ -16,11 +16,14 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 				plugin.app.metadataCache.on(
 					//@ts-ignore: It's there if dataview is enabled
 					"dataview:index-ready",
-					() => resolve(),
+					() => {
+						plugin.log.debug("dataview index ready");
+						resolve();
+					},
 				),
 			);
 		} else {
-			console.log("dataview not enabled");
+			plugin.log.debug("dataview not enabled");
 			resolve();
 		}
 	});

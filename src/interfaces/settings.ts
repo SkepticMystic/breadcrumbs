@@ -2,6 +2,7 @@ import type { ListIndex } from "src/commands/list_index";
 import type { Direction } from "src/const/hierarchies";
 import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
 import type { Hierarchy } from "./hierarchies";
+import type { LogLevels } from "src/logger";
 
 export type ShowNodeOptions = {
 	ext: boolean;
@@ -126,6 +127,11 @@ export interface BreadcrumbsSettings {
 
 	codeblocks: {
 		show_node_options: ShowNodeOptions;
+	};
+
+	// SECTION: Debugging
+	debug: {
+		level: LogLevels;
 	};
 }
 

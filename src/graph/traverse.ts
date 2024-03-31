@@ -77,12 +77,6 @@ const all_paths = (
 		graph,
 		start_node,
 		({ path }, filtered_out_edges) => {
-			// console.log(
-			// 	"path",
-			// 	path.map((e) => e.id),
-			// 	"filtered_out_edges",
-			// 	filtered_out_edges.map((e) => e.id),
-			// );
 			if (!filtered_out_edges.length) {
 				paths.push(path);
 			}

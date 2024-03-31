@@ -115,4 +115,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	codeblocks: {
 		show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 	},
+
+	debug: {
+		level: "INFO",
+	},
 };

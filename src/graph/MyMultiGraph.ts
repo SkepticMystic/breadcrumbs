@@ -165,7 +165,8 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 					);
 			});
 		} else {
-			console.log("can't safe_rename_node:", old_id, "->", new_id, {
+			// NOTE: plugin isn't available for us to use .log, but error is the highest level anyway
+			console.error("can't safe_rename_node:", old_id, "->", new_id, {
 				old_exists,
 				new_exists,
 			});

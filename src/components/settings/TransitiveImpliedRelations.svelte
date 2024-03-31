@@ -126,9 +126,9 @@
 								hierarchies={plugin.settings.hierarchies}
 								field={transitive.close_field}
 								on:select={(e) => {
-									console.log(e.detail);
-									if (e.detail)
+									if (e.detail) {
 										transitive.close_field = e.detail;
+									}
 								}}
 							/>
 						</div>

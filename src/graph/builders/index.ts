@@ -51,7 +51,6 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	add_initial_nodes(graph, all_files);
 
 	// Explicit edges
-	console.groupCollapsed("add_explicit_edges");
 	const explicit_edge_results = await Promise.all(
 		EXPLICIT_EDGE_SOURCES.map(async (source) => {
 			const result = await add_explicit_edges[source](
@@ -63,37 +62,23 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 			return { source, ...result };
 		}),
 	);
-	console.groupEnd();
-	console.log("explicit_edge_results:", explicit_edge_results);
 
 	console.groupCollapsed("add_implied_edges");
 	for (let round = 1; round <= IMPLIED_RELATIONSHIP_MAX_ROUNDS; round++) {
-		console.groupCollapsed(`round ${round}`);
-
 		Object.entries(add_implied_edges).forEach(([kind, fn]) => {
-			console.group(kind);
 			fn(graph, plugin, { round });
-			console.groupEnd();
 		});
 
 		plugin.settings.custom_implied_relations.transitive.forEach(
 			(transitive) => {
-				console.group(
-					`custom_transitive:${stringify_transitive_relation(
-						transitive,
-					)}`,
-				);
 				_add_implied_edges_custom_transitive(
 					graph,
 					plugin,
 					transitive,
 					{ round },
 				);
-				console.groupEnd();
 			},
 		);
-
-		console.groupEnd();
 	}
 	console.groupEnd();
 

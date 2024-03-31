@@ -17,6 +17,7 @@ import { _add_settings_rebuild_graph } from "./RebuildGraphSettings";
 import { _add_settings_regex_note } from "./RegexNoteSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
+import { _add_settings_debug } from "./DebugSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -178,6 +179,14 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			plugin,
 			make_details_el(containerEl, { s: { text: "> Codeblocks" } })
 				.children,
+		);
+
+		// Debugging
+		containerEl.createEl("hr");
+
+		_add_settings_debug(
+			plugin,
+			make_details_el(containerEl, { s: { text: "> Debug" } }).children,
 		);
 	}
 }

@@ -15,6 +15,7 @@ import { get_graph_stats } from "./commands/stats";
 import { DIRECTIONS } from "./const/hierarchies";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
+import { Logger } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
@@ -25,12 +26,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
 	graph = new BCGraph();
 	api!: BCAPI;
+	log!: Logger;
 
 	async onload() {
-		console.log("loading breadcrumbs");
-
 		// Settings
 		await this.loadSettings();
+
+		// Logger
+		this.log = new Logger(this);
+
+		this.log.info("loading breadcrumbs");
+
+		this.log.debug("bc.loadsettings", this.settings);
 
 		/// Migrations
 		await migrate_old_settings(this);
@@ -49,7 +56,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		);
 
 		this.app.workspace.onLayoutReady(async () => {
-			console.log("onLayoutReady");
+			this.log.debug("layout-ready");
 
 			await dataview_plugin.await_if_enabled(this);
 
@@ -59,7 +66,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Workspace
 			this.registerEvent(
 				this.app.workspace.on("layout-change", async () => {
-					console.log("layout-change");
+					this.log.debug("layout-change");
 
 					await this.refresh({
 						rebuild_graph:
@@ -87,7 +94,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Vault
 			this.registerEvent(
 				this.app.vault.on("create", (file) => {
-					console.log("on.create:", file.path);
+					this.log.debug("on.create:", file.path);
+
 					if (file instanceof TFile) {
 						// This isn't perfect, but it stops any "node doesn't exist" errors
 						// The user will have to refresh to add any relevant edges
@@ -100,7 +108,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.vault.on("rename", (file, old_path) => {
-					console.log("on.rename:", old_path, "->", file.path);
+					this.log.debug("on.rename:", old_path, "->", file.path);
+
 					if (file instanceof TFile) {
 						this.graph.safe_rename_node(old_path, file.path);
 
@@ -111,7 +120,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.vault.on("delete", (file) => {
-					console.log("on.delete:", file.path);
+					this.log.debug("on.delete:", file.path);
+
 					if (file instanceof TFile) {
 						// NOTE: Instead of dropping it, we mark it as unresolved.
 						//   There are pros and cons to both, but unresolving it is less intense.
@@ -176,12 +186,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		this.addCommand({
 			id: "breadcrumbs:graph-stats",
-			name: "Print graph stats",
-			callback: () => {
+			name: "Show/Copy graph stats",
+			callback: async () => {
 				const stats = get_graph_stats(this.graph);
 
 				console.log(stats);
-				new Notice("Graph stats printed to console");
+
+				await navigator.clipboard.writeText(
+					JSON.stringify(stats, null, 2),
+				);
+
+				new Notice(
+					"Graph stats printed to console and copied to clipboard",
+				);
 			},
 		});
 
@@ -239,8 +256,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 			(await this.loadData()) ?? {},
 			DEFAULT_SETTINGS as any,
 		);
-
-		console.log("bc.loadsettings", this.settings);
 	}
 
 	async saveSettings() {
@@ -255,9 +270,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
 	}) => {
-		console.group("bc.refresh");
-
-		console.log(
+		this.log.debug(
 			["rebuild_graph", "active_file_store", "redraw_page_views"]
 				.filter(
 					(key) => options?.[key as keyof typeof options] !== false,
@@ -273,15 +286,20 @@ export default class BreadcrumbsPlugin extends Plugin {
 				? new Notice("Rebuilding graph")
 				: null;
 
-			console.group("rebuild_graph");
+			this.log.start_group("rebuild_graph");
 			const rebuild_results = await rebuild_graph(this);
 			this.graph = rebuild_results.graph;
-			console.groupEnd();
+			this.log.end_group();
 
 			const explicit_edge_errors =
 				rebuild_results.explicit_edge_results.filter(
 					(result) => result.errors.length,
 				);
+
+			if (explicit_edge_errors.length) {
+				this.log.warn("graph-build errors:", explicit_edge_errors);
+			}
+
 			notice?.setMessage(
 				[
 					`Rebuilt graph in ${Date.now() - start_ms}ms`,
@@ -306,12 +324,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		if (options?.redraw_page_views !== false) {
-			console.groupCollapsed("redraw_page_views");
 			redraw_page_views(this);
-			console.groupEnd();
 		}
-
-		console.groupEnd();
 	};
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
@@ -333,7 +347,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					: workspace.getRightLeaf(false);
 
 			if (!leaf) {
-				console.log("bc.activateView: no leaf found");
+				this.log.warn("bc.activateView: no leaf found");
 				return;
 			}
 

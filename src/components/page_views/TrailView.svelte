@@ -72,7 +72,7 @@
 <div>
 	{#key sorted_paths}
 		{#if sorted_paths.length}
-			<div class="mb-1.5 flex justify-between gap-3">
+			<div class="mb-1.5 flex flex-wrap justify-between gap-3">
 				<select
 					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.format}
