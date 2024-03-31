@@ -192,6 +192,10 @@ In the first List Note example above, this would add edges from `B` to `D`.
 
 [![](https://mermaid.ink/img/pako:eNpVz7EOgjAQBuBXaW4qCQyCLh1MVEZ00LVLQw9tpK0pR9AQ3t0iLtxyly-Xy_0j1F4jCGhaP9QPFYhVV-lYrA2vTEfs4gkTlmVM-8HFvmc5P6yh4Mc1bPkpWY7kK9_x8u_F7A7ftDikYDFYZXR8ZZxXJNADLUoQcdQqPCVIN8U91ZO_fVwNgkKPKfQvrQhLo-5BWRCNaruoqA35cF6y_SJOX71eRAE?type=png)](https://mermaid.live/edit#pako:eNpVz7EOgjAQBuBXaW4qCQyCLh1MVEZ00LVLQw9tpK0pR9AQ3t0iLtxyly-Xy_0j1F4jCGhaP9QPFYhVV-lYrA2vTEfs4gkTlmVM-8HFvmc5P6yh4Mc1bPkpWY7kK9_x8u_F7A7ftDikYDFYZXR8ZZxXJNADLUoQcdQqPCVIN8U91ZO_fVwNgkKPKfQvrQhLo-5BWRCNaruoqA35cF6y_SJOX71eRAE)
 
+#### List Note Settings
+
+-   **Default Neighbour Field**: Choose a default field to use for the neighbour relationships. This is useful if you have a _lot_ of list notes, and don't want to add the `BC-list-note-neighbour-field` to each one.
+
 ### Dendron Notes
 
 If you use the [Dendron](https://www.dendron.so/) note-taking system, Breadcrumbs can leverage the structure of your note names. For example, if you have the following notes:
