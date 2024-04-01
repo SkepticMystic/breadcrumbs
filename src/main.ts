@@ -16,7 +16,8 @@ import { thread } from "./commands/thread";
 import { DIRECTIONS } from "./const/hierarchies";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
-import { Logger } from "./logger";
+import type { BreadcrumbsError } from "./interfaces/graph";
+import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { deep_merge_objects } from "./utils/objects";
@@ -27,18 +28,16 @@ export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
 	graph = new BCGraph();
 	api!: BCAPI;
-	log!: Logger;
 
 	async onload() {
 		// Settings
 		await this.loadSettings();
 
 		// Logger
-		this.log = new Logger(this);
+		log.set_level(this.settings.debug.level);
 
-		this.log.info("loading breadcrumbs");
-
-		this.log.debug("bc.loadsettings", this.settings);
+		log.info("loading");
+		log.debug("settings >", this.settings);
 
 		/// Migrations
 		await migrate_old_settings(this);
@@ -57,7 +56,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		);
 
 		this.app.workspace.onLayoutReady(async () => {
-			this.log.debug("layout-ready");
+			log.debug("on:layout-ready");
 
 			await dataview_plugin.await_if_enabled(this);
 
@@ -67,7 +66,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Workspace
 			this.registerEvent(
 				this.app.workspace.on("layout-change", async () => {
-					this.log.debug("layout-change");
+					log.debug("on:layout-change");
 
 					await this.refresh({
 						rebuild_graph:
@@ -79,6 +78,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.workspace.on("active-leaf-change", async (leaf) => {
+					log.debug("on:active-leaf-change");
+
 					// NOTE: We only want to refresh the store when changing to another md note
 					if (leaf?.getViewState().type !== "markdown") {
 						return;
@@ -95,33 +96,33 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Vault
 			this.registerEvent(
 				this.app.vault.on("create", (file) => {
-					this.log.debug("on.create:", file.path);
+					log.debug("on:create >", file.path);
 
 					if (file instanceof TFile) {
 						// This isn't perfect, but it stops any "node doesn't exist" errors
 						// The user will have to refresh to add any relevant edges
 						this.graph.upsert_node(file.path, { resolved: true });
 
-						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
 
 			this.registerEvent(
 				this.app.vault.on("rename", (file, old_path) => {
-					this.log.debug("on.rename:", old_path, "->", file.path);
+					log.debug("on:rename >", old_path, "->", file.path);
 
 					if (file instanceof TFile) {
 						this.graph.safe_rename_node(old_path, file.path);
 
-						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
 
 			this.registerEvent(
 				this.app.vault.on("delete", (file) => {
-					this.log.debug("on.delete:", file.path);
+					log.debug("on:delete >", file.path);
 
 					if (file instanceof TFile) {
 						// NOTE: Instead of dropping it, we mark it as unresolved.
@@ -134,7 +135,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 							false,
 						);
 
-						// NOTE: No need to this.refresh. The envent triggers a layout-change anyway
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
@@ -290,7 +291,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
 	}) => {
-		this.log.debug(
+		log.debug(
+			"refresh >",
 			["rebuild_graph", "active_file_store", "redraw_page_views"]
 				.filter(
 					(key) => options?.[key as keyof typeof options] !== false,
@@ -306,18 +308,21 @@ export default class BreadcrumbsPlugin extends Plugin {
 				? new Notice("Rebuilding graph")
 				: null;
 
-			this.log.start_group("rebuild_graph");
 			const rebuild_results = await rebuild_graph(this);
 			this.graph = rebuild_results.graph;
-			this.log.end_group();
 
-			const explicit_edge_errors =
-				rebuild_results.explicit_edge_results.filter(
-					(result) => result.errors.length,
+			const explicit_edge_errors = rebuild_results.explicit_edge_results
+				.filter((result) => result.errors.length)
+				.reduce(
+					(acc, { source, errors }) => {
+						acc[source] = errors;
+						return acc;
+					},
+					{} as Record<string, BreadcrumbsError[]>,
 				);
 
-			if (explicit_edge_errors.length) {
-				this.log.warn("graph-build errors:", explicit_edge_errors);
+			if (Object.keys(explicit_edge_errors).length) {
+				log.warn("explicit_edge_errors >", explicit_edge_errors);
 			}
 
 			notice?.setMessage(
@@ -325,11 +330,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 					`Rebuilt graph in ${Date.now() - start_ms}ms`,
 
 					explicit_edge_errors.length
-						? "\nErrors (see console for more info):"
+						? "\nErrors (see console for details):"
 						: null,
 
-					...explicit_edge_errors.map(
-						({ errors, source }) =>
+					...Object.entries(explicit_edge_errors).map(
+						([source, errors]) =>
 							`- ${source}: ${errors.length} errors`,
 					),
 				]
@@ -367,7 +372,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					: workspace.getRightLeaf(false);
 
 			if (!leaf) {
-				this.log.warn("bc.activateView: no leaf found");
+				log.warn("activate_view > no leaf found");
 				return;
 			}
 

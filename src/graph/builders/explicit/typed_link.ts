@@ -3,6 +3,7 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
+import { log } from "src/logger";
 import { ensure_is_array } from "src/utils/arrays";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { resolve_relative_target_path } from "src/utils/obsidian";
@@ -89,13 +90,16 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					} else if (target_link instanceof DateTime) {
 						// NOTE: The original, unparsed value is no longer available
 						// So we just skip it for now
-						plugin.log.debug("Ignoring DateTime for field:", field);
+						log.debug(
+							"builder:typed-link > Ignoring DateTime for field:",
+							field,
+						);
 
 						return;
 					} else {
 						// warn because we know it's a BC field, with a definitely invalid value
-						plugin.log.warn(
-							"Invalid target_link type",
+						log.warn(
+							"builder:typed-link > Invalid target_link type",
 							target_link,
 						);
 					}

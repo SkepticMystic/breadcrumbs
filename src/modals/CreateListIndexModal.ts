@@ -3,6 +3,7 @@ import { ListIndex } from "src/commands/list_index";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
@@ -109,7 +110,7 @@ export class CreateListIndexModal extends Modal {
 				.setButtonText("Build & Copy to Clipboard")
 				.setCta()
 				.onClick(async () => {
-					plugin.log.debug("build_list_index options", this.options);
+					log.debug("build_list_index options", this.options);
 
 					const list_index = ListIndex.build(
 						plugin.graph,

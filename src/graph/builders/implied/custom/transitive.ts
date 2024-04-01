@@ -1,5 +1,6 @@
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { url_search_params } from "src/utils/url";
@@ -20,8 +21,8 @@ export const _add_implied_edges_custom_transitive = (
 	);
 	if (!field_hierarchy) {
 		// TODO: This seems like justification enough for ImpliedEdgeBuilders to return an errors array like the explicit ones
-		plugin.log.warn(
-			`Couldn't find hierarchy for transitive.close_field: ${transitive.close_field}`,
+		log.warn(
+			`No hierarchy for transitive.close_field: ${transitive.close_field}`,
 		);
 		return {};
 	}

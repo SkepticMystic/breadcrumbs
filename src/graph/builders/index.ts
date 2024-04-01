@@ -63,7 +63,6 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		}),
 	);
 
-	console.groupCollapsed("add_implied_edges");
 	for (let round = 1; round <= IMPLIED_RELATIONSHIP_MAX_ROUNDS; round++) {
 		Object.entries(add_implied_edges).forEach(([kind, fn]) => {
 			fn(graph, plugin, { round });
@@ -80,7 +79,6 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 			},
 		);
 	}
-	console.groupEnd();
 
 	return { graph, explicit_edge_results };
 };

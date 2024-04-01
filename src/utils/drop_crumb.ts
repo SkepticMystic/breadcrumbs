@@ -5,6 +5,7 @@ import type {
 	BCNodeAttributes,
 } from "src/graph/MyMultiGraph";
 import type { CrumbDestination } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import {
 	ensure_is_array,
@@ -78,7 +79,10 @@ export const drop_crumbs = async (
 						}
 					});
 
-					plugin.log.debug("frontmatter", frontmatter);
+					log.debug(
+						"drop_crumbs > processed frontmatter",
+						frontmatter,
+					);
 				},
 			);
 			break;

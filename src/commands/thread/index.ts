@@ -1,6 +1,7 @@
 import { MarkdownView, Notice, TFile } from "obsidian";
 import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { drop_crumbs } from "src/utils/drop_crumb";
 import { Paths } from "src/utils/paths";
@@ -39,7 +40,7 @@ export const thread = async (
 		const msg = `Error creating file "${target_path}". ${error instanceof Error ? error.message : error}}`;
 
 		new Notice(msg);
-		plugin.log.error(msg);
+		log.error(msg);
 
 		return;
 	}

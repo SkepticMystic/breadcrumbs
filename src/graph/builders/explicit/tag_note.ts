@@ -4,6 +4,7 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
@@ -20,8 +21,8 @@ const get_tag_note_info = (
 	if (!raw_tag) {
 		raw_tag = metadata["BC-tag-note"];
 		if (raw_tag) {
-			plugin.log.warn(
-				`DEPRECATED: BC-tag-note is deprecated in favor of ${META_FIELD["tag-note-tag"]}`,
+			log.warn(
+				`'BC-tag-note' is deprecated in favor of ${META_FIELD["tag-note-tag"]}`,
 			);
 		}
 	}

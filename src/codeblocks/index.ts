@@ -116,9 +116,11 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			case "dataview-from": {
 				//@ts-ignore: TODO: Remove once everyone has migrated
 				if (key === "from") {
-					plugin.log.warn(
-						"The 'from' field in codeblocks is deprecated in favour of 'dataview-from' instead.",
-					);
+					errors.push({
+						path: key,
+						code: "deprecated_field",
+						message: `The 'from' field is deprecated. Use 'dataview-from' instead.`,
+					});
 				}
 
 				try {

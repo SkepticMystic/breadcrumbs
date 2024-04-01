@@ -1,4 +1,4 @@
-import { LOG_LEVELS } from "src/logger";
+import { LOG_LEVELS, log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 
@@ -13,7 +13,7 @@ export const _add_settings_debug = (
 			options: LOG_LEVELS,
 			value: plugin.settings.debug.level,
 			cb: async (value) => {
-				plugin.log.level = value;
+				log.set_level(value);
 				plugin.settings.debug.level = value;
 
 				await plugin.saveSettings();

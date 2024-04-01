@@ -6,6 +6,7 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
@@ -108,7 +109,10 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			pages = dataview_plugin.get_api()!.pages(query)
 				.values as IDataview.Page[];
 		} catch (error) {
-			plugin.log.warn("dataview-note DV API error", error);
+			log.warn(
+				"dataview-note > DV API error:",
+				error instanceof Error ? error.message : error,
+			);
 
 			return errors.push({
 				code: "invalid_field_value",
