@@ -612,6 +612,17 @@ Show specific attributes about each item in the tree. Give a comma-separated lis
 -   `implied_kind`: The kind of [implied relation](#implied-relationships) the edge is.
 -   `round`: The round the implied edge was added in.
 
+## Suggestors
+
+### Hierarchy Field Suggestor
+
+The Hierarchy Field Suggestor lets you quickly add a new [Typed Link](#typed-links) edge. If you type the _trigger_ string at the start of a line, it will show you a list of all the fields you've used in your Breadcrumbs settings, and let you quickly select one.
+
+#### Hierarchy Field Suggestor Settings
+
+-   **Enable**: Enable the Hierarchy Field Suggestor. Obsidian needs to be restarted after enabling.
+-   **Trigger**: The character(s) that triggers the suggestor. Defaults to `.`.
+
 ## API
 
 Breadcrumbs exposes a simple API for other plugins to use.
