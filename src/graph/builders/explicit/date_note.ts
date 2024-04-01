@@ -93,8 +93,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			);
 
 			// NOTE: We have a full path, so we can go straight to the file without the given source_path
-			const target_file =
-				plugin.app.vault.getAbstractFileByPath(target_path);
+			const target_file = plugin.app.vault.getFileByPath(target_path);
 			if (!target_file) {
 				graph.safe_add_node(target_path, { resolved: false });
 			}

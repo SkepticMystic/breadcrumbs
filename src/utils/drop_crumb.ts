@@ -22,20 +22,17 @@ const linkify_edge = (
 	target_aliases: string[] | undefined,
 ) => {
 	// target_id is a full path
-	const target_file = plugin.app.vault.getAbstractFileByPath(target_id);
+	const target_file = plugin.app.vault.getFileByPath(target_id);
 
 	if (!target_file) {
 		return `[[${Paths.drop_ext(target_id)}]]`;
-	} else if (target_file instanceof TFile) {
+	} else {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,
 			source_id,
 			undefined,
 			target_aliases?.at(0),
 		);
-	} else {
-		// NOTE: This is a folder or something else
-		return `[[${target_id}]]`;
 	}
 };
 

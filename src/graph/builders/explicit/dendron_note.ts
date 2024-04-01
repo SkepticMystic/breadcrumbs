@@ -91,16 +91,16 @@ const handle_dendron_note = (
 		"md",
 	);
 
-	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
-	const target_file = plugin.app.vault.getAbstractFileByPath(target_path);
-
 	const { field, field_hierarchy } = dendron_note_info.data;
 
-	// If !target_file, we can recursively call handle_dendron_note
-	//   To add the unresolved edges along the way
+	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
+	const target_file = plugin.app.vault.getFileByPath(target_path);
+
 	if (!target_file) {
 		graph.safe_add_node(target_path, { resolved: false });
 
+		// If !target_file, we can recursively call handle_dendron_note
+		//   To add the unresolved edges along the way
 		handle_dendron_note(
 			plugin,
 			graph,

@@ -88,9 +88,7 @@ const handle_johnny_decimal_note = (
 	if (!target_note) return;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
-	const target_file = plugin.app.vault.getAbstractFileByPath(
-		target_note.path,
-	);
+	const target_file = plugin.app.vault.getFileByPath(target_note.path);
 
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
