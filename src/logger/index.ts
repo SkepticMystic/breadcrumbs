@@ -15,13 +15,13 @@ export class Logger {
 
 	debug(...args: any[]) {
 		if (get_level_i(this.level) <= 0) {
-			console.log("bc.debug |", ...args);
+			console.log("%c[BC:DEBUG]", "color: #999;", ...args);
 		}
 	}
 
 	info(...args: any[]) {
 		if (get_level_i(this.level) <= 1) {
-			console.log("bc.info |", ...args);
+			console.log("[BC:INFO]", ...args);
 		}
 	}
 
@@ -29,13 +29,13 @@ export class Logger {
 		if (get_level_i(this.level) <= 2) {
 			// NOTE: Don't actually console.warn
 			// The user doesn't need a stack trace
-			console.log("bc.warn |", ...args);
+			console.log("%c[BC:WARN]", "color: #f90;", ...args);
 		}
 	}
 
 	error(...args: any[]) {
 		if (get_level_i(this.level) <= 3) {
-			console.error("bc.error |", ...args);
+			console.error("%c[BC:ERROR]", "color: #f00;", ...args);
 		}
 	}
 
