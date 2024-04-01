@@ -20,6 +20,7 @@ import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
+import { HierarchyFieldSuggestor } from "./suggestor/hierarchy-field";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
@@ -54,6 +55,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// @ts-ignore: Don't want to make it optional, but still delete on unload
 			() => delete window.BCAPI,
 		);
+
+		// TODO: registerHoverLinkSource
+
+		// Suggestors
+		if (this.settings.suggestors.hierarchy_field.enabled) {
+			this.registerEditorSuggest(new HierarchyFieldSuggestor(this));
+		}
 
 		this.app.workspace.onLayoutReady(async () => {
 			log.debug("on:layout-ready");

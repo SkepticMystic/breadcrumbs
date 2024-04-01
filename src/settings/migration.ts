@@ -259,5 +259,36 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		delete old.writeBCsInline;
 	}
 
+	/// Thread
+	if (old.threadingTemplate !== undefined) {
+		plugin.settings.commands.thread.default_options.target_path_template =
+			old.threadingTemplate;
+
+		delete old.threadingTemplate;
+	}
+
+	if (old.threadUnderCursor !== undefined) {
+		plugin.settings.commands.thread.default_options.destination =
+			old.threadUnderCursor ? "dataview-inline" : "frontmatter";
+
+		delete old.threadUnderCursor;
+	}
+
+	// SECTION: Suggestors
+	/// Hierarchy Field
+	if (old.enableRelationSuggestor !== undefined) {
+		plugin.settings.suggestors.hierarchy_field.enabled =
+			old.enableRelationSuggestor;
+
+		delete old.enableRelationSuggestor;
+	}
+
+	if (old.relSuggestorTrigger !== undefined) {
+		plugin.settings.suggestors.hierarchy_field.trigger =
+			old.relSuggestorTrigger;
+
+		delete old.relSuggestorTrigger;
+	}
+
 	await plugin.saveSettings();
 };

@@ -124,6 +124,13 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 	},
 
+	suggestors: {
+		hierarchy_field: {
+			enabled: false,
+			trigger: ".",
+		},
+	},
+
 	debug: {
 		level: "INFO",
 	},
