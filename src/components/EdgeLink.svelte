@@ -28,5 +28,5 @@
 	resolved={edge.target_attr.resolved}
 	cls="{cls} BC-edge {edge.attr.explicit
 		? 'BC-edge-explicit'
-		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`} "
+		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`}"
 />

@@ -12,7 +12,7 @@
 </script>
 
 {#if Object.values(enabled_views).some(Boolean)}
-	<div class="mb-4">
+	<div class="markdown-rendered mb-4">
 		{#if enabled_views.grid}
 			<GridView {plugin} />
 		{/if}

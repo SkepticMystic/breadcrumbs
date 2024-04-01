@@ -13,26 +13,22 @@
 	const no_ext = Paths.drop_ext(path);
 </script>
 
-<a
-	class="internal-link {cls}"
+<!-- svelte-ignore a11y-interactive-supports-focus -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<span
+	role="link"
+	class="internal-link cursor-pointer {cls}"
 	class:is-unresolved={!resolved}
 	class:BC-active-note={$active_file_store?.path === path}
-	href={path}
 	data-href={path}
-	rel="noopener"
-	target="_blank"
 	aria-label={// Previously checked if path === display
 	// But I think we should only show the label if the folder/basename is different,
 	// not just the extension
 	no_ext === display ? "" : path}
-	on:click={async (e) => {
+	on:click={(e) =>
 		// NOTE: We openLinkText from vault root, since it's a full path already
-		// TODO: I think #511 comes from here. Test if this does what is expected:
-		//  - If only one leaf is open, open the link in that leaf
-		//  - If multiple leaves are open, open in the active leaf
-		//  - If another window is open, open in the active window
-		await plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
-	}}
+		// TODO: I think #511 comes from here.
+		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e))}
 >
 	{display}
-</a>
+</span>
