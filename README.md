@@ -507,6 +507,19 @@ This command takes all the _implied_ edges leaving the current note, and makes t
 
 -   **Destination**: Choose where to write the edges to. Either as [frontmatter links](#frontmatter-links), or [Dataview links](#dataview-links).
 
+### Thread
+
+This command creates a new note, and adds a Breadcrumbs edge to it from the current note. This is useful for quickly creating a new note in the context of the current note.
+
+#### Thread Settings
+
+-   **Destination**: Choose where to write the edges to. Either as [frontmatter links](#frontmatter-links), [Dataview links](#dataview-links), or none.
+-   **Target Path Template**: Choose a template for the path of the new note. This can include placeholders for:
+    -   `{{source.folder}}`: The folder of the current note.
+    -   `{{source.path}}`: The path of the current note.
+    -   `{{source.basename}}`: The basename of the current note.
+    -   `{{attr.field}}`: The Breadcrumbs field used to thread the new note.
+
 ## Codeblocks
 
 Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)). The basic syntax is:
