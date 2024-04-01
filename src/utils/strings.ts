@@ -1,3 +1,4 @@
+import { log } from "src/logger";
 import { deep_access } from "./objects";
 
 export const split_and_trim = (str: string, delimiter = ","): string[] => {
@@ -23,7 +24,8 @@ export const resolve_templates = (
 	str: string,
 	templates: Record<string, unknown>,
 ): string => {
-	console.log("templates", templates);
+	log.info("templates", templates);
+
 	let resolved = str.slice();
 
 	resolved.match(TEMPLATE_REGEX)?.forEach((match) => {

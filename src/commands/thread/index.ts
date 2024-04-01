@@ -29,7 +29,7 @@ export const thread = async (
 		}),
 		"md",
 	);
-	console.log("target_path", target_path);
+	log.debug("thread > target_path", target_path);
 
 	// Create the target file
 	let target_file: TFile | null = null;
@@ -37,7 +37,7 @@ export const thread = async (
 	try {
 		target_file = await plugin.app.vault.create(target_path, "");
 	} catch (error) {
-		const msg = `Error creating file "${target_path}". ${error instanceof Error ? error.message : error}}`;
+		const msg = `Error creating file "${target_path}". ${error instanceof Error ? error.message : error}`;
 
 		new Notice(msg);
 		log.error(msg);
