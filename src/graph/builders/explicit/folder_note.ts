@@ -139,21 +139,29 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 	});
 
 	await Promise.all(
-		folder_notes.map(({ data, file }) =>
+		folder_notes.map(({ data, file: folder_note }) =>
 			iterate_folder_files(
 				plugin,
-				file.folder,
+				folder_note.folder,
 				(target_path) => {
-					if (target_path === file.path) return;
+					if (
+						!target_path.endsWith(".md") ||
+						target_path === folder_note.path
+					)
+						return;
 
 					// We know path is resolved
-					graph.safe_add_directed_edge(file.path, target_path, {
-						dir: data.dir,
-						explicit: true,
-						field: data.field,
-						source: "folder_note",
-						hierarchy_i: data.hierarchy_i,
-					});
+					graph.safe_add_directed_edge(
+						folder_note.path,
+						target_path,
+						{
+							dir: data.dir,
+							explicit: true,
+							field: data.field,
+							source: "folder_note",
+							hierarchy_i: data.hierarchy_i,
+						},
+					);
 				},
 				data.recurse,
 			),
