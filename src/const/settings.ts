@@ -110,6 +110,14 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				destination: "frontmatter",
 			},
 		},
+
+		thread: {
+			default_options: {
+				destination: "frontmatter",
+				target_path_template:
+					"{{source.folder}}/{{attr.field}} {{source.basename}}",
+			},
+		},
 	},
 
 	codeblocks: {

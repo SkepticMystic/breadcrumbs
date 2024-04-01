@@ -13,6 +13,8 @@ const extname = (path: string) => path.split(".").pop()!;
 
 const drop_folder = (path: string) => path.split("/").pop()!;
 
+const dirname = (path: string) => path.split("/").slice(0, -1).join("/");
+
 /** Keeps .ext */
 const basename = (path: string) => path.split("/").pop()!;
 
@@ -55,8 +57,10 @@ const show = (
 
 export const Paths = {
 	ensure_ext,
+
 	extname,
 	basename,
+	dirname,
 
 	// update_name,
 

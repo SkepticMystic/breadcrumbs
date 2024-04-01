@@ -12,6 +12,7 @@ import {
 	group_projection,
 	remove_duplicates,
 } from "src/utils/arrays";
+import { Paths } from "./paths";
 
 const linkify_edge = (
 	plugin: BreadcrumbsPlugin,
@@ -23,12 +24,7 @@ const linkify_edge = (
 	const target_file = plugin.app.vault.getAbstractFileByPath(target_id);
 
 	if (!target_file) {
-		// NOTE: Wait... by definition, the target file points to the source.
-		// Can it be the case that an _unresolved_ target has an explicit edge?
-		// I think one of the edge builders relies on this question, as well
-		plugin.log.info("unresolved target", target_id);
-
-		return `[[${target_id}]]`;
+		return `[[${Paths.drop_ext(target_id)}]]`;
 	} else if (target_file instanceof TFile) {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,

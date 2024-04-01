@@ -1,8 +1,8 @@
 import type { ListIndex } from "src/commands/list_index";
 import type { Direction } from "src/const/hierarchies";
 import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
-import type { Hierarchy } from "./hierarchies";
 import type { LogLevels } from "src/logger";
+import type { Hierarchy } from "./hierarchies";
 
 export type ShowNodeOptions = {
 	ext: boolean;
@@ -121,6 +121,13 @@ export interface BreadcrumbsSettings {
 		freeze_implied_edges: {
 			default_options: {
 				destination: CrumbDestination;
+			};
+		};
+
+		thread: {
+			default_options: {
+				target_path_template: string;
+				destination: CrumbDestination | "none";
 			};
 		};
 	};

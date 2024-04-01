@@ -35,7 +35,7 @@ export class Logger {
 
 	error(...args: any[]) {
 		if (get_level_i(this.level) <= 3) {
-			console.error("%c[BC:ERROR]", "color: #f00;", ...args);
+			console.log("%c[BC:ERROR]", "color: #f00;", ...args);
 		}
 	}
 

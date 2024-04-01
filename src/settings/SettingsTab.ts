@@ -18,6 +18,7 @@ import { _add_settings_regex_note } from "./RegexNoteSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
 import { _add_settings_debug } from "./DebugSettings";
+import { _add_settings_thread } from "./ThreadSettings";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -169,6 +170,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			make_details_el(containerEl, {
 				s: { text: "> Freeze Implied Edges" },
 			}).children,
+		);
+
+		_add_settings_thread(
+			plugin,
+			make_details_el(containerEl, { s: { text: "> Thread" } }).children,
 		);
 
 		// Codeblocks

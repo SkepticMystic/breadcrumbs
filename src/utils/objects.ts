@@ -24,6 +24,26 @@ export function deep_merge_objects<T>(obj1: T, obj2: T): T {
 	return result;
 }
 
+export const deep_access = <
+	T extends Record<string, unknown>,
+	K extends string,
+>(
+	obj: T,
+	path: K[],
+) => {
+	let current = obj;
+
+	for (const key of path) {
+		if (current[key] === undefined) {
+			return undefined;
+		}
+
+		current = current[key] as T;
+	}
+
+	return current as unknown;
+};
+
 export const untyped_pick = <
 	T extends Record<string, unknown>,
 	K extends string,

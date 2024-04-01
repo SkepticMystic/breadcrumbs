@@ -12,6 +12,7 @@ import { CodeblockMDRC } from "./codeblocks/MDRC";
 import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
+import { thread } from "./commands/thread";
 import { DIRECTIONS } from "./const/hierarchies";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
@@ -232,18 +233,37 @@ export default class BreadcrumbsPlugin extends Plugin {
 				callback: () => jump_to_neighbour(this, { attr: { dir } }),
 			});
 		});
+		this.settings.hierarchies.forEach((hierarchy) => {
+			DIRECTIONS.forEach((dir) => {
+				hierarchy.dirs[dir].forEach((field) => {
+					if (!field) return;
+
+					this.addCommand({
+						id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
+						name: `Jump to first neighbour by field:${field}`,
+						callback: () =>
+							jump_to_neighbour(this, { attr: { field } }),
+					});
+				});
+			});
+		});
+
+		// Thread
 		this.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
 			DIRECTIONS.forEach((dir) => {
-				const fields_str = hierarchy.dirs[dir].join(",");
-				if (!fields_str.length) return;
+				hierarchy.dirs[dir].forEach((field) => {
+					if (!field) return;
 
-				this.addCommand({
-					id: `breadcrumbs:jump-to-first-neighbour-field:${hierarchy_i}-${dir}`,
-					name: `Jump to first neighbour by field:${fields_str}`,
-					callback: () =>
-						jump_to_neighbour(this, {
-							attr: { hierarchy_i, dir },
-						}),
+					this.addCommand({
+						id: `breadcrumbs:thread-field:${field}`,
+						name: `Thread by field:${field}`,
+						callback: () =>
+							thread(
+								this,
+								{ hierarchy_i, dir, field },
+								this.settings.commands.thread.default_options,
+							),
+					});
 				});
 			});
 		});
