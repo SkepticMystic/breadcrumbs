@@ -87,7 +87,10 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						target_link?.path
 					) {
 						unsafe_target_path = target_link.path;
-					} else if (target_link instanceof DateTime) {
+					} else if (
+						//@ts-ignore: instanceof didn't work here?
+						target_link?.isLuxonDateTime
+					) {
 						// NOTE: The original, unparsed value is no longer available
 						// So we just skip it for now
 						log.debug(
