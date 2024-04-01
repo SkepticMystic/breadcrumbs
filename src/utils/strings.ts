@@ -24,8 +24,6 @@ export const resolve_templates = (
 	str: string,
 	templates: Record<string, unknown>,
 ): string => {
-	log.info("templates", templates);
-
 	let resolved = str.slice();
 
 	resolved.match(TEMPLATE_REGEX)?.forEach((match) => {

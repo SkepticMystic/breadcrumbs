@@ -18,15 +18,18 @@ export const thread = async (
 	if (!source_file) return;
 
 	// Resolve the target path template
+	const template_data = {
+		attr,
+		source: {
+			path: source_file.path,
+			folder: source_file.parent?.path ?? "",
+			basename: Paths.drop_ext(source_file.basename),
+		},
+	};
+	log.info("template_data", template_data);
+
 	const target_path = Paths.ensure_ext(
-		resolve_templates(options.target_path_template, {
-			attr,
-			source: {
-				path: source_file.path,
-				folder: source_file.parent?.path ?? "",
-				basename: Paths.drop_ext(source_file.basename),
-			},
-		}),
+		resolve_templates(options.target_path_template, template_data),
 		"md",
 	);
 	log.debug("thread > target_path", target_path);
@@ -64,6 +67,8 @@ export const thread = async (
 	// Open the target file
 	await Promise.all([
 		// Let the cache update so that the refresh sees the new file
+		// NOTE: I half-completed a less-flaky solution by listening to app.metadataCache.on("changed", ...)
+		// But this only works if Dataview isn't enabled, and I couldn't find the correct event to listen to for Dataview
 		sleep(500),
 		active_view.leaf.openFile(target_file),
 	]);

@@ -2,6 +2,7 @@ import { MultiGraph } from "graphology";
 import type { ExplicitEdgeSource } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "src/interfaces/hierarchies";
+import { fail, succ } from "src/utils/result";
 import { objectify_edge_mapper } from "./objectify_mappers";
 import { Traverse } from "./traverse";
 import { has_edge_attrs, is_self_loop } from "./utils";
@@ -118,12 +119,16 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 	}
 
 	safe_rename_node(old_id: string, new_id: string) {
-		const [old_exists, new_exists] = [
-			this.hasNode(old_id),
-			this.hasNode(new_id),
-		];
+		const exists = {
+			old: this.hasNode(old_id),
+			new: this.hasNode(new_id),
+		};
 
-		if (old_exists && !new_exists) {
+		if (!exists.old) {
+			return fail({ exists, message: "old_id doesn't exist" });
+		} else if (exists.new) {
+			return fail({ exists, message: "new_id already exists" });
+		} else {
 			// Add the new node
 			this.addNode(new_id, this.getNodeAttributes(old_id));
 
@@ -133,46 +138,43 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 			//   You could just rerun the builders for the new_id node
 			//   But for now, the name-specific edges can just be filtered out here
 			// Freeze the old node
-			const old_in_edges = this.mapInEdges(
-				old_id,
-				objectify_edge_mapper((e) => e),
-			);
-			const old_out_edges = this.get_out_edges(old_id);
+			const old_edges = {
+				in: this.get_in_edges(old_id),
+				out: this.get_out_edges(old_id),
+			};
 
 			// Drop the old node (conveniently, this also drops the old edges)
 			this.dropNode(old_id);
 
 			// Point the old edges at the new node
-			old_in_edges.forEach((old_in_edge) => {
+			old_edges.in.forEach((old_in_edge) => {
 				// Might be a self-loop (source:self_is_sibling, for example)
 				is_self_loop(old_in_edge)
-					? this.addDirectedEdge(new_id, new_id, old_in_edge.attr)
-					: this.addDirectedEdge(
+					? this.safe_add_directed_edge(
+							new_id,
+							new_id,
+							old_in_edge.attr,
+						)
+					: this.safe_add_directed_edge(
 							old_in_edge.source_id,
 							new_id,
 							old_in_edge.attr,
 						);
 			});
 
-			old_out_edges.forEach((old_out_edge) => {
+			old_edges.out.forEach((old_out_edge) => {
 				// Only add the self-loop once.
 				// If it's there, it would have appeared in both the old_in and old_out edges
 				!is_self_loop(old_out_edge) &&
-					this.addDirectedEdge(
+					this.safe_add_directed_edge(
 						new_id,
 						old_out_edge.target_id,
 						old_out_edge.attr,
 					);
 			});
-		} else {
-			// NOTE: plugin isn't available for us to use .log, but error is the highest level anyway
-			console.error("can't safe_rename_node:", old_id, "->", new_id, {
-				old_exists,
-				new_exists,
-			});
 		}
 
-		return { old_exists, new_exists };
+		return succ({ exists });
 	}
 
 	/** Uniquely identify an edge based on its:
@@ -208,6 +210,14 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 			return false;
 		}
 	};
+
+	get_in_edges = (node_id?: string) =>
+		node_id
+			? this.mapInEdges(
+					node_id,
+					objectify_edge_mapper((e) => e),
+				)
+			: this.mapInEdges(objectify_edge_mapper((e) => e));
 
 	get_out_edges = (node_id?: string) =>
 		node_id

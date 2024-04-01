@@ -12,7 +12,8 @@ import type {
 	BCNodeAttributes,
 } from "./MyMultiGraph";
 
-export const is_self_loop = (edge: BCEdge) => edge.source_id === edge.target_id;
+export const is_self_loop = (edge: Pick<BCEdge, "source_id" | "target_id">) =>
+	edge.source_id === edge.target_id;
 
 export const stringify_node = (
 	node_id: string,

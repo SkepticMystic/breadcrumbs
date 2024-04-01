@@ -113,7 +113,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 					log.debug("on:rename >", old_path, "->", file.path);
 
 					if (file instanceof TFile) {
-						this.graph.safe_rename_node(old_path, file.path);
+						const res = this.graph.safe_rename_node(
+							old_path,
+							file.path,
+						);
+
+						if (!res.ok) {
+							log.error("safe_rename_node >", res.error.message);
+						}
 
 						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
