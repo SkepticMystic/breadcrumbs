@@ -10,8 +10,9 @@ Internally, Breadcrumbs uses a graph to represent this structure (much like the 
 
 -   [Hierarchies](#hierarchies)
 -   [Building the Breadcrumbs graph](#building-the-breadcrumbs-graph)
-    -   [Explicit Edge Sources](#explicit-edge-sources)
+    -   [Explicit Edge Builders](#explicit-edge-sources)
     -   [Implied Relationships](#implied-relationships)
+    -   [Customise the Build Process](#customise-the-build-process)
 -   [Leveraging the Breadcrumbs graph](#leveraging-the-breadcrumbs-graph)
     -   [Views](#views)
     -   [Commands](#commands)
@@ -399,6 +400,13 @@ Now there is a chain of `[up, down]` between `A` and `B` (`A -up-> Parent -down-
 [![](https://mermaid.ink/img/pako:eNptjzELgzAQhf_KcZOCCuqWodDSsYXSrlkOc1bBJBITShH_e6N2KfSG4_je43hvxsYqRoFPR2MHl7s0EKdMjinkOYQx7gNUyY0cG5_uap2cftSdVitS9mU2WP6D9fc75AVMpBmKFWKGmp2mXsUc82qR6DvWLFHEU3FLYfASpVmilYK3j7dpUHgXOMMwKvJ87ik20ChaGqZIWfXeuuvebau4fABhA0Kt?type=png)](https://mermaid.live/edit#pako:eNptjzELgzAQhf_KcZOCCuqWodDSsYXSrlkOc1bBJBITShH_e6N2KfSG4_je43hvxsYqRoFPR2MHl7s0EKdMjinkOYQx7gNUyY0cG5_uap2cftSdVitS9mU2WP6D9fc75AVMpBmKFWKGmp2mXsUc82qR6DvWLFHEU3FLYfASpVmilYK3j7dpUHgXOMMwKvJ87ik20ChaGqZIWfXeuuvebau4fABhA0Kt)
 
 You can think of increasing the rounds as making all _previous_ implied relations **explicit**. So, in the above example, increasing the rounds of the Parents' Child is Sibling relation to `2` would make the `down` edge between `A` and `B` explicit (because they were added in round `1`), and then detect the sibling relationship.
+
+## Customise the Build Process
+
+The following metadata fields influence how Breadcrumbs adds edges to the graph. They can be added to the YAML frontmatter, or as an inline Dataview field.
+
+-   `BC-ignore-in-edges`: If true, Breadcrumbs won't add edges coming _into_ this note.
+-   `BC-ignore-out-edges`: If true, Breadcrumbs won't add edges going _out_ of this note.
 
 # Leveraging the Breadcrumbs graph
 
