@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
@@ -20,7 +20,7 @@ const get_dataview_note_info = (
 		return fail(undefined);
 	}
 
-	const query = metadata[META_FIELD["dataview-note-query"]];
+	const query = metadata[META_ALIAS["dataview-note-query"]];
 	if (!query) {
 		return fail(undefined);
 	} else if (typeof query !== "string") {
@@ -32,7 +32,7 @@ const get_dataview_note_info = (
 	}
 	// NOTE: We check that the query is actually valid later
 
-	const field = metadata[META_FIELD["dataview-note-field"]];
+	const field = metadata[META_ALIAS["dataview-note-field"]];
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {

@@ -1,4 +1,4 @@
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -15,7 +15,7 @@ const get_regex_note_info = (
 	if (!metadata) return fail(undefined);
 
 	// NOTE: Check for a regex first, then the field, since there may be a default and we would do more work than necessary before failing if there is no regex
-	const regex_str = metadata[META_FIELD["regex-note-regex"]];
+	const regex_str = metadata[META_ALIAS["regex-note-regex"]];
 	if (!regex_str) {
 		return fail(undefined);
 	} else if (typeof regex_str !== "string") {
@@ -26,7 +26,7 @@ const get_regex_note_info = (
 		});
 	}
 
-	const flags = metadata[META_FIELD["regex-note-flags"]];
+	const flags = metadata[META_ALIAS["regex-note-flags"]];
 	if (flags && typeof flags !== "string") {
 		return graph_build_fail({
 			path,
@@ -47,7 +47,7 @@ const get_regex_note_info = (
 	}
 
 	const field =
-		metadata[META_FIELD["regex-note-field"]] ??
+		metadata[META_ALIAS["regex-note-field"]] ??
 		plugin.settings.explicit_edge_sources.regex_note.default_field;
 
 	if (!field) {

@@ -1,5 +1,5 @@
 import type { Direction } from "src/const/hierarchies";
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -17,12 +17,12 @@ const get_tag_note_info = (
 ) => {
 	if (!metadata) return fail(undefined);
 
-	let raw_tag = metadata[META_FIELD["tag-note-tag"]];
+	let raw_tag = metadata[META_ALIAS["tag-note-tag"]];
 	if (!raw_tag) {
 		raw_tag = metadata["BC-tag-note"];
 		if (raw_tag) {
 			log.warn(
-				`'BC-tag-note' is deprecated in favor of ${META_FIELD["tag-note-tag"]}`,
+				`'BC-tag-note' is deprecated in favor of ${META_ALIAS["tag-note-tag"]}`,
 			);
 		}
 	}
@@ -39,7 +39,7 @@ const get_tag_note_info = (
 	const tag = ensure_starts_with(raw_tag, "#");
 
 	const field =
-		metadata[META_FIELD["tag-note-field"]] ??
+		metadata[META_ALIAS["tag-note-field"]] ??
 		plugin.settings.explicit_edge_sources.tag_note.default_field;
 
 	if (!field) {
@@ -64,7 +64,7 @@ const get_tag_note_info = (
 		});
 	}
 
-	const exact = Boolean(metadata[META_FIELD["tag-note-exact"]]);
+	const exact = Boolean(metadata[META_ALIAS["tag-note-exact"]]);
 
 	return succ({ tag, field, exact, field_hierarchy });
 };

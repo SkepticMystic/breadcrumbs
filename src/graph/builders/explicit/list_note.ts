@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
@@ -20,7 +20,7 @@ const get_list_note_info = (
 		return fail(undefined);
 	}
 
-	const field = metadata[META_FIELD["list-note-field"]];
+	const field = metadata[META_ALIAS["list-note-field"]];
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {
@@ -44,7 +44,7 @@ const get_list_note_info = (
 	}
 
 	const neighbour_field =
-		metadata[META_FIELD["list-note-neighbour-field"]] ??
+		metadata[META_ALIAS["list-note-neighbour-field"]] ??
 		plugin.settings.explicit_edge_sources.list_note.default_neighbour_field;
 
 	const neighbour_hierarchy =
@@ -53,7 +53,7 @@ const get_list_note_info = (
 			: null;
 
 	const exclude_index = Boolean(
-		metadata[META_FIELD["list-note-exclude-index"]],
+		metadata[META_ALIAS["list-note-exclude-index"]],
 	);
 
 	return succ({

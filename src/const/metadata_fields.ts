@@ -1,4 +1,4 @@
-const METADATA_FIELDS_LIST = [
+export const METADATA_FIELDS_LIST = [
 	"BC-tag-note-tag",
 	"BC-tag-note-field",
 	"BC-tag-note-exact",
@@ -20,11 +20,77 @@ const METADATA_FIELDS_LIST = [
 	//
 	"BC-dataview-note-query",
 	"BC-dataview-note-field",
+	//
+	// TODO: Implement
+	"BC-ignore-edges",
 ] as const;
 
 export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
 
-export const META_FIELD = {
+export const METADATA_FIELDS_MAP: Record<
+	MetadataField,
+	{
+		property_type: "text" | "checkbox" | "number" | "multitext";
+	}
+> = {
+	"BC-tag-note-tag": {
+		property_type: "text",
+	},
+	"BC-tag-note-field": {
+		property_type: "text",
+	},
+	"BC-tag-note-exact": {
+		property_type: "checkbox",
+	},
+	//
+	"BC-regex-note-regex": {
+		property_type: "text",
+	},
+	"BC-regex-note-flags": {
+		property_type: "text",
+	},
+	"BC-regex-note-field": {
+		property_type: "text",
+	},
+	//
+	"BC-folder-note-field": {
+		property_type: "text",
+	},
+	"BC-folder-note-recurse": {
+		property_type: "checkbox",
+	},
+	//
+	"BC-list-note-field": {
+		property_type: "text",
+	},
+	"BC-list-note-neighbour-field": {
+		property_type: "text",
+	},
+	"BC-list-note-exclude-index": {
+		property_type: "checkbox",
+	},
+	//
+	"BC-dendron-note-field": {
+		property_type: "text",
+	},
+	//
+	"BC-johnny-decimal-note-field": {
+		property_type: "text",
+	},
+	//
+	"BC-dataview-note-query": {
+		property_type: "text",
+	},
+	"BC-dataview-note-field": {
+		property_type: "text",
+	},
+	//
+	"BC-ignore-edges": {
+		property_type: "checkbox",
+	},
+};
+
+export const META_ALIAS: Record<string, MetadataField> = {
 	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
@@ -46,8 +112,6 @@ export const META_FIELD = {
 	//
 	"dataview-note-query": "BC-dataview-note-query",
 	"dataview-note-field": "BC-dataview-note-field",
-} satisfies Record<string, MetadataField>;
-
-if (Object.keys(META_FIELD).length !== METADATA_FIELDS_LIST.length) {
-	throw new Error("Missing keys in META_FIELD");
-}
+	//
+	"ignore-edges": "BC-ignore-edges",
+};

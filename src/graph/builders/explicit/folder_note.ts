@@ -1,5 +1,5 @@
 import type { Direction } from "src/const/hierarchies";
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
@@ -23,7 +23,7 @@ const get_folder_note_info = (
 ): Result<FolderNoteData, BreadcrumbsError | undefined> => {
 	if (!metadata) return fail(undefined);
 
-	const field = metadata[META_FIELD["folder-note-field"]];
+	const field = metadata[META_ALIAS["folder-note-field"]];
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {
@@ -46,7 +46,7 @@ const get_folder_note_info = (
 		});
 	}
 
-	const recurse = Boolean(metadata[META_FIELD["folder-note-recurse"]]);
+	const recurse = Boolean(metadata[META_ALIAS["folder-note-recurse"]]);
 
 	return succ({
 		field,

@@ -14,6 +14,7 @@ import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
 import { thread } from "./commands/thread";
 import { DIRECTIONS } from "./const/hierarchies";
+import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
 import type { BreadcrumbsError } from "./interfaces/graph";
@@ -42,6 +43,29 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		/// Migrations
 		await migrate_old_settings(this);
+
+		// Set the BC-fields to the right Properties type
+		// https://github.com/chrisgrieser/obsidian-quadro/blob/c456bba7654af5132852e15bd157bf16433057a1/src/shared/utils.ts#L101
+		// https://discord.com/channels/686053708261228577/840286264964022302/1224674199642177638
+
+		try {
+			const now = Date.now();
+
+			for (const [field, { property_type }] of Object.entries(
+				METADATA_FIELDS_MAP,
+			)) {
+				//@ts-ignore: This is an async function to set the types in .obsidian/types.json
+				this.app.metadataTypeManager.setType(field, property_type);
+			}
+
+			log.debug(
+				"metadataTypeManager.setType took",
+				Date.now() - now,
+				"ms",
+			);
+		} catch (error) {
+			log.error("metadataTypeManager.setType error >", error);
+		}
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
@@ -283,6 +307,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 				});
 			});
 		});
+
+		log.debug("loaded Breadcrumbs plugin");
 	}
 
 	onunload() {}

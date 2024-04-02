@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import type { Hierarchy } from "src/interfaces/hierarchies";
 import type {
@@ -121,7 +121,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	) {
 		if (old.hierarchyNotes.length > 0) {
 			new Notice(
-				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_FIELD["list-note-field"]}" field in each hierarchy note.`,
+				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`,
 			);
 		}
 

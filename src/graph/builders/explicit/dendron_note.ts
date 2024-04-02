@@ -1,4 +1,4 @@
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	BreadcrumbsError,
@@ -19,7 +19,7 @@ const get_dendron_note_info = (
 	// if (!metadata) return fail(undefined);
 
 	const field =
-		metadata?.[META_FIELD["dendron-note-field"]] ??
+		metadata?.[META_ALIAS["dendron-note-field"]] ??
 		//   Which is why we have a default_field on dendron_note
 		plugin.settings.explicit_edge_sources.dendron_note.default_field;
 
@@ -109,7 +109,7 @@ const handle_dendron_note = (
 			//   The unresolved note has no BC-dendron field, by definition
 			//   Passing undefined would just use the settings.default field
 			//   But we can propagate the field from the resolved source note, to stay in the same hierarchy
-			{ [META_FIELD["dendron-note-field"]]: field },
+			{ [META_ALIAS["dendron-note-field"]]: field },
 			errors,
 		);
 	}

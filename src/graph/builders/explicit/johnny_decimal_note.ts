@@ -1,4 +1,4 @@
-import { META_FIELD } from "src/const/metadata_fields";
+import { META_ALIAS } from "src/const/metadata_fields";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	BreadcrumbsError,
@@ -20,7 +20,7 @@ const get_johnny_decimal_note_info = (
 	// if (!metadata) return fail(undefined);
 
 	const field =
-		metadata?.[META_FIELD["johnny-decimal-note-field"]] ??
+		metadata?.[META_ALIAS["johnny-decimal-note-field"]] ??
 		//   Which is why we have a default_field on johnny_decimal_note
 		plugin.settings.explicit_edge_sources.johnny_decimal_note.default_field;
 
