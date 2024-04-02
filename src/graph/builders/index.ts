@@ -1,14 +1,12 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
+import { META_ALIAS } from "src/const/metadata_fields";
 import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_edges } from "./implied";
-import {
-	_add_implied_edges_custom_transitive,
-	stringify_transitive_relation,
-} from "./implied/custom/transitive";
+import { _add_implied_edges_custom_transitive } from "./implied/custom/transitive";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
@@ -22,6 +20,13 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 				node_attr.aliases = aliases;
 			}
 
+			if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
+				node_attr.ignore_in_edges = true;
+			}
+			if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
+				node_attr.ignore_out_edges = true;
+			}
+
 			graph.addNode(file.path, node_attr);
 		});
 	} else {
@@ -33,6 +38,13 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 			const aliases = page.file.aliases.values;
 			if (Array.isArray(aliases) && aliases.length > 0) {
 				node_attr.aliases = aliases;
+			}
+
+			if (page[META_ALIAS["ignore-in-edges"]]) {
+				node_attr.ignore_in_edges = true;
+			}
+			if (page[META_ALIAS["ignore-out-edges"]]) {
+				node_attr.ignore_out_edges = true;
 			}
 
 			graph.addNode(page.file.path, node_attr);

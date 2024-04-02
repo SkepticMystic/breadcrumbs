@@ -21,8 +21,8 @@ export const METADATA_FIELDS_LIST = [
 	"BC-dataview-note-query",
 	"BC-dataview-note-field",
 	//
-	// TODO: Implement
-	"BC-ignore-edges",
+	"BC-ignore-in-edges",
+	"BC-ignore-out-edges",
 ] as const;
 
 export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
@@ -85,12 +85,15 @@ export const METADATA_FIELDS_MAP: Record<
 		property_type: "text",
 	},
 	//
-	"BC-ignore-edges": {
+	"BC-ignore-in-edges": {
+		property_type: "checkbox",
+	},
+	"BC-ignore-out-edges": {
 		property_type: "checkbox",
 	},
 };
 
-export const META_ALIAS: Record<string, MetadataField> = {
+export const META_ALIAS = {
 	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
@@ -113,5 +116,6 @@ export const META_ALIAS: Record<string, MetadataField> = {
 	"dataview-note-query": "BC-dataview-note-query",
 	"dataview-note-field": "BC-dataview-note-field",
 	//
-	"ignore-edges": "BC-ignore-edges",
-};
+	"ignore-in-edges": "BC-ignore-in-edges",
+	"ignore-out-edges": "BC-ignore-out-edges",
+} satisfies Record<string, MetadataField>;

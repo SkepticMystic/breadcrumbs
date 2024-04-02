@@ -2,6 +2,7 @@ import { MultiGraph } from "graphology";
 import type { ExplicitEdgeSource } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
 import type { Hierarchy } from "src/interfaces/hierarchies";
+import { log } from "src/logger";
 import { fail, succ } from "src/utils/result";
 import { objectify_edge_mapper } from "./objectify_mappers";
 import { Traverse } from "./traverse";
@@ -11,6 +12,10 @@ export type BCNodeAttributes = {
 	/** .md file exists  */
 	resolved: boolean;
 	aliases?: string[];
+	/** If true, don't add any edges _to_ this node */
+	ignore_in_edges?: true;
+	/** If true, don't add any edges _from_ this node */
+	ignore_out_edges?: true;
 };
 
 export const EDGE_ATTRIBUTES = [
@@ -196,11 +201,26 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 	//   even tho there are now frozen real relations serving the exact same purpose.
 	// |${attr.explicit ? "explicit|" + attr.source : "implied|" + attr.implied_kind}
 
+	/** Return true if the edge was added.
+	 * Won't be added if it already exists (based on it's {@link this.make_edge_id}),
+	 * 	or if it's target_node has ingore_in_edges */
 	safe_add_directed_edge = (
 		source_id: string,
 		target_id: string,
 		attr: BCEdgeAttributes,
 	) => {
+		if (this.getNodeAttribute(target_id, "ignore_in_edges")) {
+			log.debug(
+				`ignore-in-edge > ${source_id} -${attr.field}-> ${target_id}`,
+			);
+			return false;
+		} else if (this.getNodeAttribute(source_id, "ignore_out_edges")) {
+			log.debug(
+				`ignore-out-edge > ${source_id} -${attr.field}-> ${target_id}`,
+			);
+			return false;
+		}
+
 		const edge_id = this.make_edge_id(source_id, target_id, attr);
 
 		if (!this.hasDirectedEdge(edge_id)) {
