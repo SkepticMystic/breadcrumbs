@@ -1,3 +1,5 @@
+import type { FrontmatterPropertyType } from "src/interfaces/obsidian";
+
 export const METADATA_FIELDS_LIST = [
 	"BC-tag-note-tag",
 	"BC-tag-note-field",
@@ -30,7 +32,7 @@ export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
 export const METADATA_FIELDS_MAP: Record<
 	MetadataField,
 	{
-		property_type: "text" | "checkbox" | "number" | "multitext";
+		property_type: FrontmatterPropertyType;
 	}
 > = {
 	"BC-tag-note-tag": {

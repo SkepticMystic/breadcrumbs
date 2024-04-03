@@ -22,6 +22,7 @@ import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { HierarchyFieldSuggestor } from "./suggestor/hierarchy-field";
+import { get_all_hierarchy_fields } from "./utils/hierarchies";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
@@ -44,22 +45,24 @@ export default class BreadcrumbsPlugin extends Plugin {
 		/// Migrations
 		await migrate_old_settings(this);
 
-		// Set the BC-fields to the right Properties type
-		// https://github.com/chrisgrieser/obsidian-quadro/blob/c456bba7654af5132852e15bd157bf16433057a1/src/shared/utils.ts#L101
-		// https://discord.com/channels/686053708261228577/840286264964022302/1224674199642177638
-
+		// Set the hierarchy-fields & BC-meta-fields to the right Properties type
 		try {
 			const now = Date.now();
+
+			for (const field of get_all_hierarchy_fields(
+				this.settings.hierarchies,
+			)) {
+				this.app.metadataTypeManager.setType(field, "multitext");
+			}
 
 			for (const [field, { property_type }] of Object.entries(
 				METADATA_FIELDS_MAP,
 			)) {
-				//@ts-ignore: This is an async function to set the types in .obsidian/types.json
 				this.app.metadataTypeManager.setType(field, property_type);
 			}
 
 			log.debug(
-				"metadataTypeManager.setType took",
+				"metadataTypeManager.setTypes took",
 				Date.now() - now,
 				"ms",
 			);
