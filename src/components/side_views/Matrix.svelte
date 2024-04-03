@@ -73,7 +73,7 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-muted">No outgoings edges</p>
+			<p class="search-empty-state">No outgoings edges</p>
 		{/if}
 	{/key}
 </div>

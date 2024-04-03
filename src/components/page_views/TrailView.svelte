@@ -125,7 +125,7 @@
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
 		{:else if plugin.settings.views.page.trail.no_path_message}
-			<p class="BC-trail-view-no-path">
+			<p class="BC-trail-view-no-path search-empty-state">
 				{plugin.settings.views.page.trail.no_path_message}
 			</p>
 		{/if}

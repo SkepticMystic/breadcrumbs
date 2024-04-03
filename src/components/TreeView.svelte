@@ -93,9 +93,9 @@
 						.show_node_options}
 				/>
 			{:else}
-				<p class="text-faint">
+				<div class="search-empty-state">
 					No paths found in {url_search_params({ dir })}
-				</p>
+				</div>
 			{/if}
 		{/key}
 	</div>

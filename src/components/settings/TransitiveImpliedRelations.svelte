@@ -112,7 +112,7 @@
 									{/each}
 								</div>
 							{:else}
-								<span class="text-muted">
+								<span class="search-empty-state">
 									No fields in the chain. Use the selector to
 									add some
 								</span>
