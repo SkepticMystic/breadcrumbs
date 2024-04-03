@@ -23,21 +23,23 @@
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if nested.children.length}
-				<div class="tree-item-icon collapse-icon">
+				<div class="tree-item-icon collapse-icon mod-collapsible">
 					<ChevronOpener open={opens[i]} />
 				</div>
 			{/if}
 
-			<EdgeLink
-				cls="tree-item-inner"
-				{plugin}
-				edge={nested.edge}
-				{show_node_options}
-			/>
+			<div class="tree-item-inner">
+				<EdgeLink
+					cls="tree-item-inner-text"
+					{plugin}
+					edge={nested.edge}
+					{show_node_options}
+				/>
+			</div>
 
 			{#if show_attributes?.length}
 				<div class="tree-item-flair-outer">
-					<span class="BC-field tree-item-flair">
+					<span class="tree-item-flair">
 						{url_search_params(
 							untyped_pick(nested.edge.attr, show_attributes),
 						)}

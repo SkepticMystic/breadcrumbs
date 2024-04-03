@@ -53,25 +53,25 @@
 
 	{#key all_out_edges}
 		{#if all_out_edges.length}
-			{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
-				{@const hierarchy_out_edges = all_out_edges.filter((e) =>
-					has_edge_attrs(e, { hierarchy_i }),
-				)}
-
-				{#if hierarchy_out_edges.length}
-					<MatrixHierarchy
-						{plugin}
-						{hierarchy}
-						{show_attributes}
-						{hierarchy_out_edges}
-						{sort}
-					/>
-
-					{#if plugin.settings.hierarchies.length !== hierarchy_i + 1}
-						<hr class="my-3" />
+			<div>
+				{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
+					{@const hierarchy_out_edges = all_out_edges.filter((e) =>
+						has_edge_attrs(e, { hierarchy_i }),
+					)}
+					{#if hierarchy_out_edges.length}
+						<MatrixHierarchy
+							{plugin}
+							{hierarchy}
+							{show_attributes}
+							{hierarchy_out_edges}
+							{sort}
+						/>
+						{#if plugin.settings.hierarchies.length !== hierarchy_i + 1}
+							<hr class="my-3" />
+						{/if}
 					{/if}
-				{/if}
-			{/each}
+				{/each}
+			</div>
 		{:else}
 			<p class="text-muted">No outgoings edges</p>
 		{/if}
