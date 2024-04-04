@@ -30,7 +30,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		return { errors };
 	}
 
-	const date_note_files: {
+	const date_notes: {
 		ext: string;
 		path: string;
 		folder: string;
@@ -47,10 +47,10 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		);
 		if (!date.isValid) return;
 
-		date_note_files.push({
+		date_notes.push({
 			date,
-			ext: file.extension,
 			path: file.path,
+			ext: file.extension,
 			basename: file.basename,
 			// Not sure why would this be undefined?
 			//   I tested and a file in the root of the vault still has a parent
@@ -66,7 +66,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		);
 		if (!date.isValid) return;
 
-		date_note_files.push({
+		date_notes.push({
 			date,
 			ext: file.ext,
 			path: file.path,
@@ -75,7 +75,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		});
 	});
 
-	date_note_files
+	date_notes
 		.sort((a, b) => a.date.toMillis() - b.date.toMillis())
 		.forEach((date_note, i) => {
 			const basename_plus_one_day = date_note.date
@@ -83,7 +83,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				.toFormat(date_note_settings.date_format);
 
 			const target_basename = date_note_settings.stretch_to_existing
-				? date_note_files.at(i + 1)?.basename ?? basename_plus_one_day
+				? date_notes.at(i + 1)?.basename ?? basename_plus_one_day
 				: basename_plus_one_day;
 
 			const target_path = Paths.build(

@@ -92,10 +92,12 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	);
 
 	all_files.dataview?.forEach((dataview_note_page) => {
+		const dataview_note_path = dataview_note_page.file.path;
+
 		const dataview_note_info = get_dataview_note_info(
 			plugin,
 			dataview_note_page,
-			dataview_note_page.file.path,
+			dataview_note_path,
 		);
 		if (!dataview_note_info.ok) {
 			if (dataview_note_info.error) errors.push(dataview_note_info.error);
@@ -106,7 +108,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 		let pages: IDataview.Page[] = [];
 		try {
-			pages = dataview_plugin.get_api()!.pages(query)
+			pages = dataview_plugin.get_api()!.pages(query, dataview_note_path)
 				.values as IDataview.Page[];
 		} catch (error) {
 			log.warn(
@@ -116,7 +118,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 			return errors.push({
 				code: "invalid_field_value",
-				path: dataview_note_page.file.path,
+				path: dataview_note_path,
 				message: `dataview-note-query is not a valid dataview query: '${query}'`,
 			});
 		}
