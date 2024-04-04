@@ -234,7 +234,7 @@ Breadcrumbs will add edges from `10.20.a Task 1` to `10.20 Project A` to `10 Wor
 -   **Field**: Choose the field to use for the edges.
 -   **Delimiter**: Choose the delimiter you use in your Johnny Decimal notes. This is generally a period (`.`), but can be anything you like.
 
-### Dataview Note
+### Dataview Notes
 
 _Dataview Notes_ allow you to use the [Dataview plugin](https://github.com/blacksmithgu/obsidian-dataview) query engine to add edges to the graph. You can turn a note into a dataview note by adding the following to your frontmatter:
 
