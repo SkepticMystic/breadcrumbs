@@ -79,6 +79,7 @@ export interface BreadcrumbsSettings {
 
 			trail: {
 				enabled: boolean;
+				show_controls: boolean;
 				default_depth: number;
 				format: "grid" | "path";
 				selection: "all" | "shortest" | "longest";

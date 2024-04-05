@@ -72,6 +72,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				default_depth: 999,
 				selection: "all",
 				no_path_message: "",
+				show_controls: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 			prev_next: {

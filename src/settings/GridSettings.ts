@@ -74,6 +74,20 @@ export const _add_settings_trail_view = (
 	});
 
 	new_setting(containerEl, {
+		name: "Show controls",
+		desc: "Show controls to change the depth/format/path-selection of the trail view",
+		toggle: {
+			value: plugin.settings.views.page.trail.show_controls,
+			cb: async (value) => {
+				plugin.settings.views.page.trail.show_controls = value;
+
+				await Promise.all([plugin.saveSettings()]);
+				plugin.refresh({ rebuild_graph: false });
+			},
+		},
+	});
+
+	new_setting(containerEl, {
 		name: "No path message",
 		desc: "Message to display when there is no path to display. Leave blank to hide the trail view when there is no path.",
 		input: {

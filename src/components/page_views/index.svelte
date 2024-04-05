@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
 	import PrevNextView from "./PrevNextView.svelte";
-	import GridView from "./TrailView.svelte";
+	import TrailView from "./TrailView.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -14,7 +14,7 @@
 {#if Object.values(enabled_views).some(Boolean)}
 	<div class="markdown-rendered mb-4">
 		{#if enabled_views.grid}
-			<GridView {plugin} />
+			<TrailView {plugin} />
 		{/if}
 
 		{#if enabled_views.prev_next}
