@@ -25,10 +25,15 @@
 	// But I think we should only show the label if the folder/basename is different,
 	// not just the extension
 	no_ext === display ? "" : path}
-	on:click={(e) =>
+	on:auxclick|preventDefault={(e) => {
+		if (e.button !== 1) return;
+
+		plugin.app.workspace.openLinkText(path, "", "tab");
+	}}
+	on:click={(e) => {
 		// NOTE: We openLinkText from vault root, since it's a full path already
-		// TODO: I think #511 comes from here.
-		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e))}
+		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
+	}}
 >
 	{display}
 </span>
