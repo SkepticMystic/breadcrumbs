@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Keymap, Menu } from "obsidian";
 	import { log } from "src/logger";
 	import BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
@@ -35,8 +36,15 @@
 			hoverParent: event.currentTarget.parentElement,
 		});
 	}}
+	on:contextmenu={(e) => {
+		const menu = new Menu();
+
+		// SOURCE: https://discord.com/channels/686053708261228577/840286264964022302/1225828755252052068
+		plugin.app.workspace.handleLinkContextMenu(menu, display, path);
+
+		menu.showAtMouseEvent(e);
 	}}
-	on:auxclick|preventDefault={(e) => {
+	on:auxclick={(e) => {
 		log.debug("on:auxclick e.button", e.button);
 
 		if (e.button === 1) {

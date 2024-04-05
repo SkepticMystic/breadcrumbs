@@ -1,5 +1,7 @@
 import "obsidian";
 
+// TODO: https://github.com/Fevol/obsidian-typings
+
 export type FrontmatterPropertyType =
 	| "text"
 	| "checkbox"
@@ -21,7 +23,9 @@ declare module "obsidian" {
 		};
 	}
 
-	interface Workspace {}
+	interface Workspace {
+		handleLinkContextMenu(menu: Menu, display: string, path: string): void;
+	}
 
 	interface Editor {}
 }
