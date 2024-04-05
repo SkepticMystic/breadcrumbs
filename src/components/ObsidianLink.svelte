@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Keymap } from "obsidian";
+	import { log } from "src/logger";
 	import BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { Paths } from "src/utils/paths";
@@ -26,9 +26,11 @@
 	// not just the extension
 	no_ext === display ? "" : path}
 	on:auxclick|preventDefault={(e) => {
-		if (e.button !== 1) return;
+		log.debug("on:auxclick e.button", e.button);
 
-		plugin.app.workspace.openLinkText(path, "", "tab");
+		if (e.button === 1) {
+			plugin.app.workspace.openLinkText(path, "", "tab");
+		}
 	}}
 	on:click={(e) => {
 		// NOTE: We openLinkText from vault root, since it's a full path already
