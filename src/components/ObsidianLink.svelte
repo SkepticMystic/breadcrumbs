@@ -15,6 +15,7 @@
 
 <!-- svelte-ignore a11y-interactive-supports-focus -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <span
 	role="link"
 	class="internal-link cursor-pointer {cls}"
@@ -25,6 +26,19 @@
 	// But I think we should only show the label if the folder/basename is different,
 	// not just the extension
 	no_ext === display ? "" : path}
+	on:mouseover={(e) => {
+		// TODO: https://discord.com/channels/686053708261228577/840286264964022302/1225817553881006123
+		if (e.ctrlKey) {
+			// SOURCE: https://github.com/blacksmithgu/obsidian-dataview/blob/4829a8320044dd3bdc3eafa96d628ffc74bacfd6/src/ui/views/calendar-view.ts#L83
+			plugin.app.workspace.trigger(
+				"link-hover",
+				{},
+				e.currentTarget,
+				path,
+				path,
+			);
+		}
+	}}
 	on:auxclick|preventDefault={(e) => {
 		log.debug("on:auxclick e.button", e.button);
 

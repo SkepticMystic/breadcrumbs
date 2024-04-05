@@ -83,7 +83,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 			() => delete window.BCAPI,
 		);
 
-		// TODO: registerHoverLinkSource
+		this.registerHoverLinkSource("breadcrumbs", {
+			defaultMod: true,
+			display: "Breadcrumbs",
+		});
 
 		// Suggestors
 		if (this.settings.suggestors.hierarchy_field.enabled) {
