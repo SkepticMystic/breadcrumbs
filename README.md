@@ -252,6 +252,9 @@ BC-dataview-note-query: "#tag" AND "Folder"
 BC-dataview-note-field: child
 ```
 
+> [!TIP]
+> The `query` is passed directly to the Dataview `pages` method, which you can test out in the Obsidian console with `app.plugins.plugins.dataview.api.pages('<query>', app.workspace.getActiveFile()?.path ?? "")`
+
 ### Date Notes
 
 _Date Notes_ allow you to leverage your existing daily notes structure. You can enable Date Notes globally in the settings, under Date Notes. For example, if you have the following notes:
