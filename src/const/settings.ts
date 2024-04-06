@@ -90,6 +90,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 		},
+
+		codeblocks: {
+			show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+		},
 	},
 
 	commands: {
@@ -119,10 +123,6 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 					"{{source.folder}}/{{attr.field}} {{source.basename}}",
 			},
 		},
-	},
-
-	codeblocks: {
-		show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 	},
 
 	suggestors: {

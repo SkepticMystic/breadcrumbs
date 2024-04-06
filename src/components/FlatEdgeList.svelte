@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { BCEdge } from "src/graph/MyMultiGraph";
+	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
 	import { type EdgeSorter } from "src/graph/utils";
-	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
@@ -10,8 +9,8 @@
 
 	export let plugin: BreadcrumbsPlugin;
 	export let show_node_options: ShowNodeOptions;
+	export let show_attributes: EdgeAttribute[] | undefined;
 	export let flat_edges: { edge: BCEdge; depth: number }[] = [];
-	export let show_attributes: ICodeblock["Options"]["show_attributes"];
 
 	export let sort: EdgeSorter;
 </script>

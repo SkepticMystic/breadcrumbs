@@ -104,6 +104,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			},
 		);
 	}
+	// !SECTION
 
 	// SECTION: Explicit edge sources
 	/// Tag note
@@ -187,6 +188,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		delete old.dateNoteField;
 		delete old.dateNoteFormat;
 	}
+	// !SECTION
 
 	// SECTION: Views
 	/// Page
@@ -227,6 +229,17 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 		delete old.showPrevNext;
 	}
+
+	//// Codeblocks
+	// @ts-ignore: This previously wasn't "considered" a view
+	if (plugin.settings.codeblocks !== undefined) {
+		// @ts-ignore: This previously wasn't "considered" a view
+		plugin.settings.views.codeblocks = plugin.settings.codeblocks;
+
+		// @ts-ignore: This previously wasn't "considered" a view
+		delete plugin.settings.codeblocks;
+	}
+	// !SECTION
 
 	// SECTION: Commands
 	/// Rebuild Graph
@@ -291,6 +304,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 		delete old.threadUnderCursor;
 	}
+	// !SECTION
 
 	// SECTION: Suggestors
 	/// Hierarchy Field
@@ -307,6 +321,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 		delete old.relSuggestorTrigger;
 	}
+	// !SECTION
 
 	await plugin.saveSettings();
 };

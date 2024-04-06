@@ -47,7 +47,8 @@
 	const mermaid = wrap_in_codeblock(
 		Mermaid.from_edges(flat_unique.sort(sort), {
 			click: { method: "class" },
-			show_node_options: plugin.settings.codeblocks.show_node_options,
+			show_node_options:
+				plugin.settings.views.codeblocks.show_node_options,
 			direction:
 				options.mermaid_direction ?? options.dir === "down"
 					? "TB"

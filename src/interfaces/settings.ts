@@ -102,6 +102,10 @@ export interface BreadcrumbsSettings {
 				show_node_options: ShowNodeOptions;
 			};
 		};
+
+		codeblocks: {
+			show_node_options: ShowNodeOptions;
+		};
 	};
 
 	commands: {
@@ -131,10 +135,6 @@ export interface BreadcrumbsSettings {
 				destination: CrumbDestination | "none";
 			};
 		};
-	};
-
-	codeblocks: {
-		show_node_options: ShowNodeOptions;
 	};
 
 	suggestors: {

@@ -6,7 +6,8 @@ export const _add_settings_codeblocks = (
 	containerEl: HTMLElement,
 ) => {
 	_add_settings_show_node_options(plugin, containerEl, {
-		get: () => plugin.settings.codeblocks.show_node_options,
-		set: (value) => (plugin.settings.codeblocks.show_node_options = value),
+		get: () => plugin.settings.views.codeblocks.show_node_options,
+		set: (value) =>
+			(plugin.settings.views.codeblocks.show_node_options = value),
 	});
 };

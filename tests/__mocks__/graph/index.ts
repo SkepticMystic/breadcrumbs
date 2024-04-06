@@ -4,9 +4,14 @@ export const _mock_edge = (
 	source_id: string,
 	target_id: string,
 	attr?: Partial<BCEdgeAttributes>,
-): Pick<BCEdge, "source_id" | "target_id" | "attr"> => ({
+): Pick<
+	BCEdge,
+	"attr" | "source_id" | "target_id" | "source_attr" | "target_attr"
+> => ({
 	source_id,
 	target_id,
+	source_attr: { resolved: true },
+	target_attr: { resolved: true },
 	attr:
 		attr?.explicit === true || attr?.explicit === undefined
 			? {
