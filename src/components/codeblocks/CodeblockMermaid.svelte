@@ -48,6 +48,7 @@
 		Mermaid.from_edges(flat_unique.sort(sort), {
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
+			show_attributes: options.show_attributes,
 			show_node_options:
 				plugin.settings.views.codeblocks.show_node_options,
 			direction:
@@ -85,6 +86,12 @@
 	{/if}
 
 	{#if sliced.length}
-		<div class="BC-codeblock-mermaid-graph" use:render_mermaid></div>
+		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
+	https://mermaid.js.org/syntax/flowchart.html#width -->
+		<div
+			class="BC-codeblock-mermaid-graph"
+			style="max-width: var(--file-line-width);"
+			use:render_mermaid
+		></div>
 	{/if}
 </div>

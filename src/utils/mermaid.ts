@@ -1,7 +1,13 @@
-import type { BCEdge, BCEdgeAttributes } from "src/graph/MyMultiGraph";
+import type {
+	BCEdge,
+	BCEdgeAttributes,
+	EdgeAttribute,
+} from "src/graph/MyMultiGraph";
 import { stringify_node } from "src/graph/utils";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { remove_duplicates_by } from "./arrays";
+import { untyped_pick } from "./objects";
+import { url_search_params } from "./url";
 
 const MERMAID_DIRECTIONS = ["LR", "RL", "TB", "BT"] as const;
 type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
@@ -20,6 +26,7 @@ const from_edges = (
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
 		show_node_options?: ShowNodeOptions;
+		show_attributes?: EdgeAttribute[];
 		renderer?: MermaidRenderer;
 		click?:
 			| { method: "class" }
@@ -44,13 +51,16 @@ const from_edges = (
 			stringify_node(e.target_id, e.target_attr, config),
 		];
 
-		const [source, arrow, target] = [
+		const [source, arrow, attrs, target] = [
 			`${encodeURIComponent(e.source_id)}("${source_label}")`,
-			(e.attr.explicit ? "-->" : "-.->") + `|${e.attr.field}|`,
+			e.attr.explicit ? "-->" : "-.->",
+			config?.show_attributes?.length
+				? `|"${url_search_params(untyped_pick(e.attr, config.show_attributes), { trim_lone_param: true })}"|`
+				: "",
 			`${encodeURIComponent(e.target_id)}("${target_label}")`,
 		];
 
-		lines.push(`\t${source} ${arrow} ${target}`);
+		lines.push(`\t${source} ${arrow}${attrs} ${target}`);
 	});
 
 	lines.push("");
