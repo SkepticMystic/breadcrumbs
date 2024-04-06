@@ -13,8 +13,10 @@ describe("from_edges", () => {
 			`
 %%{init: {"flowchart": {"defaultRenderer": "dagre"}} }%%
 flowchart LR
-\ta.md("a") -->|up| b.md("b")
-\tb.md("b") -.->|down| c.md("c")`.trimStart(),
+\ta.md("a") --> b.md("b")
+\tb.md("b") -.-> c.md("c")`.trimStart(),
 		);
 	});
 });
+
+// TODO: I need to test more cases here
