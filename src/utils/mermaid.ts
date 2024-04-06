@@ -39,7 +39,7 @@ const from_edges = (
 		];
 
 		lines.push(
-			`\t${e.source_id}[${source_label}] ${e.attr.explicit ? "-->" : "-.->"}|${e.attr.field}| ${e.target_id}[${target_label}]`,
+			`\t${encodeURIComponent(e.source_id)}["${source_label}"] ${e.attr.explicit ? "-->" : "-.->"}|${e.attr.field}| ${encodeURIComponent(e.target_id)}["${target_label}"]`,
 		);
 	});
 
@@ -58,13 +58,15 @@ const from_edges = (
 			);
 
 			if (nodes.length) {
-				lines.push(`\tclass ${nodes.map((n) => n.id)} internal-link`);
+				lines.push(
+					`\tclass ${nodes.map((n) => encodeURIComponent(n.id))} internal-link`,
+				);
 			}
 
 			const unresolved_nodes = nodes.filter((n) => !n.attr.resolved);
 			if (unresolved_nodes.length) {
 				lines.push(
-					`\tclass ${unresolved_nodes.map((n) => n.id)} is-unresolved`,
+					`\tclass ${unresolved_nodes.map((n) => encodeURIComponent(n.id))} is-unresolved`,
 				);
 			}
 
