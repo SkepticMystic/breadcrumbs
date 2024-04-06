@@ -12,8 +12,8 @@ describe("from_edges", () => {
 		).toBe(
 			`
 flowchart LR
-\ta[a] -->|up| b[b]
-\tb[b] -.->|down| c[c]`.trimStart(),
+\ta["a"] -->|up| b["b"]
+\tb["b"] -.->|down| c["c"]`.trimStart(),
 		);
 	});
 });
