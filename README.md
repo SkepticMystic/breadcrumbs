@@ -556,7 +556,7 @@ There are more complex sort fields as well:
 
 Type: `show-attributes?: string[]`
 
-Show specific attributes about each item in the tree. Give a comma-separated list of values. Options include:
+Show specific attributes about each item in the tree/mermaid-chart. Give a comma-separated list of values. Options include:
 
 -   `hierarchy_i`: Which hierarchy the edge is from.
 -   `dir`: The direction of the edge.
