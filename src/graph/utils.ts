@@ -55,39 +55,43 @@ export const stringify_edge = (
 
 export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
 
+const sorters = {
+	path: (order) => (a, b) => a.target_id.localeCompare(b.target_id) * order,
+
+	basename: (order) => (a, b) => {
+		const [a_field, b_field] = [
+			Paths.drop_folder(a.target_id),
+			Paths.drop_folder(b.target_id),
+		];
+
+		return a_field.localeCompare(b_field) * order;
+	},
+
+	field: (order) => (a, b) => {
+		const [a_field, b_field] = [
+			a.attr.field ?? "null",
+			b.attr.field ?? "null",
+		];
+
+		return a_field.localeCompare(b_field) * order;
+	},
+} satisfies Partial<Record<EdgeSortId["field"], (order: number) => EdgeSorter>>;
+
 export const get_edge_sorter: (
 	sort: EdgeSortId,
 	graph: BCGraph,
 ) => EdgeSorter = (sort, graph) => {
 	switch (sort.field) {
 		case "path": {
-			return (a, b) => {
-				const [a_field, b_field] = [a.target_id, b.target_id];
-
-				return a_field.localeCompare(b_field) * sort.order;
-			};
+			return sorters.path(sort.order);
 		}
 
 		case "basename": {
-			return (a, b) => {
-				const [a_field, b_field] = [
-					Paths.drop_folder(a.target_id),
-					Paths.drop_folder(b.target_id),
-				];
-
-				return a_field.localeCompare(b_field) * sort.order;
-			};
+			return sorters.basename(sort.order);
 		}
 
 		case "field": {
-			return (a, b) => {
-				const [a_field, b_field] = [
-					a.attr.field ?? "null",
-					b.attr.field ?? "null",
-				];
-
-				return a_field.localeCompare(b_field) * sort.order;
-			};
+			return sorters.field(sort.order);
 		}
 
 		case "explicit": {
@@ -149,10 +153,9 @@ export const get_edge_sorter: (
 									? sort.order
 									: 0;
 						} else {
-							return (
-								a_neighbour.target_id.localeCompare(
-									b_neighbour.target_id,
-								) * sort.order
+							return sorters.path(sort.order)(
+								a_neighbour,
+								b_neighbour,
 							);
 						}
 					};
@@ -196,10 +199,9 @@ export const get_edge_sorter: (
 									? sort.order
 									: 0;
 						} else {
-							return (
-								a_neighbour.target_id.localeCompare(
-									b_neighbour.target_id,
-								) * sort.order
+							return sorters.path(sort.order)(
+								a_neighbour,
+								b_neighbour,
 							);
 						}
 					};

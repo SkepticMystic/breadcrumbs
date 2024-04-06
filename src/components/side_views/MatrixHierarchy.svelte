@@ -14,7 +14,7 @@
 	export let sort: EdgeSorter;
 </script>
 
-<div class="BC-matrix-view-hierarchy flex flex-col gap-3">
+<div class="BC-matrix-view-hierarchy flex flex-col gap-2">
 	{#each DIRECTIONS as dir}
 		{@const dir_out_edges = hierarchy_out_edges.filter((e) =>
 			has_edge_attrs(e, { dir }),

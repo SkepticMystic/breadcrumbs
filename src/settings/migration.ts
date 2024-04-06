@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
@@ -7,8 +7,10 @@ import type {
 	BreadcrumbsSettings,
 	OLD_BREADCRUMBS_SETTINGS,
 } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { blank_hierarchy } from "src/utils/hierarchies";
+import { Paths } from "src/utils/paths";
 
 export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	const old = plugin.settings as BreadcrumbsSettings &
@@ -104,7 +106,6 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	}
 
 	// SECTION: Explicit edge sources
-
 	/// Tag note
 	if (old.tagNoteField !== undefined) {
 		plugin.settings.explicit_edge_sources.tag_note.default_field =
@@ -120,8 +121,25 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.HNUpField !== undefined
 	) {
 		if (old.hierarchyNotes.length > 0) {
-			new Notice(
-				`DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`,
+			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note. Breadcrumbs has added the field to each of your hierarchy notes, so no action is required.`;
+			log.warn(msg);
+			new Notice(msg);
+
+			await Promise.all(
+				old.hierarchyNotes.map((path) => {
+					const file = plugin.app.vault.getAbstractFileByPath(
+						Paths.ensure_ext(path, "md"),
+					);
+					if (!file || !(file instanceof TFile)) return;
+
+					return plugin.app.fileManager.processFrontMatter(
+						file,
+						(frontmatter) => {
+							frontmatter[META_ALIAS["list-note-field"]] ??=
+								old.HNUpField;
+						},
+					);
+				}),
 			);
 		}
 

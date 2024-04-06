@@ -137,7 +137,6 @@ export interface BreadcrumbsSettings {
 		show_node_options: ShowNodeOptions;
 	};
 
-	// TODO: migrate old_settings
 	suggestors: {
 		hierarchy_field: {
 			enabled: boolean;

@@ -10,7 +10,6 @@ export const _add_implied_edges_self_is_sibling: ImpliedEdgeBuilder = (
 			return {};
 		}
 
-		// TODO: Check if a transitive chain (of length 0) would work here
 		graph.forEachNode((node) => {
 			graph.safe_add_directed_edge(node, node, {
 				round,
