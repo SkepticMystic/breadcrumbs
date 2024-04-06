@@ -55,18 +55,25 @@ const from_edges = (
 
 	lines.push("");
 
+	// NOTE: This is _pretty_ inefficient, but necessary.
+	// If we just take all unique target_ids, we miss source nodes that don't have any incoming edges.
+	const nodes = remove_duplicates_by(
+		edges.flatMap((e) => [
+			{ id: e.source_id, attr: e.source_attr },
+			{ id: e.target_id, attr: e.target_attr },
+		]),
+		(n) => n.id,
+	);
+
+	// const active_file = get(active_file_store);
+	// if (active_file && nodes.find((n) => n.id === active_file.path)) {
+	// 	lines.push(
+	// 		`\tclass ${encodeURIComponent(active_file.path)} BC-active-note`,
+	// 	);
+	// }
+
 	switch (config?.click?.method) {
 		case "class": {
-			// NOTE: This is _pretty_ inefficient, but necessary.
-			// If we just take all unique target_ids, we miss source nodes that don't have any incoming edges.
-			const nodes = remove_duplicates_by(
-				edges.flatMap((e) => [
-					{ id: e.source_id, attr: e.source_attr },
-					{ id: e.target_id, attr: e.target_attr },
-				]),
-				(n) => n.id,
-			);
-
 			if (nodes.length) {
 				lines.push(
 					`\tclass ${nodes.map((n) => encodeURIComponent(n.id))} internal-link`,
@@ -84,9 +91,9 @@ const from_edges = (
 		}
 
 		case "href": {
-			edges.forEach(({ target_id }) => {
+			nodes.forEach((node) => {
 				lines.push(
-					`\tclick ${target_id} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(target_id)}"`,
+					`\tclick ${encodeURIComponent(node.id)} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(node.id)}"`,
 				);
 			});
 
@@ -94,9 +101,9 @@ const from_edges = (
 		}
 
 		case "callback": {
-			edges.forEach(({ target_id }) => {
+			nodes.forEach((node) => {
 				lines.push(
-					`\tclick ${target_id} "${(<Extract<(typeof config)["click"], { method: "callback" }>>config.click)?.callback_name}"`,
+					`\tclick ${encodeURIComponent(node.id)} "${(<Extract<(typeof config)["click"], { method: "callback" }>>config.click)?.callback_name}"`,
 				);
 			});
 
