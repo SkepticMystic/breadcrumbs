@@ -485,15 +485,17 @@ The above example would render a markdown list of all paths going _down_ from th
 
 #### Fields
 
+The following fields can be added to the codeblock to customise the output. Optional fields are marked with a `?`, and their default values are shown in `(parentheses)`.
+
 ##### `type`
 
-Type: `type?: tree | mermaid`
+Type: `type?: (tree) | mermaid`
 
 How to visualise the results.
 
 ##### `dir`
 
-Type: `dir?: up|down|same|prev|next`
+Type: `dir?: up | (down) | same | prev | next`
 
 Filter edges by a given direction
 
@@ -511,7 +513,7 @@ Add a title above the codeblock
 
 ##### `depth`
 
-Type: `depth?: number-number`
+Type: `depth?: <number>-<number>`
 
 Filter edges by a depth range. For example:
 
@@ -519,9 +521,11 @@ Filter edges by a depth range. For example:
 -   `3-` would show all paths 3 levels deep and deeper.
 -   `-3` would show all paths 3 levels deep and shallower.
 
+By default, all depths are shown.
+
 ##### `flat`
 
-Type: `flat?: true|false`
+Type: `flat?: true | (false)`
 
 Flatten the nested results into a flat list.
 
@@ -533,7 +537,7 @@ Filter edges by a [Dataview](http://blacksmithgu.github.io/obsidian-dataview/) q
 
 ##### `sort`
 
-Type: `sort?: <field> (asc|desc)`
+Type: `sort?: <field> (asc) | desc`
 
 Used to sort the results. The available fields are:
 
@@ -567,6 +571,15 @@ Show specific attributes about each item in the tree. Give a comma-separated lis
 Type: `mermaid-direction?: LR | RL | TB | BT`
 
 The direction of the mermaid graph (if `type: mermaid`). If you don't give a value, Breadcrumbs will choose one based on the `dir` field.
+
+##### `mermaid-renderer`
+
+Type: `mermaid-renderer?: (dagre) | elk`
+
+The renderer to use for the mermaid graph.
+
+-   `dagre` is the default renderer, and is more stable.
+-   `elk` is more experimental, but can handle larger graphs.
 
 ### View Settings
 
