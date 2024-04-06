@@ -10,6 +10,7 @@ import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
+import { Mermaid } from "src/utils/mermaid";
 
 const FIELDS = [
 	"type",
@@ -23,7 +24,10 @@ const FIELDS = [
 	"sort",
 	"field-prefix",
 	"show-attributes",
+	"mermaid-direction",
 ] as const;
+
+const TYPES: ICodeblock["Options"]["type"][] = ["tree", "mermaid"];
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 	const hierarchy_fields = get_all_hierarchy_fields(
@@ -47,6 +51,14 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 		//   we know it's non-empty
 		switch (key) {
 			case "type": {
+				if (!TYPES.includes(value as ICodeblock["Options"]["type"])) {
+					return errors.push({
+						path: key,
+						code: "invalid_field_value",
+						message: `Invalid type: ${value}. Valid options: ${TYPES.join(", ")}`,
+					});
+				}
+
 				return (parsed.type = value as ICodeblock["Options"]["type"]);
 			}
 
@@ -60,6 +72,21 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				}
 
 				return (parsed.dir = value as Direction);
+			}
+
+			case "mermaid-direction": {
+				if (
+					!Mermaid.DIRECTIONS.includes(value as Mermaid["Direction"])
+				) {
+					return errors.push({
+						path: key,
+						code: "invalid_field_value",
+						message: `Invalid mermaid-direction: ${value}. Valid options: ${Mermaid.DIRECTIONS.join(", ")}`,
+					});
+				}
+
+				return (parsed.mermaid_direction =
+					value as Mermaid["Direction"]);
 			}
 
 			case "title": {

@@ -37,3 +37,6 @@ export const resolve_templates = (
 
 	return resolved;
 };
+
+export const wrap_in_codeblock = (str: string, lang = ""): string =>
+	"```" + lang + "\n" + str + "\n```";

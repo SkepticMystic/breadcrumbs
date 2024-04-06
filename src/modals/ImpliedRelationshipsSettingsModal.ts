@@ -3,6 +3,7 @@ import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { Mermaid } from "src/utils/mermaid";
 import { new_setting } from "src/utils/settings";
+import { wrap_in_codeblock } from "src/utils/strings";
 
 const ROUNDS = Array.from(
 	// +1 to include 0 rounds
@@ -36,11 +37,14 @@ export class ImpliedRelationshipsSettingsModal extends Modal {
 For each relationship, choose the number of _rounds_ to run. Zero (0) rounds disables the relation. One (1) round runs it once, only considering real relations added before. Two (2) rounds runs it twice, considering real relations and implied relations added in the first round. And so on.`,
 		});
 
-		const render_mermaid_diagram = (diagram_string: string) => {
-			const code = "```mermaid\n" + diagram_string + "\n```";
-
-			MarkdownRenderer.render(this.app, code, contentEl, "", plugin);
-		};
+		const render_mermaid_diagram = (diagram_string: string) =>
+			MarkdownRenderer.render(
+				this.app,
+				wrap_in_codeblock(diagram_string, "mermaid"),
+				contentEl,
+				"",
+				plugin,
+			);
 
 		const save = async () => {
 			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
@@ -64,6 +68,8 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Me",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "same" },
 				},
 			]),
@@ -89,10 +95,14 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 					{
 						source_id: "A",
 						target_id: "B",
+						source_attr: { resolved: true },
+						target_attr: { resolved: true },
 						attr: { explicit: true, field: "up" },
 					},
 					{
 						source_id: "B",
+						source_attr: { resolved: true },
+						target_attr: { resolved: true },
 						target_id: "A",
 						attr: { explicit: false, field: "down" },
 					},
@@ -122,16 +132,22 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Dad",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "up" },
 				},
 				{
 					source_id: "Dad",
 					target_id: "Sister",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "down" },
 				},
 				{
 					source_id: "Me",
 					target_id: "Sister",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "same" },
 				},
 			]),
@@ -158,16 +174,22 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Sister",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "same" },
 				},
 				{
 					source_id: "Sister",
 					target_id: "Brother",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "same" },
 				},
 				{
 					source_id: "Me",
 					target_id: "Brother",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "same" },
 				},
 			]),
@@ -194,16 +216,22 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Sister",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "same" },
 				},
 				{
 					source_id: "Sister",
 					target_id: "Dad",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "up" },
 				},
 				{
 					source_id: "Me",
 					target_id: "Dad",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "up" },
 				},
 			]),
@@ -230,16 +258,22 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Dad",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "up" },
 				},
 				{
 					source_id: "Dad",
 					target_id: "Uncle",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "same" },
 				},
 				{
 					source_id: "Me",
 					target_id: "Uncle",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "up" },
 				},
 			]),
@@ -264,21 +298,29 @@ For each relationship, choose the number of _rounds_ to run. Zero (0) rounds dis
 				{
 					source_id: "Me",
 					target_id: "Dad",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "up" },
 				},
 				{
 					source_id: "Dad",
 					target_id: "Uncle",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "same" },
 				},
 				{
 					source_id: "Uncle",
 					target_id: "Cousin",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: true, field: "down" },
 				},
 				{
 					source_id: "Me",
 					target_id: "Cousin",
+					source_attr: { resolved: true },
+					target_attr: { resolved: true },
 					attr: { explicit: false, field: "same" },
 				},
 			]),

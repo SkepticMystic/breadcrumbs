@@ -1,4 +1,5 @@
 import { MarkdownRenderChild } from "obsidian";
+import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte";
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
@@ -7,7 +8,7 @@ import { Codeblocks } from ".";
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
-	component: CodeblockTree | undefined;
+	component: CodeblockTree | CodeblockMermaid | undefined;
 
 	constructor(
 		plugin: BreadcrumbsPlugin,
@@ -33,14 +34,33 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		log.debug("resolved codeblock options", options);
 
 		this.containerEl.empty();
-		this.component = new CodeblockTree({
-			target: this.containerEl,
-			props: {
-				errors,
-				options,
-				plugin: this.plugin,
-			},
-		});
+
+		switch (options.type) {
+			case "tree": {
+				this.component = new CodeblockTree({
+					target: this.containerEl,
+					props: {
+						errors,
+						options,
+						plugin: this.plugin,
+					},
+				});
+
+				break;
+			}
+
+			case "mermaid": {
+				this.component = new CodeblockMermaid({
+					target: this.containerEl,
+					props: {
+						errors,
+						options,
+						plugin: this.plugin,
+					},
+				});
+				break;
+			}
+		}
 	}
 
 	onunload(): void {
