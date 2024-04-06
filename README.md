@@ -534,7 +534,7 @@ This command creates a new note, and adds a Breadcrumbs edge to it from the curr
 
 ## Codeblocks
 
-Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)). The basic syntax is:
+Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)), or a [mermaid](https://mermaid.js.org) graph of the same data. The basic syntax is:
 
 ```yaml
 type: tree
@@ -549,7 +549,7 @@ The above example would render a markdown list of all paths going _down_ from th
 
 #### `type`
 
-Type: `type?: tree`
+Type: `type?: tree | mermaid`
 
 How to visualise the results.
 
@@ -623,6 +623,12 @@ Show specific attributes about each item in the tree. Give a comma-separated lis
 -   `source`: The [source](#explicit-edge-sources) of the edge.
 -   `implied_kind`: The kind of [implied relation](#implied-relationships) the edge is.
 -   `round`: The round the implied edge was added in.
+
+#### `mermaid-direction`
+
+Type: `mermaid-direction?: LR | RL | TB | BT`
+
+The direction of the mermaid graph (if `type: mermaid`). If you don't give a value, Breadcrumbs will choose one based on the `dir` field.
 
 ## Suggestors
 
