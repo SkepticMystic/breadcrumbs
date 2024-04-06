@@ -6,6 +6,9 @@ import { remove_duplicates_by } from "./arrays";
 const MERMAID_DIRECTIONS = ["LR", "RL", "TB", "BT"] as const;
 type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
 
+const MERMAID_RENDERER = ["dagre", "elk"] as const;
+type MermaidRenderer = (typeof MERMAID_RENDERER)[number];
+
 const from_edges = (
 	edges: (Pick<
 		BCEdge,
@@ -17,20 +20,23 @@ const from_edges = (
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
 		show_node_options?: ShowNodeOptions;
+		renderer?: MermaidRenderer;
 		click?:
 			| { method: "class" }
 			| { method: "callback"; callback_name: string }
 			| { method: "href"; getter: (target_id: string) => string };
 	},
 ) => {
-	const { direction, kind } = Object.assign(
-		{ direction: "LR", kind: "flowchart" },
+	const { direction, kind, renderer } = Object.assign(
+		{ direction: "LR", kind: "flowchart", renderer: "dagre" },
 		config,
 	);
 
-	// obsidian://open?vault=breadcrumbs-test-vault&file=build-graph%2Flist-note%2F1
-
-	const lines = [`${kind} ${direction}`];
+	const lines = [
+		// TODO: If I add 'graph' as an option, double-check if the below "flowchart" property needs to change accordingly
+		`%%{init: {"flowchart": {"defaultRenderer": "${renderer}"}} }%%`,
+		`${kind} ${direction}`,
+	];
 
 	edges.forEach((e) => {
 		const [source_label, target_label] = [
@@ -38,9 +44,13 @@ const from_edges = (
 			stringify_node(e.target_id, e.target_attr, config),
 		];
 
-		lines.push(
-			`\t${encodeURIComponent(e.source_id)}["${source_label}"] ${e.attr.explicit ? "-->" : "-.->"}|${e.attr.field}| ${encodeURIComponent(e.target_id)}["${target_label}"]`,
-		);
+		const [source, arrow, target] = [
+			`${encodeURIComponent(e.source_id)}("${source_label}")`,
+			(e.attr.explicit ? "-->" : "-.->") + `|${e.attr.field}|`,
+			`${encodeURIComponent(e.target_id)}("${target_label}")`,
+		];
+
+		lines.push(`\t${source} ${arrow} ${target}`);
 	});
 
 	lines.push("");
@@ -99,9 +109,11 @@ const from_edges = (
 
 export const Mermaid = {
 	from_edges,
+	RENDERERS: MERMAID_RENDERER,
 	DIRECTIONS: MERMAID_DIRECTIONS,
 };
 
 export type Mermaid = {
+	Renderer: MermaidRenderer;
 	Direction: MermaidDirection;
 };

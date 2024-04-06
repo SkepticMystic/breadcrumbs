@@ -25,6 +25,7 @@ const FIELDS = [
 	"field-prefix",
 	"show-attributes",
 	"mermaid-direction",
+	"mermaid-renderer",
 ] as const;
 
 const TYPES: ICodeblock["Options"]["type"][] = ["tree", "mermaid"];
@@ -244,6 +245,18 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 							return true;
 						}
 					}) as any);
+			}
+
+			case "mermaid-renderer": {
+				if (!Mermaid.RENDERERS.includes(value as Mermaid["Renderer"])) {
+					return errors.push({
+						path: key,
+						code: "invalid_field_value",
+						message: `Invalid mermaid-renderer: ${value}. Valid options: ${Mermaid.RENDERERS.join(", ")}`,
+					});
+				}
+
+				return (parsed.mermaid_renderer = value as Mermaid["Renderer"]);
 			}
 
 			default: {

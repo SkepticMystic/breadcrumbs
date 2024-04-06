@@ -19,5 +19,8 @@ export type ICodeblock = {
 		show_attributes?: (typeof EDGE_ATTRIBUTES)[number][];
 		// mermaid
 		mermaid_direction?: Mermaid["Direction"];
+		mermaid_renderer?: Mermaid["Renderer"];
+		// TODO: Use subgraphs to show folders: https://mermaid.js.org/syntax/flowchart.html#subgraphs
+		// mermaid_subgraphs?: "folders"
 	};
 };
