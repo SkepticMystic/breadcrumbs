@@ -8,12 +8,12 @@ describe("from_edges", () => {
 			Mermaid.from_edges([
 				_mock_edge("a", "b", { explicit: true, field: "up" }),
 				_mock_edge("b", "c", { explicit: false, field: "down" }),
-			]),
+			]).trim(),
 		).toBe(
 			`
 flowchart LR
-\ta -->|up| b
-\tb -.->|down| c`.trimStart(),
+\ta[a] -->|up| b[b]
+\tb[b] -.->|down| c[c]`.trimStart(),
 		);
 	});
 });
