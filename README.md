@@ -2,22 +2,29 @@
 > Breadcrumbs has recently been rewritten from scratch, and is available in the V4 beta (downloadable via the Obsidian BRAT plugin). If you're an existing user, see here for more info about the changes: https://github.com/SkepticMystic/breadcrumbs/blob/master/V4.md.
 > The following documentation has been rewritten for V4.
 
-Breadcrumbs is an Obsidian plugin that lets you add structured hierarchy to your notes, then view/traverse that structure in various ways.
-
-Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _direction_ to them). You tell Breadcrumbs about the structure of your notes, it builds this directed graph, and then lets you visualise and navigate the graph.
+Breadcrumbs is an Obsidian plugin that lets you add _directed links_ to your notes, then view/traverse that structure in various ways. Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _direction_ to them). You tell Breadcrumbs about the structure of your notes, it builds this directed graph, and then lets you visualise and navigate the graph.
 
 **Table of Contents**:
 
 -   [Hierarchies](#hierarchies)
--   [Building the Breadcrumbs graph](#building-the-breadcrumbs-graph)
+-   [Building the graph](#building-the-graph)
     -   [Explicit Edge Builders](#explicit-edge-sources)
     -   [Implied Relationships](#implied-relationships)
     -   [Customise the Build Process](#customise-the-build-process)
--   [Leveraging the Breadcrumbs graph](#leveraging-the-breadcrumbs-graph)
+-   [Leveraging the graph](#leveraging-the-graph)
     -   [Views](#views)
+        -   [Page View](#page-view)
+        -   [Matrix View](#matrix-view)
+        -   [Tree View](#tree-view)
+        -   [Codeblocks](#codeblocks)
     -   [Commands](#commands)
-    -   [Codeblocks](#codeblocks)
+        -   [Rebuild Graph](#rebuild-graph)
+        -   [Create List Index](#create-list-index)
+        -   [Jump to First Neighbour](#jump-to-first-neighbour)
+        -   [Thread](#thread)
+    -   [Suggestors](#suggestors)
     -   [API](#api)
+-   [Media](#media)
 
 # Hierarchies
 
@@ -36,7 +43,7 @@ Using these _fields_, you can now start adding edges to your Breadcrumbs graph. 
 
 [![](https://mermaid.ink/img/pako:eNoljjEOgzAMRa8SeQIJhtItQ6eqU1naNYuVmBKVJMhNVFWIu9eApy-_Z-svYJMj0DBM6WtH5KzuDxOVzKm6YR6Ja9W2yo5-chIuqqt6qg-j28iMTDHv6Fz1ab-ABgJxQO_k87LJBgQEMqAlOuS3ARNX8bDk9PxFCzpzoQbK7DDT1eOLMYAecPrIlpzPifuj6t54_QNKMzn8?type=png)](https://mermaid.live/edit#pako:eNoljjEOgzAMRa8SeQIJhtItQ6eqU1naNYuVmBKVJMhNVFWIu9eApy-_Z-svYJMj0DBM6WtH5KzuDxOVzKm6YR6Ja9W2yo5-chIuqqt6qg-j28iMTDHv6Fz1ab-ABgJxQO_k87LJBgQEMqAlOuS3ARNX8bDk9PxFCzpzoQbK7DDT1eOLMYAecPrIlpzPifuj6t54_QNKMzn8)
 
-# Building the Breadcrumbs graph
+# Building the graph
 
 There are two broad ways of building the graph, or adding edges. The first are the _explicit edge sources_, and the other are the various _implied relationships_ that build on the explicit edges.
 
@@ -411,7 +418,7 @@ The following metadata fields influence how Breadcrumbs adds edges to the graph.
 -   `BC-ignore-in-edges`: If true, Breadcrumbs won't add edges coming _into_ this note.
 -   `BC-ignore-out-edges`: If true, Breadcrumbs won't add edges going _out_ of this note.
 
-# Leveraging the Breadcrumbs graph
+# Leveraging the graph
 
 ## Views
 
@@ -462,6 +469,104 @@ The Tree View shows up on the side of the editor, and shows all path going in a 
 #### Tree View Settings
 
 -   **Default Direction**: Choose the default direction to traverse in the Tree View.
+
+### Codeblocks
+
+Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)), or a [mermaid](https://mermaid.js.org) graph of the same data. The basic syntax is:
+
+```yaml
+type: tree
+dir: down
+depth: 0-3
+sort: basename desc
+```
+
+The above example would render a markdown list of all paths going _down_ from the current note, up to a depth of 3, sorted by the basename of the notes, in descending order.
+
+#### Fields
+
+##### `type`
+
+Type: `type?: tree | mermaid`
+
+How to visualise the results.
+
+##### `dir`
+
+Type: `dir?: up|down|same|prev|next`
+
+Filter edges by a given direction
+
+##### `fields`
+
+Type: `fields?: string`
+
+Filter edges by a list of fields (comma-separated)
+
+##### `title`
+
+Type: `title?: string`
+
+Add a title above the codeblock
+
+##### `depth`
+
+Type: `depth?: number-number`
+
+Filter edges by a depth range. For example:
+
+-   `1-3` would show all paths between 1 and 3 levels deep.
+-   `3-` would show all paths 3 levels deep and deeper.
+-   `-3` would show all paths 3 levels deep and shallower.
+
+##### `flat`
+
+Type: `flat?: true|false`
+
+Flatten the nested results into a flat list.
+
+##### `dataview-from`
+
+Type: `dataview-from?: string`
+
+Filter edges by a [Dataview](http://blacksmithgu.github.io/obsidian-dataview/) query.
+
+##### `sort`
+
+Type: `sort?: <field> (asc|desc)`
+
+Used to sort the results. The available fields are:
+
+-   `basename` sorts by the basename of the note.
+-   `path` sorts by the full path of the note.
+-   `field` sorts by the field value of the note.
+-   `explicit` sorts by the explicitness of the edge.
+    -   Uses `source` as a tiebreaker for explicit edges, and `implied_kind` for implied edges.
+
+There are more complex sort fields as well:
+
+-   `neighbour-field:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
+    -   Useful for sorting by the `next` neighbour.
+
+##### `show-attributes`
+
+Type: `show-attributes?: string[]`
+
+Show specific attributes about each item in the tree. Give a comma-separated list of values. Options include:
+
+-   `hierarchy_i`: Which hierarchy the edge is from.
+-   `dir`: The direction of the edge.
+-   `field`: The field of the edge.
+-   `explicit`: Whether the edge is explicit or implied.
+-   `source`: The [source](#explicit-edge-sources) of the edge.
+-   `implied_kind`: The kind of [implied relation](#implied-relationships) the edge is.
+-   `round`: The round the implied edge was added in.
+
+##### `mermaid-direction`
+
+Type: `mermaid-direction?: LR | RL | TB | BT`
+
+The direction of the mermaid graph (if `type: mermaid`). If you don't give a value, Breadcrumbs will choose one based on the `dir` field.
 
 ### View Settings
 
@@ -531,104 +636,6 @@ This command creates a new note, and adds a Breadcrumbs edge to it from the curr
     -   `{{source.path}}`: The path of the current note.
     -   `{{source.basename}}`: The basename of the current note.
     -   `{{attr.field}}`: The Breadcrumbs field used to thread the new note.
-
-## Codeblocks
-
-Breadcrumbs adds a new codeblock language, `breadcrumbs`. Currently, this can be used to render a tree of all paths in a given direction from the current note (similar to the [Tree View](#tree-view)), or a [mermaid](https://mermaid.js.org) graph of the same data. The basic syntax is:
-
-```yaml
-type: tree
-dir: down
-depth: 0-3
-sort: basename desc
-```
-
-The above example would render a markdown list of all paths going _down_ from the current note, up to a depth of 3, sorted by the basename of the notes, in descending order.
-
-### Fields
-
-#### `type`
-
-Type: `type?: tree | mermaid`
-
-How to visualise the results.
-
-#### `dir`
-
-Type: `dir?: up|down|same|prev|next`
-
-Filter edges by a given direction
-
-#### `fields`
-
-Type: `fields?: string`
-
-Filter edges by a list of fields (comma-separated)
-
-#### `title`
-
-Type: `title?: string`
-
-Add a title above the codeblock
-
-#### `depth`
-
-Type: `depth?: number-number`
-
-Filter edges by a depth range. For example:
-
--   `1-3` would show all paths between 1 and 3 levels deep.
--   `3-` would show all paths 3 levels deep and deeper.
--   `-3` would show all paths 3 levels deep and shallower.
-
-#### `flat`
-
-Type: `flat?: true|false`
-
-Flatten the nested results into a flat list.
-
-#### `dataview-from`
-
-Type: `dataview-from?: string`
-
-Filter edges by a [Dataview](http://blacksmithgu.github.io/obsidian-dataview/) query.
-
-#### `sort`
-
-Type: `sort?: <field> (asc|desc)`
-
-Used to sort the results. The available fields are:
-
--   `basename` sorts by the basename of the note.
--   `path` sorts by the full path of the note.
--   `field` sorts by the field value of the note.
--   `explicit` sorts by the explicitness of the edge.
-    -   Uses `source` as a tiebreaker for explicit edges, and `implied_kind` for implied edges.
-
-There are more complex sort fields as well:
-
--   `neighbour-field:<field>` sort by the _path_ of the first neighbour of the note in the given `<field>`.
-    -   Useful for sorting by the `next` neighbour.
-
-#### `show-attributes`
-
-Type: `show-attributes?: string[]`
-
-Show specific attributes about each item in the tree. Give a comma-separated list of values. Options include:
-
--   `hierarchy_i`: Which hierarchy the edge is from.
--   `dir`: The direction of the edge.
--   `field`: The field of the edge.
--   `explicit`: Whether the edge is explicit or implied.
--   `source`: The [source](#explicit-edge-sources) of the edge.
--   `implied_kind`: The kind of [implied relation](#implied-relationships) the edge is.
--   `round`: The round the implied edge was added in.
-
-#### `mermaid-direction`
-
-Type: `mermaid-direction?: LR | RL | TB | BT`
-
-The direction of the mermaid graph (if `type: mermaid`). If you don't give a value, Breadcrumbs will choose one based on the `dir` field.
 
 ## Suggestors
 
