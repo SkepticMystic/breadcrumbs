@@ -51,13 +51,14 @@
 			show_node_options:
 				plugin.settings.views.codeblocks.show_node_options,
 			direction:
-				options.mermaid_direction ?? options.dir === "down"
+				options.mermaid_direction ??
+				(options.dir === "down"
 					? "TB"
 					: options.dir === "up"
 						? "BT"
 						: options.dir === "prev"
 							? "RL"
-							: "LR",
+							: "LR"),
 		}),
 		"mermaid",
 	);
