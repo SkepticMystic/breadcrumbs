@@ -65,5 +65,5 @@ export const stringify_transitive_relation = (
 	transitive: BreadcrumbsSettings["custom_implied_relations"]["transitive"][number],
 ) =>
 	`[${transitive.chain
-		.map((attr) => url_search_params(attr))
+		.map((attr) => url_search_params(attr, { trim_lone_param: true }))
 		.join(", ")}] -> ${transitive.close_field}`;

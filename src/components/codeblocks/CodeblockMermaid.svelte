@@ -10,9 +10,9 @@
 	import { remove_duplicates_by } from "src/utils/arrays";
 	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
+	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { Paths } from "src/utils/paths";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -51,8 +51,6 @@
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,
-			show_node_options:
-				plugin.settings.views.codeblocks.show_node_options,
 			get_node_label: (id, _attr) => {
 				const source_path = $active_file_store?.path ?? "";
 

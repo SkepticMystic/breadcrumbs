@@ -42,6 +42,7 @@
 					<span class="tree-item-flair">
 						{url_search_params(
 							untyped_pick(nested.edge.attr, show_attributes),
+							{ trim_lone_param: true },
 						)}
 					</span>
 				</div>

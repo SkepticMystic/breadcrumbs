@@ -64,6 +64,7 @@
 								class="tree-item-flair font-mono"
 								aria-label={url_search_params(
 									untyped_pick(edge.attr, show_attributes),
+									{ trim_lone_param: true },
 								)}
 							>
 								{edge.attr.explicit ? "x" : "i"}
