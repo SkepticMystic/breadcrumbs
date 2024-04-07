@@ -62,3 +62,13 @@ export const pick = <T extends Record<string, unknown>, K extends keyof T>(
 	Object.fromEntries(
 		Object.entries(obj).filter(([key]) => keys.includes(key as K)),
 	) as Pick<T, K>;
+
+/** Returns a new object */
+export const remove_nullish_keys = <T extends Record<string, unknown>>(
+	obj: T,
+) =>
+	Object.fromEntries(
+		Object.entries(obj).filter(
+			([_, val]) => val !== null && val !== undefined,
+		),
+	) as Partial<T>;

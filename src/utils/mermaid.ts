@@ -1,12 +1,12 @@
 import type {
 	BCEdge,
 	BCEdgeAttributes,
+	BCNodeAttributes,
 	EdgeAttribute,
 } from "src/graph/MyMultiGraph";
-import { stringify_node } from "src/graph/utils";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { remove_duplicates_by } from "./arrays";
-import { untyped_pick } from "./objects";
+import { remove_nullish_keys, untyped_pick } from "./objects";
 import { url_search_params } from "./url";
 
 const MERMAID_DIRECTIONS = ["LR", "RL", "TB", "BT"] as const;
@@ -27,6 +27,7 @@ const from_edges = (
 		direction?: MermaidDirection;
 		show_node_options?: ShowNodeOptions;
 		show_attributes?: EdgeAttribute[];
+		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
 		renderer?: MermaidRenderer;
 		click?:
 			| { method: "class" }
@@ -34,9 +35,9 @@ const from_edges = (
 			| { method: "href"; getter: (target_id: string) => string };
 	},
 ) => {
-	const { direction, kind, renderer } = Object.assign(
+	const { direction, kind, renderer, get_node_label } = Object.assign(
 		{ direction: "LR", kind: "flowchart", renderer: "dagre" },
-		config,
+		remove_nullish_keys(config ?? {}),
 	);
 
 	const lines = [
@@ -45,19 +46,44 @@ const from_edges = (
 		`${kind} ${direction}`,
 	];
 
-	edges.forEach((e) => {
-		const [source_label, target_label] = [
-			stringify_node(e.source_id, e.source_attr, config),
-			stringify_node(e.target_id, e.target_attr, config),
-		];
+	const node_map = remove_duplicates_by(
+		// NOTE: This is _pretty_ inefficient, but necessary.
+		// If we just take all unique target_ids, we miss source nodes that don't have any incoming edges.
+		edges.flatMap((e) => [
+			{ path: e.source_id, attr: e.source_attr },
+			{ path: e.target_id, attr: e.target_attr },
+		]),
+		(n) => n.path,
+	).reduce(
+		(map, node, i) =>
+			map.set(node.path, {
+				i,
+				attr: node.attr,
+				label: get_node_label?.(node.path, node.attr) ?? node.path,
+			}),
+		new Map<string, { i: number; label: string; attr: BCNodeAttributes }>(),
+	);
 
+	// Declare the labeled nodes
+	node_map.forEach((node) => {
+		lines.push(`\t${node.i}("${node.label}")`);
+	});
+
+	lines.push("");
+
+	// Add the edges
+	edges.forEach((e) => {
 		const [source, arrow, attrs, target] = [
-			`${encodeURIComponent(e.source_id)}("${source_label}")`,
+			// No need to label the nodes again
+			node_map.get(e.source_id)?.i,
+
 			e.attr.explicit ? "-->" : "-.->",
+
 			config?.show_attributes?.length
 				? `|"${url_search_params(untyped_pick(e.attr, config.show_attributes), { trim_lone_param: true })}"|`
 				: "",
-			`${encodeURIComponent(e.target_id)}("${target_label}")`,
+
+			node_map.get(e.target_id)?.i,
 		];
 
 		lines.push(`\t${source} ${arrow}${attrs} ${target}`);
@@ -65,35 +91,18 @@ const from_edges = (
 
 	lines.push("");
 
-	// NOTE: This is _pretty_ inefficient, but necessary.
-	// If we just take all unique target_ids, we miss source nodes that don't have any incoming edges.
-	const nodes = remove_duplicates_by(
-		edges.flatMap((e) => [
-			{ id: e.source_id, attr: e.source_attr },
-			{ id: e.target_id, attr: e.target_attr },
-		]),
-		(n) => n.id,
-	);
-
-	// const active_file = get(active_file_store);
-	// if (active_file && nodes.find((n) => n.id === active_file.path)) {
-	// 	lines.push(
-	// 		`\tclass ${encodeURIComponent(active_file.path)} BC-active-note`,
-	// 	);
-	// }
-
 	switch (config?.click?.method) {
 		case "class": {
+			const nodes = [...node_map.values()];
+
 			if (nodes.length) {
-				lines.push(
-					`\tclass ${nodes.map((n) => encodeURIComponent(n.id))} internal-link`,
-				);
+				lines.push(`\tclass ${nodes.map((n) => n.i)} internal-link`);
 			}
 
 			const unresolved_nodes = nodes.filter((n) => !n.attr.resolved);
 			if (unresolved_nodes.length) {
 				lines.push(
-					`\tclass ${unresolved_nodes.map((n) => encodeURIComponent(n.id))} is-unresolved`,
+					`\tclass ${unresolved_nodes.map((n) => n.i)} is-unresolved`,
 				);
 			}
 
@@ -101,9 +110,9 @@ const from_edges = (
 		}
 
 		case "href": {
-			nodes.forEach((node) => {
+			node_map.forEach((node, path) => {
 				lines.push(
-					`\tclick ${encodeURIComponent(node.id)} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(node.id)}"`,
+					`\tclick ${node.i} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(path)}"`,
 				);
 			});
 
@@ -111,9 +120,9 @@ const from_edges = (
 		}
 
 		case "callback": {
-			nodes.forEach((node) => {
+			node_map.forEach((node) => {
 				lines.push(
-					`\tclick ${encodeURIComponent(node.id)} "${(<Extract<(typeof config)["click"], { method: "callback" }>>config.click)?.callback_name}"`,
+					`\tclick ${node.i} call ${(<Extract<(typeof config)["click"], { method: "callback" }>>config.click)?.callback_name}()`,
 				);
 			});
 

@@ -8,9 +8,11 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { remove_duplicates_by } from "src/utils/arrays";
+	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { Paths } from "src/utils/paths";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -51,6 +53,24 @@
 			show_attributes: options.show_attributes,
 			show_node_options:
 				plugin.settings.views.codeblocks.show_node_options,
+			get_node_label: (id, _attr) => {
+				const source_path = $active_file_store?.path ?? "";
+
+				const file = plugin.app.vault.getFileByPath(id);
+				if (!file) {
+					return Paths.drop_ext(
+						Links.resolve_to_absolute_path(
+							plugin.app,
+							id,
+							source_path,
+						),
+					);
+				}
+
+				return plugin.app.fileManager
+					.generateMarkdownLink(file, source_path)
+					.slice(2, -2);
+			},
 			direction:
 				options.mermaid_direction ??
 				(options.dir === "down"
