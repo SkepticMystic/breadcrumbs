@@ -22,11 +22,11 @@ const from_edges = (
 		attr: Pick<BCEdgeAttributes, "explicit" | "field" | "dir">;
 	})[],
 	config?: {
+		renderer?: MermaidRenderer;
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
 		show_attributes?: EdgeAttribute[];
 		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
-		renderer?: MermaidRenderer;
 		click?:
 			| { method: "class" }
 			| { method: "callback"; callback_name: string }
@@ -77,15 +77,16 @@ const from_edges = (
 	const collapsed_edges: typeof edges = [];
 
 	for (const e of edges.sort(
+		// Favour explicit edges
 		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
 	)) {
 		if (
 			e.attr.dir !== "same" ||
 			!collapsed_edges.find(
 				(e2) =>
-					e2.source_id === e.target_id &&
-					e2.target_id === e.source_id &&
-					e2.attr.dir === "same",
+					e.target_id === e2.source_id &&
+					e.source_id === e2.target_id &&
+					e.attr.field === e2.attr.field,
 			)
 		) {
 			collapsed_edges.push(e);
