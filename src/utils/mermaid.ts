@@ -4,7 +4,6 @@ import type {
 	BCNodeAttributes,
 	EdgeAttribute,
 } from "src/graph/MyMultiGraph";
-import type { ShowNodeOptions } from "src/interfaces/settings";
 import { remove_duplicates_by } from "./arrays";
 import { remove_nullish_keys, untyped_pick } from "./objects";
 import { url_search_params } from "./url";
@@ -25,14 +24,16 @@ const from_edges = (
 	config?: {
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
-		show_node_options?: ShowNodeOptions;
 		show_attributes?: EdgeAttribute[];
 		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
 		renderer?: MermaidRenderer;
 		click?:
 			| { method: "class" }
 			| { method: "callback"; callback_name: string }
-			| { method: "href"; getter: (target_id: string) => string };
+			| {
+					method: "href";
+					getter: (id: string, attr: BCNodeAttributes) => string;
+			  };
 	},
 ) => {
 	const { direction, kind, renderer, get_node_label } = Object.assign(
@@ -42,7 +43,7 @@ const from_edges = (
 
 	const lines = [
 		// TODO: If I add 'graph' as an option, double-check if the below "flowchart" property needs to change accordingly
-		`%%{init: {"flowchart": {"defaultRenderer": "${renderer}"}} }%%`,
+		`%%{init: {"${kind}": {"defaultRenderer": "${renderer}"}} }%%`,
 		`${kind} ${direction}`,
 	];
 
@@ -112,7 +113,7 @@ const from_edges = (
 		case "href": {
 			node_map.forEach((node, path) => {
 				lines.push(
-					`\tclick ${node.i} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(path)}"`,
+					`\tclick ${node.i} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(path, node.attr)}"`,
 				);
 			});
 
