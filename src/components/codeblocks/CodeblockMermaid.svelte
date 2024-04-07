@@ -111,5 +111,7 @@
 			style="max-width: var(--file-line-width);"
 			use:render_mermaid
 		></div>
+	{:else}
+		<p class="search-empty-state">No paths found.</p>
 	{/if}
 </div>

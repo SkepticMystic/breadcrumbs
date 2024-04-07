@@ -19,7 +19,7 @@ const from_edges = (
 		BCEdge,
 		"source_id" | "target_id" | "source_attr" | "target_attr"
 	> & {
-		attr: Pick<BCEdgeAttributes, "explicit" | "field">;
+		attr: Pick<BCEdgeAttributes, "explicit" | "field" | "dir">;
 	})[],
 	config?: {
 		kind?: "flowchart" | "graph";
@@ -72,13 +72,39 @@ const from_edges = (
 
 	lines.push("");
 
+	// Collapse dir === same edges to and from the same nodes
+	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
+	const collapsed_edges: typeof edges = [];
+
+	for (const e of edges.sort(
+		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
+	)) {
+		if (
+			e.attr.dir !== "same" ||
+			!collapsed_edges.find(
+				(e2) =>
+					e2.source_id === e.target_id &&
+					e2.target_id === e.source_id &&
+					e2.attr.dir === "same",
+			)
+		) {
+			collapsed_edges.push(e);
+		}
+	}
+
 	// Add the edges
-	edges.forEach((e) => {
+	collapsed_edges.forEach((e) => {
 		const [source, arrow, attrs, target] = [
 			// No need to label the nodes again
 			node_map.get(e.source_id)?.i,
 
-			e.attr.explicit ? "-->" : "-.->",
+			e.attr.dir === "same"
+				? e.attr.explicit
+					? "<--->"
+					: "<-.->"
+				: e.attr.explicit
+					? "-->"
+					: "-.->",
 
 			config?.show_attributes?.length
 				? `|"${url_search_params(untyped_pick(e.attr, config.show_attributes), { trim_lone_param: true })}"|`
