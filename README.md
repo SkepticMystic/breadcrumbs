@@ -529,6 +529,12 @@ Type: `flat?: true | (false)`
 
 Flatten the nested results into a flat list.
 
+##### `collapse`
+
+Type: `collapse?: true | (false)`
+
+Collapse the nested results such that the top-level dropdowns are closed.
+
 ##### `dataview-from`
 
 Type: `dataview-from?: string`
