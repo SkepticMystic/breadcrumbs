@@ -1,12 +1,30 @@
+import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import { DIRECTIONS } from "src/const/hierarchies";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
+import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
 	containerEl: HTMLElement,
 ) => {
+	new_setting(containerEl, {
+		name: "Collapse",
+		desc: "Collapse the tree by default",
+		toggle: {
+			value: plugin.settings.views.side.tree.collapse,
+			cb: async (checked) => {
+				plugin.settings.views.side.tree.collapse = checked;
+
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
+			},
+		},
+	});
+
 	new_setting(containerEl, {
 		name: "Default Direction",
 		desc: "The default direction to use in the tree traversal",
@@ -22,6 +40,33 @@ export const _add_settings_tree_view = (
 				]);
 			},
 		},
+	});
+
+	new EdgeSortIdSettingItem({
+		target: containerEl,
+		props: { edge_sort_id: plugin.settings.views.side.tree.edge_sort_id },
+	}).$on("select", async (e) => {
+		plugin.settings.views.side.tree.edge_sort_id = e.detail;
+
+		await Promise.all([
+			plugin.saveSettings(),
+			plugin.refresh({ rebuild_graph: false }),
+		]);
+	});
+
+	new ShowAttributesSettingItem({
+		target: containerEl,
+		props: {
+			exclude_attributes: ["dir"],
+			show_attributes: plugin.settings.views.side.tree.show_attributes,
+		},
+	}).$on("select", async (e) => {
+		plugin.settings.views.side.tree.show_attributes = e.detail;
+
+		await Promise.all([
+			plugin.saveSettings(),
+			plugin.refresh({ rebuild_graph: false }),
+		]);
 	});
 
 	_add_settings_show_node_options(plugin, containerEl, {

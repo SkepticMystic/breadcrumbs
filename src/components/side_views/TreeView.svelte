@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { Compass } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeSortId } from "src/const/graph";
-	import { type Direction } from "src/const/hierarchies";
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import { Traverse } from "src/graph/traverse";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
@@ -11,17 +8,17 @@
 	import { active_file_store } from "src/stores/active_file";
 	import { url_search_params } from "src/utils/url";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
+	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let open_signal: boolean | null = true;
-	let show_attributes: EdgeAttribute[] = [];
-	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
-	let dir: Direction = plugin.settings.views.side.tree.default_dir;
+	let dir = plugin.settings.views.side.tree.default_dir;
+	let edge_sort_id = plugin.settings.views.side.tree.edge_sort_id;
+	let show_attributes = plugin.settings.views.side.tree.show_attributes;
+	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
 	$: nested_edges =
 		$active_file_store &&

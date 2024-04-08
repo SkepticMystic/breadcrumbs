@@ -1,6 +1,7 @@
 import type { ListIndex } from "src/commands/list_index";
+import type { EdgeSortId } from "src/const/graph";
 import type { Direction } from "src/const/hierarchies";
-import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
+import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { LogLevels } from "src/logger";
 import type { Hierarchy } from "./hierarchies";
 
@@ -98,7 +99,10 @@ export interface BreadcrumbsSettings {
 			};
 
 			tree: {
+				collapse: boolean;
 				default_dir: Direction;
+				edge_sort_id: EdgeSortId;
+				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
 			};
 		};

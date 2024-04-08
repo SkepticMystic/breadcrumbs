@@ -1,10 +1,16 @@
 import { ListIndex } from "src/commands/list_index";
-import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import type {
+	BreadcrumbsSettings,
+	ShowNodeOptions,
+} from "src/interfaces/settings";
 import { blank_hierarchy } from "src/utils/hierarchies";
+import type { EdgeSortId } from "./graph";
 
 export const IMPLIED_RELATIONSHIP_MAX_ROUNDS = 10;
 
-const DEFAULT_SHOW_NODE_OPTIONS = {
+const DEFAULT_EDGE_SORT_ID: EdgeSortId = { field: "basename", order: 1 };
+
+const DEFAULT_SHOW_NODE_OPTIONS: ShowNodeOptions = {
 	ext: false,
 	folder: false,
 	alias: false,
@@ -69,8 +75,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			trail: {
 				enabled: true,
 				format: "grid",
-				default_depth: 999,
 				selection: "all",
+				default_depth: 999,
 				no_path_message: "",
 				show_controls: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
@@ -86,7 +92,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			},
 
 			tree: {
+				collapse: false,
 				default_dir: "down",
+				show_attributes: [],
+				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 		},
