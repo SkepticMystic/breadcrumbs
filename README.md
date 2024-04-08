@@ -468,7 +468,10 @@ The Tree View shows up on the side of the editor, and shows all path going in a 
 
 #### Tree View Settings
 
--   **Default Direction**: Choose the default direction to traverse in the Tree View.
+-   **Collapse**: Collapse the tree such that the top-level dropdowns are closed.
+-   **Direction**: Choose the default direction to traverse in the Tree View.
+-   **Sort**: Choose which field and direction to sort the tree by.
+-   **Show Attributes**: Choose which edge attributes to show in the tree.
 
 ### Codeblocks
 
