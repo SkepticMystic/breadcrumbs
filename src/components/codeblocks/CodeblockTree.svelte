@@ -58,6 +58,7 @@
 				<NestedEdgeList
 					{sort}
 					{plugin}
+					open_signal={!options.collapse}
 					show_attributes={options.show_attributes}
 					nested_edges={Traverse.nest_all_paths(sliced)}
 					show_node_options={plugin.settings.views.codeblocks

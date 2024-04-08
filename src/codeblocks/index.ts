@@ -12,6 +12,8 @@ import type BreadcrumbsPlugin from "src/main";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { Mermaid } from "src/utils/mermaid";
 
+// TODO: parseYaml
+
 const FIELDS = [
 	"type",
 	"dir",
@@ -19,6 +21,7 @@ const FIELDS = [
 	"fields",
 	"depth",
 	"flat",
+	"collapse",
 	"dataview-from",
 	"content",
 	"sort",
@@ -137,6 +140,10 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 
 			case "flat": {
 				return (parsed.flat = value === "true");
+			}
+
+			case "collapse": {
+				return (parsed.collapse = value === "true");
 			}
 
 			//@ts-ignore: TODO: Remove once everyone has migrated

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { stringify_transitive_relation } from "src/graph/builders/implied/custom/transitive";
 	import type BreadcrumbsPlugin from "src/main";
-	import ChevronOpener from "../ChevronOpener.svelte";
+	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import HierarchyFieldSelector from "../selector/HierarchyFieldSelector.svelte";
 	import { PlusIcon, SaveIcon } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";

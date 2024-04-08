@@ -1,25 +1,27 @@
 <script lang="ts">
 	import { Compass } from "lucide-svelte";
+	import { ICON_SIZE } from "src/const";
 	import type { EdgeSortId } from "src/const/graph";
 	import { type Direction } from "src/const/hierarchies";
+	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import { Traverse } from "src/graph/traverse";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { DirectionSelectorMenu } from "src/menus/DirectionSelectorMenu";
 	import { active_file_store } from "src/stores/active_file";
-	import NestedEdgeList from "./NestedEdgeList.svelte";
-	import RebuildGraphButton from "./RebuildGraphButton.svelte";
-	import EdgeSortIdSelector from "./selector/EdgeSortIdSelector.svelte";
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import ShowAttributesSelectorMenu from "./selector/ShowAttributesSelectorMenu.svelte";
-	import { ICON_SIZE } from "src/const";
 	import { url_search_params } from "src/utils/url";
+	import NestedEdgeList from "../NestedEdgeList.svelte";
+	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
+	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
+	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
+	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let dir: Direction = plugin.settings.views.side.tree.default_dir;
-	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
+	let open_signal: boolean | null = true;
 	let show_attributes: EdgeAttribute[] = [];
+	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
+	let dir: Direction = plugin.settings.views.side.tree.default_dir;
 
 	$: nested_edges =
 		$active_file_store &&
@@ -65,6 +67,11 @@
 				bind:show_attributes
 			/>
 
+			<ChevronCollapseButton
+				cls="clickable-icon nav-action-button"
+				bind:open={open_signal}
+			/>
+
 			<button
 				class="clickable-icon nav-action-button flex items-center gap-2"
 				aria-label="Change direction"
@@ -87,6 +94,7 @@
 				<NestedEdgeList
 					{sort}
 					{plugin}
+					{open_signal}
 					{nested_edges}
 					{show_attributes}
 					show_node_options={plugin.settings.views.side.tree

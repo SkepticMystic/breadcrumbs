@@ -6,8 +6,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
-	import ChevronOpener from "../ChevronOpener.svelte";
 	import EdgeLink from "../EdgeLink.svelte";
+	import ChevronOpener from "../button/ChevronOpener.svelte";
 
 	export let dir: Direction;
 	export let hierarchy: Hierarchy;

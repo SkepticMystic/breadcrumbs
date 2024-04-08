@@ -13,7 +13,7 @@
 	import { swap_items } from "src/utils/arrays";
 	import { blank_hierarchy } from "src/utils/hierarchies";
 	import { split_and_trim } from "src/utils/strings";
-	import ChevronOpener from "../ChevronOpener.svelte";
+	import ChevronOpener from "../button/ChevronOpener.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 

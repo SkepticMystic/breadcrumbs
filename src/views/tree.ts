@@ -1,5 +1,5 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import TreeViewComponent from "src/components/TreeView.svelte";
+import TreeViewComponent from "src/components/side_views/TreeView.svelte";
 import { VIEW_IDS } from "src/const/views";
 import BreadcrumbsPlugin from "src/main";
 

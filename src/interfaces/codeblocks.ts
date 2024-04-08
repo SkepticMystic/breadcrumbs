@@ -12,6 +12,7 @@ export type ICodeblock = {
 		fields?: string[];
 		depth: [number, number];
 		flat: boolean;
+		collapse?: boolean;
 		dataview_from_paths?: string[];
 		content?: "open" | "closed";
 		sort: EdgeSortId;
