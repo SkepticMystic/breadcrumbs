@@ -21,8 +21,8 @@ jobs:
             - name: Build plugin
               run: |
                   npm install
-                  npm test
-                  npm run build
+                  npm test || exit 1
+                  npm run build || exit 1
 
             - name: Create release
               env:
