@@ -103,7 +103,7 @@
 		</h3>
 	{/if}
 
-	{#if sliced.length}
+	{#if flat_unique.length}
 		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
 	https://mermaid.js.org/syntax/flowchart.html#width -->
 		<div
