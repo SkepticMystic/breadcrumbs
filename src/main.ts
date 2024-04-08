@@ -77,6 +77,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// Especially before dataview, since the api would get used alot in dv codeblocks
 		this.api = new BCAPI(this);
 
+		// @ts-ignore: I can extend window, but this is the only place
 		window.BCAPI = this.api;
 		this.register(
 			// @ts-ignore: Don't want to make it optional, but still delete on unload

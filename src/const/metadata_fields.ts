@@ -1,4 +1,4 @@
-import type { FrontmatterPropertyType } from "src/interfaces/obsidian";
+import type { PropertyWidgetType } from "src/interfaces/obsidian";
 
 export const METADATA_FIELDS_LIST = [
 	"BC-tag-note-tag",
@@ -32,7 +32,7 @@ export type MetadataField = (typeof METADATA_FIELDS_LIST)[number];
 export const METADATA_FIELDS_MAP: Record<
 	MetadataField,
 	{
-		property_type: FrontmatterPropertyType;
+		property_type: PropertyWidgetType;
 	}
 > = {
 	"BC-tag-note-tag": {
