@@ -496,11 +496,11 @@ Type: `type?: (tree) | mermaid`
 
 How to visualise the results.
 
-##### `dir`
+##### `dirs`
 
-Type: `dir?: up | (down) | same | prev | next`
+Type: `dirs?: (up | (down) | same | prev | next)[]`
 
-Filter edges by a given direction
+Filter edges by a given list of directions. By default, only the `down` direction is shown.
 
 ##### `fields`
 
