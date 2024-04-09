@@ -49,15 +49,20 @@ export default class BreadcrumbsPlugin extends Plugin {
 		try {
 			const now = Date.now();
 
+			const all_properties =
+				this.app.metadataTypeManager.getAllProperties();
+
 			for (const field of get_all_hierarchy_fields(
 				this.settings.hierarchies,
 			)) {
+				if (all_properties[field].type === "multitext") continue;
 				this.app.metadataTypeManager.setType(field, "multitext");
 			}
 
 			for (const [field, { property_type }] of Object.entries(
 				METADATA_FIELDS_MAP,
 			)) {
+				if (all_properties[field].type === property_type) continue;
 				this.app.metadataTypeManager.setType(field, property_type);
 			}
 
