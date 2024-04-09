@@ -18,24 +18,33 @@
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 
+	const base_traversal = ({
+		hierarchy_i,
+	}: {
+		hierarchy_i: number | undefined;
+	}) =>
+		Traverse.all_paths(
+			"depth_first",
+			plugin.graph,
+			$active_file_store!.path,
+			(e) =>
+				has_edge_attrs(e, {
+					hierarchy_i,
+					dir: options.dir,
+					$or_fields: options.fields,
+					$or_target_ids: options.dataview_from_paths,
+				}),
+		);
+
 	const all_paths =
 		$active_file_store && plugin.graph.hasNode($active_file_store.path)
-			? plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						Traverse.all_paths(
-							"depth_first",
-							plugin.graph,
-							$active_file_store!.path,
-							(e) =>
-								has_edge_attrs(e, {
-									hierarchy_i,
-									dir: options.dir,
-									$or_fields: options.fields,
-									$or_target_ids: options.dataview_from_paths,
-								}),
-						),
-					)
-					.flat()
+			? options.merge_hierarchies
+				? base_traversal({ hierarchy_i: undefined })
+				: plugin.settings.hierarchies
+						.map((_hierarchy, hierarchy_i) =>
+							base_traversal({ hierarchy_i }),
+						)
+						.flat()
 			: [];
 
 	const sliced = all_paths.map((path) =>

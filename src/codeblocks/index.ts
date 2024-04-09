@@ -1,3 +1,4 @@
+import { parseYaml } from "obsidian";
 import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	SIMPLE_EDGE_SORT_FIELDS,
@@ -16,12 +17,14 @@ import { Mermaid } from "src/utils/mermaid";
 
 const FIELDS = [
 	"type",
+	// TODO: Accept multiple directions, treated as $or_dirs in has_attributes
 	"dir",
 	"title",
 	"fields",
 	"depth",
 	"flat",
 	"collapse",
+	"merge-hierarchies",
 	"dataview-from",
 	"content",
 	"sort",
@@ -109,7 +112,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 								message: `Invalid field: ${field}. Must be one of your hierarchy fields.`,
 							});
 							return false;
-						} else return true;
+						} else {
+							return true;
+						}
 					}));
 			}
 
@@ -145,6 +150,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			case "collapse": {
 				return (parsed.collapse = value === "true");
 			}
+
+			case "merge-hierarchies":
+				return (parsed.merge_hierarchies = value === "true");
 
 			//@ts-ignore: TODO: Remove once everyone has migrated
 			case "from":
