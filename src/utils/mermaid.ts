@@ -34,7 +34,7 @@ const build_attrs = (
 };
 
 const from_edges = (
-	edges: BCEdge[],
+	edges: Omit<BCEdge, "id" | "undirected">[],
 	config?: {
 		active_node_id?: string;
 		renderer?: MermaidRenderer;
