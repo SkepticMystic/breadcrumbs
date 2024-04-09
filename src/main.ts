@@ -1,4 +1,5 @@
 import { Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -26,7 +27,6 @@ import { get_all_hierarchy_fields } from "./utils/hierarchies";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import { Codeblocks } from "src/codeblocks";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -56,14 +56,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 			for (const field of get_all_hierarchy_fields(
 				this.settings.hierarchies,
 			)) {
-				if (all_properties[field].type === "multitext") continue;
+				if (all_properties[field]?.type === "multitext") continue;
 				this.app.metadataTypeManager.setType(field, "multitext");
 			}
 
 			for (const [field, { property_type }] of Object.entries(
 				METADATA_FIELDS_MAP,
 			)) {
-				if (all_properties[field].type === property_type) continue;
+				if (all_properties[field]?.type === property_type) continue;
 				this.app.metadataTypeManager.setType(field, property_type);
 			}
 
@@ -201,7 +201,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 				VIEW_IDS.tree,
 				(leaf) => new TreeView(leaf, this),
 			);
-
 		});
 
 		// Codeblocks
@@ -345,11 +344,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
+		// TODO: Disable where unnecessary
 		redraw_codeblocks?: boolean;
 	}) => {
 		log.debug(
 			"refresh >",
-			["rebuild_graph", "active_file_store", "redraw_page_views"]
+			[
+				"rebuild_graph",
+				"active_file_store",
+				"redraw_page_views",
+				"redraw_codeblocks",
+			]
 				.filter(
 					(key) => options?.[key as keyof typeof options] !== false,
 				)
@@ -409,7 +414,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		if (options?.redraw_codeblocks !== false) {
-			Codeblocks.update_codeblocks();
+			Codeblocks.update_all();
 		}
 	};
 

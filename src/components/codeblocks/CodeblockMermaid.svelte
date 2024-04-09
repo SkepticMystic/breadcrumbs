@@ -13,7 +13,6 @@
 	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -22,7 +21,9 @@
 	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
 		all_paths = get_all_paths();
-	}
+	};
+
+	const sort = get_edge_sorter(options.sort, plugin.graph);
 
 	const base_traversal = ({
 		hierarchy_i,
@@ -43,67 +44,55 @@
 		);
 
 	const get_all_paths = () => {
-		if ($active_file_store && plugin.graph.hasNode($active_file_store.path)) {
+		if (
+			$active_file_store &&
+			plugin.graph.hasNode($active_file_store.path)
+		) {
 			if (options.merge_hierarchies) {
 				return base_traversal({ hierarchy_i: undefined });
 			} else {
 				return plugin.settings.hierarchies
 					.map((_hierarchy, hierarchy_i) =>
-						base_traversal({ hierarchy_i })
+						base_traversal({ hierarchy_i }),
 					)
 					.flat();
 			}
 		} else {
 			return [];
 		}
-	}
+	};
 
 	let all_paths = get_all_paths();
 
-	let sliced: BCEdge[][];
 	$: sliced = all_paths.map((path) =>
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
-	let flat_unique: BCEdge[][];
 	$: flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
 
-	const sort = get_edge_sorter(options.sort, plugin.graph);
-
-	let mermaid: string;
 	$: mermaid = wrap_in_codeblock(
 		Mermaid.from_edges(flat_unique.sort(sort), {
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,
 			active_node_id: $active_file_store?.path,
-			get_node_label: (id, _attr) => {
+			get_node_label: (node_id, _attr) => {
 				const source_path = $active_file_store?.path ?? "";
+				const file = plugin.app.vault.getFileByPath(node_id);
 
-				const file = plugin.app.vault.getFileByPath(id);
-				if (!file) {
-					return Paths.drop_ext(
-						Links.resolve_to_absolute_path(
-							plugin.app,
-							id,
-							source_path,
-						),
-					);
-				}
-
-				return plugin.app.fileManager
-					.generateMarkdownLink(file, source_path)
-					.slice(2, -2);
+				return file
+					? plugin.app.fileManager
+							.generateMarkdownLink(file, source_path)
+							.slice(2, -2)
+					: Paths.drop_ext(
+							Links.resolve_to_absolute_path(
+								plugin.app,
+								node_id,
+								source_path,
+							),
+						);
 			},
 			direction: options.mermaid_direction,
-			//  ??
-			// (options.dir === "down"
-			// 	? "TB"
-			// 	: options.dir === "up"
-			// 		? "BT"
-			// 		: options.dir === "prev"
-			// 			? "RL"
-			// 			: "LR"),
 		}),
 		"mermaid",
 	);
@@ -113,18 +102,24 @@
 
 	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
 	// and for the initial render the target element is undefined, so we need to check for that
-	const render_mermaid = (mermaid_str: string, target_el: HTMLElement | undefined) => {
+	const render_mermaid = (
+		mermaid_str: string,
+		target_el: HTMLElement | undefined,
+	) => {
 		if (target_el) {
+			log.debug("rendering mermaid");
+
 			target_el.empty();
+
 			MarkdownRenderer.render(
 				plugin.app,
 				mermaid_str,
 				target_el,
 				$active_file_store?.path ?? "",
 				plugin,
-			)
+			);
 		}
-	}
+	};
 
 	$: render_mermaid(mermaid, mermaid_element);
 </script>
