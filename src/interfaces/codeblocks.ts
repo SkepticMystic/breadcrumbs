@@ -7,7 +7,7 @@ export type ICodeblock = {
 	/** Once resolved, the non-optional fields WILL be there, with a default if missing */
 	Options: {
 		type: "tree" | "mermaid";
-		dir: Direction;
+		dirs: Direction[];
 		title?: string;
 		fields?: string[];
 		depth: [number, number];

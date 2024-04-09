@@ -1,4 +1,3 @@
-import { parseYaml } from "obsidian";
 import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	SIMPLE_EDGE_SORT_FIELDS,
@@ -12,6 +11,7 @@ import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { Mermaid } from "src/utils/mermaid";
+import { quote_join } from "src/utils/strings";
 
 // TODO: parseYaml
 
@@ -19,6 +19,7 @@ const FIELDS = [
 	"type",
 	// TODO: Accept multiple directions, treated as $or_dirs in has_attributes
 	"dir",
+	"dirs",
 	"title",
 	"fields",
 	"depth",
@@ -62,23 +63,38 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid type: ${value}. Valid options: ${TYPES.join(", ")}`,
+						message: `Invalid type: "${value}". Options: ${quote_join(TYPES)}`,
 					});
 				}
 
 				return (parsed.type = value as ICodeblock["Options"]["type"]);
 			}
 
-			case "dir": {
-				if (!DIRECTIONS.includes(value as Direction)) {
-					return errors.push({
+			case "dir":
+			case "dirs": {
+				if (key === "dir") {
+					errors.push({
 						path: key,
-						code: "invalid_field_value",
-						message: `Invalid dir: ${value}`,
+						code: "deprecated_field",
+						message: `The 'dir' field is deprecated in favour of 'dirs' which accepts multiple directions (comma-separated).`,
 					});
 				}
 
-				return (parsed.dir = value as Direction);
+				return (parsed.dirs = value
+					.split(",")
+					.map((field) => field.trim())
+					.filter((dir) => {
+						if (!DIRECTIONS.includes(dir as Direction)) {
+							errors.push({
+								path: key,
+								code: "invalid_field_value",
+								message: `Invalid dir: "${dir}". Options: ${quote_join(DIRECTIONS)}`,
+							});
+							return false;
+						} else {
+							return true;
+						}
+					}) as Direction[]);
 			}
 
 			case "mermaid-direction": {
@@ -88,7 +104,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid mermaid-direction: ${value}. Valid options: ${Mermaid.DIRECTIONS.join(", ")}`,
+						message: `Invalid mermaid-direction: "${value}". Options: ${quote_join(Mermaid.DIRECTIONS)}`,
 					});
 				}
 
@@ -109,7 +125,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 							errors.push({
 								path: key,
 								code: "invalid_field_value",
-								message: `Invalid field: ${field}. Must be one of your hierarchy fields.`,
+								message: `Invalid field: "${field}". Options: ${quote_join(hierarchy_fields)}`,
 							});
 							return false;
 						} else {
@@ -134,7 +150,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid depth: ${value}. Min is greater than max.`,
+						message: `Invalid depth: "${value}". Min is greater than max.`,
 					});
 
 					return (parsed.depth = [0, Infinity]);
@@ -178,7 +194,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid dataview-from: ${value}. Must be a valid dataview query.`,
+						message: `Invalid dataview-from: "${value}". You can also use \`app.plugins.plugins.dataview.api.pages\` to test your query.`,
 					});
 				}
 			}
@@ -189,7 +205,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid content: ${value}. Valid options: open, closed`,
+						message: `Invalid content: "${value}". Options: "open", "closed"`,
 					});
 				}
 
@@ -208,18 +224,16 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid sort field: ${field}. Valid options: ${SIMPLE_EDGE_SORT_FIELDS.map((f) => `"${f}"`).join(", ")}, or a complex field prefixed with: ${COMPLEX_EDGE_SORT_FIELD_PREFIXES.map(
-							(f) => `"${f}"`,
-						).join(", ")}`,
+						message: `Invalid sort-field: "${field}". Options: ${quote_join(SIMPLE_EDGE_SORT_FIELDS)}, or a complex field prefixed with: ${quote_join(COMPLEX_EDGE_SORT_FIELD_PREFIXES)}`,
 					});
 				}
 
-				// If an order has been given, but isn't a valid option
+				// If an order has been given, but isn't a option
 				if (order && order !== "asc" && order !== "desc") {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid sort order: ${order}. Valid options: asc, desc, or blank (default is asc).`,
+						message: `Invalid sort-order: "${order}". Options: "asc", "desc", or <blank>.`,
 					});
 				}
 
@@ -251,9 +265,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 							errors.push({
 								path: key,
 								code: "invalid_field_value",
-								message: `Invalid show-attributes: ${attr}. Valid options: ${EDGE_ATTRIBUTES.join(
-									", ",
-								)}`,
+								message: `Invalid show-attributes: "${attr}". Options: ${quote_join(EDGE_ATTRIBUTES)}.`,
 							});
 							return false;
 						} else {
@@ -267,7 +279,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return errors.push({
 						path: key,
 						code: "invalid_field_value",
-						message: `Invalid mermaid-renderer: ${value}. Valid options: ${Mermaid.RENDERERS.join(", ")}`,
+						message: `Invalid mermaid-renderer: "${value}". Options: ${quote_join(Mermaid.RENDERERS)}`,
 					});
 				}
 
@@ -278,7 +290,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				errors.push({
 					path: key,
 					code: "invalid_field_value",
-					message: `Invalid codeblock field: ${key}. Valid options: ${FIELDS.join(", ")}`,
+					message: `Invalid codeblock field: "${key}". Options: ${quote_join(FIELDS)}`,
 				});
 			}
 		}
@@ -293,7 +305,7 @@ const resolve_options = (
 	Object.assign(
 		{
 			type: "tree",
-			dir: "down",
+			dirs: ["down"],
 			depth: [0, Infinity],
 			flat: false,
 			sort: {

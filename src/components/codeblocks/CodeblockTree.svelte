@@ -25,7 +25,7 @@
 			(e) =>
 				has_edge_attrs(e, {
 					hierarchy_i,
-					dir: options.dir,
+					$or_dirs: options.dirs,
 					$or_fields: options.fields,
 					$or_target_ids: options.dataview_from_paths,
 				}),

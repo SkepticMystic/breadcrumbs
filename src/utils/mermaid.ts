@@ -22,6 +22,7 @@ const from_edges = (
 		attr: Pick<BCEdgeAttributes, "explicit" | "field" | "dir">;
 	})[],
 	config?: {
+		active_node_id?: string;
 		renderer?: MermaidRenderer;
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
@@ -124,7 +125,11 @@ const from_edges = (
 			const nodes = [...node_map.values()];
 
 			if (nodes.length) {
-				lines.push(`\tclass ${nodes.map((n) => n.i)} internal-link`);
+				const active_note_i = node_map.get(config.active_node_id!)?.i;
+
+				lines.push(
+					`\tclass ${nodes.filter((n) => n.i !== active_note_i).map((n) => n.i)} internal-link`,
+				);
 			}
 
 			const unresolved_nodes = nodes.filter((n) => !n.attr.resolved);

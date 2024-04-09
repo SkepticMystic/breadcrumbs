@@ -30,7 +30,7 @@
 			(e) =>
 				has_edge_attrs(e, {
 					hierarchy_i,
-					dir: options.dir,
+					$or_dirs: options.dirs,
 					$or_fields: options.fields,
 					$or_target_ids: options.dataview_from_paths,
 				}),
@@ -60,6 +60,7 @@
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,
+			active_node_id: $active_file_store?.path,
 			get_node_label: (id, _attr) => {
 				const source_path = $active_file_store?.path ?? "";
 
@@ -78,15 +79,15 @@
 					.generateMarkdownLink(file, source_path)
 					.slice(2, -2);
 			},
-			direction:
-				options.mermaid_direction ??
-				(options.dir === "down"
-					? "TB"
-					: options.dir === "up"
-						? "BT"
-						: options.dir === "prev"
-							? "RL"
-							: "LR"),
+			direction: options.mermaid_direction,
+			//  ??
+			// (options.dir === "down"
+			// 	? "TB"
+			// 	: options.dir === "up"
+			// 		? "BT"
+			// 		: options.dir === "prev"
+			// 			? "RL"
+			// 			: "LR"),
 		}),
 		"mermaid",
 	);

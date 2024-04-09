@@ -1,10 +1,14 @@
-import { log } from "src/logger";
 import { deep_access } from "./objects";
 
 export const split_and_trim = (str: string, delimiter = ","): string[] => {
 	if (!str || str === "") return [];
 	else return str.split(delimiter).map((str) => str.trim());
 };
+
+export const quote_join = (
+	arr: string[] | readonly string[],
+	quote = '"',
+): string => arr.map((str) => quote + str + quote).join(", ");
 
 export const ensure_starts_with = (str: string, prefix: string): string =>
 	str.startsWith(prefix) ? str : prefix + str;
