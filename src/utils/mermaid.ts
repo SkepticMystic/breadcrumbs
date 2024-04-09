@@ -14,6 +14,24 @@ type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
 const MERMAID_RENDERER = ["dagre", "elk"] as const;
 type MermaidRenderer = (typeof MERMAID_RENDERER)[number];
 
+const build_arrow = (e: {
+	attr: Pick<BCEdgeAttributes, "explicit" | "dir">;
+}) => (e.attr.dir === "same" ? "<--->" : e.attr.explicit ? "-->" : "-.->");
+
+const build_attrs = (
+	e: { attr: Pick<BCEdgeAttributes, "explicit"> },
+	show_attributes?: EdgeAttribute[],
+) => {
+	const params = show_attributes?.length
+		? url_search_params(untyped_pick(e.attr, show_attributes), {
+				trim_lone_param: true,
+			})
+		: null;
+
+	// Only add the attributes if there are any, otherwise Mermaid will throw an error
+	return params?.length ? `|"${params}"|` : "";
+};
+
 const from_edges = (
 	edges: (Pick<
 		BCEdge,
@@ -75,47 +93,45 @@ const from_edges = (
 
 	// Collapse dir === same edges to and from the same nodes
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
-	const collapsed_edges: typeof edges = [];
+	const mermaid_edges: {
+		source_i: number;
+		target_i: number;
+		arrow: string;
+		attrs: string;
+		field: BCEdgeAttributes["field"];
+	}[] = [];
 
 	for (const e of edges.sort(
-		// Favour explicit edges
+		// Favour explicit edges in the dedupe
 		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
 	)) {
+		const [source_i, target_i] = [
+			node_map.get(e.source_id)!.i,
+			node_map.get(e.target_id)!.i,
+		];
+
 		if (
 			e.attr.dir !== "same" ||
-			!collapsed_edges.find(
+			!mermaid_edges.find(
 				(e2) =>
-					e.target_id === e2.source_id &&
-					e.source_id === e2.target_id &&
-					e.attr.field === e2.attr.field,
+					target_i === e2.source_i &&
+					source_i === e2.target_i &&
+					e.attr.field === e2.field,
 			)
 		) {
-			collapsed_edges.push(e);
+			mermaid_edges.push({
+				source_i,
+				target_i,
+				field: e.attr.field,
+				arrow: build_arrow(e),
+				attrs: build_attrs(e, config?.show_attributes),
+			});
 		}
 	}
 
 	// Add the edges
-	collapsed_edges.forEach((e) => {
-		const [source, arrow, attrs, target] = [
-			// No need to label the nodes again
-			node_map.get(e.source_id)?.i,
-
-			e.attr.dir === "same"
-				? e.attr.explicit
-					? "<--->"
-					: "<-.->"
-				: e.attr.explicit
-					? "-->"
-					: "-.->",
-
-			config?.show_attributes?.length
-				? `|"${url_search_params(untyped_pick(e.attr, config.show_attributes), { trim_lone_param: true })}"|`
-				: "",
-
-			node_map.get(e.target_id)?.i,
-		];
-
-		lines.push(`\t${source} ${arrow}${attrs} ${target}`);
+	mermaid_edges.forEach(({ arrow, attrs, source_i, target_i }) => {
+		lines.push(`\t${source_i} ${arrow}${attrs} ${target_i}`);
 	});
 
 	lines.push("");
