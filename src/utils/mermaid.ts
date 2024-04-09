@@ -5,6 +5,7 @@ import type {
 	EdgeAttribute,
 } from "src/graph/MyMultiGraph";
 import { remove_duplicates_by } from "./arrays";
+import { get_opposite_direction } from "./hierarchies";
 import { remove_nullish_keys, untyped_pick } from "./objects";
 import { url_search_params } from "./url";
 
@@ -16,14 +17,14 @@ type MermaidRenderer = (typeof MERMAID_RENDERER)[number];
 
 const build_arrow = (e: {
 	attr: Pick<BCEdgeAttributes, "explicit" | "dir">;
-}) => (e.attr.dir === "same" ? "<--->" : e.attr.explicit ? "-->" : "-.->");
+}) => (e.attr.dir === "same" ? "<-->" : e.attr.explicit ? "-->" : "-.->");
 
 const build_attrs = (
-	e: { attr: Pick<BCEdgeAttributes, "explicit"> },
+	attr: Record<string, unknown>,
 	show_attributes?: EdgeAttribute[],
 ) => {
 	const params = show_attributes?.length
-		? url_search_params(untyped_pick(e.attr, show_attributes), {
+		? url_search_params(untyped_pick(attr, show_attributes), {
 				trim_lone_param: true,
 			})
 		: null;
@@ -33,12 +34,7 @@ const build_attrs = (
 };
 
 const from_edges = (
-	edges: (Pick<
-		BCEdge,
-		"source_id" | "target_id" | "source_attr" | "target_attr"
-	> & {
-		attr: Pick<BCEdgeAttributes, "explicit" | "field" | "dir">;
-	})[],
+	edges: BCEdge[],
 	config?: {
 		active_node_id?: string;
 		renderer?: MermaidRenderer;
@@ -97,52 +93,76 @@ const from_edges = (
 		source_i: number;
 		target_i: number;
 		arrow: string;
-		attrs: string;
-		field: BCEdgeAttributes["field"];
+		attr: BCEdgeAttributes;
+		collapsed_attr: Record<string, unknown>;
 	}[] = [];
 
-	for (const e of edges.sort(
+	for (const edge of edges.sort(
 		// Favour explicit edges in the dedupe
 		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
 	)) {
 		const [source_i, target_i] = [
-			node_map.get(e.source_id)!.i,
-			node_map.get(e.target_id)!.i,
+			node_map.get(edge.source_id)!.i,
+			node_map.get(edge.target_id)!.i,
 		];
 
-		if (
-			e.attr.dir !== "same" ||
-			!mermaid_edges.find(
-				(e2) =>
-					target_i === e2.source_i &&
-					source_i === e2.target_i &&
-					e.attr.field === e2.field,
-			)
-		) {
+		const opposing_edge_i = mermaid_edges.findIndex(
+			(existing) =>
+				target_i === existing.source_i &&
+				source_i === existing.target_i &&
+				// The combination of hierarchy_i and dir uniquely identify a field in a hierarchy
+				edge.attr.hierarchy_i === existing.attr.hierarchy_i &&
+				edge.attr.dir === get_opposite_direction(existing.attr.dir),
+		);
+
+		if (opposing_edge_i === -1) {
+			// If there is no opposing edge, add the original edge
 			mermaid_edges.push({
 				source_i,
 				target_i,
-				field: e.attr.field,
-				arrow: build_arrow(e),
-				attrs: build_attrs(e, config?.show_attributes),
+				arrow: build_arrow(edge),
+				attr: edge.attr,
+				collapsed_attr: { ...edge.attr },
+			});
+		} else {
+			// If there is an opposing edge, collapse them into a single edge
+			const existing = mermaid_edges[opposing_edge_i];
+
+			existing.arrow =
+				edge.attr.explicit || existing.attr.explicit ? "<-->" : "<-.->";
+
+			config?.show_attributes?.forEach((attr) => {
+				existing.collapsed_attr[attr] =
+					String(existing.collapsed_attr[attr]) +
+					"|" +
+					//@ts-ignore: If the property is not in the object, it will be undefined
+					(edge.attr[attr] ?? "_");
 			});
 		}
 	}
 
 	// Add the edges
-	mermaid_edges.forEach(({ arrow, attrs, source_i, target_i }) => {
-		lines.push(`\t${source_i} ${arrow}${attrs} ${target_i}`);
+	mermaid_edges.forEach(({ arrow, collapsed_attr, source_i, target_i }) => {
+		lines.push(
+			`\t${source_i} ${arrow}${build_attrs(collapsed_attr, config?.show_attributes)} ${target_i}`,
+		);
 	});
 
 	lines.push("");
+
+	const active_note_i = config?.active_node_id
+		? node_map.get(config?.active_node_id)?.i
+		: null;
+
+	if (active_note_i !== null) {
+		lines.push(`\tclass ${active_note_i} BC-active-node`);
+	}
 
 	switch (config?.click?.method) {
 		case "class": {
 			const nodes = [...node_map.values()];
 
 			if (nodes.length) {
-				const active_note_i = node_map.get(config.active_node_id!)?.i;
-
 				lines.push(
 					`\tclass ${nodes.filter((n) => n.i !== active_note_i).map((n) => n.i)} internal-link`,
 				);
