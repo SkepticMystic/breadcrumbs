@@ -13,10 +13,16 @@
 	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
+
+	// this is an exposed function that we can call from the outside to update the codeblock
+	export const update = () => {
+		all_paths = get_all_paths();
+	}
 
 	const base_traversal = ({
 		hierarchy_i,
@@ -36,26 +42,36 @@
 				}),
 		);
 
-	const all_paths =
-		$active_file_store && plugin.graph.hasNode($active_file_store.path)
-			? options.merge_hierarchies
-				? base_traversal({ hierarchy_i: undefined })
-				: plugin.settings.hierarchies
-						.map((_hierarchy, hierarchy_i) =>
-							base_traversal({ hierarchy_i }),
-						)
-						.flat()
-			: [];
+	const get_all_paths = () => {
+		if ($active_file_store && plugin.graph.hasNode($active_file_store.path)) {
+			if (options.merge_hierarchies) {
+				return base_traversal({ hierarchy_i: undefined });
+			} else {
+				return plugin.settings.hierarchies
+					.map((_hierarchy, hierarchy_i) =>
+						base_traversal({ hierarchy_i })
+					)
+					.flat();
+			}
+		} else {
+			return [];
+		}
+	}
 
-	const sliced = all_paths.map((path) =>
+	let all_paths = get_all_paths();
+
+	let sliced: BCEdge[][];
+	$: sliced = all_paths.map((path) =>
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
-	const flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
+	let flat_unique: BCEdge[][];
+	$: flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
 
 	const sort = get_edge_sorter(options.sort, plugin.graph);
 
-	const mermaid = wrap_in_codeblock(
+	let mermaid: string;
+	$: mermaid = wrap_in_codeblock(
 		Mermaid.from_edges(flat_unique.sort(sort), {
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
@@ -91,17 +107,26 @@
 		}),
 		"mermaid",
 	);
-	log.debug(mermaid);
+	$: log.debug(mermaid);
 
-	const render_mermaid = (node: HTMLElement) => {
-		MarkdownRenderer.render(
-			plugin.app,
-			mermaid,
-			node,
-			$active_file_store?.path ?? "",
-			plugin,
-		);
-	};
+	let mermaid_element: HTMLElement | undefined;
+
+	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
+	// and for the initial render the target element is undefined, so we need to check for that
+	const render_mermaid = (mermaid_str: string, target_el: HTMLElement | undefined) => {
+		if (target_el) {
+			target_el.empty();
+			MarkdownRenderer.render(
+				plugin.app,
+				mermaid_str,
+				target_el,
+				$active_file_store?.path ?? "",
+				plugin,
+			)
+		}
+	}
+
+	$: render_mermaid(mermaid, mermaid_element);
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -119,7 +144,7 @@
 		<div
 			class="BC-codeblock-mermaid-graph"
 			style="max-width: var(--file-line-width);"
-			use:render_mermaid
+			bind:this={mermaid_element}
 		></div>
 	{:else}
 		<p class="search-empty-state">No paths found.</p>

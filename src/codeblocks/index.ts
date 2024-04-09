@@ -12,6 +12,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { Mermaid } from "src/utils/mermaid";
 import { quote_join } from "src/utils/strings";
+import { CodeblockMDRC } from "src/codeblocks/MDRC";
 
 // TODO: parseYaml
 
@@ -316,8 +317,27 @@ const resolve_options = (
 		parsed,
 	);
 
+const active_codeblocks: Map<string, CodeblockMDRC> = new Map();
+
+const register_codeblock = (codeBlock: CodeblockMDRC) => {
+	active_codeblocks.set(codeBlock.id, codeBlock);
+}
+
+const unregister_codeblock = (codeBlock: CodeblockMDRC) => {
+	active_codeblocks.delete(codeBlock.id);
+}
+
+const update_codeblocks = () => {
+	for (const codeBlock of active_codeblocks.values()) {
+		void codeBlock.update();
+	}
+}
+
 export const Codeblocks = {
 	FIELDS,
 	parse_source,
 	resolve_options,
+	register_codeblock,
+	unregister_codeblock,
+	update_codeblocks,
 };

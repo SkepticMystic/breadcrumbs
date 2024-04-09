@@ -26,6 +26,7 @@ import { get_all_hierarchy_fields } from "./utils/hierarchies";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import { Codeblocks } from "src/codeblocks";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -201,15 +202,16 @@ export default class BreadcrumbsPlugin extends Plugin {
 				(leaf) => new TreeView(leaf, this),
 			);
 
-			// Codeblocks
-			this.registerMarkdownCodeBlockProcessor(
-				"breadcrumbs",
-				(source, el, ctx) => {
-					const mdrc = new CodeblockMDRC(this, el, source);
-					ctx.addChild(mdrc);
-				},
-			);
 		});
+
+		// Codeblocks
+		this.registerMarkdownCodeBlockProcessor(
+			"breadcrumbs",
+			(source, el, ctx) => {
+				const mdrc = new CodeblockMDRC(this, el, source);
+				ctx.addChild(mdrc);
+			},
+		);
 
 		// Commands
 		this.addCommand({
@@ -343,6 +345,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
+		redraw_codeblocks?: boolean;
 	}) => {
 		log.debug(
 			"refresh >",
@@ -403,6 +406,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		if (options?.redraw_page_views !== false) {
 			redraw_page_views(this);
+		}
+
+		if (options?.redraw_codeblocks !== false) {
+			Codeblocks.update_codeblocks();
 		}
 	};
 

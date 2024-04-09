@@ -9,6 +9,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
 	component: CodeblockTree | CodeblockMermaid | undefined;
+	id: string;
 
 	constructor(
 		plugin: BreadcrumbsPlugin,
@@ -17,12 +18,26 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	) {
 		super(containerEl);
 
+		this.id = window.crypto.randomUUID();
+
 		this.plugin = plugin;
 		this.source = source;
 	}
 
+	async update(): Promise<void> {
+		log.debug("CodeblockMDRC.update");
+		if (this.component) {
+			try {
+				this.component.update();
+			} catch (e) {
+				log.error("failed to update codeblock", e);
+			}
+		}
+	}
+
 	async onload(): Promise<void> {
 		log.debug("CodeblockMDRC.load");
+		Codeblocks.register_codeblock(this);
 
 		const { parsed, errors } = Codeblocks.parse_source(
 			this.plugin,
@@ -65,6 +80,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 	onunload(): void {
 		log.debug("CodeblockMDRC.unload");
+		Codeblocks.unregister_codeblock(this);
 
 		this.component?.$destroy();
 	}
