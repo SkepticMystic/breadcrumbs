@@ -536,6 +536,12 @@ Flatten the nested results into a flat list.
 
 Type: `collapse?: true | (false)`
 
+##### `merge-hierarchies`
+
+Type: `merge-hierarchies?: true | (false)`
+
+By default, Breadcrumbs traverses each hierarchy separately. If you set this to `true`, Breadcrumbs will merge all hierarchies together, meaning paths of edges from _different_ hierarchies can contribute to the same path.
+
 Collapse the nested results such that the top-level dropdowns are closed.
 
 ##### `dataview-from`
