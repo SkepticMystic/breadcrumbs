@@ -14,10 +14,17 @@
 	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { onMount } from "svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
+	export let file_path: string;
+
+	let all_paths = [];
+
+	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
+	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : undefined);
 
 	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
 
@@ -37,7 +44,7 @@
 		Traverse.all_paths(
 			"depth_first",
 			plugin.graph,
-			$active_file_store!.path,
+			active_file_path,
 			(e) =>
 				has_edge_attrs(e, {
 					hierarchy_i,
@@ -49,8 +56,8 @@
 
 	const get_all_paths = () => {
 		if (
-			$active_file_store &&
-			plugin.graph.hasNode($active_file_store.path)
+			active_file_path &&
+			plugin.graph.hasNode(active_file_path)
 		) {
 			if (options.merge_hierarchies) {
 				return base_traversal({ hierarchy_i: undefined });
@@ -66,7 +73,10 @@
 		}
 	};
 
-	let all_paths = get_all_paths();
+	onMount(() => {
+		all_paths = get_all_paths();
+	});
+
 	let distances: Map<string, number> = new Map();
 
 	// Prioritise closer edges
@@ -90,9 +100,9 @@
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,
-			active_node_id: $active_file_store?.path,
+			active_node_id: active_file_path,
 			get_node_label: (node_id, _attr) => {
-				const source_path = $active_file_store?.path ?? "";
+				const source_path = active_file_path ?? "";
 				const file = plugin.app.vault.getFileByPath(node_id);
 
 				return file
@@ -130,7 +140,7 @@
 				plugin.app,
 				mermaid_str,
 				target_el,
-				$active_file_store?.path ?? "",
+				active_file_path ?? "",
 				plugin,
 			);
 		}

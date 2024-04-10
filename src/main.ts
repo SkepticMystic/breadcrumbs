@@ -207,7 +207,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			"breadcrumbs",
 			(source, el, ctx) => {
-				const mdrc = new CodeblockMDRC(this, el, source);
+				const mdrc = new CodeblockMDRC(this, el, source, ctx.sourcePath);
 				ctx.addChild(mdrc);
 			},
 		);
