@@ -15,6 +15,7 @@ type Traverser = (
 	edge_filter?: (edge: BCEdge, depth: number) => boolean,
 ) => void;
 
+// NOTE: This is now _breadth_ first, but I need to rename it everywhere
 const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	// edge_ids visited so far
 	const visited = new Set<string>();
@@ -26,15 +27,10 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 		.map((edge) => ({ path: [edge] }));
 
 	while (stack.length > 0) {
-		const item = stack.pop()!;
+		const item = stack.shift()!;
 		const current_edge = item.path.at(-1)!;
 
-		// TODO: Now that we check visited in filtered_out_edges, is this redundant?
-		if (visited.has(current_edge.id)) {
-			continue;
-		} else {
-			visited.add(current_edge.id);
-		}
+		visited.add(current_edge.id);
 
 		const filtered_out_edges = graph
 			.get_out_edges(current_edge.target_id)

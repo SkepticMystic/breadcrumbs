@@ -12,6 +12,7 @@
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
+	import { remove_duplicates_by } from "src/utils/arrays";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -35,6 +36,16 @@
 								// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
 								(edge) =>
 									has_edge_attrs(edge, { dir, hierarchy_i }),
+							).map((path) =>
+								remove_duplicates_by(
+									path.filter(
+										(e) =>
+											// Dont show edges that eventually loop back to the active file
+											e.target_id !==
+											$active_file_store!.path,
+									),
+									(e) => e.target_id,
+								),
 							),
 						),
 					)

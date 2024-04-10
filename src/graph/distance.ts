@@ -7,7 +7,7 @@ const from_paths = (all_paths: BCEdge[][]) => {
 		path.forEach(({ target_id }, depth) => {
 			distances.set(
 				target_id,
-				Math.min(distances.get(target_id) ?? Infinity, depth),
+				Math.min(distances.get(target_id) ?? Infinity, depth + 1),
 			);
 		});
 	});

@@ -15,12 +15,20 @@ type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
 const MERMAID_RENDERER = ["dagre", "elk"] as const;
 type MermaidRenderer = (typeof MERMAID_RENDERER)[number];
 
+type MermaidEdge = {
+	source_i: number;
+	target_i: number;
+	arrow: string;
+	attr: BCEdgeAttributes;
+	collapsed_attr: Record<string, Set<string>>;
+};
+
 const build_arrow = (e: {
 	attr: Pick<BCEdgeAttributes, "explicit" | "dir">;
 }) => (e.attr.dir === "same" ? "<-->" : e.attr.explicit ? "-->" : "-.->");
 
 const build_attrs = (
-	attr: Record<string, unknown>,
+	attr: Record<string, string>,
 	show_attributes?: EdgeAttribute[],
 ) => {
 	const params = show_attributes?.length
@@ -89,13 +97,7 @@ const from_edges = (
 
 	// Collapse dir === same edges to and from the same nodes
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
-	const mermaid_edges: {
-		source_i: number;
-		target_i: number;
-		arrow: string;
-		attr: BCEdgeAttributes;
-		collapsed_attr: Record<string, unknown>;
-	}[] = [];
+	const mermaid_edges: MermaidEdge[] = [];
 
 	for (const edge of edges.sort(
 		// Favour explicit edges in the dedupe
@@ -122,7 +124,15 @@ const from_edges = (
 				target_i,
 				arrow: build_arrow(edge),
 				attr: edge.attr,
-				collapsed_attr: { ...edge.attr },
+				collapsed_attr: Object.fromEntries(
+					config?.show_attributes?.map((attr) => [
+						attr,
+						new Set([
+							// @ts-ignore: If the property is not in the object, it will be undefined
+							edge.attr[attr] ?? "_",
+						]),
+					]) ?? [],
+				),
 			});
 		} else {
 			// If there is an opposing edge, collapse them into a single edge
@@ -132,20 +142,27 @@ const from_edges = (
 				edge.attr.explicit || existing.attr.explicit ? "<-->" : "<-.->";
 
 			config?.show_attributes?.forEach((attr) => {
-				existing.collapsed_attr[attr] =
-					String(existing.collapsed_attr[attr]) +
-					"|" +
-					//@ts-ignore: If the property is not in the object, it will be undefined
-					(edge.attr[attr] ?? "_");
+				existing.collapsed_attr[attr].add(
+					// @ts-ignore: If the property is not in the object, it will be undefined
+					edge.attr[attr] ?? "_",
+				);
 			});
 		}
 	}
 
 	// Add the edges
 	mermaid_edges.forEach(({ arrow, collapsed_attr, source_i, target_i }) => {
-		lines.push(
-			`\t${source_i} ${arrow}${build_attrs(collapsed_attr, config?.show_attributes)} ${target_i}`,
+		const attrs = build_attrs(
+			Object.fromEntries(
+				Object.entries(collapsed_attr).map(([key, set]) => [
+					key,
+					[...set.values()].join("|"),
+				]),
+			),
+			config?.show_attributes,
 		);
+
+		lines.push(`\t${source_i} ${arrow}${attrs} ${target_i}`);
 	});
 
 	lines.push("");

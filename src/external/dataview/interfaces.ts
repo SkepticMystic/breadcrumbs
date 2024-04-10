@@ -1,4 +1,4 @@
-import type { Pos, TFile } from "obsidian";
+import type { Pos } from "obsidian";
 
 export declare namespace IDataview {
 	export type Link = {

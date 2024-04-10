@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { MarkdownRenderer } from "obsidian";
+	import { Distance } from "src/graph/distance";
 	import { Traverse } from "src/graph/traverse";
-	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
+	import { has_edge_attrs } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
@@ -18,12 +19,15 @@
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 
+	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
+
 	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
 		all_paths = get_all_paths();
-	};
+		distances = Distance.from_paths(all_paths);
 
-	const sort = get_edge_sorter(options.sort, plugin.graph);
+		log.debug("distances", distances);
+	};
 
 	const base_traversal = ({
 		hierarchy_i,
@@ -63,15 +67,26 @@
 	};
 
 	let all_paths = get_all_paths();
+	let distances: Map<string, number> = new Map();
 
-	$: sliced = all_paths.map((path) =>
+	// Prioritise closer edges
+	$: sorted = all_paths.map((path) =>
+		path.slice().sort((a, b) => {
+			const a_dist = distances.get(a.target_id) ?? 0;
+			const b_dist = distances.get(b.target_id) ?? 0;
+
+			return a_dist - b_dist;
+		}),
+	);
+
+	$: sliced = sorted.map((path) =>
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
 	$: flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
 
 	$: mermaid = wrap_in_codeblock(
-		Mermaid.from_edges(flat_unique.sort(sort), {
+		Mermaid.from_edges(flat_unique, {
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,
