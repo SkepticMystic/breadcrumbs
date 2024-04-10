@@ -50,11 +50,11 @@ describe("all_paths", () => {
 		expect(all_paths).toEqual([
 			[
 				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "d" },
+				{ source_id: "b", target_id: "c" },
 			],
 			[
 				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
+				{ source_id: "b", target_id: "d" },
 			],
 		]);
 	});
@@ -81,13 +81,13 @@ describe("all_paths", () => {
 		expect(all_paths).toEqual([
 			[
 				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "d" },
-				{ source_id: "d", target_id: "e" },
+				{ source_id: "b", target_id: "c" },
+				{ source_id: "c", target_id: "e" },
 			],
 			[
 				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
-				{ source_id: "c", target_id: "e" },
+				{ source_id: "b", target_id: "d" },
+				{ source_id: "d", target_id: "e" },
 			],
 		]);
 	});
