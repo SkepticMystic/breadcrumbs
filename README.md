@@ -4,27 +4,7 @@
 
 Breadcrumbs is an Obsidian plugin that lets you add _directed links_ to your notes, then view/traverse that structure in various ways. Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _direction_ to them). You tell Breadcrumbs about the structure of your notes, it builds this directed graph, and then lets you visualise and navigate the graph.
 
-**Table of Contents**:
-
--   [Hierarchies](#hierarchies)
--   [Building the graph](#building-the-graph)
-    -   [Explicit Edge Builders](#explicit-edge-sources)
-    -   [Implied Relationships](#implied-relationships)
-    -   [Customise the Build Process](#customise-the-build-process)
--   [Leveraging the graph](#leveraging-the-graph)
-    -   [Views](#views)
-        -   [Page View](#page-view)
-        -   [Matrix View](#matrix-view)
-        -   [Tree View](#tree-view)
-        -   [Codeblocks](#codeblocks)
-    -   [Commands](#commands)
-        -   [Rebuild Graph](#rebuild-graph)
-        -   [Create List Index](#create-list-index)
-        -   [Jump to First Neighbour](#jump-to-first-neighbour)
-        -   [Thread](#thread)
-    -   [Suggestors](#suggestors)
-    -   [API](#api)
--   [Media](#media)
+[**Read the wiki for detailed documentation**](https://github.com/SkepticMystic/breadcrumbs/wiki)
 
 # Hierarchies
 
