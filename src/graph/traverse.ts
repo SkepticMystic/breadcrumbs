@@ -23,15 +23,11 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	const stack: StackItem[] = graph
 		.get_out_edges(start_node)
 		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e, 0)))
-		.map((edge) => ({
-			// NOTE: It's a little redundant to add the start_edge,
-			//    but it makes the code simpler (e.g. GridView)
-			path: [edge],
-		}));
+		.map((edge) => ({ path: [edge] }));
 
 	while (stack.length > 0) {
-		const stack_item = stack.pop()!;
-		const current_edge = stack_item.path.at(-1)!;
+		const item = stack.pop()!;
+		const current_edge = item.path.at(-1)!;
 
 		// TODO: Now that we check visited in filtered_out_edges, is this redundant?
 		if (visited.has(current_edge.id)) {
@@ -47,16 +43,15 @@ const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 					!is_self_loop(e) &&
 					// In the case of a loop of more than one node
 					!visited.has(e.id) &&
-					(!edge_filter || edge_filter(e, stack_item.path.length)),
+					(!edge_filter || edge_filter(e, item.path.length)),
 			);
 
 		// Act on the current stack item
-		callback(stack_item, filtered_out_edges);
+		callback(item, filtered_out_edges);
 
 		// And push the next edges
 		filtered_out_edges.forEach((out_edge) => {
-			// But push the next edge
-			stack.push({ path: stack_item.path.concat(out_edge) });
+			stack.push({ path: item.path.concat(out_edge) });
 		});
 	}
 };
