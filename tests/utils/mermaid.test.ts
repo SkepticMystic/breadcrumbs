@@ -31,7 +31,7 @@ flowchart LR
 			}).trim(),
 		).toBe(
 			`
-%%{init: {"graph": {"defaultRenderer": "elk"}} }%%
+%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
 graph TB
 \t0("a.md")
 \t1("b.md")
