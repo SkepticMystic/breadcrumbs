@@ -15,16 +15,17 @@
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { onMount } from "svelte";
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	let all_paths = [];
+	let all_paths: BCEdge[][] = [];
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : undefined);
+	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : '');
 
 	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
 
@@ -74,7 +75,7 @@
 	};
 
 	onMount(() => {
-		all_paths = get_all_paths();
+		update();
 	});
 
 	let distances: Map<string, number> = new Map();
@@ -102,7 +103,7 @@
 			show_attributes: options.show_attributes,
 			active_node_id: active_file_path,
 			get_node_label: (node_id, _attr) => {
-				const source_path = active_file_path ?? "";
+				const source_path = active_file_path;
 				const file = plugin.app.vault.getFileByPath(node_id);
 
 				return file
@@ -140,7 +141,7 @@
 				plugin.app,
 				mermaid_str,
 				target_el,
-				active_file_path ?? "",
+				active_file_path,
 				plugin,
 			);
 		}

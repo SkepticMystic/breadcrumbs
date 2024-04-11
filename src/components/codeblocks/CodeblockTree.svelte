@@ -9,16 +9,17 @@
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { onMount } from "svelte";
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	let all_paths = [];
+	let all_paths: BCEdge[][] = [];
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : undefined);
+	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : '');
 
 	$: console.log(active_file_path);
 
@@ -69,7 +70,7 @@
 	};
 
 	onMount(() => {
-		all_paths = get_all_paths();
+		update();
 	});
 
 	$: sliced = all_paths.map((path) =>
