@@ -9,17 +9,20 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
 	component: CodeblockTree | CodeblockMermaid | undefined;
+	file_path: string;
 	id: string;
 
 	constructor(
 		plugin: BreadcrumbsPlugin,
 		containerEl: HTMLElement,
 		source: string,
+		file_path: string,
 	) {
 		super(containerEl);
 
 		this.plugin = plugin;
 		this.source = source;
+		this.file_path = file_path;
 		this.id = window.crypto.randomUUID();
 	}
 
@@ -57,6 +60,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 					props: {
 						errors,
 						options,
+						file_path: this.file_path,
 						plugin: this.plugin,
 					},
 				});
@@ -70,6 +74,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 					props: {
 						errors,
 						options,
+						file_path: this.file_path,
 						plugin: this.plugin,
 					},
 				});
