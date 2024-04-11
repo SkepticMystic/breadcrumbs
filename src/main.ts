@@ -66,12 +66,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 				if (all_properties[field]?.type === property_type) continue;
 				this.app.metadataTypeManager.setType(field, property_type);
 			}
-
-			log.debug(
-				"metadataTypeManager.setTypes took",
-				Date.now() - now,
-				"ms",
-			);
 		} catch (error) {
 			log.error("metadataTypeManager.setType error >", error);
 		}
@@ -207,7 +201,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			"breadcrumbs",
 			(source, el, ctx) => {
-				const mdrc = new CodeblockMDRC(this, el, source, ctx.sourcePath);
+				const mdrc = new CodeblockMDRC(
+					this,
+					el,
+					source,
+					ctx.sourcePath,
+				);
 				ctx.addChild(mdrc);
 			},
 		);

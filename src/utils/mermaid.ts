@@ -65,8 +65,8 @@ const from_edges = (
 	);
 
 	const lines = [
-		// TODO: If I add 'graph' as an option, double-check if the below "flowchart" property needs to change accordingly
-		`%%{init: {"${kind}": {"defaultRenderer": "${renderer}"}} }%%`,
+		// NOTE: Regardless of kind, the below field should always be flowchart
+		`%%{init: {"flowchart": {"defaultRenderer": "${renderer}"}} }%%`,
 		`${kind} ${direction}`,
 	];
 
@@ -169,9 +169,9 @@ const from_edges = (
 
 	const active_note_i = config?.active_node_id
 		? node_map.get(config?.active_node_id)?.i
-		: null;
+		: undefined;
 
-	if (active_note_i !== null) {
+	if (active_note_i !== undefined) {
 		lines.push(`\tclass ${active_note_i} BC-active-node`);
 	}
 

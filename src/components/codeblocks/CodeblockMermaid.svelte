@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { MarkdownRenderer } from "obsidian";
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Distance } from "src/graph/distance";
 	import { Traverse } from "src/graph/traverse";
 	import { has_edge_attrs } from "src/graph/utils";
@@ -13,9 +14,8 @@
 	import { Mermaid } from "src/utils/mermaid";
 	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
-	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { onMount } from "svelte";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
+	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -25,7 +25,11 @@
 	let all_paths: BCEdge[][] = [];
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : '');
+	$: active_file_path = file_path
+		? file_path
+		: $active_file_store
+			? $active_file_store.path
+			: "";
 
 	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
 
@@ -42,24 +46,17 @@
 	}: {
 		hierarchy_i: number | undefined;
 	}) =>
-		Traverse.all_paths(
-			"depth_first",
-			plugin.graph,
-			active_file_path,
-			(e) =>
-				has_edge_attrs(e, {
-					hierarchy_i,
-					$or_dirs: options.dirs,
-					$or_fields: options.fields,
-					$or_target_ids: options.dataview_from_paths,
-				}),
+		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
+			has_edge_attrs(e, {
+				hierarchy_i,
+				$or_dirs: options.dirs,
+				$or_fields: options.fields,
+				$or_target_ids: options.dataview_from_paths,
+			}),
 		);
 
 	const get_all_paths = () => {
-		if (
-			active_file_path &&
-			plugin.graph.hasNode(active_file_path)
-		) {
+		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
 			if (options.merge_hierarchies) {
 				return base_traversal({ hierarchy_i: undefined });
 			} else {
@@ -74,9 +71,7 @@
 		}
 	};
 
-	onMount(() => {
-		update();
-	});
+	onMount(update);
 
 	let distances: Map<string, number> = new Map();
 
@@ -98,6 +93,7 @@
 
 	$: mermaid = wrap_in_codeblock(
 		Mermaid.from_edges(flat_unique, {
+			kind: "graph",
 			click: { method: "class" },
 			renderer: options.mermaid_renderer,
 			show_attributes: options.show_attributes,

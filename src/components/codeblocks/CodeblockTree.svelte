@@ -19,9 +19,11 @@
 	let all_paths: BCEdge[][] = [];
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path ? file_path : ($active_file_store ? $active_file_store.path : '');
-
-	$: console.log(active_file_path);
+	$: active_file_path = file_path
+		? file_path
+		: $active_file_store
+			? $active_file_store.path
+			: "";
 
 	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
@@ -35,26 +37,19 @@
 	}: {
 		hierarchy_i: number | undefined;
 	}) =>
-		Traverse.all_paths(
-			"depth_first",
-			plugin.graph,
-			active_file_path,
-			(e) =>
-				has_edge_attrs(e, {
-					hierarchy_i,
-					$or_dirs: options.dirs,
-					$or_fields: options.fields,
-					$or_target_ids: options.dataview_from_paths,
-				}),
+		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
+			has_edge_attrs(e, {
+				hierarchy_i,
+				$or_dirs: options.dirs,
+				$or_fields: options.fields,
+				$or_target_ids: options.dataview_from_paths,
+			}),
 		);
 
 	const get_all_paths = () => {
 		console.log(active_file_path);
 
-		if (
-			active_file_path &&
-			plugin.graph.hasNode(active_file_path)
-		) {
+		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
 			if (options.merge_hierarchies) {
 				return base_traversal({ hierarchy_i: undefined });
 			} else {
@@ -69,13 +64,11 @@
 		}
 	};
 
-	onMount(() => {
-		update();
-	});
-
 	$: sliced = all_paths.map((path) =>
 		path.slice(options.depth[0], options.depth[1]),
 	);
+
+	onMount(update);
 </script>
 
 <div class="BC-codeblock-tree">
