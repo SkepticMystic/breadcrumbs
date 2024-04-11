@@ -4,8 +4,6 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 
 export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
-	log.debug("redraw_page_views");
-
 	const markdown_view =
 		plugin.app.workspace.getActiveViewOfType(MarkdownView);
 	if (!markdown_view) {
