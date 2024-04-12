@@ -1,18 +1,24 @@
 export const LOG_LEVELS = ["DEBUG", "INFO", "WARN", "ERROR"] as const;
 export type LogLevels = (typeof LOG_LEVELS)[number];
 
-const LEVEL_COLOURS: Record<LogLevels, string> = {
+const LEVEL_COLOURS: Record<LogLevels, string | null> = {
 	DEBUG: "#999",
-	INFO: "#fff",
+	INFO: null,
 	WARN: "#f90",
 	ERROR: "#f00",
 };
 
-const build_prefix = (level: LogLevels) => [
-	`%c[BC:${level}][${new Date().toISOString().split("T")[1]}]`,
-	`color: ${LEVEL_COLOURS[level]};`,
-	"\n",
-];
+const build_prefix = (level: LogLevels) => {
+	const colour = LEVEL_COLOURS[level];
+
+	const prefix = `[BC:${level}][${new Date().toISOString().split("T")[1]}]`;
+
+	return [
+		colour ? `%c${prefix}` : prefix,
+		colour ? `color: ${LEVEL_COLOURS[level]};` : "",
+		"\n",
+	];
+};
 
 class Logger {
 	level_i!: number;
