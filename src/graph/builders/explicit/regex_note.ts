@@ -3,6 +3,7 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
@@ -38,6 +39,7 @@ const get_regex_note_info = (
 	let regex: RegExp;
 	try {
 		regex = new RegExp(regex_str, (flags || "") as string);
+		log.debug(`get_regex_note_info > regex:`, regex);
 	} catch (e) {
 		return graph_build_fail({
 			path,

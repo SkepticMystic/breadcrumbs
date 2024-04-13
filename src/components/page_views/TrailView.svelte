@@ -2,24 +2,23 @@
 	import { Traverse } from "src/graph/traverse";
 	import { has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
-	import { active_file_store } from "src/stores/active_file";
 	import { remove_duplicates_by } from "src/utils/arrays";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
+	export let file_path: string;
 
 	const all_paths =
-		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode($active_file_store.path)
+		plugin.graph.hasNode(file_path)
 			? plugin.settings.hierarchies
 					.map((_hierarchy, hierarchy_i) =>
 						Traverse.all_paths(
 							"depth_first",
 							plugin.graph,
-							$active_file_store!.path,
+							file_path,
 							(edge) =>
 								has_edge_attrs(edge, {
 									dir: "up",

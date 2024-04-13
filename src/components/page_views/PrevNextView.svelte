@@ -1,20 +1,19 @@
 <script lang="ts">
+	import { has_edge_attrs } from "src/graph/utils";
 	import BreadcrumbsPlugin from "src/main";
-	import { active_file_store } from "src/stores/active_file";
 	import { group_by } from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { has_edge_attrs } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
+	export let file_path: string;
 
 	const grouped_out_edges =
-		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode($active_file_store.path)
+		plugin.graph.hasNode(file_path)
 			? group_by(
 					plugin.graph
-						.get_out_edges($active_file_store.path)
+						.get_out_edges(file_path)
 						.filter((e) =>
 							has_edge_attrs(e, { $or_dirs: ["prev", "next"] }),
 						),

@@ -229,6 +229,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					});
 				}
 
+				// TODO: At this point we know the field is simple or prefixed with a complex
+				// 	but the _value_ of the complex field is not validated
+
 				// If an order has been given, but isn't a option
 				if (order && order !== "asc" && order !== "desc") {
 					return errors.push({
