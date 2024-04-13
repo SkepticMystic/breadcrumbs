@@ -9,17 +9,13 @@ describe("get_graph_stats", () => {
 			edges: [
 				_mock_edge("a", "b", {}),
 				_mock_edge("b", "c", {
-					dir: "up",
 					explicit: true,
 					field: "parent",
-					hierarchy_i: 1,
 					source: "dataview_note",
 				}),
 				_mock_edge("c", "d", {
-					dir: "next",
 					explicit: false,
 					field: "right",
-					hierarchy_i: 2,
 					implied_kind: "cousin_is_sibling",
 					round: 1,
 				}),
@@ -32,7 +28,7 @@ describe("get_graph_stats", () => {
 			nodes: { resolved: { true: 4 } },
 			edges: {
 				field: {
-					child: 1,
+					down: 1,
 					parent: 1,
 					right: 1,
 				},
@@ -43,16 +39,6 @@ describe("get_graph_stats", () => {
 				explicit: {
 					true: 2,
 					false: 1,
-				},
-				direction: {
-					down: 1,
-					up: 1,
-					next: 1,
-				},
-				hierarchy_i: {
-					"0": 1,
-					"1": 1,
-					"2": 1,
 				},
 				implied_kind: {
 					cousin_is_sibling: 1,

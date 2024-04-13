@@ -26,8 +26,7 @@ describe("build", () => {
 
 		const list_index = ListIndex.build(graph, "index.md", {
 			indent: " ",
-			dir: "down",
-			hierarchy_i: -1,
+			fields: ["down"],
 			link_kind: "none",
 			edge_sort_id: {
 				order: 1,
