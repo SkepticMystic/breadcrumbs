@@ -20,6 +20,13 @@ export interface BreadcrumbsSettings {
 
 	edge_fields: EdgeField[];
 
+	edge_field_groups: {
+		/** The field group's name */
+		group: string;
+		/** The fields in the group */
+		fields: EdgeField["label"][];
+	}[];
+
 	implied_relations: {
 		transitive: {
 			rounds: number;
@@ -150,6 +157,151 @@ export interface BreadcrumbsSettings {
 		};
 	};
 
+	// SECTION: Debugging
+	debug: {
+		level: LogLevels;
+	};
+}
+
+export const OLD_DIRECTIONS = ["up", "down", "same", "prev", "next"] as const;
+export type OLD_DIRECTION = (typeof OLD_DIRECTIONS)[number];
+
+export type OLD_HIERARCHY = {
+	dirs: Record<OLD_DIRECTION, string[]>;
+	implied_relationships: Record<
+		| "self_is_sibling"
+		| "opposite_direction"
+		| "cousin_is_sibling"
+		| "same_parent_is_sibling"
+		| "same_sibling_is_sibling"
+		| "siblings_parent_is_parent"
+		| "parents_sibling_is_parent",
+		{ rounds: number }
+	>;
+};
+
+export interface BreadcrumbsSettingsWithDirection {
+	// Once I've reach settings parity with old BC, I can add this flag to skip over all the checks in migrate_old_settings
+	// But for now, as I add new (old) settings, I don't want to skip migrating them
+	// V4_MIGRATED: boolean;
+
+	hierarchies: OLD_HIERARCHY[];
+
+	custom_implied_relations: {
+		transitive: {
+			rounds: number;
+			chain: Partial<BCEdgeAttributes>[];
+			/** The transitive closure field */
+			close_field: string;
+		}[];
+	};
+
+	explicit_edge_sources: {
+		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
+		// The two are not distinguished, because Dataview doesn't distinguish them
+		typed_link: {};
+		tag_note: {
+			default_field: string;
+		};
+		list_note: {
+			default_neighbour_field: string;
+		};
+		dendron_note: {
+			enabled: boolean;
+			// Should BC-dendron-note-delimiter be a thing too?
+			// With the current setup, it would only apply to a single edge per note
+			delimiter: string;
+			default_field: string;
+			display_trimmed: boolean;
+		};
+		johnny_decimal_note: {
+			enabled: boolean;
+			delimiter: string;
+			default_field: string;
+		};
+		date_note: {
+			enabled: boolean;
+			date_format: string;
+			default_field: string;
+			// If there is a gap from one day to another, should the "next" note be the unresolved one in one day
+			//  or the next resolved note?
+			// e.g. 2024-03-30 -> 2024-03-31 (unresolved)
+			// vs   2024-03-30 -> 2024-04-01 (resolved)
+			stretch_to_existing: boolean;
+		};
+		regex_note: {
+			default_field: string;
+		};
+	};
+	views: {
+		page: {
+			all: {
+				sticky: boolean;
+				/** Constrain max-width to var(--file-line-width) */
+				readable_line_width: boolean;
+			};
+			trail: {
+				enabled: boolean;
+				show_controls: boolean;
+				default_depth: number;
+				format: "grid" | "path";
+				selection: "all" | "shortest" | "longest";
+				no_path_message: string;
+				show_node_options: ShowNodeOptions;
+			};
+			prev_next: {
+				enabled: boolean;
+				show_node_options: ShowNodeOptions;
+			};
+		};
+		side: {
+			matrix: {
+				show_node_options: ShowNodeOptions;
+			};
+
+			tree: {
+				collapse: boolean;
+				default_dir: OLD_DIRECTION;
+				edge_sort_id: EdgeSortId;
+				show_attributes: EdgeAttribute[];
+				show_node_options: ShowNodeOptions;
+			};
+		};
+		codeblocks: {
+			show_node_options: ShowNodeOptions;
+		};
+	};
+	commands: {
+		rebuild_graph: {
+			notify: boolean;
+			trigger: {
+				// TODO: Not actually implemented yet
+				note_save: boolean;
+				layout_change: boolean;
+			};
+		};
+		list_index: {
+			default_options: ListIndex.Options;
+		};
+		freeze_implied_edges: {
+			default_options: {
+				destination: CrumbDestination;
+			};
+		};
+		thread: {
+			default_options: {
+				target_path_template: string;
+				destination: CrumbDestination | "none";
+			};
+		};
+	};
+
+	suggestors: {
+		hierarchy_field: {
+			enabled: boolean;
+			trigger: string;
+		};
+	};
 	// SECTION: Debugging
 	debug: {
 		level: LogLevels;

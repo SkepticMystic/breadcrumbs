@@ -2,27 +2,50 @@ import { Notice, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
-import type {
-	BreadcrumbsSettings,
-	OLD_BREADCRUMBS_SETTINGS,
+import {
+	OLD_DIRECTIONS,
+	type BreadcrumbsSettings,
+	type BreadcrumbsSettingsWithDirection,
+	type OLD_BREADCRUMBS_SETTINGS,
+	type OLD_DIRECTION,
+	type OLD_HIERARCHY,
 } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 
+const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
+	switch (dir) {
+		case "up":
+			return "down";
+		case "down":
+			return "up";
+		case "same":
+			return "same";
+		case "next":
+			return "prev";
+		case "prev":
+			return "next";
+	}
+};
+
 // TODO: Loooots of migrating to do here
 export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
-	const old = plugin.settings as BreadcrumbsSettings &
+	const old = plugin.settings as (
+		| BreadcrumbsSettings
+		| BreadcrumbsSettingsWithDirection
+	) &
 		OLD_BREADCRUMBS_SETTINGS;
 
-	// NOTE: Keep the intermediate type, not just old.
 	// SECTION: Hierarchies
+	// NOTE: Keep the intermediate type, not just old. We convert this to the latest type next
 	/// Hierarchies used to just be the Record<Direction, string[]>, but it's now wrapped in an object
 	/// We can also handle the move of implied_relationships here
 	if (old.userHiers && old.impliedRelations) {
-		const implied_relationships: Hierarchy["implied_relationships"] = {
-			...blank_hierarchy().implied_relationships,
-
+		const implied_relationships: OLD_HIERARCHY["implied_relationships"] = {
+			opposite_direction: {
+				rounds: 1,
+			},
 			self_is_sibling: {
 				rounds: Number(old.impliedRelations.siblingIdentity),
 			},
@@ -43,6 +66,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			},
 		};
 
+		// @ts-ignore
 		plugin.settings.hierarchies = old.userHiers.map((hierarchy) => ({
 			dirs: hierarchy,
 			implied_relationships,
@@ -52,57 +76,171 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		delete old.impliedRelations;
 	}
 
-	// This is a migration _within_ V4. The enabledness of implied_relation was a direct boolean under the kind name.
-	// But now, it's wrapped in an object with an `enabled` key.
-	if (
-		typeof plugin.settings.hierarchies.at(0)?.implied_relationships
-			.cousin_is_sibling === "boolean"
-	) {
-		plugin.settings.hierarchies = plugin.settings.hierarchies.map(
-			(hier) => {
-				hier.implied_relationships = {
-					self_is_sibling: {
-						rounds: Number(
-							hier.implied_relationships.self_is_sibling,
-						),
-					},
-					opposite_direction: {
-						rounds: Number(
-							hier.implied_relationships.opposite_direction,
-						),
-					},
-					cousin_is_sibling: {
-						rounds: Number(
-							hier.implied_relationships.cousin_is_sibling,
-						),
-					},
-					same_parent_is_sibling: {
-						rounds: Number(
-							hier.implied_relationships.same_parent_is_sibling,
-						),
-					},
-					same_sibling_is_sibling: {
-						rounds: Number(
-							hier.implied_relationships.same_sibling_is_sibling,
-						),
-					},
-					siblings_parent_is_parent: {
-						rounds: Number(
-							hier.implied_relationships
-								.siblings_parent_is_parent,
-						),
-					},
-					parents_sibling_is_parent: {
-						rounds: Number(
-							hier.implied_relationships
-								.parents_sibling_is_parent,
-						),
-					},
-				};
+	// Transform hierarchies into edge_fields
+	// @ts-ignore
+	if (plugin.settings.hierarchies) {
+		OLD_DIRECTIONS.forEach((dir) => {
+			plugin.settings.edge_field_groups.push({
+				group: `All ${dir}s`,
+				//@ts-ignore
+				fields: (<OLD_HIERARCHY[]>plugin.settings.hierarchies)
+					.flatMap((hier) => hier.dirs[dir])
+					.filter(Boolean),
+			});
+		});
 
-				return hier;
+		// @ts-ignore
+		(<OLD_HIERARCHY[]>plugin.settings.hierarchies).forEach(
+			(hier, hier_i) => {
+				plugin.settings.edge_field_groups.push({
+					group: `Hierarchy ${hier_i + 1}`,
+					fields: Object.values(hier.dirs)
+						.flatMap((fields) => fields)
+						.filter(Boolean),
+				});
+
+				Object.values(hier.dirs).forEach((fields) => {
+					fields.forEach((field) =>
+						plugin.settings.edge_fields.push({ label: field }),
+					);
+				});
+
+				Object.entries(hier.implied_relationships).forEach(
+					([rel, { rounds }]) => {
+						if (!rounds) return;
+
+						const fields = {
+							up: hier.dirs.up[0],
+							same: hier.dirs.same[0],
+							down: hier.dirs.down[0],
+							next: hier.dirs.next[0],
+							prev: hier.dirs.prev[0],
+						};
+
+						switch (rel) {
+							case "self_is_sibling": {
+								if (!fields.same) return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										// TODO(NODIR): Handle empty chain
+										chain: [],
+										close_reversed: false,
+										close_field: fields.same,
+									},
+								);
+							}
+
+							case "opposite_direction": {
+								OLD_DIRECTIONS.forEach((dir) => {
+									const field = fields[dir];
+									const close_field =
+										fields[get_opposite_direction(dir)];
+									if (!field || !close_field) return;
+
+									plugin.settings.implied_relations.transitive.push(
+										{
+											rounds,
+											close_field,
+											chain: [{ field }],
+											close_reversed: true,
+										},
+									);
+								});
+								break;
+							}
+
+							case "cousin_is_sibling": {
+								if (!fields.up || !fields.same || !fields.down)
+									return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										chain: [
+											{ field: fields.up },
+											{ field: fields.same },
+											{ field: fields.down },
+										],
+										close_reversed: false,
+										close_field: fields.same,
+									},
+								);
+							}
+
+							case "same_parent_is_sibling": {
+								if (!fields.up || !fields.down || !fields.down)
+									return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										chain: [
+											{ field: fields.up },
+											{ field: fields.down },
+										],
+										close_reversed: false,
+										close_field: fields.same,
+									},
+								);
+							}
+
+							case "same_sibling_is_sibling": {
+								if (!fields.same) return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										chain: [
+											{ field: fields.same },
+											{ field: fields.same },
+										],
+										close_reversed: false,
+										close_field: fields.same,
+									},
+								);
+							}
+
+							case "siblings_parent_is_parent": {
+								if (!fields.up || !fields.same) return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										chain: [
+											{ field: fields.same },
+											{ field: fields.up },
+										],
+										close_reversed: false,
+										close_field: fields.up,
+									},
+								);
+							}
+
+							case "parents_sibling_is_parent": {
+								if (!fields.up || !fields.same) return;
+
+								plugin.settings.implied_relations.transitive.push(
+									{
+										rounds,
+										chain: [
+											{ field: fields.up },
+											{ field: fields.same },
+										],
+										close_reversed: false,
+										close_field: fields.up,
+									},
+								);
+							}
+						}
+					},
+				);
 			},
 		);
+
+		// @ts-ignore
+		delete plugin.settings.hierarchies;
 	}
 	// !SECTION
 

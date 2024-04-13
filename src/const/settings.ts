@@ -24,6 +24,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		{ label: "prev" },
 	],
 
+	edge_field_groups: [],
+
 	explicit_edge_sources: {
 		typed_link: {},
 		list_note: {
