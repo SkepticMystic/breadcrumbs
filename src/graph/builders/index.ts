@@ -1,6 +1,5 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
-import { IMPLIED_RELATIONSHIP_MAX_ROUNDS } from "src/const/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
@@ -75,8 +74,16 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		}),
 	);
 
-	for (let round = 1; round <= IMPLIED_RELATIONSHIP_MAX_ROUNDS; round++) {
-		Object.entries(add_implied_edges).forEach(([kind, fn]) => {
+	const max_implied_relationship_rounds = Math.max(
+		...plugin.settings.hierarchies.flatMap((hierarchy) =>
+			Object.values(hierarchy.implied_relationships).map(
+				(imp) => imp.rounds,
+			),
+		),
+	);
+
+	for (let round = 1; round <= max_implied_relationship_rounds; round++) {
+		Object.entries(add_implied_edges).forEach(([_kind, fn]) => {
 			fn(graph, plugin, { round });
 		});
 
