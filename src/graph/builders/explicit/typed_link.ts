@@ -1,11 +1,9 @@
-import { DateTime } from "luxon";
 import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import { ensure_is_array } from "src/utils/arrays";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 
 const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
@@ -17,6 +15,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 ) => {
 	const errors: BreadcrumbsError[] = [];
 
+	const field_labels = plugin.settings.edge_fields.map((f) => f.label);
+
 	all_files.obsidian?.forEach(
 		({ file: source_file, cache: source_cache }) => {
 			// On the Dataview branch, it's possible the field value is invalid.
@@ -26,12 +26,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				// We only want the field name, so we split on the dot and take the first element
 				// This implies that we can't have a field name with a dot in it...
 				const field = target_link.key.split(".")[0];
-
-				const field_hierarchy = get_field_hierarchy(
-					plugin.settings.hierarchies,
-					field,
-				);
-				if (!field_hierarchy) return;
+				if (!field_labels.includes(field)) return;
 
 				const [target_path, target_file] = resolve_relative_target_path(
 					plugin.app,
@@ -48,8 +43,6 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					field,
 					explicit: true,
 					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
 				});
 			});
 		},
@@ -58,19 +51,17 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
 
-		// Instead of iterating all keys, I could use the hierarchy fields...
-		// Is that better or worse? Chances are, there are more page-fields than hierarchy fields,
-		// so that would take longer
+		// TODO: Instead of iterating all keys, I could use the edge_fields...
+		// Is that better or worse?
 		Object.keys(page).forEach((field) => {
-			// NOTE: Implies that a hierarchy field can't be in this list,
+			// NOTE: Implies that an edge-field can't be in this list,
 			//   But Dataview probably enforces that anyway
-			if (["file", "aliases"].includes(field)) return;
-
-			const field_hierarchy = get_field_hierarchy(
-				plugin.settings.hierarchies,
-				field,
-			);
-			if (!field_hierarchy) return;
+			if (
+				["file", "aliases"].includes(field) ||
+				!field_labels.includes(field)
+			) {
+				return;
+			}
 
 			// page[field]: Link | Link[] | Link[][]
 			ensure_is_array(page[field])
@@ -136,8 +127,6 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 							field,
 							explicit: true,
 							source: "typed_link",
-							dir: field_hierarchy.dir,
-							hierarchy_i: field_hierarchy.hierarchy_i,
 						},
 					);
 				});

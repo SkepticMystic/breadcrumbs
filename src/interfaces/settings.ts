@@ -3,6 +3,8 @@ import type { EdgeSortId } from "src/const/graph";
 import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { LogLevels } from "src/logger";
 
+export type EdgeField = { label: string };
+
 export type ShowNodeOptions = {
 	ext: boolean;
 	folder: boolean;
@@ -16,14 +18,16 @@ export interface BreadcrumbsSettings {
 	// But for now, as I add new (old) settings, I don't want to skip migrating them
 	// V4_MIGRATED: boolean;
 
-	fields: { label: string }[];
+	edge_fields: EdgeField[];
 
-	custom_implied_relations: {
+	implied_relations: {
 		transitive: {
 			rounds: number;
 			chain: Partial<BCEdgeAttributes>[];
 			/** The transitive closure field */
 			close_field: string;
+			/** If false, add the edge from start to end. Else from end to start */
+			close_reversed: boolean;
 		}[];
 	};
 
@@ -140,7 +144,7 @@ export interface BreadcrumbsSettings {
 	};
 
 	suggestors: {
-		hierarchy_field: {
+		edge_field: {
 			enabled: boolean;
 			trigger: string;
 		};

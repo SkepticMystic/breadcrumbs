@@ -21,10 +21,11 @@ import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
-import { HierarchyFieldSuggestor } from "./suggestor/hierarchy-field";
+import { EdgeFieldSuggestor } from "./suggestor/edge_fields";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import type { PropertyWidgetType } from "./interfaces/obsidian";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -44,14 +45,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 		/// Migrations
 		await migrate_old_settings(this);
 
-		// Set the hierarchy-fields & BC-meta-fields to the right Properties type
+		// Set the edge_fields & BC-meta-fields to the right Properties type
 		try {
 			const now = Date.now();
 
 			const all_properties =
 				this.app.metadataTypeManager.getAllProperties();
 
-			for (const field of this.settings.fields) {
+			for (const field of this.settings.edge_fields) {
 				if (all_properties[field.label]?.type === "multitext") continue;
 				this.app.metadataTypeManager.setType(field.label, "multitext");
 			}
@@ -86,8 +87,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		// Suggestors
-		if (this.settings.suggestors.hierarchy_field.enabled) {
-			this.registerEditorSuggest(new HierarchyFieldSuggestor(this));
+		if (this.settings.suggestors.edge_field.enabled) {
+			this.registerEditorSuggest(new EdgeFieldSuggestor(this));
 		}
 
 		this.app.workspace.onLayoutReady(async () => {
@@ -274,7 +275,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		/// Jump to first neighbour
-		this.settings.fields.forEach((field) => {
+		this.settings.edge_fields.forEach((field) => {
 			this.addCommand({
 				id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
 				name: `Jump to first neighbour by field:${field}`,
@@ -284,7 +285,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		// Thread
-		this.settings.fields.forEach((field) => {
+		this.settings.edge_fields.forEach((field) => {
 			this.addCommand({
 				id: `breadcrumbs:thread-field:${field}`,
 				name: `Thread by field:${field}`,
@@ -358,8 +359,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 					{} as Record<string, BreadcrumbsError[]>,
 				);
 
+			const implied_edge_results = Object.fromEntries(
+				Object.entries(rebuild_results.implied_edge_results)
+					.filter(([_, errors]) => errors.length)
+					.map(([implied_kind, errors]) => [implied_kind, errors]),
+			);
+
 			if (Object.keys(explicit_edge_errors).length) {
 				log.warn("explicit_edge_errors >", explicit_edge_errors);
+			}
+			if (Object.keys(implied_edge_results).length) {
+				log.warn("implied_edge_results >", implied_edge_results);
 			}
 
 			notice?.setMessage(

@@ -2,20 +2,20 @@ import { Notice, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
-import type { Hierarchy } from "src/interfaces/hierarchies";
 import type {
 	BreadcrumbsSettings,
 	OLD_BREADCRUMBS_SETTINGS,
 } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { blank_hierarchy } from "src/utils/hierarchies";
 import { Paths } from "src/utils/paths";
 
+// TODO: Loooots of migrating to do here
 export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	const old = plugin.settings as BreadcrumbsSettings &
 		OLD_BREADCRUMBS_SETTINGS;
 
+	// NOTE: Keep the intermediate type, not just old.
 	// SECTION: Hierarchies
 	/// Hierarchies used to just be the Record<Direction, string[]>, but it's now wrapped in an object
 	/// We can also handle the move of implied_relationships here

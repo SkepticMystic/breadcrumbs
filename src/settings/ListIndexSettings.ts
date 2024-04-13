@@ -1,9 +1,6 @@
-import { Setting } from "obsidian";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
-import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
 import type BreadcrumbsPlugin from "src/main";
-import { stringify_hierarchy } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
@@ -13,43 +10,7 @@ export const _add_settings_list_index = (
 ) => {
 	const { settings } = plugin;
 
-	new Setting(contentEl)
-		.setName("Hierarchy")
-		.setDesc("Optionally constrain the traversal to a specific hierarchy")
-		.addDropdown((dropdown) => {
-			dropdown.addOption("-1", "All");
-
-			settings.hierarchies.forEach((hierarchy, i) => {
-				dropdown.addOption(String(i), stringify_hierarchy(hierarchy));
-			});
-
-			dropdown.setValue(
-				String(
-					settings.commands.list_index.default_options.hierarchy_i,
-				),
-			);
-
-			dropdown.onChange(async (value) => {
-				settings.commands.list_index.default_options.hierarchy_i =
-					Number(value);
-
-				await plugin.saveSettings();
-			});
-		});
-
-	new_setting(contentEl, {
-		name: "Direction",
-		desc: "Direction to traverse",
-		select: {
-			options: DIRECTIONS,
-			value: settings.commands.list_index.default_options.dir,
-			cb: async (value) => {
-				settings.commands.list_index.default_options.dir = value;
-
-				await plugin.saveSettings();
-			},
-		},
-	});
+	// TODO(NODIR): Field selector to contsrain traversal
 
 	new_setting(contentEl, {
 		name: "Link Kind",

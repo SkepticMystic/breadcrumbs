@@ -29,7 +29,7 @@ export const ShowAttributesSelectorMenu = ({
 		);
 	};
 
-	(<const>["hierarchy_i", "dir", "field", "explicit"])
+	(<const>["field", "explicit"])
 		.filter((attr) => !exclude_attributes?.includes(attr))
 		.forEach(add_item);
 

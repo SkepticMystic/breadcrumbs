@@ -1,5 +1,4 @@
 import type { ExplicitEdgeSource } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
 import type { BCEdgeAttributes, BCGraph } from "src/graph/MyMultiGraph";
 
 type GraphStats = {
@@ -10,14 +9,6 @@ type GraphStats = {
 	};
 
 	edges: {
-		hierarchy_i: Partial<{
-			[key: string]: number;
-		}>;
-
-		direction: Partial<{
-			[key in Direction]: number;
-		}>;
-
 		field: Partial<{
 			[key: string]: number;
 		}>;
@@ -54,8 +45,6 @@ export const get_graph_stats = (graph: BCGraph) => {
 			field: {},
 			source: {},
 			explicit: {},
-			direction: {},
-			hierarchy_i: {},
 			implied_kind: {},
 		},
 	};
@@ -67,12 +56,6 @@ export const get_graph_stats = (graph: BCGraph) => {
 	}
 
 	for (const { attributes: attr } of graph.edgeEntries()) {
-		stats.edges.hierarchy_i[attr.hierarchy_i] =
-			(stats.edges.hierarchy_i[attr.hierarchy_i] || 0) + 1;
-
-		stats.edges.direction[attr.dir] =
-			(stats.edges.direction[attr.dir] || 0) + 1;
-
 		stats.edges.field[attr.field ?? "null"] =
 			(stats.edges.field[attr.field ?? "null"] || 0) + 1;
 

@@ -1,6 +1,5 @@
 import { Menu } from "obsidian";
 import { SIMPLE_EDGE_SORT_FIELDS, type EdgeSortId } from "src/const/graph";
-import { DIRECTIONS } from "src/const/hierarchies";
 
 const ORDERS = [1, -1] as const;
 
@@ -42,24 +41,6 @@ export const EdgeSortIdMenu = ({
 			);
 		},
 	);
-
-	menu.addSeparator();
-
-	if (!exclude_fields?.includes("neighbour-dir:")) {
-		DIRECTIONS.forEach((dir) => {
-			const field = `neighbour-dir:${dir}` as const;
-
-			menu.addItem((item) =>
-				item
-					.setTitle("Field: " + field)
-					.setChecked(value.field === field)
-					.onClick(() => {
-						value.field = field;
-						cb(value);
-					}),
-			);
-		});
-	}
 
 	return menu;
 };

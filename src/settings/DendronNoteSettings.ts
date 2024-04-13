@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
-import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 
 export const _add_settings_dendron_note = (
@@ -45,7 +44,7 @@ export const _add_settings_dendron_note = (
 		select: {
 			value: plugin.settings.explicit_edge_sources.dendron_note
 				.default_field,
-			options: get_all_hierarchy_fields(plugin.settings.hierarchies),
+			options: plugin.settings.edge_fields.map((f) => f.label),
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.dendron_note.default_field =
 					value;

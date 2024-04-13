@@ -2,7 +2,7 @@ import { Notice } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 
-export const _add_settings_hierarchy_field_suggestor = (
+export const _add_settings_edge_field_suggestor = (
 	plugin: BreadcrumbsPlugin,
 	contentEl: HTMLElement,
 ) => {
@@ -10,11 +10,11 @@ export const _add_settings_hierarchy_field_suggestor = (
 
 	new_setting(contentEl, {
 		name: "Enabled",
-		desc: "Whether to enable the hierarchy field suggestor",
+		desc: "Whether to enable the edge field suggestor",
 		toggle: {
-			value: settings.suggestors.hierarchy_field.enabled,
+			value: settings.suggestors.edge_field.enabled,
 			cb: async (value) => {
-				settings.suggestors.hierarchy_field.enabled = value;
+				settings.suggestors.edge_field.enabled = value;
 
 				if (value) {
 					new Notice(
@@ -31,14 +31,14 @@ export const _add_settings_hierarchy_field_suggestor = (
 		name: "Trigger String",
 		desc: "The string that triggers the suggestor (when entered at the start of a line)",
 		input: {
-			value: settings.suggestors.hierarchy_field.trigger,
+			value: settings.suggestors.edge_field.trigger,
 			cb: async (value) => {
 				if (!value) {
 					new Notice("Trigger string cannot be empty");
 					return;
 				}
 
-				settings.suggestors.hierarchy_field.trigger = value;
+				settings.suggestors.edge_field.trigger = value;
 
 				await plugin.saveSettings();
 			},

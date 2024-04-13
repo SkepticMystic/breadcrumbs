@@ -23,15 +23,14 @@ export const EDGE_ATTRIBUTES = [
 	"field",
 	"explicit",
 	"source",
-	"closure_rule_i",
+	"implied_kind",
 	"round",
 ] as const;
 
 export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
 export type BCEdgeAttributes = {
-	/** null if the implied edge has no opposite field */
-	field: string | null;
+	field: string;
 } & (
 	| {
 			explicit: true;
@@ -39,8 +38,7 @@ export type BCEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			/** The index of the transitive closure rule */
-			closure_rule_i: number;
+			implied_kind: string;
 			/** Which round of implied_building this edge got added in.
 			 * Starts at 1 - you can think of real edges as being added in round 0.
 			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
@@ -184,9 +182,6 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		target_id: string,
 		attr: BCEdgeAttributes,
 	) => `${source_id}|${attr.field}|${target_id}`;
-	// NOTE: These fields are redundant. The `field` field defines which hierarchy_i and dir is chosen anyway,
-	//   so it's not adding any extra information to the dedupe key
-	// |${attr.hierarchy_i}|${attr.dir}
 	// NOTE: These fields shouldn't actually dedupe an edge... I think what the user would consider an edge to be the same
 	//   even if it was added for different reasons, but still to and from the same nodes, using the same field.
 	//   Consider the commands/freeze-crumbs/index.md note as an example. If these fields were included, the implied relations would still show

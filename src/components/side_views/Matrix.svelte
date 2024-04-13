@@ -10,7 +10,7 @@
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import MatrixHierarchy from "./MatrixHierarchy.svelte";
+	import MatrixEdgeField from "./MatrixEdgeField.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -38,14 +38,14 @@
 
 			<EdgeSortIdSelector
 				cls="clickable-icon nav-action-button"
-				exclude_fields={["field", "neighbour-dir:", "neighbour-field:"]}
+				exclude_fields={["field", "neighbour-field:"]}
 				bind:edge_sort_id
 			/>
 
 			<!-- We can exclude alot of attrs, since they're implied by other info on the Matrix -->
 			<ShowAttributesSelectorMenu
 				cls="clickable-icon nav-action-button"
-				exclude_attributes={["hierarchy_i", "dir", "field", "explicit"]}
+				exclude_attributes={["field", "explicit"]}
 				bind:show_attributes
 			/>
 		</div>
@@ -54,21 +54,18 @@
 	{#key all_out_edges}
 		{#if all_out_edges.length}
 			<div>
-				{#each plugin.settings.hierarchies as hierarchy, hierarchy_i}
-					{@const hierarchy_out_edges = all_out_edges.filter((e) =>
-						has_edge_attrs(e, { hierarchy_i }),
+				{#each plugin.settings.edge_fields as edge_field}
+					{@const edges = all_out_edges.filter((e) =>
+						has_edge_attrs(e, { field: edge_field.label }),
 					)}
-					{#if hierarchy_out_edges.length}
-						<MatrixHierarchy
+					{#if edges.length}
+						<MatrixEdgeField
+							{edges}
 							{plugin}
-							{hierarchy}
 							{show_attributes}
-							{hierarchy_out_edges}
 							{sort}
+							field={edge_field.label}
 						/>
-						{#if plugin.settings.hierarchies.length !== hierarchy_i + 1}
-							<hr class="my-3" />
-						{/if}
 					{/if}
 				{/each}
 			</div>

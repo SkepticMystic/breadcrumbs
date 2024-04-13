@@ -3,7 +3,6 @@ import type {
 	BreadcrumbsSettings,
 	ShowNodeOptions,
 } from "src/interfaces/settings";
-import { blank_hierarchy } from "src/utils/hierarchies";
 import type { EdgeSortId } from "./graph";
 
 export const IMPLIED_RELATIONSHIP_MAX_ROUNDS = 10;
@@ -17,17 +16,12 @@ const DEFAULT_SHOW_NODE_OPTIONS: ShowNodeOptions = {
 };
 
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-	hierarchies: [
-		{
-			dirs: {
-				up: ["up"],
-				same: ["same"],
-				down: ["down"],
-				next: ["next"],
-				prev: ["prev"],
-			},
-			implied_relationships: blank_hierarchy().implied_relationships,
-		},
+	edge_fields: [
+		{ label: "up" },
+		{ label: "down" },
+		{ label: "same" },
+		{ label: "next" },
+		{ label: "prev" },
 	],
 
 	explicit_edge_sources: {
@@ -61,7 +55,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 	},
 
-	custom_implied_relations: {
+	implied_relations: {
 		transitive: [],
 	},
 
@@ -93,8 +87,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 
 			tree: {
 				collapse: false,
-				default_dir: "down",
 				show_attributes: [],
+				default_fields: ["down"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
@@ -135,7 +129,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	},
 
 	suggestors: {
-		hierarchy_field: {
+		edge_field: {
 			enabled: false,
 			trigger: ".",
 		},

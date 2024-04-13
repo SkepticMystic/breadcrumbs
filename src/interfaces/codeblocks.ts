@@ -1,5 +1,4 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
 import type { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { Mermaid } from "src/utils/mermaid";
 
@@ -7,7 +6,6 @@ export type ICodeblock = {
 	/** Once resolved, the non-optional fields WILL be there, with a default if missing */
 	Options: {
 		type: "tree" | "mermaid";
-		dirs: Direction[];
 		title?: string;
 		fields?: string[];
 		depth: [number, number];

@@ -13,7 +13,7 @@ export class BCAPI {
 	}
 
 	get fields() {
-		return this.plugin.settings.fields;
+		return this.plugin.settings.edge_fields;
 	}
 
 	// TODO

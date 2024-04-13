@@ -42,29 +42,23 @@
 	};
 
 	const base_traversal = ({
-		hierarchy_i,
+		$or_fields,
 	}: {
-		hierarchy_i: number | undefined;
+		$or_fields: string[] | undefined;
 	}) =>
 		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
 			has_edge_attrs(e, {
-				hierarchy_i,
-				$or_dirs: options.dirs,
-				$or_fields: options.fields,
+				$or_fields,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
 
 	const get_all_paths = () => {
 		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
-			if (options.merge_hierarchies) {
-				return base_traversal({ hierarchy_i: undefined });
+			if (options.merge_field_groups) {
+				return base_traversal({ $or_fields: undefined });
 			} else {
-				return plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						base_traversal({ hierarchy_i }),
-					)
-					.flat();
+				return [].flat();
 			}
 		} else {
 			return [];

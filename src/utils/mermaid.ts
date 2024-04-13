@@ -5,7 +5,6 @@ import type {
 	EdgeAttribute,
 } from "src/graph/MyMultiGraph";
 import { remove_duplicates_by } from "./arrays";
-import { get_opposite_direction } from "./hierarchies";
 import { remove_nullish_keys, untyped_pick } from "./objects";
 import { url_search_params } from "./url";
 
@@ -23,9 +22,8 @@ type MermaidEdge = {
 	collapsed_attr: Record<string, Set<string>>;
 };
 
-const build_arrow = (e: {
-	attr: Pick<BCEdgeAttributes, "explicit" | "dir">;
-}) => (e.attr.dir === "same" ? "<-->" : e.attr.explicit ? "-->" : "-.->");
+const build_arrow = (e: { attr: Pick<BCEdgeAttributes, "explicit"> }) =>
+	e.attr.explicit ? "-->" : "-.->";
 
 const build_attrs = (
 	attr: Record<string, string>,
@@ -95,7 +93,7 @@ const from_edges = (
 
 	lines.push("");
 
-	// Collapse dir === same edges to and from the same nodes
+	// Collapse opposing edges to and from the same nodes
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
 	const mermaid_edges: MermaidEdge[] = [];
 
@@ -110,11 +108,9 @@ const from_edges = (
 
 		const opposing_edge_i = mermaid_edges.findIndex(
 			(existing) =>
+				// NOTE: This is pretty intense, all opposing edges will collapse, because now there's no direction semantics
 				target_i === existing.source_i &&
-				source_i === existing.target_i &&
-				// The combination of hierarchy_i and dir uniquely identify a field in a hierarchy
-				edge.attr.hierarchy_i === existing.attr.hierarchy_i &&
-				edge.attr.dir === get_opposite_direction(existing.attr.dir),
+				source_i === existing.target_i,
 		);
 
 		if (opposing_edge_i === -1) {

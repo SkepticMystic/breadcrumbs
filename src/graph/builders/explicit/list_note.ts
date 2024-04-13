@@ -7,9 +7,10 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+
+// TODO(NODIR): This whole file is hectic, do some proper reading+testing
 
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -29,13 +30,7 @@ const get_list_note_info = (
 			code: "invalid_field_value",
 			message: `list-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
@@ -47,10 +42,21 @@ const get_list_note_info = (
 		metadata[META_ALIAS["list-note-neighbour-field"]] ??
 		plugin.settings.explicit_edge_sources.list_note.default_neighbour_field;
 
-	const neighbour_hierarchy =
-		neighbour_field && typeof neighbour_field === "string"
-			? get_field_hierarchy(plugin.settings.hierarchies, neighbour_field)
-			: null;
+	if (neighbour_field && typeof field !== "string") {
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `list-note-neighbour-field is not a string: '${neighbour_field}'`,
+		});
+	} else if (
+		!plugin.settings.edge_fields.find((f) => f.label === neighbour_field)
+	) {
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `list-note-neighbour-field is not a valid BC field: '${neighbour_field}'`,
+		});
+	}
 
 	// TODO: Doesn't this just do what BC-ignore-out-edges does?
 	const exclude_index = Boolean(
@@ -60,15 +66,8 @@ const get_list_note_info = (
 	return succ({
 		field,
 		exclude_index,
-		dir: field_hierarchy.dir,
-		hierarchy_i: field_hierarchy.hierarchy_i,
-		neighbour: neighbour_hierarchy
-			? {
-					dir: neighbour_hierarchy.dir,
-					field: neighbour_field as string,
-					hierarchy_i: neighbour_hierarchy.hierarchy_i,
-				}
-			: undefined,
+		// TODO: This should be more JS safe, instead of casting
+		neighbour_field: (neighbour_field ?? undefined) as string | undefined,
 	});
 };
 
@@ -84,28 +83,20 @@ const resolve_field_override = (
 	list_item: IDataview.NoteList,
 	path: string,
 ) => {
-	const field_override = list_item.text.match(FIELD_OVERRIDE_REGEX)?.[1];
+	const field = list_item.text.match(FIELD_OVERRIDE_REGEX)?.[1];
+
 	// No override, use the list_note_info field
-	if (!field_override) return succ(undefined);
-
-	const resolved_field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field_override,
-	);
-
-	if (!resolved_field_hierarchy) {
+	if (!field) {
+		return succ(undefined);
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `Field override is not a valid BC field: ${field_override}. Line: ${list_item.position.start.line}`,
+			message: `Field override is not a valid BC field: ${field}. Line: ${list_item.position.start.line}`,
 		});
+	} else {
+		return succ({ field });
 	}
-
-	return succ({
-		field: field_override,
-		dir: resolved_field_hierarchy.dir,
-		hierarchy_i: resolved_field_hierarchy.hierarchy_i,
-	});
 };
 
 /** If a few conditions are met, add an edge from the current list item to the _next_ one on the same level */
@@ -128,7 +119,7 @@ const handle_neighbour_list_item = ({
 	>;
 }) => {
 	// If there is no neighbour field, don't bother
-	if (!list_note_info.data.neighbour) return;
+	if (!list_note_info.data.neighbour_field) return;
 
 	// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
 	const source_list_item =
@@ -162,7 +153,6 @@ const handle_neighbour_list_item = ({
 			break;
 		}
 	}
-
 	if (!neighbour_list_item) return;
 
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
@@ -182,9 +172,7 @@ const handle_neighbour_list_item = ({
 	graph.safe_add_directed_edge(source_path, path, {
 		explicit: true,
 		source: "list_note",
-		dir: list_note_info.data.neighbour.dir,
-		field: list_note_info.data.neighbour.field,
-		hierarchy_i: list_note_info.data.neighbour.hierarchy_i,
+		field: list_note_info.data.neighbour_field,
 	});
 };
 
@@ -259,15 +247,15 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					source_list_item.position.start.col === 0
 				) {
 					// Override top-level field
-					const source_field_hierarchy = resolve_field_override(
+					const source_override_field = resolve_field_override(
 						plugin,
 						source_list_item,
 						list_note_page.file.path,
 					);
 
-					if (!source_field_hierarchy.ok) {
-						if (source_field_hierarchy.error) {
-							errors.push(source_field_hierarchy.error);
+					if (!source_override_field.ok) {
+						if (source_override_field.error) {
+							errors.push(source_override_field.error);
 						}
 						return;
 					}
@@ -278,7 +266,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						{
 							explicit: true,
 							source: "list_note",
-							...(source_field_hierarchy.data ??
+							...(source_override_field.data ??
 								list_note_info.data),
 						},
 					);
@@ -299,15 +287,15 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					const target_link = target_list_item.outlinks.at(0);
 					if (!target_link) return;
 
-					const target_field_hierarchy = resolve_field_override(
+					const target_override_field = resolve_field_override(
 						plugin,
 						target_list_item,
 						list_note_page.file.path,
 					);
 
-					if (!target_field_hierarchy.ok) {
-						if (target_field_hierarchy.error) {
-							errors.push(target_field_hierarchy.error);
+					if (!target_override_field.ok) {
+						if (target_override_field.error) {
+							errors.push(target_override_field.error);
 						}
 						return;
 					}
@@ -330,7 +318,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					graph.safe_add_directed_edge(source_path, target_path, {
 						explicit: true,
 						source: "list_note",
-						...(target_field_hierarchy.data ?? list_note_info.data),
+						...(target_override_field.data ?? list_note_info.data),
 					});
 				});
 			},

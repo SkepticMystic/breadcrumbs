@@ -1,5 +1,4 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
-import { DIRECTIONS } from "src/const/hierarchies";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
@@ -25,22 +24,7 @@ export const _add_settings_tree_view = (
 		},
 	});
 
-	new_setting(containerEl, {
-		name: "Default Direction",
-		desc: "The default direction to use in the tree traversal",
-		select: {
-			value: plugin.settings.views.side.tree.default_dir,
-			options: DIRECTIONS,
-			cb: async (value) => {
-				plugin.settings.views.side.tree.default_dir = value;
-
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
-				]);
-			},
-		},
-	});
+	// TODO(NODIR): default_fields
 
 	new EdgeSortIdSettingItem({
 		target: containerEl,
@@ -57,7 +41,6 @@ export const _add_settings_tree_view = (
 	new ShowAttributesSettingItem({
 		target: containerEl,
 		props: {
-			exclude_attributes: ["dir"],
 			show_attributes: plugin.settings.views.side.tree.show_attributes,
 		},
 	}).$on("select", async (e) => {

@@ -1,18 +1,24 @@
 <script lang="ts">
-	import { stringify_transitive_relation } from "src/graph/builders/implied/custom/transitive";
+	import { PlusIcon, SaveIcon } from "lucide-svelte";
+	import { Notice } from "obsidian";
+	import { ICON_SIZE } from "src/const";
+	import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
 	import type BreadcrumbsPlugin from "src/main";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
-	import HierarchyFieldSelector from "../selector/HierarchyFieldSelector.svelte";
-	import { PlusIcon, SaveIcon } from "lucide-svelte";
-	import { ICON_SIZE } from "src/const";
+	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let transitives = [...plugin.settings.custom_implied_relations.transitive];
+	let transitives = [...plugin.settings.implied_relations.transitive];
 	const opens = transitives.map(() => false);
 
 	const save = async () => {
-		plugin.settings.custom_implied_relations.transitive = transitives;
+		for (const { close_field } of transitives) {
+			if (!close_field) {
+				return new Notice("Closing field cannot be empty.");
+			}
+		}
+		plugin.settings.implied_relations.transitive = transitives;
 
 		await plugin.saveSettings();
 		await plugin.refresh();
@@ -38,7 +44,8 @@
 					{
 						chain: [],
 						rounds: 1,
-						close_field: plugin.settings.hierarchies[0].dirs.up[0],
+						close_reversed: false,
+						close_field: plugin.settings.edge_fields[0].label,
 					},
 				])}
 		>
@@ -80,13 +87,13 @@
 						<div class="flex flex-wrap items-center gap-3">
 							<span class="font-semibold">Chain:</span>
 
-							<HierarchyFieldSelector
-								hierarchies={plugin.settings.hierarchies}
+							<EdgeFieldSelector
+								fields={plugin.settings.edge_fields}
 								on:select={(e) => {
 									if (e.detail)
 										transitive.chain = [
 											...transitive.chain,
-											{ field: e.detail },
+											{ field: e.detail.label },
 										];
 								}}
 							/>
@@ -122,12 +129,11 @@
 						<div>
 							<span class="font-semibold">Closing Field: </span>
 
-							<HierarchyFieldSelector
-								hierarchies={plugin.settings.hierarchies}
-								field={transitive.close_field}
+							<EdgeFieldSelector
+								fields={plugin.settings.edge_fields}
 								on:select={(e) => {
 									if (e.detail) {
-										transitive.close_field = e.detail;
+										transitive.close_field = e.detail.label;
 									}
 								}}
 							/>
@@ -148,6 +154,8 @@
 								}}
 							/>
 						</div>
+
+						<!-- TODO: close_reversed toggle -->
 					</div>
 				{/key}
 			</details>

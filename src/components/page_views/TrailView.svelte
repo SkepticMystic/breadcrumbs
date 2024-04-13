@@ -13,16 +13,15 @@
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode(file_path)
-			? plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
+			? plugin.settings.edge_fields
+					.map((field) =>
 						Traverse.all_paths(
 							"depth_first",
 							plugin.graph,
 							file_path,
 							(edge) =>
 								has_edge_attrs(edge, {
-									dir: "up",
-									hierarchy_i,
+									field: field.label,
 								}),
 						),
 					)

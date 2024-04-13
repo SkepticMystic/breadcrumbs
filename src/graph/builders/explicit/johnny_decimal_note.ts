@@ -5,7 +5,6 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_not_ends_with } from "src/utils/strings";
@@ -32,13 +31,7 @@ const get_johnny_decimal_note_info = (
 			code: "invalid_field_value",
 			message: `johnny-decimal-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
@@ -46,7 +39,7 @@ const get_johnny_decimal_note_info = (
 		});
 	}
 
-	return succ({ field, field_hierarchy });
+	return succ({ field });
 };
 
 /** Take in the info of a johnny_decimal note.
@@ -95,14 +88,12 @@ const handle_johnny_decimal_note = (
 		graph.safe_add_node(target_note.path, { resolved: false });
 	}
 
-	const { field, field_hierarchy } = johnny_decimal_note_info.data;
+	const { field } = johnny_decimal_note_info.data;
 
 	graph.safe_add_directed_edge(source_note.path, target_note.path, {
 		field,
 		explicit: true,
-		dir: field_hierarchy.dir,
 		source: "johnny_decimal_note",
-		hierarchy_i: field_hierarchy.hierarchy_i,
 	});
 };
 

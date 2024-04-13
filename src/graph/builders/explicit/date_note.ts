@@ -3,7 +3,6 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Paths } from "src/utils/paths";
 
 export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
@@ -15,20 +14,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
 	if (!date_note_settings.enabled) return { errors };
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		date_note_settings.default_field,
-	);
-	if (!field_hierarchy) {
-		errors.push({
-			code: "invalid_setting_value",
-			message: `date_note.default_field is not a valid BC field: '${date_note_settings.default_field}'`,
-			path: "settings.explicit_edge_sources.date_note.default_field",
-		});
-
-		return { errors };
-	}
 
 	const date_notes: {
 		ext: string;
@@ -101,9 +86,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			graph.safe_add_directed_edge(date_note.path, target_path, {
 				explicit: true,
 				source: "date_note",
-				dir: field_hierarchy.dir,
 				field: date_note_settings.default_field,
-				hierarchy_i: field_hierarchy.hierarchy_i,
 			});
 		});
 

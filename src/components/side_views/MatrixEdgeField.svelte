@@ -1,17 +1,14 @@
 <script lang="ts">
-	import type { Direction } from "src/const/hierarchies";
 	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeSorter } from "src/graph/utils";
-	import type { Hierarchy } from "src/interfaces/hierarchies";
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 
-	export let dir: Direction;
-	export let hierarchy: Hierarchy;
-	export let dir_out_edges: BCEdge[];
+	export let field: string;
+	export let edges: BCEdge[];
 	export let plugin: BreadcrumbsPlugin;
 	export let show_attributes: EdgeAttribute[];
 
@@ -21,7 +18,7 @@
 </script>
 
 <details
-	class="BC-matrix-view-dir BC-matrix-view-dir-{dir} tree-item"
+	class="BC-matrix-view-field BC-matrix-view-field-{field} tree-item"
 	bind:open
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -33,20 +30,20 @@
 
 		<div class="tree-item-inner">
 			<span class="tree-item-inner-text">
-				{hierarchy.dirs[dir].join(", ")}
+				{field}
 			</span>
 		</div>
 
 		<div class="tree-item-flair-outer">
 			<span class="tree-item-flair">
-				{dir_out_edges.length}
+				{edges.length}
 			</span>
 		</div>
 	</summary>
 
 	<div class="tree-item-children flex flex-col">
 		{#key sort}
-			{#each dir_out_edges.sort(sort) as edge}
+			{#each edges.sort(sort) as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
 						<div class="tree-item-inner flex grow">

@@ -1,20 +1,18 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
-import { DIRECTIONS } from "src/const/hierarchies";
 import { LINK_KINDS } from "src/const/links";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
-import { stringify_hierarchy } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
-	active_file: TFile | null = get(active_file_store);
 	options: ListIndex.Options;
+	active_file: TFile | null = get(active_file_store);
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app);
@@ -37,37 +35,7 @@ export class CreateListIndexModal extends Modal {
 			text: "Create List Index",
 		});
 
-		new Setting(contentEl)
-			.setName("Hierarchy")
-			.setDesc(
-				"Optionally constrain the traversal to a specific hierarchy",
-			)
-			.addDropdown((dropdown) => {
-				dropdown.addOption("-1", "All");
-
-				settings.hierarchies.forEach((hierarchy, i) => {
-					dropdown.addOption(
-						String(i),
-						stringify_hierarchy(hierarchy),
-					);
-				});
-
-				dropdown.setValue(String(this.options.hierarchy_i));
-
-				dropdown.onChange((value) => {
-					this.options.hierarchy_i = Number(value);
-				});
-			});
-
-		new_setting(contentEl, {
-			name: "Direction",
-			desc: "Direction to traverse",
-			select: {
-				options: DIRECTIONS,
-				value: this.options.dir,
-				cb: (value) => (this.options.dir = value),
-			},
-		});
+		// TODO(NODIR): Field selector to contsrain traversal
 
 		new_setting(contentEl, {
 			name: "Link Kind",

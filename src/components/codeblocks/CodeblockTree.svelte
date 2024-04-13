@@ -1,15 +1,15 @@
 <script lang="ts">
+	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Traverse } from "src/graph/traverse";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import { onMount } from "svelte";
 	import FlatEdgeList from "../FlatEdgeList.svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { onMount } from "svelte";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -33,15 +33,13 @@
 	const sort = get_edge_sorter(options.sort, plugin.graph);
 
 	const base_traversal = ({
-		hierarchy_i,
+		$or_fields,
 	}: {
-		hierarchy_i: number | undefined;
+		$or_fields: string[] | undefined;
 	}) =>
 		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
 			has_edge_attrs(e, {
-				hierarchy_i,
-				$or_dirs: options.dirs,
-				$or_fields: options.fields,
+				$or_fields,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
@@ -50,14 +48,10 @@
 		console.log(active_file_path);
 
 		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
-			if (options.merge_hierarchies) {
-				return base_traversal({ hierarchy_i: undefined });
+			if (options.merge_field_groups) {
+				return base_traversal({ $or_fields: undefined });
 			} else {
-				return plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						base_traversal({ hierarchy_i }),
-					)
-					.flat();
+				return [].flat();
 			}
 		} else {
 			return [];

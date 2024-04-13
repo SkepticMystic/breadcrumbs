@@ -7,6 +7,7 @@
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
+	// TODO(NODIR): This'll take alot of thought to migrate to no-dirs
 	const grouped_out_edges =
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
@@ -15,9 +16,9 @@
 					plugin.graph
 						.get_out_edges(file_path)
 						.filter((e) =>
-							has_edge_attrs(e, { $or_dirs: ["prev", "next"] }),
+							has_edge_attrs(e, { $or_fields: ["TODO"] }),
 						),
-					(e) => e.attr.dir,
+					(e) => e.attr.field,
 				)
 			: null;
 </script>

@@ -1,26 +1,27 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import { Traverse, type NestedEdgePath } from "src/graph/traverse";
-import { get_edge_sorter, stringify_node } from "src/graph/utils";
-import type { ObsidianLinkKind } from "src/interfaces/links";
+import {
+	get_edge_sorter,
+	has_edge_attrs,
+	stringify_node,
+} from "src/graph/utils";
+import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 
 export namespace ListIndex {
 	export type Options = {
-		dir: Direction;
-		hierarchy_i: number;
+		fields: string[];
 		indent: string;
-		link_kind: ObsidianLinkKind;
+		link_kind: LinkKind;
 		show_node_options: ShowNodeOptions;
 		edge_sort_id: EdgeSortId;
 	};
 
 	export const DEFAULT_OPTIONS: Options = {
-		dir: "down",
+		fields: [],
 		indent: "\\t",
-		hierarchy_i: -1,
 		link_kind: "wiki",
 		edge_sort_id: {
 			order: 1,
@@ -33,7 +34,7 @@ export namespace ListIndex {
 		nested_paths: NestedEdgePath[],
 		options: {
 			indent: string;
-			link_kind: ObsidianLinkKind;
+			link_kind: LinkKind;
 			show_node_options: ShowNodeOptions;
 		},
 	) => {
@@ -65,14 +66,8 @@ export namespace ListIndex {
 		nested_paths_to_list_index(
 			Traverse.sort_nested_paths(
 				Traverse.nest_all_paths(
-					Traverse.all_paths(
-						"depth_first",
-						graph,
-						start_node,
-						(e) =>
-							e.attr.dir === options.dir &&
-							(options.hierarchy_i === -1 ||
-								e.attr.hierarchy_i === options.hierarchy_i),
+					Traverse.all_paths("depth_first", graph, start_node, (e) =>
+						has_edge_attrs(e, { $or_fields: options.fields }),
 					),
 				),
 				get_edge_sorter(options.edge_sort_id, graph),

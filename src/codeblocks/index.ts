@@ -82,7 +82,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "fields": {
-				const field_labels = plugin.settings.fields.map(
+				const field_labels = plugin.settings.edge_fields.map(
 					(field) => field.label,
 				);
 
@@ -277,7 +277,6 @@ const resolve_options = (
 	Object.assign(
 		{
 			type: "tree",
-			dirs: ["down"],
 			depth: [0, Infinity],
 			flat: false,
 			sort: {

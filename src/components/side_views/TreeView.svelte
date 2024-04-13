@@ -1,22 +1,18 @@
 <script lang="ts">
-	import { Compass } from "lucide-svelte";
-	import { ICON_SIZE } from "src/const";
 	import { Traverse } from "src/graph/traverse";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
-	import { DirectionSelectorMenu } from "src/menus/DirectionSelectorMenu";
 	import { active_file_store } from "src/stores/active_file";
-	import { url_search_params } from "src/utils/url";
+	import { remove_duplicates_by } from "src/utils/arrays";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import { remove_duplicates_by } from "src/utils/arrays";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let dir = plugin.settings.views.side.tree.default_dir;
+	let fields = plugin.settings.views.side.tree.default_fields;
 	let edge_sort_id = plugin.settings.views.side.tree.edge_sort_id;
 	let show_attributes = plugin.settings.views.side.tree.show_attributes;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
@@ -26,16 +22,14 @@
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
-			? plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
+			? fields
+					.map((field) =>
 						Traverse.nest_all_paths(
 							Traverse.all_paths(
 								"depth_first",
 								plugin.graph,
 								$active_file_store!.path,
-								// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
-								(edge) =>
-									has_edge_attrs(edge, { dir, hierarchy_i }),
+								(edge) => has_edge_attrs(edge, { field }),
 							).map((path) =>
 								remove_duplicates_by(
 									path.filter(
@@ -70,7 +64,6 @@
 			/>
 
 			<ShowAttributesSelectorMenu
-				exclude_attributes={["dir"]}
 				cls="clickable-icon nav-action-button"
 				bind:show_attributes
 			/>
@@ -81,20 +74,6 @@
 			/>
 
 			<!-- TODO: merge-hierarchies button -->
-
-			<button
-				class="clickable-icon nav-action-button flex items-center gap-2"
-				aria-label="Change direction"
-				on:click={(e) =>
-					DirectionSelectorMenu({
-						value: dir,
-						cb: (value) => (dir = value),
-					}).showAtMouseEvent(e)}
-			>
-				<Compass size={ICON_SIZE} />
-
-				<span>{dir}</span>
-			</button>
 		</div>
 	</div>
 
@@ -111,9 +90,7 @@
 						.show_node_options}
 				/>
 			{:else}
-				<div class="search-empty-state">
-					No paths found in {url_search_params({ dir })}
-				</div>
+				<div class="search-empty-state">No paths found</div>
 			{/if}
 		{/key}
 	</div>

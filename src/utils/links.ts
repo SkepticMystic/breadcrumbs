@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { ObsidianLinkKind } from "src/interfaces/links";
+import type { LinkKind } from "src/interfaces/links";
 import { Paths } from "./paths";
 
 /** Given an unresolved link path, return the absolute path of where it _would_ get created,
@@ -24,7 +24,7 @@ const ify = (
 	{
 		link_kind,
 	}: {
-		link_kind: ObsidianLinkKind;
+		link_kind: LinkKind;
 	},
 ) => {
 	switch (link_kind) {

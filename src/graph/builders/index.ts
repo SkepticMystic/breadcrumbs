@@ -1,11 +1,11 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
+import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
-import { add_implied_edges } from "./implied";
-import { _add_implied_edges_custom_transitive } from "./implied/custom/transitive";
+import { _add_implied_edges_transitive } from "./implied/transitive";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
@@ -70,34 +70,47 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 				all_files,
 			);
 
-			return { source, ...result };
+			return { source, errors: result.errors };
 		}),
 	);
 
 	const max_implied_relationship_rounds = Math.max(
-		...plugin.settings.hierarchies.flatMap((hierarchy) =>
-			Object.values(hierarchy.implied_relationships).map(
-				(imp) => imp.rounds,
-			),
+		...plugin.settings.implied_relations.transitive.map(
+			(imp) => imp.rounds,
 		),
 	);
 
+	const implied_edge_results: { transitive: BreadcrumbsError[] } = {
+		transitive: [],
+	};
+
 	for (let round = 1; round <= max_implied_relationship_rounds; round++) {
-		Object.entries(add_implied_edges).forEach(([_kind, fn]) => {
-			fn(graph, plugin, { round });
+		const edges: EdgeToAdd[] = [];
+
+		plugin.settings.implied_relations.transitive.forEach((transitive) => {
+			const result = _add_implied_edges_transitive(
+				graph,
+				plugin,
+				transitive,
+				{ round },
+			);
+
+			edges.push(...result.edges);
+			implied_edge_results.transitive.push(...result.errors);
 		});
 
-		plugin.settings.custom_implied_relations.transitive.forEach(
-			(transitive) => {
-				_add_implied_edges_custom_transitive(
-					graph,
-					plugin,
-					transitive,
-					{ round },
+		// PERF: Break if no edges were added. We've reached a fixed point
+		if (edges.length === 0) break;
+		else {
+			edges.forEach((edge) => {
+				graph.safe_add_directed_edge(
+					edge.source_id,
+					edge.target_id,
+					edge.attr,
 				);
-			},
-		);
+			});
+		}
 	}
 
-	return { graph, explicit_edge_results };
+	return { graph, explicit_edge_results, implied_edge_results };
 };

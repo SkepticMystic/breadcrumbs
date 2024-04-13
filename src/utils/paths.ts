@@ -28,15 +28,6 @@ const build = (
 	ext: string,
 ) => ensure_ext(join(folder, basename), ext);
 
-// const update_name = (
-// 	path_str: string,
-// 	callback: (basename: string) => string,
-// ) => {
-// 	const { dir, ext, name } = path.parse(path_str);
-
-// 	return path.join(dir, callback(name) + ext);
-// };
-
 /** Pass in which components you want to *keep*, the rest will be dropped */
 const show = (
 	path: string,
