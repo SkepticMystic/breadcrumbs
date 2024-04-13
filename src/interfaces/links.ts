@@ -1,3 +1,3 @@
 import type { LINK_KINDS } from "src/const/links";
 
-export type LinkKind = (typeof LINK_KINDS)[number];
+export type ObsidianLinkKind = (typeof LINK_KINDS)[number];

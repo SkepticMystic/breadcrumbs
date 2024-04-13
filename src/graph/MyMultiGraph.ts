@@ -1,7 +1,5 @@
 import { MultiGraph } from "graphology";
 import type { ExplicitEdgeSource } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
-import type { Hierarchy } from "src/interfaces/hierarchies";
 import { log } from "src/logger";
 import { fail, succ } from "src/utils/result";
 import { objectify_edge_mapper } from "./objectify_mappers";
@@ -12,6 +10,9 @@ export type BCNodeAttributes = {
 	/** .md file exists  */
 	resolved: boolean;
 	aliases?: string[];
+	// TODO: All a narrower ignore filter, to ignore only edges from certain sources, for example
+	// 	source=list-note
+	// The syntax can allow multiple values: source=list-note source=dataview (parse as URLSearchParams)
 	/** If true, don't add any edges _to_ this node */
 	ignore_in_edges?: true;
 	/** If true, don't add any edges _from_ this node */
@@ -19,25 +20,17 @@ export type BCNodeAttributes = {
 };
 
 export const EDGE_ATTRIBUTES = [
-	"hierarchy_i",
-	"dir",
 	"field",
 	"explicit",
 	"source",
-	"implied_kind",
+	"closure_rule_i",
 	"round",
 ] as const;
 
 export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
 export type BCEdgeAttributes = {
-	/** The hierarchy index */
-	hierarchy_i: number;
-	/** The direction of the field in the hierarchy */
-	dir: Direction;
-	/** The hierarchy field
-	 * null if the implied edge has no opposite field
-	 */
+	/** null if the implied edge has no opposite field */
 	field: string | null;
 } & (
 	| {
@@ -46,9 +39,8 @@ export type BCEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			implied_kind:
-				| keyof Hierarchy["implied_relationships"]
-				| `custom_transitive:${string}`;
+			/** The index of the transitive closure rule */
+			closure_rule_i: number;
 			/** Which round of implied_building this edge got added in.
 			 * Starts at 1 - you can think of real edges as being added in round 0.
 			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.

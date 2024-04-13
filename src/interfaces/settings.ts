@@ -1,9 +1,7 @@
 import type { ListIndex } from "src/commands/list_index";
 import type { EdgeSortId } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
 import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { LogLevels } from "src/logger";
-import type { Hierarchy } from "./hierarchies";
 
 export type ShowNodeOptions = {
 	ext: boolean;
@@ -18,7 +16,7 @@ export interface BreadcrumbsSettings {
 	// But for now, as I add new (old) settings, I don't want to skip migrating them
 	// V4_MIGRATED: boolean;
 
-	hierarchies: Hierarchy[];
+	fields: { label: string }[];
 
 	custom_implied_relations: {
 		transitive: {
@@ -100,8 +98,8 @@ export interface BreadcrumbsSettings {
 
 			tree: {
 				collapse: boolean;
-				default_dir: Direction;
 				edge_sort_id: EdgeSortId;
+				default_fields: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
 			};
@@ -156,7 +154,13 @@ export interface BreadcrumbsSettings {
 
 export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	// SECTION: Hierarchies
-	userHiers: Hierarchy["dirs"][]; // MIGRATED
+	userHiers: {
+		up: string;
+		down: string;
+		same: string;
+		prev: string;
+		next: string;
+	}[]; // MIGRATED
 
 	// SECTION: explicit_edge_sources
 	addDateNotes: boolean; // MIGRATED
@@ -281,7 +285,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 
 	threadIntoNewPane: boolean;
 	threadingTemplate: string;
-	threadingDirTemplates: { [dir in Direction]: string };
+	// threadingDirTemplates: { [dir in Direction]: string };
 	threadUnderCursor: boolean;
 
 	// SECTION: Not sure?

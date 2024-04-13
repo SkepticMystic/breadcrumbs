@@ -14,7 +14,6 @@ import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
 import { thread } from "./commands/thread";
-import { DIRECTIONS } from "./const/hierarchies";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
@@ -23,7 +22,6 @@ import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { HierarchyFieldSuggestor } from "./suggestor/hierarchy-field";
-import { get_all_hierarchy_fields } from "./utils/hierarchies";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
@@ -53,11 +51,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 			const all_properties =
 				this.app.metadataTypeManager.getAllProperties();
 
-			for (const field of get_all_hierarchy_fields(
-				this.settings.hierarchies,
-			)) {
-				if (all_properties[field]?.type === "multitext") continue;
-				this.app.metadataTypeManager.setType(field, "multitext");
+			for (const field of this.settings.fields) {
+				if (all_properties[field.label]?.type === "multitext") continue;
+				this.app.metadataTypeManager.setType(field.label, "multitext");
 			}
 
 			for (const [field, { property_type }] of Object.entries(
@@ -278,45 +274,26 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		/// Jump to first neighbour
-		DIRECTIONS.forEach((dir) => {
+		this.settings.fields.forEach((field) => {
 			this.addCommand({
-				id: `breadcrumbs:jump-to-first-neighbour-dir:${dir}`,
-				name: `Jump to first neigbour in direction:${dir}`,
-				callback: () => jump_to_neighbour(this, { attr: { dir } }),
-			});
-		});
-		this.settings.hierarchies.forEach((hierarchy) => {
-			DIRECTIONS.forEach((dir) => {
-				hierarchy.dirs[dir].forEach((field) => {
-					if (!field) return;
-
-					this.addCommand({
-						id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
-						name: `Jump to first neighbour by field:${field}`,
-						callback: () =>
-							jump_to_neighbour(this, { attr: { field } }),
-					});
-				});
+				id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
+				name: `Jump to first neighbour by field:${field}`,
+				callback: () =>
+					jump_to_neighbour(this, { attr: { field: field.label } }),
 			});
 		});
 
 		// Thread
-		this.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
-			DIRECTIONS.forEach((dir) => {
-				hierarchy.dirs[dir].forEach((field) => {
-					if (!field) return;
-
-					this.addCommand({
-						id: `breadcrumbs:thread-field:${field}`,
-						name: `Thread by field:${field}`,
-						callback: () =>
-							thread(
-								this,
-								{ hierarchy_i, dir, field },
-								this.settings.commands.thread.default_options,
-							),
-					});
-				});
+		this.settings.fields.forEach((field) => {
+			this.addCommand({
+				id: `breadcrumbs:thread-field:${field}`,
+				name: `Thread by field:${field}`,
+				callback: () =>
+					thread(
+						this,
+						{ field: field.label },
+						this.settings.commands.thread.default_options,
+					),
 			});
 		});
 

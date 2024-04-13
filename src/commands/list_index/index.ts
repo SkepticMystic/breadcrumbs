@@ -3,7 +3,7 @@ import type { Direction } from "src/const/hierarchies";
 import type { BCGraph } from "src/graph/MyMultiGraph";
 import { Traverse, type NestedEdgePath } from "src/graph/traverse";
 import { get_edge_sorter, stringify_node } from "src/graph/utils";
-import type { LinkKind } from "src/interfaces/links";
+import type { ObsidianLinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 
@@ -12,7 +12,7 @@ export namespace ListIndex {
 		dir: Direction;
 		hierarchy_i: number;
 		indent: string;
-		link_kind: LinkKind;
+		link_kind: ObsidianLinkKind;
 		show_node_options: ShowNodeOptions;
 		edge_sort_id: EdgeSortId;
 	};
@@ -33,7 +33,7 @@ export namespace ListIndex {
 		nested_paths: NestedEdgePath[],
 		options: {
 			indent: string;
-			link_kind: LinkKind;
+			link_kind: ObsidianLinkKind;
 			show_node_options: ShowNodeOptions;
 		},
 	) => {

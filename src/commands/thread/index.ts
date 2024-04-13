@@ -9,7 +9,7 @@ import { resolve_templates } from "src/utils/strings";
 
 export const thread = async (
 	plugin: BreadcrumbsPlugin,
-	attr: Pick<BCEdgeAttributes, "field" | "dir" | "hierarchy_i">,
+	attr: Pick<BCEdgeAttributes, "field">,
 	options: BreadcrumbsSettings["commands"]["thread"]["default_options"],
 ) => {
 	const active_view = plugin.app.workspace.getActiveViewOfType(MarkdownView);

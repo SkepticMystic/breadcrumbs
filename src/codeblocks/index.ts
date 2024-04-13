@@ -3,14 +3,12 @@ import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	SIMPLE_EDGE_SORT_FIELDS,
 } from "src/const/graph";
-import { DIRECTIONS, type Direction } from "src/const/hierarchies";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { Mermaid } from "src/utils/mermaid";
 import { quote_join } from "src/utils/strings";
 
@@ -18,9 +16,6 @@ import { quote_join } from "src/utils/strings";
 
 const FIELDS = [
 	"type",
-	// TODO: Accept multiple directions, treated as $or_dirs in has_attributes
-	"dir",
-	"dirs",
 	"title",
 	"fields",
 	"depth",
@@ -39,10 +34,6 @@ const FIELDS = [
 const TYPES: ICodeblock["Options"]["type"][] = ["tree", "mermaid"];
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
-	const hierarchy_fields = get_all_hierarchy_fields(
-		plugin.settings.hierarchies,
-	);
-
 	const lines = source.split("\n");
 
 	const errors: BreadcrumbsError[] = [];
@@ -71,33 +62,6 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.type = value as ICodeblock["Options"]["type"]);
 			}
 
-			case "dir":
-			case "dirs": {
-				if (key === "dir") {
-					errors.push({
-						path: key,
-						code: "deprecated_field",
-						message: `The 'dir' field is deprecated in favour of 'dirs' which accepts multiple directions (comma-separated).`,
-					});
-				}
-
-				return (parsed.dirs = value
-					.split(",")
-					.map((field) => field.trim())
-					.filter((dir) => {
-						if (!DIRECTIONS.includes(dir as Direction)) {
-							errors.push({
-								path: key,
-								code: "invalid_field_value",
-								message: `Invalid dir: "${dir}". Options: ${quote_join(DIRECTIONS)}`,
-							});
-							return false;
-						} else {
-							return true;
-						}
-					}) as Direction[]);
-			}
-
 			case "mermaid-direction": {
 				if (
 					!Mermaid.DIRECTIONS.includes(value as Mermaid["Direction"])
@@ -118,15 +82,19 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "fields": {
+				const field_labels = plugin.settings.fields.map(
+					(field) => field.label,
+				);
+
 				return (parsed.fields = value
 					.split(",")
 					.map((field) => field.trim())
 					.filter((field) => {
-						if (!hierarchy_fields.includes(field)) {
+						if (!field_labels.includes(field)) {
 							errors.push({
 								path: key,
 								code: "invalid_field_value",
-								message: `Invalid field: "${field}". Options: ${quote_join(hierarchy_fields)}`,
+								message: `Invalid field: "${field}". Options: ${quote_join(field_labels)}`,
 							});
 							return false;
 						} else {
