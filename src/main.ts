@@ -27,6 +27,7 @@ import { get_all_hierarchy_fields } from "./utils/hierarchies";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import { Timer } from "./utils/timer";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -362,7 +363,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
-			const start_ms = Date.now();
+			const timer = new Timer();
 
 			const notice = this.settings.commands.rebuild_graph.notify
 				? new Notice("Rebuilding graph")
@@ -387,7 +388,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			notice?.setMessage(
 				[
-					`Rebuilt graph in ${Date.now() - start_ms}ms`,
+					`Rebuilt graph in ${timer.elapsed()}ms`,
 
 					explicit_edge_errors.length
 						? "\nErrors (see console for details):"

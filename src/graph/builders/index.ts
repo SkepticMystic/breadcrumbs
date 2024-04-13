@@ -7,6 +7,8 @@ import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 import { add_implied_edges } from "./implied";
 import { _add_implied_edges_custom_transitive } from "./implied/custom/transitive";
+import { Timer } from "src/utils/timer";
+import { log } from "src/logger";
 
 const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 	if (all_files.obsidian) {
@@ -53,6 +55,9 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 };
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
+	const timer = new Timer();
+	const timer2 = new Timer();
+
 	// Make a new graph, instead of mutating the old one
 	const graph = new BCGraph();
 
@@ -61,6 +66,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 
 	// Add initial nodes
 	add_initial_nodes(graph, all_files);
+
+	log.debug(timer.elapsedMessage("Adding initial nodes"));
+	timer.reset();
 
 	// Explicit edges
 	const explicit_edge_results = await Promise.all(
@@ -74,6 +82,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 			return { source, ...result };
 		}),
 	);
+
+	log.debug(timer.elapsedMessage("Adding initial edges"));
+	timer.reset();
 
 	for (let round = 1; round <= IMPLIED_RELATIONSHIP_MAX_ROUNDS; round++) {
 		Object.entries(add_implied_edges).forEach(([kind, fn]) => {
@@ -91,6 +102,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 			},
 		);
 	}
+
+	log.debug(timer.elapsedMessage("Adding implied edges"));
+	log.debug(timer2.elapsedMessage("Total Graph building"));
 
 	return { graph, explicit_edge_results };
 };
