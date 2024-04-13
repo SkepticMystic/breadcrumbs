@@ -80,6 +80,8 @@
 				bind:open={open_signal}
 			/>
 
+			<!-- TODO: merge-hierarchies button -->
+
 			<button
 				class="clickable-icon nav-action-button flex items-center gap-2"
 				aria-label="Change direction"

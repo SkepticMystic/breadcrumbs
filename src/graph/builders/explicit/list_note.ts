@@ -52,6 +52,7 @@ const get_list_note_info = (
 			? get_field_hierarchy(plugin.settings.hierarchies, neighbour_field)
 			: null;
 
+	// TODO: Doesn't this just do what BC-ignore-out-edges does?
 	const exclude_index = Boolean(
 		metadata[META_ALIAS["list-note-exclude-index"]],
 	);
