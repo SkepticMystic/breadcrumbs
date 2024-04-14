@@ -3,7 +3,7 @@
 	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Distance } from "src/graph/distance";
 	import { Traverse } from "src/graph/traverse";
-	import { has_edge_attrs } from "src/graph/utils";
+	import { has_edge_attrs, type EdgeAttrFilters } from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
@@ -42,24 +42,22 @@
 		log.debug("distances", distances);
 	};
 
-	const base_traversal = ({ field }: { field: string | undefined }) =>
+	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.all_paths("depth_first", plugin.graph, source_path, (e) =>
 			has_edge_attrs(e, {
-				field,
+				...attr,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
 
 	const get_all_paths = () => {
 		if (source_path && plugin.graph.hasNode(source_path)) {
-			if (options.merge_fields) {
-				return base_traversal({ field: undefined });
-			} else {
-				return (
-					options.fields ??
-					plugin.settings.edge_fields.map((f) => f.label)
-				).flatMap((field) => base_traversal({ field }));
-			}
+			return options.merge_fields
+				? base_traversal({ $or_fields: options.fields })
+				: (
+						options.fields ??
+						plugin.settings.edge_fields.map((f) => f.label)
+					).flatMap((field) => base_traversal({ field }));
 		} else {
 			return [];
 		}

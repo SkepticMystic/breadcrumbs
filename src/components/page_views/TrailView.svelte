@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
-	import { has_edge_attrs } from "src/graph/utils";
+	import { has_edge_attrs, type EdgeAttrFilters } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { remove_duplicates_by } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -13,14 +13,14 @@
 
 	const trail_settings = plugin.settings.views.page.trail;
 
-	const base_traversal = ({ field }: { field: string | undefined }) =>
+	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.all_paths("depth_first", plugin.graph, file_path, (e) =>
-			has_edge_attrs(e, { field }),
+			has_edge_attrs(e, attr),
 		);
 
 	$: all_paths = plugin.graph.hasNode(file_path)
 		? plugin.settings.views.page.trail.merge_fields
-			? base_traversal({ field: undefined })
+			? base_traversal({ $or_fields: trail_settings.field_group_labels })
 			: resolve_field_group_labels(
 					plugin.settings.edge_field_groups,
 					trail_settings.field_group_labels,

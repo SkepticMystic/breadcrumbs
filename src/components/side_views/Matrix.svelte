@@ -6,6 +6,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
+	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
 
@@ -14,7 +15,7 @@
 	let { edge_sort_id, field_group_labels, show_attributes } =
 		plugin.settings.views.side.matrix;
 
-	const edge_field_labels = resolve_field_group_labels(
+	$: edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
 	);
@@ -60,7 +61,11 @@
 				bind:show_attributes
 			/>
 
-			<!-- TODO: EdgeFieldsSelectorMenu -->
+			<FieldGroupSelector
+				cls="clickable-icon nav-action-button"
+				{plugin}
+				bind:field_group_labels
+			/>
 		</div>
 	</div>
 

@@ -12,13 +12,13 @@
 		plugin.settings.views.page.prev_next;
 
 	const edge_field_labels = {
-		left: resolve_field_group_labels(
+		prev: resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
-			field_group_labels.left,
+			field_group_labels.prev,
 		),
-		right: resolve_field_group_labels(
+		next: resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
-			field_group_labels.right,
+			field_group_labels.next,
 		),
 	};
 
@@ -27,24 +27,24 @@
 				plugin.graph.get_out_edges(file_path).filter((e) =>
 					has_edge_attrs(e, {
 						$or_fields: remove_duplicates([
-							...edge_field_labels.left,
-							...edge_field_labels.right,
+							...edge_field_labels.prev,
+							...edge_field_labels.next,
 						]),
 					}),
 				),
 				(e) =>
-					edge_field_labels.left.includes(e.attr.field)
-						? ("left" as const)
-						: ("right" as const),
+					edge_field_labels.prev.includes(e.attr.field)
+						? ("prev" as const)
+						: ("next" as const),
 			)
 		: null;
 </script>
 
-<div class="BC-left-right-view flex">
-	{#if grouped_out_edges?.left?.length || grouped_out_edges?.right?.length}
+<div class="BC-prev-next-view flex">
+	{#if grouped_out_edges?.prev?.length || grouped_out_edges?.next?.length}
 		<div class="flex w-full flex-col">
-			{#each grouped_out_edges?.left ?? [] as edge}
-				<div class="BC-right-left-item flex gap-3 p-1 text-left">
+			{#each grouped_out_edges?.prev ?? [] as edge}
+				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field">{edge.attr.field}</span>
 
 					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
@@ -53,8 +53,8 @@
 		</div>
 
 		<div class="flex w-full flex-col">
-			{#each grouped_out_edges?.right ?? [] as edge}
-				<div class="BC-right-left-item flex gap-3 p-1 text-right">
+			{#each grouped_out_edges?.next ?? [] as edge}
+				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
 					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
 
 					<span class="BC-field">{edge.attr.field}</span>
@@ -65,11 +65,11 @@
 </div>
 
 <style>
-	.BC-left-right-view > div {
+	.BC-prev-next-view > div {
 		border: 1px solid var(--background-modifier-border);
 	}
 
-	.BC-right-left-item {
+	.BC-next-prev-item {
 		border-bottom: 1px solid var(--background-modifier-border);
 	}
 </style>

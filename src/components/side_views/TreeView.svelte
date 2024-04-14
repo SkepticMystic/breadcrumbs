@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
-	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
+	import {
+		get_edge_sorter,
+		has_edge_attrs,
+		type EdgeAttrFilters,
+	} from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { remove_duplicates_by } from "src/utils/arrays";
@@ -10,6 +14,7 @@
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
+	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -23,13 +28,13 @@
 	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
-	const base_traversal = ({ field }: { field: string | undefined }) =>
+	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.nest_all_paths(
 			Traverse.all_paths(
 				"depth_first",
 				plugin.graph,
 				$active_file_store!.path,
-				(edge) => has_edge_attrs(edge, { field }),
+				(edge) => has_edge_attrs(edge, attr),
 			).map((path) =>
 				// TODO: This post-processing should be done in the traversal
 				remove_duplicates_by(
@@ -43,7 +48,7 @@
 			),
 		);
 
-	const edge_field_labels = resolve_field_group_labels(
+	$: edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
 	);
@@ -51,7 +56,7 @@
 	$: nested_edges =
 		$active_file_store && plugin.graph.hasNode($active_file_store.path)
 			? merge_fields
-				? base_traversal({ field: undefined })
+				? base_traversal({ $or_fields: edge_field_labels })
 				: edge_field_labels.flatMap((field) =>
 						base_traversal({ field }),
 					)
@@ -84,9 +89,16 @@
 				bind:open={open_signal}
 			/>
 
-			<!-- TODO: EdgeFieldsSelector -->
+			<MergeFieldsButton
+				cls="clickable-icon nav-action-button"
+				bind:merge_fields
+			/>
 
-			<MergeFieldsButton bind:merge_fields />
+			<FieldGroupLabelsSelector
+				{plugin}
+				cls="clickable-icon nav-action-button"
+				bind:field_group_labels
+			/>
 		</div>
 	</div>
 

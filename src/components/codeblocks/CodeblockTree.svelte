@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Traverse } from "src/graph/traverse";
-	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
+	import {
+		get_edge_sorter,
+		has_edge_attrs,
+		type EdgeAttrFilters,
+	} from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
@@ -32,24 +36,22 @@
 
 	const sort = get_edge_sorter(options.sort, plugin.graph);
 
-	const base_traversal = ({ field }: { field: string | undefined }) =>
+	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
 			has_edge_attrs(e, {
-				field,
+				...attr,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
 
 	const get_all_paths = () => {
 		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
-			if (options.merge_fields) {
-				return base_traversal({ field: undefined });
-			} else {
-				return (
-					options.fields ??
-					plugin.settings.edge_fields.map((f) => f.label)
-				).flatMap((field) => base_traversal({ field }));
-			}
+			return options.merge_fields
+				? base_traversal({ $or_fields: options.fields })
+				: (
+						options.fields ??
+						plugin.settings.edge_fields.map((f) => f.label)
+					).flatMap((field) => base_traversal({ field }));
 		} else {
 			return [];
 		}

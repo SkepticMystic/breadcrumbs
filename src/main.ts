@@ -25,7 +25,6 @@ import { EdgeFieldSuggestor } from "./suggestor/edge_fields";
 import { deep_merge_objects } from "./utils/objects";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import type { PropertyWidgetType } from "./interfaces/obsidian";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -276,12 +275,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		/// Jump to first neighbour
-		this.settings.edge_fields.forEach((field) => {
+		this.settings.edge_field_groups.forEach((group) => {
 			this.addCommand({
-				id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
-				name: `Jump to first neighbour by field:${field}`,
+				id: `breadcrumbs:jump-to-first-neighbour-group:${group.label}`,
+				name: `Jump to first neighbour by group:${group.label}`,
 				callback: () =>
-					jump_to_neighbour(this, { attr: { field: field.label } }),
+					jump_to_neighbour(this, {
+						attr: { $or_fields: group.fields },
+					}),
 			});
 		});
 
