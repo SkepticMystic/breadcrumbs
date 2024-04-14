@@ -11,6 +11,7 @@ import {
 	type OLD_HIERARCHY,
 } from "src/interfaces/settings";
 import { log } from "src/logger";
+import { remove_duplicates } from "src/utils/arrays";
 
 const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 	switch (dir) {
@@ -79,13 +80,21 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	// Transform hierarchies into edge_fields
 	if (old.hierarchies) {
 		OLD_DIRECTIONS.forEach((dir) => {
-			settings.edge_field_groups.push({
-				label: `All ${dir}s`,
+			const fields = old
+				.hierarchies!.flatMap((hier) => hier.dirs[dir])
+				.filter(Boolean);
 
-				fields: old
-					.hierarchies!.flatMap((hier) => hier.dirs[dir])
-					.filter(Boolean),
-			});
+			const label = `${dir}s`;
+			const existing = settings.edge_field_groups.find(
+				(group) => group.label === label,
+			);
+
+			if (existing) {
+				existing.fields.push(...fields);
+				existing.fields = remove_duplicates(existing.fields);
+			} else {
+				settings.edge_field_groups.push({ label, fields });
+			}
 		});
 
 		old.hierarchies.forEach((hier, hier_i) => {

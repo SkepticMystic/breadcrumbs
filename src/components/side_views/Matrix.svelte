@@ -3,6 +3,7 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { group_by } from "src/utils/arrays";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
@@ -10,8 +11,13 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let { edge_sort_id, field_labels, show_attributes, show_node_options } =
+	let { edge_sort_id, field_group_labels, show_attributes } =
 		plugin.settings.views.side.matrix;
+
+	const edge_field_labels = resolve_field_group_labels(
+		plugin.settings.edge_field_groups,
+		field_group_labels,
+	);
 
 	$: grouped_out_edges =
 		$active_file_store &&
@@ -23,7 +29,7 @@
 						.get_out_edges($active_file_store.path)
 						.filter((e) =>
 							has_edge_attrs(e, {
-								$or_fields: field_labels,
+								$or_fields: edge_field_labels,
 							}),
 						),
 					(e) => e.attr.field,

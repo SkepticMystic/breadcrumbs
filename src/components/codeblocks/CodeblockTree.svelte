@@ -41,8 +41,6 @@
 		);
 
 	const get_all_paths = () => {
-		console.log(active_file_path);
-
 		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
 			if (options.merge_fields) {
 				return base_traversal({ field: undefined });

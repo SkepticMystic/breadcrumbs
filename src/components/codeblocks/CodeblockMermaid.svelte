@@ -26,7 +26,7 @@
 	let distances: Map<string, number> = new Map();
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path
+	$: source_path = file_path
 		? file_path
 		: $active_file_store
 			? $active_file_store.path
@@ -43,7 +43,7 @@
 	};
 
 	const base_traversal = ({ field }: { field: string | undefined }) =>
-		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
+		Traverse.all_paths("depth_first", plugin.graph, source_path, (e) =>
 			has_edge_attrs(e, {
 				field,
 				$or_target_ids: options.dataview_from_paths,
@@ -51,7 +51,7 @@
 		);
 
 	const get_all_paths = () => {
-		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
+		if (source_path && plugin.graph.hasNode(source_path)) {
 			if (options.merge_fields) {
 				return base_traversal({ field: undefined });
 			} else {
@@ -87,11 +87,12 @@
 		Mermaid.from_edges(flat_unique, {
 			kind: "graph",
 			click: { method: "class" },
+			active_node_id: source_path,
 			renderer: options.mermaid_renderer,
+			direction: options.mermaid_direction,
 			show_attributes: options.show_attributes,
-			active_node_id: active_file_path,
+
 			get_node_label: (node_id, _attr) => {
-				const source_path = active_file_path;
 				const file = plugin.app.vault.getFileByPath(node_id);
 
 				return file
@@ -106,7 +107,6 @@
 							),
 						);
 			},
-			direction: options.mermaid_direction,
 		}),
 		"mermaid",
 	);
@@ -129,7 +129,7 @@
 				plugin.app,
 				mermaid_str,
 				target_el,
-				active_file_path,
+				source_path,
 				plugin,
 			);
 		}

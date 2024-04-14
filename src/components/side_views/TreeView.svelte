@@ -4,6 +4,7 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { remove_duplicates_by } from "src/utils/arrays";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
@@ -18,7 +19,7 @@
 		merge_fields,
 		show_attributes,
 		show_node_options,
-		default_field_labels,
+		field_group_labels,
 	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
@@ -42,11 +43,16 @@
 			),
 		);
 
+	const edge_field_labels = resolve_field_group_labels(
+		plugin.settings.edge_field_groups,
+		field_group_labels,
+	);
+
 	$: nested_edges =
 		$active_file_store && plugin.graph.hasNode($active_file_store.path)
 			? merge_fields
 				? base_traversal({ field: undefined })
-				: default_field_labels.flatMap((field) =>
+				: edge_field_labels.flatMap((field) =>
 						base_traversal({ field }),
 					)
 			: [];

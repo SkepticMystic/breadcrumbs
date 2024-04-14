@@ -92,30 +92,34 @@ export interface BreadcrumbsSettings {
 				no_path_message: string;
 				show_node_options: ShowNodeOptions;
 				selection: "all" | "shortest" | "longest";
+				field_group_labels: string[];
 			};
 
 			prev_next: {
 				enabled: boolean;
 				show_node_options: ShowNodeOptions;
 
-				field_labels: { prev: string[]; next: string[] };
+				field_group_labels: {
+					prev: string[];
+					next: string[];
+				};
 			};
 		};
 		side: {
 			matrix: {
-				field_labels: string[];
 				edge_sort_id: EdgeSortId;
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				field_group_labels: string[];
 			};
 
 			tree: {
 				collapse: boolean;
 				merge_fields: boolean;
 				edge_sort_id: EdgeSortId;
-				default_field_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				field_group_labels: string[];
 			};
 		};
 

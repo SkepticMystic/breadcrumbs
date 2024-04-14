@@ -3,6 +3,7 @@
 	import { has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { remove_duplicates_by } from "src/utils/arrays";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
@@ -10,23 +11,21 @@
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
+	const trail_settings = plugin.settings.views.page.trail;
+
 	const base_traversal = ({ field }: { field: string | undefined }) =>
 		Traverse.all_paths("depth_first", plugin.graph, file_path, (e) =>
-			has_edge_attrs(e, {
-				field,
-			}),
+			has_edge_attrs(e, { field }),
 		);
 
-	$: all_paths =
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode(file_path)
-			? plugin.settings.views.page.trail.merge_fields
-				? base_traversal({ field: undefined })
-				: plugin.settings.edge_fields.flatMap((field) =>
-						base_traversal({ field: field.label }),
-					)
-			: [];
+	$: all_paths = plugin.graph.hasNode(file_path)
+		? plugin.settings.views.page.trail.merge_fields
+			? base_traversal({ field: undefined })
+			: resolve_field_group_labels(
+					plugin.settings.edge_field_groups,
+					trail_settings.field_group_labels,
+				).flatMap((field) => base_traversal({ field }))
+		: [];
 
 	$: selected_paths =
 		plugin.settings.views.page.trail.selection === "all"
@@ -72,7 +71,7 @@
 		{#if sorted_paths.length}
 			<div
 				class="mb-1 flex flex-wrap justify-between gap-3"
-				class:hidden={!plugin.settings.views.page.trail.show_controls}
+				class:hidden={!trail_settings.show_controls}
 			>
 				<select
 					class="dropdown"
@@ -130,9 +129,9 @@
 			{:else if plugin.settings.views.page.trail.format === "path"}
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
-		{:else if plugin.settings.views.page.trail.no_path_message}
+		{:else if trail_settings.no_path_message}
 			<p class="BC-trail-view-no-path search-empty-state">
-				{plugin.settings.views.page.trail.no_path_message}
+				{trail_settings.no_path_message}
 			</p>
 		{/if}
 	{/key}

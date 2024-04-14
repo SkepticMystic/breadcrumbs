@@ -24,7 +24,28 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		{ label: "prev" },
 	],
 
-	edge_field_groups: [],
+	edge_field_groups: [
+		{
+			label: "ups",
+			fields: ["up"],
+		},
+		{
+			label: "downs",
+			fields: ["down"],
+		},
+		{
+			label: "sames",
+			fields: ["same"],
+		},
+		{
+			label: "nexts",
+			fields: ["next"],
+		},
+		{
+			label: "prevs",
+			fields: ["prev"],
+		},
+	],
 
 	explicit_edge_sources: {
 		typed_link: {},
@@ -73,17 +94,18 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				format: "grid",
 				selection: "all",
 				default_depth: 999,
-				merge_fields: false,
 				no_path_message: "",
 				show_controls: true,
+				merge_fields: false,
+				field_group_labels: ["ups"],
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 			prev_next: {
 				enabled: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
-				field_labels: {
-					prev: ["prev"],
-					next: ["next"],
+				field_group_labels: {
+					prev: ["prevs"],
+					next: ["nexts"],
 				},
 			},
 		},
@@ -91,15 +113,15 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			matrix: {
 				show_attributes: [],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
-				field_labels: ["down", "up", "same", "next", "prev"],
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				field_group_labels: ["ups", "downs", "sames", "nexts", "prevs"],
 			},
 
 			tree: {
 				collapse: false,
 				show_attributes: [],
 				merge_fields: false,
-				default_field_labels: ["down"],
+				field_group_labels: ["downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},

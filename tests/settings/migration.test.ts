@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import { DEFAULT_SETTINGS } from "src/const/settings";
+import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { migrate_old_settings } from "src/settings/migration";
 import { deep_merge_objects } from "src/utils/objects";
 import { describe, expect, test } from "vitest";
@@ -59,15 +60,17 @@ describe("migration", () => {
 					trail: {
 						enabled: true,
 						format: "grid",
-						default_depth: 999,
 						selection: "all",
+						default_depth: 999,
 						no_path_message: "",
+						merge_fields: false,
+						show_controls: false,
+						field_group_labels: ["ups"],
 						show_node_options: {
 							ext: false,
 							folder: false,
 							alias: false,
 						},
-						show_controls: false,
 					},
 					prev_next: {
 						enabled: true,
@@ -76,14 +79,26 @@ describe("migration", () => {
 							folder: false,
 							alias: false,
 						},
-						field_labels: {
-							prev: ["prev"],
-							next: ["next"],
+						field_group_labels: {
+							prev: ["prevs"],
+							next: ["nexts"],
 						},
 					},
 				},
 				side: {
 					matrix: {
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
+						show_attributes: [],
+						field_group_labels: [
+							"ups",
+							"downs",
+							"sames",
+							"nexts",
+							"prevs",
+						],
 						show_node_options: {
 							ext: true,
 							folder: false,
@@ -91,18 +106,19 @@ describe("migration", () => {
 						},
 					},
 					tree: {
+						collapse: true,
+						merge_fields: false,
+						show_attributes: [],
+						field_group_labels: ["downs"],
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
 						show_node_options: {
 							ext: false,
 							folder: false,
 							alias: false,
 						},
-						collapse: true,
-						show_attributes: [],
-						edge_sort_id: {
-							field: "basename",
-							order: 1,
-						},
-						default_field_labels: ["down"],
 					},
 				},
 				codeblocks: {
@@ -124,6 +140,7 @@ describe("migration", () => {
 				list_index: {
 					default_options: {
 						// TODO: Not sure why this dir field isn't getting deleted...
+						// @ts-ignore
 						dir: "down",
 						indent: "\\t",
 						hierarchy_i: -1,
@@ -176,24 +193,24 @@ describe("migration", () => {
 			],
 			edge_field_groups: [
 				{
-					label: "All ups",
+					label: "ups",
 					fields: ["up", "parent"],
 				},
 				{
-					label: "All downs",
+					label: "downs",
 					fields: ["down", "child"],
 				},
 				{
-					label: "All sames",
+					label: "sames",
 					fields: ["same", "sibling"],
 				},
 				{
-					label: "All prevs",
-					fields: ["prev", "left"],
+					label: "nexts",
+					fields: ["next", "right"],
 				},
 				{
-					label: "All nexts",
-					fields: ["next", "right"],
+					label: "prevs",
+					fields: ["prev", "left"],
 				},
 				{
 					label: "Hierarchy 1",
@@ -286,6 +303,6 @@ describe("migration", () => {
 					},
 				],
 			},
-		});
+		} satisfies BreadcrumbsSettings);
 	});
 });
