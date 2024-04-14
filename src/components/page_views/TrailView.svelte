@@ -11,20 +11,20 @@
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
-	const trail_settings = plugin.settings.views.page.trail;
-
 	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.all_paths("depth_first", plugin.graph, file_path, (e) =>
 			has_edge_attrs(e, attr),
 		);
 
+	$: edge_field_labels = resolve_field_group_labels(
+		plugin.settings.edge_field_groups,
+		plugin.settings.views.page.trail.field_group_labels,
+	);
+
 	$: all_paths = plugin.graph.hasNode(file_path)
 		? plugin.settings.views.page.trail.merge_fields
-			? base_traversal({ $or_fields: trail_settings.field_group_labels })
-			: resolve_field_group_labels(
-					plugin.settings.edge_field_groups,
-					trail_settings.field_group_labels,
-				).flatMap((field) => base_traversal({ field }))
+			? base_traversal({ $or_fields: edge_field_labels })
+			: edge_field_labels.flatMap((field) => base_traversal({ field }))
 		: [];
 
 	$: selected_paths =
@@ -71,7 +71,7 @@
 		{#if sorted_paths.length}
 			<div
 				class="mb-1 flex flex-wrap justify-between gap-3"
-				class:hidden={!trail_settings.show_controls}
+				class:hidden={!plugin.settings.views.page.trail.show_controls}
 			>
 				<select
 					class="dropdown"
@@ -129,9 +129,9 @@
 			{:else if plugin.settings.views.page.trail.format === "path"}
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
-		{:else if trail_settings.no_path_message}
+		{:else if plugin.settings.views.page.trail.no_path_message}
 			<p class="BC-trail-view-no-path search-empty-state">
-				{trail_settings.no_path_message}
+				{plugin.settings.views.page.trail.no_path_message}
 			</p>
 		{/if}
 	{/key}

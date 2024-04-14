@@ -3,6 +3,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -23,8 +24,6 @@ export const _add_settings_tree_view = (
 			},
 		},
 	});
-
-	// TODO(NODIR): default_fields
 
 	new EdgeSortIdSettingItem({
 		target: containerEl,
@@ -50,6 +49,38 @@ export const _add_settings_tree_view = (
 			plugin.saveSettings(),
 			plugin.refresh({ rebuild_graph: false }),
 		]);
+	});
+
+	new FieldGroupLabelsSettingItem({
+		target: containerEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
+				plugin.settings.views.side.tree.field_group_labels,
+		},
+	}).$on("select", async (e) => {
+		plugin.settings.views.side.tree.field_group_labels = e.detail;
+
+		await Promise.all([
+			plugin.saveSettings(),
+			plugin.refresh({ rebuild_graph: false }),
+		]);
+	});
+
+	new_setting(containerEl, {
+		name: "Merge Fields",
+		desc: "Merge fields in the traversal, instead of keeping their paths separate",
+		toggle: {
+			value: plugin.settings.views.side.tree.merge_fields,
+			cb: async (value) => {
+				plugin.settings.views.side.tree.merge_fields = value;
+
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
+			},
+		},
 	});
 
 	_add_settings_show_node_options(plugin, containerEl, {

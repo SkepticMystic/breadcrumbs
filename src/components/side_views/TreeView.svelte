@@ -95,8 +95,8 @@
 			/>
 
 			<FieldGroupLabelsSelector
-				{plugin}
 				cls="clickable-icon nav-action-button"
+				edge_field_groups={plugin.settings.edge_field_groups}
 				bind:field_group_labels
 			/>
 		</div>

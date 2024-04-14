@@ -63,7 +63,7 @@
 
 			<FieldGroupSelector
 				cls="clickable-icon nav-action-button"
-				{plugin}
+				edge_field_groups={plugin.settings.edge_field_groups}
 				bind:field_group_labels
 			/>
 		</div>

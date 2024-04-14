@@ -142,13 +142,16 @@
 							);
 						}}
 					/>
-					<button title="Remove Field">
+					<button
+						title="Remove Field"
+						on:click={() => actions.fields.remove(edge_field)}
+					>
 						<XIcon size={ICON_SIZE} />
 					</button>
 				</div>
 
-				<div class="flex flex-wrap gap-1 px-3">
-					<span>In Groups</span>
+				<div class="flex flex-wrap gap-1 pl-4">
+					<span>Groups</span>
 
 					{#each group_labels as group_label}
 						<!-- svelte-ignore a11y-missing-attribute -->
@@ -218,7 +221,7 @@
 					</select>
 				</div>
 
-				<div class="flex flex-wrap items-center gap-1 px-3">
+				<div class="flex flex-wrap items-center gap-1 pl-4">
 					<span>Fields</span>
 
 					{#each group.fields as field}

@@ -63,11 +63,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		containerEl.addClass("BC-settings-tab");
 
-		containerEl.createEl("h3", { text: "Edge Fields" });
-
 		new EdgeFieldSettings({
 			props: { plugin },
-			target: containerEl,
+			target: make_details_el(containerEl, {
+				s: { text: "> Edge Fields" },
+			}).children,
 		});
 
 		// Implied Relations
