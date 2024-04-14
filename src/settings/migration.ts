@@ -1,7 +1,7 @@
-import { Notice, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
+import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
 import {
 	OLD_DIRECTIONS,
 	type BreadcrumbsSettings,
@@ -11,8 +11,6 @@ import {
 	type OLD_HIERARCHY,
 } from "src/interfaces/settings";
 import { log } from "src/logger";
-import type BreadcrumbsPlugin from "src/main";
-import { Paths } from "src/utils/paths";
 
 const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 	switch (dir) {
@@ -30,11 +28,9 @@ const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 };
 
 // TODO: Loooots of migrating to do here
-export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
-	const old = plugin.settings as (
-		| BreadcrumbsSettings
-		| BreadcrumbsSettingsWithDirection
-	) &
+export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
+	const old = settings as BreadcrumbsSettings &
+		BreadcrumbsSettingsWithDirection &
 		OLD_BREADCRUMBS_SETTINGS;
 
 	// SECTION: Hierarchies
@@ -67,7 +63,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		};
 
 		// @ts-ignore
-		plugin.settings.hierarchies = old.userHiers.map((hierarchy) => ({
+		settings.hierarchies = old.userHiers.map((hierarchy) => ({
 			dirs: hierarchy,
 			implied_relationships,
 		}));
@@ -78,176 +74,189 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	// Transform hierarchies into edge_fields
 	// @ts-ignore
-	if (plugin.settings.hierarchies) {
+	if (settings.hierarchies) {
 		OLD_DIRECTIONS.forEach((dir) => {
-			plugin.settings.edge_field_groups.push({
+			settings.edge_field_groups.push({
 				label: `All ${dir}s`,
 				//@ts-ignore
-				fields: (<OLD_HIERARCHY[]>plugin.settings.hierarchies)
+				fields: (<OLD_HIERARCHY[]>settings.hierarchies)
 					.flatMap((hier) => hier.dirs[dir])
 					.filter(Boolean),
 			});
 		});
 
 		// @ts-ignore
-		(<OLD_HIERARCHY[]>plugin.settings.hierarchies).forEach(
-			(hier, hier_i) => {
-				const field_labels = Object.values(hier.dirs)
-					.flatMap((fields) => fields)
-					.filter(Boolean);
+		(<OLD_HIERARCHY[]>settings.hierarchies).forEach((hier, hier_i) => {
+			const field_labels = Object.values(hier.dirs)
+				.flatMap((fields) => fields)
+				.filter(Boolean);
 
-				plugin.settings.edge_field_groups.push({
-					label: `Hierarchy ${hier_i + 1}`,
-					fields: field_labels,
-				});
+			settings.edge_field_groups.push({
+				label: `Hierarchy ${hier_i + 1}`,
+				fields: field_labels,
+			});
 
-				field_labels.forEach((field) =>
-					plugin.settings.edge_fields.push({ label: field }),
-				);
+			field_labels.forEach((label) => {
+				if (
+					!settings.edge_fields.find((field) => field.label === label)
+				) {
+					settings.edge_fields.push({ label });
+				}
+			});
 
-				Object.entries(hier.implied_relationships).forEach(
-					([rel, { rounds }]) => {
-						if (!rounds) return;
+			Object.entries(hier.implied_relationships).forEach(
+				([rel, { rounds }]) => {
+					if (!rounds) return;
 
-						const fields = {
-							up: hier.dirs.up[0],
-							same: hier.dirs.same[0],
-							down: hier.dirs.down[0],
-							next: hier.dirs.next[0],
-							prev: hier.dirs.prev[0],
-						};
+					const fields = {
+						up: hier.dirs.up[0],
+						same: hier.dirs.same[0],
+						down: hier.dirs.down[0],
+						next: hier.dirs.next[0],
+						prev: hier.dirs.prev[0],
+					};
 
-						switch (rel) {
-							case "self_is_sibling": {
-								if (!fields.same) return;
+					switch (rel) {
+						case "self_is_sibling": {
+							if (!fields.same) return;
 
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										// TODO(NODIR): Handle empty chain
-										chain: [],
-										close_reversed: false,
-										close_field: fields.same,
-									},
-								);
-							}
-
-							case "opposite_direction": {
-								OLD_DIRECTIONS.forEach((dir) => {
-									const field = fields[dir];
-									const close_field =
-										fields[get_opposite_direction(dir)];
-									if (!field || !close_field) return;
-
-									plugin.settings.implied_relations.transitive.push(
-										{
-											rounds,
-											close_field,
-											chain: [{ field }],
-											close_reversed: true,
-										},
-									);
-								});
-								break;
-							}
-
-							case "cousin_is_sibling": {
-								if (!fields.up || !fields.same || !fields.down)
-									return;
-
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										chain: [
-											{ field: fields.up },
-											{ field: fields.same },
-											{ field: fields.down },
-										],
-										close_reversed: false,
-										close_field: fields.same,
-									},
-								);
-							}
-
-							case "same_parent_is_sibling": {
-								if (!fields.up || !fields.down || !fields.down)
-									return;
-
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										chain: [
-											{ field: fields.up },
-											{ field: fields.down },
-										],
-										close_reversed: false,
-										close_field: fields.same,
-									},
-								);
-							}
-
-							case "same_sibling_is_sibling": {
-								if (!fields.same) return;
-
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										chain: [
-											{ field: fields.same },
-											{ field: fields.same },
-										],
-										close_reversed: false,
-										close_field: fields.same,
-									},
-								);
-							}
-
-							case "siblings_parent_is_parent": {
-								if (!fields.up || !fields.same) return;
-
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										chain: [
-											{ field: fields.same },
-											{ field: fields.up },
-										],
-										close_reversed: false,
-										close_field: fields.up,
-									},
-								);
-							}
-
-							case "parents_sibling_is_parent": {
-								if (!fields.up || !fields.same) return;
-
-								plugin.settings.implied_relations.transitive.push(
-									{
-										rounds,
-										chain: [
-											{ field: fields.up },
-											{ field: fields.same },
-										],
-										close_reversed: false,
-										close_field: fields.up,
-									},
-								);
-							}
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								// TODO(NODIR): Handle empty chain
+								chain: [],
+								close_reversed: false,
+								close_field: fields.same,
+							});
 						}
-					},
-				);
-			},
-		);
+
+						case "opposite_direction": {
+							OLD_DIRECTIONS.forEach((dir) => {
+								const field = fields[dir];
+								const close_field =
+									fields[get_opposite_direction(dir)];
+								if (!field || !close_field) return;
+
+								settings.implied_relations.transitive.push({
+									rounds,
+									name: `[${field}] -> ${close_field} (reversed)`,
+									close_field,
+									chain: [{ field }],
+									close_reversed: true,
+								});
+							});
+							break;
+						}
+
+						case "cousin_is_sibling": {
+							if (!fields.up || !fields.same || !fields.down)
+								return;
+
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								chain: [
+									{ field: fields.up },
+									{ field: fields.same },
+									{ field: fields.down },
+								],
+								close_reversed: false,
+								close_field: fields.same,
+							});
+						}
+
+						case "same_parent_is_sibling": {
+							if (!fields.up || !fields.down || !fields.down)
+								return;
+
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								chain: [
+									{ field: fields.up },
+									{ field: fields.down },
+								],
+								close_reversed: false,
+								close_field: fields.same,
+							});
+						}
+
+						case "same_sibling_is_sibling": {
+							if (!fields.same) return;
+
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								chain: [
+									{ field: fields.same },
+									{ field: fields.same },
+								],
+								close_reversed: false,
+								close_field: fields.same,
+							});
+						}
+
+						case "siblings_parent_is_parent": {
+							if (!fields.up || !fields.same) return;
+
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								chain: [
+									{ field: fields.same },
+									{ field: fields.up },
+								],
+								close_reversed: false,
+								close_field: fields.up,
+							});
+						}
+
+						case "parents_sibling_is_parent": {
+							if (!fields.up || !fields.same) return;
+
+							settings.implied_relations.transitive.push({
+								rounds,
+								name: rel + ` (hierarchy ${hier_i + 1})`,
+								chain: [
+									{ field: fields.up },
+									{ field: fields.same },
+								],
+								close_reversed: false,
+								close_field: fields.up,
+							});
+						}
+					}
+				},
+			);
+		});
 
 		// @ts-ignore
-		delete plugin.settings.hierarchies;
+		delete settings.hierarchies;
+	}
+	// !SECTION
+
+	// SECTION: custom_implied_relations
+	if (old.custom_implied_relations) {
+		old.custom_implied_relations.transitive.forEach((rel) => {
+			settings.implied_relations.transitive.push({
+				...rel,
+				close_reversed: false,
+				name: stringify_transitive_relation({
+					...rel,
+					close_reversed: false,
+				}),
+			});
+		});
+
+		//@ts-ignore
+		delete old.custom_implied_relations;
 	}
 	// !SECTION
 
 	// SECTION: Explicit edge sources
-	/// Tag note
 	if (old.tagNoteField !== undefined) {
-		plugin.settings.explicit_edge_sources.tag_note.default_field =
+		/// Tag note
+		settings.explicit_edge_sources.tag_note.default_field =
 			old.tagNoteField;
 
 		delete old.tagNoteField;
@@ -260,26 +269,8 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.HNUpField !== undefined
 	) {
 		if (old.hierarchyNotes.length > 0) {
-			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note. Breadcrumbs has added the field to each of your hierarchy notes, so no action is required.`;
+			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`;
 			log.warn(msg);
-			new Notice(msg);
-
-			await Promise.all(
-				old.hierarchyNotes.map((path) => {
-					const file = plugin.app.vault.getAbstractFileByPath(
-						Paths.ensure_ext(path, "md"),
-					);
-					if (!file || !(file instanceof TFile)) return;
-
-					return plugin.app.fileManager.processFrontMatter(
-						file,
-						(frontmatter) => {
-							frontmatter[META_ALIAS["list-note-field"]] ??=
-								old.HNUpField;
-						},
-					);
-				}),
-			);
 		}
 
 		delete old.HNUpField;
@@ -294,7 +285,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.trimDendronNotes !== undefined &&
 		old.dendronNoteDelimiter !== undefined
 	) {
-		plugin.settings.explicit_edge_sources.dendron_note = {
+		settings.explicit_edge_sources.dendron_note = {
 			enabled: old.addDendronNotes,
 			default_field: old.dendronNoteField,
 			delimiter: old.dendronNoteDelimiter,
@@ -313,7 +304,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.dateNoteField !== undefined &&
 		old.dateNoteFormat !== undefined
 	) {
-		plugin.settings.explicit_edge_sources.date_note = {
+		settings.explicit_edge_sources.date_note = {
 			enabled: old.addDateNotes,
 			default_field: old.dateNoteField,
 			date_format: old.dateNoteFormat,
@@ -331,7 +322,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	// SECTION: Views
 	/// Page
 	if (old.respectReadableLineLength !== undefined) {
-		plugin.settings.views.page.all.readable_line_width =
+		settings.views.page.all.readable_line_width =
 			old.respectReadableLineLength;
 
 		delete old.respectReadableLineLength;
@@ -339,43 +330,47 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	//// Trail
 	if (old.showBCs !== undefined) {
-		plugin.settings.views.page.trail.enabled = old.showBCs;
+		settings.views.page.trail.enabled = old.showBCs;
 		delete old.showBCs;
 	}
 
 	if (old.showGrid !== undefined) {
-		plugin.settings.views.page.trail.format = old.showGrid
-			? "grid"
-			: "path";
+		settings.views.page.trail.format = old.showGrid ? "grid" : "path";
 
 		delete old.showGrid;
 	}
 
 	if (old.gridDefaultDepth !== undefined) {
-		plugin.settings.views.page.trail.default_depth = old.gridDefaultDepth;
+		settings.views.page.trail.default_depth = old.gridDefaultDepth;
 		delete old.gridDefaultDepth;
 	}
 
 	if (old.noPathMessage !== undefined) {
-		plugin.settings.views.page.trail.no_path_message = old.noPathMessage;
+		settings.views.page.trail.no_path_message = old.noPathMessage;
 		delete old.noPathMessage;
 	}
 
 	//// Prev/Next
 	if (old.showPrevNext !== undefined) {
-		plugin.settings.views.page.prev_next.enabled = old.showPrevNext;
+		settings.views.page.prev_next.enabled = old.showPrevNext;
 
 		delete old.showPrevNext;
 	}
 
+	//// Tree
+	if (old.views.side.tree.default_dir !== undefined) {
+		// @ts-ignore
+		delete old.views.side.tree.default_dir;
+	}
+
 	//// Codeblocks
 	// @ts-ignore: This previously wasn't "considered" a view
-	if (plugin.settings.codeblocks !== undefined) {
+	if (settings.codeblocks !== undefined) {
 		// @ts-ignore: This previously wasn't "considered" a view
-		plugin.settings.views.codeblocks = plugin.settings.codeblocks;
+		settings.views.codeblocks = settings.codeblocks;
 
 		// @ts-ignore: This previously wasn't "considered" a view
-		delete plugin.settings.codeblocks;
+		delete settings.codeblocks;
 	}
 	// !SECTION
 
@@ -386,9 +381,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.refreshOnNoteSave !== undefined &&
 		old.refreshOnNoteChange !== undefined
 	) {
-		plugin.settings.commands.rebuild_graph.notify = old.showRefreshNotice;
+		settings.commands.rebuild_graph.notify = old.showRefreshNotice;
 
-		plugin.settings.commands.rebuild_graph.trigger = {
+		settings.commands.rebuild_graph.trigger = {
 			note_save: old.refreshOnNoteSave,
 			layout_change: old.refreshOnNoteChange,
 		};
@@ -404,8 +399,8 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		old.aliasesInIndex !== undefined &&
 		old.createIndexIndent !== undefined
 	) {
-		plugin.settings.commands.list_index.default_options = {
-			...plugin.settings.commands.list_index.default_options,
+		settings.commands.list_index.default_options = {
+			...settings.commands.list_index.default_options,
 
 			indent: old.createIndexIndent,
 			link_kind: old.wikilinkIndex ? "wiki" : "none",
@@ -415,6 +410,9 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 			},
 		};
 
+		// @ts-ignore
+		delete settings.commands.list_index.default_options.dir;
+
 		delete old.wikilinkIndex;
 		delete old.aliasesInIndex;
 		delete old.createIndexIndent;
@@ -422,7 +420,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	/// Freeze implied edges
 	if (old.writeBCsInline !== undefined) {
-		plugin.settings.commands.freeze_implied_edges.default_options.destination =
+		settings.commands.freeze_implied_edges.default_options.destination =
 			old.writeBCsInline ? "dataview-inline" : "frontmatter";
 
 		delete old.writeBCsInline;
@@ -430,14 +428,14 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 
 	/// Thread
 	if (old.threadingTemplate !== undefined) {
-		plugin.settings.commands.thread.default_options.target_path_template =
+		settings.commands.thread.default_options.target_path_template =
 			old.threadingTemplate;
 
 		delete old.threadingTemplate;
 	}
 
 	if (old.threadUnderCursor !== undefined) {
-		plugin.settings.commands.thread.default_options.destination =
+		settings.commands.thread.default_options.destination =
 			old.threadUnderCursor ? "dataview-inline" : "frontmatter";
 
 		delete old.threadUnderCursor;
@@ -447,18 +445,25 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	// SECTION: Suggestors
 	/// Hierarchy Field
 	if (old.enableRelationSuggestor !== undefined) {
-		plugin.settings.suggestors.edge_field.enabled =
-			old.enableRelationSuggestor;
+		settings.suggestors.edge_field.enabled = old.enableRelationSuggestor;
 
 		delete old.enableRelationSuggestor;
 	}
 
 	if (old.relSuggestorTrigger !== undefined) {
-		plugin.settings.suggestors.edge_field.trigger = old.relSuggestorTrigger;
+		settings.suggestors.edge_field.trigger = old.relSuggestorTrigger;
 
 		delete old.relSuggestorTrigger;
 	}
+
+	if (old.suggestors.hierarchy_field !== undefined) {
+		settings.suggestors.edge_field = old.suggestors.hierarchy_field;
+
+		// @ts-ignore
+		delete old.suggestors.hierarchy_field;
+	}
+
 	// !SECTION
 
-	await plugin.saveSettings();
+	return settings;
 };

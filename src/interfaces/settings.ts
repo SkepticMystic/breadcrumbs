@@ -29,6 +29,7 @@ export interface BreadcrumbsSettings {
 
 	implied_relations: {
 		transitive: {
+			name: string;
 			rounds: number;
 			chain: Partial<BCEdgeAttributes>[];
 			/** The transitive closure field */

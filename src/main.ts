@@ -43,7 +43,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 		log.debug("settings >", this.settings);
 
 		/// Migrations
-		await migrate_old_settings(this);
+		this.settings = migrate_old_settings(this.settings);
+		await this.saveSettings();
 
 		// Set the edge_fields & BC-meta-fields to the right Properties type
 		try {
