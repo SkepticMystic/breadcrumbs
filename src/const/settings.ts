@@ -73,6 +73,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				format: "grid",
 				selection: "all",
 				default_depth: 999,
+				merge_fields: false,
 				no_path_message: "",
 				show_controls: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
@@ -88,12 +89,16 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 		side: {
 			matrix: {
+				show_attributes: [],
+				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
+				field_labels: ["down", "up", "same", "next", "prev"],
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 
 			tree: {
 				collapse: false,
 				show_attributes: [],
+				merge_fields: false,
 				default_field_labels: ["down"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },

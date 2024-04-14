@@ -1,35 +1,34 @@
 <script lang="ts">
-	import type { EdgeSortId } from "src/const/graph";
-	import {
-		EDGE_ATTRIBUTES,
-		type EdgeAttribute,
-	} from "src/graph/MyMultiGraph";
 	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import { group_by } from "src/utils/arrays";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
-	import type { EdgeField } from "src/interfaces/settings";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let edge_fields: EdgeField[] | undefined = undefined;
-	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
-	let show_attributes: EdgeAttribute[] = EDGE_ATTRIBUTES.slice();
+	let { edge_sort_id, field_labels, show_attributes, show_node_options } =
+		plugin.settings.views.side.matrix;
 
-	$: all_out_edges =
+	$: grouped_out_edges =
 		$active_file_store &&
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
-			? plugin.graph.get_out_edges($active_file_store.path).filter((e) =>
-					has_edge_attrs(e, {
-						$or_fields: edge_fields?.map((f) => f.label),
-					}),
+			? group_by(
+					plugin.graph
+						.get_out_edges($active_file_store.path)
+						.filter((e) =>
+							has_edge_attrs(e, {
+								$or_fields: field_labels,
+							}),
+						),
+					(e) => e.attr.field,
 				)
-			: [];
+			: null;
 
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
@@ -59,20 +58,17 @@
 		</div>
 	</div>
 
-	{#key all_out_edges}
-		{#if all_out_edges.length}
+	{#key grouped_out_edges}
+		{#if grouped_out_edges}
 			<div>
-				{#each plugin.settings.edge_fields as edge_field}
-					{@const edges = all_out_edges.filter((e) =>
-						has_edge_attrs(e, { field: edge_field.label }),
-					)}
-					{#if edges.length}
+				{#each Object.entries(grouped_out_edges) as [field, edges]}
+					{#if edges?.length}
 						<MatrixEdgeField
+							{sort}
 							{edges}
+							{field}
 							{plugin}
 							{show_attributes}
-							{sort}
-							field={edge_field.label}
 						/>
 					{/if}
 				{/each}

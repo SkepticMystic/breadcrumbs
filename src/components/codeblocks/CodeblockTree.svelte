@@ -32,14 +32,10 @@
 
 	const sort = get_edge_sorter(options.sort, plugin.graph);
 
-	const base_traversal = ({
-		$or_fields,
-	}: {
-		$or_fields: string[] | undefined;
-	}) =>
+	const base_traversal = ({ field }: { field: string | undefined }) =>
 		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
 			has_edge_attrs(e, {
-				$or_fields,
+				field,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
@@ -48,10 +44,13 @@
 		console.log(active_file_path);
 
 		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
-			if (options.merge_field_groups) {
-				return base_traversal({ $or_fields: undefined });
+			if (options.merge_fields) {
+				return base_traversal({ field: undefined });
 			} else {
-				return [].flat();
+				return (
+					options.fields ??
+					plugin.settings.edge_fields.map((f) => f.label)
+				).flatMap((field) => base_traversal({ field }));
 			}
 		} else {
 			return [];

@@ -6,6 +6,7 @@
 	import { remove_duplicates_by } from "src/utils/arrays";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
@@ -13,43 +14,41 @@
 	export let plugin: BreadcrumbsPlugin;
 
 	let {
-		default_field_labels,
 		edge_sort_id,
+		merge_fields,
 		show_attributes,
 		show_node_options,
+		default_field_labels,
 	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
+	const base_traversal = ({ field }: { field: string | undefined }) =>
+		Traverse.nest_all_paths(
+			Traverse.all_paths(
+				"depth_first",
+				plugin.graph,
+				$active_file_store!.path,
+				(edge) => has_edge_attrs(edge, { field }),
+			).map((path) =>
+				// TODO: This post-processing should be done in the traversal
+				remove_duplicates_by(
+					path.filter(
+						(e) =>
+							// Dont show edges that eventually loop back to the active file
+							e.target_id !== $active_file_store!.path,
+					),
+					(e) => e.target_id,
+				),
+			),
+		);
+
 	$: nested_edges =
-		$active_file_store &&
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode($active_file_store.path)
-			? default_field_labels
-					.map((field_label) =>
-						Traverse.nest_all_paths(
-							Traverse.all_paths(
-								"depth_first",
-								plugin.graph,
-								$active_file_store!.path,
-								(edge) =>
-									has_edge_attrs(edge, {
-										field: field_label,
-									}),
-							).map((path) =>
-								remove_duplicates_by(
-									path.filter(
-										(e) =>
-											// Dont show edges that eventually loop back to the active file
-											e.target_id !==
-											$active_file_store!.path,
-									),
-									(e) => e.target_id,
-								),
-							),
-						),
+		$active_file_store && plugin.graph.hasNode($active_file_store.path)
+			? merge_fields
+				? base_traversal({ field: undefined })
+				: default_field_labels.flatMap((field) =>
+						base_traversal({ field }),
 					)
-					.flat()
 			: [];
 
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
@@ -81,7 +80,7 @@
 
 			<!-- TODO: EdgeFieldsSelector -->
 
-			<!-- TODO: merge-hierarchies button -->
+			<MergeFieldsButton bind:merge_fields />
 		</div>
 	</div>
 

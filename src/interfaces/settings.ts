@@ -85,12 +85,13 @@ export interface BreadcrumbsSettings {
 
 			trail: {
 				enabled: boolean;
-				show_controls: boolean;
 				default_depth: number;
+				merge_fields: boolean;
+				show_controls: boolean;
 				format: "grid" | "path";
-				selection: "all" | "shortest" | "longest";
 				no_path_message: string;
 				show_node_options: ShowNodeOptions;
+				selection: "all" | "shortest" | "longest";
 			};
 
 			prev_next: {
@@ -102,11 +103,15 @@ export interface BreadcrumbsSettings {
 		};
 		side: {
 			matrix: {
+				field_labels: string[];
+				edge_sort_id: EdgeSortId;
+				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
 			};
 
 			tree: {
 				collapse: boolean;
+				merge_fields: boolean;
 				edge_sort_id: EdgeSortId;
 				default_field_labels: string[];
 				show_attributes: EdgeAttribute[];

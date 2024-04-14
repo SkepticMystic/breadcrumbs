@@ -11,6 +11,7 @@ export type ICodeblock = {
 		depth: [number, number];
 		flat: boolean;
 		collapse?: boolean;
+		merge_fields?: boolean;
 		merge_hierarchies?: boolean;
 		dataview_from_paths?: string[];
 		content?: "open" | "closed";

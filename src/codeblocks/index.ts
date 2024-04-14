@@ -21,7 +21,7 @@ const FIELDS = [
 	"depth",
 	"flat",
 	"collapse",
-	"merge-hierarchies",
+	"merge-fields",
 	"dataview-from",
 	"content",
 	"sort",
@@ -136,8 +136,9 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.collapse = value === "true");
 			}
 
-			case "merge-hierarchies":
-				return (parsed.merge_hierarchies = value === "true");
+			case "merge-fields": {
+				return (parsed.merge_fields = value === "true");
+			}
 
 			//@ts-ignore: TODO: Remove once everyone has migrated
 			case "from":

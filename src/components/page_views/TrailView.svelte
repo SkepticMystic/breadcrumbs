@@ -3,29 +3,29 @@
 	import { has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { remove_duplicates_by } from "src/utils/arrays";
+	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
-	const all_paths =
+	const base_traversal = ({ field }: { field: string | undefined }) =>
+		Traverse.all_paths("depth_first", plugin.graph, file_path, (e) =>
+			has_edge_attrs(e, {
+				field,
+			}),
+		);
+
+	$: all_paths =
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode(file_path)
-			? plugin.settings.edge_fields
-					.map((field) =>
-						Traverse.all_paths(
-							"depth_first",
-							plugin.graph,
-							file_path,
-							(edge) =>
-								has_edge_attrs(edge, {
-									field: field.label,
-								}),
-						),
+			? plugin.settings.views.page.trail.merge_fields
+				? base_traversal({ field: undefined })
+				: plugin.settings.edge_fields.flatMap((field) =>
+						base_traversal({ field: field.label }),
 					)
-					.flat()
 			: [];
 
 	$: selected_paths =
@@ -93,6 +93,11 @@
 						<option value={s}> {s} </option>
 					{/each}
 				</select>
+
+				<MergeFieldsButton
+					bind:merge_fields={plugin.settings.views.page.trail
+						.merge_fields}
+				/>
 
 				<div class="flex items-center gap-1">
 					<button

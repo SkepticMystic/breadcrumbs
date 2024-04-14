@@ -10,7 +10,11 @@
 	export let field: string;
 	export let edges: BCEdge[];
 	export let plugin: BreadcrumbsPlugin;
+	// NOTE: These are available on settings, but they're modified in the parent component,
+	// 	so rather pass them in to receive updates
 	export let show_attributes: EdgeAttribute[];
+
+	let { show_node_options } = plugin.settings.views.side.matrix;
 
 	export let sort: EdgeSorter;
 
@@ -50,9 +54,8 @@
 							<EdgeLink
 								{edge}
 								{plugin}
+								{show_node_options}
 								cls="grow tree-item-inner-text"
-								show_node_options={plugin.settings.views.side
-									.matrix.show_node_options}
 							/>
 						</div>
 
