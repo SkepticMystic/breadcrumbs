@@ -1,5 +1,6 @@
 import { App, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import EdgeFieldSettings from "../components/settings/EdgeFieldSettings.svelte";
 import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
 import { _add_settings_codeblocks } from "./CodeblockSettings";
 import { _add_settings_date_note } from "./DateNoteSettings";
@@ -61,6 +62,13 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.addClass("BC-settings-tab");
+
+		containerEl.createEl("h3", { text: "Edge Fields" });
+
+		new EdgeFieldSettings({
+			props: { plugin },
+			target: containerEl,
+		});
 
 		// Implied Relations
 		containerEl.createEl("hr");
