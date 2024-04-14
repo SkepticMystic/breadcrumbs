@@ -29,7 +29,6 @@ export class CreateListIndexModal extends Modal {
 		}
 
 		const { contentEl, plugin } = this;
-		const { settings } = plugin;
 
 		contentEl.createEl("h2", {
 			text: "Create List Index",

@@ -27,11 +27,10 @@ const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 	}
 };
 
-// TODO: Loooots of migrating to do here
 export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	const old = settings as BreadcrumbsSettings &
-		BreadcrumbsSettingsWithDirection &
-		OLD_BREADCRUMBS_SETTINGS;
+		Partial<BreadcrumbsSettingsWithDirection> &
+		Partial<OLD_BREADCRUMBS_SETTINGS>;
 
 	// SECTION: Hierarchies
 	// NOTE: Keep the intermediate type, not just old. We convert this to the latest type next
@@ -62,9 +61,14 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			},
 		};
 
-		// @ts-ignore
-		settings.hierarchies = old.userHiers.map((hierarchy) => ({
-			dirs: hierarchy,
+		old.hierarchies = old.userHiers.map((hierarchy) => ({
+			dirs: OLD_DIRECTIONS.reduce(
+				(acc, dir) => ({
+					...acc,
+					[dir]: hierarchy[dir],
+				}),
+				{} as OLD_HIERARCHY["dirs"],
+			),
 			implied_relationships,
 		}));
 
@@ -73,20 +77,18 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	// Transform hierarchies into edge_fields
-	// @ts-ignore
-	if (settings.hierarchies) {
+	if (old.hierarchies) {
 		OLD_DIRECTIONS.forEach((dir) => {
 			settings.edge_field_groups.push({
 				label: `All ${dir}s`,
-				//@ts-ignore
-				fields: (<OLD_HIERARCHY[]>settings.hierarchies)
-					.flatMap((hier) => hier.dirs[dir])
+
+				fields: old
+					.hierarchies!.flatMap((hier) => hier.dirs[dir])
 					.filter(Boolean),
 			});
 		});
 
-		// @ts-ignore
-		(<OLD_HIERARCHY[]>settings.hierarchies).forEach((hier, hier_i) => {
+		old.hierarchies.forEach((hier, hier_i) => {
 			const field_labels = Object.values(hier.dirs)
 				.flatMap((fields) => fields)
 				.filter(Boolean);
@@ -230,8 +232,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			);
 		});
 
-		// @ts-ignore
-		delete settings.hierarchies;
+		delete old.hierarchies;
 	}
 	// !SECTION
 
@@ -248,7 +249,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			});
 		});
 
-		//@ts-ignore
 		delete old.custom_implied_relations;
 	}
 	// !SECTION

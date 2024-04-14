@@ -4,6 +4,7 @@ import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { LogLevels } from "src/logger";
 
 export type EdgeField = { label: string };
+export type EdgeFieldGroup = { label: string; fields: EdgeField["label"][] };
 
 export type ShowNodeOptions = {
 	ext: boolean;
@@ -19,13 +20,7 @@ export interface BreadcrumbsSettings {
 	// V4_MIGRATED: boolean;
 
 	edge_fields: EdgeField[];
-
-	edge_field_groups: {
-		/** The field group's name */
-		label: string;
-		/** The fields in the group */
-		fields: EdgeField["label"][];
-	}[];
+	edge_field_groups: EdgeFieldGroup[];
 
 	implied_relations: {
 		transitive: {
