@@ -80,6 +80,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			prev_next: {
 				enabled: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				field_labels: {
+					prev: ["prev"],
+					next: ["next"],
+				},
 			},
 		},
 		side: {
@@ -90,7 +94,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			tree: {
 				collapse: false,
 				show_attributes: [],
-				default_fields: ["down"],
+				default_field_labels: ["down"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},

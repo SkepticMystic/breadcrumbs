@@ -81,7 +81,7 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	if (plugin.settings.hierarchies) {
 		OLD_DIRECTIONS.forEach((dir) => {
 			plugin.settings.edge_field_groups.push({
-				group: `All ${dir}s`,
+				label: `All ${dir}s`,
 				//@ts-ignore
 				fields: (<OLD_HIERARCHY[]>plugin.settings.hierarchies)
 					.flatMap((hier) => hier.dirs[dir])
@@ -92,18 +92,18 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 		// @ts-ignore
 		(<OLD_HIERARCHY[]>plugin.settings.hierarchies).forEach(
 			(hier, hier_i) => {
+				const field_labels = Object.values(hier.dirs)
+					.flatMap((fields) => fields)
+					.filter(Boolean);
+
 				plugin.settings.edge_field_groups.push({
-					group: `Hierarchy ${hier_i + 1}`,
-					fields: Object.values(hier.dirs)
-						.flatMap((fields) => fields)
-						.filter(Boolean),
+					label: `Hierarchy ${hier_i + 1}`,
+					fields: field_labels,
 				});
 
-				Object.values(hier.dirs).forEach((fields) => {
-					fields.forEach((field) =>
-						plugin.settings.edge_fields.push({ label: field }),
-					);
-				});
+				field_labels.forEach((field) =>
+					plugin.settings.edge_fields.push({ label: field }),
+				);
 
 				Object.entries(hier.implied_relationships).forEach(
 					([rel, { rounds }]) => {
@@ -447,15 +447,14 @@ export const migrate_old_settings = async (plugin: BreadcrumbsPlugin) => {
 	// SECTION: Suggestors
 	/// Hierarchy Field
 	if (old.enableRelationSuggestor !== undefined) {
-		plugin.settings.suggestors.hierarchy_field.enabled =
+		plugin.settings.suggestors.edge_field.enabled =
 			old.enableRelationSuggestor;
 
 		delete old.enableRelationSuggestor;
 	}
 
 	if (old.relSuggestorTrigger !== undefined) {
-		plugin.settings.suggestors.hierarchy_field.trigger =
-			old.relSuggestorTrigger;
+		plugin.settings.suggestors.edge_field.trigger = old.relSuggestorTrigger;
 
 		delete old.relSuggestorTrigger;
 	}

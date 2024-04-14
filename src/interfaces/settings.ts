@@ -22,7 +22,7 @@ export interface BreadcrumbsSettings {
 
 	edge_field_groups: {
 		/** The field group's name */
-		group: string;
+		label: string;
 		/** The fields in the group */
 		fields: EdgeField["label"][];
 	}[];
@@ -100,6 +100,8 @@ export interface BreadcrumbsSettings {
 			prev_next: {
 				enabled: boolean;
 				show_node_options: ShowNodeOptions;
+
+				field_labels: { prev: string[]; next: string[] };
 			};
 		};
 		side: {
@@ -110,7 +112,7 @@ export interface BreadcrumbsSettings {
 			tree: {
 				collapse: boolean;
 				edge_sort_id: EdgeSortId;
-				default_fields: string[];
+				default_field_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
 			};

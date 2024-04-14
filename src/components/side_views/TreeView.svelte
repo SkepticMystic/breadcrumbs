@@ -12,9 +12,12 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let fields = plugin.settings.views.side.tree.default_fields;
-	let edge_sort_id = plugin.settings.views.side.tree.edge_sort_id;
-	let show_attributes = plugin.settings.views.side.tree.show_attributes;
+	let {
+		default_field_labels,
+		edge_sort_id,
+		show_attributes,
+		show_node_options,
+	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
 	$: nested_edges =
@@ -22,14 +25,17 @@
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
-			? fields
-					.map((field) =>
+			? default_field_labels
+					.map((field_label) =>
 						Traverse.nest_all_paths(
 							Traverse.all_paths(
 								"depth_first",
 								plugin.graph,
 								$active_file_store!.path,
-								(edge) => has_edge_attrs(edge, { field }),
+								(edge) =>
+									has_edge_attrs(edge, {
+										field: field_label,
+									}),
 							).map((path) =>
 								remove_duplicates_by(
 									path.filter(
@@ -73,6 +79,8 @@
 				bind:open={open_signal}
 			/>
 
+			<!-- TODO: EdgeFieldsSelector -->
+
 			<!-- TODO: merge-hierarchies button -->
 		</div>
 	</div>
@@ -86,8 +94,7 @@
 					{open_signal}
 					{nested_edges}
 					{show_attributes}
-					show_node_options={plugin.settings.views.side.tree
-						.show_node_options}
+					{show_node_options}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

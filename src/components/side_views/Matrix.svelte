@@ -11,9 +11,11 @@
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
+	import type { EdgeField } from "src/interfaces/settings";
 
 	export let plugin: BreadcrumbsPlugin;
 
+	let edge_fields: EdgeField[] | undefined = undefined;
 	let edge_sort_id: EdgeSortId = { field: "basename", order: 1 };
 	let show_attributes: EdgeAttribute[] = EDGE_ATTRIBUTES.slice();
 
@@ -22,7 +24,11 @@
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.hasNode($active_file_store.path)
-			? plugin.graph.get_out_edges($active_file_store.path)
+			? plugin.graph.get_out_edges($active_file_store.path).filter((e) =>
+					has_edge_attrs(e, {
+						$or_fields: edge_fields?.map((f) => f.label),
+					}),
+				)
 			: [];
 
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
@@ -48,6 +54,8 @@
 				exclude_attributes={["field", "explicit"]}
 				bind:show_attributes
 			/>
+
+			<!-- TODO: EdgeFieldsSelectorMenu -->
 		</div>
 	</div>
 

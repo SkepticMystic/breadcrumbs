@@ -4,23 +4,28 @@
 	import { group_by } from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
+	export let plugin: BreadcrumbsPlugin;
 
-	// TODO(NODIR): This'll take alot of thought to migrate to no-dirs
-	const grouped_out_edges =
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode(file_path)
-			? group_by(
-					plugin.graph
-						.get_out_edges(file_path)
-						.filter((e) =>
-							has_edge_attrs(e, { $or_fields: ["TODO"] }),
-						),
-					(e) => e.attr.field,
-				)
-			: null;
+	const { field_labels, show_node_options } =
+		plugin.settings.views.page.prev_next;
+
+	const grouped_out_edges = plugin.graph.hasNode(file_path)
+		? group_by(
+				plugin.graph.get_out_edges(file_path).filter((e) =>
+					has_edge_attrs(e, {
+						$or_fields: [
+							...field_labels.prev,
+							...field_labels.next,
+						],
+					}),
+				),
+				(e) =>
+					field_labels.prev.includes(e.attr.field)
+						? ("prev" as const)
+						: ("next" as const),
+			)
+		: null;
 </script>
 
 <div class="BC-prev-next-view flex">
@@ -30,13 +35,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field">{edge.attr.field}</span>
 
-					<EdgeLink
-						{edge}
-						{plugin}
-						cls="grow"
-						show_node_options={plugin.settings.views.page.prev_next
-							.show_node_options}
-					/>
+					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
 				</div>
 			{/each}
 		</div>
@@ -44,13 +43,7 @@
 		<div class="flex w-full flex-col">
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-					<EdgeLink
-						{edge}
-						{plugin}
-						cls="grow"
-						show_node_options={plugin.settings.views.page.prev_next
-							.show_node_options}
-					/>
+					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
 
 					<span class="BC-field">{edge.attr.field}</span>
 				</div>
