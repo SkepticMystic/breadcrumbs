@@ -9,6 +9,8 @@ import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
+import { remove_duplicates } from "src/utils/arrays";
+import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
 import { quote_join } from "src/utils/strings";
 
@@ -18,6 +20,7 @@ const FIELDS = [
 	"type",
 	"title",
 	"fields",
+	"field-groups",
 	"depth",
 	"flat",
 	"collapse",
@@ -101,6 +104,45 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 							return true;
 						}
 					}));
+			}
+
+			case "field-groups": {
+				const group_labels = plugin.settings.edge_field_groups.map(
+					(group) => group.label,
+				);
+
+				const values = value
+					.split(",")
+					.map((group) => group.trim())
+					.filter((group) => {
+						// NOTE: resolve_field_group_labels handles values that aren't group labels just fine
+						// 	but this lets us add an error message
+						if (!group_labels.includes(group)) {
+							errors.push({
+								path: key,
+								code: "invalid_field_value",
+								message: `Invalid field-group: "${group}". Options: ${quote_join(group_labels)}`,
+							});
+							return false;
+						} else {
+							return true;
+						}
+					});
+
+				const field_labels = resolve_field_group_labels(
+					plugin.settings.edge_field_groups,
+					values,
+				);
+
+				if (parsed.fields) {
+					parsed.fields = remove_duplicates(
+						parsed.fields.concat(field_labels),
+					);
+				} else {
+					parsed.fields = field_labels;
+				}
+
+				return;
 			}
 
 			case "depth": {

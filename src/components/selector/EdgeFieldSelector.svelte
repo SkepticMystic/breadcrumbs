@@ -12,14 +12,17 @@
 
 <select
 	class="dropdown"
-	on:change={() => {
-		dispatch("select", field);
+	on:change={(e) => {
+		dispatch(
+			"select",
+			fields.find((field) => field.label === e.currentTarget.value),
+		);
 		field = undefined;
 	}}
 >
 	<option value={undefined}>Select Field</option>
 
-	{#each fields as field}
-		<option value={field}>{field.label}</option>
+	{#each fields as { label }}
+		<option value={label}>{label}</option>
 	{/each}
 </select>

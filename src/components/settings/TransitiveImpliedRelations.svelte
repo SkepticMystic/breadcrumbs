@@ -42,6 +42,8 @@
 				(transitives = [
 					...transitives,
 					{
+						// TODO(NODIR): Add input for name
+						name: "",
 						chain: [],
 						rounds: 1,
 						close_reversed: false,
