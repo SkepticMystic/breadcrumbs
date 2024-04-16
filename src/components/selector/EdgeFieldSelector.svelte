@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from "svelte";
 
 	export let fields: EdgeField[];
+	export let undefine_on_change = true;
 	export let field: EdgeField | undefined = undefined;
 
 	const dispatch = createEventDispatcher<{
@@ -12,12 +13,12 @@
 
 <select
 	class="dropdown"
+	value={field ? field.label : undefined}
 	on:change={(e) => {
-		dispatch(
-			"select",
-			fields.find((field) => field.label === e.currentTarget.value),
-		);
-		field = undefined;
+		field = fields.find((field) => field.label === e.currentTarget.value);
+		dispatch("select", field);
+
+		if (undefine_on_change) field = undefined;
 	}}
 >
 	<option value={undefined}>Select Field</option>

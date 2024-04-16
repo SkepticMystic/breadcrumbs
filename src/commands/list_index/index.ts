@@ -1,5 +1,5 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { BCGraph } from "src/graph/MyMultiGraph";
+import type { BCGraph, EdgeAttribute } from "src/graph/MyMultiGraph";
 import { Traverse, type NestedEdgePath } from "src/graph/traverse";
 import {
 	get_edge_sorter,
@@ -9,35 +9,41 @@ import {
 import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
+import { untyped_pick } from "src/utils/objects";
+import { url_search_params } from "src/utils/url";
 
 export namespace ListIndex {
 	export type Options = {
 		// TODO: merge_fields: boolean;
-		fields: string[];
 		indent: string;
+		fields: string[];
 		link_kind: LinkKind;
-		show_node_options: ShowNodeOptions;
 		edge_sort_id: EdgeSortId;
+		field_group_labels: string[];
+		show_attributes: EdgeAttribute[];
+		show_node_options: ShowNodeOptions;
 	};
 
 	export const DEFAULT_OPTIONS: Options = {
 		fields: [],
 		indent: "\\t",
 		link_kind: "wiki",
+		show_attributes: [],
+		field_group_labels: [],
 		edge_sort_id: {
 			order: 1,
 			field: "basename",
 		},
-		show_node_options: { ext: false, alias: true, folder: false },
+		show_node_options: {
+			ext: false,
+			alias: true,
+			folder: false,
+		},
 	};
 
 	const nested_paths_to_list_index = (
 		nested_paths: NestedEdgePath[],
-		options: {
-			indent: string;
-			link_kind: LinkKind;
-			show_node_options: ShowNodeOptions;
-		},
+		options: Options,
 	) => {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
@@ -51,7 +57,14 @@ export namespace ListIndex {
 				link_kind: options.link_kind,
 			});
 
-			index += real_indent.repeat(depth) + `- ${link}\n`;
+			const attr = options.show_attributes
+				? ` (${url_search_params(
+						untyped_pick(edge.attr, options.show_attributes),
+						{ trim_lone_param: true },
+					)})`
+				: "";
+
+			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
 			index += nested_paths_to_list_index(children, options);
 		});

@@ -236,9 +236,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 			id: "breadcrumbs:graph-stats",
 			name: "Show/Copy graph stats",
 			callback: async () => {
-				const stats = get_graph_stats(this.graph);
-
-				console.log(stats);
+				const stats = get_graph_stats(this.graph, {
+					groups: this.settings.edge_field_groups,
+				});
 
 				await navigator.clipboard.writeText(
 					JSON.stringify(stats, null, 2),
@@ -285,14 +285,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		// Thread
-		this.settings.edge_fields.forEach((field) => {
+		this.settings.edge_fields.forEach(({ label }) => {
 			this.addCommand({
-				id: `breadcrumbs:thread-field:${field}`,
-				name: `Thread by field:${field}`,
+				id: `breadcrumbs:thread-field:${label}`,
+				name: `Thread by field:${label}`,
 				callback: () =>
 					thread(
 						this,
-						{ field: field.label },
+						{ field: label },
 						this.settings.commands.thread.default_options,
 					),
 			});

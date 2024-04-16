@@ -326,6 +326,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	CSVPaths: string;
 
 	dataviewNoteField: string;
+	dvWaitTime: number; // MIGRATED
 
 	addDendronNotes: boolean; // MIGRATED
 	dendronNoteDelimiter: string; // MIGRATED
@@ -380,7 +381,7 @@ export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	limitTrailCheckboxes: string[];
 
 	// Default layout to use for Juggl view
-	// jugglLayout: JugglLayouts;
+	jugglLayout: string;
 	parseJugglLinksWithoutJuggl: boolean;
 	showUpInJuggl: boolean;
 	showJuggl: boolean;

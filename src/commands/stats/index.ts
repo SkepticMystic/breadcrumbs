@@ -1,5 +1,6 @@
 import type { ExplicitEdgeSource } from "src/const/graph";
 import type { BCEdgeAttributes, BCGraph } from "src/graph/MyMultiGraph";
+import type { EdgeFieldGroup } from "src/interfaces/settings";
 
 type GraphStats = {
 	nodes: {
@@ -13,7 +14,9 @@ type GraphStats = {
 			[key: string]: number;
 		}>;
 
-		// TODO: group: Partial<{ [key: string]: number }>;
+		group: Partial<{
+			[key: string]: number;
+		}>;
 
 		explicit: Partial<{
 			[key: string]: number;
@@ -36,7 +39,10 @@ type GraphStats = {
 	};
 };
 
-export const get_graph_stats = (graph: BCGraph) => {
+export const get_graph_stats = (
+	graph: BCGraph,
+	data: { groups: EdgeFieldGroup[] },
+) => {
 	const stats: GraphStats = {
 		nodes: {
 			resolved: {},
@@ -45,6 +51,7 @@ export const get_graph_stats = (graph: BCGraph) => {
 		edges: {
 			round: {},
 			field: {},
+			group: {},
 			source: {},
 			explicit: {},
 			implied_kind: {},
@@ -60,6 +67,13 @@ export const get_graph_stats = (graph: BCGraph) => {
 	for (const { attributes: attr } of graph.edgeEntries()) {
 		stats.edges.field[attr.field ?? "null"] =
 			(stats.edges.field[attr.field ?? "null"] || 0) + 1;
+
+		data.groups.forEach((group) => {
+			if (group.fields.includes(attr.field)) {
+				stats.edges.group[group.label] =
+					(stats.edges.group[group.label] || 0) + 1;
+			}
+		});
 
 		const explicit = String(attr.explicit);
 		stats.edges.explicit[explicit] =

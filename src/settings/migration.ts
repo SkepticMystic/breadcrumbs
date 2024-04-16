@@ -319,12 +319,10 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		old.dateNoteFormat !== undefined
 	) {
 		settings.explicit_edge_sources.date_note = {
+			...DEFAULT_SETTINGS.explicit_edge_sources.date_note,
 			enabled: old.addDateNotes,
 			default_field: old.dateNoteField,
 			date_format: old.dateNoteFormat,
-			stretch_to_existing:
-				DEFAULT_SETTINGS.explicit_edge_sources.date_note
-					.stretch_to_existing,
 		};
 
 		delete old.addDateNotes;
@@ -475,6 +473,32 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 		// @ts-ignore
 		delete old.suggestors.hierarchy_field;
+	}
+	// !SECTION
+
+	// SECTION: Misc
+	if (old.alphaSortAsc !== undefined) {
+		delete old.alphaSortAsc;
+	}
+
+	if (old.debugMode) {
+		delete old.debugMode;
+	}
+
+	if (old.dvWaitTime !== undefined) {
+		delete old.dvWaitTime;
+	}
+
+	if (old.fieldSuggestor !== undefined) {
+		delete old.fieldSuggestor;
+	}
+
+	if (old.filterImpliedSiblingsOfDifferentTypes !== undefined) {
+		delete old.filterImpliedSiblingsOfDifferentTypes;
+	}
+
+	if (old.jugglLayout !== undefined) {
+		delete old.jugglLayout;
 	}
 
 	// !SECTION

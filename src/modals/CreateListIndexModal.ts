@@ -1,11 +1,14 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
 import { ListIndex } from "src/commands/list_index";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
 import { LINK_KINDS } from "src/const/links";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
+import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
 
@@ -34,7 +37,22 @@ export class CreateListIndexModal extends Modal {
 			text: "Create List Index",
 		});
 
-		// TODO(NODIR): Field selector to contsrain traversal
+		new FieldGroupLabelsSettingItem({
+			target: contentEl,
+			props: {
+				field_group_labels: this.options.field_group_labels,
+				edge_field_groups: plugin.settings.edge_field_groups,
+			},
+		}).$on("select", (e) => {
+			// Tracking groups for the UI
+			this.options.field_group_labels = e.detail;
+
+			// Settings fields for the build call
+			this.options.fields = resolve_field_group_labels(
+				plugin.settings.edge_field_groups,
+				this.options.field_group_labels,
+			);
+		});
 
 		new_setting(contentEl, {
 			name: "Link Kind",
@@ -60,6 +78,13 @@ export class CreateListIndexModal extends Modal {
 			props: { edge_sort_id: this.options.edge_sort_id },
 		}).$on("select", (e) => {
 			this.options.edge_sort_id = e.detail;
+		});
+
+		new ShowAttributesSettingItem({
+			target: contentEl,
+			props: { show_attributes: this.options.show_attributes },
+		}).$on("select", (e) => {
+			this.options.show_attributes = e.detail;
 		});
 
 		_add_settings_show_node_options(

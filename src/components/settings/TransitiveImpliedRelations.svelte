@@ -133,7 +133,7 @@
 									{/each}
 								</div>
 							{:else}
-								<span class="search-empty-state">
+								<span class="search-empty-state my-0">
 									No fields in the chain. Use the selector to
 									add some
 								</span>
@@ -144,6 +144,7 @@
 							<span class="font-semibold">Closing Field: </span>
 
 							<EdgeFieldSelector
+								undefine_on_change={false}
 								fields={plugin.settings.edge_fields}
 								on:select={(e) => {
 									if (e.detail) {
@@ -169,7 +170,14 @@
 							/>
 						</div>
 
-						<!-- TODO: close_reversed toggle -->
+						<div class="flex items-center gap-2">
+							<span class="font-semibold">Close Reversed: </span>
+
+							<input
+								type="checkbox"
+								bind:checked={transitive.close_reversed}
+							/>
+						</div>
 					</div>
 				{/key}
 			</details>

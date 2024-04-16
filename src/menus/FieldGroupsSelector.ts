@@ -12,8 +12,26 @@ export const FieldGroupsSelectorMenu = ({
 }) => {
 	const menu = new Menu();
 
-	edge_field_groups.forEach((group) => {
-		const checked = value.includes(group.label);
+	const checks = edge_field_groups.map((group) =>
+		value.includes(group.label),
+	);
+
+	const all_checked = checks.every((check) => check);
+
+	menu.addItem((item) =>
+		item.setTitle(all_checked ? "None" : "All").onClick(() => {
+			value = all_checked
+				? []
+				: edge_field_groups.map((group) => group.label);
+
+			cb(value);
+		}),
+	);
+
+	menu.addSeparator();
+
+	edge_field_groups.forEach((group, group_i) => {
+		const checked = checks[group_i];
 
 		menu.addItem((item) =>
 			item

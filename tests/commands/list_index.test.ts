@@ -26,7 +26,10 @@ describe("build", () => {
 
 		const list_index = ListIndex.build(graph, "index.md", {
 			indent: " ",
-			fields: ["down"],
+			fields: [],
+			// TODO: test this
+			show_attributes: [],
+			field_group_labels: ["down"],
 			link_kind: "none",
 			edge_sort_id: {
 				order: 1,

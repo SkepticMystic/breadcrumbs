@@ -72,7 +72,10 @@
 	{#key grouped_out_edges}
 		{#if grouped_out_edges}
 			<div>
-				{#each Object.entries(grouped_out_edges) as [field, edges]}
+				<!-- NOTE: Although it's more efficient, iterating over the Object.entries(grouped_out_edges) doesn't result in a stable order. -->
+				{#each plugin.settings.edge_fields as field}
+					{@const edges = grouped_out_edges[field.label]}
+
 					{#if edges?.length}
 						<MatrixEdgeField
 							{sort}

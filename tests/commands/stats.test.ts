@@ -16,13 +16,18 @@ describe("get_graph_stats", () => {
 				_mock_edge("c", "d", {
 					explicit: false,
 					field: "right",
-					implied_kind: "cousin_is_sibling",
+					implied_kind: "transitive:cousin_is_sibling",
 					round: 1,
 				}),
 			],
 		});
 
-		const stats = get_graph_stats(graph);
+		const stats = get_graph_stats(graph, {
+			groups: [
+				{ label: "ups", fields: ["parent"] },
+				{ label: "rights", fields: ["right"] },
+			],
+		});
 
 		expect(stats).toStrictEqual({
 			nodes: { resolved: { true: 4 } },
@@ -31,6 +36,10 @@ describe("get_graph_stats", () => {
 					down: 1,
 					parent: 1,
 					right: 1,
+				},
+				group: {
+					ups: 1,
+					rights: 1,
 				},
 				source: {
 					typed_link: 1,
@@ -41,7 +50,7 @@ describe("get_graph_stats", () => {
 					false: 1,
 				},
 				implied_kind: {
-					cousin_is_sibling: 1,
+					"transitive:cousin_is_sibling": 1,
 				},
 				round: {
 					"1": 1,

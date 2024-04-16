@@ -1,14 +1,15 @@
 <script lang="ts">
 	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeSorter } from "src/graph/utils";
+	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 
-	export let field: string;
 	export let edges: BCEdge[];
+	export let field: EdgeField;
 	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
 	// 	so rather pass them in to receive updates
@@ -22,7 +23,7 @@
 </script>
 
 <details
-	class="BC-matrix-view-field BC-matrix-view-field-{field} tree-item"
+	class="BC-matrix-view-field BC-matrix-view-field-{field.label} tree-item"
 	bind:open
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -34,7 +35,7 @@
 
 		<div class="tree-item-inner">
 			<span class="tree-item-inner-text">
-				{field}
+				{field.label}
 			</span>
 		</div>
 
