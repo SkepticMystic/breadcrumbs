@@ -47,8 +47,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// Set the edge_fields & BC-meta-fields to the right Properties type
 		try {
-			const now = Date.now();
-
 			const all_properties =
 				this.app.metadataTypeManager.getAllProperties();
 
@@ -379,12 +377,21 @@ export default class BreadcrumbsPlugin extends Plugin {
 					`Rebuilt graph in ${Date.now() - start_ms}ms`,
 
 					explicit_edge_errors.length
-						? "\nErrors (see console for details):"
+						? "\nExplicit edge errors (see console for details):"
 						: null,
 
 					...Object.entries(explicit_edge_errors).map(
 						([source, errors]) =>
 							`- ${source}: ${errors.length} errors`,
+					),
+
+					implied_edge_results.length
+						? "\nImplied edge errors (see console for details):"
+						: null,
+
+					...Object.entries(implied_edge_results).map(
+						([implied_kind, errors]) =>
+							`- ${implied_kind}: ${errors.length} errors`,
 					),
 				]
 					.filter(Boolean)

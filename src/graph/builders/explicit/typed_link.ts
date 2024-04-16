@@ -15,7 +15,9 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 ) => {
 	const errors: BreadcrumbsError[] = [];
 
-	const field_labels = plugin.settings.edge_fields.map((f) => f.label);
+	const field_labels = new Set(
+		plugin.settings.edge_fields.map((f) => f.label),
+	);
 
 	all_files.obsidian?.forEach(
 		({ file: source_file, cache: source_cache }) => {
@@ -26,7 +28,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				// We only want the field name, so we split on the dot and take the first element
 				// This implies that we can't have a field name with a dot in it...
 				const field = target_link.key.split(".")[0];
-				if (!field_labels.includes(field)) return;
+				if (!field_labels.has(field)) return;
 
 				const [target_path, target_file] = resolve_relative_target_path(
 					plugin.app,
@@ -57,8 +59,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 			// NOTE: Implies that an edge-field can't be in this list,
 			//   But Dataview probably enforces that anyway
 			if (
-				["file", "aliases"].includes(field) ||
-				!field_labels.includes(field)
+				!field_labels.has(field) ||
+				["file", "aliases"].includes(field)
 			) {
 				return;
 			}

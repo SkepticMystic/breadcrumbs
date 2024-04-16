@@ -42,7 +42,6 @@
 				(transitives = [
 					...transitives,
 					{
-						// TODO(NODIR): Add input for name
 						name: "",
 						chain: [],
 						rounds: 1,
@@ -68,7 +67,8 @@
 						<ChevronOpener open={opens[t_i]} />
 
 						<code>
-							{stringify_transitive_relation(transitive)}
+							{transitive.name ||
+								stringify_transitive_relation(transitive)}
 							({transitive.rounds} rounds)
 						</code>
 					</div>
@@ -86,6 +86,18 @@
 
 				{#key transitive}
 					<div class="my-2 flex flex-col gap-2 px-4 py-2">
+						<div class="flex flex-wrap items-center gap-3">
+							<span class="font-semibold">Name:</span>
+
+							<input
+								type="text"
+								value={transitive.name}
+								placeholder="Name (optional)"
+								on:blur={(e) =>
+									(transitive.name = e.currentTarget.value)}
+							/>
+						</div>
+
 						<div class="flex flex-wrap items-center gap-3">
 							<span class="font-semibold">Chain:</span>
 

@@ -22,6 +22,131 @@ describe("migration", () => {
 		const migrated = migrate_old_settings(old);
 
 		expect(migrated).toStrictEqual({
+			edge_fields: [
+				{ label: "up" },
+				{ label: "down" },
+				{ label: "same" },
+				{ label: "next" },
+				{ label: "prev" },
+				{ label: "parent" },
+				{ label: "sibling" },
+				{ label: "child" },
+				{ label: "right" },
+				{ label: "left" },
+			],
+			edge_field_groups: [
+				{
+					label: "ups",
+					fields: ["up", "parent"],
+				},
+				{
+					label: "downs",
+					fields: ["down", "child"],
+				},
+				{
+					label: "sames",
+					fields: ["same", "sibling"],
+				},
+				{
+					label: "nexts",
+					fields: ["next", "right"],
+				},
+				{
+					label: "prevs",
+					fields: ["prev", "left"],
+				},
+				{
+					label: "Hierarchy 1",
+					fields: ["up", "same", "down", "next", "prev"],
+				},
+				{
+					label: "Hierarchy 2",
+					fields: ["parent", "sibling", "child", "right", "left"],
+				},
+			],
+			implied_relations: {
+				transitive: [
+					{
+						rounds: 1,
+						name: "Opposite Direction: up/down",
+						close_field: "down",
+						chain: [{ field: "up" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: down/up",
+						close_field: "up",
+						chain: [{ field: "down" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: same/same",
+						close_field: "same",
+						chain: [{ field: "same" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: next/prev",
+						close_field: "prev",
+						chain: [{ field: "next" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: prev/next",
+						close_field: "next",
+						chain: [{ field: "prev" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: parent/child",
+						close_field: "child",
+						chain: [{ field: "parent" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: child/parent",
+						close_field: "parent",
+						chain: [{ field: "child" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: sibling/sibling",
+						close_field: "sibling",
+						chain: [{ field: "sibling" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: left/right",
+						close_field: "right",
+						chain: [{ field: "left" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: right/left",
+						close_field: "left",
+						chain: [{ field: "right" }],
+						close_reversed: true,
+					},
+					// custom_implied_relations.transitive
+					{
+						chain: [{ field: "up" }, { field: "same" }],
+						close_field: "up",
+						close_reversed: false,
+						name: "[up, same] -> up",
+						rounds: 1,
+					},
+				],
+			},
+
 			explicit_edge_sources: {
 				list_note: {
 					default_neighbour_field: "",
@@ -178,130 +303,6 @@ describe("migration", () => {
 			},
 			debug: {
 				level: "DEBUG",
-			},
-			edge_fields: [
-				{ label: "up" },
-				{ label: "down" },
-				{ label: "same" },
-				{ label: "next" },
-				{ label: "prev" },
-				{ label: "parent" },
-				{ label: "sibling" },
-				{ label: "child" },
-				{ label: "right" },
-				{ label: "left" },
-			],
-			edge_field_groups: [
-				{
-					label: "ups",
-					fields: ["up", "parent"],
-				},
-				{
-					label: "downs",
-					fields: ["down", "child"],
-				},
-				{
-					label: "sames",
-					fields: ["same", "sibling"],
-				},
-				{
-					label: "nexts",
-					fields: ["next", "right"],
-				},
-				{
-					label: "prevs",
-					fields: ["prev", "left"],
-				},
-				{
-					label: "Hierarchy 1",
-					fields: ["up", "same", "down", "next", "prev"],
-				},
-				{
-					label: "Hierarchy 2",
-					fields: ["parent", "sibling", "child", "right", "left"],
-				},
-			],
-			implied_relations: {
-				transitive: [
-					{
-						rounds: 1,
-						name: "[up] -> down (reversed)",
-						close_field: "down",
-						chain: [{ field: "up" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[down] -> up (reversed)",
-						close_field: "up",
-						chain: [{ field: "down" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[same] -> same (reversed)",
-						close_field: "same",
-						chain: [{ field: "same" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[prev] -> next (reversed)",
-						close_field: "next",
-						chain: [{ field: "prev" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[next] -> prev (reversed)",
-						close_field: "prev",
-						chain: [{ field: "next" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[parent] -> child (reversed)",
-						close_field: "child",
-						chain: [{ field: "parent" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[child] -> parent (reversed)",
-						close_field: "parent",
-						chain: [{ field: "child" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[sibling] -> sibling (reversed)",
-						close_field: "sibling",
-						chain: [{ field: "sibling" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[left] -> right (reversed)",
-						close_field: "right",
-						chain: [{ field: "left" }],
-						close_reversed: true,
-					},
-					{
-						rounds: 1,
-						name: "[right] -> left (reversed)",
-						close_field: "left",
-						chain: [{ field: "right" }],
-						close_reversed: true,
-					},
-					// custom_implied_relations.transitive
-					{
-						chain: [{ field: "up" }, { field: "same" }],
-						close_field: "up",
-						close_reversed: false,
-						name: "[up, same] -> up",
-						rounds: 1,
-					},
-				],
 			},
 		} satisfies BreadcrumbsSettings);
 	});

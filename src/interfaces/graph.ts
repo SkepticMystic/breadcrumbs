@@ -4,6 +4,7 @@ import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
 
 export type BreadcrumbsError = {
+	// TODO: Differentiate between invalid edge-field and invalid metadata-field values
 	code: "deprecated_field" | "invalid_field_value" | "invalid_setting_value";
 	message: string;
 	path: string;
@@ -28,6 +29,6 @@ export type EdgeToAdd = {
 };
 
 export type ImpliedEdgeBuilderResults = {
-	errors: BreadcrumbsError[];
 	edges: EdgeToAdd[];
+	errors: BreadcrumbsError[];
 };

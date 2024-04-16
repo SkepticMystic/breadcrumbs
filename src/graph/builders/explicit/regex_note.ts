@@ -59,6 +59,12 @@ const get_regex_note_info = (
 			code: "invalid_field_value",
 			message: `regex-note-field is not a string: '${field}'`,
 		});
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
+		return graph_build_fail({
+			path,
+			code: "invalid_field_value",
+			message: `dataview-note-field is not a valid field: '${field}'`,
+		});
 	}
 
 	return succ({

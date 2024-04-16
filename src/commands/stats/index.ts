@@ -13,6 +13,8 @@ type GraphStats = {
 			[key: string]: number;
 		}>;
 
+		// TODO: group: Partial<{ [key: string]: number }>;
+
 		explicit: Partial<{
 			[key: string]: number;
 		}>;

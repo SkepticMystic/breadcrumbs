@@ -32,7 +32,8 @@ export const _add_implied_edges_transitive = (
 		return { edges, errors };
 	}
 
-	const implied_kind = `transitive:${transitive.name}`;
+	const implied_kind =
+		`transitive:${transitive.name || stringify_transitive_relation(transitive)}` as const;
 
 	graph.forEachNode((start_node) => {
 		graph

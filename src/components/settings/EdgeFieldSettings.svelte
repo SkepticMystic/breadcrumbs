@@ -113,7 +113,7 @@
 
 		<button on:click={actions.groups.add}> New Group </button>
 
-		<button on:click={actions.save}> Save </button>
+		<button disabled={!dirty} on:click={actions.save}> Save </button>
 
 		{#if dirty}
 			<span style="color: var(--text-warning);">
@@ -136,12 +136,11 @@
 						type="text"
 						class="w-32 scroll-mt-24"
 						value={edge_field.label}
-						on:blur={(e) => {
+						on:blur={(e) =>
 							actions.fields.rename(
 								edge_field,
 								e.currentTarget.value,
-							);
-						}}
+							)}
 					/>
 					<button
 						class="w-8"
@@ -168,14 +167,13 @@
 							<button
 								class="h-5 w-3"
 								title="Remove field from group"
-								on:click={() => {
+								on:click={() =>
 									actions.groups.remove_field(
 										plugin.settings.edge_field_groups.find(
 											(g) => g.label === group_label,
 										),
 										edge_field.label,
-									);
-								}}
+									)}
 							>
 								X
 							</button>

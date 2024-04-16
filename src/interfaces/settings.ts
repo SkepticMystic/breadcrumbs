@@ -1,6 +1,7 @@
 import type { ListIndex } from "src/commands/list_index";
 import type { EdgeSortId } from "src/const/graph";
 import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/MyMultiGraph";
+import type { EdgeAttrFilters } from "src/graph/utils";
 import type { LogLevels } from "src/logger";
 
 export type EdgeField = { label: string };
@@ -26,7 +27,7 @@ export interface BreadcrumbsSettings {
 		transitive: {
 			name: string;
 			rounds: number;
-			chain: Partial<BCEdgeAttributes>[];
+			chain: EdgeAttrFilters[];
 			/** The transitive closure field */
 			close_field: string;
 			/** If false, add the edge from start to end. Else from end to start */
@@ -90,9 +91,9 @@ export interface BreadcrumbsSettings {
 				show_controls: boolean;
 				format: "grid" | "path";
 				no_path_message: string;
+				field_group_labels: string[];
 				show_node_options: ShowNodeOptions;
 				selection: "all" | "shortest" | "longest";
-				field_group_labels: string[];
 			};
 
 			prev_next: {
@@ -108,18 +109,18 @@ export interface BreadcrumbsSettings {
 		side: {
 			matrix: {
 				edge_sort_id: EdgeSortId;
+				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
-				field_group_labels: string[];
 			};
 
 			tree: {
 				collapse: boolean;
 				merge_fields: boolean;
 				edge_sort_id: EdgeSortId;
+				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
-				field_group_labels: string[];
 			};
 		};
 
@@ -317,13 +318,7 @@ export interface BreadcrumbsSettingsWithDirection {
 
 export type OLD_BREADCRUMBS_SETTINGS = Partial<{
 	// SECTION: Hierarchies
-	userHiers: {
-		up: string;
-		down: string;
-		same: string;
-		prev: string;
-		next: string;
-	}[]; // MIGRATED
+	userHiers: Record<OLD_DIRECTION, string>[]; // MIGRATED
 
 	// SECTION: explicit_edge_sources
 	addDateNotes: boolean; // MIGRATED

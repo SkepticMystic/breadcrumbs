@@ -15,6 +15,8 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
 	if (!date_note_settings.enabled) return { errors };
 
+	// TODO: Validate that date_note_settings.default_field is a valid field
+
 	const date_notes: {
 		ext: string;
 		path: string;

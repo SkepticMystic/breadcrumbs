@@ -47,6 +47,46 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 	],
 
+	implied_relations: {
+		transitive: [
+			{
+				name: "Opposite Direction: up/down",
+				rounds: 1,
+				chain: [{ field: "up" }],
+				close_field: "down",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: down/up",
+				rounds: 1,
+				chain: [{ field: "down" }],
+				close_field: "up",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: same/same",
+				rounds: 1,
+				chain: [{ field: "same" }],
+				close_field: "same",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: next/prev",
+				rounds: 1,
+				chain: [{ field: "next" }],
+				close_field: "prev",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: prev/next",
+				rounds: 1,
+				chain: [{ field: "prev" }],
+				close_field: "next",
+				close_reversed: true,
+			},
+		],
+	},
+
 	explicit_edge_sources: {
 		typed_link: {},
 		list_note: {
@@ -76,10 +116,6 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			default_field: "next",
 			stretch_to_existing: false,
 		},
-	},
-
-	implied_relations: {
-		transitive: [],
 	},
 
 	views: {

@@ -12,6 +12,7 @@ import { Links } from "src/utils/links";
 
 export namespace ListIndex {
 	export type Options = {
+		// TODO: merge_fields: boolean;
 		fields: string[];
 		indent: string;
 		link_kind: LinkKind;

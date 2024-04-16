@@ -16,6 +16,10 @@ export class BCAPI {
 		return this.plugin.settings.edge_fields;
 	}
 
+	get field_groups() {
+		return this.plugin.settings.edge_field_groups;
+	}
+
 	// TODO
 	public buildObsGraph = () => {
 		throw new Error("Not implemented");

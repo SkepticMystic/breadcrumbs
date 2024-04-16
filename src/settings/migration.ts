@@ -11,7 +11,7 @@ import {
 	type OLD_HIERARCHY,
 } from "src/interfaces/settings";
 import { log } from "src/logger";
-import { remove_duplicates } from "src/utils/arrays";
+import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
 
 const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 	switch (dir) {
@@ -150,7 +150,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 								settings.implied_relations.transitive.push({
 									rounds,
-									name: `[${field}] -> ${close_field} (reversed)`,
+									name: `Opposite Direction: ${field}/${close_field}`,
 									close_field,
 									chain: [{ field }],
 									close_reversed: true,
@@ -260,11 +260,16 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 		delete old.custom_implied_relations;
 	}
+
+	settings.implied_relations.transitive = remove_duplicates_by(
+		settings.implied_relations.transitive,
+		stringify_transitive_relation,
+	);
 	// !SECTION
 
 	// SECTION: Explicit edge sources
+	/// Tag note
 	if (old.tagNoteField !== undefined) {
-		/// Tag note
 		settings.explicit_edge_sources.tag_note.default_field =
 			old.tagNoteField;
 

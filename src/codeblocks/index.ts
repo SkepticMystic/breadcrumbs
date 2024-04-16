@@ -5,14 +5,14 @@ import {
 } from "src/const/graph";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
-import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { remove_duplicates } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
-import { quote_join } from "src/utils/strings";
+import { quote_join, split_and_trim } from "src/utils/strings";
 
 // TODO: parseYaml
 
@@ -84,15 +84,24 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.title = value);
 			}
 
+			//@ts-ignore: TODO: Remove once everyone has migrated
+			case "dir":
+			// @ts-ignore
+			case "dirs": {
+				return errors.push({
+					path: key,
+					code: "deprecated_field",
+					message: `The '${key}' field is deprecated. Use 'fields' or 'field-groups' instead.`,
+				});
+			}
+
 			case "fields": {
 				const field_labels = plugin.settings.edge_fields.map(
 					(field) => field.label,
 				);
 
-				return (parsed.fields = value
-					.split(",")
-					.map((field) => field.trim())
-					.filter((field) => {
+				return (parsed.fields = split_and_trim(value).filter(
+					(field) => {
 						if (!field_labels.includes(field)) {
 							errors.push({
 								path: key,
@@ -103,7 +112,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 						} else {
 							return true;
 						}
-					}));
+					},
+				));
 			}
 
 			case "field-groups": {
@@ -111,23 +121,20 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					(group) => group.label,
 				);
 
-				const values = value
-					.split(",")
-					.map((group) => group.trim())
-					.filter((group) => {
-						// NOTE: resolve_field_group_labels handles values that aren't group labels just fine
-						// 	but this lets us add an error message
-						if (!group_labels.includes(group)) {
-							errors.push({
-								path: key,
-								code: "invalid_field_value",
-								message: `Invalid field-group: "${group}". Options: ${quote_join(group_labels)}`,
-							});
-							return false;
-						} else {
-							return true;
-						}
-					});
+				const values = split_and_trim(value).filter((group) => {
+					// NOTE: resolve_field_group_labels handles values that aren't group labels just fine
+					// 	but this lets us add an error message
+					if (!group_labels.includes(group)) {
+						errors.push({
+							path: key,
+							code: "invalid_field_value",
+							message: `Invalid field-group: "${group}". Options: ${quote_join(group_labels)}`,
+						});
+						return false;
+					} else {
+						return true;
+					}
+				});
 
 				const field_labels = resolve_field_group_labels(
 					plugin.settings.edge_field_groups,
@@ -272,10 +279,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "show-attributes": {
-				return (parsed.show_attributes = value
-					.split(",")
-					.map((attr) => attr.trim())
-					.filter((attr) => {
+				return (parsed.show_attributes = split_and_trim(value).filter(
+					(attr) => {
 						if (!EDGE_ATTRIBUTES.includes(attr as any)) {
 							errors.push({
 								path: key,
@@ -286,7 +291,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 						} else {
 							return true;
 						}
-					}) as any);
+					},
+				) as EdgeAttribute[]);
 			}
 
 			case "mermaid-renderer": {

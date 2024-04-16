@@ -22,14 +22,16 @@
 		),
 	};
 
+	const merged_field_labels = remove_duplicates([
+		...edge_field_labels.prev,
+		...edge_field_labels.next,
+	]);
+
 	const grouped_out_edges = plugin.graph.hasNode(file_path)
 		? group_by(
 				plugin.graph.get_out_edges(file_path).filter((e) =>
 					has_edge_attrs(e, {
-						$or_fields: remove_duplicates([
-							...edge_field_labels.prev,
-							...edge_field_labels.next,
-						]),
+						$or_fields: merged_field_labels,
 					}),
 				),
 				(e) =>
@@ -47,7 +49,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field">{edge.attr.field}</span>
 
-					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
+					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 				</div>
 			{/each}
 		</div>
@@ -55,7 +57,7 @@
 		<div class="flex w-full flex-col">
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-					<EdgeLink {edge} {plugin} cls="grow" {show_node_options} />
+					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 
 					<span class="BC-field">{edge.attr.field}</span>
 				</div>

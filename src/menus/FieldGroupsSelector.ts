@@ -13,7 +13,7 @@ export const FieldGroupsSelectorMenu = ({
 	const menu = new Menu();
 
 	edge_field_groups.forEach((group) => {
-		const checked = value.some((label) => group.label === label);
+		const checked = value.includes(group.label);
 
 		menu.addItem((item) =>
 			item
