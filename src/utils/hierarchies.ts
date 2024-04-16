@@ -9,6 +9,7 @@ export const blank_hierarchy = (): Hierarchy => ({
 		next: [""],
 		prev: [""],
 	},
+
 	// NOTE: In a "blank" hierarchy, should everything be off, or should it be reasonable defaults?
 	implied_relationships: {
 		opposite_direction: { rounds: 1 },
