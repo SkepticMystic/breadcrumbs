@@ -59,8 +59,9 @@
 		</button>
 	</div>
 
+	<!-- TODO: Reorder -->
 	<div class="flex flex-col gap-3">
-		{#each transitives as transitive, t_i}
+		{#each transitives as transitive, t_i (stringify_transitive_relation(transitive))}
 			<details class="rounded border p-2" bind:open={opens[t_i]}>
 				<summary class="flex items-center justify-between gap-2">
 					<div class="flex items-center gap-2">

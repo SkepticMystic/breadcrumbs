@@ -97,10 +97,8 @@ const from_edges = (
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
 	const mermaid_edges: MermaidEdge[] = [];
 
-	for (const edge of edges.sort(
-		// Favour explicit edges in the dedupe
-		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
-	)) {
+	// TODO: Use Codeblock.Options.sort here
+	for (const edge of edges) {
 		const [source_i, target_i] = [
 			node_map.get(edge.source_id)!.i,
 			node_map.get(edge.target_id)!.i,

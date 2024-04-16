@@ -19,6 +19,7 @@ import { quote_join, split_and_trim } from "src/utils/strings";
 const FIELDS = [
 	"type",
 	"title",
+	// TODO: "start-note",
 	"fields",
 	"field-groups",
 	"depth",
@@ -153,6 +154,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "depth": {
+				// TODO: Just "2" should be valid, equivalent to "-2"
 				// depth: -2
 				// depth: 1-2
 				// depth: 1-

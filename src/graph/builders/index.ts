@@ -95,20 +95,34 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		transitive: [],
 	};
 
+	// Track which fields get added, clearing each round
+	// This lets us check if a transitive rule even needs to be considered
+	const added_fields = new Set<string>();
+
+	// Add all the fields from the initial edges
+	for (const edge of graph.edgeEntries()) {
+		added_fields.add(edge.attributes.field);
+	}
+
 	for (let round = 1; round <= max_implied_relationship_rounds; round++) {
 		const edges: EdgeToAdd[] = [];
 
-		plugin.settings.implied_relations.transitive.forEach((transitive) => {
-			const result = _add_implied_edges_transitive(
-				graph,
-				plugin,
-				transitive,
-				{ round },
-			);
+		plugin.settings.implied_relations.transitive.forEach((rule) => {
+			// If none of the fields added in the previous round are in this rule, skip it
+			if (!rule.chain.some((attr) => added_fields.has(attr.field!))) {
+				return;
+			}
+
+			const result = _add_implied_edges_transitive(graph, plugin, rule, {
+				round,
+			});
 
 			edges.push(...result.edges);
 			implied_edge_results.transitive.push(...result.errors);
 		});
+
+		// We don't need the previous fields anymore
+		added_fields.clear();
 
 		// PERF: Break if no edges were added. We've reached a fixed point
 		if (edges.length === 0) break;
@@ -118,7 +132,7 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 					edge.source_id,
 					edge.target_id,
 					edge.attr,
-				);
+				) && added_fields.add(edge.attr.field);
 			});
 		}
 	}
