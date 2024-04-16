@@ -126,5 +126,5 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	log.debug(timer.elapsedMessage("Adding implied edges"));
 	log.debug(timer2.elapsedMessage("Total Graph building"));
 
-	return { graph, explicit_edge_results };
+	return { graph, explicit_edge_results, implied_edge_results };
 };
