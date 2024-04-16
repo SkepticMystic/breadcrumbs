@@ -375,7 +375,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			notice?.setMessage(
 				[
-					`Rebuilt graph in ${timer.elapsed()}ms`,
+					`Rebuilt graph in ${timer.elapsed().toFixed(1)}ms`,
 
 					explicit_edge_errors.length
 						? "\nExplicit edge errors (see console for details):"
