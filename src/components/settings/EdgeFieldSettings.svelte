@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { XIcon } from "lucide-svelte";
-	import { ICON_SIZE } from "src/const";
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 
@@ -41,6 +39,8 @@
 			},
 
 			rename: (edge_field: EdgeField, new_label: string) => {
+				if (edge_field.label === new_label) return;
+
 				edge_field.label = new_label;
 
 				plugin.settings.edge_field_groups.forEach((group) => {
@@ -77,6 +77,8 @@
 			},
 
 			rename: (group: EdgeFieldGroup, new_label: string) => {
+				if (group.label === new_label) return;
+
 				group.label = new_label;
 
 				dirty = true;
@@ -129,11 +131,10 @@
 
 			<div class="flex flex-col gap-2">
 				<div class="flex items-center gap-1">
-					<span>Field</span>
-
 					<input
+						id="BC-edge-field-{edge_field.label}"
 						type="text"
-						class="w-32"
+						class="w-32 scroll-mt-24"
 						value={edge_field.label}
 						on:blur={(e) => {
 							actions.fields.rename(
@@ -143,56 +144,70 @@
 						}}
 					/>
 					<button
+						class="w-8"
 						title="Remove Field"
 						on:click={() => actions.fields.remove(edge_field)}
 					>
-						<XIcon size={ICON_SIZE} />
+						X
 					</button>
 				</div>
 
-				<div class="flex flex-wrap gap-1 pl-4">
+				<div class="flex flex-wrap items-center gap-1.5">
 					<span>Groups</span>
 
 					{#each group_labels as group_label}
-						<!-- svelte-ignore a11y-missing-attribute -->
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<!-- svelte-ignore a11y-no-static-element-interactions -->
-						<a
-							class="tag"
-							title="Click to remove field from group"
-							on:click={() => {
-								actions.groups.remove_field(
-									plugin.settings.edge_field_groups.find(
-										(g) => g.label === group_label,
-									),
-									edge_field.label,
-								);
-							}}
-						>
-							{group_label} x
-						</a>
+						<div class="flex items-center gap-0.5">
+							<a
+								class="tag"
+								title="Jump to group"
+								href="#BC-edge-group-{group_label}"
+							>
+								{group_label}
+							</a>
+
+							<button
+								class="h-5 w-3"
+								title="Remove field from group"
+								on:click={() => {
+									actions.groups.remove_field(
+										plugin.settings.edge_field_groups.find(
+											(g) => g.label === group_label,
+										),
+										edge_field.label,
+									);
+								}}
+							>
+								X
+							</button>
+						</div>
 					{/each}
 				</div>
 			</div>
 		{/each}
 	</div>
 
+	<hr />
+
 	<h4>Groups</h4>
 	<div class="flex flex-col gap-6">
 		{#each plugin.settings.edge_field_groups as group}
-			<div class="flex flex-col gap-1">
+			<div class="flex flex-col gap-2">
 				<div class="flex items-center gap-1">
-					<span>Group</span>
 					<input
+						id="BC-edge-group-{group.label}"
 						type="text"
-						class="w-32"
+						class="w-32 scroll-mt-24"
 						value={group.label}
 						on:blur={(e) =>
 							actions.groups.rename(group, e.currentTarget.value)}
 					/>
 
-					<button on:click={() => actions.groups.remove(group)}>
-						<XIcon size={ICON_SIZE} />
+					<button
+						class="w-8"
+						title="Remove Group"
+						on:click={() => actions.groups.remove(group)}
+					>
+						X
 					</button>
 
 					<select
@@ -221,22 +236,27 @@
 					</select>
 				</div>
 
-				<div class="flex flex-wrap items-center gap-1 pl-4">
+				<div class="flex flex-wrap items-center gap-1.5">
 					<span>Fields</span>
 
 					{#each group.fields as field}
-						<div class="flex items-center gap-1">
-							<!-- svelte-ignore a11y-missing-attribute -->
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<div class="flex items-center gap-0.5">
 							<a
 								class="tag"
+								title="Jump to field"
+								href="#BC-edge-field-{field}"
+							>
+								{field}
+							</a>
+
+							<button
+								class="h-5 w-3"
 								title="Click to remove field from group"
 								on:click={() =>
 									actions.groups.remove_field(group, field)}
 							>
-								{field} x
-							</a>
+								X
+							</button>
 						</div>
 					{/each}
 				</div>
