@@ -139,7 +139,7 @@
 					<input
 						id="BC-edge-field-{edge_field.label}"
 						type="text"
-						class="w-32 scroll-mt-24"
+						class="w-48 scroll-mt-24"
 						placeholder="Field Label"
 						value={edge_field.label}
 						on:blur={(e) =>
@@ -155,39 +155,12 @@
 					>
 						X
 					</button>
-
-					<select
-						class="dropdown"
-						value=""
-						on:change={(e) => {
-							if (e.currentTarget.value) {
-								actions.groups.add_field(
-									plugin.settings.edge_field_groups.find(
-										(g) =>
-											g.label === e.currentTarget.value,
-									),
-									edge_field.label,
-								);
-
-								e.currentTarget.value = "";
-							}
-						}}
-					>
-						<option value="" disabled>Add to Group</option>
-
-						{#each plugin.settings.edge_field_groups as group}
-							{#if !group.fields.includes(edge_field.label)}
-								<option value={group.label}>
-									{group.label}
-								</option>
-							{/if}
-						{/each}
-					</select>
 				</div>
 
 				<div class="flex flex-wrap items-center gap-1.5">
 					<span>Groups</span>
 
+					<!-- TODO: Rather right click context menu instead of delete button. Same for group fields below -->
 					{#each group_labels as group_label}
 						<div class="flex items-center gap-0.5">
 							<a
@@ -217,6 +190,34 @@
 					{#if !group_labels.length}
 						<span class="search-empty-state my-0">{"<none>"}</span>
 					{/if}
+
+					<select
+						class="dropdown"
+						value=""
+						on:change={(e) => {
+							if (e.currentTarget.value) {
+								actions.groups.add_field(
+									plugin.settings.edge_field_groups.find(
+										(g) =>
+											g.label === e.currentTarget.value,
+									),
+									edge_field.label,
+								);
+
+								e.currentTarget.value = "";
+							}
+						}}
+					>
+						<option value="" disabled>Add to Group</option>
+
+						{#each plugin.settings.edge_field_groups as group}
+							{#if !group.fields.includes(edge_field.label)}
+								<option value={group.label}>
+									{group.label}
+								</option>
+							{/if}
+						{/each}
+					</select>
 				</div>
 			</div>
 		{/each}
@@ -232,7 +233,7 @@
 					<input
 						id="BC-edge-group-{group.label}"
 						type="text"
-						class="w-32 scroll-mt-24"
+						class="w-48 scroll-mt-24"
 						placeholder="Group Label"
 						value={group.label}
 						on:blur={(e) =>
@@ -246,31 +247,6 @@
 					>
 						X
 					</button>
-
-					<select
-						class="dropdown"
-						value=""
-						on:change={(e) => {
-							if (e.currentTarget.value) {
-								actions.groups.add_field(
-									group,
-									e.currentTarget.value,
-								);
-
-								e.currentTarget.value = "";
-							}
-						}}
-					>
-						<option value="" disabled>Add Field</option>
-
-						{#each plugin.settings.edge_fields as edge_field}
-							{#if !group.fields.includes(edge_field.label)}
-								<option value={edge_field.label}>
-									{edge_field.label}
-								</option>
-							{/if}
-						{/each}
-					</select>
 				</div>
 
 				<div class="flex flex-wrap items-center gap-1.5">
@@ -300,6 +276,31 @@
 					{#if !group.fields.length}
 						<span class="search-empty-state my-0">{"<none>"}</span>
 					{/if}
+
+					<select
+						class="dropdown"
+						value=""
+						on:change={(e) => {
+							if (e.currentTarget.value) {
+								actions.groups.add_field(
+									group,
+									e.currentTarget.value,
+								);
+
+								e.currentTarget.value = "";
+							}
+						}}
+					>
+						<option value="" disabled>Add Field</option>
+
+						{#each plugin.settings.edge_fields as edge_field}
+							{#if !group.fields.includes(edge_field.label)}
+								<option value={edge_field.label}>
+									{edge_field.label}
+								</option>
+							{/if}
+						{/each}
+					</select>
 				</div>
 			</div>
 		{/each}
