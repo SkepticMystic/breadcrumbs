@@ -27,7 +27,7 @@ export const _mock_edge = (
 					round: 1,
 					field: "down",
 					explicit: false as const,
-					implied_kind: "opposite_direction",
+					implied_kind: "transitive:opposite_direction",
 
 					...(attr as Partial<
 						Extract<BCEdgeAttributes, { explicit: false }>
