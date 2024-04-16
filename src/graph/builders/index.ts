@@ -1,7 +1,9 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+import { Timer } from "src/utils/timer";
 import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
@@ -52,6 +54,9 @@ const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
 };
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
+	const timer = new Timer();
+	const timer2 = new Timer();
+
 	// Make a new graph, instead of mutating the old one
 	const graph = new BCGraph();
 
@@ -60,6 +65,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 
 	// Add initial nodes
 	add_initial_nodes(graph, all_files);
+
+	log.debug(timer.elapsedMessage("Adding initial nodes"));
+	timer.reset();
 
 	// Explicit edges
 	const explicit_edge_results = await Promise.all(
@@ -73,6 +81,9 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 			return { source, errors: result.errors };
 		}),
 	);
+
+	log.debug(timer.elapsedMessage("Adding initial edges"));
+	timer.reset();
 
 	const max_implied_relationship_rounds = Math.max(
 		...plugin.settings.implied_relations.transitive.map(
@@ -112,5 +123,8 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		}
 	}
 
-	return { graph, explicit_edge_results, implied_edge_results };
+	log.debug(timer.elapsedMessage("Adding implied edges"));
+	log.debug(timer2.elapsedMessage("Total Graph building"));
+
+	return { graph, explicit_edge_results };
 };
