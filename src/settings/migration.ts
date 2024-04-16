@@ -139,6 +139,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.same,
 							});
+
+							break;
 						}
 
 						case "opposite_direction": {
@@ -156,12 +158,14 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 									close_reversed: true,
 								});
 							});
+
 							break;
 						}
 
 						case "cousin_is_sibling": {
-							if (!fields.up || !fields.same || !fields.down)
+							if (!fields.up || !fields.same || !fields.down) {
 								return;
+							}
 
 							settings.implied_relations.transitive.push({
 								rounds,
@@ -174,11 +178,14 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.same,
 							});
+
+							break;
 						}
 
 						case "same_parent_is_sibling": {
-							if (!fields.up || !fields.down || !fields.down)
+							if (!fields.up || !fields.down || !fields.down) {
 								return;
+							}
 
 							settings.implied_relations.transitive.push({
 								rounds,
@@ -190,6 +197,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.same,
 							});
+
+							break;
 						}
 
 						case "same_sibling_is_sibling": {
@@ -205,6 +214,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.same,
 							});
+
+							break;
 						}
 
 						case "siblings_parent_is_parent": {
@@ -220,6 +231,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.up,
 							});
+
+							break;
 						}
 
 						case "parents_sibling_is_parent": {
@@ -235,6 +248,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 								close_reversed: false,
 								close_field: fields.up,
 							});
+
+							break;
 						}
 					}
 				},
