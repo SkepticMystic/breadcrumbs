@@ -15,6 +15,7 @@ type Traverser = (
 	edge_filter?: (edge: BCEdge, depth: number) => boolean,
 ) => void;
 
+// TODO: This whole alg is very inefficient
 // NOTE: This is now _breadth_ first, but I need to rename it everywhere
 const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
 	// edge_ids visited so far

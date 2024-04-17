@@ -53,8 +53,9 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
 
-		// TODO: Instead of iterating all keys, I could use the edge_fields...
-		// Is that better or worse?
+		// NOTE: Instead of iterating all keys, I could use the edge_fields...
+		// But I'm assuming there are probably more edge fields than page fields
+		// So this is probably more efficient
 		Object.keys(page).forEach((field) => {
 			// NOTE: Implies that an edge-field can't be in this list,
 			//   But Dataview probably enforces that anyway

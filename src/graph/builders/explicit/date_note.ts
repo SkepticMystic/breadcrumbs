@@ -14,8 +14,18 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
 	if (!date_note_settings.enabled) return { errors };
-
-	// TODO: Validate that date_note_settings.default_field is a valid field
+	else if (
+		!plugin.settings.edge_fields.find(
+			(field) => field.label === date_note_settings.default_field,
+		)
+	) {
+		errors.push({
+			code: "invalid_setting_value",
+			path: "explicit_edge_sources.date_note.default_field",
+			message: `The default Date Note field "${date_note_settings.default_field}" is not a valid Breadcrumbs Edge field`,
+		});
+		return { errors };
+	}
 
 	const date_notes: {
 		ext: string;

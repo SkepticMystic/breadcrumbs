@@ -5,12 +5,13 @@ import type { MaybePromise } from ".";
 
 export type BreadcrumbsError = {
 	// TODO: Differentiate between invalid edge-field and invalid metadata-field values
+	// BUT: Some errors might be a metadata field with an invalid edge-field value
 	code: "deprecated_field" | "invalid_field_value" | "invalid_setting_value";
 	message: string;
 	path: string;
 };
 
-// TODO: A completely different approach is to do it on a single node level
+// NOTE: A completely different approach is to do it on a single node level
 //   This way, we could rebuild the edges for a particular node as needed
 /** "Extension" system. Takes in current state of plugin & graph, and adds to the graph */
 export type ExplicitEdgeBuilder = (

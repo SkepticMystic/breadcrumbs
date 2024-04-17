@@ -3,7 +3,11 @@
 	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Distance } from "src/graph/distance";
 	import { Traverse } from "src/graph/traverse";
-	import { has_edge_attrs, type EdgeAttrFilters } from "src/graph/utils";
+	import {
+		get_edge_sorter,
+		has_edge_attrs,
+		type EdgeAttrFilters,
+	} from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
@@ -21,6 +25,8 @@
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
+
+	const sort = get_edge_sorter(options.sort, plugin.graph);
 
 	let all_paths: BCEdge[][] = [];
 	let distances: Map<string, number> = new Map();
@@ -79,10 +85,10 @@
 		path.slice(options.depth[0], options.depth[1]),
 	);
 
-	$: flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
+	$: edges = remove_duplicates_by(sliced.flat(), (e) => e.id).sort(sort);
 
 	$: mermaid = wrap_in_codeblock(
-		Mermaid.from_edges(flat_unique, {
+		Mermaid.from_edges(edges, {
 			kind: "graph",
 			click: { method: "class" },
 			active_node_id: source_path,
@@ -145,7 +151,7 @@
 		</h3>
 	{/if}
 
-	{#if flat_unique.length}
+	{#if edges.length}
 		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
 	https://mermaid.js.org/syntax/flowchart.html#width -->
 		<div

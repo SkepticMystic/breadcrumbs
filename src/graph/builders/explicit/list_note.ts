@@ -10,8 +10,6 @@ import type BreadcrumbsPlugin from "src/main";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
-// TODO(NODIR): This whole file is hectic, do some proper reading+testing
-
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
@@ -59,6 +57,7 @@ const get_list_note_info = (
 	}
 
 	// TODO: Doesn't this just do what BC-ignore-out-edges does?
+	// UPDATE: No, list-note-exclude-index ignores-out-edges, but _only for list-notes_
 	const exclude_index = Boolean(
 		metadata[META_ALIAS["list-note-exclude-index"]],
 	);
@@ -66,7 +65,6 @@ const get_list_note_info = (
 	return succ({
 		field,
 		exclude_index,
-		// TODO: This should be more JS safe, instead of casting
 		neighbour_field: (neighbour_field ?? undefined) as string | undefined,
 	});
 };
@@ -118,7 +116,7 @@ const handle_neighbour_list_item = ({
 		{ ok: true }
 	>;
 }) => {
-	// If there is no neighbour field, don't bother
+	// Already checked outside, but this makes TS happy
 	if (!list_note_info.data.neighbour_field) return;
 
 	// NOTE: Known to exist, since we wouldn't have reached this function if it didn't
@@ -266,23 +264,25 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						{
 							explicit: true,
 							source: "list_note",
-							...(source_override_field.data ??
-								list_note_info.data),
+							field:
+								source_override_field.data?.field ??
+								list_note_info.data.field,
 						},
 					);
 				}
 
 				// NOTE: The logic of this function is _just_ complicated enough to warrent a separate function
 				// to prevent multiple levels of if statement nesting
-				handle_neighbour_list_item({
-					graph,
-					plugin,
-					source_path,
-					list_note_info,
-					list_note_page,
-					source_list_item_i,
-				});
-
+				if (list_note_info.data.neighbour_field) {
+					handle_neighbour_list_item({
+						graph,
+						plugin,
+						source_path,
+						list_note_info,
+						list_note_page,
+						source_list_item_i,
+					});
+				}
 				source_list_item.children.forEach((target_list_item) => {
 					const target_link = target_list_item.outlinks.at(0);
 					if (!target_link) return;
@@ -318,7 +318,9 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					graph.safe_add_directed_edge(source_path, target_path, {
 						explicit: true,
 						source: "list_note",
-						...(target_override_field.data ?? list_note_info.data),
+						field:
+							target_override_field.data?.field ??
+							list_note_info.data.field,
 					});
 				});
 			},

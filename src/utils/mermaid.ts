@@ -97,7 +97,6 @@ const from_edges = (
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
 	const mermaid_edges: MermaidEdge[] = [];
 
-	// TODO: Use Codeblock.Options.sort here
 	for (const edge of edges) {
 		const [source_i, target_i] = [
 			node_map.get(edge.source_id)!.i,

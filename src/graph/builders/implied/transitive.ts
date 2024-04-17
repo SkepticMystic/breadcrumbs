@@ -70,7 +70,6 @@ export const _add_implied_edges_transitive = (
 };
 
 // TODO: Move this to a util file
-// TODO: Use this in place of the hardcoded implied relation strings (same_sibling_is_sibling, etc.)
 export const stringify_transitive_relation = (
 	rule: Pick<
 		BreadcrumbsSettings["implied_relations"]["transitive"][number],

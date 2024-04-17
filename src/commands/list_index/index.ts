@@ -57,7 +57,7 @@ export namespace ListIndex {
 				link_kind: options.link_kind,
 			});
 
-			const attr = options.show_attributes
+			const attr = options.show_attributes.length
 				? ` (${url_search_params(
 						untyped_pick(edge.attr, options.show_attributes),
 						{ trim_lone_param: true },
