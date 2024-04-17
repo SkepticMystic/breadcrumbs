@@ -28,6 +28,9 @@ const build = (
 	ext: string,
 ) => ensure_ext(join(folder, basename), ext);
 
+const normalise = (path: string) =>
+	path.replace(/\/+/g, "/").replace(/^\//, "");
+
 /** Pass in which components you want to *keep*, the rest will be dropped */
 const show = (
 	path: string,
@@ -60,5 +63,6 @@ export const Paths = {
 
 	join,
 	build,
+	normalise,
 	show,
 };

@@ -28,9 +28,11 @@ export const thread = async (
 	};
 	log.info("template_data", template_data);
 
-	const target_path = Paths.ensure_ext(
-		resolve_templates(options.target_path_template, template_data),
-		"md",
+	const target_path = Paths.normalise(
+		Paths.ensure_ext(
+			resolve_templates(options.target_path_template, template_data),
+			"md",
+		),
 	);
 	log.debug("thread > target_path", target_path);
 
