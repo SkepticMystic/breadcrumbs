@@ -45,6 +45,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			label: "prevs",
 			fields: ["prev"],
 		},
+		{
+			label: "hierarchy 1",
+			fields: ["up", "down", "same", "next", "prev"],
+		},
 	],
 
 	implied_relations: {

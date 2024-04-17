@@ -103,7 +103,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 				.filter(Boolean);
 
 			settings.edge_field_groups.push({
-				label: `Hierarchy ${hier_i + 1}`,
+				label: `hierarchy ${hier_i + 1}`,
 				fields: field_labels,
 			});
 
@@ -257,7 +257,13 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		});
 
 		delete old.hierarchies;
+
+		settings.edge_field_groups = remove_duplicates_by(
+			settings.edge_field_groups,
+			(group) => group.label,
+		);
 	}
+
 	// !SECTION
 
 	// SECTION: custom_implied_relations

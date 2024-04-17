@@ -54,11 +54,11 @@ describe("migration", () => {
 					fields: ["prev", "left"],
 				},
 				{
-					label: "Hierarchy 1",
-					fields: ["up", "same", "down", "next", "prev"],
+					label: "hierarchy 1",
+					fields: ["up", "down", "same", "next", "prev"],
 				},
 				{
-					label: "Hierarchy 2",
+					label: "hierarchy 2",
 					fields: ["parent", "sibling", "child", "right", "left"],
 				},
 			],
@@ -519,23 +519,15 @@ describe("migration", () => {
 					fields: ["prev", "left"],
 				},
 				{
-					label: "Hierarchy 1",
-					fields: ["up", "same", "down", "next", "prev"],
+					label: "hierarchy 1",
+					fields: ["up", "down", "same", "next", "prev"],
 				},
 				{
-					label: "Hierarchy 2",
+					label: "hierarchy 2",
 					fields: ["parent", "sibling", "child", "right", "left"],
 				},
 				{
-					label: "Hierarchy 1",
-					fields: ["parent", "sibling", "child"],
-				},
-				{
-					label: "Hierarchy 2",
-					fields: ["r-member", "r-sibling", "relation"],
-				},
-				{
-					label: "Hierarchy 3",
+					label: "hierarchy 3",
 					fields: ["r-parent", "half-sibling", "r-child"],
 				},
 			],
