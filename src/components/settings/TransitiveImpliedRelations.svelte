@@ -1,27 +1,129 @@
 <script lang="ts">
-	import { PlusIcon, SaveIcon } from "lucide-svelte";
-	import { Notice } from "obsidian";
+	import { ArrowDown, ArrowUp, PlusIcon, SaveIcon } from "lucide-svelte";
+	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
 	import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
+	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
+	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
+	let dirty = false;
 	let transitives = [...plugin.settings.implied_relations.transitive];
 	const opens = transitives.map(() => false);
 
-	const save = async () => {
-		for (const { close_field } of transitives) {
-			if (!close_field) {
-				return new Notice("Closing field cannot be empty.");
+	const actions = {
+		save: async () => {
+			for (const { close_field } of transitives) {
+				if (!close_field) {
+					return new Notice("Closing field cannot be empty.");
+				}
 			}
-		}
-		plugin.settings.implied_relations.transitive = transitives;
+			plugin.settings.implied_relations.transitive = transitives;
 
-		await plugin.saveSettings();
-		await plugin.refresh();
+			await plugin.saveSettings();
+			await plugin.refresh();
+
+			dirty = false;
+		},
+
+		add_transitive: () => {
+			transitives.push({
+				name: "",
+				chain: [],
+				rounds: 1,
+				close_reversed: false,
+				close_field: plugin.settings.edge_fields[0].label,
+			});
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		remove_transitive: (i: number) => {
+			transitives = transitives.filter((_, j) => j !== i);
+
+			dirty = true;
+		},
+
+		rename_transitive: (i: number, new_name: string) => {
+			if (transitives[i].name === new_name) return;
+
+			transitives[i].name = new_name;
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		reorder_transitive: (i: number, j: number) => {
+			const temp = transitives[i];
+			transitives[i] = transitives[j];
+			transitives[j] = temp;
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		add_chain_field: (i: number, field: EdgeField | undefined) => {
+			if (!field) return;
+
+			transitives[i].chain.push({ field: field.label });
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		remove_chain_field: (i: number, j: number) => {
+			transitives[i].chain = transitives[i].chain.filter(
+				(_, k) => k !== j,
+			);
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		set_close_field: (i: number, field: EdgeField | undefined) => {
+			if (!field) return;
+
+			transitives[i].close_field = field.label;
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		set_rounds: (i: number, rounds: number) => {
+			if (isNaN(rounds) || rounds < 0) return;
+
+			transitives[i].rounds = rounds;
+
+			transitives = transitives;
+			dirty = true;
+		},
+
+		set_close_reversed: (i: number, reversed: boolean) => {
+			transitives[i].close_reversed = reversed;
+
+			transitives = transitives;
+			dirty = true;
+		},
+	};
+
+	const context_menus = {
+		chain_field: (rule_i: number, attr_i: number) => (e: MouseEvent) => {
+			const menu = new Menu();
+
+			menu.addItem((item) =>
+				item
+					.setTitle("Remove Field")
+					.setIcon("x")
+					.onClick(() => actions.remove_chain_field(rule_i, attr_i)),
+			);
+
+			menu.showAtMouseEvent(e);
+		},
 	};
 </script>
 
@@ -53,92 +155,102 @@
 			<PlusIcon size={ICON_SIZE} />
 		</button>
 
-		<button class="flex items-center gap-1" on:click={save}>
+		<button
+			class="flex items-center gap-1"
+			disabled={!dirty}
+			on:click={actions.save}
+		>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
+
+		{#if dirty}
+			<span class="text-warning">Unsaved changes</span>
+		{/if}
 	</div>
 
-	<!-- TODO: Reorder -->
 	<div class="flex flex-col gap-3">
-		{#each transitives as transitive, t_i (stringify_transitive_relation(transitive))}
-			<details class="rounded border p-2" bind:open={opens[t_i]}>
+		{#each transitives as rule, rule_i (stringify_transitive_relation(rule))}
+			<details class="rounded border p-2" bind:open={opens[rule_i]}>
 				<summary class="flex items-center justify-between gap-2">
 					<div class="flex items-center gap-2">
-						<ChevronOpener open={opens[t_i]} />
+						<ChevronOpener open={opens[rule_i]} />
 
 						<code>
-							{transitive.name ||
-								stringify_transitive_relation(transitive)}
-							({transitive.rounds} rounds)
+							{rule.name || stringify_transitive_relation(rule)}
+							({rule.rounds} rounds)
 						</code>
 					</div>
 
-					<button
-						aria-label="Delete Transitive Implied Relation"
-						on:click={() =>
-							(transitives = transitives.filter(
-								(_, j) => j !== t_i,
-							))}
-					>
-						X
-					</button>
+					<div class="flex gap-1">
+						<button
+							disabled={rule_i === 0}
+							on:click={() =>
+								actions.reorder_transitive(rule_i, rule_i - 1)}
+						>
+							<ArrowUp size={ICON_SIZE} />
+						</button>
+						<button
+							disabled={rule_i === transitives.length - 1}
+							on:click={() =>
+								actions.reorder_transitive(rule_i, rule_i + 1)}
+						>
+							<ArrowDown size={ICON_SIZE} />
+						</button>
+
+						<button
+							aria-label="Delete Transitive Implied Relation"
+							on:click={() => actions.remove_transitive(rule_i)}
+						>
+							X
+						</button>
+					</div>
 				</summary>
 
-				{#key transitive}
+				{#key rule}
 					<div class="my-2 flex flex-col gap-2 px-4 py-2">
 						<div class="flex flex-wrap items-center gap-3">
 							<span class="font-semibold">Name:</span>
 
 							<input
 								type="text"
-								value={transitive.name}
+								value={rule.name}
 								placeholder="Name (optional)"
 								on:blur={(e) =>
-									(transitive.name = e.currentTarget.value)}
+									actions.rename_transitive(
+										rule_i,
+										e.currentTarget.value,
+									)}
 							/>
 						</div>
 
 						<div class="flex flex-wrap items-center gap-3">
 							<span class="font-semibold">Chain:</span>
 
-							<EdgeFieldSelector
-								fields={plugin.settings.edge_fields}
-								on:select={(e) => {
-									if (e.detail)
-										transitive.chain = [
-											...transitive.chain,
-											{ field: e.detail.label },
-										];
-								}}
-							/>
-
-							{#if transitive.chain.length}
+							{#if rule.chain.length}
 								<div class="flex flex-wrap gap-3">
-									{#each transitive.chain as item, c_i (c_i + (item.field ?? ""))}
-										<div class="flex items-center gap-1">
-											<code>{item.field}</code>
-
-											<button
-												class="clickable-icon"
-												on:click={() => {
-													transitive.chain =
-														transitive.chain.filter(
-															(_, j) => j !== c_i,
-														);
-												}}
-											>
-												X
-											</button>
-										</div>
+									{#each rule.chain as attr, attr_i (attr_i + (attr.field ?? ""))}
+										<Tag
+											tag={attr.field ?? ""}
+											title="Right click for more actions."
+											on:contextmenu={context_menus.chain_field(
+												rule_i,
+												attr_i,
+											)}
+										/>
 									{/each}
 								</div>
 							{:else}
 								<span class="search-empty-state my-0">
-									No fields in the chain. Use the selector to
-									add some
+									No fields in the chain.
 								</span>
 							{/if}
+
+							<EdgeFieldSelector
+								fields={plugin.settings.edge_fields}
+								on:select={(e) =>
+									actions.add_chain_field(rule_i, e.detail)}
+							/>
 						</div>
 
 						<div>
@@ -147,11 +259,11 @@
 							<EdgeFieldSelector
 								undefine_on_change={false}
 								fields={plugin.settings.edge_fields}
-								on:select={(e) => {
-									if (e.detail) {
-										transitive.close_field = e.detail.label;
-									}
-								}}
+								field={plugin.settings.edge_fields.find(
+									(f) => f.label === rule.close_field,
+								)}
+								on:select={(e) =>
+									actions.set_close_field(rule_i, e.detail)}
 							/>
 						</div>
 
@@ -162,12 +274,12 @@
 								type="number"
 								min={0}
 								max={100}
-								value={transitive.rounds}
-								on:blur={(e) => {
-									const num = +e.currentTarget.value;
-
-									if (!isNaN(num)) transitive.rounds = num;
-								}}
+								value={rule.rounds}
+								on:blur={(e) =>
+									actions.set_rounds(
+										rule_i,
+										+e.currentTarget.value,
+									)}
 							/>
 						</div>
 
@@ -176,7 +288,12 @@
 
 							<input
 								type="checkbox"
-								bind:checked={transitive.close_reversed}
+								bind:checked={rule.close_reversed}
+								on:click={(e) =>
+									actions.set_close_reversed(
+										rule_i,
+										e.currentTarget.checked,
+									)}
 							/>
 						</div>
 					</div>

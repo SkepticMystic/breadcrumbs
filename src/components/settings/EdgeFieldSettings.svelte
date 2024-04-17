@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { PlusIcon, SaveIcon } from "lucide-svelte";
+	import { Menu } from "obsidian";
+	import { ICON_SIZE } from "src/const";
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import Tag from "../obsidian/tag.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -110,20 +114,70 @@
 			},
 		},
 	};
+
+	const context_menus = {
+		field_group:
+			(edge_field: EdgeField, group_label: string) => (e: MouseEvent) => {
+				const menu = new Menu();
+
+				menu.addItem((item) =>
+					item
+						.setTitle("Remove from Group")
+						.setIcon("x")
+						.onClick(() =>
+							actions.groups.remove_field(
+								plugin.settings.edge_field_groups.find(
+									(g) => g.label === group_label,
+								),
+								edge_field.label,
+							),
+						),
+				);
+
+				menu.showAtMouseEvent(e);
+			},
+
+		group_field:
+			(group: EdgeFieldGroup, field_label: string) => (e: MouseEvent) => {
+				const menu = new Menu();
+
+				menu.addItem((item) =>
+					item
+						.setTitle("Remove Field")
+						.setIcon("x")
+						.onClick(() =>
+							actions.groups.remove_field(group, field_label),
+						),
+				);
+
+				menu.showAtMouseEvent(e);
+			},
+	};
 </script>
 
 <div class="flex flex-col">
-	<div class="flex flex-wrap items-center gap-2">
-		<button on:click={actions.fields.add}> New Edge Field </button>
+	<div class="flex flex-wrap items-center gap-1">
+		<button class="flex items-center gap-1" on:click={actions.fields.add}>
+			<PlusIcon size={ICON_SIZE} />
+			New Edge Field
+		</button>
 
-		<button on:click={actions.groups.add}> New Group </button>
+		<button class="flex items-center gap-1" on:click={actions.groups.add}>
+			<PlusIcon size={ICON_SIZE} />
+			New Group
+		</button>
 
-		<button disabled={!dirty} on:click={actions.save}> Save </button>
+		<button
+			class="flex items-center gap-1"
+			disabled={!dirty}
+			on:click={actions.save}
+		>
+			<SaveIcon size={ICON_SIZE} />
+			Save
+		</button>
 
 		{#if dirty}
-			<span style="color: var(--text-warning);">
-				Remember to save your changes!
-			</span>
+			<span class="text-warning"> Remember to save your changes! </span>
 		{/if}
 	</div>
 
@@ -160,30 +214,17 @@
 				<div class="flex flex-wrap items-center gap-1.5">
 					<span>Groups</span>
 
-					<!-- TODO: Rather right click context menu instead of delete button. Same for group fields below -->
 					{#each group_labels as group_label}
 						<div class="flex items-center gap-0.5">
-							<a
-								class="tag"
-								title="Jump to group"
+							<Tag
+								tag={group_label}
 								href="#BC-edge-group-{group_label}"
-							>
-								{group_label}
-							</a>
-
-							<button
-								class="h-5 w-3"
-								title="Remove field from group"
-								on:click={() =>
-									actions.groups.remove_field(
-										plugin.settings.edge_field_groups.find(
-											(g) => g.label === group_label,
-										),
-										edge_field.label,
-									)}
-							>
-								x
-							</button>
+								title="Jump to group. Right click for more actions."
+								on:contextmenu={context_menus.field_group(
+									edge_field,
+									group_label,
+								)}
+							/>
 						</div>
 					{/each}
 
@@ -252,24 +293,17 @@
 				<div class="flex flex-wrap items-center gap-1.5">
 					<span>Fields</span>
 
-					{#each group.fields as field}
+					{#each group.fields as field_label}
 						<div class="flex items-center gap-0.5">
-							<a
-								class="tag"
-								title="Jump to field"
-								href="#BC-edge-field-{field}"
-							>
-								{field}
-							</a>
-
-							<button
-								class="h-5 w-3"
-								title="Click to remove field from group"
-								on:click={() =>
-									actions.groups.remove_field(group, field)}
-							>
-								x
-							</button>
+							<Tag
+								tag={field_label}
+								href="#BC-edge-field-{field_label}"
+								title="Jump to field. Right click for more actions."
+								on:contextmenu={context_menus.group_field(
+									group,
+									field_label,
+								)}
+							/>
 						</div>
 					{/each}
 
