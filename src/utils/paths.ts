@@ -15,6 +15,7 @@ const drop_folder = (path: string) => path.split("/").pop()!;
 
 const dirname = (path: string) => path.split("/").slice(0, -1).join("/");
 
+// TODO: This should do the same thing as TFile.basename, specifically, drop .ext
 /** Keeps .ext */
 const basename = (path: string) => path.split("/").pop()!;
 

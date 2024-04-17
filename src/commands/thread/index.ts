@@ -23,7 +23,7 @@ export const thread = async (
 		source: {
 			path: source_file.path,
 			folder: source_file.parent?.path ?? "",
-			basename: Paths.drop_ext(source_file.basename),
+			basename: source_file.basename,
 		},
 	};
 	log.info("template_data", template_data);
