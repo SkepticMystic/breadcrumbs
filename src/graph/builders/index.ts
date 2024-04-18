@@ -113,9 +113,12 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 				return;
 			}
 
-			const result = _add_implied_edges_transitive(graph, plugin, rule, {
+			const result = _add_implied_edges_transitive(
+				graph,
+				plugin,
+				rule,
 				round,
-			});
+			);
 
 			edges.push(...result.edges);
 			implied_edge_results.transitive.push(...result.errors);

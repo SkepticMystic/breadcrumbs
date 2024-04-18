@@ -57,10 +57,6 @@ describe("migration", () => {
 					label: "hierarchy 1",
 					fields: ["up", "down", "same", "next", "prev"],
 				},
-				{
-					label: "hierarchy 2",
-					fields: ["parent", "sibling", "child", "right", "left"],
-				},
 			],
 			implied_relations: {
 				transitive: [
@@ -521,14 +517,6 @@ describe("migration", () => {
 				{
 					label: "hierarchy 1",
 					fields: ["up", "down", "same", "next", "prev"],
-				},
-				{
-					label: "hierarchy 2",
-					fields: ["parent", "sibling", "child", "right", "left"],
-				},
-				{
-					label: "hierarchy 3",
-					fields: ["r-parent", "half-sibling", "r-child"],
 				},
 			],
 			implied_relations: {

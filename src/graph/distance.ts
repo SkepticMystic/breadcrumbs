@@ -1,20 +1,21 @@
-import type { BCEdge } from "./MyMultiGraph";
+import type { TraversalStackItem } from "./traverse";
 
-const from_paths = (all_paths: BCEdge[][]) => {
+const from_traversal_items = (items: TraversalStackItem[]) => {
 	const distances = new Map<string, number>();
 
-	all_paths.forEach((path) => {
-		path.forEach(({ target_id }, depth) => {
-			distances.set(
-				target_id,
-				Math.min(distances.get(target_id) ?? Infinity, depth + 1),
-			);
-		});
+	items.forEach((item) => {
+		distances.set(
+			item.edge.target_id,
+			Math.min(
+				distances.get(item.edge.target_id) ?? Infinity,
+				item.depth + 1,
+			),
+		);
 	});
 
 	return distances;
 };
 
 export const Distance = {
-	from_paths,
+	from_traversal_items,
 };

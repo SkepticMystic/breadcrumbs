@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { MarkdownRenderer } from "obsidian";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Distance } from "src/graph/distance";
-	import { Traverse } from "src/graph/traverse";
+	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
 	import {
 		get_edge_sorter,
 		has_edge_attrs,
@@ -13,9 +12,9 @@
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { remove_duplicates_by } from "src/utils/arrays";
 	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
+	import { is_between } from "src/utils/numbers";
 	import { Paths } from "src/utils/paths";
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import { onMount } from "svelte";
@@ -28,7 +27,7 @@
 
 	const sort = get_edge_sorter(options.sort, plugin.graph);
 
-	let all_paths: BCEdge[][] = [];
+	let traversal_items: TraversalStackItem[] = [];
 	let distances: Map<string, number> = new Map();
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
@@ -38,32 +37,30 @@
 			? $active_file_store.path
 			: "";
 
-	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
-
 	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
-		all_paths = get_all_paths();
-		distances = Distance.from_paths(all_paths);
-
-		log.debug("distances", distances);
+		traversal_items = get_traversal_items();
+		distances = Distance.from_traversal_items(traversal_items);
 	};
 
 	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.all_paths("depth_first", plugin.graph, source_path, (e) =>
-			has_edge_attrs(e, {
+		Traverse.gather_items(plugin.graph, source_path, (item) =>
+			has_edge_attrs(item.edge, {
 				...attr,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
 
-	const get_all_paths = () => {
+	const edge_field_labels =
+		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+
+	const get_traversal_items = () => {
 		if (source_path && plugin.graph.hasNode(source_path)) {
 			return options.merge_fields
 				? base_traversal({ $or_fields: options.fields })
-				: (
-						options.fields ??
-						plugin.settings.edge_fields.map((f) => f.label)
-					).flatMap((field) => base_traversal({ field }));
+				: edge_field_labels.flatMap((field) =>
+						base_traversal({ field }),
+					);
 		} else {
 			return [];
 		}
@@ -71,21 +68,16 @@
 
 	onMount(update);
 
-	// Prioritise closer edges
-	$: sorted = all_paths.map((path) =>
-		path.slice().sort((a, b) => {
-			const a_dist = distances.get(a.target_id) ?? 0;
-			const b_dist = distances.get(b.target_id) ?? 0;
-
-			return a_dist - b_dist;
-		}),
-	);
-
-	$: sliced = sorted.map((path) =>
-		path.slice(options.depth[0], options.depth[1]),
-	);
-
-	$: edges = remove_duplicates_by(sliced.flat(), (e) => e.id).sort(sort);
+	$: edges = traversal_items
+		.filter((item) =>
+			is_between(
+				distances.get(item.edge.target_id) ?? 0,
+				options.depth[0] + 1,
+				options.depth[1],
+			),
+		)
+		.map((item) => item.edge)
+		.sort(sort);
 
 	$: mermaid = wrap_in_codeblock(
 		Mermaid.from_edges(edges, {
@@ -151,7 +143,7 @@
 		</h3>
 	{/if}
 
-	{#if edges.length}
+	{#if traversal_items.length}
 		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
 	https://mermaid.js.org/syntax/flowchart.html#width -->
 		<div

@@ -187,7 +187,18 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.collapse = value === "true");
 			}
 
+			// @ts-expect-error: TODO: Remove once everyone has migrated
+			case "merge-hierarchies":
 			case "merge-fields": {
+				// @ts-expect-error
+				if (key === "merge-hierarchies") {
+					errors.push({
+						path: key,
+						code: "deprecated_field",
+						message: `The 'merge-hierarchies' field is deprecated. Use 'merge-fields' instead.`,
+					});
+				}
+
 				return (parsed.merge_fields = value === "true");
 			}
 

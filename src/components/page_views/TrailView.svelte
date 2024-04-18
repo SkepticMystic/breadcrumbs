@@ -11,9 +11,13 @@
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
+	// TODO: I've copped-out here, building the view from edge_tree seems crazy hard.
+	// So I just use all_paths
 	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.all_paths("depth_first", plugin.graph, file_path, (e) =>
-			has_edge_attrs(e, attr),
+		Traverse.tree_to_all_paths(
+			Traverse.build_tree(plugin.graph, file_path, {}, (e) =>
+				has_edge_attrs(e, attr),
+			),
 		);
 
 	$: edge_field_labels = resolve_field_group_labels(

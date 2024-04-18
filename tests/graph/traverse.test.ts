@@ -3,8 +3,10 @@ import { Traverse } from "src/graph/traverse";
 import { _mock_edge } from "tests/__mocks__/graph";
 import { describe, expect, test } from "vitest";
 
+// TODO: This isn't the _best_ way to test these traversal functions
+// But it does make writing the target data simpler
 describe("all_paths", () => {
-	test("straight-line", (t) => {
+	test("straight-line", () => {
 		const graph = new BCGraph({
 			edges: [
 				_mock_edge("a", "b", {}),
@@ -13,24 +15,21 @@ describe("all_paths", () => {
 			],
 		});
 
-		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
-			(path) =>
-				path.map((e) => ({
-					source_id: e.source_id,
-					target_id: e.target_id,
-				})),
-		);
+		const edges = Traverse.flatten_tree(
+			Traverse.build_tree(graph, "a", {}),
+		).map((item) => ({
+			source_id: item.edge.source_id,
+			target_id: item.edge.target_id,
+		}));
 
-		expect(all_paths).toEqual([
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
-				{ source_id: "c", target_id: "d" },
-			],
+		expect(edges).toStrictEqual([
+			{ source_id: "a", target_id: "b" },
+			{ source_id: "b", target_id: "c" },
+			{ source_id: "c", target_id: "d" },
 		]);
 	});
 
-	test("fork", (t) => {
+	test("fork", () => {
 		const graph = new BCGraph({
 			edges: [
 				_mock_edge("a", "b", {}),
@@ -39,27 +38,21 @@ describe("all_paths", () => {
 			],
 		});
 
-		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
-			(path) =>
-				path.map((e) => ({
-					source_id: e.source_id,
-					target_id: e.target_id,
-				})),
-		);
+		const edges = Traverse.flatten_tree(
+			Traverse.build_tree(graph, "a", {}),
+		).map((item) => ({
+			source_id: item.edge.source_id,
+			target_id: item.edge.target_id,
+		}));
 
-		expect(all_paths).toEqual([
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
-			],
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "d" },
-			],
+		expect(edges).toEqual([
+			{ source_id: "a", target_id: "b" },
+			{ source_id: "b", target_id: "c" },
+			{ source_id: "b", target_id: "d" },
 		]);
 	});
 
-	test("diamond", (t) => {
+	test("diamond", () => {
 		const graph = new BCGraph({
 			edges: [
 				_mock_edge("a", "b", {}),
@@ -70,29 +63,23 @@ describe("all_paths", () => {
 			],
 		});
 
-		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
-			(path) =>
-				path.map((e) => ({
-					source_id: e.source_id,
-					target_id: e.target_id,
-				})),
-		);
+		const edges = Traverse.flatten_tree(
+			Traverse.build_tree(graph, "a", {}),
+		).map((item) => ({
+			source_id: item.edge.source_id,
+			target_id: item.edge.target_id,
+		}));
 
-		expect(all_paths).toEqual([
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
-				{ source_id: "c", target_id: "e" },
-			],
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "d" },
-				{ source_id: "d", target_id: "e" },
-			],
+		expect(edges).toEqual([
+			{ source_id: "a", target_id: "b" },
+			{ source_id: "b", target_id: "c" },
+			{ source_id: "c", target_id: "e" },
+			{ source_id: "b", target_id: "d" },
+			{ source_id: "d", target_id: "e" },
 		]);
 	});
 
-	test("loop", (t) => {
+	test("loop", () => {
 		const graph = new BCGraph({
 			edges: [
 				_mock_edge("a", "b", {}),
@@ -101,21 +88,17 @@ describe("all_paths", () => {
 			],
 		});
 
-		const all_paths = Traverse.all_paths("depth_first", graph, "a").map(
-			(path) =>
-				path.map((e) => ({
-					source_id: e.source_id,
-					target_id: e.target_id,
-				})),
-		);
+		const edges = Traverse.flatten_tree(
+			Traverse.build_tree(graph, "a", {}),
+		).map((item) => ({
+			source_id: item.edge.source_id,
+			target_id: item.edge.target_id,
+		}));
 
-		expect(all_paths).toEqual([
-			[
-				{ source_id: "a", target_id: "b" },
-				{ source_id: "b", target_id: "c" },
-				{ source_id: "c", target_id: "b" },
-				// Then Stop! don't loop back to c then b, and so on
-			],
+		expect(edges).toEqual([
+			{ source_id: "a", target_id: "b" },
+			{ source_id: "b", target_id: "c" },
+			{ source_id: "c", target_id: "b" },
 		]);
 	});
 

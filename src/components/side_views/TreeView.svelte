@@ -7,7 +7,6 @@
 	} from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { remove_duplicates_by } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
@@ -29,31 +28,22 @@
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
 	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.nest_all_paths(
-			Traverse.all_paths(
-				"depth_first",
-				plugin.graph,
-				$active_file_store!.path,
-				(edge) => has_edge_attrs(edge, attr),
-			).map((path) =>
-				// TODO: This post-processing should be done in the traversal
-				remove_duplicates_by(
-					path.filter(
-						(e) =>
-							// Dont show edges that eventually loop back to the active file
-							e.target_id !== $active_file_store!.path,
-					),
-					(e) => e.target_id,
-				),
-			),
+		Traverse.build_tree(
+			plugin.graph,
+			$active_file_store!.path,
+			// TODO: Customisable max depth
+			{ max_depth: 20 },
+			(edge) => has_edge_attrs(edge, attr),
 		);
+
+	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 
 	$: edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
 	);
 
-	$: nested_edges =
+	$: tree =
 		$active_file_store && plugin.graph.hasNode($active_file_store.path)
 			? merge_fields
 				? base_traversal({ $or_fields: edge_field_labels })
@@ -61,8 +51,6 @@
 						base_traversal({ field }),
 					)
 			: [];
-
-	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
 </script>
 
 <div class="markdown-rendered BC-tree-view -mt-2">
@@ -103,15 +91,15 @@
 	</div>
 
 	<div class="BC-tree-view-items">
-		{#key nested_edges || sort}
-			{#if nested_edges.length}
+		{#key tree || sort}
+			{#if tree.length}
 				<NestedEdgeList
 					{sort}
 					{plugin}
 					{open_signal}
-					{nested_edges}
 					{show_attributes}
 					{show_node_options}
+					{tree}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

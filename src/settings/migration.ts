@@ -98,22 +98,18 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		});
 
 		old.hierarchies.forEach((hier, hier_i) => {
-			const field_labels = Object.values(hier.dirs)
+			Object.values(hier.dirs)
 				.flatMap((fields) => fields)
-				.filter(Boolean);
-
-			settings.edge_field_groups.push({
-				label: `hierarchy ${hier_i + 1}`,
-				fields: field_labels,
-			});
-
-			field_labels.forEach((label) => {
-				if (
-					!settings.edge_fields.find((field) => field.label === label)
-				) {
-					settings.edge_fields.push({ label });
-				}
-			});
+				.filter(Boolean)
+				.forEach((label) => {
+					if (
+						!settings.edge_fields.find(
+							(field) => field.label === label,
+						)
+					) {
+						settings.edge_fields.push({ label });
+					}
+				});
 
 			Object.entries(hier.implied_relationships).forEach(
 				([rel, { rounds }]) => {

@@ -1,6 +1,6 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { BCGraph, EdgeAttribute } from "src/graph/MyMultiGraph";
-import { Traverse, type NestedEdgePath } from "src/graph/traverse";
+import { Traverse, type EdgeTree } from "src/graph/traverse";
 import {
 	get_edge_sorter,
 	has_edge_attrs,
@@ -17,6 +17,8 @@ export namespace ListIndex {
 		// TODO: merge_fields: boolean;
 		indent: string;
 		fields: string[];
+		// TODO
+		max_depth?: number;
 		link_kind: LinkKind;
 		edge_sort_id: EdgeSortId;
 		field_group_labels: string[];
@@ -41,14 +43,11 @@ export namespace ListIndex {
 		},
 	};
 
-	const nested_paths_to_list_index = (
-		nested_paths: NestedEdgePath[],
-		options: Options,
-	) => {
+	const edge_tree_to_list_index = (tree: EdgeTree[], options: Options) => {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
-		nested_paths.forEach(({ children, depth, edge }) => {
+		tree.forEach(({ children, depth, edge }) => {
 			const display = stringify_node(edge.target_id, edge.target_attr, {
 				show_node_options: options.show_node_options,
 			});
@@ -66,7 +65,7 @@ export namespace ListIndex {
 
 			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
-			index += nested_paths_to_list_index(children, options);
+			index += edge_tree_to_list_index(children, options);
 		});
 
 		return index;
@@ -77,12 +76,10 @@ export namespace ListIndex {
 		start_node: string,
 		options: Options,
 	) =>
-		nested_paths_to_list_index(
-			Traverse.sort_nested_paths(
-				Traverse.nest_all_paths(
-					Traverse.all_paths("depth_first", graph, start_node, (e) =>
-						has_edge_attrs(e, { $or_fields: options.fields }),
-					),
+		edge_tree_to_list_index(
+			Traverse.sort_edge_tree(
+				Traverse.build_tree(graph, start_node, options, (e) =>
+					has_edge_attrs(e, { $or_fields: options.fields }),
 				),
 				get_edge_sorter(options.edge_sort_id, graph),
 			),

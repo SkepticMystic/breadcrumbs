@@ -211,55 +211,63 @@
 					</button>
 				</div>
 
-				<div class="flex flex-wrap items-center gap-1.5">
-					<span>Groups</span>
+				<!-- TODO: I don't think this key even does what I'm looking for
+				The intention is to update the groups_label references when the groups themselves change
+			To replicate an issue this cause, context-menu > remove field from group, then do that again. It doesn't remove the second time -->
+				{#key plugin.settings.edge_field_groups}
+					<div class="flex flex-wrap items-center gap-1.5">
+						<span>Groups</span>
 
-					{#each group_labels as group_label}
-						<div class="flex items-center gap-0.5">
-							<Tag
-								tag={group_label}
-								href="#BC-edge-group-{group_label}"
-								title="Jump to group. Right click for more actions."
-								on:contextmenu={context_menus.field_group(
-									edge_field,
-									group_label,
-								)}
-							/>
-						</div>
-					{/each}
-
-					{#if !group_labels.length}
-						<span class="search-empty-state my-0">{"<none>"}</span>
-					{/if}
-
-					<select
-						class="dropdown"
-						value=""
-						on:change={(e) => {
-							if (e.currentTarget.value) {
-								actions.groups.add_field(
-									plugin.settings.edge_field_groups.find(
-										(g) =>
-											g.label === e.currentTarget.value,
-									),
-									edge_field.label,
-								);
-
-								e.currentTarget.value = "";
-							}
-						}}
-					>
-						<option value="" disabled>Add to Group</option>
-
-						{#each plugin.settings.edge_field_groups as group}
-							{#if !group.fields.includes(edge_field.label)}
-								<option value={group.label}>
-									{group.label}
-								</option>
-							{/if}
+						{#each group_labels as group_label}
+							<div class="flex items-center gap-0.5">
+								<Tag
+									tag={group_label}
+									href="#BC-edge-group-{group_label}"
+									title="Jump to group. Right click for more actions."
+									on:contextmenu={context_menus.field_group(
+										edge_field,
+										group_label,
+									)}
+								/>
+							</div>
 						{/each}
-					</select>
-				</div>
+
+						{#if !group_labels.length}
+							<span class="search-empty-state my-0">
+								{"<none>"}
+							</span>
+						{/if}
+
+						<select
+							class="dropdown"
+							value=""
+							on:change={(e) => {
+								if (e.currentTarget.value) {
+									actions.groups.add_field(
+										plugin.settings.edge_field_groups.find(
+											(g) =>
+												g.label ===
+												e.currentTarget.value,
+										),
+										edge_field.label,
+									);
+
+									e.currentTarget.value = "";
+								}
+							}}
+						>
+							<option value="" disabled>Add to Group</option>
+
+							{#each plugin.settings.edge_field_groups as group}
+								{#if !group.fields.includes(edge_field.label)}
+									<option value={group.label}>
+										{group.label}
+									</option>
+								{/if}
+							{/each}
+						</select>
+					</div>
+				{/key}
 			</div>
 		{/each}
 	</div>
