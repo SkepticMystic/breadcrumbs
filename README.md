@@ -22,6 +22,10 @@ Media related to Breacrumbs. Thanks to everyone for sharing!
 -   [Obsidian Hub - Breadcrumbs for Comparative Law](https://publish.obsidian.md/hub/03+-+Showcases+%26+Templates/Plugin+Showcases/Breadcrumbs+for+Comparative+Law)
 -   [Obsidian Hub - How to get the most out of Breadcrumbs](https://publish.obsidian.md/hub/04+-+Guides%2C+Workflows%2C+%26+Courses/Guides/How+to+get+the+most+out+of+the+Breadcrumbs+plugin)
 
+# Credits
+
+-   [mProjectsCode](https://github.com/mProjectsCode): For their various PRs, insightful suggestions, and efficient graph-traversal algorithms
+
 # Feed my coffee problem
 
 If you're so inclined, you can buy me a coffee over here: https://ko-fi.com/skepticmystic :)
