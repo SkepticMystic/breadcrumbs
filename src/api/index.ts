@@ -19,11 +19,6 @@ export class BCAPI {
 		return this.plugin.settings.edge_field_groups;
 	}
 
-	// TODO
-	public buildObsGraph = () => {
-		throw new Error("Not implemented");
-	};
-
 	public refresh = () => this.plugin.refresh();
 	/** @deprecated Use refresh */
 	public refreshIndex = this.refresh;

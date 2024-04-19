@@ -128,6 +128,9 @@ const sort_edge_tree = (tree: EdgeTree[], sorter: EdgeSorter) => {
 	return tree.sort((a, b) => sorter(a.edge, b.edge));
 };
 
+// TODO: Not sure how, but we need to filter out paths that included the same target_id twice.
+// e.g. me -> spouse -> sibling-in-law under the rule [spouse, sibling, sibling] -> sibling-in-law
+// Yields me -->|sibling-in-law| spouse
 /** Find all paths of nodes connected by edges that pair-wise match the attrs in the chain */
 const get_transitive_chain_target_ids = (
 	graph: BCGraph,
