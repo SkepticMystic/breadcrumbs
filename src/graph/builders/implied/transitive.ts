@@ -3,7 +3,7 @@ import { Traverse } from "src/graph/traverse";
 import type { ImpliedEdgeBuilderResults } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
-import { url_search_params } from "src/utils/url";
+import { stringify_transitive_relation } from "src/utils/transitive_rules";
 
 export const _add_implied_edges_transitive = (
 	graph: BCGraph,
@@ -60,14 +60,3 @@ export const _add_implied_edges_transitive = (
 
 	return results;
 };
-
-// TODO: Move this to a util file
-export const stringify_transitive_relation = (
-	rule: Pick<
-		BreadcrumbsSettings["implied_relations"]["transitive"][number],
-		"chain" | "close_field" | "close_reversed"
-	>,
-) =>
-	`[${rule.chain
-		.map((attr) => url_search_params(attr, { trim_lone_param: true }))
-		.join(", ")}] ${rule.close_reversed ? "←" : "→"} ${rule.close_field}`;

@@ -2,13 +2,18 @@
 	import { ArrowDown, ArrowUp, PlusIcon, SaveIcon } from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
-	import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import {
+		stringify_transitive_relation,
+		transitive_rule_to_edges,
+	} from "src/utils/transitive_rules";
 	import { onDestroy } from "svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
+	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
+	import { Mermaid } from "src/utils/mermaid";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -289,6 +294,19 @@
 									)}
 							/>
 						</div>
+
+						{#if opens[rule_i]}
+							<MermaidDiagram
+								{plugin}
+								mermaid={Mermaid.from_edges(
+									transitive_rule_to_edges(rule),
+									{
+										show_attributes: ["field"],
+										collapse_opposing_edges: false,
+									},
+								)}
+							/>
+						{/if}
 					</div>
 				{/key}
 			</details>

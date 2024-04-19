@@ -1,7 +1,6 @@
 import { ListIndex } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
-import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
 import {
 	OLD_DIRECTIONS,
 	type BreadcrumbsSettings,
@@ -12,6 +11,7 @@ import {
 } from "src/interfaces/settings";
 import { log } from "src/logger";
 import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
+import { stringify_transitive_relation } from "src/utils/transitive_rules";
 
 const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 	switch (dir) {

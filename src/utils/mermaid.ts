@@ -47,6 +47,7 @@ const from_edges = (
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
 		show_attributes?: EdgeAttribute[];
+		collapse_opposing_edges?: false;
 		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
 		click?:
 			| { method: "class" }
@@ -103,12 +104,15 @@ const from_edges = (
 			node_map.get(edge.target_id)!.i,
 		];
 
-		const opposing_edge_i = mermaid_edges.findIndex(
-			(existing) =>
-				// NOTE: This is pretty intense, all opposing edges will collapse, because now there's no direction semantics
-				target_i === existing.source_i &&
-				source_i === existing.target_i,
-		);
+		const opposing_edge_i =
+			config?.collapse_opposing_edges !== false
+				? mermaid_edges.findIndex(
+						(existing) =>
+							// NOTE: This is pretty intense, all opposing edges will collapse, because now there's no direction semantics
+							target_i === existing.source_i &&
+							source_i === existing.target_i,
+					)
+				: -1;
 
 		if (opposing_edge_i === -1) {
 			// If there is no opposing edge, add the original edge
