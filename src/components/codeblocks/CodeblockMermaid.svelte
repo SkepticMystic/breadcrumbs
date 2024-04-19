@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { MarkdownRenderer } from "obsidian";
 	import { Distance } from "src/graph/distance";
 	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
 	import {
@@ -16,8 +15,8 @@
 	import { Mermaid } from "src/utils/mermaid";
 	import { is_between } from "src/utils/numbers";
 	import { Paths } from "src/utils/paths";
-	import { wrap_in_codeblock } from "src/utils/strings";
 	import { onMount } from "svelte";
+	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -79,59 +78,32 @@
 		.map((item) => item.edge)
 		.sort(sort);
 
-	$: mermaid = wrap_in_codeblock(
-		Mermaid.from_edges(edges, {
-			kind: "graph",
-			click: { method: "class" },
-			active_node_id: source_path,
-			renderer: options.mermaid_renderer,
-			direction: options.mermaid_direction,
-			show_attributes: options.show_attributes,
+	$: mermaid = Mermaid.from_edges(edges, {
+		kind: "graph",
+		click: { method: "class" },
+		active_node_id: source_path,
+		renderer: options.mermaid_renderer,
+		direction: options.mermaid_direction,
+		show_attributes: options.show_attributes,
 
-			get_node_label: (node_id, _attr) => {
-				const file = plugin.app.vault.getFileByPath(node_id);
+		get_node_label: (node_id, _attr) => {
+			const file = plugin.app.vault.getFileByPath(node_id);
 
-				return file
-					? plugin.app.fileManager
-							.generateMarkdownLink(file, source_path)
-							.slice(2, -2)
-					: Paths.drop_ext(
-							Links.resolve_to_absolute_path(
-								plugin.app,
-								node_id,
-								source_path,
-							),
-						);
-			},
-		}),
-		"mermaid",
-	);
+			return file
+				? plugin.app.fileManager
+						.generateMarkdownLink(file, source_path)
+						.slice(2, -2)
+				: Paths.drop_ext(
+						Links.resolve_to_absolute_path(
+							plugin.app,
+							node_id,
+							source_path,
+						),
+					);
+		},
+	});
+
 	$: log.debug(mermaid);
-
-	let mermaid_element: HTMLElement | undefined;
-
-	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
-	// and for the initial render the target element is undefined, so we need to check for that
-	const render_mermaid = (
-		mermaid_str: string,
-		target_el: HTMLElement | undefined,
-	) => {
-		if (target_el) {
-			log.debug("rendering mermaid");
-
-			target_el.empty();
-
-			MarkdownRenderer.render(
-				plugin.app,
-				mermaid_str,
-				target_el,
-				source_path,
-				plugin,
-			);
-		}
-	};
-
-	$: render_mermaid(mermaid, mermaid_element);
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -144,13 +116,7 @@
 	{/if}
 
 	{#if traversal_items.length}
-		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
-	https://mermaid.js.org/syntax/flowchart.html#width -->
-		<div
-			class="BC-codeblock-mermaid-graph"
-			style="max-width: var(--file-line-width);"
-			bind:this={mermaid_element}
-		></div>
+		<MermaidDiagram {plugin} {mermaid} {source_path} />
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
 	{/if}
