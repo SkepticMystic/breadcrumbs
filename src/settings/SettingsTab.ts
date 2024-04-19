@@ -50,6 +50,7 @@ const make_details_el = (
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
+	components: (EdgeFieldSettings | TransitiveImpliedRelations)[] = [];
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app, plugin);
@@ -63,23 +64,27 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		containerEl.addClass("BC-settings-tab");
 
-		new EdgeFieldSettings({
-			props: { plugin },
-			target: make_details_el(containerEl, {
-				s: { text: "> Edge Fields" },
-			}).children,
-		});
+		this.components.push(
+			new EdgeFieldSettings({
+				props: { plugin },
+				target: make_details_el(containerEl, {
+					s: { text: "> Edge Fields" },
+				}).children,
+			}),
+		);
 
 		// Implied Relations
 		containerEl.createEl("hr");
 		containerEl.createEl("h3", { text: "Implied Relations" });
 
-		new TransitiveImpliedRelations({
-			props: { plugin },
-			target: make_details_el(containerEl, {
-				s: { text: "> Transitive" },
-			}).children,
-		});
+		this.components.push(
+			new TransitiveImpliedRelations({
+				props: { plugin },
+				target: make_details_el(containerEl, {
+					s: { text: "> Transitive" },
+				}).children,
+			}),
+		);
 
 		// Edge Sources
 		containerEl.createEl("hr");
@@ -202,5 +207,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			plugin,
 			make_details_el(containerEl, { s: { text: "> Debug" } }).children,
 		);
+	}
+
+	hide() {
+		this.components.forEach((c) => c.$destroy());
 	}
 }

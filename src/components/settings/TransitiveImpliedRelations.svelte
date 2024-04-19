@@ -5,11 +5,20 @@
 	import { stringify_transitive_relation } from "src/graph/builders/implied/transitive";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { onDestroy } from "svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
+
+	onDestroy(() => {
+		if (dirty) {
+			new Notice(
+				"⚠️ Exited without saving changes to Implied Relation Settings. Your changes are still in effect, but were not saved. Go back and click 'Save' if you want them to persist.",
+			);
+		}
+	});
 
 	let dirty = false;
 	let transitives = [...plugin.settings.implied_relations.transitive];
@@ -133,33 +142,17 @@
 		Breadcrumbs fields that collapse into a single field. For example, if
 		you have the fields: "spouse", "sibling", and "sibling-in-law", you can
 		add the transitive chain
-		<code>[spouse, sibling] -> sibling-in-law</code>. In other words, your
-		spouse's sibling is your sibling-in-law.
+		<code>
+			{stringify_transitive_relation({
+				close_reversed: false,
+				close_field: "sibling-in-law",
+				chain: [{ field: "spouse" }, { field: "sibling" }],
+			})}
+		</code>. In other words, your spouse's sibling is your sibling-in-law.
 	</p>
 
 	<div class="my-2 flex items-center gap-2">
-		<button
-			aria-label="Add New Transitive Implied Relation"
-			on:click={async () =>
-				(transitives = [
-					...transitives,
-					{
-						name: "",
-						chain: [],
-						rounds: 1,
-						close_reversed: false,
-						close_field: plugin.settings.edge_fields[0].label,
-					},
-				])}
-		>
-			<PlusIcon size={ICON_SIZE} />
-		</button>
-
-		<button
-			class="flex items-center gap-1"
-			disabled={!dirty}
-			on:click={actions.save}
-		>
+		<button class="flex items-center gap-1" on:click={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
@@ -170,7 +163,7 @@
 	</div>
 
 	<div class="flex flex-col gap-3">
-		{#each transitives as rule, rule_i (stringify_transitive_relation(rule))}
+		{#each transitives as rule, rule_i (stringify_transitive_relation(rule) + rule_i)}
 			<details class="rounded border p-2" bind:open={opens[rule_i]}>
 				<summary class="flex items-center justify-between gap-2">
 					<div class="flex items-center gap-2">
@@ -300,6 +293,14 @@
 				{/key}
 			</details>
 		{/each}
+
+		<button
+			class="flex items-center gap-1"
+			on:click={actions.add_transitive}
+		>
+			<PlusIcon size={ICON_SIZE} />
+			Add New Transitive Implied Relation
+		</button>
 	</div>
 </div>
 

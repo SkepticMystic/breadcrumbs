@@ -1,14 +1,28 @@
 <script lang="ts">
 	import { PlusIcon, SaveIcon } from "lucide-svelte";
-	import { Menu } from "obsidian";
+	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { onDestroy } from "svelte";
 	import Tag from "../obsidian/tag.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
+	onDestroy(() => {
+		if (dirty) {
+			new Notice(
+				"⚠️ Exited without saving changes to Edge Field Settings. Your changes are still in effect, but were not saved. Go back and click 'Save' if you want them to persist.",
+			);
+		}
+	});
+
 	let dirty = false;
+
+	let filters = {
+		fields: "",
+		groups: "",
+	};
 
 	const actions = {
 		save: async () => {
@@ -45,14 +59,15 @@
 			rename: (edge_field: EdgeField, new_label: string) => {
 				if (edge_field.label === new_label) return;
 
-				edge_field.label = new_label;
-
 				plugin.settings.edge_field_groups.forEach((group) => {
 					const index = group.fields.indexOf(edge_field.label);
 					if (index === -1) return;
 
 					group.fields[index] = new_label;
 				});
+
+				// NOTE: Only rename the field after updating the groups
+				edge_field.label = new_label;
 
 				dirty = true;
 				plugin = plugin;
@@ -156,56 +171,58 @@
 </script>
 
 <div class="flex flex-col">
-	<div class="flex flex-wrap items-center gap-1">
-		<button class="flex items-center gap-1" on:click={actions.fields.add}>
-			<PlusIcon size={ICON_SIZE} />
-			New Edge Field
-		</button>
-
-		<button class="flex items-center gap-1" on:click={actions.groups.add}>
-			<PlusIcon size={ICON_SIZE} />
-			New Group
-		</button>
-
-		<button
-			class="flex items-center gap-1"
-			disabled={!dirty}
-			on:click={actions.save}
-		>
+	<div class="my-2 flex items-center gap-2">
+		<button class="flex items-center gap-1" on:click={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
 
 		{#if dirty}
-			<span class="text-warning"> Remember to save your changes! </span>
+			<span class="text-warning">Unsaved changes</span>
 		{/if}
 	</div>
 
-	<h4>Fields</h4>
+	<div class="flex items-center gap-3">
+		<h4>Fields</h4>
+
+		<div class="flex gap-1">
+			<input
+				type="text"
+				placeholder="Filter Fields by Name"
+				bind:value={filters.fields}
+			/>
+			<button
+				class="w-8"
+				aria-label="Clear Filter"
+				disabled={filters.fields === ""}
+				on:click={() => (filters.fields = "")}
+			>
+				X
+			</button>
+		</div>
+	</div>
+
 	<div class="flex flex-col gap-7">
-		{#each plugin.settings.edge_fields as edge_field, i}
+		{#each plugin.settings.edge_fields.filter( (f) => f.label.includes(filters.fields), ) as field}
 			{@const group_labels = plugin.settings.edge_field_groups
-				.filter((group) => group.fields.includes(edge_field.label))
+				.filter((group) => group.fields.includes(field.label))
 				.map((g) => g.label)}
 
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
-						id="BC-edge-field-{edge_field.label}"
+						id="BC-edge-field-{field.label}"
 						type="text"
 						class="w-48 scroll-mt-24"
 						placeholder="Field Label"
-						value={edge_field.label}
+						value={field.label}
 						on:blur={(e) =>
-							actions.fields.rename(
-								edge_field,
-								e.currentTarget.value,
-							)}
+							actions.fields.rename(field, e.currentTarget.value)}
 					/>
 					<button
 						class="w-8"
 						title="Remove Field"
-						on:click={() => actions.fields.remove(edge_field)}
+						on:click={() => actions.fields.remove(field)}
 					>
 						X
 					</button>
@@ -225,7 +242,7 @@
 									href="#BC-edge-group-{group_label}"
 									title="Jump to group. Right click for more actions."
 									on:contextmenu={context_menus.field_group(
-										edge_field,
+										field,
 										group_label,
 									)}
 								/>
@@ -249,7 +266,7 @@
 												g.label ===
 												e.currentTarget.value,
 										),
-										edge_field.label,
+										field.label,
 									);
 
 									e.currentTarget.value = "";
@@ -259,7 +276,7 @@
 							<option value="" disabled>Add to Group</option>
 
 							{#each plugin.settings.edge_field_groups as group}
-								{#if !group.fields.includes(edge_field.label)}
+								{#if !group.fields.includes(field.label)}
 									<option value={group.label}>
 										{group.label}
 									</option>
@@ -270,13 +287,37 @@
 				{/key}
 			</div>
 		{/each}
+
+		<button class="flex items-center gap-1" on:click={actions.fields.add}>
+			<PlusIcon size={ICON_SIZE} />
+			New Edge Field
+		</button>
 	</div>
 
 	<hr />
 
-	<h4>Groups</h4>
+	<div class="flex items-center gap-3">
+		<h4>Groups</h4>
+
+		<div class="flex gap-1">
+			<input
+				type="text"
+				placeholder="Filter Groups by Name"
+				bind:value={filters.groups}
+			/>
+			<button
+				class="w-8"
+				aria-label="Clear Filter"
+				disabled={filters.groups === ""}
+				on:click={() => (filters.groups = "")}
+			>
+				X
+			</button>
+		</div>
+	</div>
+
 	<div class="flex flex-col gap-7">
-		{#each plugin.settings.edge_field_groups as group}
+		{#each plugin.settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups), ) as group}
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
@@ -346,5 +387,10 @@
 				</div>
 			</div>
 		{/each}
+
+		<button class="flex items-center gap-1" on:click={actions.groups.add}>
+			<PlusIcon size={ICON_SIZE} />
+			New Group
+		</button>
 	</div>
 </div>
