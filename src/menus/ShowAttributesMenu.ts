@@ -18,20 +18,13 @@ export const ShowAttributesSelectorMenu = ({
 	const all = possible.length === value.length;
 
 	menu.addItem((item) =>
-		item
-			.setTitle(all ? "None" : "All")
-			.setChecked(all)
-			.onClick(() => {
-				if (all) {
-					cb([]);
-				} else {
-					cb(possible);
-				}
-			}),
+		item.setTitle(all ? "None" : "All").onClick(() => {
+			cb(all ? [] : possible);
+		}),
 	);
 
 	menu.addSeparator();
-	
+
 	const add_item = (attr: EdgeAttribute) => {
 		const included = value.includes(attr);
 

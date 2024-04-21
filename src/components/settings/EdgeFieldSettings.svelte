@@ -9,6 +9,8 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
+	// TODO: See if const settings = plugin.settings works
+
 	onDestroy(() => {
 		if (dirty) {
 			new Notice(
@@ -57,7 +59,17 @@
 			},
 
 			rename: (edge_field: EdgeField, new_label: string) => {
-				if (edge_field.label === new_label) return;
+				if (edge_field.label === new_label) {
+					return;
+				} else if (new_label === "") {
+					return new Notice("Field label cannot be empty.");
+				} else if (
+					plugin.settings.edge_fields.some(
+						(f) => f.label === new_label,
+					)
+				) {
+					return new Notice("Field label must be unique.");
+				}
 
 				plugin.settings.edge_field_groups.forEach((group) => {
 					const index = group.fields.indexOf(edge_field.label);
@@ -65,6 +77,61 @@
 
 					group.fields[index] = new_label;
 				});
+
+				plugin.settings.implied_relations.transitive.forEach((rule) => {
+					rule.chain = rule.chain.map((attr) =>
+						attr.field === edge_field.label
+							? { ...attr, field: new_label }
+							: attr,
+					);
+
+					rule.close_field =
+						rule.close_field === edge_field.label
+							? new_label
+							: rule.close_field;
+				});
+
+				plugin.settings.explicit_edge_sources.tag_note.default_field =
+					plugin.settings.explicit_edge_sources.tag_note
+						.default_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources.tag_note
+								.default_field;
+
+				plugin.settings.explicit_edge_sources.list_note.default_neighbour_field =
+					plugin.settings.explicit_edge_sources.list_note
+						.default_neighbour_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources.list_note
+								.default_neighbour_field;
+
+				plugin.settings.explicit_edge_sources.dendron_note.default_field =
+					plugin.settings.explicit_edge_sources.dendron_note
+						.default_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources.dendron_note
+								.default_field;
+
+				plugin.settings.explicit_edge_sources.johnny_decimal_note.default_field =
+					plugin.settings.explicit_edge_sources.johnny_decimal_note
+						.default_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources
+								.johnny_decimal_note.default_field;
+
+				plugin.settings.explicit_edge_sources.date_note.default_field =
+					plugin.settings.explicit_edge_sources.date_note
+						.default_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources.date_note
+								.default_field;
+
+				plugin.settings.explicit_edge_sources.regex_note.default_field =
+					plugin.settings.explicit_edge_sources.regex_note
+						.default_field === edge_field.label
+						? new_label
+						: plugin.settings.explicit_edge_sources.regex_note
+								.default_field;
 
 				// NOTE: Only rename the field after updating the groups
 				edge_field.label = new_label;
@@ -97,6 +164,31 @@
 
 			rename: (group: EdgeFieldGroup, new_label: string) => {
 				if (group.label === new_label) return;
+
+				plugin.settings.views.page.trail.field_group_labels =
+					plugin.settings.views.page.trail.field_group_labels.map(
+						(label) => (label === group.label ? new_label : label),
+					);
+
+				plugin.settings.views.page.prev_next.field_group_labels.prev =
+					plugin.settings.views.page.prev_next.field_group_labels.prev.map(
+						(label) => (label === group.label ? new_label : label),
+					);
+
+				plugin.settings.views.page.prev_next.field_group_labels.next =
+					plugin.settings.views.page.prev_next.field_group_labels.next.map(
+						(label) => (label === group.label ? new_label : label),
+					);
+
+				plugin.settings.views.side.matrix.field_group_labels =
+					plugin.settings.views.side.matrix.field_group_labels.map(
+						(label) => (label === group.label ? new_label : label),
+					);
+
+				plugin.settings.views.side.matrix.field_group_labels =
+					plugin.settings.views.side.matrix.field_group_labels.map(
+						(label) => (label === group.label ? new_label : label),
+					);
 
 				group.label = new_label;
 

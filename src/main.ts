@@ -99,6 +99,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 			const metadatacache_init_event = this.app.metadataCache.on(
 				"initialized",
 				async () => {
+					log.debug("on:metadatacache-initialized");
+
 					await this.refresh();
 					this.app.metadataCache.offref(metadatacache_init_event);
 				},

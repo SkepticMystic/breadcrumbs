@@ -35,6 +35,7 @@ export interface BreadcrumbsSettings {
 		}[];
 	};
 
+	// NOTE: Anytime a new default_field prop is added, be sure to update it on rename in EdgeFieldSettings.svelte
 	explicit_edge_sources: {
 		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
 		// The two are not distinguished, because Dataview doesn't distinguish them

@@ -8,6 +8,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 	"date_note",
 	"folder_note",
 	"regex_note",
+	// TODO: "zetel_note", // Can date_notes do this already?
 ] as const;
 
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];
