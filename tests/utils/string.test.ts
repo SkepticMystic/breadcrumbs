@@ -1,4 +1,8 @@
-import { resolve_templates, split_and_trim } from "src/utils/strings";
+import {
+	resolve_templates,
+	split_and_trim,
+	wrap_in_codeblock,
+} from "src/utils/strings";
 import { describe, test } from "vitest";
 
 describe("split_and_trim", () => {
@@ -52,5 +56,15 @@ describe("resolve_templates", (d) => {
 		t.expect(resolve_templates("Hello, {{user.name}}!", { user: {} })).toBe(
 			"Hello, {{user.name}}!",
 		);
+	});
+});
+
+describe("wrap_in_codeblock", () => {
+	test("no lang", (t) => {
+		t.expect(wrap_in_codeblock("hello")).toBe("```\nhello\n```");
+	});
+
+	test("with lang", (t) => {
+		t.expect(wrap_in_codeblock("hello", "ts")).toBe("```ts\nhello\n```");
 	});
 });

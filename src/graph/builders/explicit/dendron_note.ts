@@ -58,10 +58,7 @@ const handle_dendron_note = (
 	// NOTE: There are easier ways to do alot of the below.
 	//   But the `file` type between obsidian and dataview doesn't have the common fields needed.
 	//   So we rebuild from `path`
-	// drop_ext, as the delimiter might be '.'
-	const source_basename_splits = Paths.drop_ext(
-		Paths.basename(source_path),
-	).split(delimiter);
+	const source_basename_splits = Paths.basename(source_path).split(delimiter);
 	if (source_basename_splits.length === 1) return;
 
 	const dendron_note_info = get_dendron_note_info(

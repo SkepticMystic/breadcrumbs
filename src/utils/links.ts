@@ -13,7 +13,7 @@ const resolve_to_absolute_path = (
 ) => {
 	const folder = app.fileManager.getNewFileParent(source_path, relative_path);
 
-	return Paths.join(folder.path, Paths.basename(relative_path));
+	return Paths.build(folder.path, Paths.basename(relative_path), "md");
 };
 
 // TODO: Should I be using app.fileManager.generateMarkdownLink here?

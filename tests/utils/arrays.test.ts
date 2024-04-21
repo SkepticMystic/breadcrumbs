@@ -1,8 +1,10 @@
 import {
+	ensure_is_array,
 	ensure_square_array,
 	gather_by_runs,
 	group_by,
 	remove_duplicates,
+	remove_duplicates_by,
 	swap_items,
 	transpose,
 } from "src/utils/arrays";
@@ -10,6 +12,7 @@ import { describe, test } from "vitest";
 
 describe("swap_items", () => {
 	const original = [0, 1, 2];
+
 	test("happy", (t) => {
 		t.expect(swap_items(0, 1, original)).toEqual([1, 0, 2]);
 	});
@@ -28,6 +31,16 @@ describe("swap_items", () => {
 });
 
 describe("ensure_is_array", () => {
+	test("happy", (t) => {
+		t.expect(ensure_is_array([1, 2, 3])).toEqual([1, 2, 3]);
+	});
+
+	test("scalar", (t) => {
+		t.expect(ensure_is_array(1)).toEqual([1]);
+	});
+});
+
+describe("ensure_square_array", () => {
 	test("happy", (t) => {
 		const arr = [[1, 2, 3], [4, 5], [6]];
 
@@ -173,5 +186,30 @@ describe("remove_duplicates", (t) => {
 		const arr = [1, 2, 3, 1, 2, 3, 4, 5, 6, 4, 5, 6];
 
 		t.expect(remove_duplicates(arr)).toEqual([1, 2, 3, 4, 5, 6]);
+	});
+});
+
+describe("remove_duplicates_by", (t) => {
+	test("empty", (t) => {
+		const arr: number[] = [];
+
+		t.expect(remove_duplicates_by(arr, (v) => v)).toEqual([]);
+	});
+
+	test("happy", (t) => {
+		const arr = [
+			{ a: 1, b: 1 },
+			{ a: 1, b: 2 },
+			{ a: 2, b: 3 },
+			{ a: 2, b: 4 },
+			{ a: 3, b: 5 },
+			{ a: 3, b: 6 },
+		];
+
+		t.expect(remove_duplicates_by(arr, (v) => v.a)).toEqual([
+			{ a: 1, b: 1 },
+			{ a: 2, b: 3 },
+			{ a: 3, b: 5 },
+		]);
 	});
 });

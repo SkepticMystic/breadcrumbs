@@ -125,7 +125,7 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	const johnny_decimal_notes: JohnnyDecimalNote[] = [];
 
 	all_files.obsidian?.forEach(({ file, cache }) => {
-		const basename = Paths.drop_ext(Paths.basename(file.path));
+		const basename = Paths.basename(file.path);
 
 		const decimals = basename.match(regex)?.[1];
 		if (!decimals) return;
@@ -139,7 +139,7 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	});
 
 	all_files.dataview?.forEach((page) => {
-		const basename = Paths.drop_ext(Paths.basename(page.file.path));
+		const basename = Paths.basename(page.file.path);
 
 		const decimals = basename.match(regex)?.[1];
 		if (!decimals) return;
