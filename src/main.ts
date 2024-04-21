@@ -93,9 +93,16 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.app.workspace.onLayoutReady(async () => {
 			log.debug("on:layout-ready");
 
+			// Wait for DV and metadataCache before refreshing
 			await dataview_plugin.await_if_enabled(this);
 
-			await this.refresh();
+			const metadatacache_init_event = this.app.metadataCache.on(
+				"initialized",
+				async () => {
+					await this.refresh();
+					this.app.metadataCache.offref(metadatacache_init_event);
+				},
+			);
 
 			// Events
 			/// Workspace
