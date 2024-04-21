@@ -20,7 +20,7 @@ export const _add_settings_date_note = (
 
 	new_setting(containerEl, {
 		name: "Default Field",
-		desc: "Field to use to join date notes together",
+		desc: "Field used to join date notes together. Breadcrumbs takes the current note's date, adds one day, and joins the two notes with this field.",
 		select: {
 			value: plugin.settings.explicit_edge_sources.date_note
 				.default_field,
