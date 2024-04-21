@@ -154,16 +154,19 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "depth": {
-				// TODO: Just "2" should be valid, equivalent to "-2"
-				// depth: -2
+				// depth: 1
 				// depth: 1-2
-				// depth: 1-
 
 				const bounds = value.split("-").map((num) => parseInt(num));
 
+				// NOTE:  Number.isNaN(undefined) === false; Because JS
 				const [min, max] = [
-					Number.isNaN(bounds[0]) ? 0 : bounds[0],
-					Number.isNaN(bounds[1]) ? Infinity : bounds[1],
+					bounds[0] === undefined || Number.isNaN(bounds[0])
+						? 0
+						: bounds[0],
+					bounds[1] === undefined || Number.isNaN(bounds[1])
+						? Infinity
+						: bounds[1],
 				];
 
 				if (min > max) {
@@ -176,7 +179,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return (parsed.depth = [0, Infinity]);
 				}
 
-				return (parsed.depth = [min, max] as [number, number]);
+				return (parsed.depth = [min, max] as const);
 			}
 
 			case "flat": {

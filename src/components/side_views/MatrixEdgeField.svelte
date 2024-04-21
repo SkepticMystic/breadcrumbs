@@ -7,6 +7,7 @@
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
+	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 
 	export let edges: BCEdge[];
 	export let field: EdgeField;
@@ -60,17 +61,14 @@
 							/>
 						</div>
 
-						<div class="tree-item-flair-outer">
-							<span
-								class="tree-item-flair font-mono"
-								aria-label={url_search_params(
-									untyped_pick(edge.attr, show_attributes),
-									{ trim_lone_param: true },
-								)}
-							>
-								{edge.attr.explicit ? "x" : "i"}
-							</span>
-						</div>
+						<TreeItemFlair
+							cls="font-mono"
+							label={edge.attr.explicit ? "x" : "i"}
+							aria_label={url_search_params(
+								untyped_pick(edge.attr, show_attributes),
+								{ trim_lone_param: true },
+							)}
+						/>
 					</div>
 				</div>
 			{/each}

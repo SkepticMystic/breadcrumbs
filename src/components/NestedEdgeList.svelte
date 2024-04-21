@@ -8,6 +8,7 @@
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
+	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -49,14 +50,12 @@
 			</div>
 
 			{#if show_attributes?.length}
-				<div class="tree-item-flair-outer">
-					<span class="tree-item-flair">
-						{url_search_params(
-							untyped_pick(item.edge.attr, show_attributes),
-							{ trim_lone_param: true },
-						)}
-					</span>
-				</div>
+				<TreeItemFlair
+					label={url_search_params(
+						untyped_pick(item.edge.attr, show_attributes),
+						{ trim_lone_param: true },
+					)}
+				/>
 			{/if}
 		</summary>
 
