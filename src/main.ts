@@ -23,9 +23,9 @@ import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { EdgeFieldSuggestor } from "./suggestor/edge_fields";
 import { deep_merge_objects } from "./utils/objects";
+import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import { Timer } from "./utils/timer";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -240,6 +240,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				const stats = get_graph_stats(this.graph, {
 					groups: this.settings.edge_field_groups,
 				});
+				console.log("Graph stats >", stats);
 
 				await navigator.clipboard.writeText(
 					JSON.stringify(stats, null, 2),
