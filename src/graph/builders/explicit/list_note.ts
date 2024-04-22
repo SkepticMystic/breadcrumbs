@@ -40,20 +40,24 @@ const get_list_note_info = (
 		metadata[META_ALIAS["list-note-neighbour-field"]] ??
 		plugin.settings.explicit_edge_sources.list_note.default_neighbour_field;
 
-	if (neighbour_field && typeof field !== "string") {
-		return graph_build_fail({
-			path,
-			code: "invalid_field_value",
-			message: `list-note-neighbour-field is not a string: '${neighbour_field}'`,
-		});
-	} else if (
-		!plugin.settings.edge_fields.find((f) => f.label === neighbour_field)
-	) {
-		return graph_build_fail({
-			path,
-			code: "invalid_field_value",
-			message: `list-note-neighbour-field is not a valid BC field: '${neighbour_field}'`,
-		});
+	if (neighbour_field) {
+		if (typeof neighbour_field !== "string") {
+			return graph_build_fail({
+				path,
+				code: "invalid_field_value",
+				message: `list-note-neighbour-field is not a string: '${neighbour_field}'`,
+			});
+		} else if (
+			!plugin.settings.edge_fields.find(
+				(f) => f.label === neighbour_field,
+			)
+		) {
+			return graph_build_fail({
+				path,
+				code: "invalid_field_value",
+				message: `list-note-neighbour-field is not a valid BC field: '${neighbour_field}'`,
+			});
+		}
 	}
 
 	// TODO: Doesn't this just do what BC-ignore-out-edges does?
