@@ -96,15 +96,21 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// Wait for DV and metadataCache before refreshing
 			await dataview_plugin.await_if_enabled(this);
 
-			const metadatacache_init_event = this.app.metadataCache.on(
-				"initialized",
-				async () => {
-					log.debug("on:metadatacache-initialized");
+			if (this.app.metadataCache.initialized) {
+				log.debug("metadataCache:initialized");
 
-					await this.refresh();
-					this.app.metadataCache.offref(metadatacache_init_event);
-				},
-			);
+				await this.refresh();
+			} else {
+				const metadatacache_init_event = this.app.metadataCache.on(
+					"initialized",
+					async () => {
+						log.debug("on:metadatacache-initialized");
+
+						await this.refresh();
+						this.app.metadataCache.offref(metadatacache_init_event);
+					},
+				);
+			}
 
 			// Events
 			/// Workspace
