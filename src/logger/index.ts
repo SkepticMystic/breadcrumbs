@@ -1,4 +1,11 @@
-export const LOG_LEVELS = ["DEBUG", "INFO", "WARN", "ERROR"] as const;
+export const LOG_LEVELS = [
+	"DEBUG",
+	"INFO",
+	"WARN",
+	"ERROR",
+	// Some features log data
+	"FEAT",
+] as const;
 export type LogLevels = (typeof LOG_LEVELS)[number];
 
 const LEVEL_COLOURS: Record<LogLevels, string | null> = {
@@ -6,6 +13,7 @@ const LEVEL_COLOURS: Record<LogLevels, string | null> = {
 	INFO: null,
 	WARN: "#f90",
 	ERROR: "#f00",
+	FEAT: "#0f0",
 };
 
 const build_prefix = (level: LogLevels) => {
@@ -50,6 +58,12 @@ class Logger {
 	error(...args: any[]) {
 		if (this.level_i <= 3) {
 			console.log(...build_prefix("ERROR"), ...args);
+		}
+	}
+
+	feat(...args: any[]) {
+		if (this.level_i <= 4) {
+			console.log(...build_prefix("FEAT"), ...args);
 		}
 	}
 

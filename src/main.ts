@@ -255,7 +255,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				const stats = get_graph_stats(this.graph, {
 					groups: this.settings.edge_field_groups,
 				});
-				console.log("Graph stats >", stats);
+				log.feat("Graph stats >", stats);
 
 				await navigator.clipboard.writeText(
 					JSON.stringify(stats, null, 2),
