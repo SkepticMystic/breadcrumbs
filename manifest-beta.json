@@ -6,6 +6,7 @@
 	"description": "Add structured hierarchies to your notes",
 	"author": "SkepticMystic",
 	"authorUrl": "https://github.com/SkepticMystic/breadcrumbs",
-	"fundingUrl": "https://ko-fi.com/skepticmystic",
+	"fundingUrl": "https://github.com/SkepticMystic/breadcrumbs#donations",
+	"helpUrl": "https://publish.obsidian.md/breadcrumbs-docs",
 	"isDesktopOnly": false
 }
