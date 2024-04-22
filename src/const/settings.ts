@@ -16,6 +16,8 @@ const DEFAULT_SHOW_NODE_OPTIONS: ShowNodeOptions = {
 };
 
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
+	is_dirty: false,
+
 	edge_fields: [
 		{ label: "up" },
 		{ label: "down" },

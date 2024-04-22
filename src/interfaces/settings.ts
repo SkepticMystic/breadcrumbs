@@ -16,6 +16,8 @@ export type ShowNodeOptions = {
 export type CrumbDestination = "frontmatter" | "dataview-inline";
 
 export interface BreadcrumbsSettings {
+	is_dirty: boolean;
+
 	// Once I've reach settings parity with old BC, I can add this flag to skip over all the checks in migrate_old_settings
 	// But for now, as I add new (old) settings, I don't want to skip migrating them
 	// V4_MIGRATED: boolean;

@@ -4,29 +4,21 @@
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { Mermaid } from "src/utils/mermaid";
 	import {
 		stringify_transitive_relation,
 		transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
-	import { onDestroy } from "svelte";
+	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
-	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
-	import { Mermaid } from "src/utils/mermaid";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	onDestroy(() => {
-		if (dirty) {
-			new Notice(
-				"⚠️ Exited without saving changes to Implied Relation Settings. Your changes are still in effect, but were not saved. Go back and click 'Save' if you want them to persist.",
-			);
-		}
-	});
+	const settings = plugin.settings;
 
-	let dirty = false;
-	let transitives = [...plugin.settings.implied_relations.transitive];
+	let transitives = [...settings.implied_relations.transitive];
 	const opens = transitives.map(() => false);
 
 	const actions = {
@@ -36,12 +28,12 @@
 					return new Notice("Closing field cannot be empty.");
 				}
 			}
-			plugin.settings.implied_relations.transitive = transitives;
+
+			settings.is_dirty = false;
+			settings.implied_relations.transitive = transitives;
 
 			await plugin.saveSettings();
 			await plugin.refresh();
-
-			dirty = false;
 		},
 
 		add_transitive: () => {
@@ -50,17 +42,17 @@
 				chain: [],
 				rounds: 1,
 				close_reversed: false,
-				close_field: plugin.settings.edge_fields[0].label,
+				close_field: settings.edge_fields[0].label,
 			});
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		remove_transitive: (i: number) => {
 			transitives = transitives.filter((_, j) => j !== i);
 
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		rename_transitive: (i: number, new_name: string) => {
@@ -69,7 +61,7 @@
 			transitives[i].name = new_name;
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		reorder_transitive: (i: number, j: number) => {
@@ -78,7 +70,7 @@
 			transitives[j] = temp;
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		add_chain_field: (i: number, field: EdgeField | undefined) => {
@@ -87,7 +79,7 @@
 			transitives[i].chain.push({ field: field.label });
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		remove_chain_field: (i: number, j: number) => {
@@ -96,7 +88,7 @@
 			);
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		set_close_field: (i: number, field: EdgeField | undefined) => {
@@ -105,7 +97,7 @@
 			transitives[i].close_field = field.label;
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		set_rounds: (i: number, rounds: number) => {
@@ -114,14 +106,14 @@
 			transitives[i].rounds = rounds;
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 
 		set_close_reversed: (i: number, reversed: boolean) => {
 			transitives[i].close_reversed = reversed;
 
 			transitives = transitives;
-			dirty = true;
+			settings.is_dirty = true;
 		},
 	};
 
@@ -162,7 +154,7 @@
 			Save
 		</button>
 
-		{#if dirty}
+		{#if settings.is_dirty}
 			<span class="text-warning">Unsaved changes</span>
 		{/if}
 	</div>
@@ -206,24 +198,9 @@
 				</summary>
 
 				{#key rule}
-					<div class="my-2 flex flex-col gap-2 px-4 py-2">
+					<div class="my-2 flex flex-col gap-3 px-4 py-2">
 						<div class="flex flex-wrap items-center gap-3">
-							<span class="font-semibold">Name:</span>
-
-							<input
-								type="text"
-								value={rule.name}
-								placeholder="Name (optional)"
-								on:blur={(e) =>
-									actions.rename_transitive(
-										rule_i,
-										e.currentTarget.value,
-									)}
-							/>
-						</div>
-
-						<div class="flex flex-wrap items-center gap-3">
-							<span class="font-semibold">Chain:</span>
+							<span class="font-semibold">Edge Chain:</span>
 
 							{#if rule.chain.length}
 								<div class="flex flex-wrap gap-3">
@@ -245,7 +222,7 @@
 							{/if}
 
 							<EdgeFieldSelector
-								fields={plugin.settings.edge_fields}
+								fields={settings.edge_fields}
 								on:select={(e) =>
 									actions.add_chain_field(rule_i, e.detail)}
 							/>
@@ -256,12 +233,26 @@
 
 							<EdgeFieldSelector
 								undefine_on_change={false}
-								fields={plugin.settings.edge_fields}
-								field={plugin.settings.edge_fields.find(
+								fields={settings.edge_fields}
+								field={settings.edge_fields.find(
 									(f) => f.label === rule.close_field,
 								)}
 								on:select={(e) =>
 									actions.set_close_field(rule_i, e.detail)}
+							/>
+						</div>
+
+						<div class="flex items-center gap-2">
+							<span class="font-semibold">Close Reversed: </span>
+
+							<input
+								type="checkbox"
+								bind:checked={rule.close_reversed}
+								on:click={(e) =>
+									actions.set_close_reversed(
+										rule_i,
+										e.currentTarget.checked,
+									)}
 							/>
 						</div>
 
@@ -281,16 +272,17 @@
 							/>
 						</div>
 
-						<div class="flex items-center gap-2">
-							<span class="font-semibold">Close Reversed: </span>
+						<div class="flex flex-wrap items-center gap-3">
+							<span class="font-semibold">Name (optional):</span>
 
 							<input
-								type="checkbox"
-								bind:checked={rule.close_reversed}
-								on:click={(e) =>
-									actions.set_close_reversed(
+								type="text"
+								value={rule.name}
+								placeholder="Rule Name"
+								on:blur={(e) =>
+									actions.rename_transitive(
 										rule_i,
-										e.currentTarget.checked,
+										e.currentTarget.value,
 									)}
 							/>
 						</div>

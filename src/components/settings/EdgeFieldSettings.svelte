@@ -4,22 +4,11 @@
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { onDestroy } from "svelte";
 	import Tag from "../obsidian/tag.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	// TODO: See if const settings = plugin.settings works
-
-	onDestroy(() => {
-		if (dirty) {
-			new Notice(
-				"⚠️ Exited without saving changes to Edge Field Settings. Your changes are still in effect, but were not saved. Go back and click 'Save' if you want them to persist.",
-			);
-		}
-	});
-
-	let dirty = false;
+	const settings = plugin.settings;
 
 	let filters = {
 		fields: "",
@@ -28,33 +17,32 @@
 
 	const actions = {
 		save: async () => {
-			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
+			settings.is_dirty = false;
 
-			dirty = false;
+			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
 		},
 
 		fields: {
 			add: () => {
-				plugin.settings.edge_fields.push({
-					label: `Edge Field ${plugin.settings.edge_fields.length + 1}`,
+				settings.edge_fields.push({
+					label: `Edge Field ${settings.edge_fields.length + 1}`,
 				});
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 			remove: (edge_field: EdgeField) => {
-				plugin.settings.edge_fields =
-					plugin.settings.edge_fields.filter(
-						(f) => f.label !== edge_field.label,
-					);
+				settings.edge_fields = settings.edge_fields.filter(
+					(f) => f.label !== edge_field.label,
+				);
 
-				plugin.settings.edge_field_groups.forEach((group) => {
+				settings.edge_field_groups.forEach((group) => {
 					group.fields = group.fields.filter(
 						(f) => f !== edge_field.label,
 					);
 				});
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 
@@ -64,21 +52,19 @@
 				} else if (new_label === "") {
 					return new Notice("Field label cannot be empty.");
 				} else if (
-					plugin.settings.edge_fields.some(
-						(f) => f.label === new_label,
-					)
+					settings.edge_fields.some((f) => f.label === new_label)
 				) {
 					return new Notice("Field label must be unique.");
 				}
 
-				plugin.settings.edge_field_groups.forEach((group) => {
+				settings.edge_field_groups.forEach((group) => {
 					const index = group.fields.indexOf(edge_field.label);
 					if (index === -1) return;
 
 					group.fields[index] = new_label;
 				});
 
-				plugin.settings.implied_relations.transitive.forEach((rule) => {
+				settings.implied_relations.transitive.forEach((rule) => {
 					rule.chain = rule.chain.map((attr) =>
 						attr.field === edge_field.label
 							? { ...attr, field: new_label }
@@ -91,108 +77,106 @@
 							: rule.close_field;
 				});
 
-				plugin.settings.explicit_edge_sources.tag_note.default_field =
-					plugin.settings.explicit_edge_sources.tag_note
-						.default_field === edge_field.label
+				settings.explicit_edge_sources.tag_note.default_field =
+					settings.explicit_edge_sources.tag_note.default_field ===
+					edge_field.label
 						? new_label
-						: plugin.settings.explicit_edge_sources.tag_note
-								.default_field;
+						: settings.explicit_edge_sources.tag_note.default_field;
 
-				plugin.settings.explicit_edge_sources.list_note.default_neighbour_field =
-					plugin.settings.explicit_edge_sources.list_note
+				settings.explicit_edge_sources.list_note.default_neighbour_field =
+					settings.explicit_edge_sources.list_note
 						.default_neighbour_field === edge_field.label
 						? new_label
-						: plugin.settings.explicit_edge_sources.list_note
+						: settings.explicit_edge_sources.list_note
 								.default_neighbour_field;
 
-				plugin.settings.explicit_edge_sources.dendron_note.default_field =
-					plugin.settings.explicit_edge_sources.dendron_note
+				settings.explicit_edge_sources.dendron_note.default_field =
+					settings.explicit_edge_sources.dendron_note
 						.default_field === edge_field.label
 						? new_label
-						: plugin.settings.explicit_edge_sources.dendron_note
+						: settings.explicit_edge_sources.dendron_note
 								.default_field;
 
-				plugin.settings.explicit_edge_sources.johnny_decimal_note.default_field =
-					plugin.settings.explicit_edge_sources.johnny_decimal_note
+				settings.explicit_edge_sources.johnny_decimal_note.default_field =
+					settings.explicit_edge_sources.johnny_decimal_note
 						.default_field === edge_field.label
 						? new_label
-						: plugin.settings.explicit_edge_sources
-								.johnny_decimal_note.default_field;
-
-				plugin.settings.explicit_edge_sources.date_note.default_field =
-					plugin.settings.explicit_edge_sources.date_note
-						.default_field === edge_field.label
-						? new_label
-						: plugin.settings.explicit_edge_sources.date_note
+						: settings.explicit_edge_sources.johnny_decimal_note
 								.default_field;
 
-				plugin.settings.explicit_edge_sources.regex_note.default_field =
-					plugin.settings.explicit_edge_sources.regex_note
-						.default_field === edge_field.label
+				settings.explicit_edge_sources.date_note.default_field =
+					settings.explicit_edge_sources.date_note.default_field ===
+					edge_field.label
 						? new_label
-						: plugin.settings.explicit_edge_sources.regex_note
+						: settings.explicit_edge_sources.date_note
+								.default_field;
+
+				settings.explicit_edge_sources.regex_note.default_field =
+					settings.explicit_edge_sources.regex_note.default_field ===
+					edge_field.label
+						? new_label
+						: settings.explicit_edge_sources.regex_note
 								.default_field;
 
 				// NOTE: Only rename the field after updating the groups
 				edge_field.label = new_label;
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 		},
 
 		groups: {
 			add: () => {
-				plugin.settings.edge_field_groups.push({
-					label: `Group ${plugin.settings.edge_field_groups.length + 1}`,
+				settings.edge_field_groups.push({
+					label: `Group ${settings.edge_field_groups.length + 1}`,
 					fields: [],
 				});
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 
 			remove: (group: EdgeFieldGroup) => {
-				plugin.settings.edge_field_groups =
-					plugin.settings.edge_field_groups.filter(
-						(g) => g.label !== group.label,
-					);
+				settings.edge_field_groups = settings.edge_field_groups.filter(
+					(g) => g.label !== group.label,
+				);
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 
 			rename: (group: EdgeFieldGroup, new_label: string) => {
 				if (group.label === new_label) return;
 
-				plugin.settings.views.page.trail.field_group_labels =
-					plugin.settings.views.page.trail.field_group_labels.map(
+				settings.views.page.trail.field_group_labels =
+					settings.views.page.trail.field_group_labels.map((label) =>
+						label === group.label ? new_label : label,
+					);
+
+				settings.views.page.prev_next.field_group_labels.prev =
+					settings.views.page.prev_next.field_group_labels.prev.map(
 						(label) => (label === group.label ? new_label : label),
 					);
 
-				plugin.settings.views.page.prev_next.field_group_labels.prev =
-					plugin.settings.views.page.prev_next.field_group_labels.prev.map(
+				settings.views.page.prev_next.field_group_labels.next =
+					settings.views.page.prev_next.field_group_labels.next.map(
 						(label) => (label === group.label ? new_label : label),
 					);
 
-				plugin.settings.views.page.prev_next.field_group_labels.next =
-					plugin.settings.views.page.prev_next.field_group_labels.next.map(
+				settings.views.side.matrix.field_group_labels =
+					settings.views.side.matrix.field_group_labels.map(
 						(label) => (label === group.label ? new_label : label),
 					);
 
-				plugin.settings.views.side.matrix.field_group_labels =
-					plugin.settings.views.side.matrix.field_group_labels.map(
-						(label) => (label === group.label ? new_label : label),
-					);
-
-				plugin.settings.views.side.matrix.field_group_labels =
-					plugin.settings.views.side.matrix.field_group_labels.map(
+				settings.views.side.matrix.field_group_labels =
+					settings.views.side.matrix.field_group_labels.map(
 						(label) => (label === group.label ? new_label : label),
 					);
 
 				group.label = new_label;
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 
@@ -204,7 +188,7 @@
 
 				group.fields.push(field_label);
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 
@@ -216,7 +200,7 @@
 
 				group.fields = group.fields.filter((f) => f !== field_label);
 
-				dirty = true;
+				settings.is_dirty = true;
 				plugin = plugin;
 			},
 		},
@@ -233,7 +217,7 @@
 						.setIcon("x")
 						.onClick(() =>
 							actions.groups.remove_field(
-								plugin.settings.edge_field_groups.find(
+								settings.edge_field_groups.find(
 									(g) => g.label === group_label,
 								),
 								edge_field.label,
@@ -269,7 +253,7 @@
 			Save
 		</button>
 
-		{#if dirty}
+		{#if settings.is_dirty}
 			<span class="text-warning">Unsaved changes</span>
 		{/if}
 	</div>
@@ -295,8 +279,8 @@
 	</div>
 
 	<div class="flex flex-col gap-7">
-		{#each plugin.settings.edge_fields.filter( (f) => f.label.includes(filters.fields), ) as field}
-			{@const group_labels = plugin.settings.edge_field_groups
+		{#each settings.edge_fields.filter( (f) => f.label.includes(filters.fields), ) as field}
+			{@const group_labels = settings.edge_field_groups
 				.filter((group) => group.fields.includes(field.label))
 				.map((g) => g.label)}
 
@@ -323,7 +307,7 @@
 				<!-- TODO: I don't think this key even does what I'm looking for
 				The intention is to update the groups_label references when the groups themselves change
 			To replicate an issue this cause, context-menu > remove field from group, then do that again. It doesn't remove the second time -->
-				{#key plugin.settings.edge_field_groups}
+				{#key settings.edge_field_groups}
 					<div class="flex flex-wrap items-center gap-1.5">
 						<span>Groups</span>
 
@@ -353,7 +337,7 @@
 							on:change={(e) => {
 								if (e.currentTarget.value) {
 									actions.groups.add_field(
-										plugin.settings.edge_field_groups.find(
+										settings.edge_field_groups.find(
 											(g) =>
 												g.label ===
 												e.currentTarget.value,
@@ -367,7 +351,7 @@
 						>
 							<option value="" disabled>Add to Group</option>
 
-							{#each plugin.settings.edge_field_groups as group}
+							{#each settings.edge_field_groups as group}
 								{#if !group.fields.includes(field.label)}
 									<option value={group.label}>
 										{group.label}
@@ -409,7 +393,7 @@
 	</div>
 
 	<div class="flex flex-col gap-7">
-		{#each plugin.settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups), ) as group}
+		{#each settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups), ) as group}
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
@@ -468,7 +452,7 @@
 					>
 						<option value="" disabled>Add Field</option>
 
-						{#each plugin.settings.edge_fields as edge_field}
+						{#each settings.edge_fields as edge_field}
 							{#if !group.fields.includes(edge_field.label)}
 								<option value={edge_field.label}>
 									{edge_field.label}

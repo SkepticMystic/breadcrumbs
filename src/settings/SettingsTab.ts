@@ -1,4 +1,4 @@
-import { App, PluginSettingTab } from "obsidian";
+import { App, Notice, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
 import EdgeFieldSettings from "../components/settings/EdgeFieldSettings.svelte";
 import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
@@ -210,6 +210,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 	}
 
 	hide() {
+		if (this.plugin.settings.is_dirty) {
+			new Notice(
+				"⚠️ Exited without saving settings. Your changes are still in effect, but were not saved. Go back and click 'Save' if you want them to persist. Otherwise, reload Obsidian to revert to the last saved settings.",
+			);
+		}
+
 		this.components.forEach((c) => c.$destroy());
 	}
 }
