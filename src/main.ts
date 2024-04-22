@@ -328,6 +328,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 	}
 
 	async saveSettings() {
+		this.settings.is_dirty = false;
+
 		await this.saveData(this.settings);
 	}
 

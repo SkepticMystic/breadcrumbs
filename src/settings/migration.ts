@@ -267,11 +267,8 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		old.custom_implied_relations.transitive.forEach((rel) => {
 			settings.implied_relations.transitive.push({
 				...rel,
+				name: "",
 				close_reversed: false,
-				name: stringify_transitive_relation({
-					...rel,
-					close_reversed: false,
-				}),
 			});
 		});
 

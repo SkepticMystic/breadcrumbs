@@ -29,11 +29,12 @@
 				}
 			}
 
-			settings.is_dirty = false;
 			settings.implied_relations.transitive = transitives;
 
-			await plugin.saveSettings();
-			await plugin.refresh();
+			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
+
+			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
+			plugin = plugin;
 		},
 
 		add_transitive: () => {

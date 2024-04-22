@@ -20,6 +20,7 @@ describe("migration", () => {
 		const migrated = migrate_old_settings(old);
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
+			is_dirty: false,
 			edge_fields: [
 				{ label: "up" },
 				{ label: "down" },
@@ -135,7 +136,7 @@ describe("migration", () => {
 						chain: [{ field: "up" }, { field: "same" }],
 						close_field: "up",
 						close_reversed: false,
-						name: "[up, same] → up",
+						name: "",
 						rounds: 1,
 					},
 				],
@@ -317,6 +318,7 @@ describe("migration", () => {
 		const migrated = migrate_old_settings(old);
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
+			is_dirty: false,
 			explicit_edge_sources: {
 				list_note: {
 					default_neighbour_field: "",
@@ -596,7 +598,7 @@ describe("migration", () => {
 						chain: [{ field: "up" }, { field: "same" }],
 						close_field: "up",
 						close_reversed: false,
-						name: "[up, same] → up",
+						name: "",
 					},
 					{
 						rounds: 1,
@@ -645,14 +647,14 @@ describe("migration", () => {
 						rounds: 5,
 						close_field: "sibling",
 						close_reversed: false,
-						name: "[r-parent, r-child] → sibling",
+						name: "",
 					},
 					{
 						chain: [{ field: "relation" }, { field: "r-child" }],
 						rounds: 5,
 						close_field: "child",
 						close_reversed: false,
-						name: "[relation, r-child] → child",
+						name: "",
 					},
 					{
 						chain: [
@@ -663,21 +665,21 @@ describe("migration", () => {
 						rounds: 5,
 						close_field: "half-sibling",
 						close_reversed: false,
-						name: "[r-parent, r-sibling, r-child] → half-sibling",
+						name: "",
 					},
 					{
 						chain: [{ field: "r-member" }, { field: "relation" }],
 						rounds: 5,
 						close_field: "r-sibling",
 						close_reversed: false,
-						name: "[r-member, relation] → r-sibling",
+						name: "",
 					},
 					{
 						chain: [{ field: "r-parent" }, { field: "r-member" }],
 						rounds: 5,
 						close_field: "parent",
 						close_reversed: false,
-						name: "[r-parent, r-member] → parent",
+						name: "",
 					},
 				],
 			},

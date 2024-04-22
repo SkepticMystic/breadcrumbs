@@ -17,9 +17,10 @@
 
 	const actions = {
 		save: async () => {
-			settings.is_dirty = false;
-
 			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
+
+			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
+			plugin = plugin;
 		},
 
 		fields: {
