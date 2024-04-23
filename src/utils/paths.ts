@@ -15,27 +15,19 @@ const drop_folder = (path: string) => path.split("/").pop()!;
 
 const dirname = (path: string) => path.split("/").slice(0, -1).join("/");
 
-/** Keeps .ext */
-const basename = (path: string) => path.split("/").pop()!;
+/** Drops .ext, like TFile.basename */
+const basename = (path: string) => drop_ext(path.split("/").pop()!);
 
-const join = (...paths: string[]) =>
-	ensure_not_starts_with(paths.join("/").replace(/\/+/g, "/"), "/");
+/** Replace double slashes within the path, and drop leading slashes */
+const normalise = (path: string) =>
+	path.replace(/\/+/g, "/").replace(/^\//, "");
 
 const build = (
 	folder: string,
 	basename: string,
 	/** _Just_ extname, no period */
 	ext: string,
-) => ensure_ext(join(folder, basename), ext);
-
-// const update_name = (
-// 	path_str: string,
-// 	callback: (basename: string) => string,
-// ) => {
-// 	const { dir, ext, name } = path.parse(path_str);
-
-// 	return path.join(dir, callback(name) + ext);
-// };
+) => ensure_ext(normalise(folder + "/" + basename), ext);
 
 /** Pass in which components you want to *keep*, the rest will be dropped */
 const show = (
@@ -62,12 +54,10 @@ export const Paths = {
 	basename,
 	dirname,
 
-	// update_name,
-
 	drop_ext,
 	drop_folder,
 
-	join,
 	build,
+	normalise,
 	show,
 };

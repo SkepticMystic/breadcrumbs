@@ -26,7 +26,8 @@ Media related to Breacrumbs. Thanks to everyone for sharing!
 
 ## Credits
 
--   [mProjectsCode](https://github.com/mProjectsCode): For their various PRs, insightful suggestions, and efficient graph-traversal algorithms
+-   [mProjectsCode](https://github.com/mProjectsCode): For their PRs, insightful suggestions, and efficiency improvements.
+-   [HEmile](https://github.com/HEmile): For their PRs, and helpful discussions on graph-theory.
 
 <!-- NOTE: This heading is linked to in the manifest.fundingUrl. Be sure to change that if updating the heading label -->
 

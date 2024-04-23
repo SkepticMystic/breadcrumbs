@@ -8,7 +8,6 @@ import type {
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
 const get_dataview_note_info = (
@@ -41,25 +40,17 @@ const get_dataview_note_info = (
 			code: "invalid_field_value",
 			message: "dataview-note-field is not a string",
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `dataview-note-field is not a valid BC field: '${field}'`,
+			message: `dataview-note-field is not a valid field: '${field}'`,
 		});
 	}
 
 	return succ({
 		field,
 		query,
-		dir: field_hierarchy.dir,
-		hierarchy_i: field_hierarchy.hierarchy_i,
 	});
 };
 
@@ -103,8 +94,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			if (dataview_note_info.error) errors.push(dataview_note_info.error);
 			return;
 		}
-
-		const { field, query, dir, hierarchy_i } = dataview_note_info.data;
+		const { field, query } = dataview_note_info.data;
 
 		let pages: IDataview.Page[] = [];
 		try {
@@ -129,9 +119,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 				dataview_note_page.file.path,
 				page.file.path,
 				{
-					dir,
 					field,
-					hierarchy_i,
 					explicit: true,
 					source: "dataview_note",
 				},

@@ -7,13 +7,8 @@ import {
 	type EditorSuggestTriggerInfo,
 } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
-import {
-	get_all_hierarchy_fields,
-	get_field_hierarchy,
-} from "src/utils/hierarchies";
-import { url_search_params } from "src/utils/url";
 
-export class HierarchyFieldSuggestor extends EditorSuggest<string> {
+export class EdgeFieldSuggestor extends EditorSuggest<string> {
 	plugin: BreadcrumbsPlugin;
 
 	constructor(plugin: BreadcrumbsPlugin) {
@@ -27,7 +22,7 @@ export class HierarchyFieldSuggestor extends EditorSuggest<string> {
 		editor: Editor,
 		_file: TFile,
 	): EditorSuggestTriggerInfo | null {
-		const { trigger } = this.plugin.settings.suggestors.hierarchy_field;
+		const { trigger } = this.plugin.settings.suggestors.edge_field;
 
 		// Get everything before the cursor
 		const sub = editor.getLine(cursor.line).substring(0, cursor.ch);
@@ -44,25 +39,12 @@ export class HierarchyFieldSuggestor extends EditorSuggest<string> {
 	}
 
 	getSuggestions = ({ query }: EditorSuggestContext) =>
-		get_all_hierarchy_fields(this.plugin.settings.hierarchies).filter(
-			(field) => field.includes(query),
-		);
+		this.plugin.settings.edge_fields
+			.map((f) => f.label)
+			.filter((field) => field.includes(query));
 
 	renderSuggestion(suggestion: string, el: HTMLElement) {
-		const hierarchy_field = get_field_hierarchy(
-			this.plugin.settings.hierarchies,
-			suggestion,
-		);
-		if (!hierarchy_field) return;
-
 		el.createDiv({ text: suggestion });
-
-		const alt = el.createDiv({
-			text: url_search_params({ dir: hierarchy_field.dir }),
-		});
-
-		alt.style.fontSize = "0.8em";
-		alt.style.color = "var(--text-muted)";
 	}
 
 	selectSuggestion(suggestion: string) {

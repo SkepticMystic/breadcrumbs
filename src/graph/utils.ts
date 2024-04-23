@@ -2,7 +2,6 @@ import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	type EdgeSortId,
 } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
 import type {
@@ -161,52 +160,6 @@ export const get_edge_sorter: (
 					};
 				}
 
-				// NOTE: Effectively the same result as neighbour-field (since the out_edges are constrained to the given hierarchy)
-				// But it lets the user more easily choose a sort sort.order for multiple hierarchies
-				case "neighbour-dir": {
-					const cache: Record<string, BCEdge | undefined> = {};
-					const dir = sort.field.split(":", 2).at(1) as Direction;
-
-					return (a, b) => {
-						const [a_neighbour, b_neighbour] = [
-							(cache[a.target_id] ??= graph
-								.get_out_edges(a.target_id)
-								.filter((e) =>
-									has_edge_attrs(e, {
-										dir,
-										hierarchy_i: a.attr.hierarchy_i,
-									}),
-								)
-								.at(0)),
-
-							(cache[b.target_id] ??= graph
-								.get_out_edges(b.target_id)
-								.filter((e) =>
-									has_edge_attrs(e, {
-										dir,
-										hierarchy_i: b.attr.hierarchy_i,
-									}),
-								)
-								.at(0)),
-						];
-
-						if (!a_neighbour || !b_neighbour) {
-							// NOTE: This puts the node with no neighbours last
-							// Which makes sense, I think. It simulates a traversal, where the node with no neighbours is the end of the path
-							return a_neighbour
-								? -sort.order
-								: b_neighbour
-									? sort.order
-									: 0;
-						} else {
-							return sorters.path(sort.order)(
-								a_neighbour,
-								b_neighbour,
-							);
-						}
-					};
-				}
-
 				default: {
 					return (_a, _b) => sort.order;
 				}
@@ -216,11 +169,10 @@ export const get_edge_sorter: (
 };
 
 export type EdgeAttrFilters = Partial<
-	Pick<BCEdgeAttributes, "dir" | "explicit" | "field" | "hierarchy_i">
+	Pick<BCEdgeAttributes, "explicit" | "field">
 > &
 	Partial<{
 		$or_fields: string[];
-		$or_dirs: Direction[];
 		$or_target_ids: string[];
 	}>;
 
@@ -228,13 +180,9 @@ export type EdgeAttrFilters = Partial<
 export const has_edge_attrs = (edge: BCEdge, attrs?: EdgeAttrFilters) =>
 	attrs === undefined ||
 	[
-		attrs.dir === undefined || edge.attr.dir === attrs.dir,
 		attrs.field === undefined || edge.attr.field === attrs.field,
 		attrs.explicit === undefined || edge.attr.explicit === attrs.explicit,
-		attrs.hierarchy_i === undefined ||
-			edge.attr.hierarchy_i === attrs.hierarchy_i,
 
-		attrs.$or_dirs === undefined || attrs.$or_dirs.includes(edge.attr.dir),
 		attrs.$or_fields === undefined ||
 			attrs.$or_fields.includes(edge.attr.field ?? "null"),
 		attrs.$or_target_ids === undefined ||

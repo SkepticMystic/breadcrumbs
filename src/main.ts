@@ -14,7 +14,6 @@ import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
 import { jump_to_neighbour } from "./commands/jump";
 import { get_graph_stats } from "./commands/stats";
 import { thread } from "./commands/thread";
-import { DIRECTIONS } from "./const/hierarchies";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
@@ -22,12 +21,11 @@ import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
-import { HierarchyFieldSuggestor } from "./suggestor/hierarchy-field";
-import { get_all_hierarchy_fields } from "./utils/hierarchies";
+import { EdgeFieldSuggestor } from "./suggestor/edge_fields";
 import { deep_merge_objects } from "./utils/objects";
+import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import { Timer } from "./utils/timer";
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
@@ -45,20 +43,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 		log.debug("settings >", this.settings);
 
 		/// Migrations
-		await migrate_old_settings(this);
+		this.settings = migrate_old_settings(this.settings);
+		await this.saveSettings();
 
-		// Set the hierarchy-fields & BC-meta-fields to the right Properties type
+		// Set the edge_fields & BC-meta-fields to the right Properties type
 		try {
-			const now = Date.now();
-
 			const all_properties =
 				this.app.metadataTypeManager.getAllProperties();
 
-			for (const field of get_all_hierarchy_fields(
-				this.settings.hierarchies,
-			)) {
-				if (all_properties[field]?.type === "multitext") continue;
-				this.app.metadataTypeManager.setType(field, "multitext");
+			for (const field of this.settings.edge_fields) {
+				if (all_properties[field.label]?.type === "multitext") continue;
+				this.app.metadataTypeManager.setType(field.label, "multitext");
 			}
 
 			for (const [field, { property_type }] of Object.entries(
@@ -91,16 +86,31 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		// Suggestors
-		if (this.settings.suggestors.hierarchy_field.enabled) {
-			this.registerEditorSuggest(new HierarchyFieldSuggestor(this));
+		if (this.settings.suggestors.edge_field.enabled) {
+			this.registerEditorSuggest(new EdgeFieldSuggestor(this));
 		}
 
 		this.app.workspace.onLayoutReady(async () => {
 			log.debug("on:layout-ready");
 
+			// Wait for DV and metadataCache before refreshing
 			await dataview_plugin.await_if_enabled(this);
 
-			await this.refresh();
+			if (this.app.metadataCache.initialized) {
+				log.debug("metadataCache:initialized");
+
+				await this.refresh();
+			} else {
+				const metadatacache_init_event = this.app.metadataCache.on(
+					"initialized",
+					async () => {
+						log.debug("on:metadatacache-initialized");
+
+						await this.refresh();
+						this.app.metadataCache.offref(metadatacache_init_event);
+					},
+				);
+			}
 
 			// Events
 			/// Workspace
@@ -242,9 +252,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 			id: "breadcrumbs:graph-stats",
 			name: "Show/Copy graph stats",
 			callback: async () => {
-				const stats = get_graph_stats(this.graph);
-
-				console.log(stats);
+				const stats = get_graph_stats(this.graph, {
+					groups: this.settings.edge_field_groups,
+				});
+				log.feat("Graph stats >", stats);
 
 				await navigator.clipboard.writeText(
 					JSON.stringify(stats, null, 2),
@@ -279,45 +290,28 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		/// Jump to first neighbour
-		DIRECTIONS.forEach((dir) => {
+		this.settings.edge_field_groups.forEach((group) => {
 			this.addCommand({
-				id: `breadcrumbs:jump-to-first-neighbour-dir:${dir}`,
-				name: `Jump to first neigbour in direction:${dir}`,
-				callback: () => jump_to_neighbour(this, { attr: { dir } }),
-			});
-		});
-		this.settings.hierarchies.forEach((hierarchy) => {
-			DIRECTIONS.forEach((dir) => {
-				hierarchy.dirs[dir].forEach((field) => {
-					if (!field) return;
-
-					this.addCommand({
-						id: `breadcrumbs:jump-to-first-neighbour-field:${field}`,
-						name: `Jump to first neighbour by field:${field}`,
-						callback: () =>
-							jump_to_neighbour(this, { attr: { field } }),
-					});
-				});
+				id: `breadcrumbs:jump-to-first-neighbour-group:${group.label}`,
+				name: `Jump to first neighbour by group:${group.label}`,
+				callback: () =>
+					jump_to_neighbour(this, {
+						attr: { $or_fields: group.fields },
+					}),
 			});
 		});
 
 		// Thread
-		this.settings.hierarchies.forEach((hierarchy, hierarchy_i) => {
-			DIRECTIONS.forEach((dir) => {
-				hierarchy.dirs[dir].forEach((field) => {
-					if (!field) return;
-
-					this.addCommand({
-						id: `breadcrumbs:thread-field:${field}`,
-						name: `Thread by field:${field}`,
-						callback: () =>
-							thread(
-								this,
-								{ hierarchy_i, dir, field },
-								this.settings.commands.thread.default_options,
-							),
-					});
-				});
+		this.settings.edge_fields.forEach(({ label }) => {
+			this.addCommand({
+				id: `breadcrumbs:thread-field:${label}`,
+				name: `Thread by field:${label}`,
+				callback: () =>
+					thread(
+						this,
+						{ field: label },
+						this.settings.commands.thread.default_options,
+					),
 			});
 		});
 
@@ -334,6 +328,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 	}
 
 	async saveSettings() {
+		this.settings.is_dirty = false;
+
 		await this.saveData(this.settings);
 	}
 
@@ -344,23 +340,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
-		// TODO: Disable where unnecessary
+		redraw_side_views?: true;
 		redraw_codeblocks?: boolean;
 	}) => {
-		log.debug(
-			"refresh >",
-			[
-				"rebuild_graph",
-				"active_file_store",
-				"redraw_page_views",
-				"redraw_codeblocks",
-			]
-				.filter(
-					(key) => options?.[key as keyof typeof options] !== false,
-				)
-				.join(", "),
-		);
-
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
 			const timer = new Timer();
@@ -382,21 +364,39 @@ export default class BreadcrumbsPlugin extends Plugin {
 					{} as Record<string, BreadcrumbsError[]>,
 				);
 
+			const implied_edge_results = Object.fromEntries(
+				Object.entries(rebuild_results.implied_edge_results)
+					.filter(([_, errors]) => errors.length)
+					.map(([implied_kind, errors]) => [implied_kind, errors]),
+			);
+
 			if (Object.keys(explicit_edge_errors).length) {
 				log.warn("explicit_edge_errors >", explicit_edge_errors);
+			}
+			if (Object.keys(implied_edge_results).length) {
+				log.warn("implied_edge_results >", implied_edge_results);
 			}
 
 			notice?.setMessage(
 				[
-					`Rebuilt graph in ${timer.elapsed()}ms`,
+					`Rebuilt graph in ${timer.elapsed().toFixed(1)}ms`,
 
 					explicit_edge_errors.length
-						? "\nErrors (see console for details):"
+						? "\nExplicit edge errors (see console for details):"
 						: null,
 
 					...Object.entries(explicit_edge_errors).map(
 						([source, errors]) =>
 							`- ${source}: ${errors.length} errors`,
+					),
+
+					implied_edge_results.length
+						? "\nImplied edge errors (see console for details):"
+						: null,
+
+					...Object.entries(implied_edge_results).map(
+						([implied_kind, errors]) =>
+							`- ${implied_kind}: ${errors.length} errors`,
 					),
 				]
 					.filter(Boolean)
@@ -415,6 +415,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		if (options?.redraw_codeblocks !== false) {
 			Codeblocks.update_all();
+		}
+
+		if (options?.redraw_side_views === true) {
+			this.app.workspace
+				.getLeavesOfType(VIEW_IDS.matrix)
+				.forEach((leaf) => {
+					(leaf.view as MatrixView).onOpen();
+				});
+			this.app.workspace
+				.getLeavesOfType(VIEW_IDS.tree)
+				.forEach((leaf) => {
+					(leaf.view as TreeView).onOpen();
+				});
 		}
 	};
 

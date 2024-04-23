@@ -1,9 +1,9 @@
-import { Setting } from "obsidian";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
-import { DIRECTIONS } from "src/const/hierarchies";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
 import { LINK_KINDS } from "src/const/links";
 import type BreadcrumbsPlugin from "src/main";
-import { stringify_hierarchy } from "src/utils/hierarchies";
+import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
@@ -13,42 +13,26 @@ export const _add_settings_list_index = (
 ) => {
 	const { settings } = plugin;
 
-	new Setting(contentEl)
-		.setName("Hierarchy")
-		.setDesc("Optionally constrain the traversal to a specific hierarchy")
-		.addDropdown((dropdown) => {
-			dropdown.addOption("-1", "All");
+	new FieldGroupLabelsSettingItem({
+		target: contentEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
+				settings.commands.list_index.default_options.field_group_labels,
+		},
+	}).$on("select", async (e) => {
+		// Tracking groups for the UI
+		settings.commands.list_index.default_options.field_group_labels =
+			e.detail;
 
-			settings.hierarchies.forEach((hierarchy, i) => {
-				dropdown.addOption(String(i), stringify_hierarchy(hierarchy));
-			});
-
-			dropdown.setValue(
-				String(
-					settings.commands.list_index.default_options.hierarchy_i,
-				),
+		// Settings fields for the build call
+		settings.commands.list_index.default_options.fields =
+			resolve_field_group_labels(
+				plugin.settings.edge_field_groups,
+				settings.commands.list_index.default_options.field_group_labels,
 			);
 
-			dropdown.onChange(async (value) => {
-				settings.commands.list_index.default_options.hierarchy_i =
-					Number(value);
-
-				await plugin.saveSettings();
-			});
-		});
-
-	new_setting(contentEl, {
-		name: "Direction",
-		desc: "Direction to traverse",
-		select: {
-			options: DIRECTIONS,
-			value: settings.commands.list_index.default_options.dir,
-			cb: async (value) => {
-				settings.commands.list_index.default_options.dir = value;
-
-				await plugin.saveSettings();
-			},
-		},
+		await plugin.saveSettings();
 	});
 
 	new_setting(contentEl, {
@@ -86,6 +70,18 @@ export const _add_settings_list_index = (
 		},
 	}).$on("select", async (e) => {
 		settings.commands.list_index.default_options.edge_sort_id = e.detail;
+
+		await plugin.saveSettings();
+	});
+
+	new ShowAttributesSettingItem({
+		target: contentEl,
+		props: {
+			show_attributes:
+				settings.commands.list_index.default_options.show_attributes,
+		},
+	}).$on("select", async (e) => {
+		settings.commands.list_index.default_options.show_attributes = e.detail;
 
 		await plugin.saveSettings();
 	});

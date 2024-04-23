@@ -9,32 +9,37 @@ describe("get_graph_stats", () => {
 			edges: [
 				_mock_edge("a", "b", {}),
 				_mock_edge("b", "c", {
-					dir: "up",
 					explicit: true,
 					field: "parent",
-					hierarchy_i: 1,
 					source: "dataview_note",
 				}),
 				_mock_edge("c", "d", {
-					dir: "next",
 					explicit: false,
 					field: "right",
-					hierarchy_i: 2,
-					implied_kind: "cousin_is_sibling",
+					implied_kind: "transitive:cousin_is_sibling",
 					round: 1,
 				}),
 			],
 		});
 
-		const stats = get_graph_stats(graph);
+		const stats = get_graph_stats(graph, {
+			groups: [
+				{ label: "ups", fields: ["parent"] },
+				{ label: "rights", fields: ["right"] },
+			],
+		});
 
 		expect(stats).toStrictEqual({
 			nodes: { resolved: { true: 4 } },
 			edges: {
 				field: {
-					child: 1,
+					down: 1,
 					parent: 1,
 					right: 1,
+				},
+				group: {
+					ups: 1,
+					rights: 1,
 				},
 				source: {
 					typed_link: 1,
@@ -44,18 +49,8 @@ describe("get_graph_stats", () => {
 					true: 2,
 					false: 1,
 				},
-				direction: {
-					down: 1,
-					up: 1,
-					next: 1,
-				},
-				hierarchy_i: {
-					"0": 1,
-					"1": 1,
-					"2": 1,
-				},
 				implied_kind: {
-					cousin_is_sibling: 1,
+					"transitive:cousin_is_sibling": 1,
 				},
 				round: {
 					"1": 1,

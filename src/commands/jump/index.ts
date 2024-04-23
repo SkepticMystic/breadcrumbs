@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
-import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
-import { has_edge_attrs } from "src/graph/utils";
+import { has_edge_attrs, type EdgeAttrFilters } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
 import { active_file_store } from "src/stores/active_file";
 import { url_search_params } from "src/utils/url";
@@ -8,7 +7,7 @@ import { get } from "svelte/store";
 
 export const jump_to_neighbour = async (
 	plugin: BreadcrumbsPlugin,
-	options: { attr: Partial<BCEdgeAttributes> },
+	options: { attr: EdgeAttrFilters },
 ) => {
 	const active_file = get(active_file_store);
 	if (!active_file) return;

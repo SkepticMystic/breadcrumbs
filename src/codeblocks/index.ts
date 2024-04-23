@@ -3,30 +3,29 @@ import {
 	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
 	SIMPLE_EDGE_SORT_FIELDS,
 } from "src/const/graph";
-import { DIRECTIONS, type Direction } from "src/const/hierarchies";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
-import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/MyMultiGraph";
 import type { ICodeblock } from "src/interfaces/codeblocks";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { get_all_hierarchy_fields } from "src/utils/hierarchies";
+import { remove_duplicates } from "src/utils/arrays";
+import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
-import { quote_join } from "src/utils/strings";
+import { quote_join, split_and_trim } from "src/utils/strings";
 
 // TODO: parseYaml
 
 const FIELDS = [
 	"type",
-	// TODO: Accept multiple directions, treated as $or_dirs in has_attributes
-	"dir",
-	"dirs",
 	"title",
+	// TODO: "start-note",
 	"fields",
+	"field-groups",
 	"depth",
 	"flat",
 	"collapse",
-	"merge-hierarchies",
+	"merge-fields",
 	"dataview-from",
 	"content",
 	"sort",
@@ -39,10 +38,6 @@ const FIELDS = [
 const TYPES: ICodeblock["Options"]["type"][] = ["tree", "mermaid"];
 
 const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
-	const hierarchy_fields = get_all_hierarchy_fields(
-		plugin.settings.hierarchies,
-	);
-
 	const lines = source.split("\n");
 
 	const errors: BreadcrumbsError[] = [];
@@ -71,33 +66,6 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.type = value as ICodeblock["Options"]["type"]);
 			}
 
-			case "dir":
-			case "dirs": {
-				if (key === "dir") {
-					errors.push({
-						path: key,
-						code: "deprecated_field",
-						message: `The 'dir' field is deprecated in favour of 'dirs' which accepts multiple directions (comma-separated).`,
-					});
-				}
-
-				return (parsed.dirs = value
-					.split(",")
-					.map((field) => field.trim())
-					.filter((dir) => {
-						if (!DIRECTIONS.includes(dir as Direction)) {
-							errors.push({
-								path: key,
-								code: "invalid_field_value",
-								message: `Invalid dir: "${dir}". Options: ${quote_join(DIRECTIONS)}`,
-							});
-							return false;
-						} else {
-							return true;
-						}
-					}) as Direction[]);
-			}
-
 			case "mermaid-direction": {
 				if (
 					!Mermaid.DIRECTIONS.includes(value as Mermaid["Direction"])
@@ -118,33 +86,117 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "fields": {
-				return (parsed.fields = value
-					.split(",")
-					.map((field) => field.trim())
-					.filter((field) => {
-						if (!hierarchy_fields.includes(field)) {
+				const field_labels = plugin.settings.edge_fields.map(
+					(field) => field.label,
+				);
+
+				return (parsed.fields = split_and_trim(value).filter(
+					(field) => {
+						if (!field_labels.includes(field)) {
 							errors.push({
 								path: key,
 								code: "invalid_field_value",
-								message: `Invalid field: "${field}". Options: ${quote_join(hierarchy_fields)}`,
+								message: `Invalid field: "${field}". Options: ${quote_join(field_labels)}`,
 							});
 							return false;
 						} else {
 							return true;
 						}
-					}));
+					},
+				));
+			}
+
+			case "field-groups": {
+				const group_labels = plugin.settings.edge_field_groups.map(
+					(group) => group.label,
+				);
+
+				const values = split_and_trim(value).filter((group) => {
+					// NOTE: resolve_field_group_labels handles values that aren't group labels just fine
+					// 	but this lets us add an error message
+					if (!group_labels.includes(group)) {
+						errors.push({
+							path: key,
+							code: "invalid_field_value",
+							message: `Invalid field-group: "${group}". Options: ${quote_join(group_labels)}`,
+						});
+						return false;
+					} else {
+						return true;
+					}
+				});
+
+				const field_labels = resolve_field_group_labels(
+					plugin.settings.edge_field_groups,
+					values,
+				);
+
+				if (parsed.fields) {
+					parsed.fields = remove_duplicates(
+						parsed.fields.concat(field_labels),
+					);
+				} else {
+					parsed.fields = field_labels;
+				}
+
+				return;
+			}
+
+			//@ts-ignore: TODO: Remove once everyone has migrated
+			case "dir":
+			// @ts-ignore
+			case "dirs": {
+				errors.push({
+					path: key,
+					code: "deprecated_field",
+					message: `The '${key}' field is deprecated. Use 'fields' or 'field-groups' instead.`,
+				});
+
+				const group_labels = plugin.settings.edge_field_groups.map(
+					(group) => group.label,
+				);
+
+				// Check if a group is named after that direction (or it's plural, since that's how the default groups are setup)
+				const included_group_labels = split_and_trim(value)
+					.map((group) =>
+						group_labels.includes(group)
+							? group
+							: group_labels.includes(group + "s")
+								? group + "s"
+								: "",
+					)
+					.filter(Boolean);
+
+				const field_labels = resolve_field_group_labels(
+					plugin.settings.edge_field_groups,
+					included_group_labels,
+				);
+
+				if (parsed.fields) {
+					parsed.fields = remove_duplicates(
+						parsed.fields.concat(field_labels),
+					);
+				} else {
+					parsed.fields = field_labels;
+				}
+
+				return;
 			}
 
 			case "depth": {
-				// depth: -2
+				// depth: 1
 				// depth: 1-2
-				// depth: 1-
 
 				const bounds = value.split("-").map((num) => parseInt(num));
 
+				// NOTE:  Number.isNaN(undefined) === false; Because JS
 				const [min, max] = [
-					Number.isNaN(bounds[0]) ? 0 : bounds[0],
-					Number.isNaN(bounds[1]) ? Infinity : bounds[1],
+					bounds[0] === undefined || Number.isNaN(bounds[0])
+						? 0
+						: bounds[0],
+					bounds[1] === undefined || Number.isNaN(bounds[1])
+						? Infinity
+						: bounds[1],
 				];
 
 				if (min > max) {
@@ -157,7 +209,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 					return (parsed.depth = [0, Infinity]);
 				}
 
-				return (parsed.depth = [min, max] as [number, number]);
+				return (parsed.depth = [min, max] as const);
 			}
 
 			case "flat": {
@@ -168,8 +220,20 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.collapse = value === "true");
 			}
 
+			// @ts-expect-error: TODO: Remove once everyone has migrated
 			case "merge-hierarchies":
-				return (parsed.merge_hierarchies = value === "true");
+			case "merge-fields": {
+				// @ts-expect-error
+				if (key === "merge-hierarchies") {
+					errors.push({
+						path: key,
+						code: "deprecated_field",
+						message: `The 'merge-hierarchies' field is deprecated. Use 'merge-fields' instead.`,
+					});
+				}
+
+				return (parsed.merge_fields = value === "true");
+			}
 
 			//@ts-ignore: TODO: Remove once everyone has migrated
 			case "from":
@@ -261,10 +325,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 			}
 
 			case "show-attributes": {
-				return (parsed.show_attributes = value
-					.split(",")
-					.map((attr) => attr.trim())
-					.filter((attr) => {
+				return (parsed.show_attributes = split_and_trim(value).filter(
+					(attr) => {
 						if (!EDGE_ATTRIBUTES.includes(attr as any)) {
 							errors.push({
 								path: key,
@@ -275,7 +337,8 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 						} else {
 							return true;
 						}
-					}) as any);
+					},
+				) as EdgeAttribute[]);
 			}
 
 			case "mermaid-renderer": {
@@ -309,7 +372,6 @@ const resolve_options = (
 	Object.assign(
 		{
 			type: "tree",
-			dirs: ["down"],
 			depth: [0, Infinity],
 			flat: false,
 			sort: {

@@ -8,6 +8,7 @@ export const EXPLICIT_EDGE_SOURCES = [
 	"date_note",
 	"folder_note",
 	"regex_note",
+	// TODO: "zetel_note", // Can date_notes do this already?
 ] as const;
 
 export type ExplicitEdgeSource = (typeof EXPLICIT_EDGE_SOURCES)[number];
@@ -25,12 +26,7 @@ export const SIMPLE_EDGE_SORT_FIELDS = [
 ] as const;
 type SimpleEdgeSortField = (typeof SIMPLE_EDGE_SORT_FIELDS)[number];
 
-export const COMPLEX_EDGE_SORT_FIELD_PREFIXES = [
-	// BREAKING: rather use neighbour-field
-	"neighbour",
-	"neighbour-field",
-	"neighbour-dir",
-] as const;
+export const COMPLEX_EDGE_SORT_FIELD_PREFIXES = ["neighbour-field"] as const;
 export type ComplexEdgeSortFieldPrefix =
 	(typeof COMPLEX_EDGE_SORT_FIELD_PREFIXES)[number];
 

@@ -5,7 +5,6 @@ import type {
 	EdgeAttribute,
 } from "src/graph/MyMultiGraph";
 import { remove_duplicates_by } from "./arrays";
-import { get_opposite_direction } from "./hierarchies";
 import { remove_nullish_keys, untyped_pick } from "./objects";
 import { url_search_params } from "./url";
 
@@ -23,9 +22,8 @@ type MermaidEdge = {
 	collapsed_attr: Record<string, Set<string>>;
 };
 
-const build_arrow = (e: {
-	attr: Pick<BCEdgeAttributes, "explicit" | "dir">;
-}) => (e.attr.dir === "same" ? "<-->" : e.attr.explicit ? "-->" : "-.->");
+const build_arrow = (e: { attr: Pick<BCEdgeAttributes, "explicit"> }) =>
+	e.attr.explicit ? "-->" : "-.->";
 
 const build_attrs = (
 	attr: Record<string, string>,
@@ -49,6 +47,7 @@ const from_edges = (
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
 		show_attributes?: EdgeAttribute[];
+		collapse_opposing_edges?: false;
 		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
 		click?:
 			| { method: "class" }
@@ -95,27 +94,25 @@ const from_edges = (
 
 	lines.push("");
 
-	// Collapse dir === same edges to and from the same nodes
+	// Collapse opposing edges to and from the same nodes
 	// e.g. A -->|same| B -->|same| A becomes A <-->|same| B
 	const mermaid_edges: MermaidEdge[] = [];
 
-	for (const edge of edges.sort(
-		// Favour explicit edges in the dedupe
-		(a, b) => Number(b.attr.explicit) - Number(a.attr.explicit),
-	)) {
+	for (const edge of edges) {
 		const [source_i, target_i] = [
 			node_map.get(edge.source_id)!.i,
 			node_map.get(edge.target_id)!.i,
 		];
 
-		const opposing_edge_i = mermaid_edges.findIndex(
-			(existing) =>
-				target_i === existing.source_i &&
-				source_i === existing.target_i &&
-				// The combination of hierarchy_i and dir uniquely identify a field in a hierarchy
-				edge.attr.hierarchy_i === existing.attr.hierarchy_i &&
-				edge.attr.dir === get_opposite_direction(existing.attr.dir),
-		);
+		const opposing_edge_i =
+			config?.collapse_opposing_edges !== false
+				? mermaid_edges.findIndex(
+						(existing) =>
+							// NOTE: This is pretty intense, all opposing edges will collapse, because now there's no direction semantics
+							target_i === existing.source_i &&
+							source_i === existing.target_i,
+					)
+				: -1;
 
 		if (opposing_edge_i === -1) {
 			// If there is no opposing edge, add the original edge
@@ -219,8 +216,48 @@ const from_edges = (
 	return lines.join("\n");
 };
 
+const _encode = (code: string) => {
+	const bytes = new TextEncoder().encode(code);
+	return btoa(String.fromCharCode(...bytes));
+};
+
+const to_image_link = (code: string) =>
+	`https://mermaid.ink/img/${_encode(code)}`;
+
+type MermaidState = {
+	code: string;
+	mermaid: {
+		theme: string;
+	};
+	updateDiagram: boolean;
+	autoSync: boolean;
+	editorMode?: "code" | "config";
+	panZoom?: boolean;
+	pan?: { x: number; y: number };
+	zoom?: number;
+};
+
+// SOURCE: https://mermaid.js.org/ecosystem/tutorials.html#jupyter-integration-with-mermaid-js
+const to_live_edit_link = (code: string) => {
+	const state: MermaidState = {
+		code,
+		// NOTE: For some reason, having both true doesn't trigger the initial render?
+		autoSync: false,
+		updateDiagram: true,
+		mermaid: { theme: "default" },
+	};
+
+	const encoded = _encode(JSON.stringify(state, undefined, 2));
+
+	return `https://mermaid.live/edit#base64:${encoded}`;
+};
+
 export const Mermaid = {
 	from_edges,
+
+	to_image_link,
+	to_live_edit_link,
+
 	RENDERERS: MERMAID_RENDERER,
 	DIRECTIONS: MERMAID_DIRECTIONS,
 };

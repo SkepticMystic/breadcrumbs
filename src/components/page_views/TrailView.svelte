@@ -1,33 +1,35 @@
 <script lang="ts">
 	import { Traverse } from "src/graph/traverse";
-	import { has_edge_attrs } from "src/graph/utils";
+	import { has_edge_attrs, type EdgeAttrFilters } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { remove_duplicates_by } from "src/utils/arrays";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
+	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
 
-	const all_paths =
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode(file_path)
-			? plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						Traverse.all_paths(
-							"depth_first",
-							plugin.graph,
-							file_path,
-							(edge) =>
-								has_edge_attrs(edge, {
-									dir: "up",
-									hierarchy_i,
-								}),
-						),
-					)
-					.flat()
-			: [];
+	// TODO: I've copped-out here, building the view from edge_tree seems crazy hard.
+	// So I just use all_paths
+	const base_traversal = (attr: EdgeAttrFilters) =>
+		Traverse.tree_to_all_paths(
+			Traverse.build_tree(plugin.graph, file_path, {}, (e) =>
+				has_edge_attrs(e, attr),
+			),
+		);
+
+	$: edge_field_labels = resolve_field_group_labels(
+		plugin.settings.edge_field_groups,
+		plugin.settings.views.page.trail.field_group_labels,
+	);
+
+	$: all_paths = plugin.graph.hasNode(file_path)
+		? plugin.settings.views.page.trail.merge_fields
+			? base_traversal({ $or_fields: edge_field_labels })
+			: edge_field_labels.flatMap((field) => base_traversal({ field }))
+		: [];
 
 	$: selected_paths =
 		plugin.settings.views.page.trail.selection === "all"
@@ -94,6 +96,11 @@
 						<option value={s}> {s} </option>
 					{/each}
 				</select>
+
+				<MergeFieldsButton
+					bind:merge_fields={plugin.settings.views.page.trail
+						.merge_fields}
+				/>
 
 				<div class="flex items-center gap-1">
 					<button

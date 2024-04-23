@@ -1,19 +1,22 @@
 <script lang="ts">
-	import type { Direction } from "src/const/hierarchies";
 	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeSorter } from "src/graph/utils";
-	import type { Hierarchy } from "src/interfaces/hierarchies";
+	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { untyped_pick } from "src/utils/objects";
 	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
+	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 
-	export let dir: Direction;
-	export let hierarchy: Hierarchy;
-	export let dir_out_edges: BCEdge[];
+	export let edges: BCEdge[];
+	export let field: EdgeField;
 	export let plugin: BreadcrumbsPlugin;
+	// NOTE: These are available on settings, but they're modified in the parent component,
+	// 	so rather pass them in to receive updates
 	export let show_attributes: EdgeAttribute[];
+
+	let { show_node_options } = plugin.settings.views.side.matrix;
 
 	export let sort: EdgeSorter;
 
@@ -21,7 +24,7 @@
 </script>
 
 <details
-	class="BC-matrix-view-dir BC-matrix-view-dir-{dir} tree-item"
+	class="BC-matrix-view-field BC-matrix-view-field-{field.label} tree-item"
 	bind:open
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -33,43 +36,39 @@
 
 		<div class="tree-item-inner">
 			<span class="tree-item-inner-text">
-				{hierarchy.dirs[dir].join(", ")}
+				{field.label}
 			</span>
 		</div>
 
 		<div class="tree-item-flair-outer">
 			<span class="tree-item-flair">
-				{dir_out_edges.length}
+				{edges.length}
 			</span>
 		</div>
 	</summary>
 
 	<div class="tree-item-children flex flex-col">
 		{#key sort}
-			{#each dir_out_edges.sort(sort) as edge}
+			{#each edges.sort(sort) as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
 						<div class="tree-item-inner flex grow">
 							<EdgeLink
 								{edge}
 								{plugin}
+								{show_node_options}
 								cls="grow tree-item-inner-text"
-								show_node_options={plugin.settings.views.side
-									.matrix.show_node_options}
 							/>
 						</div>
 
-						<div class="tree-item-flair-outer">
-							<span
-								class="tree-item-flair font-mono"
-								aria-label={url_search_params(
-									untyped_pick(edge.attr, show_attributes),
-									{ trim_lone_param: true },
-								)}
-							>
-								{edge.attr.explicit ? "x" : "i"}
-							</span>
-						</div>
+						<TreeItemFlair
+							cls="font-mono"
+							label={edge.attr.explicit ? "x" : "i"}
+							aria_label={url_search_params(
+								untyped_pick(edge.attr, show_attributes),
+								{ trim_lone_param: true },
+							)}
+						/>
 					</div>
 				</div>
 			{/each}

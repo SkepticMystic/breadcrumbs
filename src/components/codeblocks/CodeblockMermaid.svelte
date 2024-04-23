@@ -1,71 +1,67 @@
 <script lang="ts">
-	import { MarkdownRenderer } from "obsidian";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { Distance } from "src/graph/distance";
-	import { Traverse } from "src/graph/traverse";
-	import { has_edge_attrs } from "src/graph/utils";
+	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
+	import {
+		get_edge_sorter,
+		has_edge_attrs,
+		type EdgeAttrFilters,
+	} from "src/graph/utils";
 	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { remove_duplicates_by } from "src/utils/arrays";
 	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
+	import { is_between } from "src/utils/numbers";
 	import { Paths } from "src/utils/paths";
-	import { wrap_in_codeblock } from "src/utils/strings";
 	import { onMount } from "svelte";
+	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { ImageIcon, PencilIcon } from "lucide-svelte";
+	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	let all_paths: BCEdge[][] = [];
+	const sort = get_edge_sorter(options.sort, plugin.graph);
+
+	let traversal_items: TraversalStackItem[] = [];
+	let distances: Map<string, number> = new Map();
 
 	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: active_file_path = file_path
+	$: source_path = file_path
 		? file_path
 		: $active_file_store
 			? $active_file_store.path
 			: "";
 
-	// TODO: We can take a subgraph matching the edge_filter, then get .edges(), no need for a traversal
-
 	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
-		all_paths = get_all_paths();
-		distances = Distance.from_paths(all_paths);
-
-		log.debug("distances", distances);
+		traversal_items = get_traversal_items();
+		distances = Distance.from_traversal_items(traversal_items);
 	};
 
-	const base_traversal = ({
-		hierarchy_i,
-	}: {
-		hierarchy_i: number | undefined;
-	}) =>
-		Traverse.all_paths("depth_first", plugin.graph, active_file_path, (e) =>
-			has_edge_attrs(e, {
-				hierarchy_i,
-				$or_dirs: options.dirs,
-				$or_fields: options.fields,
+	const base_traversal = (attr: EdgeAttrFilters) =>
+		Traverse.gather_items(plugin.graph, source_path, (item) =>
+			has_edge_attrs(item.edge, {
+				...attr,
 				$or_target_ids: options.dataview_from_paths,
 			}),
 		);
 
-	const get_all_paths = () => {
-		if (active_file_path && plugin.graph.hasNode(active_file_path)) {
-			if (options.merge_hierarchies) {
-				return base_traversal({ hierarchy_i: undefined });
-			} else {
-				return plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						base_traversal({ hierarchy_i }),
-					)
-					.flat();
-			}
+	const edge_field_labels =
+		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+
+	const get_traversal_items = () => {
+		if (source_path && plugin.graph.hasNode(source_path)) {
+			return options.merge_fields
+				? base_traversal({ $or_fields: options.fields })
+				: edge_field_labels.flatMap((field) =>
+						base_traversal({ field }),
+					);
 		} else {
 			return [];
 		}
@@ -73,80 +69,46 @@
 
 	onMount(update);
 
-	let distances: Map<string, number> = new Map();
+	$: edges = traversal_items
+		.filter((item) =>
+			is_between(
+				distances.get(item.edge.target_id) ?? 0,
+				options.depth[0] + 1,
+				options.depth[1],
+			),
+		)
+		.map((item) => item.edge)
+		.sort(sort);
 
-	// Prioritise closer edges
-	$: sorted = all_paths.map((path) =>
-		path.slice().sort((a, b) => {
-			const a_dist = distances.get(a.target_id) ?? 0;
-			const b_dist = distances.get(b.target_id) ?? 0;
+	$: mermaid = Mermaid.from_edges(edges, {
+		kind: "graph",
+		click: { method: "class" },
+		active_node_id: source_path,
+		renderer: options.mermaid_renderer,
+		direction: options.mermaid_direction,
+		show_attributes: options.show_attributes,
 
-			return a_dist - b_dist;
-		}),
-	);
+		get_node_label: (node_id, _attr) => {
+			const file = plugin.app.vault.getFileByPath(node_id);
 
-	$: sliced = sorted.map((path) =>
-		path.slice(options.depth[0], options.depth[1]),
-	);
+			return file
+				? plugin.app.fileManager
+						.generateMarkdownLink(file, source_path)
+						.slice(2, -2)
+				: Paths.drop_ext(
+						Links.resolve_to_absolute_path(
+							plugin.app,
+							node_id,
+							source_path,
+						),
+					);
+		},
+	});
 
-	$: flat_unique = remove_duplicates_by(sliced.flat(), (e) => e.id);
-
-	$: mermaid = wrap_in_codeblock(
-		Mermaid.from_edges(flat_unique, {
-			kind: "graph",
-			click: { method: "class" },
-			renderer: options.mermaid_renderer,
-			show_attributes: options.show_attributes,
-			active_node_id: active_file_path,
-			get_node_label: (node_id, _attr) => {
-				const source_path = active_file_path;
-				const file = plugin.app.vault.getFileByPath(node_id);
-
-				return file
-					? plugin.app.fileManager
-							.generateMarkdownLink(file, source_path)
-							.slice(2, -2)
-					: Paths.drop_ext(
-							Links.resolve_to_absolute_path(
-								plugin.app,
-								node_id,
-								source_path,
-							),
-						);
-			},
-			direction: options.mermaid_direction,
-		}),
-		"mermaid",
-	);
 	$: log.debug(mermaid);
-
-	let mermaid_element: HTMLElement | undefined;
-
-	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
-	// and for the initial render the target element is undefined, so we need to check for that
-	const render_mermaid = (
-		mermaid_str: string,
-		target_el: HTMLElement | undefined,
-	) => {
-		if (target_el) {
-			log.debug("rendering mermaid");
-
-			target_el.empty();
-
-			MarkdownRenderer.render(
-				plugin.app,
-				mermaid_str,
-				target_el,
-				active_file_path,
-				plugin,
-			);
-		}
-	};
-
-	$: render_mermaid(mermaid, mermaid_element);
 </script>
 
-<div class="BC-codeblock-mermaid">
+<div class="BC-codeblock-mermaid relative">
 	<CodeblockErrors {errors} />
 
 	{#if options.title}
@@ -155,14 +117,32 @@
 		</h3>
 	{/if}
 
-	{#if flat_unique.length}
-		<!-- TODO: The max-width doesn't actually work. Mermaid suggests you can set the width, but only via CLI?
-	https://mermaid.js.org/syntax/flowchart.html#width -->
-		<div
-			class="BC-codeblock-mermaid-graph"
-			style="max-width: var(--file-line-width);"
-			bind:this={mermaid_element}
-		></div>
+	{#if traversal_items.length}
+		<div class="absolute bottom-2 left-2 flex gap-1">
+			<button
+				role="link"
+				aria-label="View Image"
+				class="clickable-icon nav-action-button"
+				on:click={() => {
+					window.open(Mermaid.to_image_link(mermaid), "_blank");
+				}}
+			>
+				<ImageIcon size={ICON_SIZE} />
+			</button>
+
+			<button
+				role="link"
+				aria-label="Live Editor"
+				class="clickable-icon nav-action-button"
+				on:click={() => {
+					window.open(Mermaid.to_live_edit_link(mermaid), "_blank");
+				}}
+			>
+				<PencilIcon size={ICON_SIZE} />
+			</button>
+		</div>
+
+		<MermaidDiagram {plugin} {mermaid} {source_path} />
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
 	{/if}

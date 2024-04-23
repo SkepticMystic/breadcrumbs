@@ -9,13 +9,7 @@ Outputs to /styles.css, for Obsidian to use.
 @tailwind components;
 @tailwind utilities;
 
-.text-faint {
-	color: var(--text-faint);
-}
-
-.text-error {
-	color: var(--text-error);
-}
+/* Breadcrumbs */
 
 /* Hide the last hr in the Matrix View */
 .BC-matrix-view hr:last-child {
@@ -27,4 +21,18 @@ Outputs to /styles.css, for Obsidian to use.
 	position: sticky;
 	top: calc(var(--file-margins) * -1);
 	background-color: var(--background-primary);
+}
+
+/* Obsidian */
+
+.text-faint {
+	color: var(--text-faint);
+}
+
+.text-warning {
+	color: var(--text-warning);
+}
+
+.text-error {
+	color: var(--text-error);
 }

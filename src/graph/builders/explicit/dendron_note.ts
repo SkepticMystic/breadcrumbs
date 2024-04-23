@@ -5,7 +5,6 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
@@ -31,21 +30,15 @@ const get_dendron_note_info = (
 			code: "invalid_field_value",
 			message: `dendron-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `dendron-note-field is not a valid BC field: '${field}'`,
+			message: `dendron-note-field is not a valid field: '${field}'`,
 		});
 	}
 
-	return succ({ field, field_hierarchy });
+	return succ({ field });
 };
 
 /** Take in the info of a _potential_ dendron note.
@@ -65,10 +58,7 @@ const handle_dendron_note = (
 	// NOTE: There are easier ways to do alot of the below.
 	//   But the `file` type between obsidian and dataview doesn't have the common fields needed.
 	//   So we rebuild from `path`
-	// drop_ext, as the delimiter might be '.'
-	const source_basename_splits = Paths.drop_ext(
-		Paths.basename(source_path),
-	).split(delimiter);
+	const source_basename_splits = Paths.basename(source_path).split(delimiter);
 	if (source_basename_splits.length === 1) return;
 
 	const dendron_note_info = get_dendron_note_info(
@@ -90,8 +80,7 @@ const handle_dendron_note = (
 		source_basename_splits.slice(0, -1).join(delimiter),
 		"md",
 	);
-
-	const { field, field_hierarchy } = dendron_note_info.data;
+	const { field } = dendron_note_info.data;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
 	const target_file = plugin.app.vault.getFileByPath(target_path);
@@ -108,7 +97,7 @@ const handle_dendron_note = (
 			// This is really quite elegant :)
 			//   The unresolved note has no BC-dendron field, by definition
 			//   Passing undefined would just use the settings.default field
-			//   But we can propagate the field from the resolved source note, to stay in the same hierarchy
+			//   But we can propagate the field from the resolved source note
 			{ [META_ALIAS["dendron-note-field"]]: field },
 			errors,
 		);
@@ -118,8 +107,6 @@ const handle_dendron_note = (
 		field,
 		explicit: true,
 		source: "dendron_note",
-		dir: field_hierarchy.dir,
-		hierarchy_i: field_hierarchy.hierarchy_i,
 	});
 };
 

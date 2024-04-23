@@ -9,7 +9,7 @@ import { resolve_templates } from "src/utils/strings";
 
 export const thread = async (
 	plugin: BreadcrumbsPlugin,
-	attr: Pick<BCEdgeAttributes, "field" | "dir" | "hierarchy_i">,
+	attr: Pick<BCEdgeAttributes, "field">,
 	options: BreadcrumbsSettings["commands"]["thread"]["default_options"],
 ) => {
 	const active_view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
@@ -23,14 +23,16 @@ export const thread = async (
 		source: {
 			path: source_file.path,
 			folder: source_file.parent?.path ?? "",
-			basename: Paths.drop_ext(source_file.basename),
+			basename: source_file.basename,
 		},
 	};
 	log.info("template_data", template_data);
 
-	const target_path = Paths.ensure_ext(
-		resolve_templates(options.target_path_template, template_data),
-		"md",
+	const target_path = Paths.normalise(
+		Paths.ensure_ext(
+			resolve_templates(options.target_path_template, template_data),
+			"md",
+		),
 	);
 	log.debug("thread > target_path", target_path);
 

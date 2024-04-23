@@ -1,4 +1,3 @@
-import type { Direction } from "src/const/hierarchies";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
@@ -6,7 +5,6 @@ import type {
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
 
@@ -50,13 +48,7 @@ const get_tag_note_info = (
 			code: "invalid_field_value",
 			message: `tag-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
@@ -66,7 +58,7 @@ const get_tag_note_info = (
 
 	const exact = Boolean(metadata[META_ALIAS["tag-note-exact"]]);
 
-	return succ({ tag, field, exact, field_hierarchy });
+	return succ({ tag, field, exact });
 };
 
 export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
@@ -81,9 +73,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	const tag_notes: {
 		tag: string;
 		field: string;
-		dir: Direction;
 		exact: boolean;
-		hierarchy_i: number;
 		source_path: string;
 	}[] = [];
 
@@ -115,15 +105,13 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				return;
 			}
 
-			const { tag, field, exact, field_hierarchy } = tag_note_info.data;
+			const { tag, field, exact } = tag_note_info.data;
 
 			tag_notes.push({
 				tag,
 				exact,
 				field,
-				dir: field_hierarchy.dir,
 				source_path: tag_note_file.path,
-				hierarchy_i: field_hierarchy.hierarchy_i,
 			});
 		},
 	);
@@ -147,16 +135,13 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 			if (tag_note_info.error) errors.push(tag_note_info.error);
 			return;
 		}
-
-		const { tag, field, exact, field_hierarchy } = tag_note_info.data;
+		const { tag, field, exact } = tag_note_info.data;
 
 		tag_notes.push({
 			tag,
 			exact,
 			field,
-			dir: field_hierarchy.dir,
 			source_path: tag_note_file.path,
-			hierarchy_i: field_hierarchy.hierarchy_i,
 		});
 	});
 
@@ -178,10 +163,8 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		target_paths?.forEach((target_path) => {
 			graph.safe_add_directed_edge(tag_note.source_path, target_path, {
 				explicit: true,
-				dir: tag_note.dir,
 				source: "tag_note",
 				field: tag_note.field,
-				hierarchy_i: tag_note.hierarchy_i,
 			});
 		});
 	});

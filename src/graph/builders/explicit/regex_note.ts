@@ -5,7 +5,6 @@ import type {
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
 const get_regex_note_info = (
@@ -60,25 +59,17 @@ const get_regex_note_info = (
 			code: "invalid_field_value",
 			message: `regex-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-field is not a valid BC field: '${field}'`,
+			message: `dataview-note-field is not a valid field: '${field}'`,
 		});
 	}
 
 	return succ({
 		field,
 		regex,
-		dir: field_hierarchy.dir,
-		hierarchy_i: field_hierarchy.hierarchy_i,
 	});
 };
 
@@ -134,9 +125,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 				graph.safe_add_directed_edge(regex_note.path, target_path, {
 					explicit: true,
 					source: "regex_note",
-					dir: regex_note.info.dir,
 					field: regex_note.info.field,
-					hierarchy_i: regex_note.info.hierarchy_i,
 				});
 			});
 	});

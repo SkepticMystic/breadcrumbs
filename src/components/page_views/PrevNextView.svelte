@@ -1,25 +1,45 @@
 <script lang="ts">
 	import { has_edge_attrs } from "src/graph/utils";
 	import BreadcrumbsPlugin from "src/main";
-	import { group_by } from "src/utils/arrays";
+	import { group_by, remove_duplicates } from "src/utils/arrays";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
+	export let plugin: BreadcrumbsPlugin;
 
-	const grouped_out_edges =
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode(file_path)
-			? group_by(
-					plugin.graph
-						.get_out_edges(file_path)
-						.filter((e) =>
-							has_edge_attrs(e, { $or_dirs: ["prev", "next"] }),
-						),
-					(e) => e.attr.dir,
-				)
-			: null;
+	const { field_group_labels, show_node_options } =
+		plugin.settings.views.page.prev_next;
+
+	const edge_field_labels = {
+		prev: resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			field_group_labels.prev,
+		),
+		next: resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			field_group_labels.next,
+		),
+	};
+
+	const merged_field_labels = remove_duplicates([
+		...edge_field_labels.prev,
+		...edge_field_labels.next,
+	]);
+
+	const grouped_out_edges = plugin.graph.hasNode(file_path)
+		? group_by(
+				plugin.graph.get_out_edges(file_path).filter((e) =>
+					has_edge_attrs(e, {
+						$or_fields: merged_field_labels,
+					}),
+				),
+				(e) =>
+					edge_field_labels.prev.includes(e.attr.field)
+						? ("prev" as const)
+						: ("next" as const),
+			)
+		: null;
 </script>
 
 <div class="BC-prev-next-view flex">
@@ -29,13 +49,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field">{edge.attr.field}</span>
 
-					<EdgeLink
-						{edge}
-						{plugin}
-						cls="grow"
-						show_node_options={plugin.settings.views.page.prev_next
-							.show_node_options}
-					/>
+					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 				</div>
 			{/each}
 		</div>
@@ -43,13 +57,7 @@
 		<div class="flex w-full flex-col">
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-					<EdgeLink
-						{edge}
-						{plugin}
-						cls="grow"
-						show_node_options={plugin.settings.views.page.prev_next
-							.show_node_options}
-					/>
+					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 
 					<span class="BC-field">{edge.attr.field}</span>
 				</div>

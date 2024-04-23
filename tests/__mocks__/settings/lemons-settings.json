@@ -1,0 +1,301 @@
+{
+	"hierarchies": [
+		{
+			"dirs": {
+				"up": ["parent"],
+				"same": ["sibling"],
+				"down": ["child"],
+				"next": [],
+				"prev": []
+			},
+			"implied_relationships": {
+				"opposite_direction": {
+					"rounds": 1
+				},
+				"self_is_sibling": {
+					"rounds": 0
+				},
+				"parents_sibling_is_parent": {
+					"rounds": 0
+				},
+				"cousin_is_sibling": {
+					"rounds": 0
+				},
+				"same_parent_is_sibling": {
+					"rounds": 0
+				},
+				"same_sibling_is_sibling": {
+					"rounds": 0
+				},
+				"siblings_parent_is_parent": {
+					"rounds": 0
+				}
+			}
+		},
+		{
+			"dirs": {
+				"up": ["r-member"],
+				"same": ["r-sibling"],
+				"down": ["relation"],
+				"next": [""],
+				"prev": [""]
+			},
+			"implied_relationships": {
+				"opposite_direction": {
+					"rounds": 1
+				},
+				"self_is_sibling": {
+					"rounds": 0
+				},
+				"parents_sibling_is_parent": {
+					"rounds": 0
+				},
+				"cousin_is_sibling": {
+					"rounds": 0
+				},
+				"same_parent_is_sibling": {
+					"rounds": 0
+				},
+				"same_sibling_is_sibling": {
+					"rounds": 0
+				},
+				"siblings_parent_is_parent": {
+					"rounds": 0
+				}
+			}
+		},
+		{
+			"dirs": {
+				"up": ["r-parent"],
+				"same": ["half-sibling"],
+				"down": ["r-child"],
+				"next": [""],
+				"prev": [""]
+			},
+			"implied_relationships": {
+				"opposite_direction": {
+					"rounds": 1
+				},
+				"self_is_sibling": {
+					"rounds": 0
+				},
+				"parents_sibling_is_parent": {
+					"rounds": 0
+				},
+				"cousin_is_sibling": {
+					"rounds": 0
+				},
+				"same_parent_is_sibling": {
+					"rounds": 0
+				},
+				"same_sibling_is_sibling": {
+					"rounds": 0
+				},
+				"siblings_parent_is_parent": {
+					"rounds": 0
+				}
+			}
+		}
+	],
+	"explicit_edge_sources": {
+		"list_note": {
+			"default_neighbour_field": ""
+		},
+		"typed_link": {},
+		"tag_note": {
+			"default_field": "up"
+		},
+		"regex_note": {
+			"default_field": "up"
+		},
+		"dendron_note": {
+			"enabled": false,
+			"delimiter": ".",
+			"default_field": "up",
+			"display_trimmed": false
+		},
+		"date_note": {
+			"enabled": false,
+			"date_format": "yyyy-MM-dd",
+			"default_field": "next",
+			"stretch_to_existing": false
+		},
+		"johnny_decimal_note": {
+			"enabled": false,
+			"delimiter": ".",
+			"default_field": "up"
+		}
+	},
+	"custom_implied_relations": {
+		"transitive": [
+			{
+				"chain": [
+					{
+						"field": "r-parent"
+					},
+					{
+						"field": "r-child"
+					}
+				],
+				"rounds": 5,
+				"close_field": "sibling"
+			},
+			{
+				"chain": [
+					{
+						"field": "relation"
+					},
+					{
+						"field": "r-child"
+					}
+				],
+				"rounds": 5,
+				"close_field": "child"
+			},
+			{
+				"chain": [
+					{
+						"field": "r-parent"
+					},
+					{
+						"field": "r-sibling"
+					},
+					{
+						"field": "r-child"
+					}
+				],
+				"rounds": 5,
+				"close_field": "half-sibling"
+			},
+			{
+				"chain": [
+					{
+						"field": "r-member"
+					},
+					{
+						"field": "relation"
+					}
+				],
+				"rounds": 5,
+				"close_field": "r-sibling"
+			},
+			{
+				"chain": [
+					{
+						"field": "r-parent"
+					},
+					{
+						"field": "r-member"
+					}
+				],
+				"rounds": 5,
+				"close_field": "parent"
+			}
+		]
+	},
+	"views": {
+		"page": {
+			"all": {
+				"sticky": false,
+				"readable_line_width": true
+			},
+			"trail": {
+				"enabled": true,
+				"format": "path",
+				"default_depth": 999,
+				"selection": "all",
+				"no_path_message": "",
+				"show_node_options": {
+					"ext": false,
+					"folder": false,
+					"alias": false
+				},
+				"show_controls": true
+			},
+			"prev_next": {
+				"enabled": true,
+				"show_node_options": {
+					"ext": false,
+					"folder": false,
+					"alias": false
+				}
+			}
+		},
+		"side": {
+			"matrix": {
+				"show_node_options": {
+					"ext": false,
+					"folder": false,
+					"alias": false
+				}
+			},
+			"tree": {
+				"default_dir": "down",
+				"show_node_options": {
+					"ext": false,
+					"folder": false,
+					"alias": false
+				},
+				"collapse": false,
+				"show_attributes": [],
+				"edge_sort_id": {
+					"field": "basename",
+					"order": 1
+				}
+			}
+		},
+		"codeblocks": {
+			"show_node_options": {
+				"ext": false,
+				"folder": false,
+				"alias": false
+			}
+		}
+	},
+	"commands": {
+		"rebuild_graph": {
+			"notify": true,
+			"trigger": {
+				"note_save": false,
+				"layout_change": false
+			}
+		},
+		"list_index": {
+			"default_options": {
+				"dir": "down",
+				"indent": "\\t",
+				"hierarchy_i": -1,
+				"link_kind": "wiki",
+				"edge_sort_id": {
+					"order": 1,
+					"field": "basename"
+				},
+				"show_node_options": {
+					"ext": false,
+					"alias": true,
+					"folder": false
+				}
+			}
+		},
+		"freeze_implied_edges": {
+			"default_options": {
+				"destination": "frontmatter"
+			}
+		},
+		"thread": {
+			"default_options": {
+				"destination": "frontmatter",
+				"target_path_template": "{{source.folder}}/{{attr.field}} {{source.basename}}"
+			}
+		}
+	},
+	"debug": {
+		"level": "DEBUG"
+	},
+	"suggestors": {
+		"hierarchy_field": {
+			"enabled": false,
+			"trigger": "."
+		}
+	}
+}

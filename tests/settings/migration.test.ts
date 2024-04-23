@@ -1,0 +1,688 @@
+import { readFile } from "fs/promises";
+import { DEFAULT_SETTINGS } from "src/const/settings";
+import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import { migrate_old_settings } from "src/settings/migration";
+import { deep_merge_objects } from "src/utils/objects";
+import { describe, expect, test } from "vitest";
+
+describe("migration", () => {
+	test("v4-with-directions", async () => {
+		const old = deep_merge_objects(
+			JSON.parse(
+				await readFile(
+					"tests/__mocks__/settings/v4-with-directions.json",
+					"utf-8",
+				),
+			),
+			DEFAULT_SETTINGS,
+		);
+
+		const migrated = migrate_old_settings(old);
+
+		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
+			is_dirty: false,
+			edge_fields: [
+				{ label: "up" },
+				{ label: "down" },
+				{ label: "same" },
+				{ label: "next" },
+				{ label: "prev" },
+				{ label: "parent" },
+				{ label: "sibling" },
+				{ label: "child" },
+				{ label: "right" },
+				{ label: "left" },
+			],
+			edge_field_groups: [
+				{
+					label: "ups",
+					fields: ["up", "parent"],
+				},
+				{
+					label: "downs",
+					fields: ["down", "child"],
+				},
+				{
+					label: "sames",
+					fields: ["same", "sibling"],
+				},
+				{
+					label: "nexts",
+					fields: ["next", "right"],
+				},
+				{
+					label: "prevs",
+					fields: ["prev", "left"],
+				},
+				{
+					label: "hierarchy 1",
+					fields: ["up", "down", "same", "next", "prev"],
+				},
+			],
+			implied_relations: {
+				transitive: [
+					{
+						rounds: 1,
+						name: "Opposite Direction: up/down",
+						close_field: "down",
+						chain: [{ field: "up" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: down/up",
+						close_field: "up",
+						chain: [{ field: "down" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: same/same",
+						close_field: "same",
+						chain: [{ field: "same" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: next/prev",
+						close_field: "prev",
+						chain: [{ field: "next" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: prev/next",
+						close_field: "next",
+						chain: [{ field: "prev" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: parent/child",
+						close_field: "child",
+						chain: [{ field: "parent" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: child/parent",
+						close_field: "parent",
+						chain: [{ field: "child" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: sibling/sibling",
+						close_field: "sibling",
+						chain: [{ field: "sibling" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: left/right",
+						close_field: "right",
+						chain: [{ field: "left" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: right/left",
+						close_field: "left",
+						chain: [{ field: "right" }],
+						close_reversed: true,
+					},
+					// custom_implied_relations.transitive
+					{
+						chain: [{ field: "up" }, { field: "same" }],
+						close_field: "up",
+						close_reversed: false,
+						name: "",
+						rounds: 1,
+					},
+				],
+			},
+
+			explicit_edge_sources: {
+				list_note: {
+					default_neighbour_field: "",
+				},
+				typed_link: {},
+				tag_note: {
+					default_field: "up",
+				},
+				regex_note: {
+					default_field: "up",
+				},
+				dendron_note: {
+					enabled: true,
+					delimiter: ".",
+					default_field: "up",
+					display_trimmed: true,
+				},
+				date_note: {
+					enabled: true,
+					date_format: "yyyy-MM-dd 'DN'",
+					default_field: "next",
+					stretch_to_existing: false,
+				},
+				johnny_decimal_note: {
+					enabled: false,
+					delimiter: ".",
+					default_field: "up",
+				},
+			},
+			views: {
+				page: {
+					all: {
+						sticky: false,
+						readable_line_width: true,
+					},
+					trail: {
+						enabled: true,
+						format: "grid",
+						selection: "all",
+						default_depth: 999,
+						no_path_message: "",
+						merge_fields: false,
+						show_controls: false,
+						field_group_labels: ["ups"],
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+					},
+					prev_next: {
+						enabled: true,
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+						field_group_labels: {
+							prev: ["prevs"],
+							next: ["nexts"],
+						},
+					},
+				},
+				side: {
+					matrix: {
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
+						show_attributes: ["source", "implied_kind", "round"],
+						field_group_labels: [
+							"ups",
+							"downs",
+							"sames",
+							"nexts",
+							"prevs",
+						],
+						show_node_options: {
+							ext: true,
+							folder: false,
+							alias: false,
+						},
+					},
+					tree: {
+						collapse: true,
+						merge_fields: false,
+						show_attributes: [],
+						field_group_labels: ["downs"],
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+					},
+				},
+				codeblocks: {
+					show_node_options: {
+						ext: false,
+						folder: false,
+						alias: false,
+					},
+				},
+			},
+			commands: {
+				rebuild_graph: {
+					notify: true,
+					trigger: {
+						note_save: false,
+						layout_change: false,
+					},
+				},
+				list_index: {
+					default_options: {
+						fields: [],
+						// TODO: Not sure why this dir field isn't getting deleted...
+						// @ts-ignore
+						dir: "down",
+						indent: "\\t",
+						hierarchy_i: -1,
+						link_kind: "wiki",
+						show_attributes: [],
+						edge_sort_id: {
+							order: 1,
+							field: "basename",
+						},
+						show_node_options: {
+							ext: false,
+							alias: true,
+							folder: false,
+						},
+						field_group_labels: [],
+					},
+				},
+				freeze_implied_edges: {
+					default_options: {
+						destination: "frontmatter",
+					},
+				},
+				thread: {
+					default_options: {
+						destination: "frontmatter",
+						target_path_template:
+							"{{source.folder}}/{{attr.field}} {{source.basename}}",
+					},
+				},
+			},
+			suggestors: {
+				edge_field: {
+					enabled: true,
+					trigger: ".",
+				},
+			},
+			debug: {
+				level: "DEBUG",
+			},
+		} satisfies BreadcrumbsSettings);
+	});
+
+	test("lemons-settings", async () => {
+		const old = deep_merge_objects(
+			JSON.parse(
+				await readFile(
+					"tests/__mocks__/settings/lemons-settings.json",
+					"utf-8",
+				),
+			),
+			DEFAULT_SETTINGS,
+		);
+
+		const migrated = migrate_old_settings(old);
+
+		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
+			is_dirty: false,
+			explicit_edge_sources: {
+				list_note: {
+					default_neighbour_field: "",
+				},
+				typed_link: {},
+				tag_note: {
+					default_field: "up",
+				},
+				regex_note: {
+					default_field: "up",
+				},
+				dendron_note: {
+					enabled: false,
+					delimiter: ".",
+					default_field: "up",
+					display_trimmed: false,
+				},
+				date_note: {
+					enabled: false,
+					date_format: "yyyy-MM-dd",
+					default_field: "next",
+					stretch_to_existing: false,
+				},
+				johnny_decimal_note: {
+					enabled: false,
+					delimiter: ".",
+					default_field: "up",
+				},
+			},
+			views: {
+				page: {
+					all: {
+						sticky: false,
+						readable_line_width: true,
+					},
+					trail: {
+						enabled: true,
+						format: "path",
+						default_depth: 999,
+						selection: "all",
+						no_path_message: "",
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+						show_controls: true,
+						merge_fields: false,
+						field_group_labels: ["ups"],
+					},
+					prev_next: {
+						enabled: true,
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+						field_group_labels: {
+							prev: ["prevs"],
+							next: ["nexts"],
+						},
+					},
+				},
+				side: {
+					matrix: {
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+						show_attributes: ["source", "implied_kind", "round"],
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
+						field_group_labels: [
+							"ups",
+							"downs",
+							"sames",
+							"nexts",
+							"prevs",
+						],
+					},
+					tree: {
+						show_node_options: {
+							ext: false,
+							folder: false,
+							alias: false,
+						},
+						collapse: false,
+						show_attributes: [],
+						edge_sort_id: {
+							field: "basename",
+							order: 1,
+						},
+						merge_fields: false,
+						field_group_labels: ["downs"],
+					},
+				},
+				codeblocks: {
+					show_node_options: {
+						ext: false,
+						folder: false,
+						alias: false,
+					},
+				},
+			},
+			commands: {
+				rebuild_graph: {
+					notify: true,
+					trigger: {
+						note_save: false,
+						layout_change: false,
+					},
+				},
+				list_index: {
+					default_options: {
+						fields: [],
+						// @ts-expect-error
+						dir: "down",
+						indent: "\\t",
+						hierarchy_i: -1,
+						link_kind: "wiki",
+						show_attributes: [],
+						edge_sort_id: {
+							order: 1,
+							field: "basename",
+						},
+						show_node_options: {
+							ext: false,
+							alias: true,
+							folder: false,
+						},
+						field_group_labels: [],
+					},
+				},
+				freeze_implied_edges: {
+					default_options: {
+						destination: "frontmatter",
+					},
+				},
+				thread: {
+					default_options: {
+						destination: "frontmatter",
+						target_path_template:
+							"{{source.folder}}/{{attr.field}} {{source.basename}}",
+					},
+				},
+			},
+			debug: {
+				level: "DEBUG",
+			},
+			suggestors: {
+				edge_field: {
+					enabled: false,
+					trigger: ".",
+				},
+			},
+			edge_fields: [
+				{ label: "up" },
+				{ label: "down" },
+				{ label: "same" },
+				{ label: "next" },
+				{ label: "prev" },
+				{ label: "parent" },
+				{ label: "sibling" },
+				{ label: "child" },
+				{ label: "right" },
+				{ label: "left" },
+				{ label: "r-member" },
+				{ label: "r-sibling" },
+				{ label: "relation" },
+				{ label: "r-parent" },
+				{ label: "half-sibling" },
+				{ label: "r-child" },
+			],
+			edge_field_groups: [
+				{
+					label: "ups",
+					fields: ["up", "parent", "r-member", "r-parent"],
+				},
+				{
+					label: "downs",
+					fields: ["down", "child", "relation", "r-child"],
+				},
+				{
+					label: "sames",
+					fields: ["same", "sibling", "r-sibling", "half-sibling"],
+				},
+				{
+					label: "nexts",
+					fields: ["next", "right"],
+				},
+				{
+					label: "prevs",
+					fields: ["prev", "left"],
+				},
+				{
+					label: "hierarchy 1",
+					fields: ["up", "down", "same", "next", "prev"],
+				},
+			],
+			implied_relations: {
+				transitive: [
+					{
+						name: "Opposite Direction: up/down",
+						rounds: 1,
+						chain: [{ field: "up" }],
+						close_field: "down",
+						close_reversed: true,
+					},
+					{
+						name: "Opposite Direction: down/up",
+						rounds: 1,
+						chain: [{ field: "down" }],
+						close_field: "up",
+						close_reversed: true,
+					},
+					{
+						name: "Opposite Direction: same/same",
+						rounds: 1,
+						chain: [{ field: "same" }],
+						close_field: "same",
+						close_reversed: true,
+					},
+					{
+						name: "Opposite Direction: next/prev",
+						rounds: 1,
+						chain: [{ field: "next" }],
+						close_field: "prev",
+						close_reversed: true,
+					},
+					{
+						name: "Opposite Direction: prev/next",
+						rounds: 1,
+						chain: [{ field: "prev" }],
+						close_field: "next",
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: parent/child",
+						close_field: "child",
+						chain: [{ field: "parent" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: child/parent",
+						close_field: "parent",
+						chain: [{ field: "child" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: sibling/sibling",
+						close_field: "sibling",
+						chain: [{ field: "sibling" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: left/right",
+						close_field: "right",
+						chain: [{ field: "left" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: right/left",
+						close_field: "left",
+						chain: [{ field: "right" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						chain: [{ field: "up" }, { field: "same" }],
+						close_field: "up",
+						close_reversed: false,
+						name: "",
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: r-member/relation",
+						close_field: "relation",
+						chain: [{ field: "r-member" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: relation/r-member",
+						close_field: "r-member",
+						chain: [{ field: "relation" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: r-sibling/r-sibling",
+						close_field: "r-sibling",
+						chain: [{ field: "r-sibling" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: r-parent/r-child",
+						close_field: "r-child",
+						chain: [{ field: "r-parent" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: r-child/r-parent",
+						close_field: "r-parent",
+						chain: [{ field: "r-child" }],
+						close_reversed: true,
+					},
+					{
+						rounds: 1,
+						name: "Opposite Direction: half-sibling/half-sibling",
+						close_field: "half-sibling",
+						chain: [{ field: "half-sibling" }],
+						close_reversed: true,
+					},
+					{
+						chain: [{ field: "r-parent" }, { field: "r-child" }],
+						rounds: 5,
+						close_field: "sibling",
+						close_reversed: false,
+						name: "",
+					},
+					{
+						chain: [{ field: "relation" }, { field: "r-child" }],
+						rounds: 5,
+						close_field: "child",
+						close_reversed: false,
+						name: "",
+					},
+					{
+						chain: [
+							{ field: "r-parent" },
+							{ field: "r-sibling" },
+							{ field: "r-child" },
+						],
+						rounds: 5,
+						close_field: "half-sibling",
+						close_reversed: false,
+						name: "",
+					},
+					{
+						chain: [{ field: "r-member" }, { field: "relation" }],
+						rounds: 5,
+						close_field: "r-sibling",
+						close_reversed: false,
+						name: "",
+					},
+					{
+						chain: [{ field: "r-parent" }, { field: "r-member" }],
+						rounds: 5,
+						close_field: "parent",
+						close_reversed: false,
+						name: "",
+					},
+				],
+			},
+		} satisfies BreadcrumbsSettings);
+	});
+});

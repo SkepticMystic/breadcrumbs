@@ -1,6 +1,5 @@
 import { Notice } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
-import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 
 export const _add_settings_date_note = (
@@ -21,11 +20,11 @@ export const _add_settings_date_note = (
 
 	new_setting(containerEl, {
 		name: "Default Field",
-		desc: "Field to use to join date notes together",
+		desc: "Field used to join date notes together. Breadcrumbs takes the current note's date, adds one day, and joins the two notes with this field.",
 		select: {
 			value: plugin.settings.explicit_edge_sources.date_note
 				.default_field,
-			options: get_all_hierarchy_fields(plugin.settings.hierarchies),
+			options: plugin.settings.edge_fields.map((f) => f.label),
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.date_note.default_field =
 					value;

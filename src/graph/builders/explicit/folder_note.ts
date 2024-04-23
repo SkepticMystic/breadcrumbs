@@ -1,4 +1,3 @@
-import type { Direction } from "src/const/hierarchies";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
@@ -6,14 +5,11 @@ import type {
 } from "src/interfaces/graph";
 import type { Result } from "src/interfaces/result";
 import type BreadcrumbsPlugin from "src/main";
-import { get_field_hierarchy } from "src/utils/hierarchies";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 
 type FolderNoteData = {
 	field: string;
-	dir: Direction;
 	recurse: boolean;
-	hierarchy_i: number;
 };
 
 const get_folder_note_info = (
@@ -32,17 +28,11 @@ const get_folder_note_info = (
 			code: "invalid_field_value",
 			message: `folder-note-field is not a string: '${field}'`,
 		});
-	}
-
-	const field_hierarchy = get_field_hierarchy(
-		plugin.settings.hierarchies,
-		field,
-	);
-	if (!field_hierarchy) {
+	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `folder-note-field is not a valid BC field: '${field}'`,
+			message: `folder-note-field is not a valid field: '${field}'`,
 		});
 	}
 
@@ -51,8 +41,6 @@ const get_folder_note_info = (
 	return succ({
 		field,
 		recurse,
-		dir: field_hierarchy.dir,
-		hierarchy_i: field_hierarchy.hierarchy_i,
 	});
 };
 
@@ -155,11 +143,9 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 						folder_note.path,
 						target_path,
 						{
-							dir: data.dir,
 							explicit: true,
 							field: data.field,
 							source: "folder_note",
-							hierarchy_i: data.hierarchy_i,
 						},
 					);
 				},

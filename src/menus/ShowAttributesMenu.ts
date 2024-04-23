@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { type EdgeAttribute } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/MyMultiGraph";
 
 export const ShowAttributesSelectorMenu = ({
 	cb,
@@ -11,6 +11,19 @@ export const ShowAttributesSelectorMenu = ({
 	exclude_attributes?: EdgeAttribute[];
 }) => {
 	const menu = new Menu();
+
+	const possible = EDGE_ATTRIBUTES.filter(
+		(attr) => !exclude_attributes?.includes(attr),
+	);
+	const all = possible.length === value.length;
+
+	menu.addItem((item) =>
+		item.setTitle(all ? "None" : "All").onClick(() => {
+			cb(all ? [] : possible);
+		}),
+	);
+
+	menu.addSeparator();
 
 	const add_item = (attr: EdgeAttribute) => {
 		const included = value.includes(attr);
@@ -29,7 +42,7 @@ export const ShowAttributesSelectorMenu = ({
 		);
 	};
 
-	(<const>["hierarchy_i", "dir", "field", "explicit"])
+	(<const>["field", "explicit"])
 		.filter((attr) => !exclude_attributes?.includes(attr))
 		.forEach(add_item);
 

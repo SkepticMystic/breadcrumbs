@@ -1,58 +1,56 @@
 <script lang="ts">
-	import { Compass } from "lucide-svelte";
-	import { ICON_SIZE } from "src/const";
 	import { Traverse } from "src/graph/traverse";
-	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
+	import {
+		get_edge_sorter,
+		has_edge_attrs,
+		type EdgeAttrFilters,
+	} from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
-	import { DirectionSelectorMenu } from "src/menus/DirectionSelectorMenu";
 	import { active_file_store } from "src/stores/active_file";
-	import { url_search_params } from "src/utils/url";
+	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
+	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import { remove_duplicates_by } from "src/utils/arrays";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let dir = plugin.settings.views.side.tree.default_dir;
-	let edge_sort_id = plugin.settings.views.side.tree.edge_sort_id;
-	let show_attributes = plugin.settings.views.side.tree.show_attributes;
+	let {
+		edge_sort_id,
+		merge_fields,
+		show_attributes,
+		show_node_options,
+		field_group_labels,
+	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
-	$: nested_edges =
-		$active_file_store &&
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode($active_file_store.path)
-			? plugin.settings.hierarchies
-					.map((_hierarchy, hierarchy_i) =>
-						Traverse.nest_all_paths(
-							Traverse.all_paths(
-								"depth_first",
-								plugin.graph,
-								$active_file_store!.path,
-								// Here, we ensure an edge is only considered part of a path if it is from the same hierarchy as the previous edges
-								(edge) =>
-									has_edge_attrs(edge, { dir, hierarchy_i }),
-							).map((path) =>
-								remove_duplicates_by(
-									path.filter(
-										(e) =>
-											// Dont show edges that eventually loop back to the active file
-											e.target_id !==
-											$active_file_store!.path,
-									),
-									(e) => e.target_id,
-								),
-							),
-						),
-					)
-					.flat()
-			: [];
+	const base_traversal = (attr: EdgeAttrFilters) =>
+		Traverse.build_tree(
+			plugin.graph,
+			$active_file_store!.path,
+			// TODO: Customisable max depth
+			{ max_depth: 20 },
+			(edge) => has_edge_attrs(edge, attr),
+		);
 
 	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
+
+	$: edge_field_labels = resolve_field_group_labels(
+		plugin.settings.edge_field_groups,
+		field_group_labels,
+	);
+
+	$: tree =
+		$active_file_store && plugin.graph.hasNode($active_file_store.path)
+			? merge_fields
+				? base_traversal({ $or_fields: edge_field_labels })
+				: edge_field_labels.flatMap((field) =>
+						base_traversal({ field }),
+					)
+			: [];
 </script>
 
 <div class="markdown-rendered BC-tree-view -mt-2">
@@ -70,7 +68,6 @@
 			/>
 
 			<ShowAttributesSelectorMenu
-				exclude_attributes={["dir"]}
 				cls="clickable-icon nav-action-button"
 				bind:show_attributes
 			/>
@@ -80,40 +77,32 @@
 				bind:open={open_signal}
 			/>
 
-			<!-- TODO: merge-hierarchies button -->
+			<MergeFieldsButton
+				cls="clickable-icon nav-action-button"
+				bind:merge_fields
+			/>
 
-			<button
-				class="clickable-icon nav-action-button flex items-center gap-2"
-				aria-label="Change direction"
-				on:click={(e) =>
-					DirectionSelectorMenu({
-						value: dir,
-						cb: (value) => (dir = value),
-					}).showAtMouseEvent(e)}
-			>
-				<Compass size={ICON_SIZE} />
-
-				<span>{dir}</span>
-			</button>
+			<FieldGroupLabelsSelector
+				cls="clickable-icon nav-action-button"
+				edge_field_groups={plugin.settings.edge_field_groups}
+				bind:field_group_labels
+			/>
 		</div>
 	</div>
 
 	<div class="BC-tree-view-items">
-		{#key nested_edges || sort}
-			{#if nested_edges.length}
+		{#key tree || sort}
+			{#if tree.length}
 				<NestedEdgeList
 					{sort}
 					{plugin}
 					{open_signal}
-					{nested_edges}
 					{show_attributes}
-					show_node_options={plugin.settings.views.side.tree
-						.show_node_options}
+					{show_node_options}
+					{tree}
 				/>
 			{:else}
-				<div class="search-empty-state">
-					No paths found in {url_search_params({ dir })}
-				</div>
+				<div class="search-empty-state">No paths found</div>
 			{/if}
 		{/key}
 	</div>

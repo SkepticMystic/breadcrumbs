@@ -3,7 +3,6 @@ import type {
 	BreadcrumbsSettings,
 	ShowNodeOptions,
 } from "src/interfaces/settings";
-import { blank_hierarchy } from "src/utils/hierarchies";
 import type { EdgeSortId } from "./graph";
 
 export const IMPLIED_RELATIONSHIP_MAX_ROUNDS = 10;
@@ -17,18 +16,82 @@ const DEFAULT_SHOW_NODE_OPTIONS: ShowNodeOptions = {
 };
 
 export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
-	hierarchies: [
+	is_dirty: false,
+
+	edge_fields: [
+		{ label: "up" },
+		{ label: "down" },
+		{ label: "same" },
+		{ label: "next" },
+		{ label: "prev" },
+	],
+
+	edge_field_groups: [
 		{
-			dirs: {
-				up: ["up"],
-				same: ["same"],
-				down: ["down"],
-				next: ["next"],
-				prev: ["prev"],
-			},
-			implied_relationships: blank_hierarchy().implied_relationships,
+			label: "ups",
+			fields: ["up"],
+		},
+		{
+			label: "downs",
+			fields: ["down"],
+		},
+		{
+			label: "sames",
+			fields: ["same"],
+		},
+		{
+			label: "nexts",
+			fields: ["next"],
+		},
+		{
+			label: "prevs",
+			fields: ["prev"],
+		},
+		{
+			label: "hierarchy 1",
+			fields: ["up", "down", "same", "next", "prev"],
 		},
 	],
+
+	implied_relations: {
+		transitive: [
+			{
+				name: "Opposite Direction: up/down",
+				rounds: 1,
+				chain: [{ field: "up" }],
+				close_field: "down",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: down/up",
+				rounds: 1,
+				chain: [{ field: "down" }],
+				close_field: "up",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: same/same",
+				rounds: 1,
+				chain: [{ field: "same" }],
+				close_field: "same",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: next/prev",
+				rounds: 1,
+				chain: [{ field: "next" }],
+				close_field: "prev",
+				close_reversed: true,
+			},
+			{
+				name: "Opposite Direction: prev/next",
+				rounds: 1,
+				chain: [{ field: "prev" }],
+				close_field: "next",
+				close_reversed: true,
+			},
+		],
+	},
 
 	explicit_edge_sources: {
 		typed_link: {},
@@ -61,10 +124,6 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 	},
 
-	custom_implied_relations: {
-		transitive: [],
-	},
-
 	views: {
 		page: {
 			all: {
@@ -79,22 +138,32 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				default_depth: 999,
 				no_path_message: "",
 				show_controls: true,
+				merge_fields: false,
+				field_group_labels: ["ups"],
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
 			prev_next: {
 				enabled: true,
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				field_group_labels: {
+					prev: ["prevs"],
+					next: ["nexts"],
+				},
 			},
 		},
 		side: {
 			matrix: {
+				show_attributes: ["source", "implied_kind", "round"],
+				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				field_group_labels: ["ups", "downs", "sames", "nexts", "prevs"],
 			},
 
 			tree: {
 				collapse: false,
-				default_dir: "down",
 				show_attributes: [],
+				merge_fields: false,
+				field_group_labels: ["downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},
@@ -135,7 +204,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	},
 
 	suggestors: {
-		hierarchy_field: {
+		edge_field: {
 			enabled: false,
 			trigger: ".",
 		},

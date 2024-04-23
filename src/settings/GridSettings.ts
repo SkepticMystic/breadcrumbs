@@ -1,7 +1,8 @@
+import { Notice } from "obsidian";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
-import { Notice } from "obsidian";
 
 export const _add_settings_trail_view = (
 	plugin: BreadcrumbsPlugin,
@@ -31,8 +32,10 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.format = value;
 
-				await Promise.all([plugin.saveSettings()]);
-				plugin.refresh({ rebuild_graph: false });
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
 			},
 		},
 	});
@@ -46,8 +49,10 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.selection = value;
 
-				await Promise.all([plugin.saveSettings()]);
-				plugin.refresh({ rebuild_graph: false });
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
 			},
 		},
 	});
@@ -67,8 +72,42 @@ export const _add_settings_trail_view = (
 
 				plugin.settings.views.page.trail.default_depth = int;
 
-				await Promise.all([plugin.saveSettings()]);
-				plugin.refresh({ rebuild_graph: false });
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
+			},
+		},
+	});
+
+	new FieldGroupLabelsSettingItem({
+		target: containerEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
+				plugin.settings.views.page.trail.field_group_labels,
+		},
+	}).$on("select", async (e) => {
+		plugin.settings.views.page.trail.field_group_labels = e.detail;
+
+		await Promise.all([
+			plugin.saveSettings(),
+			plugin.refresh({ rebuild_graph: false }),
+		]);
+	});
+
+	new_setting(containerEl, {
+		name: "Merge Fields",
+		desc: "Merge fields in the traversal, instead of keeping their paths separate",
+		toggle: {
+			value: plugin.settings.views.page.trail.merge_fields,
+			cb: async (value) => {
+				plugin.settings.views.page.trail.merge_fields = value;
+
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
 			},
 		},
 	});
@@ -81,8 +120,10 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.show_controls = value;
 
-				await Promise.all([plugin.saveSettings()]);
-				plugin.refresh({ rebuild_graph: false });
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
 			},
 		},
 	});
@@ -95,8 +136,10 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.no_path_message = value;
 
-				await Promise.all([plugin.saveSettings()]);
-				plugin.refresh({ rebuild_graph: false });
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({ rebuild_graph: false }),
+				]);
 			},
 		},
 	});

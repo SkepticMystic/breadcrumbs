@@ -1,5 +1,4 @@
 import type BreadcrumbsPlugin from "src/main";
-import { get_all_hierarchy_fields } from "src/utils/hierarchies";
 import { new_setting } from "src/utils/settings";
 
 export const _add_settings_list_note = (
@@ -8,15 +7,15 @@ export const _add_settings_list_note = (
 ) => {
 	new_setting(containerEl, {
 		name: "Default Neighbour Field",
-		desc: "Field to use to join neighbouring list items. A common use-case is to use a dir=next field to link items on the same level.",
+		desc: "Field to use to join neighbouring list items.",
 		select: {
-			value: plugin.settings.explicit_edge_sources.date_note
-				.default_field,
+			value: plugin.settings.explicit_edge_sources.list_note
+				.default_neighbour_field,
 			options: [""].concat(
-				get_all_hierarchy_fields(plugin.settings.hierarchies),
+				plugin.settings.edge_fields.map((f) => f.label),
 			),
 			cb: async (value) => {
-				plugin.settings.explicit_edge_sources.date_note.default_field =
+				plugin.settings.explicit_edge_sources.list_note.default_neighbour_field =
 					value;
 				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
 			},

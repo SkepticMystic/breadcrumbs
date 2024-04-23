@@ -1,17 +1,17 @@
 import { MultiGraph } from "graphology";
 import type { ExplicitEdgeSource } from "src/const/graph";
-import type { Direction } from "src/const/hierarchies";
-import type { Hierarchy } from "src/interfaces/hierarchies";
 import { log } from "src/logger";
 import { fail, succ } from "src/utils/result";
 import { objectify_edge_mapper } from "./objectify_mappers";
-import { Traverse } from "./traverse";
-import { has_edge_attrs, is_self_loop } from "./utils";
+import { is_self_loop } from "./utils";
 
 export type BCNodeAttributes = {
 	/** .md file exists  */
 	resolved: boolean;
 	aliases?: string[];
+	// TODO: All a narrower ignore filter, to ignore only edges from certain sources, for example
+	// 	source=list-note
+	// The syntax can allow multiple values: source=list-note source=dataview (parse as URLSearchParams)
 	/** If true, don't add any edges _to_ this node */
 	ignore_in_edges?: true;
 	/** If true, don't add any edges _from_ this node */
@@ -19,8 +19,6 @@ export type BCNodeAttributes = {
 };
 
 export const EDGE_ATTRIBUTES = [
-	"hierarchy_i",
-	"dir",
 	"field",
 	"explicit",
 	"source",
@@ -31,14 +29,7 @@ export const EDGE_ATTRIBUTES = [
 export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
 export type BCEdgeAttributes = {
-	/** The hierarchy index */
-	hierarchy_i: number;
-	/** The direction of the field in the hierarchy */
-	dir: Direction;
-	/** The hierarchy field
-	 * null if the implied edge has no opposite field
-	 */
-	field: string | null;
+	field: string;
 } & (
 	| {
 			explicit: true;
@@ -46,9 +37,7 @@ export type BCEdgeAttributes = {
 	  }
 	| {
 			explicit: false;
-			implied_kind:
-				| keyof Hierarchy["implied_relationships"]
-				| `custom_transitive:${string}`;
+			implied_kind: `transitive:${string}`;
 			/** Which round of implied_building this edge got added in.
 			 * Starts at 1 - you can think of real edges as being added in round 0.
 			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
@@ -192,9 +181,6 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		target_id: string,
 		attr: BCEdgeAttributes,
 	) => `${source_id}|${attr.field}|${target_id}`;
-	// NOTE: These fields are redundant. The `field` field defines which hierarchy_i and dir is chosen anyway,
-	//   so it's not adding any extra information to the dedupe key
-	// |${attr.hierarchy_i}|${attr.dir}
 	// NOTE: These fields shouldn't actually dedupe an edge... I think what the user would consider an edge to be the same
 	//   even if it was added for different reasons, but still to and from the same nodes, using the same field.
 	//   Consider the commands/freeze-crumbs/index.md note as an example. If these fields were included, the implied relations would still show
@@ -246,42 +232,4 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 					objectify_edge_mapper((e) => e),
 				)
 			: this.mapOutEdges(objectify_edge_mapper((e) => e));
-
-	/** Find all paths of nodes connected by edges that pair-wise match the attrs in the chain */
-	get_attrs_chain_path = (
-		start_node: string,
-		attr_chain: Partial<BCEdgeAttributes>[],
-		edge_filter?: (edge: BCEdge) => boolean,
-	) => {
-		const visited_nodes = new Set<string>();
-
-		return (
-			Traverse.all_paths(
-				"depth_first",
-				this,
-				start_node,
-				(edge, depth) => {
-					// NOTE: The path could go on for arbitrarily long, but the chain could have a shorter length
-					const chain_item = attr_chain.at(depth);
-
-					if (
-						!visited_nodes.has(edge.target_id) &&
-						(!edge_filter || edge_filter(edge)) &&
-						// This will naturally end the path when depth > field_chain.length
-						chain_item &&
-						has_edge_attrs(edge, chain_item)
-					) {
-						visited_nodes.add(edge.target_id);
-
-						return true;
-					} else {
-						return false;
-					}
-				},
-			)
-				// Just because field_chain[depth] doesn't add the edge to the path,
-				//   We still have the filter out the partial paths that got started in that field_chain
-				.filter((path) => path.length === attr_chain.length)
-		);
-	};
 }

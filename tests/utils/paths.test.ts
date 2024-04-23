@@ -11,11 +11,6 @@ describe("ensure_ext", () => {
 	test("shouldn't add if path already has the ext", (t) => {
 		t.expect(Paths.ensure_ext(path, "md")).toBe(path);
 	});
-
-	// NOTE: This isn't the goal of the util. Obsidian paths could have '.' in them without it meaning an ext
-	// test("should replace if path has a different ext", (t) => {
-	// 	t.expect(Paths.ensure_ext("path.html", "md")).toBe("path.md");
-	// });
 });
 
 describe("drop_ext", () => {
@@ -50,21 +45,11 @@ describe("drop_folder", () => {
 
 describe("basename", () => {
 	test("should get basename", (t) => {
-		t.expect(Paths.basename(path)).toBe("note.md");
+		t.expect(Paths.basename(path)).toBe("note");
 	});
 
 	test("shouldn't drop if no folder", (t) => {
-		t.expect(Paths.basename("note.md")).toBe("note.md");
-	});
-});
-
-describe("join", () => {
-	test("should join paths", (t) => {
-		t.expect(Paths.join("folder", "note.md")).toBe(path);
-	});
-
-	test("should remove extra slashes", (t) => {
-		t.expect(Paths.join("folder/", "/note.md")).toBe(path);
+		t.expect(Paths.basename("note.md")).toBe("note");
 	});
 });
 
@@ -75,6 +60,10 @@ describe("build", () => {
 
 	test("Handle double slash", (t) => {
 		t.expect(Paths.build("folder/", "/note", "md")).toBe(path);
+	});
+
+	test("Handle leading slash", (t) => {
+		t.expect(Paths.build("/folder", "/note", "md")).toBe(path);
 	});
 });
 
