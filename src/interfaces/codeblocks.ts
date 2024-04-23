@@ -12,7 +12,6 @@ export type ICodeblock = {
 		flat: boolean;
 		collapse?: boolean;
 		merge_fields?: boolean;
-		merge_hierarchies?: boolean;
 		dataview_from_paths?: string[];
 		content?: "open" | "closed";
 		sort: EdgeSortId;

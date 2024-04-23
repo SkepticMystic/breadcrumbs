@@ -85,17 +85,6 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				return (parsed.title = value);
 			}
 
-			//@ts-ignore: TODO: Remove once everyone has migrated
-			case "dir":
-			// @ts-ignore
-			case "dirs": {
-				return errors.push({
-					path: key,
-					code: "deprecated_field",
-					message: `The '${key}' field is deprecated. Use 'fields' or 'field-groups' instead.`,
-				});
-			}
-
 			case "fields": {
 				const field_labels = plugin.settings.edge_fields.map(
 					(field) => field.label,
@@ -140,6 +129,47 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				const field_labels = resolve_field_group_labels(
 					plugin.settings.edge_field_groups,
 					values,
+				);
+
+				if (parsed.fields) {
+					parsed.fields = remove_duplicates(
+						parsed.fields.concat(field_labels),
+					);
+				} else {
+					parsed.fields = field_labels;
+				}
+
+				return;
+			}
+
+			//@ts-ignore: TODO: Remove once everyone has migrated
+			case "dir":
+			// @ts-ignore
+			case "dirs": {
+				errors.push({
+					path: key,
+					code: "deprecated_field",
+					message: `The '${key}' field is deprecated. Use 'fields' or 'field-groups' instead.`,
+				});
+
+				const group_labels = plugin.settings.edge_field_groups.map(
+					(group) => group.label,
+				);
+
+				// Check if a group is named after that direction (or it's plural, since that's how the default groups are setup)
+				const included_group_labels = split_and_trim(value)
+					.map((group) =>
+						group_labels.includes(group)
+							? group
+							: group_labels.includes(group + "s")
+								? group + "s"
+								: "",
+					)
+					.filter(Boolean);
+
+				const field_labels = resolve_field_group_labels(
+					plugin.settings.edge_field_groups,
+					included_group_labels,
 				);
 
 				if (parsed.fields) {
