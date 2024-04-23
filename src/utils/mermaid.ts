@@ -216,8 +216,48 @@ const from_edges = (
 	return lines.join("\n");
 };
 
+const _encode = (code: string) => {
+	const bytes = new TextEncoder().encode(code);
+	return btoa(String.fromCharCode(...bytes));
+};
+
+const to_image_link = (code: string) =>
+	`https://mermaid.ink/img/${_encode(code)}`;
+
+type MermaidState = {
+	code: string;
+	mermaid: {
+		theme: string;
+	};
+	updateDiagram: boolean;
+	autoSync: boolean;
+	editorMode?: "code" | "config";
+	panZoom?: boolean;
+	pan?: { x: number; y: number };
+	zoom?: number;
+};
+
+// SOURCE: https://mermaid.js.org/ecosystem/tutorials.html#jupyter-integration-with-mermaid-js
+const to_live_edit_link = (code: string) => {
+	const state: MermaidState = {
+		code,
+		// NOTE: For some reason, having both true doesn't trigger the initial render?
+		autoSync: false,
+		updateDiagram: true,
+		mermaid: { theme: "default" },
+	};
+
+	const encoded = _encode(JSON.stringify(state, undefined, 2));
+
+	return `https://mermaid.live/edit#base64:${encoded}`;
+};
+
 export const Mermaid = {
 	from_edges,
+
+	to_image_link,
+	to_live_edit_link,
+
 	RENDERERS: MERMAID_RENDERER,
 	DIRECTIONS: MERMAID_DIRECTIONS,
 };

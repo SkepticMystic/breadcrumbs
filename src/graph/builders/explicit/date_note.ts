@@ -5,6 +5,8 @@ import type {
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
 
+// TODO: Option to point up to month, (and for month to point up to year?)
+
 export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	graph,
 	plugin,

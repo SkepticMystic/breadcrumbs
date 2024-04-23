@@ -18,6 +18,8 @@
 	import { onMount } from "svelte";
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { ImageIcon, PencilIcon } from "lucide-svelte";
+	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -106,7 +108,7 @@
 	$: log.debug(mermaid);
 </script>
 
-<div class="BC-codeblock-mermaid">
+<div class="BC-codeblock-mermaid relative">
 	<CodeblockErrors {errors} />
 
 	{#if options.title}
@@ -116,6 +118,30 @@
 	{/if}
 
 	{#if traversal_items.length}
+		<div class="absolute bottom-2 left-2 flex gap-1">
+			<button
+				role="link"
+				aria-label="View Image"
+				class="clickable-icon nav-action-button"
+				on:click={() => {
+					window.open(Mermaid.to_image_link(mermaid), "_blank");
+				}}
+			>
+				<ImageIcon size={ICON_SIZE} />
+			</button>
+
+			<button
+				role="link"
+				aria-label="Live Editor"
+				class="clickable-icon nav-action-button"
+				on:click={() => {
+					window.open(Mermaid.to_live_edit_link(mermaid), "_blank");
+				}}
+			>
+				<PencilIcon size={ICON_SIZE} />
+			</button>
+		</div>
+
 		<MermaidDiagram {plugin} {mermaid} {source_path} />
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
