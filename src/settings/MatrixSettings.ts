@@ -8,7 +8,6 @@ export const _add_settings_matrix = (
 	plugin: BreadcrumbsPlugin,
 	containerEl: HTMLElement,
 ) => {
-	// TODO: None of these SettingItem components triggers the active Matrix View to redraw
 	new EdgeSortIdSettingItem({
 		target: containerEl,
 		props: { edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id },
@@ -17,7 +16,7 @@ export const _add_settings_matrix = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
 		]);
 	});
 
@@ -32,7 +31,7 @@ export const _add_settings_matrix = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
 		]);
 	});
 
@@ -48,7 +47,7 @@ export const _add_settings_matrix = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
 		]);
 	});
 

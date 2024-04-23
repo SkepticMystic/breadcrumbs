@@ -31,7 +31,10 @@
 
 			settings.implied_relations.transitive = transitives;
 
-			await Promise.all([plugin.saveSettings(), plugin.refresh()]);
+			await Promise.all([
+				plugin.saveSettings(),
+				plugin.refresh({ redraw_side_views: true }),
+			]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
 			plugin = plugin;

@@ -340,23 +340,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
-		// TODO: Disable where unnecessary
+		redraw_side_views?: true;
 		redraw_codeblocks?: boolean;
 	}) => {
-		log.debug(
-			"refresh >",
-			[
-				"rebuild_graph",
-				"active_file_store",
-				"redraw_page_views",
-				"redraw_codeblocks",
-			]
-				.filter(
-					(key) => options?.[key as keyof typeof options] !== false,
-				)
-				.join(", "),
-		);
-
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
 			const timer = new Timer();
@@ -429,6 +415,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		if (options?.redraw_codeblocks !== false) {
 			Codeblocks.update_all();
+		}
+
+		if (options?.redraw_side_views === true) {
+			this.app.workspace
+				.getLeavesOfType(VIEW_IDS.matrix)
+				.forEach((leaf) => {
+					(leaf.view as MatrixView).onOpen();
+				});
+			this.app.workspace
+				.getLeavesOfType(VIEW_IDS.tree)
+				.forEach((leaf) => {
+					(leaf.view as TreeView).onOpen();
+				});
 		}
 	};
 

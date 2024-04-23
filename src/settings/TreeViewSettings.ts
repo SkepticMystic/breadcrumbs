@@ -1,9 +1,9 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
-import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -19,7 +19,10 @@ export const _add_settings_tree_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refresh({
+						redraw_side_views: true,
+						rebuild_graph: false,
+					}),
 				]);
 			},
 		},
@@ -33,7 +36,10 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({
+				redraw_side_views: true,
+				rebuild_graph: false,
+			}),
 		]);
 	});
 
@@ -47,7 +53,10 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({
+				redraw_side_views: true,
+				rebuild_graph: false,
+			}),
 		]);
 	});
 
@@ -63,7 +72,10 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refresh({
+				redraw_side_views: true,
+				rebuild_graph: false,
+			}),
 		]);
 	});
 
@@ -77,7 +89,10 @@ export const _add_settings_tree_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refresh({
+						redraw_side_views: true,
+						rebuild_graph: false,
+					}),
 				]);
 			},
 		},
