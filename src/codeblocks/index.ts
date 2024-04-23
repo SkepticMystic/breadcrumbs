@@ -19,7 +19,7 @@ import { quote_join, split_and_trim } from "src/utils/strings";
 const FIELDS = [
 	"type",
 	"title",
-	// TODO: "start-note",
+	"start-note",
 	"fields",
 	"field-groups",
 	"depth",
@@ -83,6 +83,10 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 
 			case "title": {
 				return (parsed.title = value);
+			}
+
+			case "start-note": {
+				return (parsed.start_node_id = value);
 			}
 
 			case "fields": {
@@ -248,6 +252,7 @@ const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
 				}
 
 				try {
+					// TODO: Do the actual api call outside of this function, so that it can be tested without relying on Obsidian
 					const pages = dataview_plugin
 						.get_api(plugin.app)
 						?.pages(value) as undefined | IDataview.Page[];

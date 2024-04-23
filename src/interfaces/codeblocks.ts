@@ -7,6 +7,7 @@ export type ICodeblock = {
 	Options: {
 		type: "tree" | "mermaid";
 		title?: string;
+		start_node_id?: string;
 		fields?: string[];
 		depth: [number, number];
 		flat: boolean;
