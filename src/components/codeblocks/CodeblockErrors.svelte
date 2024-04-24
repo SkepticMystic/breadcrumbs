@@ -5,7 +5,9 @@
 </script>
 
 {#if errors.length}
-	<p class="text-warning">Breadcrumbs Codeblock Errors</p>
+	<p class="text-warning text-lg font-semibold">
+		Breadcrumbs Codeblock Errors
+	</p>
 
 	<ul class="BC-codeblock-tree-errors">
 		{#each errors as error}
