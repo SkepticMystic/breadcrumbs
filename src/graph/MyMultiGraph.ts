@@ -2,7 +2,7 @@ import { MultiGraph } from "graphology";
 import type { ExplicitEdgeSource } from "src/const/graph";
 import { log } from "src/logger";
 import { fail, succ } from "src/utils/result";
-import { objectify_edge_mapper } from "./objectify_mappers";
+import { objectify_edge } from "./objectify_mappers";
 import { is_self_loop } from "./utils";
 
 export type BCNodeAttributes = {
@@ -217,19 +217,19 @@ export class BCGraph extends MultiGraph<BCNodeAttributes, BCEdgeAttributes> {
 		}
 	};
 
+	/** safely returns [] if node_id and !hasNode(node_id) */
 	get_in_edges = (node_id?: string) =>
 		node_id
-			? this.mapInEdges(
-					node_id,
-					objectify_edge_mapper((e) => e),
-				)
-			: this.mapInEdges(objectify_edge_mapper((e) => e));
+			? this.hasNode(node_id)
+				? this.mapInEdges(node_id, objectify_edge)
+				: []
+			: this.mapInEdges(objectify_edge);
 
+	/** safely returns [] if node_id and !hasNode(node_id) */
 	get_out_edges = (node_id?: string) =>
 		node_id
-			? this.mapOutEdges(
-					node_id,
-					objectify_edge_mapper((e) => e),
-				)
-			: this.mapOutEdges(objectify_edge_mapper((e) => e));
+			? this.hasNode(node_id)
+				? this.mapOutEdges(node_id, objectify_edge)
+				: []
+			: this.mapOutEdges(objectify_edge);
 }
