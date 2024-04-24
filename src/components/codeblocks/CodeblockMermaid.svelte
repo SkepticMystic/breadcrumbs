@@ -112,7 +112,7 @@
 	$: log.debug(mermaid);
 </script>
 
-<div class="BC-codeblock-mermaid relative">
+<div class="BC-codeblock-mermaid">
 	<CodeblockErrors {errors} />
 
 	{#if options.title}
@@ -122,31 +122,34 @@
 	{/if}
 
 	{#if traversal_items.length}
-		<div class="absolute left-2 top-2 flex">
-			<button
-				role="link"
-				aria-label="View Image on mermaid.ink"
-				class="clickable-icon nav-action-button"
-				on:click={() => {
-					window.open(Mermaid.to_image_link(mermaid), "_blank");
-				}}
-			>
-				<ImageIcon size={ICON_SIZE} />
-			</button>
-
-			<button
-				role="link"
-				aria-label="Live Edit on mermaid.live"
-				class="clickable-icon nav-action-button"
-				on:click={() => {
-					window.open(Mermaid.to_live_edit_link(mermaid), "_blank");
-				}}
-			>
-				<PencilIcon size={ICON_SIZE} />
-			</button>
+		<div class="relative">
+			<div class="absolute left-2 top-2 flex">
+				<button
+					role="link"
+					aria-label="View Image on mermaid.ink"
+					class="clickable-icon nav-action-button"
+					on:click={() => {
+						window.open(Mermaid.to_image_link(mermaid), "_blank");
+					}}
+				>
+					<ImageIcon size={ICON_SIZE} />
+				</button>
+				<button
+					role="link"
+					aria-label="Live Edit on mermaid.live"
+					class="clickable-icon nav-action-button"
+					on:click={() => {
+						window.open(
+							Mermaid.to_live_edit_link(mermaid),
+							"_blank",
+						);
+					}}
+				>
+					<PencilIcon size={ICON_SIZE} />
+				</button>
+			</div>
+			<MermaidDiagram {plugin} {mermaid} {source_path} />
 		</div>
-
-		<MermaidDiagram {plugin} {mermaid} {source_path} />
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
 	{/if}
