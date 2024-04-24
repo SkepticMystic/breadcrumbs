@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PlusIcon, SaveIcon } from "lucide-svelte";
+	import { ArrowDown, PlusIcon, SaveIcon } from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
@@ -262,7 +262,7 @@
 		{/if}
 	</div>
 
-	<div class="flex items-center gap-3">
+	<div class="flex items-center gap-4">
 		<h4>Fields</h4>
 
 		<div class="flex gap-1">
@@ -280,6 +280,14 @@
 				X
 			</button>
 		</div>
+
+		{#if settings.edge_fields.length > 3}
+			<button class="w-8" aria-label="Jump to bottom">
+				<a href="#BC-edge-field-{settings.edge_fields.last()?.label}">
+					<ArrowDown size={ICON_SIZE} />
+				</a>
+			</button>
+		{/if}
 	</div>
 
 	<div class="flex flex-col gap-7">
@@ -376,7 +384,7 @@
 
 	<hr />
 
-	<div class="flex items-center gap-3">
+	<div class="flex items-center gap-4">
 		<h4>Groups</h4>
 
 		<div class="flex gap-1">
@@ -394,6 +402,17 @@
 				X
 			</button>
 		</div>
+
+		{#if settings.edge_field_groups.length > 3}
+			<button class="w-8" aria-label="Jump to bottom">
+				<a
+					href="#BC-edge-group-{settings.edge_field_groups.last()
+						?.label}"
+				>
+					<ArrowDown size={ICON_SIZE} />
+				</a>
+			</button>
+		{/if}
 	</div>
 
 	<div class="flex flex-col gap-7">

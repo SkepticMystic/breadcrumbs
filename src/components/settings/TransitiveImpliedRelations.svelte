@@ -18,6 +18,7 @@
 
 	const settings = plugin.settings;
 
+	let filter = "";
 	let transitives = [...settings.implied_relations.transitive];
 	const opens = transitives.map(() => false);
 
@@ -158,14 +159,45 @@
 			Save
 		</button>
 
+		<div class="flex gap-1">
+			<input
+				type="text"
+				placeholder="Filter Rules by Name"
+				bind:value={filter}
+			/>
+			<button
+				class="w-8"
+				aria-label="Clear Filter"
+				disabled={filter === ""}
+				on:click={() => (filter = "")}
+			>
+				X
+			</button>
+		</div>
+
+		{#if transitives.length > 3}
+			<button class="w-8" aria-label="Jump to bottom">
+				<a href="#BC-transitive-rule-{transitives.length - 1}">
+					<ArrowDown size={ICON_SIZE} />
+				</a>
+			</button>
+		{/if}
+
 		{#if settings.is_dirty}
 			<span class="text-warning">Unsaved changes</span>
 		{/if}
 	</div>
 
 	<div class="flex flex-col gap-3">
-		{#each transitives as rule, rule_i (stringify_transitive_relation(rule) + rule_i)}
-			<details class="rounded border p-2" bind:open={opens[rule_i]}>
+		{#each transitives
+			.map((rule, rule_i) => ({ rule, rule_i }))
+			.filter( (r) => (r.rule.name || stringify_transitive_relation(r.rule)).includes(filter), ) as { rule, rule_i } (stringify_transitive_relation(rule) + rule_i)}
+			<!--  -->
+			<details
+				id="BC-transitive-rule-{rule_i}"
+				class="scroll-mt-24 rounded border p-2"
+				bind:open={opens[rule_i]}
+			>
 				<summary class="flex items-center justify-between gap-2">
 					<div class="flex items-center gap-2">
 						<ChevronOpener open={opens[rule_i]} />
