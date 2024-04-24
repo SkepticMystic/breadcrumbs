@@ -8,7 +8,8 @@ export const split_and_trim = (str: string, delimiter = ","): string[] => {
 export const quote_join = (
 	arr: string[] | readonly string[],
 	quote = '"',
-): string => arr.map((str) => quote + str + quote).join(", ");
+	joiner = ", ",
+): string => arr.map((str) => quote + str + quote).join(joiner);
 
 export const ensure_starts_with = (str: string, prefix: string): string =>
 	str.startsWith(prefix) ? str : prefix + str;

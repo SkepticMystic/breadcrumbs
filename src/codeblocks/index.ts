@@ -116,8 +116,18 @@ const codeblock_schema = (data: CodeblockInputData) =>
 						]),
 
 						order: z
-							.enum(["asc", "desc"])
-							.transform((v) => (v === "asc" ? 1 : -1)),
+							.union([
+								z.enum(["asc", "desc"]),
+								// Something very weird happening...
+								// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
+								// So when the `sort` field of the second comes in for parsing,
+								// It's already been transformed, and so sort.order is a number, not a string...
+								z.literal(1),
+								z.literal(-1),
+							])
+							.transform((v) =>
+								v === "asc" ? 1 : v === "desc" ? -1 : v,
+							),
 					}),
 				)
 				.default({
@@ -125,6 +135,8 @@ const codeblock_schema = (data: CodeblockInputData) =>
 					field: "basename",
 				}),
 		})
+		.passthrough()
+		.default({})
 
 		.transform((options) => {
 			// If field-groups are given, resolve them to their fields
@@ -167,9 +179,9 @@ const parse_source = (
 	try {
 		yaml = parseYaml(source);
 
-		log.debug(yaml);
+		log.debug("Codeblock > parsed_yaml >", yaml);
 	} catch (error) {
-		log.error("Codeblock > parse_source > parseYaml", error);
+		log.error("Codeblock > parse_source > parseYaml.error", error);
 
 		errors.push({
 			path: "yaml",
@@ -180,19 +192,8 @@ const parse_source = (
 		return { parsed: null, errors };
 	}
 
-	const invalid_fields = Object.keys(yaml).filter(
-		(key) => !FIELDS.includes(key as any),
-	);
-
-	if (invalid_fields.length) {
-		errors.push({
-			path: "yaml",
-			code: "invalid_yaml",
-			message: `Unknown field(s): ${quote_join(invalid_fields)}. Valid options: ${quote_join(FIELDS)}`,
-		});
-	}
-
-	const parsed = codeblock_schema(data).safeParse(yaml);
+	// NOTE: An empty codeblock is valid, but yaml sees it as null
+	const parsed = codeblock_schema(data).safeParse(yaml ?? {});
 	if (!parsed.success) {
 		errors.push(
 			...parsed.error.issues.map((issue) => ({
@@ -206,9 +207,21 @@ const parse_source = (
 			errors,
 			parsed: null,
 		};
-	} else {
-		return { parsed: parsed.data, errors };
 	}
+
+	const invalid_fields = Object.keys(parsed.data).filter(
+		(key) => !FIELDS.includes(key as any),
+	);
+
+	if (invalid_fields.length) {
+		errors.push({
+			path: "yaml",
+			code: "invalid_yaml",
+			message: `Unknown field(s) - ${quote_join(invalid_fields)}. Options: ${quote_join(FIELDS, "'", " | ")}`,
+		});
+	}
+
+	return { parsed: parsed.data, errors };
 };
 
 /** Refine the results of parsing, with the plugin now available in context */

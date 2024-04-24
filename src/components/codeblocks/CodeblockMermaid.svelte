@@ -122,10 +122,10 @@
 	{/if}
 
 	{#if traversal_items.length}
-		<div class="absolute bottom-2 left-2 flex gap-1">
+		<div class="absolute left-2 top-2 flex">
 			<button
 				role="link"
-				aria-label="View Image"
+				aria-label="View Image on mermaid.ink"
 				class="clickable-icon nav-action-button"
 				on:click={() => {
 					window.open(Mermaid.to_image_link(mermaid), "_blank");
@@ -136,7 +136,7 @@
 
 			<button
 				role="link"
-				aria-label="Live Editor"
+				aria-label="Live Edit on mermaid.live"
 				class="clickable-icon nav-action-button"
 				on:click={() => {
 					window.open(Mermaid.to_live_edit_link(mermaid), "_blank");
