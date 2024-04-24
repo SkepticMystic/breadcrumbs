@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks";
+	import { ListIndex } from "src/commands/list_index";
 	import { Traverse, type EdgeTree } from "src/graph/traverse";
 	import {
 		get_edge_sorter,
@@ -10,8 +11,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { onMount } from "svelte";
-	import FlatEdgeList from "../FlatEdgeList.svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
+	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -57,11 +58,22 @@
 
 	const get_tree = () => {
 		if (source_path && plugin.graph.hasNode(source_path)) {
-			return options["merge-fields"]
+			const traversal = options["merge-fields"]
 				? base_traversal({ $or_fields: options.fields })
 				: edge_field_labels.flatMap((field) =>
 						base_traversal({ field }),
 					);
+
+			// NOTE: The flattening is done here so that:
+			// - We can use NestedEdgeList for both modes
+			// - ListIndex builds from an EdgeTree[] as well
+			return options.flat
+				? Traverse.flatten_tree(traversal).map((item) => ({
+						depth: 0,
+						children: [],
+						edge: item.edge,
+					}))
+				: traversal;
 		} else {
 			return [];
 		}
@@ -79,9 +91,20 @@
 		</h3>
 	{/if}
 
-	<div class="BC-codeblock-tree-items">
-		{#if tree.length}
-			{#if !options.flat}
+	{#if tree.length}
+		<div class="BC-codeblock-tree-items relative">
+			<div class="absolute bottom-2 right-2 flex">
+				<CopyToClipboardButton
+					cls="clickable-icon nav-action-button"
+					text={ListIndex.edge_tree_to_list_index(
+						tree,
+						plugin.settings.commands.list_index.default_options,
+					)}
+				/>
+			</div>
+
+			<!-- NOTE: Padded so that the flair doesn't interfere with the floating buttons -->
+			<div class="pr-10">
 				<NestedEdgeList
 					{sort}
 					{tree}
@@ -90,17 +113,9 @@
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}
 				/>
-			{:else}
-				<FlatEdgeList
-					{sort}
-					{plugin}
-					{show_node_options}
-					flat_edges={Traverse.flatten_tree(tree)}
-					show_attributes={options["show-attributes"]}
-				/>
-			{/if}
-		{:else}
-			<p class="search-empty-state">No paths found</p>
-		{/if}
-	</div>
+			</div>
+		</div>
+	{:else}
+		<p class="search-empty-state">No paths found</p>
+	{/if}
 </div>

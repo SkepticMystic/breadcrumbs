@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { ClipboardIcon, ImageIcon, PencilIcon } from "lucide-svelte";
-	import { Notice } from "obsidian";
+	import { ImageIcon, PencilIcon } from "lucide-svelte";
 	import type { ICodeblock } from "src/codeblocks";
 	import { ICON_SIZE } from "src/const";
 	import { Distance } from "src/graph/distance";
@@ -20,6 +19,7 @@
 	import { Paths } from "src/utils/paths";
 	import { onMount } from "svelte";
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
+	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -125,25 +125,10 @@
 	{#if traversal_items.length}
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
-				<button
-					role="link"
-					aria-label="Copy Mermaid Code to Clipboard and console.log"
-					class="clickable-icon nav-action-button"
-					on:click={() => {
-						log.feat(mermaid);
-
-						navigator.clipboard
-							.writeText(mermaid)
-							.then(
-								() =>
-									new Notice(
-										"Copied to clipboard and logged to console.",
-									),
-							);
-					}}
-				>
-					<ClipboardIcon size={ICON_SIZE} />
-				</button>
+				<CopyToClipboardButton
+					text={mermaid}
+					cls="clickable-icon nav-action-button"
+				/>
 
 				<button
 					role="link"
