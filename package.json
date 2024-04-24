@@ -49,6 +49,7 @@
 	"dependencies": {
 		"graphology": "^0.25.4",
 		"lucide-svelte": "^0.360.0",
-		"luxon": "^3.4.4"
+		"luxon": "^3.4.4",
+		"zod": "^3.23.3"
 	}
 }

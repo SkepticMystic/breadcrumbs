@@ -124,21 +124,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 					};
 
 					switch (rel) {
-						case "self_is_sibling": {
-							if (!fields.same) return;
-
-							settings.implied_relations.transitive.push({
-								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
-								// TODO(NODIR): Handle empty chain
-								chain: [],
-								close_reversed: false,
-								close_field: fields.same,
-							});
-
-							break;
-						}
-
 						case "opposite_direction": {
 							OLD_DIRECTIONS.forEach((dir) => {
 								const field = fields[dir];

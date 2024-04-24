@@ -1,10 +1,10 @@
 import { MarkdownRenderChild } from "obsidian";
+import CodeblockErrors from "src/components/codeblocks/CodeblockErrors.svelte";
 import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte";
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Codeblocks } from ".";
-import { Paths } from "src/utils/paths";
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
@@ -43,70 +43,58 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		log.debug("CodeblockMDRC.load");
 
 		Codeblocks.register(this);
-
-		const { parsed, errors } = Codeblocks.parse_source(
-			this.plugin,
-			this.source,
-		);
-
-		const options = Codeblocks.resolve_options(parsed);
-		log.debug("resolved codeblock options", options);
-
-		let file_path = this.file_path;
-
-		if (options.start_node_id) {
-			const normalised = Paths.normalise(
-				Paths.ensure_ext(options.start_node_id, "md"),
-			);
-
-			const start_file =
-				this.plugin.app.metadataCache.getFirstLinkpathDest(
-					normalised,
-					file_path,
-				);
-
-			if (start_file) {
-				file_path = start_file.path;
-			} else {
-				errors.push({
-					path: "start_node_id",
-					code: "invalid_field_value",
-					message: `Invalid 'start-note', could not find: "${normalised}"`,
-				});
-			}
-		}
-
-		if (errors.length) log.warn("codeblock errors", errors);
-
 		this.containerEl.empty();
 
-		switch (options.type) {
-			case "tree": {
-				this.component = new CodeblockTree({
-					target: this.containerEl,
-					props: {
-						errors,
-						options,
-						file_path,
-						plugin: this.plugin,
-					},
-				});
+		const { parsed, errors } = Codeblocks.parse_source(this.source, {
+			edge_fields: this.plugin.settings.edge_fields,
+			field_groups: this.plugin.settings.edge_field_groups,
+		});
 
-				break;
-			}
+		if (!parsed) {
+			log.warn("fatal codeblock errors", errors);
 
-			case "mermaid": {
-				this.component = new CodeblockMermaid({
-					target: this.containerEl,
-					props: {
-						errors,
-						options,
-						file_path,
-						plugin: this.plugin,
-					},
-				});
-				break;
-			}
+			new CodeblockErrors({
+				target: this.containerEl,
+				props: { errors },
+			});
+
+			return;
+		}
+
+		const { options, file_path } = Codeblocks.postprocess_options(
+			this.file_path,
+			parsed,
+			errors,
+			this.plugin,
+		);
+		log.debug("resolved codeblock options", options);
+
+		// Although the postprocessing could also have errors,
+		// they're not fatal at this point, so we can still render the codeblock (which renders the errors as well)
+		if (errors.length) log.warn("non-fatal codeblock errors", errors);
+
+		if (options.type === "tree") {
+			this.component = new CodeblockTree({
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
+		} else if (options.type === "mermaid") {
+			this.component = new CodeblockMermaid({
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
+		} else {
+			log.error("CodeblockMDRC unknown type", options.type);
 		}
 	}
 

@@ -5,12 +5,12 @@
 </script>
 
 {#if errors.length}
-	<h3 class="text-error">Breadcrumbs Codeblock Errors</h3>
+	<h3 class="text-warning">Breadcrumbs Codeblock Errors</h3>
 
 	<ul class="BC-codeblock-tree-errors">
 		{#each errors as error}
 			<li>
-				<code>{error.message}</code>
+				<code>{error.path}</code>: {error.message}
 			</li>
 		{/each}
 	</ul>
