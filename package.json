@@ -1,7 +1,7 @@
 {
 	"name": "breadcrumbs",
 	"version": "4.1.1-beta",
-	"description": "Add structured hierarchies to your Obsidian vault",
+	"description": "Add typed-links to your Obsidian notes",
 	"main": "main.js",
 	"scripts": {
 		"SOURCE": "https://stackoverflow.com/questions/70716940/using-tailwind-css-with-esbuild-the-process",
@@ -18,7 +18,7 @@
 		"coverage:ui": "vitest run --coverage --coverage.include 'src/**' --coverage.reporter html && npx vite preview --outDir ./coverage --open"
 	},
 	"keywords": [],
-	"author": "",
+	"author": "SkepticMystic",
 	"license": "MIT",
 	"devDependencies": {
 		"@aidenlx/folder-note-core": "^1.3.6",
