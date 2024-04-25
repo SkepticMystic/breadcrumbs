@@ -6,7 +6,11 @@ import type { MaybePromise } from ".";
 export type BreadcrumbsError = {
 	// TODO: Differentiate between invalid edge-field and invalid metadata-field values
 	// BUT: Some errors might be a metadata field with an invalid edge-field value
-	code: "deprecated_field" | "invalid_field_value" | "invalid_setting_value";
+	code:
+		| "deprecated_field"
+		| "invalid_field_value"
+		| "invalid_setting_value"
+		| "invalid_yaml";
 	message: string;
 	path: string;
 };

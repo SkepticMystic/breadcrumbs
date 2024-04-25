@@ -43,7 +43,10 @@ export namespace ListIndex {
 		},
 	};
 
-	const edge_tree_to_list_index = (tree: EdgeTree[], options: Options) => {
+	export const edge_tree_to_list_index = (
+		tree: EdgeTree[],
+		options: Options,
+	) => {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
