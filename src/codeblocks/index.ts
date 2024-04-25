@@ -1,20 +1,19 @@
+import { parseYaml } from "obsidian";
 import type { CodeblockMDRC } from "src/codeblocks/MDRC";
-import {
-	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
-	SIMPLE_EDGE_SORT_FIELDS,
-} from "src/const/graph";
+import { SIMPLE_EDGE_SORT_FIELDS } from "src/const/graph";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
-import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/MyMultiGraph";
-import type { ICodeblock } from "src/interfaces/codeblocks";
+import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
 import type { BreadcrumbsError } from "src/interfaces/graph";
+import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { remove_duplicates } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
-import { quote_join, split_and_trim } from "src/utils/strings";
-
-// TODO: parseYaml
+import { Paths } from "src/utils/paths";
+import { quote_join } from "src/utils/strings";
+import { z } from "zod";
 
 const FIELDS = [
 	"type",
@@ -35,357 +34,249 @@ const FIELDS = [
 	"mermaid-renderer",
 ] as const;
 
-const TYPES: ICodeblock["Options"]["type"][] = ["tree", "mermaid"];
+type CodeblockInputData = {
+	edge_fields: EdgeField[];
+	field_groups: EdgeFieldGroup[];
+};
 
-const parse_source = (plugin: BreadcrumbsPlugin, source: string) => {
-	const lines = source.split("\n");
+const dynamic_enum_schema = (options: string[]) =>
+	z.string().superRefine((f, ctx) => {
+		if (options.includes(f)) {
+			return true;
+		} else {
+			ctx.addIssue({
+				options,
+				received: f,
+				code: "invalid_enum_value",
+			});
 
-	const errors: BreadcrumbsError[] = [];
-	const parsed: Partial<ICodeblock["Options"]> = {};
-
-	lines.forEach((line) => {
-		const [key, ...rest] = line.split(":") as [
-			key: (typeof FIELDS)[number],
-			...rest: string[],
-		];
-		const value = rest.join(":").trim();
-		if (!key || !value) return;
-
-		// By the time we parse the value in the switch statement,
-		//   we know it's non-empty
-		switch (key) {
-			case "type": {
-				if (!TYPES.includes(value as ICodeblock["Options"]["type"])) {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid type: "${value}". Options: ${quote_join(TYPES)}`,
-					});
-				}
-
-				return (parsed.type = value as ICodeblock["Options"]["type"]);
-			}
-
-			case "mermaid-direction": {
-				if (
-					!Mermaid.DIRECTIONS.includes(value as Mermaid["Direction"])
-				) {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid mermaid-direction: "${value}". Options: ${quote_join(Mermaid.DIRECTIONS)}`,
-					});
-				}
-
-				return (parsed.mermaid_direction =
-					value as Mermaid["Direction"]);
-			}
-
-			case "title": {
-				return (parsed.title = value);
-			}
-
-			case "start-note": {
-				return (parsed.start_node_id = value);
-			}
-
-			case "fields": {
-				const field_labels = plugin.settings.edge_fields.map(
-					(field) => field.label,
-				);
-
-				return (parsed.fields = split_and_trim(value).filter(
-					(field) => {
-						if (!field_labels.includes(field)) {
-							errors.push({
-								path: key,
-								code: "invalid_field_value",
-								message: `Invalid field: "${field}". Options: ${quote_join(field_labels)}`,
-							});
-							return false;
-						} else {
-							return true;
-						}
-					},
-				));
-			}
-
-			case "field-groups": {
-				const group_labels = plugin.settings.edge_field_groups.map(
-					(group) => group.label,
-				);
-
-				const values = split_and_trim(value).filter((group) => {
-					// NOTE: resolve_field_group_labels handles values that aren't group labels just fine
-					// 	but this lets us add an error message
-					if (!group_labels.includes(group)) {
-						errors.push({
-							path: key,
-							code: "invalid_field_value",
-							message: `Invalid field-group: "${group}". Options: ${quote_join(group_labels)}`,
-						});
-						return false;
-					} else {
-						return true;
-					}
-				});
-
-				const field_labels = resolve_field_group_labels(
-					plugin.settings.edge_field_groups,
-					values,
-				);
-
-				if (parsed.fields) {
-					parsed.fields = remove_duplicates(
-						parsed.fields.concat(field_labels),
-					);
-				} else {
-					parsed.fields = field_labels;
-				}
-
-				return;
-			}
-
-			//@ts-ignore: TODO: Remove once everyone has migrated
-			case "dir":
-			// @ts-ignore
-			case "dirs": {
-				errors.push({
-					path: key,
-					code: "deprecated_field",
-					message: `The '${key}' field is deprecated. Use 'fields' or 'field-groups' instead.`,
-				});
-
-				const group_labels = plugin.settings.edge_field_groups.map(
-					(group) => group.label,
-				);
-
-				// Check if a group is named after that direction (or it's plural, since that's how the default groups are setup)
-				const included_group_labels = split_and_trim(value)
-					.map((group) =>
-						group_labels.includes(group)
-							? group
-							: group_labels.includes(group + "s")
-								? group + "s"
-								: "",
-					)
-					.filter(Boolean);
-
-				const field_labels = resolve_field_group_labels(
-					plugin.settings.edge_field_groups,
-					included_group_labels,
-				);
-
-				if (parsed.fields) {
-					parsed.fields = remove_duplicates(
-						parsed.fields.concat(field_labels),
-					);
-				} else {
-					parsed.fields = field_labels;
-				}
-
-				return;
-			}
-
-			case "depth": {
-				// depth: 1
-				// depth: 1-2
-
-				const bounds = value.split("-").map((num) => parseInt(num));
-
-				// NOTE:  Number.isNaN(undefined) === false; Because JS
-				const [min, max] = [
-					bounds[0] === undefined || Number.isNaN(bounds[0])
-						? 0
-						: bounds[0],
-					bounds[1] === undefined || Number.isNaN(bounds[1])
-						? Infinity
-						: bounds[1],
-				];
-
-				if (min > max) {
-					errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid depth: "${value}". Min is greater than max.`,
-					});
-
-					return (parsed.depth = [0, Infinity]);
-				}
-
-				return (parsed.depth = [min, max] as const);
-			}
-
-			case "flat": {
-				return (parsed.flat = value === "true");
-			}
-
-			case "collapse": {
-				return (parsed.collapse = value === "true");
-			}
-
-			// @ts-expect-error: TODO: Remove once everyone has migrated
-			case "merge-hierarchies":
-			case "merge-fields": {
-				// @ts-expect-error
-				if (key === "merge-hierarchies") {
-					errors.push({
-						path: key,
-						code: "deprecated_field",
-						message: `The 'merge-hierarchies' field is deprecated. Use 'merge-fields' instead.`,
-					});
-				}
-
-				return (parsed.merge_fields = value === "true");
-			}
-
-			//@ts-ignore: TODO: Remove once everyone has migrated
-			case "from":
-			case "dataview-from": {
-				//@ts-ignore: TODO: Remove once everyone has migrated
-				if (key === "from") {
-					errors.push({
-						path: key,
-						code: "deprecated_field",
-						message: `The 'from' field is deprecated. Use 'dataview-from' instead.`,
-					});
-				}
-
-				try {
-					// TODO: Do the actual api call outside of this function, so that it can be tested without relying on Obsidian
-					const pages = dataview_plugin
-						.get_api(plugin.app)
-						?.pages(value) as undefined | IDataview.Page[];
-
-					return (parsed.dataview_from_paths = pages?.map(
-						(page) => page.file.path,
-					));
-				} catch (error) {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid dataview-from: "${value}". You can also use \`app.plugins.plugins.dataview.api.pages\` to test your query.`,
-					});
-				}
-			}
-
-			// TODO: Actually implement
-			case "content": {
-				if (value !== "open" && value !== "closed") {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid content: "${value}". Options: "open", "closed"`,
-					});
-				}
-
-				return (parsed.content = value);
-			}
-
-			case "sort": {
-				const [field, order] = value.split(" ");
-
-				if (
-					!SIMPLE_EDGE_SORT_FIELDS.includes(field as any) &&
-					!COMPLEX_EDGE_SORT_FIELD_PREFIXES.some((f) =>
-						field.startsWith(f + ":"),
-					)
-				) {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid sort-field: "${field}". Options: ${quote_join(SIMPLE_EDGE_SORT_FIELDS)}, or a complex field prefixed with: ${quote_join(COMPLEX_EDGE_SORT_FIELD_PREFIXES)}`,
-					});
-				}
-
-				// TODO: At this point we know the field is simple or prefixed with a complex
-				// 	but the _value_ of the complex field is not validated
-
-				// If an order has been given, but isn't a option
-				if (order && order !== "asc" && order !== "desc") {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid sort-order: "${order}". Options: "asc", "desc", or <blank>.`,
-					});
-				}
-
-				parsed.sort = {
-					field: field as any,
-					order: order === "desc" ? -1 : 1,
-				};
-
-				return;
-			}
-
-			// TODO: Remove once everyone has migrated
-			case "field-prefix": {
-				errors.push({
-					path: key,
-					code: "deprecated_field",
-					message: `The 'field-prefix' field is deprecated. Use 'show-attributes' instead.`,
-				});
-
-				return;
-			}
-
-			case "show-attributes": {
-				return (parsed.show_attributes = split_and_trim(value).filter(
-					(attr) => {
-						if (!EDGE_ATTRIBUTES.includes(attr as any)) {
-							errors.push({
-								path: key,
-								code: "invalid_field_value",
-								message: `Invalid show-attributes: "${attr}". Options: ${quote_join(EDGE_ATTRIBUTES)}.`,
-							});
-							return false;
-						} else {
-							return true;
-						}
-					},
-				) as EdgeAttribute[]);
-			}
-
-			case "mermaid-renderer": {
-				if (!Mermaid.RENDERERS.includes(value as Mermaid["Renderer"])) {
-					return errors.push({
-						path: key,
-						code: "invalid_field_value",
-						message: `Invalid mermaid-renderer: "${value}". Options: ${quote_join(Mermaid.RENDERERS)}`,
-					});
-				}
-
-				return (parsed.mermaid_renderer = value as Mermaid["Renderer"]);
-			}
-
-			default: {
-				errors.push({
-					path: key,
-					code: "invalid_field_value",
-					message: `Invalid codeblock field: "${key}". Options: ${quote_join(FIELDS)}`,
-				});
-			}
+			return false;
 		}
 	});
 
-	return { parsed, errors };
+const codeblock_schema = (data: CodeblockInputData) =>
+	z
+		.object({
+			flat: z.boolean().default(false),
+			collapse: z.boolean().default(false),
+			"merge-fields": z.boolean().default(false),
+
+			title: z.string().optional(),
+			"start-note": z.string().optional(),
+			"dataview-from": z.string().optional(),
+
+			content: z.enum(["open", "closed"]).optional(),
+			type: z.enum(["tree", "mermaid"]).default("tree"),
+			"mermaid-renderer": z.enum(Mermaid.RENDERERS).optional(),
+			"mermaid-direction": z.enum(Mermaid.DIRECTIONS).optional(),
+
+			"show-attributes": z.array(z.enum(EDGE_ATTRIBUTES)).optional(),
+
+			fields: z
+				.array(
+					dynamic_enum_schema(data.edge_fields.map((f) => f.label)),
+				)
+				.optional(),
+
+			"field-groups": z
+				.array(
+					dynamic_enum_schema(data.field_groups.map((f) => f.label)),
+				)
+				.optional(),
+
+			depth: z
+				.union([
+					z
+						.tuple([z.number().min(0)])
+						.transform((v) => [v[0], Infinity]),
+					z.tuple([z.number().min(0), z.number()]),
+				])
+				.default([0, Infinity])
+				.refine((v) => v[0] <= (v.at(1) ?? Infinity), {
+					message: "Min is greater than max",
+				}),
+
+			sort: z
+				.preprocess(
+					(v) => {
+						if (typeof v === "string") {
+							const [field, order] = v.split(" ");
+
+							return { field, order: order ?? "asc" };
+						} else {
+							return v;
+						}
+					},
+					z.object({
+						field: dynamic_enum_schema([
+							...SIMPLE_EDGE_SORT_FIELDS,
+							...data.edge_fields.map(
+								(f) => `neighbour-field:${f.label}`,
+							),
+						]),
+
+						order: z
+							.union([
+								z.enum(["asc", "desc"]),
+								// Something very weird happening...
+								// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
+								// So when the `sort` field of the second comes in for parsing,
+								// It's already been transformed, and so sort.order is a number, not a string...
+								z.literal(1),
+								z.literal(-1),
+							])
+							.transform((v) =>
+								v === "asc" ? 1 : v === "desc" ? -1 : v,
+							),
+					}),
+				)
+				.default({
+					order: 1,
+					field: "basename",
+				}),
+		})
+		.passthrough()
+		.default({})
+
+		.transform((options) => {
+			// If field-groups are given, resolve them to their fields
+			// adding them to the fields array
+			if (options["field-groups"]) {
+				const field_labels = resolve_field_group_labels(
+					data.field_groups,
+					options["field-groups"],
+				);
+
+				if (options.fields) {
+					options.fields = remove_duplicates(
+						options.fields.concat(field_labels),
+					);
+				} else {
+					options.fields = field_labels;
+				}
+			}
+
+			return options;
+		});
+
+export type ICodeblock = {
+	/** Once resolved, the non-optional fields WILL be there, with a default if missing */
+	Options: z.infer<ReturnType<typeof codeblock_schema>> & {
+		"dataview-from-paths"?: string[];
+	};
 };
 
-const resolve_options = (
-	parsed: ReturnType<typeof parse_source>["parsed"],
-): ICodeblock["Options"] =>
-	Object.assign(
-		{
-			type: "tree",
-			depth: [0, Infinity],
-			flat: false,
-			sort: {
-				field: "basename",
-				order: 1,
-			},
-		} satisfies ICodeblock["Options"],
-		parsed,
+const parse_source = (
+	source: string,
+	data: CodeblockInputData,
+): {
+	errors: BreadcrumbsError[];
+	parsed: z.infer<ReturnType<typeof codeblock_schema>> | null;
+} => {
+	const errors: BreadcrumbsError[] = [];
+
+	let yaml: any;
+	try {
+		yaml = parseYaml(source);
+
+		log.debug("Codeblock > parsed_yaml >", yaml);
+	} catch (error) {
+		log.error("Codeblock > parse_source > parseYaml.error", error);
+
+		errors.push({
+			path: "yaml",
+			code: "invalid_yaml",
+			message: "Invalid YAML. Check the console for more information.",
+		});
+
+		return { parsed: null, errors };
+	}
+
+	// NOTE: An empty codeblock is valid, but yaml sees it as null
+	const parsed = codeblock_schema(data).safeParse(yaml ?? {});
+	if (!parsed.success) {
+		errors.push(
+			...parsed.error.issues.map((issue) => ({
+				message: issue.message,
+				path: issue.path.join("."),
+				code: "invalid_field_value" as const,
+			})),
+		);
+
+		return {
+			errors,
+			parsed: null,
+		};
+	}
+
+	const invalid_fields = Object.keys(parsed.data).filter(
+		(key) => !FIELDS.includes(key as any),
 	);
+
+	if (invalid_fields.length) {
+		errors.push({
+			path: "yaml",
+			code: "invalid_yaml",
+			message: `Unknown field(s) - ${quote_join(invalid_fields)}. Options: ${quote_join(FIELDS, "'", " | ")}`,
+		});
+	}
+
+	return { parsed: parsed.data, errors };
+};
+
+/** Refine the results of parsing, with the plugin now available in context */
+const postprocess_options = (
+	/** Where the codeblock is */
+	source_path: string,
+	parsed: ICodeblock["Options"],
+	errors: BreadcrumbsError[],
+	plugin: BreadcrumbsPlugin,
+) => {
+	let file_path = source_path;
+
+	if (parsed["start-note"]) {
+		const normalised = Paths.normalise(
+			Paths.ensure_ext(parsed["start-note"], "md"),
+		);
+
+		const start_file = plugin.app.metadataCache.getFirstLinkpathDest(
+			normalised,
+			file_path,
+		);
+
+		if (start_file) {
+			file_path = start_file.path;
+		} else {
+			errors.push({
+				path: "start-note",
+				code: "invalid_field_value",
+				message: `Invalid 'start-note', could not find: "${normalised}"`,
+			});
+		}
+	}
+
+	if (parsed["dataview-from"]) {
+		try {
+			const pages = dataview_plugin
+				.get_api(plugin.app)
+				?.pages(parsed["dataview-from"]) as
+				| undefined
+				| IDataview.Page[];
+
+			parsed["dataview-from-paths"] = pages?.map(
+				(page) => page.file.path,
+			);
+		} catch (error) {
+			errors.push({
+				path: "dataview-from",
+				code: "invalid_field_value",
+				message: `Invalid dataview-from: "${parsed["dataview-from"]}". You can also use \`app.plugins.plugins.dataview.api.pages\` to test your query.`,
+			});
+		}
+	}
+
+	return { options: parsed, file_path };
+};
 
 const active_codeblocks: Map<string, CodeblockMDRC> = new Map();
 
@@ -405,8 +296,10 @@ const update_all = () => {
 
 export const Codeblocks = {
 	FIELDS,
+
 	parse_source,
-	resolve_options,
+	postprocess_options,
+
 	register,
 	unregister,
 	update_all,

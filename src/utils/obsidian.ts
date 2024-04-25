@@ -1,4 +1,5 @@
-import type { App } from "obsidian";
+import { Notice, type App } from "obsidian";
+import { log } from "src/logger";
 import { Links } from "./links";
 import { Paths } from "./paths";
 
@@ -20,4 +21,21 @@ export const resolve_relative_target_path = (
 		Links.resolve_to_absolute_path(app, extensioned, source_path);
 
 	return [target_path, target_file] as const;
+};
+
+export const copy_to_clipboard = async (
+	text: string,
+	options?: { notify?: boolean; log?: boolean },
+) => {
+	const resolved = Object.assign({ notify: true, log: true }, options);
+
+	if (resolved.log) {
+		log.feat(text);
+	}
+
+	await navigator.clipboard.writeText(text);
+
+	if (resolved.notify) {
+		new Notice("Copied to clipboard and logged to console.");
+	}
 };

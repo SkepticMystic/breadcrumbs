@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { ImageIcon, PencilIcon } from "lucide-svelte";
+	import type { ICodeblock } from "src/codeblocks";
+	import { ICON_SIZE } from "src/const";
 	import { Distance } from "src/graph/distance";
 	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
 	import {
@@ -6,7 +9,6 @@
 		has_edge_attrs,
 		type EdgeAttrFilters,
 	} from "src/graph/utils";
-	import type { ICodeblock } from "src/interfaces/codeblocks";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
@@ -17,16 +19,19 @@
 	import { Paths } from "src/utils/paths";
 	import { onMount } from "svelte";
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
+	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { ImageIcon, PencilIcon } from "lucide-svelte";
-	import { ICON_SIZE } from "src/const";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	const sort = get_edge_sorter(options.sort, plugin.graph);
+	const sort = get_edge_sorter(
+		// @ts-expect-error: ts(2345)
+		options.sort,
+		plugin.graph,
+	);
 
 	let traversal_items: TraversalStackItem[] = [];
 	let distances: Map<string, number> = new Map();
@@ -48,7 +53,7 @@
 		Traverse.gather_items(plugin.graph, source_path, (item) =>
 			has_edge_attrs(item.edge, {
 				...attr,
-				$or_target_ids: options.dataview_from_paths,
+				$or_target_ids: options["dataview-from-paths"],
 			}),
 		);
 
@@ -57,7 +62,7 @@
 
 	const get_traversal_items = () => {
 		if (source_path && plugin.graph.hasNode(source_path)) {
-			return options.merge_fields
+			return options["merge-fields"]
 				? base_traversal({ $or_fields: options.fields })
 				: edge_field_labels.flatMap((field) =>
 						base_traversal({ field }),
@@ -84,9 +89,9 @@
 		kind: "graph",
 		click: { method: "class" },
 		active_node_id: source_path,
-		renderer: options.mermaid_renderer,
-		direction: options.mermaid_direction,
-		show_attributes: options.show_attributes,
+		renderer: options["mermaid-renderer"],
+		direction: options["mermaid-direction"],
+		show_attributes: options["show-attributes"],
 
 		get_node_label: (node_id, _attr) => {
 			const file = plugin.app.vault.getFileByPath(node_id);
@@ -108,7 +113,7 @@
 	$: log.debug(mermaid);
 </script>
 
-<div class="BC-codeblock-mermaid relative">
+<div class="BC-codeblock-mermaid">
 	<CodeblockErrors {errors} />
 
 	{#if options.title}
@@ -118,31 +123,41 @@
 	{/if}
 
 	{#if traversal_items.length}
-		<div class="absolute bottom-2 left-2 flex gap-1">
-			<button
-				role="link"
-				aria-label="View Image"
-				class="clickable-icon nav-action-button"
-				on:click={() => {
-					window.open(Mermaid.to_image_link(mermaid), "_blank");
-				}}
-			>
-				<ImageIcon size={ICON_SIZE} />
-			</button>
+		<div class="relative">
+			<div class="absolute left-2 top-2 flex">
+				<CopyToClipboardButton
+					text={mermaid}
+					cls="clickable-icon nav-action-button"
+				/>
 
-			<button
-				role="link"
-				aria-label="Live Editor"
-				class="clickable-icon nav-action-button"
-				on:click={() => {
-					window.open(Mermaid.to_live_edit_link(mermaid), "_blank");
-				}}
-			>
-				<PencilIcon size={ICON_SIZE} />
-			</button>
+				<button
+					role="link"
+					aria-label="View Image on mermaid.ink"
+					class="clickable-icon nav-action-button"
+					on:click={() => {
+						window.open(Mermaid.to_image_link(mermaid), "_blank");
+					}}
+				>
+					<ImageIcon size={ICON_SIZE} />
+				</button>
+
+				<button
+					role="link"
+					aria-label="Live Edit on mermaid.live"
+					class="clickable-icon nav-action-button"
+					on:click={() => {
+						window.open(
+							Mermaid.to_live_edit_link(mermaid),
+							"_blank",
+						);
+					}}
+				>
+					<PencilIcon size={ICON_SIZE} />
+				</button>
+			</div>
+
+			<MermaidDiagram {plugin} {mermaid} {source_path} />
 		</div>
-
-		<MermaidDiagram {plugin} {mermaid} {source_path} />
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
 	{/if}
