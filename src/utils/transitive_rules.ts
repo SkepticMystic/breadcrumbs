@@ -12,11 +12,18 @@ export const stringify_transitive_relation = (
 		.map((attr) => url_search_params(attr, { trim_lone_param: true }))
 		.join(", ")}] ${rule.close_reversed ? "←" : "→"} ${rule.close_field}`;
 
+export const get_transitive_rule_name = (
+	rule: Pick<
+		BreadcrumbsSettings["implied_relations"]["transitive"][number],
+		"chain" | "close_field" | "close_reversed" | "name"
+	>,
+) => rule.name || stringify_transitive_relation(rule);
+
 /** Create sample edges from a transitive closure rule */
 export const transitive_rule_to_edges = (
 	rule: Pick<
 		BreadcrumbsSettings["implied_relations"]["transitive"][number],
-		"chain" | "close_field" | "close_reversed"
+		"chain" | "close_field" | "close_reversed" | "name"
 	>,
 ) => {
 	const edges: Omit<BCEdge, "id" | "undirected">[] = [];
@@ -44,7 +51,7 @@ export const transitive_rule_to_edges = (
 			round: 1,
 			explicit: false,
 			field: rule.close_field,
-			implied_kind: `transitive:${stringify_transitive_relation(rule)}`,
+			implied_kind: `transitive:${get_transitive_rule_name(rule)}`,
 		},
 	});
 

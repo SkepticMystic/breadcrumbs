@@ -6,6 +6,7 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { Mermaid } from "src/utils/mermaid";
 	import {
+		get_transitive_rule_name,
 		stringify_transitive_relation,
 		transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
@@ -190,8 +191,8 @@
 
 	<div class="flex flex-col gap-3">
 		{#each transitives
-			.map((rule, rule_i) => ({ rule, rule_i }))
-			.filter( (r) => (r.rule.name || stringify_transitive_relation(r.rule)).includes(filter), ) as { rule, rule_i } (stringify_transitive_relation(rule) + rule_i)}
+			.map( (rule, rule_i) => ({ rule, rule_i, name: get_transitive_rule_name(rule) }), )
+			.filter( (r) => r.name.includes(filter.toLowerCase()), ) as { rule, rule_i, name } (name + rule_i)}
 			<!--  -->
 			<details
 				id="BC-transitive-rule-{rule_i}"
@@ -203,8 +204,7 @@
 						<ChevronOpener open={opens[rule_i]} />
 
 						<code>
-							{rule.name || stringify_transitive_relation(rule)}
-							({rule.rounds} rounds)
+							{name} ({rule.rounds} rounds)
 						</code>
 					</div>
 

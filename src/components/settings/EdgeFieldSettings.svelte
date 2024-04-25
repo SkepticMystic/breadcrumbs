@@ -291,7 +291,7 @@
 	</div>
 
 	<div class="flex flex-col gap-7">
-		{#each settings.edge_fields.filter( (f) => f.label.includes(filters.fields), ) as field}
+		{#each settings.edge_fields.filter( (f) => f.label.includes(filters.fields.toLowerCase()), ) as field}
 			{@const group_labels = settings.edge_field_groups
 				.filter((group) => group.fields.includes(field.label))
 				.map((g) => g.label)}
@@ -416,7 +416,7 @@
 	</div>
 
 	<div class="flex flex-col gap-7">
-		{#each settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups), ) as group}
+		{#each settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups.toLowerCase()), ) as group}
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
