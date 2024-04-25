@@ -39,6 +39,12 @@ type CodeblockInputData = {
 	field_groups: EdgeFieldGroup[];
 };
 
+const zod_invalid_enum_msg = (options: any[]) =>
+	`Invalid enum value. Expected: ${quote_join(options, "'", " | ")}`;
+
+const zod_not_array_msg = (options: any[] | readonly any[]) =>
+	`Invalid type. Expected a list/array. Example: [${options.slice(0, 2).join(", ")}]`;
+
 const dynamic_enum_schema = (options: string[]) =>
 	z.string().superRefine((f, ctx) => {
 		if (options.includes(f)) {
@@ -54,12 +60,26 @@ const dynamic_enum_schema = (options: string[]) =>
 		}
 	});
 
-const codeblock_schema = (data: CodeblockInputData) =>
-	z
+const dynamic_enum_array_schema = (options: string[]) =>
+	z.array(dynamic_enum_schema(options), {
+		invalid_type_error: zod_not_array_msg(options),
+	});
+
+const codeblock_schema = (data: CodeblockInputData) => {
+	const field_labels = data.edge_fields.map((f) => f.label);
+	const group_labels = data.field_groups.map((f) => f.label);
+
+	return z
 		.object({
-			flat: z.boolean().default(false),
-			collapse: z.boolean().default(false),
-			"merge-fields": z.boolean().default(false),
+			flat: z
+				.boolean({ message: zod_invalid_enum_msg([true, false]) })
+				.default(false),
+			collapse: z
+				.boolean({ message: zod_invalid_enum_msg([true, false]) })
+				.default(false),
+			"merge-fields": z
+				.boolean({ message: zod_invalid_enum_msg([true, false]) })
+				.default(false),
 
 			title: z.string().optional(),
 			"start-note": z.string().optional(),
@@ -70,31 +90,36 @@ const codeblock_schema = (data: CodeblockInputData) =>
 			"mermaid-renderer": z.enum(Mermaid.RENDERERS).optional(),
 			"mermaid-direction": z.enum(Mermaid.DIRECTIONS).optional(),
 
-			"show-attributes": z.array(z.enum(EDGE_ATTRIBUTES)).optional(),
-
-			fields: z
-				.array(
-					dynamic_enum_schema(data.edge_fields.map((f) => f.label)),
-				)
+			"show-attributes": z
+				.array(z.enum(EDGE_ATTRIBUTES), {
+					invalid_type_error: zod_not_array_msg(EDGE_ATTRIBUTES),
+				})
 				.optional(),
 
-			"field-groups": z
-				.array(
-					dynamic_enum_schema(data.field_groups.map((f) => f.label)),
-				)
-				.optional(),
+			fields: dynamic_enum_array_schema(field_labels).optional(),
+			"field-groups": dynamic_enum_array_schema(group_labels).optional(),
 
 			depth: z
-				.union([
-					z
-						.tuple([z.number().min(0)])
-						.transform((v) => [v[0], Infinity]),
-					z.tuple([z.number().min(0), z.number()]),
-				])
-				.default([0, Infinity])
-				.refine((v) => v[0] <= (v.at(1) ?? Infinity), {
+				.array(z.number().min(0), {
+					invalid_type_error:
+						"Invalid type. Expected a list/array of one or two numbers. Example: [0] or [0, 3]",
+				})
+				.min(
+					1,
+					"Invalid length. At least one element is required. Example: [0] or [0, 3]",
+				)
+				.max(
+					2,
+					"Invalid length. Maximum of two elements allowed. Example: [0] or [0, 3]",
+				)
+				.transform((v) => {
+					if (v.length === 1) return [v[0], Infinity];
+					else return v;
+				})
+				.refine((v) => v[0] <= v[1], {
 					message: "Min is greater than max",
-				}),
+				})
+				.default([0, Infinity]),
 
 			sort: z
 				.preprocess(
@@ -108,6 +133,8 @@ const codeblock_schema = (data: CodeblockInputData) =>
 						}
 					},
 					z.object({
+						// TODO: Use a custom zod schema to retain string template literals here
+						// https://github.com/colinhacks/zod?tab=readme-ov-file#custom-schemas
 						field: dynamic_enum_schema([
 							...SIMPLE_EDGE_SORT_FIELDS,
 							...data.edge_fields.map(
@@ -158,6 +185,7 @@ const codeblock_schema = (data: CodeblockInputData) =>
 
 			return options;
 		});
+};
 
 export type ICodeblock = {
 	/** Once resolved, the non-optional fields WILL be there, with a default if missing */

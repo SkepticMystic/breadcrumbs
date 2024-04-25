@@ -9,6 +9,8 @@
 		Breadcrumbs Codeblock Errors
 	</p>
 
+	<p>The codeblock YAML has errors in the following keys/properties:</p>
+
 	<ul class="BC-codeblock-tree-errors">
 		{#each errors as error}
 			<li>
@@ -17,4 +19,15 @@
 			</li>
 		{/each}
 	</ul>
+
+	<hr />
+
+	<p>
+		See the <a
+			target="_blank"
+			href="https://publish.obsidian.md/breadcrumbs-docs/Views/Codeblocks"
+		>
+			codeblock docs
+		</a> for more info
+	</p>
 {/if}

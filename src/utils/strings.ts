@@ -6,7 +6,7 @@ export const split_and_trim = (str: string, delimiter = ","): string[] => {
 };
 
 export const quote_join = (
-	arr: string[] | readonly string[],
+	arr: any[] | readonly any[],
 	quote = '"',
 	joiner = ", ",
 ): string => arr.map((str) => quote + str + quote).join(joiner);
