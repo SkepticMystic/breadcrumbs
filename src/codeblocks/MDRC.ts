@@ -4,6 +4,7 @@ import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte"
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+import { Timer } from "src/utils/timer";
 import { Codeblocks } from ".";
 
 export class CodeblockMDRC extends MarkdownRenderChild {
@@ -40,15 +41,22 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	}
 
 	async onload(): Promise<void> {
+		const timer_outer = new Timer();
+
 		log.debug("CodeblockMDRC.load");
 
 		Codeblocks.register(this);
+
 		this.containerEl.empty();
+
+		const timer_inner = new Timer();
 
 		const { parsed, errors } = Codeblocks.parse_source(this.source, {
 			edge_fields: this.plugin.settings.edge_fields,
 			field_groups: this.plugin.settings.edge_field_groups,
 		});
+
+		log.debug(timer_inner.elapsedMessage("Codeblocks.parse_source", true));
 
 		if (!parsed) {
 			log.warn("fatal codeblock errors", errors);
@@ -68,6 +76,10 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 			this.plugin,
 		);
 		log.debug("resolved codeblock options", options);
+
+		log.debug(
+			timer_inner.elapsedMessage("Codeblocks.postprocess_options", true),
+		);
 
 		// Although the postprocessing could also have errors,
 		// they're not fatal at this point, so we can still render the codeblock (which renders the errors as well)
@@ -96,6 +108,9 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		} else {
 			log.error("CodeblockMDRC unknown type", options.type);
 		}
+
+		log.debug(timer_inner.elapsedMessage("component creation", true));
+		log.debug(timer_outer.elapsedMessage("CodeblockMDRC.onload"));
 	}
 
 	onunload(): void {
