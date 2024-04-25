@@ -45,7 +45,10 @@ export namespace ListIndex {
 
 	export const edge_tree_to_list_index = (
 		tree: EdgeTree[],
-		options: Options,
+		options: Pick<
+			Options,
+			"link_kind" | "indent" | "show_node_options" | "show_attributes"
+		>,
 	) => {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
