@@ -63,7 +63,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 			new CodeblockErrors({
 				target: this.containerEl,
-				props: { errors },
+				props: { errors, plugin: this.plugin },
 			});
 
 			return;

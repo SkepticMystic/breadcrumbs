@@ -114,7 +114,7 @@
 </script>
 
 <div class="BC-codeblock-mermaid">
-	<CodeblockErrors {errors} />
+	<CodeblockErrors {plugin} {errors} />
 
 	{#if options.title}
 		<h3 class="BC-codeblock-mermaid-title">

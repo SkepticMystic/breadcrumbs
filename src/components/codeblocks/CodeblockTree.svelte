@@ -83,7 +83,7 @@
 </script>
 
 <div class="BC-codeblock-tree">
-	<CodeblockErrors {errors} />
+	<CodeblockErrors {plugin} {errors} />
 
 	{#if options.title}
 		<h3 class="BC-codeblock-tree-title">

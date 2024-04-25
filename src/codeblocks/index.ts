@@ -33,17 +33,32 @@ const FIELDS = [
 	"mermaid-direction",
 	"mermaid-renderer",
 ] as const;
+type CodeblockField = (typeof FIELDS)[number];
 
 type CodeblockInputData = {
 	edge_fields: EdgeField[];
 	field_groups: EdgeFieldGroup[];
 };
 
-const zod_invalid_enum_msg = (options: any[]) =>
-	`Invalid enum value. Expected: ${quote_join(options, "'", " | ")}`;
+const zod_not_string_msg = (field: CodeblockField, received: unknown) =>
+	`Expected a string, but received: \`${received}\`. Try wrapping the value in quotes.
+**Valid Example**: \`${field}: "${received}"\``;
 
-const zod_not_array_msg = (options: any[] | readonly any[]) =>
-	`Invalid type. Expected a list/array. Example: [${options.slice(0, 2).join(", ")}]`;
+const zod_invalid_enum_msg = (
+	field: CodeblockField,
+	options: any[] | readonly any[],
+	received: unknown,
+) =>
+	`Expected one of the following options: ${quote_join(options, "`", ", or ")}, but received: \`${received}\`.
+**Valid Example**: \`${field}: ${options[0]}\``;
+
+const zod_not_array_msg = (
+	field: CodeblockField,
+	options: any[] | readonly any[],
+	received: unknown,
+) =>
+	`This field is now expected to be a YAML list, but received: \`${received}\`. Try wrapping it in square brackets.
+**Valid Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
 
 const dynamic_enum_schema = (options: string[]) =>
 	z.string().superRefine((f, ctx) => {
@@ -60,64 +75,167 @@ const dynamic_enum_schema = (options: string[]) =>
 		}
 	});
 
-const dynamic_enum_array_schema = (options: string[]) =>
+const BOOLEANS = [true, false] as const;
+
+const dynamic_enum_array_schema = (
+	field: CodeblockField,
+	options: string[],
+	received: unknown,
+) =>
 	z.array(dynamic_enum_schema(options), {
-		invalid_type_error: zod_not_array_msg(options),
+		invalid_type_error: zod_not_array_msg(field, options, received),
 	});
 
-const codeblock_schema = (data: CodeblockInputData) => {
+const codeblock_schema = (
+	input: Record<string, unknown>,
+	data: CodeblockInputData,
+) => {
 	const field_labels = data.edge_fields.map((f) => f.label);
 	const group_labels = data.field_groups.map((f) => f.label);
 
 	return z
 		.object({
-			flat: z
-				.boolean({ message: zod_invalid_enum_msg([true, false]) })
-				.default(false),
-			collapse: z
-				.boolean({ message: zod_invalid_enum_msg([true, false]) })
-				.default(false),
-			"merge-fields": z
-				.boolean({ message: zod_invalid_enum_msg([true, false]) })
-				.default(false),
-
-			title: z.string().optional(),
-			"start-note": z.string().optional(),
-			"dataview-from": z.string().optional(),
-
-			content: z.enum(["open", "closed"]).optional(),
-			type: z.enum(["tree", "mermaid"]).default("tree"),
-			"mermaid-renderer": z.enum(Mermaid.RENDERERS).optional(),
-			"mermaid-direction": z.enum(Mermaid.DIRECTIONS).optional(),
-
-			"show-attributes": z
-				.array(z.enum(EDGE_ATTRIBUTES), {
-					invalid_type_error: zod_not_array_msg(EDGE_ATTRIBUTES),
+			title: z
+				.string({
+					message: zod_not_string_msg(
+						//
+						"title",
+						input["title"],
+					),
 				})
 				.optional(),
 
-			fields: dynamic_enum_array_schema(field_labels).optional(),
-			"field-groups": dynamic_enum_array_schema(group_labels).optional(),
+			"start-note": z
+				.string({
+					message: zod_not_string_msg(
+						"start-note",
+						input["start-note"],
+					),
+				})
+				.optional(),
+
+			"dataview-from": z
+				.string({
+					message: zod_not_string_msg(
+						"dataview-from",
+						input["dataview-from"],
+					),
+				})
+				.optional(),
+
+			flat: z
+				.boolean({
+					message: zod_invalid_enum_msg(
+						"flat",
+						BOOLEANS,
+						input["flat"],
+					),
+				})
+				.default(false),
+
+			collapse: z
+				.boolean({
+					message: zod_invalid_enum_msg(
+						"collapse",
+						BOOLEANS,
+						input["collapse"],
+					),
+				})
+				.default(false),
+
+			"merge-fields": z
+				.boolean({
+					message: zod_invalid_enum_msg(
+						"merge-fields",
+						BOOLEANS,
+						input["merge-fields"],
+					),
+				})
+				.default(false),
+
+			content: z
+				.enum(["open", "closed"], {
+					message: zod_invalid_enum_msg(
+						"content",
+						["open", "closed"],
+						input["content"],
+					),
+				})
+				.optional(),
+
+			type: z
+				.enum(["tree", "mermaid"], {
+					message: zod_invalid_enum_msg(
+						"type",
+						["tree", "mermaid"],
+						input["type"],
+					),
+				})
+				.default("tree"),
+
+			"mermaid-renderer": z
+				.enum(Mermaid.RENDERERS, {
+					message: zod_invalid_enum_msg(
+						"mermaid-renderer",
+						Mermaid.RENDERERS,
+						input["mermaid-renderer"],
+					),
+				})
+				.optional(),
+			"mermaid-direction": z
+				.enum(Mermaid.DIRECTIONS, {
+					message: zod_invalid_enum_msg(
+						"mermaid-direction",
+						Mermaid.DIRECTIONS,
+						input["mermaid-direction"],
+					),
+				})
+				.optional(),
+
+			"show-attributes": z
+				.array(z.enum(EDGE_ATTRIBUTES), {
+					message: zod_not_array_msg(
+						"show-attributes",
+						EDGE_ATTRIBUTES,
+						input["show-attributes"],
+					),
+				})
+				.optional(),
+
+			fields: dynamic_enum_array_schema(
+				"fields",
+				field_labels,
+				input["fields"],
+			).optional(),
+
+			"field-groups": dynamic_enum_array_schema(
+				"field-groups",
+				group_labels,
+				input["field-groups"],
+			).optional(),
 
 			depth: z
 				.array(z.number().min(0), {
-					invalid_type_error:
-						"Invalid type. Expected a list/array of one or two numbers. Example: [0] or [0, 3]",
+					invalid_type_error: `Expected a YAML list of one or two numbers, but received: \`${input["depth"]}\`. Try wrapping it in square brackets.
+**Valid Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input["depth"]}]\``,
 				})
 				.min(
 					1,
-					"Invalid length. At least one element is required. Example: [0] or [0, 3]",
+					`At least one item is required, but received: \`[${input["depth"]}]\`.
+**Valid Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 				)
 				.max(
 					2,
-					"Invalid length. Maximum of two elements allowed. Example: [0] or [0, 3]",
+					`Maximum of two items allowed, but received: \`[${(<number[]>input["depth"]).join(", ")}]\`.
+**Valid Example**: \`depth: [${(<number[]>input["depth"])[0]}]\`, or possibly \`depth: [${(<number[]>input["depth"]).slice(0, 2).join(", ")}]\``,
 				)
 				.transform((v) => {
 					if (v.length === 1) return [v[0], Infinity];
 					else return v;
 				})
 				.refine((v) => v[0] <= v[1], {
-					message: "Min is greater than max",
+					message:
+						"Minimum depth cannot be greater than maximum depth.",
 				})
 				.default([0, Infinity]),
 
@@ -203,9 +321,9 @@ const parse_source = (
 } => {
 	const errors: BreadcrumbsError[] = [];
 
-	let yaml: any;
+	let yaml: Record<string, unknown>;
 	try {
-		yaml = parseYaml(source);
+		yaml = parseYaml(source) ?? {};
 
 		log.debug("Codeblock > parsed_yaml >", yaml);
 	} catch (error) {
@@ -214,14 +332,15 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: "Invalid YAML. Check the console for more information.",
+			message:
+				"Invalid YAML. Check the console for more information (press `Ctrl + Shift + I` to open the console).",
 		});
 
 		return { parsed: null, errors };
 	}
 
 	// NOTE: An empty codeblock is valid, but yaml sees it as null
-	const parsed = codeblock_schema(data).safeParse(yaml ?? {});
+	const parsed = codeblock_schema(yaml, data).safeParse(yaml);
 	if (!parsed.success) {
 		errors.push(
 			...parsed.error.issues.map((issue) => ({
@@ -245,7 +364,11 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: `Unknown field(s) - ${quote_join(invalid_fields)}. Options: ${quote_join(FIELDS, "'", " | ")}`,
+			message: zod_invalid_enum_msg(
+				"yaml" as any,
+				FIELDS,
+				invalid_fields.join(", "),
+			),
 		});
 	}
 
@@ -278,7 +401,7 @@ const postprocess_options = (
 			errors.push({
 				path: "start-note",
 				code: "invalid_field_value",
-				message: `Invalid 'start-note', could not find: "${normalised}"`,
+				message: `Could not find note \`${normalised}\` in your vault. Try a different path.`,
 			});
 		}
 	}
@@ -298,7 +421,7 @@ const postprocess_options = (
 			errors.push({
 				path: "dataview-from",
 				code: "invalid_field_value",
-				message: `Invalid dataview-from: "${parsed["dataview-from"]}". You can also use \`app.plugins.plugins.dataview.api.pages\` to test your query.`,
+				message: `The given query \`${parsed["dataview-from"]}\` is not a valid Dataview query. You can use \`app.plugins.plugins.dataview.api.pages\` to test your query in the console (press \`Ctrl + Shift + I\` to open the console).`,
 			});
 		}
 	}
