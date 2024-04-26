@@ -41,7 +41,7 @@
 		</div>
 
 		<div class="tree-item-flair-outer">
-			<span class="tree-item-flair">
+			<span class="tree-item-flair font-mono text-lg">
 				{edges.length}
 			</span>
 		</div>
