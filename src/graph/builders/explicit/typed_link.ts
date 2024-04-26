@@ -2,7 +2,6 @@ import type {
 	BreadcrumbsError,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
-import { log } from "src/logger";
 import { ensure_is_array } from "src/utils/arrays";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 
@@ -85,25 +84,21 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						// @ts-expect-error: instanceof didn't work here?
 						target_link?.isLuxonDateTime
 					) {
-						// NOTE: The original, unparsed value is no longer available
-						// So we just skip it for now
-						log.debug(
-							"builder:typed-link > Ignoring DateTime for field:",
-							field,
-						);
-
-						return;
-					} else {
-						// It's a BC field, with a definitely invalid value
-					}
-
-					if (!unsafe_target_path) {
-						return errors.push({
+						errors.push({
 							path: source_file.path,
 							code: "invalid_field_value",
-							message: `Invalid value for field '${field}': ${target_link}`,
+							message: `Invalid value for field '${field}': '${target_link}'. Dataview DateTime values are not supported, since they don't preserve the original date string.`,
+						});
+					} else {
+						// It's a BC field, with a definitely invalid value, cause it's not a link
+						errors.push({
+							path: source_file.path,
+							code: "invalid_field_value",
+							message: `Invalid value for field '${field}': '${target_link}'. Expected wikilink or markdown link.`,
 						});
 					}
+
+					if (!unsafe_target_path) return;
 
 					const [target_path, target_file] =
 						resolve_relative_target_path(
