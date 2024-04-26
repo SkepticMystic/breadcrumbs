@@ -52,19 +52,24 @@ const zod_not_array_msg = (
 	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
 **Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
 
-const dynamic_enum_schema = (options: string[]) =>
-	z.string().superRefine((f, ctx) => {
-		if (options.includes(f)) {
+const dynamic_enum_schema = (
+	options: string[],
+	/** Optionally override ctx.path (useful in the sort.order/sort.field case) */
+	path?: CodeblockField,
+) =>
+	z.string().superRefine((received, ctx) => {
+		if (options.includes(received)) {
 			return true;
 		} else {
 			ctx.addIssue({
 				options,
-				received: f,
+				received: received,
 				code: "invalid_enum_value",
+				// NOTE: Leave the default path on _this_ object, but pass the override into the error message
 				message: zod_invalid_enum_msg(
-					ctx.path.join(".") as CodeblockField,
+					path ?? (ctx.path.join(".") as CodeblockField),
 					options,
-					f,
+					received,
 				),
 			});
 
@@ -267,23 +272,38 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					z.object({
 						// TODO: Use a custom zod schema to retain string template literals here
 						// https://github.com/colinhacks/zod?tab=readme-ov-file#custom-schemas
-						field: dynamic_enum_schema([
-							...SIMPLE_EDGE_SORT_FIELDS,
-							...data.edge_fields.map(
-								(f) => `neighbour-field:${f.label}`,
-							),
-						]),
+						field: dynamic_enum_schema(
+							[
+								...SIMPLE_EDGE_SORT_FIELDS,
+								...data.edge_fields.map(
+									(f) => `neighbour-field:${f.label}`,
+								),
+							],
+							"sort",
+						),
 
 						order: z
-							.union([
-								z.enum(["asc", "desc"]),
-								// Something very weird happening...
-								// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
-								// So when the `sort` field of the second comes in for parsing,
-								// It's already been transformed, and so sort.order is a number, not a string...
-								z.literal(1),
-								z.literal(-1),
-							])
+							.union(
+								[
+									z.enum(["asc", "desc"]),
+									// Something very weird happening...
+									// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
+									// So when the `sort` field of the second comes in for parsing,
+									// It's already been transformed, and so sort.order is a number, not a string...
+									z.literal(1),
+									z.literal(-1),
+								],
+								{
+									// SOURCE: https://github.com/colinhacks/zod/issues/117#issuecomment-1595801389
+									errorMap: (_err, ctx) => ({
+										message: zod_invalid_enum_msg(
+											"sort.order" as CodeblockField,
+											["asc", "desc"],
+											ctx.data,
+										),
+									}),
+								},
+							)
 							.transform((v) =>
 								v === "asc" ? 1 : v === "desc" ? -1 : v,
 							),
