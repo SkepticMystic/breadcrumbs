@@ -35,8 +35,6 @@ export const _add_implied_edges_transitive = (
 			graph,
 			start_node,
 			rule.chain,
-			// TODO: Based on Lemon's suggestion, we no longer check that edge.round < round.
-			// But isn't that more efficient? To chop off the traversal earlier, than keep on looking?
 			(item) => item.edge.target_id !== start_node,
 		).forEach((end_node) => {
 			const [source_id, target_id] = rule.close_reversed
