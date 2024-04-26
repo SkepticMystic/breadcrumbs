@@ -8,7 +8,7 @@ import type { BreadcrumbsError } from "src/interfaces/graph";
 import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { remove_duplicates } from "src/utils/arrays";
+import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
 import { Paths } from "src/utils/paths";
@@ -41,8 +41,7 @@ type CodeblockInputData = {
 };
 
 const zod_not_string_msg = (field: CodeblockField, received: unknown) =>
-	`Expected a string (text), but got: \`${received}\` (${typeof received}).
-_Try wrapping the value in quotes._
+	`Expected a string (text), but got: \`${received}\` (${typeof received}). _Try wrapping the value in quotes._
 **Example**: \`${field}: "${received}"\``;
 
 const zod_invalid_enum_msg = (
@@ -58,8 +57,7 @@ const zod_not_array_msg = (
 	options: any[] | readonly any[],
 	received: unknown,
 ) =>
-	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}).
-_Try wrapping it in square brackets._
+	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
 **Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
 
 const dynamic_enum_schema = (options: string[]) =>
@@ -225,31 +223,27 @@ const codeblock_schema = (
 				.array(
 					z
 						.number({
-							invalid_type_error: `Expected a number, but got: \`${input["depth"]}\` (${typeof input["depth"]}).
-_Try using a number (integer)._
+							invalid_type_error: `Expected a number, but got: \`${input["depth"]}\` (${typeof input["depth"]}). _Try using a number (integer)._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 						})
-						.int({
-							message: `Expected an integer (whole number), but got: \`${input["depth"]}\`.
-_Try using a whole number (without any decimal points)._
-**Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
-						})
+						// NOTE: Doesn't do what I expect. A codeblock with no depth field gets blocked on this check...
+						// .int({
+						// 	message: `Expected an integer (whole number), but got: \`${input["depth"]}\`. _Try using a whole number (without any decimal points)._
+						// **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
+						// })
 						.min(
 							0,
-							`Minimum depth cannot be less than \`0\`, but got: \`${input["depth"]}\`
-_Try using a non-negative number (greater than or equal to zero \`0\`)._
+							`Minimum depth cannot be less than \`0\`, but got: \`${input["depth"]}\` _Try using a non-negative number (greater than or equal to zero \`0\`)._
 **Example**: \`depth: [0]\`, or possibly: \`depth: [${typeof input["depth"] === "number" ? -1 * input["depth"] : input["depth"]}\`]`,
 						),
 					{
-						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input["depth"]}\` (${typeof input["depth"]}). 
-_Try wrapping it in square brackets._
+						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input["depth"]}\` (${typeof input["depth"]}).  _Try wrapping it in square brackets._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input["depth"]}]\``,
 					},
 				)
 				.min(
 					1,
-					`At least one item is required, but got: \`[${input["depth"]}]\`.
-_Try adding a number to the list._
+					`At least one item is required, but got: \`[${input["depth"]}]\`. _Try adding a number to the list._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 				)
 				.max(
@@ -257,8 +251,7 @@ _Try adding a number to the list._
 					// NOTE: I _could_ do something like:
 					//    or possibly \`depth: [${(<number[] | null>input["depth"])?.slice(0, 2).join(", ")}]\`
 					//    But even that mess isn't safe. What if it's a string or something without join?
-					`Maximum of two items allowed, but got: \`[${input["depth"]}]\`.
-_Try removing one of the numbers._
+					`Maximum of two items allowed, but got: \`[${input["depth"]}]\`. _Try removing one of the numbers._
 **Example**: \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}]\`, or possibly \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}, 3]\``,
 				)
 				.transform((v) => {
@@ -266,8 +259,7 @@ _Try removing one of the numbers._
 					else return v;
 				})
 				.refine((v) => v[0] <= v[1], {
-					message: `Minimum depth cannot be greater than maximum depth.
-_Try swapping the numbers._
+					message: `Minimum depth cannot be greater than maximum depth. _Try swapping the numbers._
 **Example**: \`depth: [0, 3]\`, or possibly: \`depth: [${(<number[] | null>input["depth"])?.[1] ?? 0}, ${(<number[] | null>input["depth"])?.[0] ?? 3}]\``,
 				})
 				.default([0, Infinity]),
@@ -376,7 +368,12 @@ const parse_source = (
 	const parsed = codeblock_schema(yaml, data).safeParse(yaml);
 	if (!parsed.success) {
 		errors.push(
-			...parsed.error.issues.map((issue) => ({
+			// Sometimes what I thought would be a fatal parsing error just continues...
+			// The `depth` schema, for example, can send multiple issues, the latter of which don't make sense in the context of the previous failures
+			// So, we just take the first issue for each path and ignore the rest
+			...remove_duplicates_by(parsed.error.issues, (issue) =>
+				issue.path.join("."),
+			).map((issue) => ({
 				message: issue.message,
 				path: issue.path.join("."),
 				code: "invalid_field_value" as const,

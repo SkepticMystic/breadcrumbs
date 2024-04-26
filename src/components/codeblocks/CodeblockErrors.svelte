@@ -7,7 +7,7 @@
 	export let errors: BreadcrumbsError[];
 
 	const markdown = errors
-		.map((e) => `- \`${e.path}\`: ${e.message}`)
+		.map((e) => `- **\`${e.path}\`**: ${e.message}`)
 		.join("\n");
 </script>
 
