@@ -4,6 +4,8 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { drop_crumbs } from "src/utils/drop_crumb";
 
+// TODO: The name of this command isn't accessible. Figures-of-speech are hard.
+// I guess the internal code can still refer to it as such, but the command name, and docs should be more user-friendly.
 export const freeze_implied_edges_to_note = async (
 	plugin: BreadcrumbsPlugin,
 	source_file: TFile,

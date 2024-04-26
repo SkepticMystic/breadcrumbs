@@ -21,13 +21,9 @@ const resolve_to_absolute_path = (
 const ify = (
 	path: string,
 	display: string,
-	{
-		link_kind,
-	}: {
-		link_kind: LinkKind;
-	},
+	options: { link_kind: LinkKind },
 ) => {
-	switch (link_kind) {
+	switch (options.link_kind) {
 		case "none": {
 			return display;
 		}

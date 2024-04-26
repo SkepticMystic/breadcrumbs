@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ICodeblock } from "src/codeblocks";
+	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
 	import { Traverse, type EdgeTree } from "src/graph/traverse";
 	import {

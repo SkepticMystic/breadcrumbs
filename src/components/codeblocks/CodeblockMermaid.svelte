@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ImageIcon, PencilIcon } from "lucide-svelte";
-	import type { ICodeblock } from "src/codeblocks";
+	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ICON_SIZE } from "src/const";
 	import { Distance } from "src/graph/distance";
 	import { Traverse, type TraversalStackItem } from "src/graph/traverse";

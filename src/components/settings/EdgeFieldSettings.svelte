@@ -27,10 +27,23 @@
 		},
 
 		fields: {
+			make_id: (label: string) => `BC-edge-field-${label}`,
+
 			add: () => {
-				settings.edge_fields.push({
+				const field = {
 					label: `Edge Field ${settings.edge_fields.length + 1}`,
-				});
+				};
+
+				settings.edge_fields.push(field);
+
+				// Wait for Svelte to render the new item
+				setTimeout(
+					() =>
+						(window.location.hash = actions.fields.make_id(
+							field.label,
+						)),
+					0,
+				);
 
 				settings.is_dirty = true;
 				plugin = plugin;
@@ -131,11 +144,24 @@
 		},
 
 		groups: {
+			make_id: (label: string) => `BC-edge-group-${label}`,
+
 			add: () => {
-				settings.edge_field_groups.push({
+				const group = {
 					label: `Group ${settings.edge_field_groups.length + 1}`,
 					fields: [],
-				});
+				};
+
+				settings.edge_field_groups.push(group);
+
+				// Wait for Svelte to render the new item
+				setTimeout(
+					() =>
+						(window.location.hash = actions.groups.make_id(
+							group.label,
+						)),
+					0,
+				);
 
 				settings.is_dirty = true;
 				plugin = plugin;
@@ -283,7 +309,11 @@
 
 		{#if settings.edge_fields.length > 3}
 			<button class="w-8" aria-label="Jump to bottom">
-				<a href="#BC-edge-field-{settings.edge_fields.last()?.label}">
+				<a
+					href="#{actions.fields.make_id(
+						settings.edge_fields.last()?.label ?? '',
+					)}"
+				>
 					<ArrowDown size={ICON_SIZE} />
 				</a>
 			</button>
@@ -299,9 +329,9 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
-						id="BC-edge-field-{field.label}"
+						id={actions.fields.make_id(field.label)}
 						type="text"
-						class="w-48 scroll-mt-24"
+						class="w-48 scroll-mt-40"
 						placeholder="Field Label"
 						value={field.label}
 						on:blur={(e) =>
@@ -327,7 +357,9 @@
 							<div class="flex items-center gap-0.5">
 								<Tag
 									tag={group_label}
-									href="#BC-edge-group-{group_label}"
+									href="#{actions.groups.make_id(
+										group_label,
+									)}"
 									title="Jump to group. Right click for more actions."
 									on:contextmenu={context_menus.field_group(
 										field,
@@ -406,8 +438,9 @@
 		{#if settings.edge_field_groups.length > 3}
 			<button class="w-8" aria-label="Jump to bottom">
 				<a
-					href="#BC-edge-group-{settings.edge_field_groups.last()
-						?.label}"
+					href="#{actions.groups.make_id(
+						settings.edge_field_groups.last()?.label ?? '',
+					)}"
 				>
 					<ArrowDown size={ICON_SIZE} />
 				</a>
@@ -420,9 +453,9 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex flex-wrap items-center gap-1">
 					<input
-						id="BC-edge-group-{group.label}"
+						id={actions.groups.make_id(group.label)}
 						type="text"
-						class="w-48 scroll-mt-24"
+						class="w-48 scroll-mt-40"
 						placeholder="Group Label"
 						value={group.label}
 						on:blur={(e) =>
@@ -445,7 +478,7 @@
 						<div class="flex items-center gap-0.5">
 							<Tag
 								tag={field_label}
-								href="#BC-edge-field-{field_label}"
+								href="#{actions.fields.make_id(field_label)}"
 								title="Jump to field. Right click for more actions."
 								on:contextmenu={context_menus.group_field(
 									group,

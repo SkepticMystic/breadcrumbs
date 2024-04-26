@@ -42,14 +42,23 @@
 			plugin = plugin;
 		},
 
+		make_id: (rule_i: number) => `BC-transitive-rule-${rule_i}`,
+
 		add_transitive: () => {
-			transitives.push({
+			const new_length = transitives.push({
 				name: "",
 				chain: [],
 				rounds: 1,
 				close_reversed: false,
 				close_field: settings.edge_fields[0].label,
 			});
+
+			opens[new_length - 1] = true;
+
+			setTimeout(
+				() => (window.location.hash = actions.make_id(new_length - 1)),
+				0,
+			);
 
 			transitives = transitives;
 			settings.is_dirty = true;
@@ -178,7 +187,7 @@
 
 		{#if transitives.length > 3}
 			<button class="w-8" aria-label="Jump to bottom">
-				<a href="#BC-transitive-rule-{transitives.length - 1}">
+				<a href="#{actions.make_id(transitives.length - 1)}">
 					<ArrowDown size={ICON_SIZE} />
 				</a>
 			</button>
@@ -195,8 +204,8 @@
 			.filter( (r) => r.name.includes(filter.toLowerCase()), ) as { rule, rule_i, name } (name + rule_i)}
 			<!--  -->
 			<details
-				id="BC-transitive-rule-{rule_i}"
-				class="scroll-mt-24 rounded border p-2"
+				id={actions.make_id(rule_i)}
+				class="scroll-mt-40 rounded border p-2"
 				bind:open={opens[rule_i]}
 			>
 				<summary class="flex items-center justify-between gap-2">
