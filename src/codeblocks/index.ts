@@ -41,24 +41,26 @@ type CodeblockInputData = {
 };
 
 const zod_not_string_msg = (field: CodeblockField, received: unknown) =>
-	`Expected a string, but received: \`${received}\`. Try wrapping the value in quotes.
-**Valid Example**: \`${field}: "${received}"\``;
+	`Expected a string (text), but got: \`${received}\` (${typeof received}).
+_Try wrapping the value in quotes._
+**Example**: \`${field}: "${received}"\``;
 
 const zod_invalid_enum_msg = (
 	field: CodeblockField,
 	options: any[] | readonly any[],
 	received: unknown,
 ) =>
-	`Expected one of the following options: ${quote_join(options, "`", ", or ")}, but received: \`${received}\`.
-**Valid Example**: \`${field}: ${options[0]}\``;
+	`Expected one of the following options: ${quote_join(options, "`", ", or ")}, but got: \`${received}\`.
+**Example**: \`${field}: ${options[0]}\``;
 
 const zod_not_array_msg = (
 	field: CodeblockField,
 	options: any[] | readonly any[],
 	received: unknown,
 ) =>
-	`This field is now expected to be a YAML list, but received: \`${received}\`. Try wrapping it in square brackets.
-**Valid Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
+	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}).
+_Try wrapping it in square brackets._
+**Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
 
 const dynamic_enum_schema = (options: string[]) =>
 	z.string().superRefine((f, ctx) => {
@@ -69,6 +71,11 @@ const dynamic_enum_schema = (options: string[]) =>
 				options,
 				received: f,
 				code: "invalid_enum_value",
+				message: zod_invalid_enum_msg(
+					ctx.path.join(".") as CodeblockField,
+					options,
+					f,
+				),
 			});
 
 			return false;
@@ -215,27 +222,53 @@ const codeblock_schema = (
 			).optional(),
 
 			depth: z
-				.array(z.number().min(0), {
-					invalid_type_error: `Expected a YAML list of one or two numbers, but received: \`${input["depth"]}\`. Try wrapping it in square brackets.
-**Valid Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input["depth"]}]\``,
-				})
+				.array(
+					z
+						.number({
+							invalid_type_error: `Expected a number, but got: \`${input["depth"]}\` (${typeof input["depth"]}).
+_Try using a number (integer)._
+**Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
+						})
+						.int({
+							message: `Expected an integer (whole number), but got: \`${input["depth"]}\`.
+_Try using a whole number (without any decimal points)._
+**Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
+						})
+						.min(
+							0,
+							`Minimum depth cannot be less than \`0\`, but got: \`${input["depth"]}\`
+_Try using a non-negative number (greater than or equal to zero \`0\`)._
+**Example**: \`depth: [0]\`, or possibly: \`depth: [${typeof input["depth"] === "number" ? -1 * input["depth"] : input["depth"]}\`]`,
+						),
+					{
+						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input["depth"]}\` (${typeof input["depth"]}). 
+_Try wrapping it in square brackets._
+**Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input["depth"]}]\``,
+					},
+				)
 				.min(
 					1,
-					`At least one item is required, but received: \`[${input["depth"]}]\`.
-**Valid Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
+					`At least one item is required, but got: \`[${input["depth"]}]\`.
+_Try adding a number to the list._
+**Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 				)
 				.max(
 					2,
-					`Maximum of two items allowed, but received: \`[${(<number[] | null>input["depth"])?.join(", ")}]\`.
-**Valid Example**: \`depth: [${(<number[] | null>input["depth"])?.[0]}]\`, or possibly \`depth: [${(<number[] | null>input["depth"])?.slice(0, 2).join(", ")}]\``,
+					// NOTE: I _could_ do something like:
+					//    or possibly \`depth: [${(<number[] | null>input["depth"])?.slice(0, 2).join(", ")}]\`
+					//    But even that mess isn't safe. What if it's a string or something without join?
+					`Maximum of two items allowed, but got: \`[${input["depth"]}]\`.
+_Try removing one of the numbers._
+**Example**: \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}]\`, or possibly \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}, 3]\``,
 				)
 				.transform((v) => {
 					if (v.length === 1) return [v[0], Infinity];
 					else return v;
 				})
 				.refine((v) => v[0] <= v[1], {
-					message:
-						"Minimum depth cannot be greater than maximum depth.",
+					message: `Minimum depth cannot be greater than maximum depth.
+_Try swapping the numbers._
+**Example**: \`depth: [0, 3]\`, or possibly: \`depth: [${(<number[] | null>input["depth"])?.[1] ?? 0}, ${(<number[] | null>input["depth"])?.[0] ?? 3}]\``,
 				})
 				.default([0, Infinity]),
 
@@ -333,7 +366,7 @@ const parse_source = (
 			path: "yaml",
 			code: "invalid_yaml",
 			message:
-				"Invalid YAML. Check the console for more information (press `Ctrl + Shift + I` to open the console).",
+				"Invalid codeblock YAML. Check the console for more information (press `Ctrl + Shift + I` to open the console).",
 		});
 
 		return { parsed: null, errors };
@@ -421,7 +454,8 @@ const postprocess_options = (
 			errors.push({
 				path: "dataview-from",
 				code: "invalid_field_value",
-				message: `The given query \`${parsed["dataview-from"]}\` is not a valid Dataview query. You can use \`app.plugins.plugins.dataview.api.pages\` to test your query in the console (press \`Ctrl + Shift + I\` to open the console).`,
+				message: `Input \`${parsed["dataview-from"]}\` is not a valid Dataview query. 
+You can use \`app.plugins.plugins.dataview.api.pages("<query>")\` to test your query in the console (press \`Ctrl + Shift + I\` to open the console).`,
 			});
 		}
 	}
