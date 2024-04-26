@@ -82,7 +82,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					) {
 						unsafe_target_path = target_link.path;
 					} else if (
-						//@ts-ignore: instanceof didn't work here?
+						// @ts-expect-error: instanceof didn't work here?
 						target_link?.isLuxonDateTime
 					) {
 						// NOTE: The original, unparsed value is no longer available
@@ -94,18 +94,14 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 						return;
 					} else {
-						// warn because we know it's a BC field, with a definitely invalid value
-						log.warn(
-							"builder:typed-link > Invalid target_link type",
-							target_link,
-						);
+						// It's a BC field, with a definitely invalid value
 					}
 
 					if (!unsafe_target_path) {
 						return errors.push({
-							code: "invalid_field_value",
-							message: `Invalid field value for '${field}'`,
 							path: source_file.path,
+							code: "invalid_field_value",
+							message: `Invalid value for field '${field}': ${target_link}`,
 						});
 					}
 
