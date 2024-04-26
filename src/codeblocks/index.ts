@@ -226,8 +226,8 @@ const codeblock_schema = (
 				)
 				.max(
 					2,
-					`Maximum of two items allowed, but received: \`[${(<number[]>input["depth"]).join(", ")}]\`.
-**Valid Example**: \`depth: [${(<number[]>input["depth"])[0]}]\`, or possibly \`depth: [${(<number[]>input["depth"]).slice(0, 2).join(", ")}]\``,
+					`Maximum of two items allowed, but received: \`[${(<number[] | null>input["depth"])?.join(", ")}]\`.
+**Valid Example**: \`depth: [${(<number[] | null>input["depth"])?.[0]}]\`, or possibly \`depth: [${(<number[] | null>input["depth"])?.slice(0, 2).join(", ")}]\``,
 				)
 				.transform((v) => {
 					if (v.length === 1) return [v[0], Infinity];
