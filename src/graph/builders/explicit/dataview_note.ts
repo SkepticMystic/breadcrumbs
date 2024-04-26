@@ -3,7 +3,7 @@ import { META_ALIAS } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
@@ -55,11 +55,10 @@ const get_dataview_note_info = (
 };
 
 export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
 
 	all_files.obsidian?.forEach(
 		({ file: dataview_note_file, cache: dataview_note_cache }) => {
@@ -72,7 +71,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			);
 			if (!dataview_note_info.ok) {
 				if (dataview_note_info.error)
-					errors.push(dataview_note_info.error);
+					results.errors.push(dataview_note_info.error);
 				return;
 			} else {
 				new Notice(
@@ -91,7 +90,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			dataview_note_path,
 		);
 		if (!dataview_note_info.ok) {
-			if (dataview_note_info.error) errors.push(dataview_note_info.error);
+			if (dataview_note_info.error) results.errors.push(dataview_note_info.error);
 			return;
 		}
 		const { field, query } = dataview_note_info.data;
@@ -106,7 +105,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 				error instanceof Error ? error.message : error,
 			);
 
-			return errors.push({
+			return results.errors.push({
 				code: "invalid_field_value",
 				path: dataview_note_path,
 				message: `dataview-note-query is not a valid dataview query: '${query}'`,
@@ -115,17 +114,18 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 		pages.forEach((page) => {
 			// NOTE: I _believe_ we don't need to even safe_add_node, since dv will only return resolved notes
-			graph.safe_add_directed_edge(
-				dataview_note_page.file.path,
-				page.file.path,
-				{
+			results.edges.push({
+				source_id: dataview_note_page.file.path,
+				target_id: page.file.path,
+				attr: {
 					field,
 					explicit: true,
 					source: "dataview_note",
 				},
+			}
 			);
 		});
 	});
 
-	return { errors };
+	return results
 };

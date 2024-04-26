@@ -18,6 +18,11 @@ export type BCNodeAttributes = {
 	ignore_out_edges?: true;
 };
 
+export type BCNode = {
+	id: string;
+	attr: BCNodeAttributes;
+}
+
 export const EDGE_ATTRIBUTES = [
 	"field",
 	"explicit",

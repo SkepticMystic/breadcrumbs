@@ -1,6 +1,6 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
@@ -74,11 +74,10 @@ const get_regex_note_info = (
 };
 
 export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
 
 	const regex_note_files: {
 		path: string;
@@ -93,7 +92,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	all_files.obsidian?.forEach(({ file, cache }) => {
 		const info = get_regex_note_info(plugin, cache?.frontmatter, file.path);
 		if (!info.ok) {
-			if (info.error) errors.push(info.error);
+			if (info.error) results.errors.push(info.error);
 			return;
 		}
 
@@ -104,7 +103,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 		const { file } = page;
 		const info = get_regex_note_info(plugin, page, file.path);
 		if (!info.ok) {
-			if (info.error) errors.push(info.error);
+			if (info.error) results.errors.push(info.error);
 			return;
 		}
 
@@ -112,23 +111,27 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	});
 
 	// Return early before bringing all nodes into memory
-	if (!regex_note_files) return { errors };
+	if (!regex_note_files) return results
 
-	const nodes = graph.mapNodes((id) => id);
+	const nodes = all_files.obsidian?.map(note => note.file.path)
+		?? all_files.dataview?.map(note => note.file.path)
+		?? [] // Won't happen, but makes TS happy
 
 	regex_note_files.forEach((regex_note) => {
 		nodes
 			.filter((node) => regex_note.info.regex.test(node))
-			.forEach((target_path) => {
-				// NOTE: We don't need to safe_add_nodes because the list of possible targets is already from the graph
-
-				graph.safe_add_directed_edge(regex_note.path, target_path, {
-					explicit: true,
-					source: "regex_note",
-					field: regex_note.info.field,
+			.forEach((target_id) => {
+				results.edges.push({
+					target_id,
+					source_id: regex_note.path,
+					attr: {
+						explicit: true,
+						source: "regex_note",
+						field: regex_note.info.field,
+					}
 				});
 			});
 	});
 
-	return { errors };
+	return results
 };

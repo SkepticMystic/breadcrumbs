@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
@@ -8,25 +8,25 @@ import { Paths } from "src/utils/paths";
 // TODO: Option to point up to month, (and for month to point up to year?)
 
 export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
 
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
-	if (!date_note_settings.enabled) return { errors };
+	if (!date_note_settings.enabled) { return results }
 	else if (
 		!plugin.settings.edge_fields.find(
 			(field) => field.label === date_note_settings.default_field,
 		)
 	) {
-		errors.push({
+		results.errors.push({
 			code: "invalid_setting_value",
 			path: "explicit_edge_sources.date_note.default_field",
 			message: `The default Date Note field "${date_note_settings.default_field}" is not a valid Breadcrumbs Edge field`,
 		});
-		return { errors };
+
+		return results
 	}
 
 	const date_notes: {
@@ -85,24 +85,28 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				? date_notes.at(i + 1)?.basename ?? basename_plus_one_day
 				: basename_plus_one_day;
 
-			const target_path = Paths.build(
+			const target_id = Paths.build(
 				date_note.folder,
 				target_basename,
 				date_note.ext,
 			);
 
 			// NOTE: We have a full path, so we can go straight to the file without the given source_path
-			const target_file = plugin.app.vault.getFileByPath(target_path);
+			const target_file = plugin.app.vault.getFileByPath(target_id);
 			if (!target_file) {
-				graph.safe_add_node(target_path, { resolved: false });
+				results.nodes.push({ id: target_id, attr: { resolved: false } });
 			}
 
-			graph.safe_add_directed_edge(date_note.path, target_path, {
-				explicit: true,
-				source: "date_note",
-				field: date_note_settings.default_field,
+			results.edges.push({
+				target_id,
+				source_id: date_note.path,
+				attr: {
+					explicit: true,
+					source: "date_note",
+					field: date_note_settings.default_field,
+				}
 			});
 		});
 
-	return { errors };
+	return results
 };

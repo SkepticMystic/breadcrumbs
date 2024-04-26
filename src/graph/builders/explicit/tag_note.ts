@@ -1,6 +1,6 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
@@ -18,6 +18,7 @@ const get_tag_note_info = (
 	let raw_tag = metadata[META_ALIAS["tag-note-tag"]];
 	if (!raw_tag) {
 		raw_tag = metadata["BC-tag-note"];
+
 		if (raw_tag) {
 			log.warn(
 				`'BC-tag-note' is deprecated in favor of ${META_ALIAS["tag-note-tag"]}`,
@@ -62,11 +63,10 @@ const get_tag_note_info = (
 };
 
 export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [], }
 
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go
@@ -101,7 +101,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				tag_note_file.path,
 			);
 			if (!tag_note_info.ok) {
-				if (tag_note_info.error) errors.push(tag_note_info.error);
+				if (tag_note_info.error) results.errors.push(tag_note_info.error);
 				return;
 			}
 
@@ -132,7 +132,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 			tag_note_file.path,
 		);
 		if (!tag_note_info.ok) {
-			if (tag_note_info.error) errors.push(tag_note_info.error);
+			if (tag_note_info.error) results.errors.push(tag_note_info.error);
 			return;
 		}
 		const { tag, field, exact } = tag_note_info.data;
@@ -153,21 +153,25 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		const target_paths = tag_note.exact
 			? tag_paths_map.get(tag_note.tag)
 			: all_tags
-					.filter((tag) => tag.startsWith(tag_note.tag))
-					// We know that the tag_note.tag is in the tag_paths_map, so this is safe
-					.flatMap((tag) => tag_paths_map.get(tag)!);
+				.filter((tag) => tag.startsWith(tag_note.tag))
+				// We know that the tag_note.tag is in the tag_paths_map, so this is safe
+				.flatMap((tag) => tag_paths_map.get(tag)!);
 
 		// Adding these edges is comparatively simple.
 		//   We know the target_path is resolved, since it only gets added to the map
 		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
-			graph.safe_add_directed_edge(tag_note.source_path, target_path, {
-				explicit: true,
-				source: "tag_note",
-				field: tag_note.field,
-			});
+			results.edges.push({
+				source_id: tag_note.source_path,
+				target_id: target_path,
+				attr: {
+					explicit: true,
+					source: "tag_note",
+					field: tag_note.field,
+				}
+			})
 		});
 	});
 
-	return { errors };
+	return results
 };

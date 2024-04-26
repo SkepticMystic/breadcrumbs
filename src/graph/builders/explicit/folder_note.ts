@@ -1,6 +1,7 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type { Result } from "src/interfaces/result";
@@ -71,11 +72,10 @@ const iterate_folder_files = async (
 };
 
 export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
 
 	const folder_notes: {
 		file: { path: string; folder: string };
@@ -92,7 +92,7 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 				folder_note_file.path,
 			);
 			if (!folder_note_info.ok) {
-				if (folder_note_info.error) errors.push(folder_note_info.error);
+				if (folder_note_info.error) results.errors.push(folder_note_info.error);
 				return;
 			}
 
@@ -113,7 +113,7 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 			folder_note_page.file.path,
 		);
 		if (!folder_note_info.ok) {
-			if (folder_note_info.error) errors.push(folder_note_info.error);
+			if (folder_note_info.error) results.errors.push(folder_note_info.error);
 			return;
 		}
 
@@ -135,24 +135,25 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 					if (
 						!target_path.endsWith(".md") ||
 						target_path === folder_note.path
-					)
+					) {
 						return;
+					}
 
 					// We know path is resolved
-					graph.safe_add_directed_edge(
-						folder_note.path,
-						target_path,
-						{
+					results.edges.push({
+						target_id: target_path,
+						source_id: folder_note.path,
+						attr: {
 							explicit: true,
 							field: data.field,
 							source: "folder_note",
 						},
-					);
+					});
 				},
 				data.recurse,
 			),
 		),
 	);
 
-	return { errors };
+	return results
 };

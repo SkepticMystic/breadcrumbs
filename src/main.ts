@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { Events, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -26,11 +26,28 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import wasmbin from '../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm';
+import init, {
+	type InitInput,
+	type NoteGraph,
+	TransitiveGraphRule,
+	create_graph,
+	GraphConstructionNodeData,
+	GraphConstructionEdgeData,
+	BatchGraphUpdate,
+	RemoveNoteGraphUpdate,
+	AddNoteGraphUpdate,
+} from '../wasm/pkg';
+
+export enum BCEvent {
+	GRAPH_UPDATE = "graph-update",
+}
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
-	graph = new BCGraph();
+	graph!: NoteGraph;
 	api!: BCAPI;
+	events!: Events;
 
 	async onload() {
 		// Settings
@@ -41,6 +58,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		log.info("loading Breadcrumbs plugin");
 		log.debug("settings >", this.settings);
+
+		// Init event bus
+		this.events = new Events();
+
+		// Init wasm
+		await init(wasmbin);
+		this.graph = create_graph();
+		this.graph.set_update_callback(() => {
+			// funny micro task so that the rust update function finishes before we access the graph again for the visualization
+			// this is needed because otherwise we get an "recursive use of an object detected which would lead to unsafe aliasing in rust" error
+			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
+			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
+		});
 
 		/// Migrations
 		this.settings = migrate_old_settings(this.settings);
@@ -143,59 +173,60 @@ export default class BreadcrumbsPlugin extends Plugin {
 				}),
 			);
 
-			/// Vault
-			this.registerEvent(
-				this.app.vault.on("create", (file) => {
-					log.debug("on:create >", file.path);
+			// TODO
+			// /// Vault
+			// this.registerEvent(
+			// 	this.app.vault.on("create", (file) => {
+			// 		log.debug("on:create >", file.path);
 
-					if (file instanceof TFile) {
-						// This isn't perfect, but it stops any "node doesn't exist" errors
-						// The user will have to refresh to add any relevant edges
-						this.graph.upsert_node(file.path, { resolved: true });
+			// 		if (file instanceof TFile) {
+			// 			// This isn't perfect, but it stops any "node doesn't exist" errors
+			// 			// The user will have to refresh to add any relevant edges
+			// 			this.graph.upsert_node(file.path, { resolved: true });
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
-			this.registerEvent(
-				this.app.vault.on("rename", (file, old_path) => {
-					log.debug("on:rename >", old_path, "->", file.path);
+			// this.registerEvent(
+			// 	this.app.vault.on("rename", (file, old_path) => {
+			// 		log.debug("on:rename >", old_path, "->", file.path);
 
-					if (file instanceof TFile) {
-						const res = this.graph.safe_rename_node(
-							old_path,
-							file.path,
-						);
+			// 		if (file instanceof TFile) {
+			// 			const res = this.graph.safe_rename_node(
+			// 				old_path,
+			// 				file.path,
+			// 			);
 
-						if (!res.ok) {
-							log.error("safe_rename_node >", res.error.message);
-						}
+			// 			if (!res.ok) {
+			// 				log.error("safe_rename_node >", res.error.message);
+			// 			}
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
-			this.registerEvent(
-				this.app.vault.on("delete", (file) => {
-					log.debug("on:delete >", file.path);
+			// this.registerEvent(
+			// 	this.app.vault.on("delete", (file) => {
+			// 		log.debug("on:delete >", file.path);
 
-					if (file instanceof TFile) {
-						// NOTE: Instead of dropping it, we mark it as unresolved.
-						//   There are pros and cons to both, but unresolving it is less intense.
-						//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
-						//   So it's not perfect. Rebuilding the graph is the only way to be sure.
-						this.graph.setNodeAttribute(
-							file.path,
-							"resolved",
-							false,
-						);
+			// 		if (file instanceof TFile) {
+			// 			// NOTE: Instead of dropping it, we mark it as unresolved.
+			// 			//   There are pros and cons to both, but unresolving it is less intense.
+			// 			//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
+			// 			//   So it's not perfect. Rebuilding the graph is the only way to be sure.
+			// 			this.graph.setNodeAttribute(
+			// 				file.path,
+			// 				"resolved",
+			// 				false,
+			// 			);
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
 			// Views
 			this.registerView(
@@ -248,24 +279,25 @@ export default class BreadcrumbsPlugin extends Plugin {
 			},
 		});
 
-		this.addCommand({
-			id: "breadcrumbs:graph-stats",
-			name: "Show/Copy graph stats",
-			callback: async () => {
-				const stats = get_graph_stats(this.graph, {
-					groups: this.settings.edge_field_groups,
-				});
-				log.feat("Graph stats >", stats);
+		// TODO
+		// this.addCommand({
+		// 	id: "breadcrumbs:graph-stats",
+		// 	name: "Show/Copy graph stats",
+		// 	callback: async () => {
+		// 		const stats = get_graph_stats(this.graph, {
+		// 			groups: this.settings.edge_field_groups,
+		// 		});
+		// 		log.feat("Graph stats >", stats);
 
-				await navigator.clipboard.writeText(
-					JSON.stringify(stats, null, 2),
-				);
+		// 		await navigator.clipboard.writeText(
+		// 			JSON.stringify(stats, null, 2),
+		// 		);
 
-				new Notice(
-					"Graph stats printed to console and copied to clipboard",
-				);
-			},
-		});
+		// 		new Notice(
+		// 			"Graph stats printed to console and copied to clipboard",
+		// 		);
+		// 	},
+		// });
 
 		this.addCommand({
 			id: "breadcrumbs:freeze-implied-edges-to-note",
@@ -318,7 +350,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		log.debug("loaded Breadcrumbs plugin");
 	}
 
-	onunload() {}
+	onunload() { }
 
 	async loadSettings() {
 		this.settings = deep_merge_objects(
@@ -352,30 +384,30 @@ export default class BreadcrumbsPlugin extends Plugin {
 				: null;
 
 			const rebuild_results = await rebuild_graph(this);
-			this.graph = rebuild_results.graph;
+			// this.graph = rebuild_results.graph;
 
 			const explicit_edge_errors = rebuild_results.explicit_edge_results
-				.filter((result) => result.errors.length)
+				.filter(({ results }) => results.errors.length)
 				.reduce(
-					(acc, { source, errors }) => {
-						acc[source] = errors;
+					(acc, { source, results }) => {
+						acc[source] = results.errors;
 						return acc;
 					},
 					{} as Record<string, BreadcrumbsError[]>,
 				);
 
-			const implied_edge_results = Object.fromEntries(
-				Object.entries(rebuild_results.implied_edge_results)
-					.filter(([_, errors]) => errors.length)
-					.map(([implied_kind, errors]) => [implied_kind, errors]),
-			);
+			// const implied_edge_results = Object.fromEntries(
+			// 	Object.entries(rebuild_results.implied_edge_results)
+			// 		.filter(([_, errors]) => errors.length)
+			// 		.map(([implied_kind, errors]) => [implied_kind, errors]),
+			// );
 
 			if (Object.keys(explicit_edge_errors).length) {
 				log.warn("explicit_edge_errors >", explicit_edge_errors);
 			}
-			if (Object.keys(implied_edge_results).length) {
-				log.warn("implied_edge_results >", implied_edge_results);
-			}
+			// if (Object.keys(implied_edge_results).length) {
+			// 	log.warn("implied_edge_results >", implied_edge_results);
+			// }
 
 			notice?.setMessage(
 				[
@@ -390,14 +422,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 							`- ${source}: ${errors.length} errors`,
 					),
 
-					implied_edge_results.length
-						? "\nImplied edge errors (see console for details):"
-						: null,
+					// implied_edge_results.length
+					// 	? "\nImplied edge errors (see console for details):"
+					// 	: null,
 
-					...Object.entries(implied_edge_results).map(
-						([implied_kind, errors]) =>
-							`- ${implied_kind}: ${errors.length} errors`,
-					),
+					// ...Object.entries(implied_edge_results).map(
+					// 	([implied_kind, errors]) =>
+					// 		`- ${implied_kind}: ${errors.length} errors`,
+					// ),
 				]
 					.filter(Boolean)
 					.join("\n"),
