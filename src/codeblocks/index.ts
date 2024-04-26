@@ -352,7 +352,7 @@ const parse_source = (
 
 		log.debug("Codeblock > parsed_yaml >", yaml);
 	} catch (error) {
-		log.error("Codeblock > parse_source > parseYaml.error", error);
+		log.error("Codeblock > parse_source > ", error);
 
 		errors.push({
 			path: "yaml",
