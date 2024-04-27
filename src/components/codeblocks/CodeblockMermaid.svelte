@@ -27,90 +27,99 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	const sort = get_edge_sorter(
-		// @ts-expect-error: ts(2345)
-		options.sort,
-		plugin.graph,
-	);
+	let mermaid: string = "";
 
-	let traversal_items: TraversalStackItem[] = [];
-	let distances: Map<string, number> = new Map();
-
-	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: source_path = file_path
-		? file_path
-		: $active_file_store
-			? $active_file_store.path
-			: "";
-
-	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
-		traversal_items = get_traversal_items();
-		distances = Distance.from_traversal_items(traversal_items);
+		// TODO pass all the options and then implement them all the options on the rust side
+		mermaid = plugin.graph.generate_mermaid_graph([file_path], options.fields ?? [], options.depth[1] ?? 100).mermaid;
 	};
 
-	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.gather_items(plugin.graph, source_path, (item) =>
-			has_edge_attrs(item.edge, {
-				...attr,
-				$or_target_ids: options["dataview-from-paths"],
-			}),
-		);
+	update();
 
-	const edge_field_labels =
-		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+	// const sort = get_edge_sorter(
+	// 	// @ts-expect-error: ts(2345)
+	// 	options.sort,
+	// 	plugin.graph,
+	// );
 
-	const get_traversal_items = () => {
-		if (source_path && plugin.graph.hasNode(source_path)) {
-			return options["merge-fields"]
-				? base_traversal({ $or_fields: options.fields })
-				: edge_field_labels.flatMap((field) =>
-						base_traversal({ field }),
-					);
-		} else {
-			return [];
-		}
-	};
+	// let traversal_items: TraversalStackItem[] = [];
+	// let distances: Map<string, number> = new Map();
 
-	onMount(update);
+	// // if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
+	// $: source_path = file_path
+	// 	? file_path
+	// 	: $active_file_store
+	// 		? $active_file_store.path
+	// 		: "";
 
-	$: edges = traversal_items
-		.filter((item) =>
-			is_between(
-				distances.get(item.edge.target_id) ?? 0,
-				options.depth[0] + 1,
-				options.depth[1],
-			),
-		)
-		.map((item) => item.edge)
-		.sort(sort);
+	// // this is an exposed function that we can call from the outside to update the codeblock
+	// export const update = () => {
+	// 	traversal_items = get_traversal_items();
+	// 	distances = Distance.from_traversal_items(traversal_items);
+	// };
 
-	$: mermaid = Mermaid.from_edges(edges, {
-		kind: "graph",
-		click: { method: "class" },
-		active_node_id: source_path,
-		renderer: options["mermaid-renderer"],
-		direction: options["mermaid-direction"],
-		show_attributes: options["show-attributes"],
+	// const base_traversal = (attr: EdgeAttrFilters) =>
+	// 	Traverse.gather_items(plugin.graph, source_path, (item) =>
+	// 		has_edge_attrs(item.edge, {
+	// 			...attr,
+	// 			$or_target_ids: options["dataview-from-paths"],
+	// 		}),
+	// 	);
 
-		get_node_label: (node_id, _attr) => {
-			const file = plugin.app.vault.getFileByPath(node_id);
+	// const edge_field_labels =
+	// 	options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
 
-			return file
-				? plugin.app.fileManager
-						.generateMarkdownLink(file, source_path)
-						.slice(2, -2)
-				: Paths.drop_ext(
-						Links.resolve_to_absolute_path(
-							plugin.app,
-							node_id,
-							source_path,
-						),
-					);
-		},
-	});
+	// const get_traversal_items = () => {
+	// 	if (source_path && plugin.graph.hasNode(source_path)) {
+	// 		return options["merge-fields"]
+	// 			? base_traversal({ $or_fields: options.fields })
+	// 			: edge_field_labels.flatMap((field) =>
+	// 					base_traversal({ field }),
+	// 				);
+	// 	} else {
+	// 		return [];
+	// 	}
+	// };
 
-	$: log.debug(mermaid);
+	// onMount(update);
+
+	// $: edges = traversal_items
+	// 	.filter((item) =>
+	// 		is_between(
+	// 			distances.get(item.edge.target_id) ?? 0,
+	// 			options.depth[0] + 1,
+	// 			options.depth[1],
+	// 		),
+	// 	)
+	// 	.map((item) => item.edge)
+	// 	.sort(sort);
+
+	// $: mermaid = Mermaid.from_edges(edges, {
+	// 	kind: "graph",
+	// 	click: { method: "class" },
+	// 	active_node_id: source_path,
+	// 	renderer: options["mermaid-renderer"],
+	// 	direction: options["mermaid-direction"],
+	// 	show_attributes: options["show-attributes"],
+
+	// 	get_node_label: (node_id, _attr) => {
+	// 		const file = plugin.app.vault.getFileByPath(node_id);
+
+	// 		return file
+	// 			? plugin.app.fileManager
+	// 					.generateMarkdownLink(file, source_path)
+	// 					.slice(2, -2)
+	// 			: Paths.drop_ext(
+	// 					Links.resolve_to_absolute_path(
+	// 						plugin.app,
+	// 						node_id,
+	// 						source_path,
+	// 					),
+	// 				);
+	// 	},
+	// });
+
+	// $: log.debug(mermaid);
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -122,7 +131,7 @@
 		</h3>
 	{/if}
 
-	{#if traversal_items.length}
+	{#if mermaid}
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
@@ -156,7 +165,7 @@
 				</button>
 			</div>
 
-			<MermaidDiagram {plugin} {mermaid} {source_path} />
+			<MermaidDiagram {plugin} {mermaid} source_path={file_path} />
 		</div>
 	{:else}
 		<p class="search-empty-state">No paths found.</p>
