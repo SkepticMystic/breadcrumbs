@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type { IDataview } from "src/external/dataview/interfaces";
-import type { BCGraph } from "src/graph/MyMultiGraph";
+// import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,

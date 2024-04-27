@@ -1,5 +1,5 @@
 import { META_ALIAS } from "src/const/metadata_fields";
-import type { BCGraph } from "src/graph/MyMultiGraph";
+// import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	BreadcrumbsError,
 	EdgeBuilderResults,

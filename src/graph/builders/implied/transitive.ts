@@ -1,4 +1,4 @@
-import type { BCGraph } from "src/graph/MyMultiGraph";
+// import type { BCGraph } from "src/graph/MyMultiGraph";
 import { Traverse } from "src/graph/traverse";
 import type { EdgeBuilderResults } from "src/interfaces/graph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";

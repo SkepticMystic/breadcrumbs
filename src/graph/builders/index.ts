@@ -4,7 +4,7 @@ import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
-import { BCGraph, type BCNode, type BCNodeAttributes } from "../MyMultiGraph";
+import { type BCNode, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 // import { _add_implied_edges_transitive } from "./implied/transitive";

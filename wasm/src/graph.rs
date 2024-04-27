@@ -106,8 +106,23 @@ impl NodeData {
     }
 
     #[wasm_bindgen(getter)]
+    pub fn aliases(&self) -> Vec<String> {
+        self.aliases.clone()
+    }
+
+    #[wasm_bindgen(getter)]
     pub fn resolved(&self) -> bool {
         self.resolved
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn ignore_in_edges(&self) -> bool {
+        self.ignore_in_edges
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn ignore_out_edges(&self) -> bool {
+        self.ignore_out_edges
     }
 }
 
