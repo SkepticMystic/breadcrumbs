@@ -49,8 +49,10 @@ const parse_source = (
 				issue.path.join("."),
 			).map((issue) => ({
 				message: issue.message,
-				path: issue.path.join("."),
 				code: "invalid_field_value" as const,
+				path: issue.path
+					.map((key) => (typeof key === "number" ? key + 1 : key))
+					.join(" > "),
 			})),
 		);
 
