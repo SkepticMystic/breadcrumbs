@@ -162,7 +162,7 @@ const from_edges = (
 			const existing = mermaid_edges[opposing_edge_i];
 
 			existing.arrow =
-				edge.attr.explicit || existing.attr.explicit ? "<-->" : "<-.->";
+				edge.attr.explicit || existing.attr.explicit ? "---" : "-.-";
 
 			resolved.show_attributes?.forEach((attr) => {
 				existing.collapsed_attr[attr].add(
