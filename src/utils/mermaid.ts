@@ -89,7 +89,7 @@ const from_edges = (
 
 	const lines = [
 		// NOTE: Regardless of kind, the below field should always be flowchart
-		`%% { init: { "flowchart": ${JSON.stringify(flowchart_init)} } } %%`,
+		`%%{ init: { "flowchart": ${JSON.stringify(flowchart_init)} } }%%`,
 		`${resolved.kind} ${resolved.direction}`,
 	];
 
