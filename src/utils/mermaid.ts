@@ -14,6 +14,22 @@ type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
 const MERMAID_RENDERER = ["dagre", "elk"] as const;
 type MermaidRenderer = (typeof MERMAID_RENDERER)[number];
 
+const MERMAID_CURVE_STYLES = [
+	"basis",
+	"bumpX",
+	"bumpY",
+	"cardinal",
+	"catmullRom",
+	"linear",
+	"monotoneX",
+	"monotoneY",
+	"natural",
+	"step",
+	"stepAfter",
+	"stepBefore",
+] as const;
+type MermaidCurveStyle = (typeof MERMAID_CURVE_STYLES)[number];
+
 type MermaidEdge = {
 	source_i: number;
 	target_i: number;
@@ -46,6 +62,7 @@ const from_edges = (
 		renderer?: MermaidRenderer;
 		kind?: "flowchart" | "graph";
 		direction?: MermaidDirection;
+		curve_style?: MermaidCurveStyle;
 		show_attributes?: EdgeAttribute[];
 		collapse_opposing_edges?: false;
 		get_node_label?: (id: string, attr: BCNodeAttributes) => string;
@@ -58,15 +75,22 @@ const from_edges = (
 			  };
 	},
 ) => {
-	const { direction, kind, renderer, get_node_label } = Object.assign(
-		{ direction: "LR", kind: "flowchart", renderer: "dagre" },
-		remove_nullish_keys(config ?? {}),
+	const resolved = Object.assign(
+		{ direction: "LR", kind: "flowchart" },
+		remove_nullish_keys(
+			config ?? ({} as unknown as NonNullable<typeof config>),
+		),
 	);
+
+	const flowchart_init = remove_nullish_keys({
+		curve: resolved.curve_style,
+		defaultRenderer: resolved.renderer,
+	});
 
 	const lines = [
 		// NOTE: Regardless of kind, the below field should always be flowchart
-		`%%{init: {"flowchart": {"defaultRenderer": "${renderer}"}} }%%`,
-		`${kind} ${direction}`,
+		`%% { init: { "flowchart": ${JSON.stringify(flowchart_init)} } } %%`,
+		`${resolved.kind} ${resolved.direction}`,
 	];
 
 	const node_map = remove_duplicates_by(
@@ -82,7 +106,9 @@ const from_edges = (
 			map.set(node.path, {
 				i,
 				attr: node.attr,
-				label: get_node_label?.(node.path, node.attr) ?? node.path,
+				label:
+					resolved.get_node_label?.(node.path, node.attr) ??
+					node.path,
 			}),
 		new Map<string, { i: number; label: string; attr: BCNodeAttributes }>(),
 	);
@@ -105,7 +131,7 @@ const from_edges = (
 		];
 
 		const opposing_edge_i =
-			config?.collapse_opposing_edges !== false
+			resolved.collapse_opposing_edges !== false
 				? mermaid_edges.findIndex(
 						(existing) =>
 							// NOTE: This is pretty intense, all opposing edges will collapse, because now there's no direction semantics
@@ -122,7 +148,7 @@ const from_edges = (
 				arrow: build_arrow(edge),
 				attr: edge.attr,
 				collapsed_attr: Object.fromEntries(
-					config?.show_attributes?.map((attr) => [
+					resolved.show_attributes?.map((attr) => [
 						attr,
 						new Set([
 							// @ts-ignore: If the property is not in the object, it will be undefined
@@ -138,7 +164,7 @@ const from_edges = (
 			existing.arrow =
 				edge.attr.explicit || existing.attr.explicit ? "<-->" : "<-.->";
 
-			config?.show_attributes?.forEach((attr) => {
+			resolved.show_attributes?.forEach((attr) => {
 				existing.collapsed_attr[attr].add(
 					// @ts-ignore: If the property is not in the object, it will be undefined
 					edge.attr[attr] ?? "_",
@@ -156,7 +182,7 @@ const from_edges = (
 					[...set.values()].join("|"),
 				]),
 			),
-			config?.show_attributes,
+			resolved.show_attributes,
 		);
 
 		lines.push(`\t${source_i} ${arrow}${attrs} ${target_i}`);
@@ -164,15 +190,15 @@ const from_edges = (
 
 	lines.push("");
 
-	const active_note_i = config?.active_node_id
-		? node_map.get(config?.active_node_id)?.i
+	const active_note_i = resolved.active_node_id
+		? node_map.get(resolved.active_node_id)?.i
 		: undefined;
 
 	if (active_note_i !== undefined) {
 		lines.push(`\tclass ${active_note_i} BC-active-node`);
 	}
 
-	switch (config?.click?.method) {
+	switch (resolved.click?.method) {
 		case "class": {
 			const nodes = [...node_map.values()];
 
@@ -195,7 +221,7 @@ const from_edges = (
 		case "href": {
 			node_map.forEach((node, path) => {
 				lines.push(
-					`\tclick ${node.i} "${(<Extract<(typeof config)["click"], { method: "href" }>>config.click)?.getter(path, node.attr)}"`,
+					`\tclick ${node.i} "${(<Extract<(typeof resolved)["click"], { method: "href" }>>resolved.click)?.getter(path, node.attr)}"`,
 				);
 			});
 
@@ -205,7 +231,7 @@ const from_edges = (
 		case "callback": {
 			node_map.forEach((node) => {
 				lines.push(
-					`\tclick ${node.i} call ${(<Extract<(typeof config)["click"], { method: "callback" }>>config.click)?.callback_name}()`,
+					`\tclick ${node.i} call ${(<Extract<(typeof resolved)["click"], { method: "callback" }>>resolved.click)?.callback_name}()`,
 				);
 			});
 
@@ -260,6 +286,7 @@ export const Mermaid = {
 
 	RENDERERS: MERMAID_RENDERER,
 	DIRECTIONS: MERMAID_DIRECTIONS,
+	CURVE_STYLES: MERMAID_CURVE_STYLES,
 };
 
 export type Mermaid = {

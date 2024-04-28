@@ -90,6 +90,7 @@
 		click: { method: "class" },
 		active_node_id: source_path,
 		renderer: options["mermaid-renderer"],
+		curve_style: options["mermaid-curve"],
 		direction: options["mermaid-direction"],
 		show_attributes: options["show-attributes"],
 
