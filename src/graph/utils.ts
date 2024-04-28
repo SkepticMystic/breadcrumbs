@@ -7,33 +7,34 @@ import { Paths } from "src/utils/paths";
 import type {
 	BCEdge,
 	BCEdgeAttributes,
-	BCGraph,
 	BCNodeAttributes,
 } from "./MyMultiGraph";
+import type { NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export const is_self_loop = (edge: Pick<BCEdge, "source_id" | "target_id">) =>
 	edge.source_id === edge.target_id;
 
 export const stringify_node = (
-	node_id: string,
-	node_attr: BCNodeAttributes,
+	node: NodeData,
 	options?: {
 		show_node_options?: ShowNodeOptions;
 		trim_basename_delimiter?: string;
 	},
 ) => {
-	if (options?.show_node_options?.alias && node_attr.aliases?.length) {
-		return node_attr.aliases.at(0)!;
+	if (options?.show_node_options?.alias && node.aliases?.length) {
+		return node.aliases.at(0)!;
 	} else if (options?.trim_basename_delimiter) {
-		return Paths.drop_ext(node_id)
+		return Paths.drop_ext(node.path)
 			.split("/")
 			.pop()!
 			.split(options.trim_basename_delimiter)
 			.last()!;
 	} else {
-		return Paths.show(node_id, options?.show_node_options);
+		return Paths.show(node.path, options?.show_node_options);
 	}
 };
+
+// UNUSED
 export const stringify_edge = (
 	edge: BCEdge,
 	options?: {

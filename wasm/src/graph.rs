@@ -192,9 +192,13 @@ impl MermaidGraphData {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalData {
+    // the node that was traversed
     node: NodeData,
-    edge_type: String,
+    // the edge that was traversed to get to the node
+    edge: EdgeData,
+    // the depth of the node in the traversal
     depth: u32,
+    // the children of the node
     children: Vec<RecTraversalData>,
 }
 
@@ -206,8 +210,8 @@ impl RecTraversalData {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn edge_type(&self) -> String {
-        self.edge_type.clone()
+    pub fn edge(&self) -> EdgeData {
+        self.edge.clone()
     }
 
     #[wasm_bindgen(getter)]
@@ -289,7 +293,7 @@ impl NoteGraph {
                 utils::log(format!("Node already exists: {}", info_node.path));
                 continue;
             }
-    
+
             self.node_hash.insert(
                 info_node.path.clone(),
                 self.graph
@@ -547,24 +551,30 @@ impl NoteGraph {
         entry_node: String,
         edge_types: Vec<String>,
         max_depth: u32,
-    ) -> Result<RecTraversalData> {
+    ) -> Result<Vec<RecTraversalData>> {
         let now = Instant::now();
-        let mut node_count = 1;
-
-        // let node_index = self.get_node_index(node.clone()).unwrap();
 
         let start_node = self
             .int_get_node_index(&entry_node)
             .ok_or(NoteGraphError::new("Node not found"))?;
 
-        let result = self.int_rec_traverse(
-            start_node,
-            &edge_types,
-            String::new(),
-            0,
-            max_depth,
-            &mut node_count,
-        );
+        let mut node_count = 1;
+        let mut result = Vec::new();
+
+        for edge in self.graph.edges(start_node) {
+            let edge_weight = edge.weight();
+
+            result.push(self.int_rec_traverse(
+                start_node,
+                edge_weight.clone(),
+                &edge_types,
+                0,
+                max_depth,
+                &mut node_count,
+            )?);
+
+            node_count += 1;
+        }
 
         let total_elapsed = now.elapsed();
         utils::log(format!(
@@ -572,7 +582,7 @@ impl NoteGraph {
             total_elapsed, node_count
         ));
 
-        result
+        Ok(result)
     }
 
     pub fn log(&self) {
@@ -734,8 +744,8 @@ impl NoteGraph {
     pub fn int_rec_traverse(
         &self,
         node: NodeIndex<u32>,
+        edge: EdgeData,
         edge_types: &Vec<String>,
-        edge_type: String,
         depth: u32,
         max_depth: u32,
         node_count: &mut usize,
@@ -745,13 +755,13 @@ impl NoteGraph {
         if depth < max_depth {
             for edge in self.graph.edges(node) {
                 let target = edge.target();
-                let edge_type = &edge.weight().edge_type;
+                let edge_weight = edge.weight();
 
-                if edge_types.contains(edge_type) {
+                if edge_types.contains(&edge_weight.edge_type) {
                     new_children.push(self.int_rec_traverse(
                         target,
+                        edge_weight.clone(),
                         edge_types,
-                        edge_type.clone(),
                         depth + 1,
                         max_depth,
                         node_count,
@@ -764,7 +774,7 @@ impl NoteGraph {
 
         Ok(RecTraversalData {
             node: self.int_get_node_weight(node)?.clone(),
-            edge_type,
+            edge,
             depth,
             children: new_children,
         })

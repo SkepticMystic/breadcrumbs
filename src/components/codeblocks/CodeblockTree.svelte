@@ -14,6 +14,7 @@
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -27,59 +28,71 @@
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
-	let tree: EdgeTree[] = [];
+	let tree: RecTraversalData[] = [];
 
-	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: source_path = file_path
-		? file_path
-		: $active_file_store
-			? $active_file_store.path
-			: "";
-
-	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
-		tree = get_tree();
-	};
-
-	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.build_tree(
-			plugin.graph,
-			source_path,
-			{ max_depth: options.depth[1] },
-			(e) =>
-				has_edge_attrs(e, {
-					...attr,
-					$or_target_ids: options["dataview-from-paths"],
-				}),
+		tree = plugin.graph.rec_traverse(
+			file_path,
+			options.fields ?? [],
+			options.depth[1] ?? 100,
 		);
-
-	const edge_field_labels =
-		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
-
-	const get_tree = () => {
-		if (source_path && plugin.graph.hasNode(source_path)) {
-			const traversal = options["merge-fields"]
-				? base_traversal({ $or_fields: options.fields })
-				: edge_field_labels.flatMap((field) =>
-						base_traversal({ field }),
-					);
-
-			// NOTE: The flattening is done here so that:
-			// - We can use NestedEdgeList for both modes
-			// - ListIndex builds from an EdgeTree[] as well
-			return options.flat
-				? Traverse.flatten_tree(traversal).map((item) => ({
-						depth: 0,
-						children: [],
-						edge: item.edge,
-					}))
-				: traversal;
-		} else {
-			return [];
-		}
 	};
 
-	onMount(update);
+	onMount(() => {
+		update();
+	});
+
+	// // if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
+	// $: source_path = file_path
+	// 	? file_path
+	// 	: $active_file_store
+	// 		? $active_file_store.path
+	// 		: "";
+
+	// // this is an exposed function that we can call from the outside to update the codeblock
+	// export const update = () => {
+	// 	tree = get_tree();
+	// };
+
+	// const base_traversal = (attr: EdgeAttrFilters) =>
+	// 	Traverse.build_tree(
+	// 		plugin.graph,
+	// 		source_path,
+	// 		{ max_depth: options.depth[1] },
+	// 		(e) =>
+	// 			has_edge_attrs(e, {
+	// 				...attr,
+	// 				$or_target_ids: options["dataview-from-paths"],
+	// 			}),
+	// 	);
+
+	// const edge_field_labels =
+	// 	options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+
+	// const get_tree = () => {
+	// 	if (source_path && plugin.graph.hasNode(source_path)) {
+	// 		const traversal = options["merge-fields"]
+	// 			? base_traversal({ $or_fields: options.fields })
+	// 			: edge_field_labels.flatMap((field) =>
+	// 					base_traversal({ field }),
+	// 				);
+
+	// 		// NOTE: The flattening is done here so that:
+	// 		// - We can use NestedEdgeList for both modes
+	// 		// - ListIndex builds from an EdgeTree[] as well
+	// 		return options.flat
+	// 			? Traverse.flatten_tree(traversal).map((item) => ({
+	// 					depth: 0,
+	// 					children: [],
+	// 					edge: item.edge,
+	// 				}))
+	// 			: traversal;
+	// 	} else {
+	// 		return [];
+	// 	}
+	// };
+
+	// onMount(update);
 </script>
 
 <div class="BC-codeblock-tree">

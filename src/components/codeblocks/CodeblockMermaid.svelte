@@ -34,8 +34,10 @@
 		mermaid = plugin.graph.generate_mermaid_graph([file_path], options.fields ?? [], options.depth[1] ?? 100).mermaid;
 	};
 
-	update();
-
+	onMount(() => {
+		update();
+	});
+	
 	// const sort = get_edge_sorter(
 	// 	// @ts-expect-error: ts(2345)
 	// 	options.sort,

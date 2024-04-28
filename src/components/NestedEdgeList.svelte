@@ -9,10 +9,11 @@
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
+	import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	export let tree: EdgeTree[];
+	export let tree: RecTraversalData[];
 
 	export let open_signal: boolean | null;
 	export let show_node_options: ShowNodeOptions;
@@ -30,8 +31,8 @@
 		open_signal = null;
 	}
 </script>
-
-{#each tree.sort((a, b) => sort(a.edge, b.edge)) as item, i}
+<!-- TODO add sorting using the edge sorter -->
+{#each tree as item, i}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if item.children.length}
@@ -44,19 +45,21 @@
 				<EdgeLink
 					{plugin}
 					edge={item.edge}
+					target_node={item.node}
 					{show_node_options}
 					cls="tree-item-inner-text"
 				/>
 			</div>
 
-			{#if show_attributes?.length}
+			<!-- TODO -->
+			<!-- {#if show_attributes?.length}
 				<TreeItemFlair
 					label={url_search_params(
 						untyped_pick(item.edge.attr, show_attributes),
 						{ trim_lone_param: true },
 					)}
 				/>
-			{/if}
+			{/if} -->
 		</summary>
 
 		{#if item.children.length}

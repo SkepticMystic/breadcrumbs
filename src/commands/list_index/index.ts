@@ -1,5 +1,5 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { BCGraph, EdgeAttribute } from "src/graph/MyMultiGraph";
+import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 import { Traverse, type EdgeTree } from "src/graph/traverse";
 import {
 	get_edge_sorter,
@@ -11,6 +11,7 @@ import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 import { untyped_pick } from "src/utils/objects";
 import { url_search_params } from "src/utils/url";
+import type { NoteGraph, RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export namespace ListIndex {
 	export type Options = {
@@ -44,7 +45,7 @@ export namespace ListIndex {
 	};
 
 	export const edge_tree_to_list_index = (
-		tree: EdgeTree[],
+		tree: RecTraversalData[],
 		options: Pick<
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes"
@@ -53,21 +54,23 @@ export namespace ListIndex {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
-		tree.forEach(({ children, depth, edge }) => {
-			const display = stringify_node(edge.target_id, edge.target_attr, {
+		tree.forEach(({ children, depth, edge, node }) => {
+			const display = stringify_node(node, {
 				show_node_options: options.show_node_options,
 			});
 
-			const link = Links.ify(edge.target_id, display, {
+			const link = Links.ify(node.path, display, {
 				link_kind: options.link_kind,
 			});
 
-			const attr = options.show_attributes.length
-				? ` (${url_search_params(
-						untyped_pick(edge.attr, options.show_attributes),
-						{ trim_lone_param: true },
-					)})`
-				: "";
+			// TODO: show_attributes
+			// const attr = options.show_attributes.length
+			// 	? ` (${url_search_params(
+			// 			untyped_pick(edge.attr, options.show_attributes),
+			// 			{ trim_lone_param: true },
+			// 		)})`
+			// 	: "";
+			const attr = "";
 
 			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
@@ -77,8 +80,9 @@ export namespace ListIndex {
 		return index;
 	};
 
+	// TODO
 	export const build = (
-		graph: BCGraph,
+		graph: NoteGraph,
 		start_node: string,
 		options: Options,
 	) =>
