@@ -151,7 +151,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						input["merge-fields"],
 					),
 				})
-				.default(false),
+				.default(true),
 
 			content: z
 				.enum(["open", "closed"], {
@@ -191,7 +191,6 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					),
 				})
 				.optional(),
-
 			"mermaid-curve": z
 				.enum(Mermaid.CURVE_STYLES, {
 					message: zod_invalid_enum_msg(

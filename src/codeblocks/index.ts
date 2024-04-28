@@ -70,11 +70,7 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: CodeblockSchema.error.zod_invalid_enum_msg(
-				"yaml" as any,
-				CodeblockSchema.FIELDS,
-				invalid_fields.join(", "),
-			),
+			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${CodeblockSchema.FIELDS.join(", ")}`,
 		});
 	}
 

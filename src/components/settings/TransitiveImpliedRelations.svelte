@@ -48,7 +48,9 @@
 			const new_length = transitives.push({
 				name: "",
 				chain: [],
-				rounds: 1,
+				// NOTE: Max by default, users can lower if needed
+				// It seems to fit with intuition that the implied relations just keep going
+				rounds: 10,
 				close_reversed: false,
 				close_field: settings.edge_fields[0].label,
 			});
