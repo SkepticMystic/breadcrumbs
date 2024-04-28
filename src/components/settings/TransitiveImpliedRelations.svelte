@@ -213,10 +213,6 @@
 				<summary class="flex items-center justify-between gap-2">
 					<div class="flex items-center gap-2">
 						<ChevronOpener open={opens[rule_i]} />
-
-						<code>
-							{name} ({rule.rounds} rounds)
-						</code>
 					</div>
 
 					<div class="flex gap-1">
