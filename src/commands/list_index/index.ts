@@ -54,23 +54,16 @@ export namespace ListIndex {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
-		tree.forEach(({ children, depth, edge, node }) => {
-			const display = stringify_node(node, {
+		tree.forEach(({ children, depth, edge }) => {
+			const display = stringify_node(edge.target, {
 				show_node_options: options.show_node_options,
 			});
 
-			const link = Links.ify(node.path, display, {
+			const link = Links.ify(edge.target.path, display, {
 				link_kind: options.link_kind,
 			});
 
-			// TODO: show_attributes
-			// const attr = options.show_attributes.length
-			// 	? ` (${url_search_params(
-			// 			untyped_pick(edge.attr, options.show_attributes),
-			// 			{ trim_lone_param: true },
-			// 		)})`
-			// 	: "";
-			const attr = "";
+			const attr = edge.get_attribute_label(options.show_attributes);
 
 			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
