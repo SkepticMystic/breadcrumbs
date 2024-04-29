@@ -6,6 +6,7 @@ import type {
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_regex_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -77,7 +78,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	const regex_note_files: {
 		path: string;
@@ -111,27 +112,27 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	});
 
 	// Return early before bringing all nodes into memory
-	if (!regex_note_files) return results
+	if (!regex_note_files) return results;
 
-	const nodes = all_files.obsidian?.map(note => note.file.path)
-		?? all_files.dataview?.map(note => note.file.path)
-		?? [] // Won't happen, but makes TS happy
+	const nodes =
+		all_files.obsidian?.map((note) => note.file.path) ??
+		all_files.dataview?.map((note) => note.file.path) ??
+		[]; // Won't happen, but makes TS happy
 
 	regex_note_files.forEach((regex_note) => {
 		nodes
 			.filter((node) => regex_note.info.regex.test(node))
 			.forEach((target_id) => {
-				results.edges.push({
-					target_id,
-					source_id: regex_note.path,
-					attr: {
-						explicit: true,
-						source: "regex_note",
-						field: regex_note.info.field,
-					}
-				});
+				results.edges.push(
+					new GraphConstructionEdgeData(
+						target_id,
+						regex_note.path,
+						regex_note.info.field,
+						"regex_note",
+					),
+				);
 			});
 	});
 
-	return results
+	return results;
 };

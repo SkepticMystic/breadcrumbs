@@ -9,6 +9,7 @@ import type {
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_dataview_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -58,7 +59,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	all_files.obsidian?.forEach(
 		({ file: dataview_note_file, cache: dataview_note_cache }) => {
@@ -90,7 +91,8 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			dataview_note_path,
 		);
 		if (!dataview_note_info.ok) {
-			if (dataview_note_info.error) results.errors.push(dataview_note_info.error);
+			if (dataview_note_info.error)
+				results.errors.push(dataview_note_info.error);
 			return;
 		}
 		const { field, query } = dataview_note_info.data;
@@ -114,18 +116,16 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 		pages.forEach((page) => {
 			// NOTE: I _believe_ we don't need to even safe_add_node, since dv will only return resolved notes
-			results.edges.push({
-				source_id: dataview_note_page.file.path,
-				target_id: page.file.path,
-				attr: {
+			results.edges.push(
+				new GraphConstructionEdgeData(
+					dataview_note_page.file.path,
+					page.file.path,
 					field,
-					explicit: true,
-					source: "dataview_note",
-				},
-			}
+					"dataview_note",
+				),
 			);
 		});
 	});
 
-	return results
+	return results;
 };

@@ -9,6 +9,10 @@ import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_not_ends_with } from "src/utils/strings";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_johnny_decimal_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -85,20 +89,27 @@ const handle_johnny_decimal_note = (
 
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
-		results.nodes.push({ id: target_note.path, attr: { resolved: false } });
+		results.nodes.push(
+			new GraphConstructionNodeData(
+				target_note.path,
+				[],
+				false,
+				false,
+				false,
+			),
+		);
 	}
 
 	const { field } = johnny_decimal_note_info.data;
 
-	results.edges.push({
-		source_id: source_note.path,
-		target_id: target_note.path,
-		attr: {
+	results.edges.push(
+		new GraphConstructionEdgeData(
+			source_note.path,
+			target_note.path,
 			field,
-			explicit: true,
-			source: "johnny_decimal_note",
-		}
-	});
+			"johnny_decimal_note",
+		),
+	);
 };
 
 type JohnnyDecimalNote = {
@@ -112,10 +123,10 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	if (!plugin.settings.explicit_edge_sources.johnny_decimal_note.enabled) {
-		return results
+		return results;
 	}
 
 	const { delimiter } =
@@ -156,13 +167,8 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	});
 
 	johnny_decimal_notes.forEach((note) => {
-		handle_johnny_decimal_note(
-			plugin,
-			results,
-			note,
-			johnny_decimal_notes,
-		);
+		handle_johnny_decimal_note(plugin, results, note, johnny_decimal_notes);
 	});
 
-	return results
+	return results;
 };

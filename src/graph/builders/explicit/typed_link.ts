@@ -4,6 +4,10 @@ import type {
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
 import { resolve_relative_target_path } from "src/utils/obsidian";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
 
@@ -11,7 +15,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	const field_labels = new Set(
 		plugin.settings.edge_fields.map((f) => f.label),
@@ -36,18 +40,25 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				if (!target_file) {
 					// Unresolved nodes don't have aliases
-					results.nodes.push({ id: target_id, attr: { resolved: false } });
+					results.nodes.push(
+						new GraphConstructionNodeData(
+							target_id,
+							[],
+							false,
+							false,
+							false,
+						),
+					);
 				}
 
-				results.edges.push({
-					target_id,
-					source_id: source_file.path,
-					attr: {
+				results.edges.push(
+					new GraphConstructionEdgeData(
+						target_id,
+						source_file.path,
 						field,
-						explicit: true,
-						source: "typed_link",
-					}
-				});
+						"typed_link",
+					),
+				);
 			});
 		},
 	);
@@ -113,23 +124,29 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					if (!target_file) {
 						// It's an unresolved link, so we add a node for it
 						// But still do it safely, as a previous file may point to the same unresolved node
-						results.nodes.push({ id: target_path, attr: { resolved: false } });
+						results.nodes.push(
+							new GraphConstructionNodeData(
+								target_path,
+								[],
+								false,
+								false,
+								false,
+							),
+						);
 					}
 
 					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-					results.edges.push({
-						source_id: source_file.path,
-						target_id: target_path,
-						attr: {
+					results.edges.push(
+						new GraphConstructionEdgeData(
+							source_file.path,
+							target_path,
 							field,
-							explicit: true,
-							source: "typed_link",
-						}
-					},
+							"typed_link",
+						),
 					);
 				});
 		});
 	});
 
-	return results
+	return results;
 };

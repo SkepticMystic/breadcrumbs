@@ -1,13 +1,16 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 // import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
-	BreadcrumbsError,
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_dendron_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -86,7 +89,9 @@ const handle_dendron_note = (
 	const target_file = plugin.app.vault.getFileByPath(target_id);
 
 	if (!target_file) {
-		results.nodes.push({ id: target_id, attr: { resolved: false } });
+		results.nodes.push(
+			new GraphConstructionNodeData(target_id, [], false, false, false),
+		);
 
 		// If !target_file, we can recursively call handle_dendron_note
 		//   To add the unresolved edges along the way
@@ -102,25 +107,24 @@ const handle_dendron_note = (
 		);
 	}
 
-	results.edges.push({
-		source_id,
-		target_id,
-		attr: {
+	results.edges.push(
+		new GraphConstructionEdgeData(
+			source_id,
+			target_id,
 			field,
-			explicit: true,
-			source: "dendron_note",
-		}
-	});
+			"dendron_note",
+		),
+	);
 };
 
 export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	if (!plugin.settings.explicit_edge_sources.dendron_note.enabled) {
-		return results
+		return results;
 	}
 
 	all_files.obsidian?.forEach(({ file, cache }) => {
@@ -131,5 +135,5 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 		handle_dendron_note(plugin, results, page.file.path, page);
 	});
 
-	return results
+	return results;
 };

@@ -9,6 +9,10 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -167,26 +171,27 @@ const handle_neighbour_list_item = ({
 	);
 
 	if (!file) {
-		results.nodes.push({ id: target_id, attr: { resolved: false } });
+		results.nodes.push(
+			new GraphConstructionNodeData(target_id, [], false, false, false),
+		);
 	}
 
 	// NOTE: Currently no support for field overrides for neighbour-fields
-	results.edges.push({
-		source_id,
-		target_id,
-		attr: {
-			explicit: true,
-			source: "list_note",
-			field: list_note_info.data.neighbour_field,
-		}
-	});
+	results.edges.push(
+		new GraphConstructionEdgeData(
+			source_id,
+			target_id,
+			list_note_info.data.neighbour_field,
+			"list_note",
+		),
+	);
 };
 
 export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	all_files.obsidian?.forEach(
 		({ file: list_note_file, cache: list_note_cache }) => {
@@ -198,7 +203,8 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				list_note_file.path,
 			);
 			if (!list_note_info.ok) {
-				if (list_note_info.error) results.errors.push(list_note_info.error);
+				if (list_note_info.error)
+					results.errors.push(list_note_info.error);
 				return;
 			} else {
 				new Notice(
@@ -242,7 +248,15 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
-					results.nodes.push({ id: source_path, attr: { resolved: false } });
+					results.nodes.push(
+						new GraphConstructionNodeData(
+							source_path,
+							[],
+							false,
+							false,
+							false,
+						),
+					);
 				}
 
 				// Then, add the edge from the list_note itself, to the top-level list_items (if it's not excluded)
@@ -266,17 +280,12 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					}
 
 					results.edges.push(
-						{
-							source_id: list_note_page.file.path,
-							target_id: source_path,
-							attr: {
-								explicit: true,
-								source: "list_note",
-								field:
-									source_override_field.data?.field ??
-									list_note_info.data.field,
-							},
-						}
+						new GraphConstructionEdgeData(
+							list_note_page.file.path,
+							source_path,
+							list_note_info.data.field,
+							"list_note",
+						),
 					);
 				}
 
@@ -322,24 +331,29 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					// But then I'd need to break up the iteration to first gather all sources, then handle the targets
 					// This way we can guarentee the target exists
 					if (!target_file) {
-						results.nodes.push({ id: target_path, attr: { resolved: false } });
+						results.nodes.push(
+							new GraphConstructionNodeData(
+								target_path,
+								[],
+								false,
+								false,
+								false,
+							),
+						);
 					}
 
-					results.edges.push({
-						source_id: source_path,
-						target_id: target_path,
-						attr: {
-							explicit: true,
-							source: "list_note",
-							field:
-								target_override_field.data?.field ??
-								list_note_info.data.field,
-						}
-					});
+					results.edges.push(
+						new GraphConstructionEdgeData(
+							source_path,
+							target_path,
+							list_note_info.data.field,
+							"list_note",
+						),
+					);
 				});
 			},
 		);
 	});
 
-	return results
+	return results;
 };
