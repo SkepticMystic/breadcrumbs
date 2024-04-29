@@ -265,6 +265,18 @@ impl EdgeStruct {
 // }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug)]
+pub struct MermaidGraphOptions {
+    active_node: Option<String>,
+    init_line: String,
+    chart_type: String,
+    direction: String,
+    collapse_opposing_edges: bool,
+    edge_label_attributes: Vec<String>,
+    node_label_fn: Option<js_sys::Function>,
+}
+
+#[wasm_bindgen]
 pub struct MermaidGraphData {
     mermaid: String,
     traversal_time: u64,
@@ -497,6 +509,7 @@ impl NoteGraph {
         entry_nodes: Vec<String>,
         edge_types: Vec<String>,
         max_depth: u32,
+        diagram_options: MermaidGraphOptions,
     ) -> Result<MermaidGraphData> {
         let now = Instant::now();
 
@@ -519,7 +532,10 @@ impl NoteGraph {
         let traversal_elapsed = now.elapsed();
 
         let mut result = String::new();
-        result.push_str("flowchart LR\n");
+        // NOTE: double curly braces are used to escape the curly braces in the string
+        result.push_str(&diagram_options.init_line);
+        result.push_str("\n");
+        result.push_str(format!("{} {}\n", diagram_options.chart_type, diagram_options.direction).as_str());
 
         // accumulate edges by direction, so that we can collapse them in the next step
         let mut accumulated_edges: HashMap<
@@ -565,11 +581,25 @@ impl NoteGraph {
         // add nodes to the graph
         for element in node_map.iter() {
             let weight = self.int_get_node_weight(element.0.clone())?;
+            
+            let node_label = match diagram_options.node_label_fn {
+                Some(ref function) => {
+                    match function.call1(&JsValue::NULL, &weight.clone().into()) {
+                        Ok(value) => value.as_string().unwrap_or_default(),
+                        Err(e) => {
+                            return Err(NoteGraphError::new(format!("Error calling function: {:?}", e).as_str()));
+                        }
+                    }
+                }
+                None => {
+                    weight.path.clone()
+                }
+            };
+
             result.push_str(&format!(
-                "    {}[\"{} ({})\"]\n",
+                "    {}[\"{}\"]\n",
                 element.0.index(),
-                weight.path,
-                element.1
+                node_label
             ));
             if !weight.resolved {
                 unresolved_nodes.insert(element.0.index());
