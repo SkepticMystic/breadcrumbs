@@ -8,10 +8,13 @@ import { type BCNode, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 // import { _add_implied_edges_transitive } from "./implied/transitive";
-import { GraphConstructionEdgeData, GraphConstructionNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_initial_nodes = (all_files: AllFiles) => {
-	const nodes: GraphConstructionNodeData[] = []
+	const nodes: GraphConstructionNodeData[] = [];
 
 	if (all_files.obsidian) {
 		all_files.obsidian.forEach(({ file, cache }) => {
@@ -31,7 +34,15 @@ const get_initial_nodes = (all_files: AllFiles) => {
 				attr.ignore_out_edges = true;
 			}
 
-			nodes.push(new GraphConstructionNodeData(file.path, attr.aliases ?? [], true, attr.ignore_in_edges ?? false, attr.ignore_out_edges ?? false))
+			nodes.push(
+				new GraphConstructionNodeData(
+					file.path,
+					attr.aliases ?? [],
+					true,
+					attr.ignore_in_edges ?? false,
+					attr.ignore_out_edges ?? false,
+				),
+			);
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
@@ -51,23 +62,20 @@ const get_initial_nodes = (all_files: AllFiles) => {
 				attr.ignore_out_edges = true;
 			}
 
-			nodes.push(new GraphConstructionNodeData(page.file.path, attr.aliases ?? [], true, attr.ignore_in_edges ?? false, attr.ignore_out_edges ?? false))
+			nodes.push(
+				new GraphConstructionNodeData(
+					page.file.path,
+					attr.aliases ?? [],
+					true,
+					attr.ignore_in_edges ?? false,
+					attr.ignore_out_edges ?? false,
+				),
+			);
 		});
 	}
 
-	return nodes
+	return nodes;
 };
-
-// TODO: these functions should not be needed. The explicit edge builders should return the WASM data directly
-const construction_data_from_node = (node: BCNode): GraphConstructionNodeData => {
-	const attr = node.attr;
-	return new GraphConstructionNodeData(node.id, attr.aliases ?? [], attr.resolved, attr.ignore_in_edges ?? false, attr.ignore_out_edges ?? false);
-}
-
-// TODO: these functions should not be needed. The explicit edge builders should return the WASM data directly
-const construction_data_from_edge = (edge: EdgeToAdd): GraphConstructionEdgeData => {
-	return new GraphConstructionEdgeData(edge.source_id, edge.target_id, edge.attr.field, edge.attr.explicit ? edge.attr.source : edge.attr.implied_kind);
-}
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	const timer = new Timer();
@@ -84,25 +92,20 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	// Explicit edges
 	const explicit_edge_results = await Promise.all(
 		EXPLICIT_EDGE_SOURCES.map(async (source) => {
-			const results = await add_explicit_edges[source](
-				plugin,
-				all_files,
-			);
+			const results = await add_explicit_edges[source](plugin, all_files);
 
 			return { source, results };
 		}),
 	);
 
 	const edges: GraphConstructionEdgeData[] = [];
-
-	for (const { source, results } of explicit_edge_results) {
-		nodes.push(...results.nodes.map(construction_data_from_node));
-		edges.push(...results.edges.map(construction_data_from_edge));
+	for (const { results } of explicit_edge_results) {
+		nodes.push(...results.nodes);
+		edges.push(...results.edges);
 	}
 
 	log.debug(timer.elapsedMessage("Collecting edges and nodes"));
 
-	// TODO
 	plugin.graph.build_graph(nodes, edges);
 
 	// log.debug(timer.elapsedMessage("Adding initial edges"));

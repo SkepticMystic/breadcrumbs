@@ -33,4 +33,8 @@
 			codeblock docs
 		</a> for more info
 	</p>
+
+	<p>
+		Version: <code>{plugin.manifest.version}</code>
+	</p>
 {/if}

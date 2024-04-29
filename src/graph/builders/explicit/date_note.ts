@@ -4,6 +4,10 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 // TODO: Option to point up to month, (and for month to point up to year?)
 
@@ -11,11 +15,12 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
-	if (!date_note_settings.enabled) { return results }
-	else if (
+	if (!date_note_settings.enabled) {
+		return results;
+	} else if (
 		!plugin.settings.edge_fields.find(
 			(field) => field.label === date_note_settings.default_field,
 		)
@@ -26,7 +31,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			message: `The default Date Note field "${date_note_settings.default_field}" is not a valid Breadcrumbs Edge field`,
 		});
 
-		return results
+		return results;
 	}
 
 	const date_notes: {
@@ -94,19 +99,26 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			// NOTE: We have a full path, so we can go straight to the file without the given source_path
 			const target_file = plugin.app.vault.getFileByPath(target_id);
 			if (!target_file) {
-				results.nodes.push({ id: target_id, attr: { resolved: false } });
+				results.nodes.push(
+					new GraphConstructionNodeData(
+						target_id,
+						[],
+						false,
+						false,
+						false,
+					),
+				);
 			}
 
-			results.edges.push({
-				target_id,
-				source_id: date_note.path,
-				attr: {
-					explicit: true,
-					source: "date_note",
-					field: date_note_settings.default_field,
-				}
-			});
+			results.edges.push(
+				new GraphConstructionEdgeData(
+					target_id,
+					date_note.path,
+					date_note_settings.default_field,
+					"date_note",
+				),
+			);
 		});
 
-	return results
+	return results;
 };

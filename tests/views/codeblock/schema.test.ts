@@ -23,7 +23,7 @@ describe("happy", () => {
 			type: "tree",
 			collapse: false,
 			depth: [0, Infinity],
-			"merge-fields": false,
+			"merge-fields": true,
 			sort: {
 				field: "basename",
 				order: 1,
