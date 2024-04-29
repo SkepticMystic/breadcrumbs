@@ -170,6 +170,7 @@
 			<MermaidDiagram {plugin} {mermaid} source_path={file_path} />
 		</div>
 	{:else}
+		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found.</p>
 	{/if}
 </div>

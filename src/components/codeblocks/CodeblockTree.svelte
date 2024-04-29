@@ -130,6 +130,7 @@
 			</div>
 		</div>
 	{:else}
+		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found</p>
 	{/if}
 </div>

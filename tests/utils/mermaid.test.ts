@@ -11,7 +11,7 @@ describe("from_edges", () => {
 	test("!config", (t) => {
 		t.expect(Mermaid.from_edges(edges).trim()).toBe(
 			`
-%%{init: {"flowchart": {"defaultRenderer": "dagre"}} }%%
+%%{ init: { "flowchart": {} } }%%
 flowchart LR
 \t0("a.md")
 \t1("b.md")
@@ -31,7 +31,7 @@ flowchart LR
 			}).trim(),
 		).toBe(
 			`
-%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
+%%{ init: { "flowchart": {"defaultRenderer":"elk"} } }%%
 graph TB
 \t0("a.md")
 \t1("b.md")
@@ -47,7 +47,7 @@ graph TB
 			Mermaid.from_edges(edges, { show_attributes: ["field"] }).trim(),
 		).toBe(
 			`
-%%{init: {"flowchart": {"defaultRenderer": "dagre"}} }%%
+%%{ init: { "flowchart": {} } }%%
 flowchart LR
 \t0("a.md")
 \t1("b.md")
@@ -63,7 +63,7 @@ flowchart LR
 			Mermaid.from_edges(edges, { click: { method: "class" } }).trim(),
 		).toBe(
 			`
-%%{init: {"flowchart": {"defaultRenderer": "dagre"}} }%%
+%%{ init: { "flowchart": {} } }%%
 flowchart LR
 \t0("a.md")
 \t1("b.md")

@@ -24,6 +24,7 @@ const FIELDS = [
 	"show-attributes",
 	"mermaid-direction",
 	"mermaid-renderer",
+	"mermaid-curve",
 ] as const;
 type CodeblockField = (typeof FIELDS)[number];
 
@@ -150,7 +151,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						input["merge-fields"],
 					),
 				})
-				.default(false),
+				.default(true),
 
 			content: z
 				.enum(["open", "closed"], {
@@ -187,6 +188,15 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						"mermaid-direction",
 						Mermaid.DIRECTIONS,
 						input["mermaid-direction"],
+					),
+				})
+				.optional(),
+			"mermaid-curve": z
+				.enum(Mermaid.CURVE_STYLES, {
+					message: zod_invalid_enum_msg(
+						"mermaid-curve",
+						Mermaid.CURVE_STYLES,
+						input["mermaid-curve"],
 					),
 				})
 				.optional(),
@@ -336,6 +346,20 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 			}
 
 			return options;
+		})
+		.superRefine((options, ctx) => {
+			if (options["mermaid-curve"] && options["mermaid-renderer"]) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["mermaid-curve"],
+					message: `Cannot specify both a mermaid curve and a renderer. _Try removing one of the fields._
+**Example**: \`mermaid-curve: ${options["mermaid-curve"]}\`, or \`mermaid-renderer: ${options["mermaid-renderer"]}\``,
+				});
+
+				return false;
+			}
+
+			return true;
 		});
 };
 
