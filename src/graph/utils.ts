@@ -9,7 +9,7 @@ import type {
 	BCEdgeAttributes,
 	BCNodeAttributes,
 } from "./MyMultiGraph";
-import type { NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import type { EdgeStruct, NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export const is_self_loop = (edge: Pick<BCEdge, "source_id" | "target_id">) =>
 	edge.source_id === edge.target_id;
@@ -53,15 +53,16 @@ export const stringify_edge = (
 	return list.join(" ");
 };
 
-export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
+// TODO: the sorting should probably happen in the WASM code
+export type EdgeSorter = (a: EdgeStruct, b: EdgeStruct) => number;
 
 const sorters = {
-	path: (order) => (a, b) => a.target_id.localeCompare(b.target_id) * order,
+	path: (order) => (a, b) => a.target.path.localeCompare(b.target.path) * order,
 
 	basename: (order) => (a, b) => {
 		const [a_field, b_field] = [
-			Paths.drop_folder(a.target_id),
-			Paths.drop_folder(b.target_id),
+			Paths.drop_folder(a.target.path),
+			Paths.drop_folder(b.target.path),
 		];
 
 		return a_field.localeCompare(b_field) * order;
@@ -69,8 +70,8 @@ const sorters = {
 
 	field: (order) => (a, b) => {
 		const [a_field, b_field] = [
-			a.attr.field ?? "null",
-			b.attr.field ?? "null",
+			a.edge_type ?? "null",
+			b.edge_type ?? "null",
 		];
 
 		return a_field.localeCompare(b_field) * order;
@@ -79,8 +80,7 @@ const sorters = {
 
 export const get_edge_sorter: (
 	sort: EdgeSortId,
-	graph: BCGraph,
-) => EdgeSorter = (sort, graph) => {
+) => EdgeSorter = (sort) => {
 	switch (sort.field) {
 		case "path": {
 			return sorters.path(sort.order);
@@ -96,20 +96,11 @@ export const get_edge_sorter: (
 
 		case "explicit": {
 			return (a, b) => {
-				if (a.attr.explicit === true && b.attr.explicit === true) {
-					return (
-						a.attr.source.localeCompare(b.attr.source) * sort.order
-					);
-				} else if (
-					a.attr.explicit === false &&
-					b.attr.explicit === false
-				) {
-					return (
-						a.attr.implied_kind.localeCompare(b.attr.implied_kind) *
-						sort.order
-					);
+
+				if (a.implied === b.implied) {
+					return a.edge_source.localeCompare(b.edge_source) * sort.order;
 				} else {
-					return a.attr.explicit ? sort.order : -sort.order;
+					return a.implied ? -sort.order : sort.order;
 				}
 			};
 		}
@@ -125,41 +116,42 @@ export const get_edge_sorter: (
 			}
 
 			switch (sort.field.split(":")[0]) {
+				// TODO
 				// BREAKING: Deprecate in favour of neighbour-field
-				case "neighbour":
-				case "neighbour-field": {
-					const field = sort.field.split(":", 2).at(1);
-					const cache: Record<string, BCEdge | undefined> = {};
+				// case "neighbour":
+				// case "neighbour-field": {
+				// 	const field = sort.field.split(":", 2).at(1);
+				// 	const cache: Record<string, BCEdge | undefined> = {};
 
-					return (a, b) => {
-						const [a_neighbour, b_neighbour] = [
-							(cache[a.target_id] ??= graph
-								.get_out_edges(a.target_id)
-								.filter((e) => has_edge_attrs(e, { field }))
-								.at(0)),
+				// 	return (a, b) => {
+				// 		const [a_neighbour, b_neighbour] = [
+				// 			(cache[a.target_id] ??= graph
+				// 				.get_out_edges(a.target_id)
+				// 				.filter((e) => has_edge_attrs(e, { field }))
+				// 				.at(0)),
 
-							(cache[b.target_id] ??= graph
-								.get_out_edges(b.target_id)
-								.filter((e) => has_edge_attrs(e, { field }))
-								.at(0)),
-						];
+				// 			(cache[b.target_id] ??= graph
+				// 				.get_out_edges(b.target_id)
+				// 				.filter((e) => has_edge_attrs(e, { field }))
+				// 				.at(0)),
+				// 		];
 
-						if (!a_neighbour || !b_neighbour) {
-							// NOTE: This puts the node with no neighbours last
-							// Which makes sense, I think. It simulates a traversal, where the node with no neighbours is the end of the path
-							return a_neighbour
-								? -sort.order
-								: b_neighbour
-									? sort.order
-									: 0;
-						} else {
-							return sorters.path(sort.order)(
-								a_neighbour,
-								b_neighbour,
-							);
-						}
-					};
-				}
+				// 		if (!a_neighbour || !b_neighbour) {
+				// 			// NOTE: This puts the node with no neighbours last
+				// 			// Which makes sense, I think. It simulates a traversal, where the node with no neighbours is the end of the path
+				// 			return a_neighbour
+				// 				? -sort.order
+				// 				: b_neighbour
+				// 					? sort.order
+				// 					: 0;
+				// 		} else {
+				// 			return sorters.path(sort.order)(
+				// 				a_neighbour,
+				// 				b_neighbour,
+				// 			);
+				// 		}
+				// 	};
+				// }
 
 				default: {
 					return (_a, _b) => sort.order;

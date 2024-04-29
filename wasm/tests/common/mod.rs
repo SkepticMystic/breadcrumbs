@@ -22,6 +22,7 @@ pub fn tdata_generate_tree(
             "root".to_string(),
             i.to_string(),
             "down".to_string(),
+            "typed-link".to_string(),
         ));
     }
 
@@ -37,6 +38,7 @@ pub fn tdata_generate_tree(
                     current.clone(),
                     next.clone(),
                     "down".to_string(),
+                    "typed-link".to_string(),
                 ));
                 stack.push(next);
             }

@@ -3,6 +3,8 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct TransitiveGraphRule {
+    #[wasm_bindgen(skip)]
+    pub name: String,
     // the path by edge type
     #[wasm_bindgen(skip)]
     pub path: Vec<String>,
@@ -22,6 +24,7 @@ pub struct TransitiveGraphRule {
 impl TransitiveGraphRule {
     #[wasm_bindgen(constructor)]
     pub fn new(
+        name: String,
         path: Vec<String>,
         edge_type: String,
         rounds: u8,
@@ -29,6 +32,7 @@ impl TransitiveGraphRule {
         close_reversed: bool,
     ) -> TransitiveGraphRule {
         TransitiveGraphRule {
+            name,
             path,
             edge_type,
             rounds,

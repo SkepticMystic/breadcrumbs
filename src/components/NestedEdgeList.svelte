@@ -31,8 +31,8 @@
 		open_signal = null;
 	}
 </script>
-<!-- TODO add sorting using the edge sorter -->
-{#each tree as item, i}
+
+{#each tree.sort((a, b) => sort(a.edge, b.edge)) as item, i}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if item.children.length}
@@ -45,21 +45,16 @@
 				<EdgeLink
 					{plugin}
 					edge={item.edge}
-					target_node={item.node}
 					{show_node_options}
 					cls="tree-item-inner-text"
 				/>
 			</div>
 
-			<!-- TODO -->
-			<!-- {#if show_attributes?.length}
+			{#if show_attributes?.length}
 				<TreeItemFlair
-					label={url_search_params(
-						untyped_pick(item.edge.attr, show_attributes),
-						{ trim_lone_param: true },
-					)}
+					label={item.edge.get_attribute_label(show_attributes)}
 				/>
-			{/if} -->
+			{/if}
 		</summary>
 
 		{#if item.children.length}

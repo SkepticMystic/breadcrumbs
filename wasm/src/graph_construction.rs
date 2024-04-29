@@ -56,21 +56,29 @@ impl GraphConstructionNodeData {
 #[derive(Clone, Debug)]
 pub struct GraphConstructionEdgeData {
     #[wasm_bindgen(skip)]
-    pub from: String,
+    pub source: String,
     #[wasm_bindgen(skip)]
-    pub to: String,
+    pub target: String,
     #[wasm_bindgen(skip)]
     pub edge_type: String,
+    #[wasm_bindgen(skip)]
+    pub edge_source: String,
 }
 
 #[wasm_bindgen]
 impl GraphConstructionEdgeData {
     #[wasm_bindgen(constructor)]
-    pub fn new(from: String, to: String, edge_type: String) -> GraphConstructionEdgeData {
+    pub fn new(
+        source: String,
+        target: String,
+        edge_type: String,
+        edge_source: String,
+    ) -> GraphConstructionEdgeData {
         GraphConstructionEdgeData {
-            from,
-            to,
+            source,
+            target,
             edge_type,
+            edge_source,
         }
     }
 

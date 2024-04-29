@@ -28,6 +28,8 @@ pub struct EdgeData {
     #[wasm_bindgen(skip)]
     pub edge_type: String,
     #[wasm_bindgen(skip)]
+    pub edge_source: String,
+    #[wasm_bindgen(skip)]
     pub implied: bool,
     #[wasm_bindgen(skip)]
     pub round: u8,
@@ -36,9 +38,10 @@ pub struct EdgeData {
 #[wasm_bindgen]
 impl EdgeData {
     #[wasm_bindgen(constructor)]
-    pub fn new(edge_type: String, implied: bool, round: u8) -> EdgeData {
+    pub fn new(edge_type: String, edge_source: String, implied: bool, round: u8) -> EdgeData {
         EdgeData {
             edge_type,
+            edge_source,
             implied,
             round,
         }
@@ -47,6 +50,11 @@ impl EdgeData {
     #[wasm_bindgen(getter)]
     pub fn edge_type(&self) -> String {
         self.edge_type.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn edge_source(&self) -> String {
+        self.edge_source.clone()
     }
 
     #[wasm_bindgen(getter)]
@@ -148,6 +156,108 @@ impl NodeData {
     }
 }
 
+#[wasm_bindgen]
+#[derive(Clone, Debug)]
+pub struct EdgeStruct {
+    #[wasm_bindgen(skip)]
+    pub source: NodeData,
+    #[wasm_bindgen(skip)]
+    pub target: NodeData,
+
+    #[wasm_bindgen(skip)]
+    pub edge_type: String,
+    #[wasm_bindgen(skip)]
+    pub edge_source: String,
+    #[wasm_bindgen(skip)]
+    pub implied: bool,
+    #[wasm_bindgen(skip)]
+    pub round: u8,
+}
+
+#[wasm_bindgen]
+impl EdgeStruct {
+    #[wasm_bindgen(constructor)]
+    pub fn new(source: NodeData, target: NodeData, edge: EdgeData) -> EdgeStruct {
+        EdgeStruct {
+            source,
+            target,
+            edge_type: edge.edge_type,
+            edge_source: edge.edge_source,
+            implied: edge.implied,
+            round: edge.round,
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn source(&self) -> NodeData {
+        self.source.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn target(&self) -> NodeData {
+        self.target.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn edge_type(&self) -> String {
+        self.edge_type.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn edge_source(&self) -> String {
+        self.edge_source.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn implied(&self) -> bool {
+        self.implied
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn round(&self) -> u8 {
+        self.round
+    }
+
+    pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
+        let mut result = vec![];
+
+        // the mapping that exist on the JS side are as follows
+        // "field" | "explicit" | "source" | "implied_kind" | "round"
+
+        // TODO: maybe change the attribute options so that the JS side better matches the data
+
+        for attribute in attributes {
+            let data = match attribute.as_str() {
+                "field" => Some(("field", self.edge_type.clone())),
+                "explicit" => Some(("explicit", (!self.implied).to_string())),
+                "source" => {
+                    if !self.implied {
+                        Some(("source", self.edge_source.clone()))
+                    } else {
+                        None
+                    }
+                }
+                "implied_kind" => {
+                    if self.implied {
+                        Some(("implied_kind", self.edge_source.clone()))
+                    } else {
+                        None
+                    }
+                }
+                "round" => Some(("round", self.round.to_string())),
+                _ => None,
+            };
+
+            match data {
+                Some(data) => result.push(format!("{}={}", data.0, data.1)),
+                None => {}
+            }
+        }
+
+        result.join(" ")
+    }
+}
+
 // impl PartialEq for NodeData {
 //     fn eq(&self, other: &Self) -> bool {
 //         self.path == other.path
@@ -192,10 +302,8 @@ impl MermaidGraphData {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalData {
-    // the node that was traversed
-    node: NodeData,
-    // the edge that was traversed to get to the node
-    edge: EdgeData,
+    // the edge struct that was traversed
+    edge: EdgeStruct,
     // the depth of the node in the traversal
     depth: u32,
     // the children of the node
@@ -204,13 +312,17 @@ pub struct RecTraversalData {
 
 #[wasm_bindgen]
 impl RecTraversalData {
-    #[wasm_bindgen(getter)]
-    pub fn node(&self) -> NodeData {
-        self.node.clone()
+    #[wasm_bindgen(constructor)]
+    pub fn new(edge: EdgeStruct, depth: u32, children: Vec<RecTraversalData>) -> RecTraversalData {
+        RecTraversalData {
+            edge,
+            depth,
+            children,
+        }
     }
 
     #[wasm_bindgen(getter)]
-    pub fn edge(&self) -> EdgeData {
+    pub fn edge(&self) -> EdgeStruct {
         self.edge.clone()
     }
 
@@ -222,6 +334,11 @@ impl RecTraversalData {
     #[wasm_bindgen(getter)]
     pub fn children(&self) -> Vec<RecTraversalData> {
         self.children.clone()
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_children(&mut self, children: Vec<RecTraversalData>) {
+        self.children = children;
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -302,7 +419,12 @@ impl NoteGraph {
         }
 
         for edge in edges {
-            self.int_safe_add_edge(&edge.from, &edge.to, &edge.edge_type);
+            self.int_safe_add_edge(
+                &edge.source,
+                &edge.target,
+                &edge.edge_type,
+                &edge.edge_source,
+            );
         }
 
         let elapsed = now.elapsed();
@@ -557,16 +679,23 @@ impl NoteGraph {
         let start_node = self
             .int_get_node_index(&entry_node)
             .ok_or(NoteGraphError::new("Node not found"))?;
+        let start_node_weight = self.int_get_node_weight(start_node)?;
 
         let mut node_count = 1;
         let mut result = Vec::new();
 
         for edge in self.graph.edges(start_node) {
-            let edge_weight = edge.weight();
+            let target = edge.target();
+
+            let edge_struct = EdgeStruct::new(
+                start_node_weight.clone(),
+                self.int_get_node_weight(target)?.clone(),
+                edge.weight().clone(),
+            );
 
             result.push(self.int_rec_traverse(
                 start_node,
-                edge_weight.clone(),
+                edge_struct,
                 &edge_types,
                 0,
                 max_depth,
@@ -620,7 +749,7 @@ impl NoteGraph {
                 break;
             }
 
-            let mut edges_to_add: Vec<(NodeIndex<u32>, NodeIndex<u32>, String)> = Vec::new();
+            let mut edges_to_add: Vec<(NodeIndex<u32>, NodeIndex<u32>, EdgeData)> = Vec::new();
 
             for rule in self.transitive_rules.iter() {
                 // if there is any edge type that the graph doesn't have, we can skip the rule
@@ -667,10 +796,17 @@ impl NoteGraph {
                             continue;
                         }
 
+                        let edge_data = EdgeData::new(
+                            rule.edge_type.clone(),
+                            format!("transitive:{}", rule.name),
+                            true,
+                            i,
+                        );
+
                         if rule.close_reversed {
-                            edges_to_add.push((end_node, start_node, rule.edge_type.clone()));
+                            edges_to_add.push((end_node, start_node, edge_data));
                         } else {
-                            edges_to_add.push((start_node, end_node, rule.edge_type.clone()));
+                            edges_to_add.push((start_node, end_node, edge_data));
                         }
                     }
                 }
@@ -687,11 +823,11 @@ impl NoteGraph {
             let now2 = Instant::now();
             utils::log(format!("Adding {} Edges ", edges_to_add.len()));
 
-            for (from, to, edge_type) in edges_to_add {
+            for (from, to, edge_data) in edges_to_add {
                 self.int_add_edge(
                     from,
                     to,
-                    EdgeData::new(edge_type, true, i),
+                    edge_data,
                     &mut Some(&mut current_edge_type_tracker),
                 );
             }
@@ -744,7 +880,7 @@ impl NoteGraph {
     pub fn int_rec_traverse(
         &self,
         node: NodeIndex<u32>,
-        edge: EdgeData,
+        edge: EdgeStruct,
         edge_types: &Vec<String>,
         depth: u32,
         max_depth: u32,
@@ -753,14 +889,21 @@ impl NoteGraph {
         let mut new_children = Vec::new();
 
         if depth < max_depth {
-            for edge in self.graph.edges(node) {
-                let target = edge.target();
-                let edge_weight = edge.weight();
+            for outgoing_edge in self.graph.edges(node) {
+                let edge_weight = outgoing_edge.weight();
 
                 if edge_types.contains(&edge_weight.edge_type) {
+                    let target = outgoing_edge.target();
+
+                    let edge_struct = EdgeStruct::new(
+                        edge.target.clone(),
+                        self.int_get_node_weight(target)?.clone(),
+                        edge_weight.clone(),
+                    );
+
                     new_children.push(self.int_rec_traverse(
                         target,
-                        edge_weight.clone(),
+                        edge_struct,
                         edge_types,
                         depth + 1,
                         max_depth,
@@ -772,12 +915,7 @@ impl NoteGraph {
 
         *node_count += new_children.len();
 
-        Ok(RecTraversalData {
-            node: self.int_get_node_weight(node)?.clone(),
-            edge,
-            depth,
-            children: new_children,
-        })
+        Ok(RecTraversalData::new(edge, depth, new_children))
     }
 
     /// Returns the node weight for a specific node index.
@@ -1212,49 +1350,55 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_safe_add_edge(&mut self, from_path: &String, to_path: &String, edge_type: &String) {
-        let from = self.node_hash.get(from_path);
-        let to = self.node_hash.get(to_path);
+    pub fn int_safe_add_edge(
+        &mut self,
+        source_path: &String,
+        target_path: &String,
+        edge_type: &String,
+        edge_source: &String,
+    ) {
+        let source = self.node_hash.get(source_path);
+        let target = self.node_hash.get(target_path);
 
-        let from_index: NodeIndex<u32>;
-        let to_index: NodeIndex<u32>;
+        let source_index: NodeIndex<u32>;
+        let target_index: NodeIndex<u32>;
         let mut add_from_to_hash = false;
         let mut add_to_to_hash = false;
 
-        if from.is_none() {
-            from_index = self
+        if source.is_none() {
+            source_index = self
                 .graph
-                .add_node(NodeData::new_unresolved(from_path.clone()));
+                .add_node(NodeData::new_unresolved(source_path.clone()));
             add_from_to_hash = true;
         } else {
-            from_index = from.unwrap().clone();
+            source_index = source.unwrap().clone();
         }
 
-        if to.is_none() {
-            if from_path == to_path {
-                to_index = from_index;
+        if target.is_none() {
+            if source_path == target_path {
+                target_index = source_index;
             } else {
-                to_index = self
+                target_index = self
                     .graph
-                    .add_node(NodeData::new_unresolved(to_path.clone()));
+                    .add_node(NodeData::new_unresolved(target_path.clone()));
                 add_to_to_hash = true;
             }
         } else {
-            to_index = to.unwrap().clone();
+            target_index = target.unwrap().clone();
         }
 
         if add_from_to_hash {
-            self.node_hash.insert(from_path.clone(), from_index);
+            self.node_hash.insert(source_path.clone(), source_index);
         }
 
         if add_to_to_hash {
-            self.node_hash.insert(from_path.clone(), to_index);
+            self.node_hash.insert(source_path.clone(), target_index);
         }
 
         self.int_add_edge(
-            from_index,
-            to_index,
-            EdgeData::new(edge_type.clone(), false, 0),
+            source_index,
+            target_index,
+            EdgeData::new(edge_type.clone(), edge_source.clone(), false, 0),
             &mut None,
         );
     }

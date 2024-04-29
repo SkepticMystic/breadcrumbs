@@ -1,3 +1,4 @@
+import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 import { BCGraph, type BCEdge, type BCEdgeAttributes } from "./MyMultiGraph";
 import { has_edge_attrs, type EdgeSorter } from "./utils";
 
@@ -120,7 +121,7 @@ const tree_to_all_paths = (tree: EdgeTree[]): BCEdge[][] => {
 /** Sort a nested list of paths on a per-depth level.
  * Mutates the input.
  */
-const sort_edge_tree = (tree: EdgeTree[], sorter: EdgeSorter) => {
+const sort_edge_tree = (tree: RecTraversalData[], sorter: EdgeSorter) => {
 	tree.forEach((nested_path) => {
 		nested_path.children = sort_edge_tree(nested_path.children, sorter);
 	});

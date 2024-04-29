@@ -8,7 +8,7 @@ use breadcrumbs_graph_wasm::{
     graph_update::{
         AddEdgeGraphUpdate, AddNoteGraphUpdate, BatchGraphUpdate, RemoveNoteGraphUpdate,
     },
-    utils::graph_eq,
+    utils::{graph_eq, log},
 };
 use wasm_bindgen_test::*;
 mod common;
@@ -31,8 +31,22 @@ fn test_implied_edge_rules_reverse_direction() {
     let mut graph = NoteGraph::new();
 
     graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(vec!["down".to_string()], "up".to_string(), 5, false, true),
-        TransitiveGraphRule::new(vec!["up".to_string()], "down".to_string(), 5, false, true),
+        TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["down".to_string()],
+            "up".to_string(),
+            5,
+            false,
+            true,
+        ),
+        TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["up".to_string()],
+            "down".to_string(),
+            5,
+            false,
+            true,
+        ),
     ]);
 
     graph.build_graph(data.0, data.1);
@@ -57,9 +71,24 @@ fn test_implied_edge_rules_sibling() {
     let mut graph = NoteGraph::new();
 
     graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(vec!["down".to_string()], "up".to_string(), 5, false, true),
-        TransitiveGraphRule::new(vec!["up".to_string()], "down".to_string(), 5, false, true),
         TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["down".to_string()],
+            "up".to_string(),
+            5,
+            false,
+            true,
+        ),
+        TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["up".to_string()],
+            "down".to_string(),
+            5,
+            false,
+            true,
+        ),
+        TransitiveGraphRule::new(
+            "".to_string(),
             vec!["up".to_string(), "down".to_string()],
             "same".to_string(),
             5,
@@ -95,9 +124,24 @@ fn test_implied_edge_rules_sibling_can_loop() {
     let mut graph = NoteGraph::new();
 
     graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(vec!["down".to_string()], "up".to_string(), 5, false, true),
-        TransitiveGraphRule::new(vec!["up".to_string()], "down".to_string(), 5, false, true),
         TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["down".to_string()],
+            "up".to_string(),
+            5,
+            false,
+            true,
+        ),
+        TransitiveGraphRule::new(
+            "".to_string(),
+            vec!["up".to_string()],
+            "down".to_string(),
+            5,
+            false,
+            true,
+        ),
+        TransitiveGraphRule::new(
+            "".to_string(),
             vec!["up".to_string(), "down".to_string()],
             "same".to_string(),
             5,
@@ -177,10 +221,20 @@ fn test_remove_add_update() {
         false,
     ))
     .add_to_batch(&mut batch);
-    AddEdgeGraphUpdate::new("0".to_string(), "00".to_string(), "down".to_string())
-        .add_to_batch(&mut batch);
-    AddEdgeGraphUpdate::new("0".to_string(), "01".to_string(), "down".to_string())
-        .add_to_batch(&mut batch);
+    AddEdgeGraphUpdate::new(
+        "0".to_string(),
+        "00".to_string(),
+        "down".to_string(),
+        "typed-link".to_string(),
+    )
+    .add_to_batch(&mut batch);
+    AddEdgeGraphUpdate::new(
+        "0".to_string(),
+        "01".to_string(),
+        "down".to_string(),
+        "typed-link".to_string(),
+    )
+    .add_to_batch(&mut batch);
 
     graph_1.apply_update(batch).unwrap();
 
@@ -209,10 +263,20 @@ fn test_remove_add_separate_updates() {
         false,
     ))
     .add_to_batch(&mut batch_2);
-    AddEdgeGraphUpdate::new("0".to_string(), "00".to_string(), "down".to_string())
-        .add_to_batch(&mut batch_2);
-    AddEdgeGraphUpdate::new("0".to_string(), "01".to_string(), "down".to_string())
-        .add_to_batch(&mut batch_2);
+    AddEdgeGraphUpdate::new(
+        "0".to_string(),
+        "00".to_string(),
+        "down".to_string(),
+        "typed-link".to_string(),
+    )
+    .add_to_batch(&mut batch_2);
+    AddEdgeGraphUpdate::new(
+        "0".to_string(),
+        "01".to_string(),
+        "down".to_string(),
+        "typed-link".to_string(),
+    )
+    .add_to_batch(&mut batch_2);
     graph_1.apply_update(batch_2).unwrap();
 
     assert!(graph_eq(&graph_1.graph, &graph_2.graph));

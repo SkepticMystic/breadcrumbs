@@ -110,19 +110,21 @@ impl GraphUpdate for RenameNoteGraphUpdate {
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct AddEdgeGraphUpdate {
-    from: String,
-    to: String,
+    source: String,
+    target: String,
     edge_type: String,
+    edge_source: String,
 }
 
 #[wasm_bindgen]
 impl AddEdgeGraphUpdate {
     #[wasm_bindgen(constructor)]
-    pub fn new(from: String, to: String, edge_type: String) -> Self {
+    pub fn new(source: String, target: String, edge_type: String, edge_source: String) -> Self {
         Self {
-            from,
-            to,
+            source,
+            target,
             edge_type,
+            edge_source,
         }
     }
 
@@ -133,7 +135,12 @@ impl AddEdgeGraphUpdate {
 
 impl GraphUpdate for AddEdgeGraphUpdate {
     fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        Ok(graph.int_safe_add_edge(&self.from, &self.to, &self.edge_type))
+        Ok(graph.int_safe_add_edge(
+            &self.source,
+            &self.target,
+            &self.edge_type,
+            &self.edge_source,
+        ))
     }
 }
 

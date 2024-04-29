@@ -4,14 +4,14 @@
 	import { stringify_node } from "src/graph/utils";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import BreadcrumbsPlugin from "src/main";
-	import type { EdgeData, NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { EdgeData, EdgeStruct, NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-	export let edge: EdgeData;
-	export let target_node: NodeData;
+	export let edge: EdgeStruct;
 	export let plugin: BreadcrumbsPlugin;
 	export let show_node_options: ShowNodeOptions;
 	export let cls = "";
 
+	let target_node = edge.target;
 	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
 	const display = stringify_node(target_node, {
@@ -28,7 +28,7 @@
 	{display}
 	path={target_node.path}
 	resolved={target_node.resolved}
-	cls="{cls} BC-edge {edge.implied
+	cls="{cls} BC-edge {!edge.implied
 		? 'BC-edge-explicit'
 		: `BC-edge-implied BC-edge-implied-${ 'transitive' /*edge.attr.implied_kind */}`}"
 />

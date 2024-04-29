@@ -24,7 +24,6 @@
 	const sort = get_edge_sorter(
 		// @ts-expect-error: ts(2345)
 		options.sort,
-		plugin.graph,
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
@@ -41,6 +40,8 @@
 	onMount(() => {
 		update();
 	});
+
+	// TODO reimplement all this logic
 
 	// // if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
 	// $: source_path = file_path

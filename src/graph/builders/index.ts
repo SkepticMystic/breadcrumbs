@@ -66,7 +66,7 @@ const construction_data_from_node = (node: BCNode): GraphConstructionNodeData =>
 
 // TODO: these functions should not be needed. The explicit edge builders should return the WASM data directly
 const construction_data_from_edge = (edge: EdgeToAdd): GraphConstructionEdgeData => {
-	return new GraphConstructionEdgeData(edge.source_id, edge.target_id, edge.attr.field);
+	return new GraphConstructionEdgeData(edge.source_id, edge.target_id, edge.attr.field, edge.attr.explicit ? edge.attr.source : edge.attr.implied_kind);
 }
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
