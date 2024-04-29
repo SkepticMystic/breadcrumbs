@@ -30,5 +30,5 @@
 	resolved={target_node.resolved}
 	cls="{cls} BC-edge {!edge.implied
 		? 'BC-edge-explicit'
-		: `BC-edge-implied BC-edge-implied-${ 'transitive' /*edge.attr.implied_kind */}`}"
+		: `BC-edge-implied BC-edge-implied-${edge.edge_source}`}"
 />
