@@ -2,15 +2,19 @@ import type { BCEdgeAttributes, BCNode } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export type BreadcrumbsError = {
 	// TODO: Differentiate between invalid edge-field and invalid metadata-field values
 	// BUT: Some errors might be a metadata field with an invalid edge-field value
 	code:
-	| "deprecated_field"
-	| "invalid_field_value"
-	| "invalid_setting_value"
-	| "invalid_yaml";
+		| "deprecated_field"
+		| "invalid_field_value"
+		| "invalid_setting_value"
+		| "invalid_yaml";
 	message: string;
 	path: string;
 };
@@ -23,8 +27,8 @@ export type EdgeToAdd = {
 };
 
 export type EdgeBuilderResults = {
-	nodes: BCNode[]
-	edges: EdgeToAdd[];
+	nodes: GraphConstructionNodeData[];
+	edges: GraphConstructionEdgeData[];
 	errors: BreadcrumbsError[];
 };
 

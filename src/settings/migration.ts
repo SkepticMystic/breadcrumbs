@@ -133,7 +133,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 								settings.implied_relations.transitive.push({
 									rounds,
-									name: `Opposite Direction: ${field}/${close_field}`,
+									name: "",
 									close_field,
 									chain: [{ field }],
 									close_reversed: true,
@@ -150,7 +150,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 							settings.implied_relations.transitive.push({
 								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
+								name: "",
 								chain: [
 									{ field: fields.up },
 									{ field: fields.same },
@@ -170,7 +170,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 							settings.implied_relations.transitive.push({
 								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
+								name: "",
 								chain: [
 									{ field: fields.up },
 									{ field: fields.down },
@@ -187,7 +187,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 							settings.implied_relations.transitive.push({
 								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
+								name: "",
 								chain: [
 									{ field: fields.same },
 									{ field: fields.same },
@@ -204,7 +204,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 							settings.implied_relations.transitive.push({
 								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
+								name: "",
 								chain: [
 									{ field: fields.same },
 									{ field: fields.up },
@@ -221,7 +221,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 							settings.implied_relations.transitive.push({
 								rounds,
-								name: rel + ` (hierarchy ${hier_i + 1})`,
+								name: "",
 								chain: [
 									{ field: fields.up },
 									{ field: fields.same },

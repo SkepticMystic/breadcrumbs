@@ -52,35 +52,35 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	implied_relations: {
 		transitive: [
 			{
-				name: "Opposite Direction: up/down",
+				name: "",
 				rounds: 1,
 				chain: [{ field: "up" }],
 				close_field: "down",
 				close_reversed: true,
 			},
 			{
-				name: "Opposite Direction: down/up",
+				name: "",
 				rounds: 1,
 				chain: [{ field: "down" }],
 				close_field: "up",
 				close_reversed: true,
 			},
 			{
-				name: "Opposite Direction: same/same",
+				name: "",
 				rounds: 1,
 				chain: [{ field: "same" }],
 				close_field: "same",
 				close_reversed: true,
 			},
 			{
-				name: "Opposite Direction: next/prev",
+				name: "",
 				rounds: 1,
 				chain: [{ field: "next" }],
 				close_field: "prev",
 				close_reversed: true,
 			},
 			{
-				name: "Opposite Direction: prev/next",
+				name: "",
 				rounds: 1,
 				chain: [{ field: "prev" }],
 				close_field: "next",

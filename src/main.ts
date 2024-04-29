@@ -56,7 +56,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// Logger
 		log.set_level(this.settings.debug.level);
 
-		log.info("loading Breadcrumbs plugin");
+		log.info(
+			`loading plugin "${this.manifest.name}" plugin v${this.manifest.version}`,
+		);
 		log.debug("settings >", this.settings);
 
 		// Init event bus

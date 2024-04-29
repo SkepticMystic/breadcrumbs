@@ -7,6 +7,7 @@ import type {
 import type { Result } from "src/interfaces/result";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 type FolderNoteData = {
 	field: string;
@@ -75,7 +76,7 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	const folder_notes: {
 		file: { path: string; folder: string };
@@ -92,7 +93,8 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 				folder_note_file.path,
 			);
 			if (!folder_note_info.ok) {
-				if (folder_note_info.error) results.errors.push(folder_note_info.error);
+				if (folder_note_info.error)
+					results.errors.push(folder_note_info.error);
 				return;
 			}
 
@@ -113,7 +115,8 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 			folder_note_page.file.path,
 		);
 		if (!folder_note_info.ok) {
-			if (folder_note_info.error) results.errors.push(folder_note_info.error);
+			if (folder_note_info.error)
+				results.errors.push(folder_note_info.error);
 			return;
 		}
 
@@ -140,20 +143,19 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 					}
 
 					// We know path is resolved
-					results.edges.push({
-						target_id: target_path,
-						source_id: folder_note.path,
-						attr: {
-							explicit: true,
-							field: data.field,
-							source: "folder_note",
-						},
-					});
+					results.edges.push(
+						new GraphConstructionEdgeData(
+							target_path,
+							folder_note.path,
+							data.field,
+							"folder_note",
+						),
+					);
 				},
 				data.recurse,
 			),
 		),
 	);
 
-	return results
+	return results;
 };

@@ -49,8 +49,10 @@ const parse_source = (
 				issue.path.join("."),
 			).map((issue) => ({
 				message: issue.message,
-				path: issue.path.join("."),
 				code: "invalid_field_value" as const,
+				path: issue.path
+					.map((key) => (typeof key === "number" ? key + 1 : key))
+					.join(" > "),
 			})),
 		);
 
@@ -68,11 +70,7 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: CodeblockSchema.error.zod_invalid_enum_msg(
-				"yaml" as any,
-				CodeblockSchema.FIELDS,
-				invalid_fields.join(", "),
-			),
+			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${CodeblockSchema.FIELDS.join(", ")}`,
 		});
 	}
 

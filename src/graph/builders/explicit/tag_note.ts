@@ -7,6 +7,7 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
+import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_tag_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -66,7 +67,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
 ) => {
-	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [], }
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go
@@ -101,7 +102,8 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				tag_note_file.path,
 			);
 			if (!tag_note_info.ok) {
-				if (tag_note_info.error) results.errors.push(tag_note_info.error);
+				if (tag_note_info.error)
+					results.errors.push(tag_note_info.error);
 				return;
 			}
 
@@ -153,25 +155,24 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		const target_paths = tag_note.exact
 			? tag_paths_map.get(tag_note.tag)
 			: all_tags
-				.filter((tag) => tag.startsWith(tag_note.tag))
-				// We know that the tag_note.tag is in the tag_paths_map, so this is safe
-				.flatMap((tag) => tag_paths_map.get(tag)!);
+					.filter((tag) => tag.startsWith(tag_note.tag))
+					// We know that the tag_note.tag is in the tag_paths_map, so this is safe
+					.flatMap((tag) => tag_paths_map.get(tag)!);
 
 		// Adding these edges is comparatively simple.
 		//   We know the target_path is resolved, since it only gets added to the map
 		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
-			results.edges.push({
-				source_id: tag_note.source_path,
-				target_id: target_path,
-				attr: {
-					explicit: true,
-					source: "tag_note",
-					field: tag_note.field,
-				}
-			})
+			results.edges.push(
+				new GraphConstructionEdgeData(
+					tag_note.source_path,
+					target_path,
+					tag_note.field,
+					"tag_note",
+				),
+			);
 		});
 	});
 
-	return results
+	return results;
 };
