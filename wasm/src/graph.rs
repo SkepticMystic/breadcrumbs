@@ -535,7 +535,13 @@ impl NoteGraph {
         // NOTE: double curly braces are used to escape the curly braces in the string
         result.push_str(&diagram_options.init_line);
         result.push_str("\n");
-        result.push_str(format!("{} {}\n", diagram_options.chart_type, diagram_options.direction).as_str());
+        result.push_str(
+            format!(
+                "{} {}\n",
+                diagram_options.chart_type, diagram_options.direction
+            )
+            .as_str(),
+        );
 
         // accumulate edges by direction, so that we can collapse them in the next step
         let mut accumulated_edges: HashMap<
@@ -581,26 +587,22 @@ impl NoteGraph {
         // add nodes to the graph
         for element in node_map.iter() {
             let weight = self.int_get_node_weight(element.0.clone())?;
-            
+
             let node_label = match diagram_options.node_label_fn {
                 Some(ref function) => {
                     match function.call1(&JsValue::NULL, &weight.clone().into()) {
                         Ok(value) => value.as_string().unwrap_or_default(),
                         Err(e) => {
-                            return Err(NoteGraphError::new(format!("Error calling function: {:?}", e).as_str()));
+                            return Err(NoteGraphError::new(
+                                format!("Error calling function: {:?}", e).as_str(),
+                            ));
                         }
                     }
                 }
-                None => {
-                    weight.path.clone()
-                }
+                None => weight.path.clone(),
             };
 
-            result.push_str(&format!(
-                "    {}[\"{}\"]\n",
-                element.0.index(),
-                node_label
-            ));
+            result.push_str(&format!("    {}[\"{}\"]\n", element.0.index(), node_label));
             if !weight.resolved {
                 unresolved_nodes.insert(element.0.index());
             }
@@ -608,75 +610,22 @@ impl NoteGraph {
 
         // collapse edge data and add them to the graph
         for (from, to, forward, backward) in accumulated_edges.values() {
-            let mut label = String::new();
-
-            let same_elements = forward
-                .iter()
-                .zip(backward.iter())
-                .all(|(a, b)| a.edge_type == b.edge_type);
-            let all_implied = forward
-                .iter()
-                .zip_longest(backward.iter())
-                .all(|pair| match pair {
-                    EitherOrBoth::Both(a, b) => a.implied && b.implied,
-                    EitherOrBoth::Left(a) => a.implied,
-                    EitherOrBoth::Right(b) => b.implied,
-                });
-
-            let arrow_type: String;
-            if backward.is_empty() {
-                if all_implied {
-                    arrow_type = String::from("-.->");
-                } else {
-                    arrow_type = String::from("-->");
-                }
+            if diagram_options.collapse_opposing_edges {
+                result.push_str(&self.generate_mermaid_edge(
+                    from,
+                    to,
+                    forward.clone(),
+                    backward.clone(),
+                ));
             } else {
-                if all_implied {
-                    arrow_type = String::from("<-.->");
-                } else {
-                    arrow_type = String::from("<-->");
-                }
+                result.push_str(&self.generate_mermaid_edge(from, to, forward.clone(), Vec::new()));
+                result.push_str(&self.generate_mermaid_edge(
+                    to,
+                    from,
+                    backward.clone(),
+                    Vec::new(),
+                ));
             }
-
-            if same_elements {
-                label.push_str(
-                    forward
-                        .iter()
-                        .map(|edge| edge.edge_type.clone())
-                        .collect::<Vec<String>>()
-                        .join(", ")
-                        .as_str(),
-                );
-            } else {
-                label.push_str(
-                    forward
-                        .iter()
-                        .map(|edge| edge.edge_type.clone())
-                        .collect::<Vec<String>>()
-                        .join(", ")
-                        .as_str(),
-                );
-                // forward can never be empty
-                if !backward.is_empty() {
-                    label.push_str(" / ");
-                }
-                label.push_str(
-                    backward
-                        .iter()
-                        .map(|edge| edge.edge_type.clone())
-                        .collect::<Vec<String>>()
-                        .join(", ")
-                        .as_str(),
-                );
-            }
-
-            result.push_str(&format!(
-                "    {} {}|{}| {}\n",
-                from.index(),
-                arrow_type,
-                label,
-                to.index()
-            ));
         }
 
         if !unresolved_nodes.is_empty() {
@@ -696,6 +645,65 @@ impl NoteGraph {
             traversal_elapsed.as_micros() as u64,
             total_elapsed.as_micros() as u64,
         ))
+    }
+
+    fn generate_mermaid_edge(
+        &self,
+        source: &NodeIndex<u32>,
+        target: &NodeIndex<u32>,
+        forward: Vec<EdgeData>,
+        backward: Vec<EdgeData>,
+    ) -> String {
+        let mut label = String::new();
+
+        let same_elements = forward
+            .iter()
+            .zip(backward.iter())
+            .all(|(a, b)| a.edge_type == b.edge_type);
+        let all_implied = forward
+            .iter()
+            .zip_longest(backward.iter())
+            .all(|pair| match pair {
+                EitherOrBoth::Both(a, b) => a.implied && b.implied,
+                EitherOrBoth::Left(a) => a.implied,
+                EitherOrBoth::Right(b) => b.implied,
+            });
+
+        let arrow_type = match (backward.is_empty(), all_implied) {
+            (true, true) => "-.->",
+            (true, false) => "-->",
+            (false, true) => "-.-",
+            (false, false) => "---",
+        };
+
+        label.push_str(
+            forward
+                .iter()
+                .map(|edge| edge.edge_type.clone())
+                .collect::<Vec<String>>()
+                .join(", ")
+                .as_str(),
+        );
+
+        if !same_elements && !backward.is_empty() {
+            label.push_str(" | ");
+            label.push_str(
+                backward
+                    .iter()
+                    .map(|edge| edge.edge_type.clone())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+                    .as_str(),
+            );
+        }
+
+        format!(
+            "    {} {}|{}| {}\n",
+            source.index(),
+            arrow_type,
+            label,
+            target.index()
+        )
     }
 
     pub fn rec_traverse(
