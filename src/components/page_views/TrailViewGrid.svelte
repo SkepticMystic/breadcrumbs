@@ -22,7 +22,7 @@
 
 <div
 	class="BC-trail-view grid"
-	style="grid-template-rows: {'1fr '.repeat(square.length)};
+	style="grid-template-rows: min-content;
 grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
 	{#each col_runs as col, j}
