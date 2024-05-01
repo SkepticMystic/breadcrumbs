@@ -459,7 +459,7 @@
 			Add New Transitive Implied Relation
 		</button>
 
-		<details open>
+		<details>
 			<summary>Bulk Add Rules (Advanced)</summary>
 
 			<div class="flex flex-col gap-1">
