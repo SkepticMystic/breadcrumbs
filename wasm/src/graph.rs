@@ -18,6 +18,13 @@ use crate::{
     utils::{self, NoteGraphError, Result},
 };
 
+pub fn edge_matches_edge_filter(edge: &EdgeData, edge_types: Option<&Vec<String>>) -> bool {
+    match edge_types {
+        Some(types) => types.contains(&edge.edge_type),
+        None => true,
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct EdgeData {
@@ -194,7 +201,7 @@ impl NodeData {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct EdgeStruct {
     #[wasm_bindgen(skip)]
     pub source: NodeData,
@@ -247,6 +254,10 @@ impl EdgeStruct {
 
     pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
         self.edge.get_attribute_label(&attributes)
+    }
+
+    pub fn matches_edge_filter(&self, edge_types: Option<Vec<String>>) -> bool {
+        edge_matches_edge_filter(&self.edge, edge_types.as_ref())
     }
 }
 
@@ -381,6 +392,34 @@ impl NoteGraph {
                 Err(e) => utils::log(format!("Error calling function: {:?}", e)),
             }
         });
+    }
+
+    pub fn get_outgoing_edges(&self, node: String) -> Vec<EdgeStruct> {
+        let node_index = self.int_get_node_index(&node);
+
+        match node_index {
+            Some(node_index) => self
+                .int_iter_outgoing_edges(node_index)
+                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    pub fn get_incoming_edges(&self, node: String) -> Vec<EdgeStruct> {
+        let node_index = self.int_get_node_index(&node);
+
+        match node_index {
+            Some(node_index) => self
+                .int_iter_incoming_edges(node_index)
+                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
+                .collect(),
+            None => Vec::new(),
+        }
+    }
+
+    pub fn has_node(&self, node: String) -> bool {
+        self.node_hash.contains_key(&node)
     }
 
     /// Returns all edge types that are present in the graph.
@@ -548,6 +587,25 @@ impl NoteGraph {
         }
     }
 
+    pub fn int_edge_ref_to_struct(&self, edge: EdgeReference<EdgeData, u32>) -> Option<EdgeStruct> {
+        let source = self.graph.node_weight(edge.source())?.clone();
+        let target = self.graph.node_weight(edge.target())?.clone();
+
+        Some(EdgeStruct::new(source, target, edge.weight().clone()))
+    }
+
+    pub fn int_edge_to_struct(
+        &self,
+        edge_index: EdgeIndex<u32>,
+        edge_data: EdgeData,
+    ) -> Option<EdgeStruct> {
+        let (source_index, target_index) = self.graph.edge_endpoints(edge_index)?;
+        let source = self.graph.node_weight(source_index)?.clone();
+        let target = self.graph.node_weight(target_index)?.clone();
+
+        Some(EdgeStruct::new(source, target, edge_data))
+    }
+
     /// Returns the node weight for a specific node index.
     ///
     /// Will return an error if the node is not found.
@@ -633,10 +691,7 @@ impl NoteGraph {
         edge: &EdgeData,
         edge_types: Option<&Vec<String>>,
     ) -> bool {
-        match edge_types {
-            Some(types) => types.contains(&edge.edge_type),
-            None => true,
-        }
+        edge_matches_edge_filter(edge, edge_types)
     }
 
     pub fn int_remove_implied_edges(&mut self) {

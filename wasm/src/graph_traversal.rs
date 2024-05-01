@@ -72,6 +72,51 @@ impl TraversalOptions {
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
+pub struct Path {
+    edges: Vec<EdgeStruct>,
+}
+
+#[wasm_bindgen]
+impl Path {
+    pub fn length(&self) -> usize {
+        self.edges.len()
+    }
+
+    pub fn truncate(&mut self, limit: usize) {
+        self.edges.truncate(limit);
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn edges(&self) -> Vec<EdgeStruct> {
+        self.edges.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn reverse_edges(&self) -> Vec<EdgeStruct> {
+        self.edges.iter().rev().cloned().collect()
+    }
+
+    pub fn equals(&self, other: &Path) -> bool {
+        self.edges == other.edges
+    }
+
+    pub fn get_first_target(&self) -> Option<String> {
+        self.edges.first().map(|edge| edge.target.path.clone())
+    }
+}
+
+impl Path {
+    pub fn new(edges: Vec<EdgeStruct>) -> Path {
+        Path { edges }
+    }
+
+    pub fn new_start(edge: EdgeStruct) -> Path {
+        Path { edges: vec![edge] }
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Debug)]
 pub struct RecTraversalData {
     // the edge struct that was traversed
     edge: EdgeStruct,
@@ -126,6 +171,28 @@ impl RecTraversalData {
     }
 }
 
+impl RecTraversalData {
+    fn to_paths(&self) -> Vec<Path> {
+        let mut paths = Vec::new();
+
+        for child in &self.children {
+            let mut child_paths = child.to_paths();
+
+            for path in &mut child_paths {
+                path.edges.insert(0, self.edge.clone());
+            }
+
+            paths.extend(child_paths);
+        }
+
+        if paths.is_empty() {
+            paths.push(Path::new_start(self.edge.clone()));
+        }
+
+        paths
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalResult {
@@ -172,9 +239,30 @@ impl RecTraversalResult {
         self.traversal_time
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
         format!("{:?}", self)
+    }
+
+    pub fn to_paths(&self) -> Vec<Path> {
+        let mut paths = Vec::new();
+
+        for datum in &self.data {
+            paths.extend(datum.to_paths());
+        }
+
+        paths.sort_by(|a, b| {
+            let a_len = a.edges.len();
+            let b_len = b.edges.len();
+
+            a_len.cmp(&b_len)
+        });
+
+        paths
     }
 }
 

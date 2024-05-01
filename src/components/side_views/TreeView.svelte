@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { Traverse } from "src/graph/traverse";
 	import {
 		get_edge_sorter,
-		has_edge_attrs,
-		type EdgeAttrFilters,
 	} from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";

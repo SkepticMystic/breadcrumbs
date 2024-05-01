@@ -1,15 +1,11 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
-	import { Traverse, type EdgeTree } from "src/graph/traverse";
 	import {
 		get_edge_sorter,
-		has_edge_attrs,
-		type EdgeAttrFilters,
 	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
-	import { active_file_store } from "src/stores/active_file";
 	import { onMount } from "svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";

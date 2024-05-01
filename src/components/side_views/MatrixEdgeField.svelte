@@ -1,15 +1,14 @@
 <script lang="ts">
-	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
+	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeSorter } from "src/graph/utils";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { untyped_pick } from "src/utils/objects";
-	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
+	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-	export let edges: BCEdge[];
+	export let edges: EdgeStruct[];
 	export let field: EdgeField;
 	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
@@ -63,11 +62,8 @@
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.attr.explicit ? "x" : "i"}
-							aria_label={url_search_params(
-								untyped_pick(edge.attr, show_attributes),
-								{ trim_lone_param: true },
-							)}
+							label={edge.implied ? "i" : "x"}
+							aria_label={edge.get_attribute_label(show_attributes)}
 						/>
 					</div>
 				</div>

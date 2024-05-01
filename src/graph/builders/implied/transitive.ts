@@ -1,9 +1,9 @@
 // import type { BCGraph } from "src/graph/MyMultiGraph";
-import { Traverse } from "src/graph/traverse";
-import type { EdgeBuilderResults } from "src/interfaces/graph";
-import type { BreadcrumbsSettings } from "src/interfaces/settings";
-import type BreadcrumbsPlugin from "src/main";
-import { get_transitive_rule_name } from "src/utils/transitive_rules";
+// import { Traverse } from "src/graph/traverse";
+// import type { EdgeBuilderResults } from "src/interfaces/graph";
+// import type { BreadcrumbsSettings } from "src/interfaces/settings";
+// import type BreadcrumbsPlugin from "src/main";
+// import { get_transitive_rule_name } from "src/utils/transitive_rules";
 
 // export const _add_implied_edges_transitive = (
 // 	graph: BCGraph,

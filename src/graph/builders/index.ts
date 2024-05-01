@@ -4,7 +4,7 @@ import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
-import { type BCNode, type BCNodeAttributes } from "../MyMultiGraph";
+// import { type BCNode, type BCNodeAttributes } from "../MyMultiGraph";
 import { add_explicit_edges } from "./explicit";
 import { get_all_files, type AllFiles } from "./explicit/files";
 // import { _add_implied_edges_transitive } from "./implied/transitive";
@@ -18,57 +18,57 @@ const get_initial_nodes = (all_files: AllFiles) => {
 
 	if (all_files.obsidian) {
 		all_files.obsidian.forEach(({ file, cache }) => {
-			const attr: BCNodeAttributes = {
-				resolved: true,
-			};
+			let node_aliases = [];
+			let ignore_in_edges = false;
+			let ignore_out_edges = false;
 
 			const aliases = cache?.frontmatter?.aliases as unknown;
 			if (Array.isArray(aliases) && aliases.length > 0) {
-				attr.aliases = aliases;
+				node_aliases = aliases;
 			}
 
 			if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
-				attr.ignore_in_edges = true;
+				ignore_in_edges = true;
 			}
 			if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
-				attr.ignore_out_edges = true;
+				ignore_out_edges = true;
 			}
 
 			nodes.push(
 				new GraphConstructionNodeData(
 					file.path,
-					attr.aliases ?? [],
+					node_aliases,
 					true,
-					attr.ignore_in_edges ?? false,
-					attr.ignore_out_edges ?? false,
+					ignore_in_edges,
+					ignore_out_edges,
 				),
 			);
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
-			const attr: BCNodeAttributes = {
-				resolved: true,
-			};
+			let node_aliases = [];
+			let ignore_in_edges = false;
+			let ignore_out_edges = false;
 
 			const aliases = page.file.aliases.values;
 			if (Array.isArray(aliases) && aliases.length > 0) {
-				attr.aliases = aliases;
+				node_aliases = aliases;
 			}
 
 			if (page[META_ALIAS["ignore-in-edges"]]) {
-				attr.ignore_in_edges = true;
+				ignore_in_edges = true;
 			}
 			if (page[META_ALIAS["ignore-out-edges"]]) {
-				attr.ignore_out_edges = true;
+				ignore_out_edges = true;
 			}
 
 			nodes.push(
 				new GraphConstructionNodeData(
 					page.file.path,
-					attr.aliases ?? [],
+					aliases,
 					true,
-					attr.ignore_in_edges ?? false,
-					attr.ignore_out_edges ?? false,
+					ignore_in_edges,
+					ignore_out_edges,
 				),
 			);
 		});

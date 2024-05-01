@@ -1,11 +1,8 @@
 <script lang="ts">
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import type { EdgeTree } from "src/graph/traverse";
 	import { type EdgeSorter } from "src/graph/utils";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { untyped_pick } from "src/utils/objects";
-	import { url_search_params } from "src/utils/url";
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import type BreadcrumbsPlugin from "src/main";
 	import {
 		ensure_square_array,
@@ -7,16 +6,17 @@
 		transpose,
 	} from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
+	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
-	export let all_paths: BCEdge[][];
+	export let all_paths: Path[];
 
-	const reversed = all_paths.map((path) => [...path].reverse());
+	const reversed = all_paths.map((path) => path.reverse_edges);
 
 	const square = ensure_square_array(reversed, null, true);
 
 	const col_runs = transpose(square).map((col) =>
-		gather_by_runs(col, (e) => (e ? e.target_id : null)),
+		gather_by_runs(col, (e) => (e ? e.target.path : null)),
 	);
 </script>
 
