@@ -4,7 +4,7 @@ import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 import { remove_duplicates } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { Mermaid } from "src/utils/mermaid";
-import { quote_join } from "src/utils/strings";
+import { zod } from "src/utils/zod";
 import { z } from "zod";
 
 const FIELDS = [
@@ -33,61 +33,7 @@ type InputData = {
 	field_groups: EdgeFieldGroup[];
 };
 
-const zod_not_string_msg = (field: CodeblockField, received: unknown) =>
-	`Expected a string (text), but got: \`${received}\` (${typeof received}). _Try wrapping the value in quotes._
-**Example**: \`${field}: "${received}"\``;
-
-const zod_invalid_enum_msg = (
-	field: CodeblockField,
-	options: any[] | readonly any[],
-	received: unknown,
-) =>
-	`Expected one of the following options: ${quote_join(options, "`", ", or ")}, but got: \`${received}\`.
-**Example**: \`${field}: ${options[0]}\``;
-
-const zod_not_array_msg = (
-	field: CodeblockField,
-	options: any[] | readonly any[],
-	received: unknown,
-) =>
-	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
-**Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
-
-const dynamic_enum_schema = (
-	options: string[],
-	/** Optionally override ctx.path (useful in the sort.order/sort.field case) */
-	path?: CodeblockField,
-) =>
-	z.string().superRefine((received, ctx) => {
-		if (options.includes(received)) {
-			return true;
-		} else {
-			ctx.addIssue({
-				options,
-				received: received,
-				code: "invalid_enum_value",
-				// NOTE: Leave the default path on _this_ object, but pass the override into the error message
-				message: zod_invalid_enum_msg(
-					path ?? (ctx.path.join(".") as CodeblockField),
-					options,
-					received,
-				),
-			});
-
-			return false;
-		}
-	});
-
 const BOOLEANS = [true, false] as const;
-
-const dynamic_enum_array_schema = (
-	field: CodeblockField,
-	options: string[],
-	received: unknown,
-) =>
-	z.array(dynamic_enum_schema(options), {
-		invalid_type_error: zod_not_array_msg(field, options, received),
-	});
 
 const build = (input: Record<string, unknown>, data: InputData) => {
 	const field_labels = data.edge_fields.map((f) => f.label);
@@ -97,17 +43,13 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 		.object({
 			title: z
 				.string({
-					message: zod_not_string_msg(
-						//
-						"title",
-						input["title"],
-					),
+					message: zod.error.not_string("title", input["title"]),
 				})
 				.optional(),
 
 			"start-note": z
 				.string({
-					message: zod_not_string_msg(
+					message: zod.error.not_string(
 						"start-note",
 						input["start-note"],
 					),
@@ -116,7 +58,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			"dataview-from": z
 				.string({
-					message: zod_not_string_msg(
+					message: zod.error.not_string(
 						"dataview-from",
 						input["dataview-from"],
 					),
@@ -125,7 +67,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			flat: z
 				.boolean({
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"flat",
 						BOOLEANS,
 						input["flat"],
@@ -135,7 +77,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			collapse: z
 				.boolean({
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"collapse",
 						BOOLEANS,
 						input["collapse"],
@@ -145,7 +87,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			"merge-fields": z
 				.boolean({
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"merge-fields",
 						BOOLEANS,
 						input["merge-fields"],
@@ -155,7 +97,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			content: z
 				.enum(["open", "closed"], {
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"content",
 						["open", "closed"],
 						input["content"],
@@ -165,7 +107,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			type: z
 				.enum(["tree", "mermaid"], {
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"type",
 						["tree", "mermaid"],
 						input["type"],
@@ -175,7 +117,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			"mermaid-renderer": z
 				.enum(Mermaid.RENDERERS, {
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"mermaid-renderer",
 						Mermaid.RENDERERS,
 						input["mermaid-renderer"],
@@ -184,7 +126,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.optional(),
 			"mermaid-direction": z
 				.enum(Mermaid.DIRECTIONS, {
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"mermaid-direction",
 						Mermaid.DIRECTIONS,
 						input["mermaid-direction"],
@@ -193,7 +135,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.optional(),
 			"mermaid-curve": z
 				.enum(Mermaid.CURVE_STYLES, {
-					message: zod_invalid_enum_msg(
+					message: zod.error.invalid_enum(
 						"mermaid-curve",
 						Mermaid.CURVE_STYLES,
 						input["mermaid-curve"],
@@ -203,7 +145,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 
 			"show-attributes": z
 				.array(z.enum(EDGE_ATTRIBUTES), {
-					message: zod_not_array_msg(
+					message: zod.error.not_array(
 						"show-attributes",
 						EDGE_ATTRIBUTES,
 						input["show-attributes"],
@@ -211,17 +153,17 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				})
 				.optional(),
 
-			fields: dynamic_enum_array_schema(
-				"fields",
-				field_labels,
-				input["fields"],
-			).optional(),
+			fields: zod.schema
+				.dynamic_enum_array("fields", field_labels, input["fields"])
+				.optional(),
 
-			"field-groups": dynamic_enum_array_schema(
-				"field-groups",
-				group_labels,
-				input["field-groups"],
-			).optional(),
+			"field-groups": zod.schema
+				.dynamic_enum_array(
+					"field-groups",
+					group_labels,
+					input["field-groups"],
+				)
+				.optional(),
 
 			depth: z
 				.array(
@@ -282,7 +224,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					z.object({
 						// TODO: Use a custom zod schema to retain string template literals here
 						// https://github.com/colinhacks/zod?tab=readme-ov-file#custom-schemas
-						field: dynamic_enum_schema(
+						field: zod.schema.dynamic_enum(
 							[
 								...SIMPLE_EDGE_SORT_FIELDS,
 								...data.edge_fields.map(
@@ -306,7 +248,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 								{
 									// SOURCE: https://github.com/colinhacks/zod/issues/117#issuecomment-1595801389
 									errorMap: (_err, ctx) => ({
-										message: zod_invalid_enum_msg(
+										message: zod.error.invalid_enum(
 											"sort.order" as CodeblockField,
 											["asc", "desc"],
 											ctx.data,
@@ -367,12 +309,6 @@ export const CodeblockSchema = {
 	FIELDS,
 
 	build,
-
-	error: {
-		zod_not_array_msg,
-		zod_not_string_msg,
-		zod_invalid_enum_msg,
-	},
 };
 
 export type ICodeblock = {

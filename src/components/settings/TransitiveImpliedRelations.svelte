@@ -9,10 +9,14 @@
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField } from "src/interfaces/settings";
+	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { Mermaid } from "src/utils/mermaid";
+	import { split_and_trim } from "src/utils/strings";
 	import {
 		get_transitive_rule_name,
+		input_transitive_rule_schema,
+		parse_transitive_relation,
 		stringify_transitive_relation,
 		transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
@@ -69,6 +73,63 @@
 			opens[new_length - 1] = true;
 
 			setTimeout(() => actions.scroll_to(new_length - 1), 0);
+
+			transitives = transitives;
+			settings.is_dirty = true;
+		},
+
+		add_bulk: () => {
+			const textarea = document.getElementById(
+				"BC-transitive-bulk-str",
+			) as HTMLTextAreaElement | null;
+			if (!textarea) return new Notice("Could not find textarea.");
+
+			const value = textarea.value.trim();
+			if (!value) return new Notice("No rules to parse.");
+
+			const lines = split_and_trim(value, "\n").filter(Boolean);
+
+			const parsed = lines
+				.map(parse_transitive_relation)
+				.filter((r) => r.ok) as Extract<
+				ReturnType<typeof parse_transitive_relation>,
+				{ ok: true }
+			>[];
+
+			if (parsed.length !== lines.length) {
+				return new Notice(
+					"Some rules could not be parsed. Ensure you're using the correct syntax of `[field-one, field-two] -> close-field`, with each rule of a new line.",
+				);
+			}
+
+			const validated = parsed.map((r) =>
+				input_transitive_rule_schema({
+					fields: plugin.settings.edge_fields,
+				}).safeParse(r.data),
+			);
+
+			const validation_errors = validated.filter((r) => !r.success);
+
+			if (validation_errors.length) {
+				log.error(
+					"Bulk-add transitive rule errors >",
+					validation_errors.map((r) =>
+						r.success ? null : r.error?.issues,
+					),
+				);
+
+				return new Notice(
+					"Some rules could not be parsed. Check the logs for more information.",
+				);
+			}
+
+			validated.forEach((r) => {
+				if (r.success) {
+					transitives.push({ ...r.data, name: "", rounds: 10 });
+				}
+			});
+
+			new Notice(`Bulk added ${validated.length} rules ✅`);
 
 			transitives = transitives;
 			settings.is_dirty = true;
@@ -211,7 +272,7 @@
 
 		{#if transitives.length > 3}
 			<button
-				class="w-8"
+				class="w-10"
 				aria-label="Jump to bottom"
 				on:click={() => actions.scroll_to(transitives.length - 1)}
 			>
@@ -397,6 +458,29 @@
 			<PlusIcon size={ICON_SIZE} />
 			Add New Transitive Implied Relation
 		</button>
+
+		<details open>
+			<summary>Bulk Add Rules (Advanced)</summary>
+
+			<div class="flex flex-col gap-1">
+				<p>
+					Quickly add multiple rules using the shorthand syntax: <code
+					>
+						[field-one, field-two] -> close-field
+					</code>. Each rule should be on a new line.
+				</p>
+
+				<textarea
+					id="BC-transitive-bulk-str"
+					class="h-32 w-60"
+					placeholder="[up] <- down"
+				></textarea>
+
+				<button class="w-60" on:click={actions.add_bulk}>
+					Bulk Add
+				</button>
+			</div>
+		</details>
 	</div>
 </div>
 
