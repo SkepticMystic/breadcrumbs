@@ -95,7 +95,7 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 					target: modal.contentEl,
 					props: {
 						label: `Type '${PROMPT_TARGET}' to confirm`,
-						disabled_cb: (value) => value !== PROMPT_TARGET,
+						disabled_cb: (value: string) => value !== PROMPT_TARGET,
 					},
 				}).$on("submit", async (e) => {
 					if (e.detail !== PROMPT_TARGET) {

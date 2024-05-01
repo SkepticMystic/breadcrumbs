@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from "svelte";
 
 	export let label = "";
-	export let disabled_cb: (value: string) => boolean = () => false;
+	export let disabled_cb: (value: string) => boolean = (_value) => false;
 
 	let value = "";
 
