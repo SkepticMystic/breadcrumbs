@@ -7,6 +7,7 @@ use web_time::Instant;
 
 use crate::{
     graph::{EdgeData, NoteGraph},
+    graph_traversal::TraversalOptions,
     utils::{NoteGraphError, Result},
 };
 
@@ -85,33 +86,17 @@ impl MermaidGraphData {
 impl NoteGraph {
     pub fn generate_mermaid_graph(
         &self,
-        entry_nodes: Vec<String>,
-        edge_types: Vec<String>,
-        max_depth: u32,
+        traversal_options: TraversalOptions,
         diagram_options: MermaidGraphOptions,
     ) -> Result<MermaidGraphData> {
         let now = Instant::now();
 
-        let mut entry_node_indices: Vec<NodeIndex<u32>> = Vec::new();
-        for node in entry_nodes {
-            let node_index = self
-                .int_get_node_index(&node)
-                .ok_or(NoteGraphError::new("Node not found"))?;
-            entry_node_indices.push(node_index);
-        }
-
-        let (node_map, edge_map) = self.int_traverse_breadth_first(
-            entry_node_indices,
-            Some(&edge_types),
-            max_depth,
-            |_, depth| depth,
-            |edge| edge,
-        );
+        let (node_map, edge_map) = self.int_traverse_basic(&traversal_options)?;
 
         let traversal_elapsed = now.elapsed();
 
         let mut result = String::new();
-        // NOTE: double curly braces are used to escape the curly braces in the string
+
         result.push_str(&diagram_options.init_line);
         result.push_str("\n");
         result.push_str(
@@ -128,7 +113,6 @@ impl NoteGraph {
             (NodeIndex<u32>, NodeIndex<u32>, Vec<EdgeData>, Vec<EdgeData>),
         > = HashMap::new();
 
-        // TODO: this sucks, maybe use a tuple of node indices instead of strings
         for (_, edge_ref) in edge_map {
             let forward_dir = (edge_ref.source(), edge_ref.target());
 
@@ -170,7 +154,8 @@ impl NoteGraph {
             let node_label = match diagram_options.node_label_fn {
                 Some(ref function) => {
                     match function.call1(&JsValue::NULL, &weight.clone().into()) {
-                        Ok(value) => value.as_string().unwrap_or_default(),
+                        // TODO: maybe error when the return value is not a string?
+                        Ok(value) => value.as_string().unwrap_or(weight.path.clone()),
                         Err(e) => {
                             return Err(NoteGraphError::new(
                                 format!("Error calling function: {:?}", e).as_str(),

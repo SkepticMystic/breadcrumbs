@@ -15,6 +15,7 @@
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
+	import { RecTraversalData, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -27,30 +28,43 @@
 	} = plugin.settings.views.side.tree;
 	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
-	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.build_tree(
-			plugin.graph,
-			$active_file_store!.path,
-			// TODO: Customisable max depth
-			{ max_depth: 20 },
-			(edge) => has_edge_attrs(edge, attr),
-		);
-
-	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
-
 	$: edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
 	);
 
-	$: tree =
-		$active_file_store && plugin.graph.hasNode($active_file_store.path)
-			? merge_fields
-				? base_traversal({ $or_fields: edge_field_labels })
-				: edge_field_labels.flatMap((field) =>
-						base_traversal({ field }),
-					)
-			: [];
+	$: tree = plugin.graph.rec_traverse(
+		new TraversalOptions(
+			[$active_file_store!.path],
+			edge_field_labels,
+			100,
+			!merge_fields,
+		),
+	).data;
+
+	$: sort = get_edge_sorter(edge_sort_id);
+
+	// const base_traversal = (attr: EdgeAttrFilters) =>
+	// 	Traverse.build_tree(
+	// 		plugin.graph,
+	// 		$active_file_store!.path,
+	// 		// TODO: Customisable max depth
+	// 		{ max_depth: 20 },
+	// 		(edge) => has_edge_attrs(edge, attr),
+	// 	);
+
+	// $: sort = get_edge_sorter(edge_sort_id);
+
+
+
+	// $: tree =
+	// 	$active_file_store && plugin.graph.hasNode($active_file_store.path)
+	// 		? merge_fields
+	// 			? base_traversal({ $or_fields: edge_field_labels })
+	// 			: edge_field_labels.flatMap((field) =>
+	// 					base_traversal({ field }),
+	// 				)
+	// 		: [];
 </script>
 
 <div class="markdown-rendered BC-tree-view -mt-2">

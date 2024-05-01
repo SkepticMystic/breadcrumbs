@@ -14,7 +14,7 @@
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { TraversalOptions, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -31,10 +31,13 @@
 
 	export const update = () => {
 		tree = plugin.graph.rec_traverse(
-			file_path,
-			options.fields ?? [],
-			options.depth[1] ?? 100,
-		);
+			new TraversalOptions(
+				[file_path],
+				options.fields,
+				options.depth[1] ?? 100,
+				!options["merge-fields"],
+			)
+		).data;
 	};
 
 	onMount(() => {

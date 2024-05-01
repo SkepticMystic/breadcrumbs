@@ -383,6 +383,7 @@ impl NoteGraph {
         });
     }
 
+    /// Returns all edge types that are present in the graph.
     pub fn edge_types(&self) -> Vec<String> {
         self.edge_types.iter().cloned().collect()
     }

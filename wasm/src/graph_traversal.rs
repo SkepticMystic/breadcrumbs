@@ -17,11 +17,68 @@ use crate::{
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
+pub struct TraversalOptions {
+    entry_nodes: Vec<String>,
+    // if this is None, all edge types will be traversed
+    edge_types: Option<Vec<String>>,
+    max_depth: u32,
+    /// if true, multiple traversals - one for each edge type - will be performed and the results will be combined
+    /// if false, one traversal over all edge types will be performed
+    separate_edges: bool,
+}
+
+#[wasm_bindgen]
+impl TraversalOptions {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        entry_nodes: Vec<String>,
+        edge_types: Option<Vec<String>>,
+        max_depth: u32,
+        separate_edges: bool,
+    ) -> TraversalOptions {
+        TraversalOptions {
+            entry_nodes,
+            edge_types,
+            max_depth,
+            separate_edges,
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn entry_nodes(&self) -> Vec<String> {
+        self.entry_nodes.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn edge_types(&self) -> Option<Vec<String>> {
+        self.edge_types.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn max_depth(&self) -> u32 {
+        self.max_depth
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn separate_edges(&self) -> bool {
+        self.separate_edges
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Debug)]
 pub struct RecTraversalData {
     // the edge struct that was traversed
     edge: EdgeStruct,
     // the depth of the node in the traversal
     depth: u32,
+    // the number of total children of the node, so also children of children
+    number_of_children: u32,
     // the children of the node
     children: Vec<RecTraversalData>,
 }
@@ -29,10 +86,16 @@ pub struct RecTraversalData {
 #[wasm_bindgen]
 impl RecTraversalData {
     #[wasm_bindgen(constructor)]
-    pub fn new(edge: EdgeStruct, depth: u32, children: Vec<RecTraversalData>) -> RecTraversalData {
+    pub fn new(
+        edge: EdgeStruct,
+        depth: u32,
+        number_of_children: u32,
+        children: Vec<RecTraversalData>,
+    ) -> RecTraversalData {
         RecTraversalData {
             edge,
             depth,
+            number_of_children,
             children,
         }
     }
@@ -64,51 +127,117 @@ impl RecTraversalData {
 }
 
 #[wasm_bindgen]
-impl NoteGraph {
-    pub fn rec_traverse(
-        &self,
-        entry_node: String,
-        edge_types: Vec<String>,
+#[derive(Clone, Debug)]
+pub struct RecTraversalResult {
+    data: Vec<RecTraversalData>,
+    node_count: u32,
+    max_depth: u32,
+    traversal_time: u64,
+}
+
+#[wasm_bindgen]
+impl RecTraversalResult {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        data: Vec<RecTraversalData>,
+        node_count: u32,
         max_depth: u32,
-    ) -> Result<Vec<RecTraversalData>> {
+        traversal_time: u64,
+    ) -> RecTraversalResult {
+        RecTraversalResult {
+            data,
+            node_count,
+            max_depth,
+            traversal_time,
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn data(&self) -> Vec<RecTraversalData> {
+        self.data.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn node_count(&self) -> u32 {
+        self.node_count
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn max_depth(&self) -> u32 {
+        self.max_depth
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn traversal_time(&self) -> u64 {
+        self.traversal_time
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
+}
+
+#[wasm_bindgen]
+impl NoteGraph {
+    pub fn rec_traverse(&self, options: TraversalOptions) -> Result<RecTraversalResult> {
         let now = Instant::now();
 
-        let start_node = self
-            .int_get_node_index(&entry_node)
-            .ok_or(NoteGraphError::new("Node not found"))?;
-        let start_node_weight = self.int_get_node_weight(start_node)?;
-
-        let mut node_count = 1;
         let mut result = Vec::new();
 
-        for edge in self.graph.edges(start_node) {
-            let target = edge.target();
+        let edge_types = options.edge_types.unwrap_or(self.edge_types());
 
-            let edge_struct = EdgeStruct::new(
-                start_node_weight.clone(),
-                self.int_get_node_weight(target)?.clone(),
-                edge.weight().clone(),
-            );
+        for entry_node in &options.entry_nodes {
+            let start_node = self
+                .int_get_node_index(&entry_node)
+                .ok_or(NoteGraphError::new("Node not found"))?;
 
-            result.push(self.int_rec_traverse(
-                start_node,
-                edge_struct,
-                &edge_types,
-                0,
-                max_depth,
-                &mut node_count,
-            )?);
+            let start_node_weight = self.int_get_node_weight(start_node)?;
 
-            node_count += 1;
+            for edge in self.graph.edges(start_node) {
+                if !self.int_edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
+                    continue;
+                }
+
+                let target = edge.target();
+
+                let edge_struct = EdgeStruct::new(
+                    start_node_weight.clone(),
+                    self.int_get_node_weight(target)?.clone(),
+                    edge.weight().clone(),
+                );
+
+                if options.separate_edges {
+                    result.push(self.int_rec_traverse(
+                        start_node,
+                        edge_struct.clone(),
+                        Some(&vec![edge_struct.edge_type()]),
+                        0,
+                        options.max_depth,
+                    )?);
+                } else {
+                    result.push(self.int_rec_traverse(
+                        start_node,
+                        edge_struct,
+                        Some(&edge_types),
+                        0,
+                        options.max_depth,
+                    )?);
+                }
+            }
         }
 
-        let total_elapsed = now.elapsed();
-        utils::log(format!(
-            "Total tree took {:.2?} ({} nodes)",
-            total_elapsed, node_count
-        ));
+        let node_count = self.int_rec_count_children(&mut result);
+        let max_depth = self.int_rec_max_depth(&result);
 
-        Ok(result)
+        let total_elapsed = now.elapsed();
+
+        Ok(RecTraversalResult::new(
+            result,
+            node_count,
+            max_depth,
+            total_elapsed.as_millis() as u64,
+        ))
     }
 }
 
@@ -120,10 +249,9 @@ impl NoteGraph {
         &self,
         node: NodeIndex<u32>,
         edge: EdgeStruct,
-        edge_types: &Vec<String>,
+        edge_types: Option<&Vec<String>>,
         depth: u32,
         max_depth: u32,
-        node_count: &mut usize,
     ) -> Result<RecTraversalData> {
         let mut new_children = Vec::new();
 
@@ -131,7 +259,7 @@ impl NoteGraph {
             for outgoing_edge in self.graph.edges(node) {
                 let edge_weight = outgoing_edge.weight();
 
-                if edge_types.contains(&edge_weight.edge_type) {
+                if self.int_edge_matches_edge_filter(&edge_weight, edge_types) {
                     let target = outgoing_edge.target();
 
                     let edge_struct = EdgeStruct::new(
@@ -146,15 +274,79 @@ impl NoteGraph {
                         edge_types,
                         depth + 1,
                         max_depth,
-                        node_count,
                     )?)
                 }
             }
         }
 
-        *node_count += new_children.len();
+        Ok(RecTraversalData::new(edge, depth, 0, new_children))
+    }
 
-        Ok(RecTraversalData::new(edge, depth, new_children))
+    pub fn int_rec_count_children(&self, data: &mut Vec<RecTraversalData>) -> u32 {
+        let mut total_children = 0;
+
+        for datum in data.iter_mut() {
+            datum.number_of_children = self.int_rec_count_children(&mut datum.children);
+            total_children += 1 + datum.number_of_children;
+        }
+
+        total_children
+    }
+
+    pub fn int_rec_max_depth(&self, data: &Vec<RecTraversalData>) -> u32 {
+        data.iter()
+            .map(|datum| u32::max(self.int_rec_max_depth(&datum.children), datum.depth))
+            .max()
+            .unwrap_or(0)
+    }
+
+    pub fn int_traverse_basic(
+        &self,
+        options: &TraversalOptions,
+    ) -> Result<(
+        Vec<(NodeIndex<u32>, u32)>,
+        Vec<(EdgeIndex<u32>, EdgeReference<EdgeData, u32>)>,
+    )> {
+        let entry_nodes = options
+            .entry_nodes
+            .iter()
+            .map(|node| {
+                self.int_get_node_index(node)
+                    .ok_or(NoteGraphError::new("Node not found"))
+            })
+            .into_iter()
+            .collect::<Result<Vec<NodeIndex<u32>>>>()?;
+
+        if options.separate_edges {
+            let mut node_list = Vec::new();
+            let mut edge_list = Vec::new();
+
+            let all_edge_types = self.edge_types();
+            let edge_types: &Vec<String> = options.edge_types.as_ref().unwrap_or(&all_edge_types);
+
+            for edge_type in edge_types {
+                let (nodes, edges) = self.int_traverse_depth_first(
+                    entry_nodes.clone(),
+                    Some(&vec![edge_type.clone()]),
+                    options.max_depth,
+                    |_, depth| depth,
+                    |edge| edge,
+                );
+
+                node_list.extend(nodes);
+                edge_list.extend(edges);
+            }
+
+            Ok((node_list, edge_list))
+        } else {
+            Ok(self.int_traverse_depth_first(
+                entry_nodes,
+                options.edge_types.as_ref(),
+                options.max_depth,
+                |_, depth| depth,
+                |edge| edge,
+            ))
+        }
     }
 
     /// Traverses the tree in a depth first manner and calls the provided callbacks for each node and edge.
