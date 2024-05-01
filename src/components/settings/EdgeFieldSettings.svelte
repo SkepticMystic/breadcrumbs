@@ -29,6 +29,17 @@
 		fields: {
 			make_id: (label: string) => `BC-edge-field-${label}`,
 
+			scroll_to: (label: string) => {
+				const el = document.getElementById(
+					actions.fields.make_id(label),
+				);
+
+				if (el) {
+					el.scrollIntoView({ behavior: "smooth", block: "center" });
+					el.focus();
+				}
+			},
+
 			add: () => {
 				const field = {
 					label: `Edge Field ${settings.edge_fields.length + 1}`,
@@ -37,13 +48,7 @@
 				settings.edge_fields.push(field);
 
 				// Wait for Svelte to render the new item
-				setTimeout(
-					() =>
-						(window.location.hash = actions.fields.make_id(
-							field.label,
-						)),
-					0,
-				);
+				setTimeout(() => actions.fields.scroll_to(field.label), 0);
 
 				settings.is_dirty = true;
 				plugin = plugin;
@@ -146,6 +151,17 @@
 		groups: {
 			make_id: (label: string) => `BC-edge-group-${label}`,
 
+			scroll_to: (label: string) => {
+				const el = document.getElementById(
+					actions.groups.make_id(label),
+				);
+
+				if (el) {
+					el.scrollIntoView({ behavior: "smooth", block: "center" });
+					el.focus();
+				}
+			},
+
 			add: () => {
 				const group = {
 					label: `Group ${settings.edge_field_groups.length + 1}`,
@@ -155,13 +171,7 @@
 				settings.edge_field_groups.push(group);
 
 				// Wait for Svelte to render the new item
-				setTimeout(
-					() =>
-						(window.location.hash = actions.groups.make_id(
-							group.label,
-						)),
-					0,
-				);
+				setTimeout(() => actions.groups.scroll_to(group.label), 0);
 
 				settings.is_dirty = true;
 				plugin = plugin;
@@ -308,14 +318,15 @@
 		</div>
 
 		{#if settings.edge_fields.length > 3}
-			<button class="w-8" aria-label="Jump to bottom">
-				<a
-					href="#{actions.fields.make_id(
-						settings.edge_fields.last()?.label ?? '',
-					)}"
-				>
-					<ArrowDown size={ICON_SIZE} />
-				</a>
+			<button
+				class="w-10"
+				aria-label="Jump to bottom"
+				on:click={() =>
+					actions.fields.scroll_to(
+						settings.edge_fields.last()?.label ?? "",
+					)}
+			>
+				<ArrowDown size={ICON_SIZE} />
 			</button>
 		{/if}
 	</div>
@@ -357,10 +368,9 @@
 							<div class="flex items-center gap-0.5">
 								<Tag
 									tag={group_label}
-									href="#{actions.groups.make_id(
-										group_label,
-									)}"
 									title="Jump to group. Right click for more actions."
+									on:click={() =>
+										actions.groups.scroll_to(group_label)}
 									on:contextmenu={context_menus.field_group(
 										field,
 										group_label,
@@ -436,14 +446,15 @@
 		</div>
 
 		{#if settings.edge_field_groups.length > 3}
-			<button class="w-8" aria-label="Jump to bottom">
-				<a
-					href="#{actions.groups.make_id(
-						settings.edge_field_groups.last()?.label ?? '',
-					)}"
-				>
-					<ArrowDown size={ICON_SIZE} />
-				</a>
+			<button
+				class="w-10"
+				aria-label="Jump to bottom"
+				on:click={() =>
+					actions.groups.scroll_to(
+						settings.edge_field_groups.last()?.label ?? "",
+					)}
+			>
+				<ArrowDown size={ICON_SIZE} />
 			</button>
 		{/if}
 	</div>
@@ -478,8 +489,9 @@
 						<div class="flex items-center gap-0.5">
 							<Tag
 								tag={field_label}
-								href="#{actions.fields.make_id(field_label)}"
 								title="Jump to field. Right click for more actions."
+								on:click={() =>
+									actions.fields.scroll_to(field_label)}
 								on:contextmenu={context_menus.group_field(
 									group,
 									field_label,

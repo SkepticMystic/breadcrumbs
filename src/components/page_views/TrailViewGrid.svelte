@@ -20,6 +20,8 @@
 	);
 </script>
 
+<!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here
+			https://discord.com/channels/686053708261228577/702656734631821413/1234871810185629859 -->
 <div
 	class="BC-trail-view grid"
 	style="grid-template-rows: min-content;

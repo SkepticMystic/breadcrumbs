@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { ArrowDown, ArrowUp, PlusIcon, SaveIcon } from "lucide-svelte";
+	import {
+		ArrowDown,
+		ArrowUp,
+		ClipboardIcon,
+		PlusIcon,
+		SaveIcon,
+	} from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
 	import type { EdgeField } from "src/interfaces/settings";
@@ -44,6 +50,11 @@
 
 		make_id: (rule_i: number) => `BC-transitive-rule-${rule_i}`,
 
+		scroll_to: (rule_i: number) =>
+			document
+				.getElementById(actions.make_id(rule_i))
+				?.scrollIntoView({ behavior: "smooth" }),
+
 		add_transitive: () => {
 			const new_length = transitives.push({
 				name: "",
@@ -57,10 +68,21 @@
 
 			opens[new_length - 1] = true;
 
-			setTimeout(
-				() => (window.location.hash = actions.make_id(new_length - 1)),
-				0,
-			);
+			setTimeout(() => actions.scroll_to(new_length - 1), 0);
+
+			transitives = transitives;
+			settings.is_dirty = true;
+		},
+
+		copy_transitive: (i: number) => {
+			const new_length = transitives.push({
+				...transitives[i],
+				name: `${get_transitive_rule_name(transitives[i])} (copy)`,
+			});
+
+			opens[new_length - 1] = true;
+
+			setTimeout(() => actions.scroll_to(new_length - 1), 0);
 
 			transitives = transitives;
 			settings.is_dirty = true;
@@ -188,10 +210,12 @@
 		</div>
 
 		{#if transitives.length > 3}
-			<button class="w-8" aria-label="Jump to bottom">
-				<a href="#{actions.make_id(transitives.length - 1)}">
-					<ArrowDown size={ICON_SIZE} />
-				</a>
+			<button
+				class="w-8"
+				aria-label="Jump to bottom"
+				on:click={() => actions.scroll_to(transitives.length - 1)}
+			>
+				<ArrowDown size={ICON_SIZE} />
 			</button>
 		{/if}
 
@@ -231,6 +255,13 @@
 								actions.reorder_transitive(rule_i, rule_i + 1)}
 						>
 							<ArrowDown size={ICON_SIZE} />
+						</button>
+
+						<button
+							aria-label="Copy Transitive Implied Relation"
+							on:click={() => actions.copy_transitive(rule_i)}
+						>
+							<ClipboardIcon size={ICON_SIZE} />
 						</button>
 
 						<button
@@ -320,16 +351,26 @@
 						<div class="flex flex-wrap items-center gap-3">
 							<span class="font-semibold">Name (optional):</span>
 
-							<input
-								type="text"
-								value={rule.name}
-								placeholder="Rule Name"
-								on:blur={(e) =>
-									actions.rename_transitive(
-										rule_i,
-										e.currentTarget.value,
-									)}
-							/>
+							<div class="flex gap-1">
+								<input
+									type="text"
+									value={rule.name}
+									placeholder="Rule Name"
+									on:blur={(e) =>
+										actions.rename_transitive(
+											rule_i,
+											e.currentTarget.value,
+										)}
+								/>
+
+								<button
+									aria-label="Reset Name"
+									on:click={() =>
+										actions.rename_transitive(rule_i, "")}
+								>
+									X
+								</button>
+							</div>
 						</div>
 
 						{#if opens[rule_i]}
