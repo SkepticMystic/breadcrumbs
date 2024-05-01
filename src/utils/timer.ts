@@ -9,12 +9,16 @@ export class Timer {
 		return performance.now() - this.start;
 	}
 
+	elapsed_str(digits = 0): string {
+		return this.elapsed().toFixed(digits);
+	}
+
 	reset(): void {
 		this.start = performance.now();
 	}
 
 	elapsedMessage(action: string, reset = false): string {
-		const msg = `${action} took ${Math.round(this.elapsed() * 100) / 100}ms`;
+		const msg = `${action} took ${this.elapsed_str(2)}ms`;
 
 		if (reset) this.reset();
 

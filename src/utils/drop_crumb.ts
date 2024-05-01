@@ -45,6 +45,8 @@ export const drop_crumbs = async (
 	})[],
 	options: { destination: CrumbDestination | "none" },
 ) => {
+	if (!crumbs.length) return;
+
 	const links_by_field = group_projection(
 		group_by(crumbs, (e) => e.attr.field!),
 		(edges) =>

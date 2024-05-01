@@ -7,19 +7,14 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
-import { get } from "svelte/store";
 import { BCAPI } from "./api";
 import { CodeblockMDRC } from "./codeblocks/MDRC";
-import { freeze_implied_edges_to_note } from "./commands/freeze_edges";
-import { jump_to_neighbour } from "./commands/jump";
-import { get_graph_stats } from "./commands/stats";
-import { thread } from "./commands/thread";
+import { init_all_commands } from "./commands/init";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
 import { BCGraph } from "./graph/MyMultiGraph";
 import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
-import { CreateListIndexModal } from "./modals/CreateListIndexModal";
 import { migrate_old_settings } from "./settings/migration";
 import { EdgeFieldSuggestor } from "./suggestor/edge_fields";
 import { deep_merge_objects } from "./utils/objects";
@@ -225,97 +220,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		);
 
 		// Commands
-		this.addCommand({
-			id: "breadcrumbs:rebuild-graph",
-			name: "Rebuild graph",
-			callback: async () => await this.refresh(),
-		});
-
-		Object.keys(VIEW_IDS).forEach((view_id) => {
-			this.addCommand({
-				id: `breadcrumbs:open-${view_id}-view`,
-				name: `Open ${view_id} view`,
-				callback: () =>
-					this.activateView(
-						VIEW_IDS[view_id as keyof typeof VIEW_IDS],
-					),
-			});
-		});
-
-		this.addCommand({
-			id: "breadcrumbs:create-list-index",
-			name: "Create list index",
-			callback: () => {
-				new CreateListIndexModal(this.app, this).open();
-			},
-		});
-
-		this.addCommand({
-			id: "breadcrumbs:graph-stats",
-			name: "Show/Copy graph stats",
-			callback: async () => {
-				const stats = get_graph_stats(this.graph, {
-					groups: this.settings.edge_field_groups,
-				});
-				log.feat("Graph stats >", stats);
-
-				await navigator.clipboard.writeText(
-					JSON.stringify(stats, null, 2),
-				);
-
-				new Notice(
-					"Graph stats printed to console and copied to clipboard",
-				);
-			},
-		});
-
-		this.addCommand({
-			id: "breadcrumbs:freeze-implied-edges-to-note",
-			name: "Freeze implied edges to note",
-			callback: async () => {
-				// TODO: Probably add an intermediate modal to specify options
-				// The whole point is to make implied edges explicit
-				// So once you freeze them, they'll be duplicated
-				// So, in the options modal, you could temporarily enabled/disable certain implied_relations on the hierarchy
-				// preventing duplicates for implied_relations that weren't properly enabled
-				const active_file = get(active_file_store);
-				if (!active_file) return;
-
-				await freeze_implied_edges_to_note(
-					this,
-					active_file,
-					this.settings.commands.freeze_implied_edges.default_options,
-				);
-
-				new Notice("Implied edges frozen to note");
-			},
-		});
-
-		/// Jump to first neighbour
-		this.settings.edge_field_groups.forEach((group) => {
-			this.addCommand({
-				id: `breadcrumbs:jump-to-first-neighbour-group:${group.label}`,
-				name: `Jump to first neighbour by group:${group.label}`,
-				callback: () =>
-					jump_to_neighbour(this, {
-						attr: { $or_fields: group.fields },
-					}),
-			});
-		});
-
-		// Thread
-		this.settings.edge_fields.forEach(({ label }) => {
-			this.addCommand({
-				id: `breadcrumbs:thread-field:${label}`,
-				name: `Thread by field:${label}`,
-				callback: () =>
-					thread(
-						this,
-						{ field: label },
-						this.settings.commands.thread.default_options,
-					),
-			});
-		});
+		init_all_commands(this);
 
 		log.debug("loaded Breadcrumbs plugin");
 	}
@@ -381,7 +286,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			notice?.setMessage(
 				[
-					`Rebuilt graph in ${timer.elapsed().toFixed(1)}ms`,
+					`Rebuilt graph in ${timer.elapsed_str()}ms`,
 
 					explicit_edge_errors.length
 						? "\nExplicit edge errors (see console for details):"
