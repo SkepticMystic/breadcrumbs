@@ -1,6 +1,8 @@
 pub mod graph;
 pub mod graph_construction;
+pub mod graph_mermaid;
 pub mod graph_rules;
+pub mod graph_traversal;
 pub mod graph_update;
 pub mod utils;
 

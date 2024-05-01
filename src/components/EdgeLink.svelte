@@ -1,10 +1,9 @@
 <script lang="ts">
 	import ObsidianLink from "src/components/ObsidianLink.svelte";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import { stringify_node } from "src/graph/utils";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import BreadcrumbsPlugin from "src/main";
-	import type { EdgeData, EdgeStruct, NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let edge: EdgeStruct;
 	export let plugin: BreadcrumbsPlugin;
@@ -12,6 +11,7 @@
 	export let cls = "";
 
 	let target_node = edge.target;
+	
 	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
 	const display = stringify_node(target_node, {

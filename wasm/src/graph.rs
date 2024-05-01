@@ -3,7 +3,6 @@ use std::{
     fmt::Debug,
 };
 
-use itertools::{EitherOrBoth, Itertools};
 use petgraph::{
     stable_graph::{EdgeIndex, EdgeReference, Edges, NodeIndex, StableGraph},
     visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences, NodeRef},
@@ -16,10 +15,7 @@ use crate::{
     graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
     graph_rules::TransitiveGraphRule,
     graph_update::BatchGraphUpdate,
-    utils::{
-        self, BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
-        GraphTraversalDataStructure, NoteGraphError, Result,
-    },
+    utils::{self, NoteGraphError, Result},
 };
 
 #[wasm_bindgen]
@@ -65,6 +61,47 @@ impl EdgeData {
     #[wasm_bindgen(getter)]
     pub fn round(&self) -> u8 {
         self.round
+    }
+}
+
+impl EdgeData {
+    pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
+        let mut result = vec![];
+
+        // the mapping that exist on the JS side are as follows
+        // "field" | "explicit" | "source" | "implied_kind" | "round"
+
+        // TODO: maybe change the attribute options so that the JS side better matches the data
+
+        for attribute in attributes {
+            let data = match attribute.as_str() {
+                "field" => Some(("field", self.edge_type.clone())),
+                "explicit" => Some(("explicit", (!self.implied).to_string())),
+                "source" => {
+                    if !self.implied {
+                        Some(("source", self.edge_source.clone()))
+                    } else {
+                        None
+                    }
+                }
+                "implied_kind" => {
+                    if self.implied {
+                        Some(("implied_kind", self.edge_source.clone()))
+                    } else {
+                        None
+                    }
+                }
+                "round" => Some(("round", self.round.to_string())),
+                _ => None,
+            };
+
+            match data {
+                Some(data) => result.push(format!("{}={}", data.0, data.1)),
+                None => {}
+            }
+        }
+
+        result.join(" ")
     }
 }
 
@@ -163,15 +200,8 @@ pub struct EdgeStruct {
     pub source: NodeData,
     #[wasm_bindgen(skip)]
     pub target: NodeData,
-
     #[wasm_bindgen(skip)]
-    pub edge_type: String,
-    #[wasm_bindgen(skip)]
-    pub edge_source: String,
-    #[wasm_bindgen(skip)]
-    pub implied: bool,
-    #[wasm_bindgen(skip)]
-    pub round: u8,
+    pub edge: EdgeData,
 }
 
 #[wasm_bindgen]
@@ -181,10 +211,7 @@ impl EdgeStruct {
         EdgeStruct {
             source,
             target,
-            edge_type: edge.edge_type,
-            edge_source: edge.edge_source,
-            implied: edge.implied,
-            round: edge.round,
+            edge,
         }
     }
 
@@ -200,61 +227,26 @@ impl EdgeStruct {
 
     #[wasm_bindgen(getter)]
     pub fn edge_type(&self) -> String {
-        self.edge_type.clone()
+        self.edge.edge_type.clone()
     }
 
     #[wasm_bindgen(getter)]
     pub fn edge_source(&self) -> String {
-        self.edge_source.clone()
+        self.edge.edge_source.clone()
     }
 
     #[wasm_bindgen(getter)]
     pub fn implied(&self) -> bool {
-        self.implied
+        self.edge.implied
     }
 
     #[wasm_bindgen(getter)]
     pub fn round(&self) -> u8 {
-        self.round
+        self.edge.round
     }
 
     pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
-        let mut result = vec![];
-
-        // the mapping that exist on the JS side are as follows
-        // "field" | "explicit" | "source" | "implied_kind" | "round"
-
-        // TODO: maybe change the attribute options so that the JS side better matches the data
-
-        for attribute in attributes {
-            let data = match attribute.as_str() {
-                "field" => Some(("field", self.edge_type.clone())),
-                "explicit" => Some(("explicit", (!self.implied).to_string())),
-                "source" => {
-                    if !self.implied {
-                        Some(("source", self.edge_source.clone()))
-                    } else {
-                        None
-                    }
-                }
-                "implied_kind" => {
-                    if self.implied {
-                        Some(("implied_kind", self.edge_source.clone()))
-                    } else {
-                        None
-                    }
-                }
-                "round" => Some(("round", self.round.to_string())),
-                _ => None,
-            };
-
-            match data {
-                Some(data) => result.push(format!("{}={}", data.0, data.1)),
-                None => {}
-            }
-        }
-
-        result.join(" ")
+        self.edge.get_attribute_label(&attributes)
     }
 }
 
@@ -263,101 +255,6 @@ impl EdgeStruct {
 //         self.path == other.path
 //     }
 // }
-
-#[wasm_bindgen]
-#[derive(Clone, Debug)]
-pub struct MermaidGraphOptions {
-    active_node: Option<String>,
-    init_line: String,
-    chart_type: String,
-    direction: String,
-    collapse_opposing_edges: bool,
-    edge_label_attributes: Vec<String>,
-    node_label_fn: Option<js_sys::Function>,
-}
-
-#[wasm_bindgen]
-pub struct MermaidGraphData {
-    mermaid: String,
-    traversal_time: u64,
-    total_time: u64,
-}
-
-#[wasm_bindgen]
-impl MermaidGraphData {
-    #[wasm_bindgen(getter)]
-    pub fn mermaid(&self) -> String {
-        self.mermaid.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn traversal_time(&self) -> u64 {
-        self.traversal_time
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn total_time(&self) -> u64 {
-        self.total_time
-    }
-}
-
-impl MermaidGraphData {
-    pub fn new(mermaid: String, traversal_time: u64, total_time: u64) -> MermaidGraphData {
-        MermaidGraphData {
-            mermaid,
-            traversal_time,
-            total_time,
-        }
-    }
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Debug)]
-pub struct RecTraversalData {
-    // the edge struct that was traversed
-    edge: EdgeStruct,
-    // the depth of the node in the traversal
-    depth: u32,
-    // the children of the node
-    children: Vec<RecTraversalData>,
-}
-
-#[wasm_bindgen]
-impl RecTraversalData {
-    #[wasm_bindgen(constructor)]
-    pub fn new(edge: EdgeStruct, depth: u32, children: Vec<RecTraversalData>) -> RecTraversalData {
-        RecTraversalData {
-            edge,
-            depth,
-            children,
-        }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge(&self) -> EdgeStruct {
-        self.edge.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn depth(&self) -> u32 {
-        self.depth
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn children(&self) -> Vec<RecTraversalData> {
-        self.children.clone()
-    }
-
-    #[wasm_bindgen(setter)]
-    pub fn set_children(&mut self, children: Vec<RecTraversalData>) {
-        self.children = children;
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self)
-    }
-}
 
 #[wasm_bindgen]
 #[derive(Clone)]
@@ -488,268 +385,6 @@ impl NoteGraph {
 
     pub fn edge_types(&self) -> Vec<String> {
         self.edge_types.iter().cloned().collect()
-    }
-
-    // pub fn subgraph(&self, edge_types: Vec<String>) -> Result<NoteGraph> {
-    //     let mut subgraph = self.clone();
-
-    //     for edge in subgraph.graph.edge_indices() {
-    //         let edge_data = subgraph.int_get_edge_weight(edge)?;
-
-    //         if !edge_types.contains(&edge_data.edge_type) {
-    //             subgraph.graph.remove_edge(edge);
-    //         }
-    //     }
-
-    //     Ok(subgraph)
-    // }
-
-    pub fn generate_mermaid_graph(
-        &self,
-        entry_nodes: Vec<String>,
-        edge_types: Vec<String>,
-        max_depth: u32,
-        diagram_options: MermaidGraphOptions,
-    ) -> Result<MermaidGraphData> {
-        let now = Instant::now();
-
-        let mut entry_node_indices: Vec<NodeIndex<u32>> = Vec::new();
-        for node in entry_nodes {
-            let node_index = self
-                .int_get_node_index(&node)
-                .ok_or(NoteGraphError::new("Node not found"))?;
-            entry_node_indices.push(node_index);
-        }
-
-        let (node_map, edge_map) = self.int_traverse_breadth_first(
-            entry_node_indices,
-            Some(&edge_types),
-            max_depth,
-            |_, depth| depth,
-            |edge| edge,
-        );
-
-        let traversal_elapsed = now.elapsed();
-
-        let mut result = String::new();
-        // NOTE: double curly braces are used to escape the curly braces in the string
-        result.push_str(&diagram_options.init_line);
-        result.push_str("\n");
-        result.push_str(
-            format!(
-                "{} {}\n",
-                diagram_options.chart_type, diagram_options.direction
-            )
-            .as_str(),
-        );
-
-        // accumulate edges by direction, so that we can collapse them in the next step
-        let mut accumulated_edges: HashMap<
-            (NodeIndex<u32>, NodeIndex<u32>),
-            (NodeIndex<u32>, NodeIndex<u32>, Vec<EdgeData>, Vec<EdgeData>),
-        > = HashMap::new();
-
-        // TODO: this sucks, maybe use a tuple of node indices instead of strings
-        for (_, edge_ref) in edge_map {
-            let forward_dir = (edge_ref.source(), edge_ref.target());
-
-            let entry1 = accumulated_edges.get_mut(&forward_dir);
-            match entry1 {
-                Some((_, _, forward, _)) => {
-                    forward.push(edge_ref.weight().clone());
-                }
-                None => {
-                    let backward_dir = (edge_ref.target(), edge_ref.source());
-
-                    let entry2 = accumulated_edges.get_mut(&backward_dir);
-                    match entry2 {
-                        Some((_, _, _, backward)) => {
-                            backward.push(edge_ref.weight().clone());
-                        }
-                        None => {
-                            accumulated_edges.insert(
-                                forward_dir,
-                                (
-                                    edge_ref.source(),
-                                    edge_ref.target(),
-                                    vec![edge_ref.weight().clone()],
-                                    Vec::new(),
-                                ),
-                            );
-                        }
-                    }
-                }
-            }
-        }
-
-        let mut unresolved_nodes = HashSet::new();
-
-        // add nodes to the graph
-        for element in node_map.iter() {
-            let weight = self.int_get_node_weight(element.0.clone())?;
-
-            let node_label = match diagram_options.node_label_fn {
-                Some(ref function) => {
-                    match function.call1(&JsValue::NULL, &weight.clone().into()) {
-                        Ok(value) => value.as_string().unwrap_or_default(),
-                        Err(e) => {
-                            return Err(NoteGraphError::new(
-                                format!("Error calling function: {:?}", e).as_str(),
-                            ));
-                        }
-                    }
-                }
-                None => weight.path.clone(),
-            };
-
-            result.push_str(&format!("    {}[\"{}\"]\n", element.0.index(), node_label));
-            if !weight.resolved {
-                unresolved_nodes.insert(element.0.index());
-            }
-        }
-
-        // collapse edge data and add them to the graph
-        for (from, to, forward, backward) in accumulated_edges.values() {
-            if diagram_options.collapse_opposing_edges {
-                result.push_str(&self.generate_mermaid_edge(
-                    from,
-                    to,
-                    forward.clone(),
-                    backward.clone(),
-                ));
-            } else {
-                result.push_str(&self.generate_mermaid_edge(from, to, forward.clone(), Vec::new()));
-                result.push_str(&self.generate_mermaid_edge(
-                    to,
-                    from,
-                    backward.clone(),
-                    Vec::new(),
-                ));
-            }
-        }
-
-        if !unresolved_nodes.is_empty() {
-            result.push_str(&format!(
-                "class {} ng-node-unresolved",
-                unresolved_nodes
-                    .iter()
-                    .map(|index| format!("{}", index))
-                    .join(",")
-            ));
-        }
-
-        let total_elapsed = now.elapsed();
-
-        Ok(MermaidGraphData::new(
-            result,
-            traversal_elapsed.as_micros() as u64,
-            total_elapsed.as_micros() as u64,
-        ))
-    }
-
-    fn generate_mermaid_edge(
-        &self,
-        source: &NodeIndex<u32>,
-        target: &NodeIndex<u32>,
-        forward: Vec<EdgeData>,
-        backward: Vec<EdgeData>,
-    ) -> String {
-        let mut label = String::new();
-
-        let same_elements = forward
-            .iter()
-            .zip(backward.iter())
-            .all(|(a, b)| a.edge_type == b.edge_type);
-        let all_implied = forward
-            .iter()
-            .zip_longest(backward.iter())
-            .all(|pair| match pair {
-                EitherOrBoth::Both(a, b) => a.implied && b.implied,
-                EitherOrBoth::Left(a) => a.implied,
-                EitherOrBoth::Right(b) => b.implied,
-            });
-
-        let arrow_type = match (backward.is_empty(), all_implied) {
-            (true, true) => "-.->",
-            (true, false) => "-->",
-            (false, true) => "-.-",
-            (false, false) => "---",
-        };
-
-        label.push_str(
-            forward
-                .iter()
-                .map(|edge| edge.edge_type.clone())
-                .collect::<Vec<String>>()
-                .join(", ")
-                .as_str(),
-        );
-
-        if !same_elements && !backward.is_empty() {
-            label.push_str(" | ");
-            label.push_str(
-                backward
-                    .iter()
-                    .map(|edge| edge.edge_type.clone())
-                    .collect::<Vec<String>>()
-                    .join(", ")
-                    .as_str(),
-            );
-        }
-
-        format!(
-            "    {} {}|{}| {}\n",
-            source.index(),
-            arrow_type,
-            label,
-            target.index()
-        )
-    }
-
-    pub fn rec_traverse(
-        &self,
-        entry_node: String,
-        edge_types: Vec<String>,
-        max_depth: u32,
-    ) -> Result<Vec<RecTraversalData>> {
-        let now = Instant::now();
-
-        let start_node = self
-            .int_get_node_index(&entry_node)
-            .ok_or(NoteGraphError::new("Node not found"))?;
-        let start_node_weight = self.int_get_node_weight(start_node)?;
-
-        let mut node_count = 1;
-        let mut result = Vec::new();
-
-        for edge in self.graph.edges(start_node) {
-            let target = edge.target();
-
-            let edge_struct = EdgeStruct::new(
-                start_node_weight.clone(),
-                self.int_get_node_weight(target)?.clone(),
-                edge.weight().clone(),
-            );
-
-            result.push(self.int_rec_traverse(
-                start_node,
-                edge_struct,
-                &edge_types,
-                0,
-                max_depth,
-                &mut node_count,
-            )?);
-
-            node_count += 1;
-        }
-
-        let total_elapsed = now.elapsed();
-        utils::log(format!(
-            "Total tree took {:.2?} ({} nodes)",
-            total_elapsed, node_count
-        ));
-
-        Ok(result)
     }
 
     pub fn log(&self) {
@@ -912,50 +547,6 @@ impl NoteGraph {
         }
     }
 
-    /// Recursively traverses the graph using DFS and builds a tree structure.
-    ///
-    /// Will return an error if the node weight for any node along the traversal is not found.
-    pub fn int_rec_traverse(
-        &self,
-        node: NodeIndex<u32>,
-        edge: EdgeStruct,
-        edge_types: &Vec<String>,
-        depth: u32,
-        max_depth: u32,
-        node_count: &mut usize,
-    ) -> Result<RecTraversalData> {
-        let mut new_children = Vec::new();
-
-        if depth < max_depth {
-            for outgoing_edge in self.graph.edges(node) {
-                let edge_weight = outgoing_edge.weight();
-
-                if edge_types.contains(&edge_weight.edge_type) {
-                    let target = outgoing_edge.target();
-
-                    let edge_struct = EdgeStruct::new(
-                        edge.target.clone(),
-                        self.int_get_node_weight(target)?.clone(),
-                        edge_weight.clone(),
-                    );
-
-                    new_children.push(self.int_rec_traverse(
-                        target,
-                        edge_struct,
-                        edge_types,
-                        depth + 1,
-                        max_depth,
-                        node_count,
-                    )?)
-                }
-            }
-        }
-
-        *node_count += new_children.len();
-
-        Ok(RecTraversalData::new(edge, depth, new_children))
-    }
-
     /// Returns the node weight for a specific node index.
     ///
     /// Will return an error if the node is not found.
@@ -1034,107 +625,6 @@ impl NoteGraph {
         self.graph
             .edge_weight(edge)
             .ok_or(NoteGraphError::new("Edge not found"))
-    }
-
-    /// Traverses the tree in a depth first manner and calls the provided callbacks for each node and edge.
-    /// The depth metric **might not** accurately represent the intuitive understanding of depth on a graph.
-    /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
-    /// These lists are ordered by the order in which the nodes and edges were visited.
-    /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only added if the target node is already in the depth map.
-    pub fn int_traverse_depth_first<'a, T, S>(
-        &'a self,
-        entry_nodes: Vec<NodeIndex<u32>>,
-        edge_types: Option<&Vec<String>>,
-        max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
-        let mut data_structure = DepthFirstTraversalDataStructure::new();
-
-        self.int_traverse_generic(
-            &mut data_structure,
-            entry_nodes,
-            edge_types,
-            max_depth,
-            node_callback,
-            edge_callback,
-        )
-    }
-
-    /// Traverses the tree in a breadth first manner and calls the provided callbacks for each node and edge.
-    /// The depth metric accurately represent the intuitive understanding of depth on a graph.
-    /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
-    /// These lists are ordered by the order in which the nodes and edges were visited.
-    /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only added if the target node is already in the depth map.
-    pub fn int_traverse_breadth_first<'a, T, S>(
-        &'a self,
-        entry_nodes: Vec<NodeIndex<u32>>,
-        edge_types: Option<&Vec<String>>,
-        max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
-        let mut data_structure = BreadthFirstTraversalDataStructure::new();
-
-        self.int_traverse_generic(
-            &mut data_structure,
-            entry_nodes,
-            edge_types,
-            max_depth,
-            node_callback,
-            edge_callback,
-        )
-    }
-
-    pub fn int_traverse_generic<'a, T, S>(
-        &'a self,
-        traversal_data_structure: &mut impl GraphTraversalDataStructure<(NodeIndex<u32>, u32)>,
-        entry_nodes: Vec<NodeIndex<u32>>,
-        edge_types: Option<&Vec<String>>,
-        max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
-        let mut node_list: Vec<(NodeIndex<u32>, T)> = Vec::new();
-        let mut edge_list: Vec<(EdgeIndex<u32>, S)> = Vec::new();
-        let mut visited_nodes: HashSet<NodeIndex<u32>> = HashSet::new();
-
-        for node in entry_nodes {
-            node_list.push((node, node_callback(node, 0)));
-            visited_nodes.insert(node);
-            traversal_data_structure.push((node, 0));
-        }
-
-        while !traversal_data_structure.is_empty() {
-            let (current_node, current_depth) = traversal_data_structure.pop().unwrap();
-            let at_depth_limit = current_depth >= max_depth;
-
-            for edge in self.graph.edges(current_node) {
-                let target = edge.target();
-                let edge_data = edge.weight();
-
-                if self.int_edge_matches_edge_filter(edge_data, edge_types) {
-                    let already_visited = visited_nodes.contains(&target);
-
-                    // we only add the edge if we are not at the depth limit or if we are at the depth limit and the target node is already in the depth map
-                    // this captures all the outgoing edges from the nodes at the depth limit to nodes already present in the depth map
-                    if !at_depth_limit || (at_depth_limit && already_visited) {
-                        edge_list.push((edge.id(), edge_callback(edge)));
-                    }
-
-                    // we only insert the new node when we are not at the depth limit and the node is not already in the depth map
-                    if !at_depth_limit && !already_visited {
-                        node_list.push((target, node_callback(target, current_depth + 1)));
-                        visited_nodes.insert(target);
-                        traversal_data_structure.push((target, current_depth + 1));
-                    }
-                }
-            }
-        }
-
-        (node_list, edge_list)
     }
 
     pub fn int_edge_matches_edge_filter(
