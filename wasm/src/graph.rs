@@ -8,6 +8,7 @@ use petgraph::{
     visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences, NodeRef},
     Directed,
 };
+use vec_collections::{AbstractVecSet, VecSet};
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
@@ -294,7 +295,7 @@ pub struct NoteGraph {
     #[wasm_bindgen(skip)]
     pub transitive_rules: Vec<TransitiveGraphRule>,
     #[wasm_bindgen(skip)]
-    pub edge_types: HashSet<String>,
+    pub edge_types: VecSet<[String; 16]>,
     #[wasm_bindgen(skip)]
     pub node_hash: HashMap<String, NodeIndex<u32>>,
     update_callback: Option<js_sys::Function>,
@@ -306,7 +307,7 @@ impl NoteGraph {
         NoteGraph {
             graph: StableGraph::<NodeData, EdgeData, Directed, u32>::default(),
             transitive_rules: Vec::new(),
-            edge_types: HashSet::new(),
+            edge_types: VecSet::empty(),
             node_hash: HashMap::new(),
             update_callback: None,
         }
@@ -338,7 +339,7 @@ impl NoteGraph {
         let now = Instant::now();
 
         self.graph = StableGraph::<NodeData, EdgeData, Directed, u32>::default();
-        self.edge_types = HashSet::new();
+        self.edge_types = VecSet::empty();
 
         // self.graph.reserve_exact_nodes(nodes.len());
 
@@ -474,7 +475,7 @@ impl NoteGraph {
         // we would need to also check back edges though
         // a rule like [A, B] -> (C with back edge D) would do nothing if applied multiple times, since the edges on the left side were not modified
 
-        let mut edge_type_tracker: HashSet<String> = self.edge_types.clone();
+        let mut edge_type_tracker = self.edge_types.clone();
 
         for i in 1..(max_rounds + 1) {
             if edge_type_tracker.is_empty() {
@@ -550,7 +551,7 @@ impl NoteGraph {
 
             // utils::log(format!("New edge count: {}", edges_to_add.len()));
 
-            let mut current_edge_type_tracker: HashSet<String> = HashSet::new();
+            let mut current_edge_type_tracker: VecSet<[String; 16]> = VecSet::empty();
 
             let now2 = Instant::now();
             utils::log(format!("Adding {} Edges ", edges_to_add.len()));
@@ -575,7 +576,7 @@ impl NoteGraph {
     }
 
     pub fn int_rebuild_edge_type_tracker(&mut self) {
-        self.edge_types = HashSet::new();
+        self.edge_types = VecSet::empty();
 
         for edge in self.graph.edge_references() {
             self.edge_types.insert(edge.weight().edge_type.clone());
@@ -591,7 +592,7 @@ impl NoteGraph {
     pub fn int_add_to_edge_type_tracker(
         &mut self,
         edge_type: &String,
-        edge_type_tracker: &mut Option<&mut HashSet<String>>,
+        edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
         add_to_global: bool,
     ) {
         if add_to_global {
@@ -775,7 +776,7 @@ impl NoteGraph {
         from: NodeIndex<u32>,
         to: NodeIndex<u32>,
         edge_data: EdgeData,
-        edge_type_tracker: &mut Option<&mut HashSet<String>>,
+        edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
     ) {
         if self.int_has_edge(from, to, &edge_data.edge_type) {
             return;
@@ -1007,7 +1008,7 @@ impl NoteGraph {
     }
 
     pub fn assert_correct_trackers(&self) {
-        let mut edge_types: HashSet<String> = HashSet::new();
+        let mut edge_types: VecSet<[String; 16]> = VecSet::empty();
 
         for edge in self.graph.edge_references() {
             edge_types.insert(edge.weight().edge_type.clone());
