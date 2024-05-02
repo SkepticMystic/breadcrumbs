@@ -3,11 +3,31 @@ import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabel
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import { new_setting } from "src/utils/settings";
 
 export const _add_settings_matrix = (
 	plugin: BreadcrumbsPlugin,
 	containerEl: HTMLElement,
 ) => {
+	new_setting(containerEl, {
+		name: "Collapse",
+		desc: "Collapse the matrix by default",
+		toggle: {
+			value: plugin.settings.views.side.matrix.collapse,
+			cb: async (checked) => {
+				plugin.settings.views.side.matrix.collapse = checked;
+
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refresh({
+						redraw_side_views: true,
+						rebuild_graph: false,
+					}),
+				]);
+			},
+		},
+	});
+
 	new EdgeSortIdSettingItem({
 		target: containerEl,
 		props: { edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id },

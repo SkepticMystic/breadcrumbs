@@ -24,8 +24,8 @@
 		show_attributes,
 		show_node_options,
 		field_group_labels,
+		collapse,
 	} = plugin.settings.views.side.tree;
-	let open_signal: boolean | null = !plugin.settings.views.side.tree.collapse;
 
 	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.build_tree(
@@ -74,7 +74,7 @@
 
 			<ChevronCollapseButton
 				cls="clickable-icon nav-action-button"
-				bind:open={open_signal}
+				bind:collapse
 			/>
 
 			<MergeFieldsButton
@@ -95,11 +95,11 @@
 			{#if tree.length}
 				<NestedEdgeList
 					{sort}
+					{tree}
 					{plugin}
-					{open_signal}
 					{show_attributes}
 					{show_node_options}
-					{tree}
+					open_signal={!collapse}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

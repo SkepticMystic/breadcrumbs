@@ -9,6 +9,7 @@
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 
+	export let open: boolean;
 	export let edges: BCEdge[];
 	export let field: EdgeField;
 	export let plugin: BreadcrumbsPlugin;
@@ -19,8 +20,6 @@
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
 	export let sort: EdgeSorter;
-
-	let open = true;
 </script>
 
 <details
