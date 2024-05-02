@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransitiveGraphRule {
     #[wasm_bindgen(skip)]
     pub name: String,
@@ -39,5 +39,10 @@ impl TransitiveGraphRule {
             can_loop,
             close_reversed,
         }
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }

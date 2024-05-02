@@ -66,7 +66,7 @@ impl TraversalOptions {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("{:#?}", self)
     }
 }
 
@@ -102,6 +102,11 @@ impl Path {
 
     pub fn get_first_target(&self) -> Option<String> {
         self.edges.first().map(|edge| edge.target.path.clone())
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }
 
@@ -167,7 +172,7 @@ impl RecTraversalData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("{:#?}", self)
     }
 }
 
@@ -245,7 +250,7 @@ impl RecTraversalResult {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("{:#?}", self)
     }
 
     pub fn to_paths(&self) -> Vec<Path> {
@@ -297,7 +302,7 @@ impl NoteGraph {
 
                 if options.separate_edges {
                     result.push(self.int_rec_traverse(
-                        start_node,
+                        target,
                         edge_struct.clone(),
                         Some(&vec![edge_struct.edge_type()]),
                         0,
@@ -305,7 +310,7 @@ impl NoteGraph {
                     )?);
                 } else {
                     result.push(self.int_rec_traverse(
-                        start_node,
+                        target,
                         edge_struct,
                         Some(&edge_types),
                         0,
@@ -345,15 +350,17 @@ impl NoteGraph {
 
         if depth < max_depth {
             for outgoing_edge in self.graph.edges(node) {
-                let edge_weight = outgoing_edge.weight();
+                let edge_data = outgoing_edge.weight();
 
-                if self.int_edge_matches_edge_filter(&edge_weight, edge_types) {
+                if self.int_edge_matches_edge_filter(&edge_data, edge_types) {
                     let target = outgoing_edge.target();
+
+                    // assert!(*self.int_get_node_weight(node).unwrap() == edge.target);
 
                     let edge_struct = EdgeStruct::new(
                         edge.target.clone(),
                         self.int_get_node_weight(target)?.clone(),
-                        edge_weight.clone(),
+                        edge_data.clone(),
                     );
 
                     new_children.push(self.int_rec_traverse(

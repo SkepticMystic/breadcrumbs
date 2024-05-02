@@ -69,6 +69,11 @@ impl EdgeData {
     pub fn round(&self) -> u8 {
         self.round
     }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
+    }
 }
 
 impl EdgeData {
@@ -176,6 +181,11 @@ impl NodeData {
     pub fn ignore_out_edges(&self) -> bool {
         self.ignore_out_edges
     }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
+    }
 }
 
 impl NodeData {
@@ -262,6 +272,11 @@ impl EdgeStruct {
 
     pub fn is_self_loop(&self) -> bool {
         self.source.path == self.target.path
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }
 

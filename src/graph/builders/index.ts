@@ -10,6 +10,7 @@ import { get_all_files, type AllFiles } from "./explicit/files";
 import {
 	GraphConstructionEdgeData,
 	GraphConstructionNodeData,
+	TransitiveGraphRule,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_initial_nodes = (all_files: AllFiles) => {
@@ -104,6 +105,26 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	}
 
 	log.debug(timer.elapsedMessage("Collecting edges and nodes"));
+
+	const transitive_rules = plugin.settings.implied_relations.transitive.map((rule) => {
+		return new TransitiveGraphRule(
+			rule.name,
+			rule.chain.map((attr) => attr.field!),
+			rule.close_field,
+			rule.rounds,
+			false,
+			rule.close_reversed
+		)
+	});
+
+	for (const rule of transitive_rules) {
+		log.debug(rule.toString());
+	
+	}
+
+	plugin.graph.set_transitive_rules(
+		transitive_rules
+	);
 
 	plugin.graph.build_graph(nodes, edges);
 

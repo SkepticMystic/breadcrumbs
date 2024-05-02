@@ -301,7 +301,7 @@ impl NoteGraph {
             format!("    {} {} {}\n", source.index(), arrow_type, target.index())
         } else {
             format!(
-                "    {} {}|{}| {}\n",
+                "    {} {}|\"{}\"| {}\n",
                 source.index(),
                 arrow_type,
                 label,

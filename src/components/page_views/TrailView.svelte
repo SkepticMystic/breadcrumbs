@@ -6,6 +6,7 @@
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
 	import { TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { log } from "src/logger";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let file_path: string;
@@ -24,16 +25,22 @@
 		plugin.settings.views.page.trail.field_group_labels,
 	);
 
-	$: traversal_data = plugin.graph.rec_traverse(
-		new TraversalOptions(
-			[file_path],
-			edge_field_labels,
-			100,
-			!plugin.settings.views.page.trail.merge_fields,
-		),
+	// $: log.debug("edge_field_labels", edge_field_labels);
+
+	$: traversal_options = new TraversalOptions(
+		[file_path],
+		edge_field_labels,
+		100,
+		!plugin.settings.views.page.trail.merge_fields,
 	);
 
+	// $: log.debug("traversal_options", traversal_options.toString());
+
+	$: traversal_data = plugin.graph.rec_traverse(traversal_options);
+
 	$: all_paths = traversal_data.to_paths();
+
+	// $: all_paths.forEach((path) => log.debug(path.toString()));
 
 	// $: all_paths = plugin.graph.hasNode(file_path)
 	// 	? plugin.settings.views.page.trail.merge_fields
@@ -45,9 +52,9 @@
 		plugin.settings.views.page.trail.selection === "all"
 			? all_paths
 			: plugin.settings.views.page.trail.selection === "shortest"
-				? all_paths.slice(-1)
+				? all_paths.slice(0, 1)
 				: plugin.settings.views.page.trail.selection === "longest"
-					? all_paths.slice(0, 1)
+					? all_paths.slice(-1)
 					: [];
 
 	$: MAX_DEPTH = Math.max(0, ...selected_paths.map((p) => p.length()));
@@ -57,7 +64,7 @@
 	);
 
 	// Slice the paths to the chosen max depth.
-	$: selected_paths.forEach((path) => path.truncate(depth));
+	$: all_paths.forEach((path) => path.truncate(depth));
 
 	// Remove duplicates by the target_ids of the path.
 	$: deduped_paths =
