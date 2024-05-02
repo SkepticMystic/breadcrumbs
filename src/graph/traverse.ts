@@ -1,6 +1,6 @@
-// import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 // import { BCGraph, type BCEdge, type BCEdgeAttributes } from "./MyMultiGraph";
-// import { has_edge_attrs, type EdgeSorter } from "./utils";
+import { type EdgeSorter } from "./utils";
 
 // export type TraversalStackItem = {
 // 	edge: BCEdge;
@@ -118,16 +118,16 @@
 // 	return paths;
 // };
 
-// /** Sort a nested list of paths on a per-depth level.
-//  * Mutates the input.
-//  */
-// const sort_edge_tree = (tree: RecTraversalData[], sorter: EdgeSorter) => {
-// 	tree.forEach((nested_path) => {
-// 		nested_path.children = sort_edge_tree(nested_path.children, sorter);
-// 	});
+/** Sort a nested list of paths on a per-depth level.
+ * Mutates the input.
+ */
+const sort_edge_tree = (tree: RecTraversalData[], sorter: EdgeSorter) => {
+	tree.forEach((nested_path) => {
+		nested_path.children = sort_edge_tree(nested_path.children, sorter);
+	});
 
-// 	return tree.sort((a, b) => sorter(a.edge, b.edge));
-// };
+	return tree.sort((a, b) => sorter(a.edge, b.edge));
+};
 
 // // TODO: Not sure how, but we need to filter out paths that included the same target_id twice.
 // // e.g. me -> spouse -> sibling-in-law under the rule [spouse, sibling, sibling] -> sibling-in-law
@@ -161,14 +161,14 @@
 // 	return target_ids;
 // };
 
-// export const Traverse = {
+export const Traverse = {
 // 	breadth_first,
 // 	gather_items,
 // 	build_tree,
 // 	flatten_tree,
 // 	tree_to_all_paths,
 
-// 	sort_edge_tree,
+	sort_edge_tree,
 
 // 	get_transitive_chain_target_ids,
-// };
+};

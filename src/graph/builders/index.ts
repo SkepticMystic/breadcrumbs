@@ -1,6 +1,5 @@
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
-import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";

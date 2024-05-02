@@ -1,5 +1,5 @@
 import { ListIndex } from "src/commands/list_index";
-import { Traverse } from "src/graph/traverse";
+// import { Traverse } from "src/graph/traverse";
 import { active_file_store } from "src/stores/active_file";
 import { get } from "svelte/store";
 import type BCPlugin from "../main";
@@ -19,20 +19,25 @@ export class BCAPI {
 		return this.plugin.settings.edge_field_groups;
 	}
 
-	public refresh = () => this.plugin.refresh();
+	public async refresh() {
+		await this.plugin.refresh();
+	}
 	/** @deprecated Use refresh */
-	public refreshIndex = this.refresh;
+	public async refreshIndex() { 
+		await this.refresh(); 
+	}
 
 	/** @deprecated Filter edges of plugin.graph instead */
-	public getSubForFields = (fields: string[], g = this.plugin.graph) => {};
+	public getSubForFields(fields: string[], g = this.plugin.graph) {};
 
-	public build_tree = Traverse.build_tree;
-	public breadth_first_traversal = Traverse.breadth_first;
+	// TODO
+	// public build_tree = Traverse.build_tree;
+	// public breadth_first_traversal = Traverse.breadth_first;
 
-	public create_list_index = (
+	public create_list_index(
 		start_node = get(active_file_store)?.path,
 		options?: ListIndex.Options,
-	) => {
+	) {
 		if (!start_node) throw new Error("No active file");
 
 		return ListIndex.build(
@@ -44,13 +49,16 @@ export class BCAPI {
 
 	// BREAKING
 	/** @deprecated Use flatten_all_paths and flat_paths_to_index_list instead. Or, create_list_index */
-	public createIndex = () => {};
+	public createIndex() {};
 
-	public get_neighbours = (source = get(active_file_store)?.path) =>
-		source && this.plugin.graph.hasNode(source)
-			? this.plugin.graph.get_out_edges(source)
+	public get_neighbours(source = get(active_file_store)?.path) {
+		return source && this.plugin.graph.has_node(source)
+			? this.plugin.graph.get_outgoing_edges(source)
 			: [];
+	}
 
 	/** @deprecated Use get_neighbours instead */
-	public getMatrixNeighbours = this.get_neighbours;
+	public getMatrixNeighbours() { 
+		return this.get_neighbours();
+	}
 }

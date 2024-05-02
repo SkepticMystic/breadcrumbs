@@ -1,9 +1,4 @@
 import { TFile } from "obsidian";
-import type {
-	BCEdge,
-	BCEdgeAttributes,
-	BCNodeAttributes,
-} from "src/graph/MyMultiGraph";
 import type { CrumbDestination } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
@@ -14,6 +9,7 @@ import {
 	remove_duplicates,
 } from "src/utils/arrays";
 import { Paths } from "./paths";
+import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const linkify_edge = (
 	plugin: BreadcrumbsPlugin,
@@ -39,21 +35,18 @@ const linkify_edge = (
 export const drop_crumbs = async (
 	plugin: BreadcrumbsPlugin,
 	destination_file: TFile,
-	crumbs: (Pick<BCEdge, "source_id" | "target_id"> & {
-		attr: Pick<BCEdgeAttributes, "field">;
-		target_attr: Pick<BCNodeAttributes, "aliases">;
-	})[],
+	crumbs: EdgeStruct[],
 	options: { destination: CrumbDestination | "none" },
 ) => {
 	const links_by_field = group_projection(
-		group_by(crumbs, (e) => e.attr.field!),
+		group_by(crumbs, (e) => e.edge_type!),
 		(edges) =>
 			edges.map((e) =>
 				linkify_edge(
 					plugin,
-					e.source_id,
-					e.target_id,
-					e.target_attr.aliases,
+					e.source.path,
+					e.target.path,
+					e.target.aliases,
 				),
 			),
 	);

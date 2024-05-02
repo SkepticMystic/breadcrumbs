@@ -4,11 +4,11 @@ import {
 } from "src/const/graph";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Paths } from "src/utils/paths";
-// import type {
-// 	BCEdge,
-// 	BCEdgeAttributes,
-// 	BCNodeAttributes,
-// } from "./MyMultiGraph";
+import type {
+	// BCEdge,
+	BCEdgeAttributes,
+	// BCNodeAttributes,
+} from "./MyMultiGraph";
 import type { EdgeStruct, NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 // export const is_self_loop = (edge: Pick<BCEdge, "source_id" | "target_id">) =>
@@ -161,13 +161,13 @@ export const get_edge_sorter: (
 	}
 };
 
-// export type EdgeAttrFilters = Partial<
-// 	Pick<BCEdgeAttributes, "explicit" | "field">
-// > &
-// 	Partial<{
-// 		$or_fields: string[];
-// 		$or_target_ids: string[];
-// 	}>;
+export type EdgeAttrFilters = Partial<
+	Pick<BCEdgeAttributes, "explicit" | "field">
+> &
+	Partial<{
+		$or_fields: string[];
+		$or_target_ids: string[];
+	}>;
 
 // // NOTE: Technically the source and implied_kind fields could be implemented here, but missions for now
 // export const has_edge_attrs = (edge: BCEdge, attrs?: EdgeAttrFilters) =>

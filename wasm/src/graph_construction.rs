@@ -36,7 +36,7 @@ impl GraphConstructionNodeData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("{:#?}", self)
     }
 }
 
@@ -84,6 +84,6 @@ impl GraphConstructionEdgeData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+        format!("{:#?}", self)
     }
 }

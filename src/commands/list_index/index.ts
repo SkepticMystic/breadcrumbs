@@ -1,17 +1,14 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-import { Traverse, type EdgeTree } from "src/graph/traverse";
+import { Traverse } from "src/graph/traverse";
 import {
 	get_edge_sorter,
-	has_edge_attrs,
 	stringify_node,
 } from "src/graph/utils";
 import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
-import { untyped_pick } from "src/utils/objects";
-import { url_search_params } from "src/utils/url";
-import type { NoteGraph, RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { TraversalOptions, type NoteGraph, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export namespace ListIndex {
 	export type Options = {
@@ -73,19 +70,27 @@ export namespace ListIndex {
 		return index;
 	};
 
-	// TODO
 	export const build = (
 		graph: NoteGraph,
 		start_node: string,
 		options: Options,
-	) =>
-		edge_tree_to_list_index(
+	) => {
+		const traversal_options = new TraversalOptions(
+			[start_node],
+			options.fields,
+			options.max_depth ?? 100,
+			false,
+		);
+
+		return edge_tree_to_list_index(
 			Traverse.sort_edge_tree(
-				Traverse.build_tree(graph, start_node, options, (e) =>
-					has_edge_attrs(e, { $or_fields: options.fields }),
-				),
-				get_edge_sorter(options.edge_sort_id, graph),
+				// Traverse.build_tree(graph, start_node, options, (e) =>
+				// 	has_edge_attrs(e, { $or_fields: options.fields }),
+				// ),
+				graph.rec_traverse(traversal_options).data,
+				get_edge_sorter(options.edge_sort_id),
 			),
 			options,
 		);
+	}
 }

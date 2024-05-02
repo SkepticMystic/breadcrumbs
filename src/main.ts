@@ -16,7 +16,6 @@ import { get_graph_stats } from "./commands/stats";
 import { thread } from "./commands/thread";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
-import { BCGraph } from "./graph/MyMultiGraph";
 import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { CreateListIndexModal } from "./modals/CreateListIndexModal";
@@ -281,25 +280,24 @@ export default class BreadcrumbsPlugin extends Plugin {
 			},
 		});
 
-		// TODO
-		// this.addCommand({
-		// 	id: "breadcrumbs:graph-stats",
-		// 	name: "Show/Copy graph stats",
-		// 	callback: async () => {
-		// 		const stats = get_graph_stats(this.graph, {
-		// 			groups: this.settings.edge_field_groups,
-		// 		});
-		// 		log.feat("Graph stats >", stats);
+		this.addCommand({
+			id: "breadcrumbs:graph-stats",
+			name: "Show/Copy graph stats",
+			callback: async () => {
+				const stats = get_graph_stats(this.graph, {
+					groups: this.settings.edge_field_groups,
+				});
+				log.feat("Graph stats >", stats);
 
-		// 		await navigator.clipboard.writeText(
-		// 			JSON.stringify(stats, null, 2),
-		// 		);
+				await navigator.clipboard.writeText(
+					JSON.stringify(stats, null, 2),
+				);
 
-		// 		new Notice(
-		// 			"Graph stats printed to console and copied to clipboard",
-		// 		);
-		// 	},
-		// });
+				new Notice(
+					"Graph stats printed to console and copied to clipboard",
+				);
+			},
+		});
 
 		this.addCommand({
 			id: "breadcrumbs:freeze-implied-edges-to-note",
@@ -330,7 +328,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				name: `Jump to first neighbour by group:${group.label}`,
 				callback: () =>
 					jump_to_neighbour(this, {
-						attr: { $or_fields: group.fields },
+						fields: group.fields,
 					}),
 			});
 		});
@@ -343,7 +341,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				callback: () =>
 					thread(
 						this,
-						{ field: label },
+						label,
 						this.settings.commands.thread.default_options,
 					),
 			});
@@ -370,13 +368,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
 	 * Optionally disable any of these steps.
 	 */
-	refresh = async (options?: {
+	async refresh(options?: {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
 		redraw_side_views?: true;
 		redraw_codeblocks?: boolean;
-	}) => {
+	}) {
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
 			const timer = new Timer();

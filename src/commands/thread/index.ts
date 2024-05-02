@@ -1,5 +1,4 @@
 import { MarkdownView, Notice, TFile } from "obsidian";
-import type { BCEdgeAttributes } from "src/graph/MyMultiGraph";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
@@ -9,7 +8,7 @@ import { resolve_templates } from "src/utils/strings";
 
 export const thread = async (
 	plugin: BreadcrumbsPlugin,
-	attr: Pick<BCEdgeAttributes, "field">,
+	field: string,
 	options: BreadcrumbsSettings["commands"]["thread"]["default_options"],
 ) => {
 	const active_view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
@@ -19,7 +18,9 @@ export const thread = async (
 
 	// Resolve the target path template
 	const template_data = {
-		attr,
+		attr: {
+			field,
+		},
 		source: {
 			path: source_file.path,
 			folder: source_file.parent?.path ?? "",
@@ -52,19 +53,20 @@ export const thread = async (
 
 	// Drop the crumbs
 	// NOTE: You technically can Promise.all, but it's safer to create the file first
-	await drop_crumbs(
-		plugin,
-		source_file,
-		[
-			{
-				attr,
-				target_id: target_path,
-				source_id: source_file.path,
-				target_attr: { aliases: [] },
-			},
-		],
-		options,
-	);
+	// TODO
+	// await drop_crumbs(
+	// 	plugin,
+	// 	source_file,
+	// 	[
+	// 		{
+	// 			attr,
+	// 			target_id: target_path,
+	// 			source_id: source_file.path,
+	// 			target_attr: { aliases: [] },
+	// 		},
+	// 	],
+	// 	options,
+	// );
 
 	// Open the target file
 	await Promise.all([

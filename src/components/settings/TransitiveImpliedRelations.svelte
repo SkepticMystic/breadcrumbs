@@ -8,7 +8,7 @@
 	import {
 		get_transitive_rule_name,
 		stringify_transitive_relation,
-		transitive_rule_to_edges,
+		// transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
@@ -332,7 +332,8 @@
 							/>
 						</div>
 
-						{#if opens[rule_i]}
+						<!-- TODO -->
+						<!-- {#if opens[rule_i]}
 							<MermaidDiagram
 								{plugin}
 								mermaid={Mermaid.from_edges(
@@ -343,7 +344,7 @@
 									},
 								)}
 							/>
-						{/if}
+						{/if} -->
 					</div>
 				{/key}
 			</details>

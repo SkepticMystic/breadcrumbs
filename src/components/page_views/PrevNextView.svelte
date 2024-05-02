@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { has_edge_attrs } from "src/graph/utils";
 	import BreadcrumbsPlugin from "src/main";
 	import { group_by, remove_duplicates } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -27,15 +26,13 @@
 		...edge_field_labels.next,
 	]);
 
-	const grouped_out_edges = plugin.graph.hasNode(file_path)
+	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
-				plugin.graph.get_out_edges(file_path).filter((e) =>
-					has_edge_attrs(e, {
-						$or_fields: merged_field_labels,
-					}),
+				plugin.graph.get_outgoing_edges(file_path).filter((e) =>
+					e.matches_edge_filter(merged_field_labels),
 				),
 				(e) =>
-					edge_field_labels.prev.includes(e.attr.field)
+					edge_field_labels.prev.includes(e.edge_type)
 						? ("prev" as const)
 						: ("next" as const),
 			)
@@ -47,7 +44,7 @@
 		<div class="flex w-full flex-col">
 			{#each grouped_out_edges?.prev ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
-					<span class="BC-field">{edge.attr.field}</span>
+					<span class="BC-field">{edge.edge_type}</span>
 
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 				</div>
@@ -59,7 +56,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 
-					<span class="BC-field">{edge.attr.field}</span>
+					<span class="BC-field">{edge.edge_type}</span>
 				</div>
 			{/each}
 		</div>

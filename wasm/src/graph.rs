@@ -259,6 +259,10 @@ impl EdgeStruct {
     pub fn matches_edge_filter(&self, edge_types: Option<Vec<String>>) -> bool {
         edge_matches_edge_filter(&self.edge, edge_types.as_ref())
     }
+
+    pub fn is_self_loop(&self) -> bool {
+        self.source.path == self.target.path
+    }
 }
 
 // impl PartialEq for NodeData {

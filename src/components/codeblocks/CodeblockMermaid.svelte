@@ -2,25 +2,18 @@
 	import { ImageIcon, PencilIcon } from "lucide-svelte";
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ICON_SIZE } from "src/const";
-	import { Distance } from "src/graph/distance";
-	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
-	import {
-		get_edge_sorter,
-		has_edge_attrs,
-		type EdgeAttrFilters,
-	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
-	import { active_file_store } from "src/stores/active_file";
-	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
-	import { is_between } from "src/utils/numbers";
-	import { Paths } from "src/utils/paths";
 	import { onMount } from "svelte";
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { MermaidGraphOptions, NodeData, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { remove_nullish_keys } from "src/utils/objects";
+	import { Paths } from "src/utils/paths";
+	import { Links } from "src/utils/links";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -31,7 +24,52 @@
 
 	export const update = () => {
 		// TODO pass all the options and then implement them all the options on the rust side
-		mermaid = plugin.graph.generate_mermaid_graph([file_path], options.fields ?? [], options.depth[1] ?? 100).mermaid;
+
+		const max_depth = options.depth[1] ?? 100;
+
+		const traversal_options = new TraversalOptions(
+			[file_path],
+			options.fields,
+			max_depth === Infinity ? 100 : max_depth,
+			!options.collapse,
+		);
+
+		const flowchart_init = remove_nullish_keys({
+			curve: options["mermaid-curve"],
+			defaultRenderer: options["mermaid-renderer"],
+		});
+
+		const mermaid_options = new MermaidGraphOptions(
+			file_path,
+			`%%{ init: { "flowchart": ${JSON.stringify(flowchart_init)} } }%%`,
+			"graph",
+			options["mermaid-direction"] ?? "LR",
+			true,
+			options["show-attributes"] ?? [],
+			(node: NodeData) => {
+				const node_path = node.path;
+				const file = plugin.app.vault.getFileByPath(node_path);
+
+				if (file) {
+					return plugin.app.fileManager
+						.generateMarkdownLink(file, file_path)
+						.slice(2, -2);
+				} else {
+					return Paths.drop_ext(
+						Links.resolve_to_absolute_path(
+							plugin.app,
+							node_path,
+							file_path,
+						),
+					);
+				}
+			}
+		);
+
+		log.debug(traversal_options.toString());
+		log.debug(mermaid_options.toString());
+
+		mermaid = plugin.graph.generate_mermaid_graph(traversal_options, mermaid_options).mermaid;
 	};
 
 	onMount(() => {

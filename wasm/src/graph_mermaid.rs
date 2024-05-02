@@ -45,9 +45,15 @@ impl MermaidGraphOptions {
             node_label_fn,
         }
     }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
+    }
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug)]
 pub struct MermaidGraphData {
     mermaid: String,
     traversal_time: u64,
@@ -69,6 +75,11 @@ impl MermaidGraphData {
     #[wasm_bindgen(getter)]
     pub fn total_time(&self) -> u64 {
         self.total_time
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }
 
@@ -286,12 +297,16 @@ impl NoteGraph {
             );
         }
 
-        format!(
-            "    {} {}|{}| {}\n",
-            source.index(),
-            arrow_type,
-            label,
-            target.index()
-        )
+        if label.is_empty() {
+            format!("    {} {} {}\n", source.index(), arrow_type, target.index())
+        } else {
+            format!(
+                "    {} {}|{}| {}\n",
+                source.index(),
+                arrow_type,
+                label,
+                target.index()
+            )
+        }
     }
 }

@@ -1,5 +1,5 @@
 // import { MultiGraph } from "graphology";
-// import type { ExplicitEdgeSource } from "src/const/graph";
+import type { ExplicitEdgeSource } from "src/const/graph";
 // import { log } from "src/logger";
 // import { fail, succ } from "src/utils/result";
 // import { objectify_edge } from "./objectify_mappers";
@@ -33,24 +33,24 @@ export const EDGE_ATTRIBUTES = [
 
 export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
-// export type BCEdgeAttributes = {
-// 	field: string;
-// } & (
-// 	| {
-// 			explicit: true;
-// 			source: ExplicitEdgeSource;
-// 	  }
-// 	| {
-// 			explicit: false;
-// 			implied_kind: `transitive:${string}`;
-// 			/** Which round of implied_building this edge got added in.
-// 			 * Starts at 1 - you can think of real edges as being added in round 0.
-// 			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
-// 			 *   If the same edge tries again in a future round, _that_ one will be blocked.
-// 			 */
-// 			round: number;
-// 	  }
-// );
+export type BCEdgeAttributes = {
+	field: string;
+} & (
+	| {
+			explicit: true;
+			source: ExplicitEdgeSource;
+	  }
+	| {
+			explicit: false;
+			implied_kind: `transitive:${string}`;
+			/** Which round of implied_building this edge got added in.
+			 * Starts at 1 - you can think of real edges as being added in round 0.
+			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
+			 *   If the same edge tries again in a future round, _that_ one will be blocked.
+			 */
+			round: number;
+	  }
+);
 
 // export type BCEdge = {
 // 	id: string;

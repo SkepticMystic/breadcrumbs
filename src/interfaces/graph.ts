@@ -1,4 +1,4 @@
-import type { BCEdgeAttributes, BCNode } from "src/graph/MyMultiGraph";
+// import type { BCEdgeAttributes, BCNode } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
@@ -20,11 +20,11 @@ export type BreadcrumbsError = {
 };
 
 /** The values passed into safe_add_edge */
-export type EdgeToAdd = {
-	source_id: string;
-	target_id: string;
-	attr: BCEdgeAttributes;
-};
+// export type EdgeToAdd = {
+// 	source_id: string;
+// 	target_id: string;
+// 	attr: BCEdgeAttributes;
+// };
 
 export type EdgeBuilderResults = {
 	nodes: GraphConstructionNodeData[];
