@@ -68,7 +68,7 @@ export const new_setting = <
 		});
 	} else if (config.checklist) {
 		const checklist_el = setting.controlEl.createEl("div", {
-			attr: { class: "flex gap-3" },
+			attr: { class: "flex flex-wrap gap-3" },
 		});
 
 		let state = { ...config.checklist.options };
@@ -82,9 +82,11 @@ export const new_setting = <
 			checklist_el
 				.createEl("label", {
 					text: key,
-					cls: "flex items-center gap-1.5",
+					cls: "flex items-center gap-1.5 grow",
 				})
 				.createEl("input", { attr }, (el) => {
+					el.classList.add("shrink");
+
 					el.onchange = (e) => {
 						if (!(e.target instanceof HTMLInputElement)) return;
 
