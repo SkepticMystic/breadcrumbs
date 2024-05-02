@@ -32,5 +32,7 @@ wasm-bindgen-test = "0.3.34"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
-opt-level = 3
-lto = true
+opt-level = 3               # Highest level of optimization.
+lto = "fat"                 # Enable link-time optimization.
+overflow-checks = false     # Disable integer overflow checks.
+incremental = true          # Enable incremental compilation for faster builds.

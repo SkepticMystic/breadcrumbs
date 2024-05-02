@@ -1,10 +1,7 @@
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Debug,
-};
+use std::collections::HashMap;
 
 use petgraph::{
-    stable_graph::{EdgeIndex, EdgeReference, Edges, NodeIndex, StableGraph},
+    stable_graph::{Edges, StableGraph},
     visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences, NodeRef},
     Directed,
 };
@@ -14,6 +11,7 @@ use web_time::Instant;
 
 use crate::{
     graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
+    graph_data::{EdgeData, EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex, NodeData},
     graph_rules::TransitiveGraphRule,
     graph_update::BatchGraphUpdate,
     utils::{self, NoteGraphError, Result},
@@ -27,267 +25,6 @@ pub fn edge_matches_edge_filter(edge: &EdgeData, edge_types: Option<&Vec<String>
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug, PartialEq)]
-pub struct EdgeData {
-    #[wasm_bindgen(skip)]
-    pub edge_type: String,
-    #[wasm_bindgen(skip)]
-    pub edge_source: String,
-    #[wasm_bindgen(skip)]
-    pub implied: bool,
-    #[wasm_bindgen(skip)]
-    pub round: u8,
-}
-
-#[wasm_bindgen]
-impl EdgeData {
-    #[wasm_bindgen(constructor)]
-    pub fn new(edge_type: String, edge_source: String, implied: bool, round: u8) -> EdgeData {
-        EdgeData {
-            edge_type,
-            edge_source,
-            implied,
-            round,
-        }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_type(&self) -> String {
-        self.edge_type.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_source(&self) -> String {
-        self.edge_source.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
-        self.implied
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn round(&self) -> u8 {
-        self.round
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("{:#?}", self)
-    }
-}
-
-impl EdgeData {
-    pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
-        let mut result = vec![];
-
-        // the mapping that exist on the JS side are as follows
-        // "field" | "explicit" | "source" | "implied_kind" | "round"
-
-        // TODO: maybe change the attribute options so that the JS side better matches the data
-
-        for attribute in attributes {
-            let data = match attribute.as_str() {
-                "field" => Some(("field", self.edge_type.clone())),
-                "explicit" => Some(("explicit", (!self.implied).to_string())),
-                "source" => {
-                    if !self.implied {
-                        Some(("source", self.edge_source.clone()))
-                    } else {
-                        None
-                    }
-                }
-                "implied_kind" => {
-                    if self.implied {
-                        Some(("implied_kind", self.edge_source.clone()))
-                    } else {
-                        None
-                    }
-                }
-                "round" => Some(("round", self.round.to_string())),
-                _ => None,
-            };
-
-            match data {
-                Some(data) => result.push(format!("{}={}", data.0, data.1)),
-                None => {}
-            }
-        }
-
-        result.join(" ")
-    }
-}
-
-// impl PartialEq for EdgeData {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.edge_type == other.edge_type
-//     }
-// }
-
-#[wasm_bindgen]
-#[derive(Clone, Debug, PartialEq)]
-pub struct NodeData {
-    #[wasm_bindgen(skip)]
-    pub path: String,
-    #[wasm_bindgen(skip)]
-    pub aliases: Vec<String>,
-    #[wasm_bindgen(skip)]
-    pub resolved: bool,
-    #[wasm_bindgen(skip)]
-    pub ignore_in_edges: bool,
-    #[wasm_bindgen(skip)]
-    pub ignore_out_edges: bool,
-}
-
-#[wasm_bindgen]
-impl NodeData {
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        path: String,
-        aliases: Vec<String>,
-        resolved: bool,
-        ignore_in_edges: bool,
-        ignore_out_edges: bool,
-    ) -> NodeData {
-        NodeData {
-            path,
-            aliases,
-            resolved,
-            ignore_in_edges,
-            ignore_out_edges,
-        }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn path(&self) -> String {
-        self.path.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn aliases(&self) -> Vec<String> {
-        self.aliases.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn resolved(&self) -> bool {
-        self.resolved
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn ignore_in_edges(&self) -> bool {
-        self.ignore_in_edges
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn ignore_out_edges(&self) -> bool {
-        self.ignore_out_edges
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("{:#?}", self)
-    }
-}
-
-impl NodeData {
-    pub fn from_construction_data(data: &GraphConstructionNodeData) -> NodeData {
-        NodeData {
-            path: data.path.clone(),
-            aliases: data.aliases.clone(),
-            resolved: data.resolved,
-            ignore_in_edges: data.ignore_in_edges,
-            ignore_out_edges: data.ignore_out_edges,
-        }
-    }
-
-    pub fn new_unresolved(path: String) -> NodeData {
-        NodeData {
-            path,
-            aliases: Vec::new(),
-            resolved: false,
-            ignore_in_edges: false,
-            ignore_out_edges: false,
-        }
-    }
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Debug, PartialEq)]
-pub struct EdgeStruct {
-    #[wasm_bindgen(skip)]
-    pub source: NodeData,
-    #[wasm_bindgen(skip)]
-    pub target: NodeData,
-    #[wasm_bindgen(skip)]
-    pub edge: EdgeData,
-}
-
-#[wasm_bindgen]
-impl EdgeStruct {
-    #[wasm_bindgen(constructor)]
-    pub fn new(source: NodeData, target: NodeData, edge: EdgeData) -> EdgeStruct {
-        EdgeStruct {
-            source,
-            target,
-            edge,
-        }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn source(&self) -> NodeData {
-        self.source.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn target(&self) -> NodeData {
-        self.target.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_type(&self) -> String {
-        self.edge.edge_type.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_source(&self) -> String {
-        self.edge.edge_source.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
-        self.edge.implied
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn round(&self) -> u8 {
-        self.edge.round
-    }
-
-    pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
-        self.edge.get_attribute_label(&attributes)
-    }
-
-    pub fn matches_edge_filter(&self, edge_types: Option<Vec<String>>) -> bool {
-        edge_matches_edge_filter(&self.edge, edge_types.as_ref())
-    }
-
-    pub fn is_self_loop(&self) -> bool {
-        self.source.path == self.target.path
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("{:#?}", self)
-    }
-}
-
-// impl PartialEq for NodeData {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.path == other.path
-//     }
-// }
-
-#[wasm_bindgen]
 #[derive(Clone)]
 pub struct NoteGraph {
     #[wasm_bindgen(skip)]
@@ -297,7 +34,7 @@ pub struct NoteGraph {
     #[wasm_bindgen(skip)]
     pub edge_types: VecSet<[String; 16]>,
     #[wasm_bindgen(skip)]
-    pub node_hash: HashMap<String, NodeIndex<u32>>,
+    pub node_hash: HashMap<String, NGNodeIndex>,
     update_callback: Option<js_sys::Function>,
 }
 
@@ -395,7 +132,7 @@ impl NoteGraph {
     pub fn iterate_nodes(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
-        self.graph.node_references().into_iter().for_each(|node| {
+        self.graph.node_references().for_each(|node| {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => utils::log(format!("Error calling function: {:?}", e)),
@@ -406,7 +143,7 @@ impl NoteGraph {
     pub fn iterate_edges(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
-        self.graph.edge_references().into_iter().for_each(|edge| {
+        self.graph.edge_references().for_each(|edge| {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => utils::log(format!("Error calling function: {:?}", e)),
@@ -452,6 +189,12 @@ impl NoteGraph {
     }
 }
 
+impl Default for NoteGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Internal methods, not exposed to the wasm interface.
 /// All of these methods are prefixed with `int_`.
 impl NoteGraph {
@@ -482,7 +225,7 @@ impl NoteGraph {
                 break;
             }
 
-            let mut edges_to_add: Vec<(NodeIndex<u32>, NodeIndex<u32>, EdgeData)> = Vec::new();
+            let mut edges_to_add: Vec<(NGNodeIndex, NGNodeIndex, EdgeData)> = Vec::new();
 
             for rule in self.transitive_rules.iter() {
                 // if there is any edge type that the graph doesn't have, we can skip the rule
@@ -584,30 +327,30 @@ impl NoteGraph {
     }
 
     /// Returns the node index for a specific node weight.
-    pub fn int_get_node_index(&self, node: &String) -> Option<NodeIndex<u32>> {
-        self.node_hash.get(node).map(|index| index.clone())
+    pub fn int_get_node_index(&self, node: &String) -> Option<NGNodeIndex> {
+        self.node_hash.get(node).copied()
     }
 
     /// Adds an edge type to the global edge type tracker and an optional local edge type tracker.
     pub fn int_add_to_edge_type_tracker(
         &mut self,
-        edge_type: &String,
+        edge_type: &str,
         edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
         add_to_global: bool,
     ) {
         if add_to_global {
-            self.edge_types.insert(edge_type.clone());
+            self.edge_types.insert(edge_type.to_owned());
         }
 
         match edge_type_tracker {
             Some(inner) => {
-                inner.insert(edge_type.clone());
+                inner.insert(edge_type.to_owned());
             }
             None => {}
         }
     }
 
-    pub fn int_edge_ref_to_struct(&self, edge: EdgeReference<EdgeData, u32>) -> Option<EdgeStruct> {
+    pub fn int_edge_ref_to_struct(&self, edge: NGEdgeRef) -> Option<EdgeStruct> {
         let source = self.graph.node_weight(edge.source())?.clone();
         let target = self.graph.node_weight(edge.target())?.clone();
 
@@ -616,7 +359,7 @@ impl NoteGraph {
 
     pub fn int_edge_to_struct(
         &self,
-        edge_index: EdgeIndex<u32>,
+        edge_index: NGEdgeIndex,
         edge_data: EdgeData,
     ) -> Option<EdgeStruct> {
         let (source_index, target_index) = self.graph.edge_endpoints(edge_index)?;
@@ -629,44 +372,38 @@ impl NoteGraph {
     /// Returns the node weight for a specific node index.
     ///
     /// Will return an error if the node is not found.
-    pub fn int_get_node_weight(&self, node: NodeIndex<u32>) -> Result<&NodeData> {
+    pub fn int_get_node_weight(&self, node: NGNodeIndex) -> Result<&NodeData> {
         self.graph
             .node_weight(node)
             .ok_or(NoteGraphError::new("Node not found"))
     }
 
-    pub fn int_has_incoming_edges(&self, node: NodeIndex<u32>) -> bool {
+    pub fn int_has_incoming_edges(&self, node: NGNodeIndex) -> bool {
         self.graph
             .edges_directed(node, petgraph::Direction::Incoming)
             .count()
             > 0
     }
 
-    pub fn int_has_outgoing_edges(&self, node: NodeIndex<u32>) -> bool {
+    pub fn int_has_outgoing_edges(&self, node: NGNodeIndex) -> bool {
         self.graph
             .edges_directed(node, petgraph::Direction::Outgoing)
             .count()
             > 0
     }
 
-    pub fn int_iter_incoming_edges(
-        &self,
-        node: NodeIndex<u32>,
-    ) -> Edges<'_, EdgeData, Directed, u32> {
+    pub fn int_iter_incoming_edges(&self, node: NGNodeIndex) -> Edges<'_, EdgeData, Directed, u32> {
         self.graph
             .edges_directed(node, petgraph::Direction::Incoming)
     }
 
-    pub fn int_iter_outgoing_edges(
-        &self,
-        node: NodeIndex<u32>,
-    ) -> Edges<'_, EdgeData, Directed, u32> {
+    pub fn int_iter_outgoing_edges(&self, node: NGNodeIndex) -> Edges<'_, EdgeData, Directed, u32> {
         self.graph
             .edges_directed(node, petgraph::Direction::Outgoing)
     }
 
-    pub fn int_remove_outgoing_edges(&mut self, node: NodeIndex<u32>) {
-        let mut edges_to_remove: Vec<EdgeIndex<u32>> = Vec::new();
+    pub fn int_remove_outgoing_edges(&mut self, node: NGNodeIndex) {
+        let mut edges_to_remove: Vec<NGEdgeIndex> = Vec::new();
 
         for edge in self.graph.edges(node) {
             edges_to_remove.push(edge.id());
@@ -677,7 +414,7 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_set_node_resolved(&mut self, node: NodeIndex<u32>, resolved: bool) -> Result<()> {
+    pub fn int_set_node_resolved(&mut self, node: NGNodeIndex, resolved: bool) -> Result<()> {
         let node = self.graph.node_weight_mut(node);
         match node {
             Some(node) => {
@@ -700,7 +437,7 @@ impl NoteGraph {
     /// Returns the edge weight for a specific edge index.
     ///
     /// Will return an error if the edge is not found.
-    pub fn int_get_edge_weight(&self, edge: EdgeIndex<u32>) -> Result<&EdgeData> {
+    pub fn int_get_edge_weight(&self, edge: NGEdgeIndex) -> Result<&EdgeData> {
         self.graph
             .edge_weight(edge)
             .ok_or(NoteGraphError::new("Edge not found"))
@@ -717,7 +454,7 @@ impl NoteGraph {
     pub fn int_remove_implied_edges(&mut self) {
         let now = Instant::now();
 
-        // let mut edges_to_remove: Vec<EdgeIndex<u32>> = Vec::new();
+        // let mut edges_to_remove: Vec<NGEdgeIndex> = Vec::new();
 
         self.graph.retain_edges(|frozen_graph, edge| {
             let weight = frozen_graph.edge_weight(edge).unwrap();
@@ -773,8 +510,8 @@ impl NoteGraph {
     /// Will add the added edge types to the global edge type tracker and an optional local edge type tracker.
     fn int_add_edge(
         &mut self,
-        from: NodeIndex<u32>,
-        to: NodeIndex<u32>,
+        from: NGNodeIndex,
+        to: NGNodeIndex,
         edge_data: EdgeData,
         edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
     ) {
@@ -789,14 +526,13 @@ impl NoteGraph {
 
     fn int_remove_edge(
         &mut self,
-        from: NodeIndex<u32>,
-        to: NodeIndex<u32>,
+        from: NGNodeIndex,
+        to: NGNodeIndex,
         edge_type: &String,
     ) -> Result<()> {
         let edge = self
             .graph
             .edges(from)
-            .into_iter()
             .find(|e| e.target() == to && *e.weight().edge_type == *edge_type);
 
         match edge {
@@ -810,13 +546,12 @@ impl NoteGraph {
 
     pub fn int_get_edge(
         &self,
-        from: NodeIndex<u32>,
-        to: NodeIndex<u32>,
+        from: NGNodeIndex,
+        to: NGNodeIndex,
         edge_type: &String,
-    ) -> Option<EdgeReference<EdgeData, u32>> {
+    ) -> Option<NGEdgeRef> {
         self.graph
             .edges(from)
-            .into_iter()
             .find(|e| e.target() == to && *e.weight().edge_type == *edge_type)
     }
 
@@ -825,7 +560,7 @@ impl NoteGraph {
         from: &String,
         to: &String,
         edge_type: &String,
-    ) -> Option<EdgeReference<EdgeData, u32>> {
+    ) -> Option<NGEdgeRef> {
         let from_index = self.int_get_node_index(from)?;
         let to_index = self.int_get_node_index(to)?;
 
@@ -833,15 +568,9 @@ impl NoteGraph {
     }
 
     /// Checks if an edge exists between two nodes with a specific edge type.
-    pub fn int_has_edge(
-        &self,
-        from: NodeIndex<u32>,
-        to: NodeIndex<u32>,
-        edge_type: &String,
-    ) -> bool {
+    pub fn int_has_edge(&self, from: NGNodeIndex, to: NGNodeIndex, edge_type: &String) -> bool {
         self.graph
             .edges(from)
-            .into_iter()
             .any(|e| e.target() == to && *e.weight().edge_type == *edge_type)
     }
 
@@ -891,7 +620,7 @@ impl NoteGraph {
 
                 self.int_set_node_resolved(index, false)?;
 
-                let edges_to_remove: Vec<EdgeIndex<u32>> = self
+                let edges_to_remove: Vec<NGEdgeIndex> = self
                     .int_iter_outgoing_edges(index)
                     .map(|edge| edge.id())
                     .collect();
@@ -908,19 +637,19 @@ impl NoteGraph {
         Ok(())
     }
 
-    pub fn int_safe_rename_node(&mut self, old_name: &String, new_name: &String) -> Result<()> {
+    pub fn int_safe_rename_node(&mut self, old_name: &String, new_name: &str) -> Result<()> {
         let node_index = self
             .int_get_node_index(old_name)
             .ok_or(NoteGraphError::new("Old node not found"))?;
 
-        self.graph.node_weight_mut(node_index).unwrap().path = new_name.clone();
+        self.graph.node_weight_mut(node_index).unwrap().path = new_name.to_owned();
         self.node_hash.remove(old_name);
-        self.node_hash.insert(new_name.clone(), node_index);
+        self.node_hash.insert(new_name.to_owned(), node_index);
 
         Ok(())
     }
 
-    fn int_safe_delete_edge_ref(&mut self, edge: EdgeIndex<u32>) -> Result<()> {
+    fn int_safe_delete_edge_ref(&mut self, edge: NGEdgeIndex) -> Result<()> {
         let (_, target) = self
             .graph
             .edge_endpoints(edge)
@@ -958,14 +687,14 @@ impl NoteGraph {
         &mut self,
         source_path: &String,
         target_path: &String,
-        edge_type: &String,
-        edge_source: &String,
+        edge_type: &str,
+        edge_source: &str,
     ) {
         let source = self.node_hash.get(source_path);
         let target = self.node_hash.get(target_path);
 
-        let source_index: NodeIndex<u32>;
-        let target_index: NodeIndex<u32>;
+        let source_index: NGNodeIndex;
+        let target_index: NGNodeIndex;
         let mut add_from_to_hash = false;
         let mut add_to_to_hash = false;
 
@@ -975,7 +704,7 @@ impl NoteGraph {
                 .add_node(NodeData::new_unresolved(source_path.clone()));
             add_from_to_hash = true;
         } else {
-            source_index = source.unwrap().clone();
+            source_index = *source.unwrap();
         }
 
         if target.is_none() {
@@ -988,7 +717,7 @@ impl NoteGraph {
                 add_to_to_hash = true;
             }
         } else {
-            target_index = target.unwrap().clone();
+            target_index = *target.unwrap();
         }
 
         if add_from_to_hash {
@@ -1002,7 +731,7 @@ impl NoteGraph {
         self.int_add_edge(
             source_index,
             target_index,
-            EdgeData::new(edge_type.clone(), edge_source.clone(), false, 0),
+            EdgeData::new(edge_type.to_owned(), edge_source.to_owned(), false, 0),
             &mut None,
         );
     }
@@ -1016,7 +745,7 @@ impl NoteGraph {
 
         assert_eq!(edge_types, self.edge_types);
 
-        let mut node_hash: HashMap<String, NodeIndex<u32>> = HashMap::new();
+        let mut node_hash: HashMap<String, NGNodeIndex> = HashMap::new();
 
         for node_ref in self.graph.node_references() {
             node_hash.insert(node_ref.weight().path.clone(), node_ref.id());

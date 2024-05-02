@@ -1,5 +1,5 @@
 use petgraph::visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences};
-use std::{collections::VecDeque, fmt};
+use std::{collections::VecDeque, error::Error, fmt};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -36,8 +36,8 @@ impl NoteGraphError {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        format!("{:?}", self)
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }
 
@@ -46,6 +46,8 @@ impl fmt::Display for NoteGraphError {
         write!(f, "{}", self.message)
     }
 }
+
+impl Error for NoteGraphError {}
 
 pub struct DepthFirstTraversalDataStructure<T> {
     stack: Vec<T>,

@@ -20,6 +20,12 @@ impl BatchGraphUpdate {
     }
 }
 
+impl Default for BatchGraphUpdate {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BatchGraphUpdate {
     pub fn add_update(&mut self, update: Box<dyn GraphUpdate>) {
         self.updates.push(update);
@@ -135,12 +141,13 @@ impl AddEdgeGraphUpdate {
 
 impl GraphUpdate for AddEdgeGraphUpdate {
     fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        Ok(graph.int_safe_add_edge(
+        graph.int_safe_add_edge(
             &self.source,
             &self.target,
             &self.edge_type,
             &self.edge_source,
-        ))
+        );
+        Ok(())
     }
 }
 

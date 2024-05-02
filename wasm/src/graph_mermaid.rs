@@ -1,15 +1,24 @@
 use std::collections::HashMap;
 
 use itertools::{EitherOrBoth, Itertools};
-use petgraph::{stable_graph::NodeIndex, visit::EdgeRef};
+use petgraph::{
+    stable_graph::{EdgeReference, NodeIndex},
+    visit::EdgeRef,
+};
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
 use crate::{
-    graph::{EdgeData, NoteGraph},
-    graph_traversal::TraversalOptions,
+    graph::NoteGraph,
+    graph_data::EdgeData,
+    graph_traversal::{EdgeVec, TraversalOptions},
     utils::{NoteGraphError, Result},
 };
+
+pub type AccumulatedEdgeHashMap = HashMap<
+    (NodeIndex<u32>, NodeIndex<u32>),
+    (NodeIndex<u32>, NodeIndex<u32>, Vec<EdgeData>, Vec<EdgeData>),
+>;
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
@@ -47,7 +56,7 @@ impl MermaidGraphOptions {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 }
@@ -78,7 +87,7 @@ impl MermaidGraphData {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 }
@@ -102,14 +111,14 @@ impl NoteGraph {
     ) -> Result<MermaidGraphData> {
         let now = Instant::now();
 
-        let (node_map, edge_map) = self.int_traverse_basic(&traversal_options)?;
+        let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
 
         let traversal_elapsed = now.elapsed();
 
         let mut result = String::new();
 
         result.push_str(&diagram_options.init_line);
-        result.push_str("\n");
+        result.push('\n');
         result.push_str(
             format!(
                 "{} {}\n",
@@ -119,48 +128,13 @@ impl NoteGraph {
         );
 
         // accumulate edges by direction, so that we can collapse them in the next step
-        let mut accumulated_edges: HashMap<
-            (NodeIndex<u32>, NodeIndex<u32>),
-            (NodeIndex<u32>, NodeIndex<u32>, Vec<EdgeData>, Vec<EdgeData>),
-        > = HashMap::new();
-
-        for (_, edge_ref) in edge_map {
-            let forward_dir = (edge_ref.source(), edge_ref.target());
-
-            let entry1 = accumulated_edges.get_mut(&forward_dir);
-            match entry1 {
-                Some((_, _, forward, _)) => {
-                    forward.push(edge_ref.weight().clone());
-                }
-                None => {
-                    let backward_dir = (edge_ref.target(), edge_ref.source());
-
-                    let entry2 = accumulated_edges.get_mut(&backward_dir);
-                    match entry2 {
-                        Some((_, _, _, backward)) => {
-                            backward.push(edge_ref.weight().clone());
-                        }
-                        None => {
-                            accumulated_edges.insert(
-                                forward_dir,
-                                (
-                                    edge_ref.source(),
-                                    edge_ref.target(),
-                                    vec![edge_ref.weight().clone()],
-                                    Vec::new(),
-                                ),
-                            );
-                        }
-                    }
-                }
-            }
-        }
+        let accumulated_edges = NoteGraph::int_accumulate_edges(edges);
 
         let mut unresolved_nodes = Vec::new();
 
         // add nodes to the graph
-        for element in node_map.iter() {
-            let weight = self.int_get_node_weight(element.0.clone())?;
+        for element in nodes.iter() {
+            let weight = self.int_get_node_weight(element.0)?;
 
             let node_label = match diagram_options.node_label_fn {
                 Some(ref function) => {
@@ -218,10 +192,10 @@ impl NoteGraph {
             result.push_str(&format!("class {} BC-active-node\n", index.index()));
         }
 
-        if !node_map.is_empty() {
+        if !nodes.is_empty() {
             result.push_str(&format!(
                 "class {} internal-link\n",
-                node_map.iter().map(|(index, _)| index.index()).join(",")
+                nodes.iter().map(|(index, _)| index.index()).join(",")
             ));
         }
 
@@ -308,5 +282,45 @@ impl NoteGraph {
                 target.index()
             )
         }
+    }
+
+    pub fn int_accumulate_edges(
+        edges: EdgeVec<EdgeReference<EdgeData, u32>>,
+    ) -> AccumulatedEdgeHashMap {
+        let mut accumulated_edges: AccumulatedEdgeHashMap = HashMap::new();
+
+        for (_, edge_ref) in edges {
+            let forward_dir = (edge_ref.source(), edge_ref.target());
+
+            let entry1 = accumulated_edges.get_mut(&forward_dir);
+            match entry1 {
+                Some((_, _, forward, _)) => {
+                    forward.push(edge_ref.weight().clone());
+                }
+                None => {
+                    let backward_dir = (edge_ref.target(), edge_ref.source());
+
+                    let entry2 = accumulated_edges.get_mut(&backward_dir);
+                    match entry2 {
+                        Some((_, _, _, backward)) => {
+                            backward.push(edge_ref.weight().clone());
+                        }
+                        None => {
+                            accumulated_edges.insert(
+                                forward_dir,
+                                (
+                                    edge_ref.source(),
+                                    edge_ref.target(),
+                                    vec![edge_ref.weight().clone()],
+                                    Vec::new(),
+                                ),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        accumulated_edges
     }
 }

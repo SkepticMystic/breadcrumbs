@@ -1,21 +1,23 @@
 use std::collections::HashSet;
 
-use petgraph::{
-    stable_graph::{EdgeIndex, EdgeReference, NodeIndex},
-    visit::EdgeRef,
-};
+use petgraph::visit::EdgeRef;
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
 use crate::{
-    graph::{EdgeData, EdgeStruct, NoteGraph},
+    graph::NoteGraph,
+    graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
-        self, BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
+        BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
         GraphTraversalDataStructure, NoteGraphError, Result,
     },
 };
 
 const TRAVERSAL_COUNT_LIMIT: u32 = 10_000;
+
+pub type NodeVec<T> = Vec<(NGNodeIndex, T)>;
+pub type EdgeVec<T> = Vec<(NGEdgeIndex, T)>;
+pub type NodeEdgeVec<N, E> = (NodeVec<N>, EdgeVec<E>);
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
@@ -67,7 +69,7 @@ impl TraversalOptions {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 }
@@ -109,7 +111,7 @@ impl Path {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 }
@@ -175,7 +177,7 @@ impl RecTraversalData {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 }
@@ -253,7 +255,7 @@ impl RecTraversalResult {
     }
 
     #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
 
@@ -288,7 +290,7 @@ impl NoteGraph {
 
         for entry_node in &options.entry_nodes {
             let start_node = self
-                .int_get_node_index(&entry_node)
+                .int_get_node_index(entry_node)
                 .ok_or(NoteGraphError::new("Node not found"))?;
 
             let start_node_weight = self.int_get_node_weight(start_node)?;
@@ -330,8 +332,8 @@ impl NoteGraph {
             }
         }
 
-        let node_count = self.int_rec_count_children(&mut result);
-        let max_depth = self.int_rec_max_depth(&result);
+        let node_count = NoteGraph::int_rec_traversal_data_count_children(&mut result);
+        let max_depth = NoteGraph::int_rec_traversal_data_max_depth(&result);
 
         let total_elapsed = now.elapsed();
 
@@ -350,7 +352,7 @@ impl NoteGraph {
     /// Will return an error if the node weight for any node along the traversal is not found.
     pub fn int_rec_traverse(
         &self,
-        node: NodeIndex<u32>,
+        node: NGNodeIndex,
         edge: EdgeStruct,
         edge_types: Option<&Vec<String>>,
         depth: u32,
@@ -363,7 +365,7 @@ impl NoteGraph {
             for outgoing_edge in self.graph.edges(node) {
                 let edge_data = outgoing_edge.weight();
 
-                if self.int_edge_matches_edge_filter(&edge_data, edge_types) {
+                if self.int_edge_matches_edge_filter(edge_data, edge_types) {
                     let target = outgoing_edge.target();
 
                     // assert!(*self.int_get_node_weight(node).unwrap() == edge.target);
@@ -395,20 +397,26 @@ impl NoteGraph {
         Ok(RecTraversalData::new(edge, depth, 0, new_children))
     }
 
-    pub fn int_rec_count_children(&self, data: &mut Vec<RecTraversalData>) -> u32 {
+    pub fn int_rec_traversal_data_count_children(data: &mut [RecTraversalData]) -> u32 {
         let mut total_children = 0;
 
         for datum in data.iter_mut() {
-            datum.number_of_children = self.int_rec_count_children(&mut datum.children);
+            datum.number_of_children =
+                NoteGraph::int_rec_traversal_data_count_children(&mut datum.children);
             total_children += 1 + datum.number_of_children;
         }
 
         total_children
     }
 
-    pub fn int_rec_max_depth(&self, data: &Vec<RecTraversalData>) -> u32 {
+    pub fn int_rec_traversal_data_max_depth(data: &[RecTraversalData]) -> u32 {
         data.iter()
-            .map(|datum| u32::max(self.int_rec_max_depth(&datum.children), datum.depth))
+            .map(|datum| {
+                u32::max(
+                    NoteGraph::int_rec_traversal_data_max_depth(&datum.children),
+                    datum.depth,
+                )
+            })
             .max()
             .unwrap_or(0)
     }
@@ -416,10 +424,7 @@ impl NoteGraph {
     pub fn int_traverse_basic(
         &self,
         options: &TraversalOptions,
-    ) -> Result<(
-        Vec<(NodeIndex<u32>, u32)>,
-        Vec<(EdgeIndex<u32>, EdgeReference<EdgeData, u32>)>,
-    )> {
+    ) -> Result<NodeEdgeVec<u32, NGEdgeRef>> {
         let entry_nodes = options
             .entry_nodes
             .iter()
@@ -427,8 +432,7 @@ impl NoteGraph {
                 self.int_get_node_index(node)
                     .ok_or(NoteGraphError::new("Node not found"))
             })
-            .into_iter()
-            .collect::<Result<Vec<NodeIndex<u32>>>>()?;
+            .collect::<Result<Vec<NGNodeIndex>>>()?;
 
         if options.separate_edges {
             let mut node_list = Vec::new();
@@ -468,14 +472,14 @@ impl NoteGraph {
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
     /// At the depth limit, edges are only added if the target node is already in the depth map.
-    pub fn int_traverse_depth_first<'a, T, S>(
+    pub fn int_traverse_depth_first<'a, N, E>(
         &'a self,
-        entry_nodes: Vec<NodeIndex<u32>>,
+        entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<String>>,
         max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
+        node_callback: fn(NGNodeIndex, u32) -> N,
+        edge_callback: fn(NGEdgeRef<'a>) -> E,
+    ) -> NodeEdgeVec<N, E> {
         let mut data_structure = DepthFirstTraversalDataStructure::new();
 
         self.int_traverse_generic(
@@ -494,14 +498,14 @@ impl NoteGraph {
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
     /// At the depth limit, edges are only added if the target node is already in the depth map.
-    pub fn int_traverse_breadth_first<'a, T, S>(
+    pub fn int_traverse_breadth_first<'a, N, E>(
         &'a self,
-        entry_nodes: Vec<NodeIndex<u32>>,
+        entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<String>>,
         max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
+        node_callback: fn(NGNodeIndex, u32) -> N,
+        edge_callback: fn(NGEdgeRef<'a>) -> E,
+    ) -> NodeEdgeVec<N, E> {
         let mut data_structure = BreadthFirstTraversalDataStructure::new();
 
         self.int_traverse_generic(
@@ -514,18 +518,18 @@ impl NoteGraph {
         )
     }
 
-    pub fn int_traverse_generic<'a, T, S>(
+    pub fn int_traverse_generic<'a, N, E>(
         &'a self,
-        traversal_data_structure: &mut impl GraphTraversalDataStructure<(NodeIndex<u32>, u32)>,
-        entry_nodes: Vec<NodeIndex<u32>>,
+        traversal_data_structure: &mut impl GraphTraversalDataStructure<(NGNodeIndex, u32)>,
+        entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<String>>,
         max_depth: u32,
-        node_callback: fn(NodeIndex<u32>, u32) -> T,
-        edge_callback: fn(EdgeReference<'a, EdgeData, u32>) -> S,
-    ) -> (Vec<(NodeIndex<u32>, T)>, Vec<(EdgeIndex<u32>, S)>) {
-        let mut node_list: Vec<(NodeIndex<u32>, T)> = Vec::new();
-        let mut edge_list: Vec<(EdgeIndex<u32>, S)> = Vec::new();
-        let mut visited_nodes: HashSet<NodeIndex<u32>> = HashSet::new();
+        node_callback: fn(NGNodeIndex, u32) -> N,
+        edge_callback: fn(NGEdgeRef<'a>) -> E,
+    ) -> NodeEdgeVec<N, E> {
+        let mut node_list: NodeVec<N> = Vec::new();
+        let mut edge_list: EdgeVec<E> = Vec::new();
+        let mut visited_nodes: HashSet<NGNodeIndex> = HashSet::new();
 
         for node in entry_nodes {
             node_list.push((node, node_callback(node, 0)));
@@ -546,7 +550,7 @@ impl NoteGraph {
 
                     // we only add the edge if we are not at the depth limit or if we are at the depth limit and the target node is already in the depth map
                     // this captures all the outgoing edges from the nodes at the depth limit to nodes already present in the depth map
-                    if !at_depth_limit || (at_depth_limit && already_visited) {
+                    if !at_depth_limit || already_visited {
                         edge_list.push((edge.id(), edge_callback(edge)));
                     }
 
