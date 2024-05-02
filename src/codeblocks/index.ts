@@ -132,27 +132,7 @@ You can use \`app.plugins.plugins.dataview.api.pages("<query>")\` to test your q
 	return { options: parsed, file_path };
 };
 
-const active_codeblocks: Map<string, CodeblockMDRC> = new Map();
-
-const register = (codeBlock: CodeblockMDRC) => {
-	active_codeblocks.set(codeBlock.id, codeBlock);
-};
-
-const unregister = (codeBlock: CodeblockMDRC) => {
-	active_codeblocks.delete(codeBlock.id);
-};
-
-const update_all = () => {
-	for (const codeBlock of active_codeblocks.values()) {
-		void codeBlock.update();
-	}
-};
-
 export const Codeblocks = {
 	parse_source,
 	postprocess_options,
-
-	register,
-	unregister,
-	update_all,
 };

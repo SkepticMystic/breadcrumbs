@@ -6,6 +6,7 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
 import { Codeblocks } from ".";
+import { BCEvent } from "src/main";
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
@@ -44,8 +45,6 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		const timer_outer = new Timer();
 
 		log.debug("CodeblockMDRC.load");
-
-		Codeblocks.register(this);
 
 		this.containerEl.empty();
 
@@ -111,11 +110,14 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 		log.debug(timer_inner.elapsedMessage("component creation", true));
 		log.debug(timer_outer.elapsedMessage("CodeblockMDRC.onload"));
+
+		this.registerEvent(this.plugin.events.on(BCEvent.GRAPH_UPDATE, () => {
+			this.update();
+		}));
 	}
 
 	onunload(): void {
 		log.debug("CodeblockMDRC.unload");
-		Codeblocks.unregister(this);
 
 		this.component?.$destroy();
 	}

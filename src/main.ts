@@ -445,9 +445,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 			redraw_page_views(this);
 		}
 
-		if (options?.redraw_codeblocks !== false) {
-			Codeblocks.update_all();
-		}
+		// if (options?.redraw_codeblocks !== false) {
+		// 	Codeblocks.update_all();
+		// }
 
 		if (options?.redraw_side_views === true) {
 			this.app.workspace

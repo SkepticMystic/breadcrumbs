@@ -73,7 +73,11 @@
 	};
 
 	onMount(() => {
-		update();
+		try {
+			update();
+		} catch (e) {
+			log.warn("Error updating codeblock mermaid", e);
+		}
 	});
 	
 	// const sort = get_edge_sorter(

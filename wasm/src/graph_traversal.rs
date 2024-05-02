@@ -15,6 +15,8 @@ use crate::{
     },
 };
 
+const TRAVERSAL_COUNT_LIMIT: u32 = 10_000;
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct TraversalOptions {
@@ -282,6 +284,8 @@ impl NoteGraph {
 
         let edge_types = options.edge_types.unwrap_or(self.edge_types());
 
+        let mut traversal_count = 0;
+
         for entry_node in &options.entry_nodes {
             let start_node = self
                 .int_get_node_index(&entry_node)
@@ -302,6 +306,8 @@ impl NoteGraph {
                     edge.weight().clone(),
                 );
 
+                traversal_count += 1;
+
                 if options.separate_edges {
                     result.push(self.int_rec_traverse(
                         target,
@@ -309,6 +315,7 @@ impl NoteGraph {
                         Some(&vec![edge_struct.edge_type()]),
                         0,
                         options.max_depth,
+                        &mut traversal_count,
                     )?);
                 } else {
                     result.push(self.int_rec_traverse(
@@ -317,6 +324,7 @@ impl NoteGraph {
                         Some(&edge_types),
                         0,
                         options.max_depth,
+                        &mut traversal_count,
                     )?);
                 }
             }
@@ -347,6 +355,7 @@ impl NoteGraph {
         edge_types: Option<&Vec<String>>,
         depth: u32,
         max_depth: u32,
+        traversal_count: &mut u32,
     ) -> Result<RecTraversalData> {
         let mut new_children = Vec::new();
 
@@ -365,12 +374,19 @@ impl NoteGraph {
                         edge_data.clone(),
                     );
 
+                    *traversal_count += 1;
+
+                    if *traversal_count > TRAVERSAL_COUNT_LIMIT {
+                        return Err(NoteGraphError::new("Traversal count limit reached"));
+                    }
+
                     new_children.push(self.int_rec_traverse(
                         target,
                         edge_struct,
                         edge_types,
                         depth + 1,
                         max_depth,
+                        traversal_count,
                     )?)
                 }
             }

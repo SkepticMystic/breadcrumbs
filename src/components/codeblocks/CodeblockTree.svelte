@@ -11,6 +11,8 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { TraversalOptions, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { log } from "src/logger";
+	import { Timer } from "src/utils/timer";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -23,21 +25,33 @@
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
+	const DEFAULT_MAX_DEPTH = 100;
+
 	let tree: RecTraversalData[] = [];
 
 	export const update = () => {
+		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
+
 		tree = plugin.graph.rec_traverse(
 			new TraversalOptions(
 				[file_path],
-				options.fields,
-				options.depth[1] ?? 100,
+				options.fields ?? [],
+				max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
 				!options["merge-fields"],
 			)
 		).data;
 	};
 
 	onMount(() => {
-		update();
+		const timer = new Timer();
+
+		try {
+			update();
+		} catch (e) {
+			log.warn("Error updating codeblock tree", e);
+		}
+
+		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
 	});
 
 	// TODO reimplement all this logic
