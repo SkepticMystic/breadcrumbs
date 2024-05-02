@@ -25,7 +25,7 @@
 		show_node_options,
 		field_group_labels,
 	} = plugin.settings.views.side.tree;
-	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
+	let open_signal: boolean | null = !plugin.settings.views.side.tree.collapse;
 
 	const base_traversal = (attr: EdgeAttrFilters) =>
 		Traverse.build_tree(
