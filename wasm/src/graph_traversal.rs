@@ -82,8 +82,10 @@ impl Path {
         self.edges.len()
     }
 
-    pub fn truncate(&mut self, limit: usize) {
-        self.edges.truncate(limit);
+    pub fn truncate(&self, limit: usize) -> Path {
+        let mut copy = self.clone();
+        copy.edges.truncate(limit);
+        copy
     }
 
     #[wasm_bindgen(getter)]

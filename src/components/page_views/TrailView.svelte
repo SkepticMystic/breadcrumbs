@@ -64,15 +64,15 @@
 	);
 
 	// Slice the paths to the chosen max depth.
-	$: all_paths.forEach((path) => path.truncate(depth));
+	$: truncated_paths = selected_paths.map((path) => path.truncate(depth));
 
 	// Remove duplicates by the target_ids of the path.
 	$: deduped_paths =
 		// There are no duplicates if the depth is the max depth.
 		// The traversal wouldn't add them in the first place.
 		depth === MAX_DEPTH
-			? selected_paths
-			: remove_duplicates_by_equals(selected_paths, (a, b) => a.equals(b));
+			? truncated_paths
+			: remove_duplicates_by_equals(truncated_paths, (a, b) => a.equals(b));
 
 	// NOTE: Only sort after slicing, so that the depth is taken into account.
 	$: sorted_paths = deduped_paths.sort((a, b) => {
@@ -96,8 +96,8 @@
 </script>
 
 <div>
-	{#key traversal_data}
-		{#if !traversal_data.is_empty()}
+	{#key sorted_paths}
+		{#if sorted_paths.length}
 			<div
 				class="mb-1 flex flex-wrap justify-between gap-3"
 				class:hidden={!plugin.settings.views.page.trail.show_controls}
@@ -145,8 +145,7 @@
 						class="aspect-square text-lg"
 						aria-label="Increase max depth"
 						disabled={depth >= MAX_DEPTH}
-						on:click={() =>
-							(depth = Math.min(MAX_DEPTH, depth + 1))}
+						on:click={() => (depth = Math.min(MAX_DEPTH, depth + 1))}
 					>
 						+
 					</button>
