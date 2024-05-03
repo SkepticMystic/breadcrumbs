@@ -332,19 +332,12 @@
 							/>
 						</div>
 
-						<!-- TODO -->
-						<!-- {#if opens[rule_i]}
+						{#if opens[rule_i]}
 							<MermaidDiagram
 								{plugin}
-								mermaid={Mermaid.from_edges(
-									transitive_rule_to_edges(rule),
-									{
-										show_attributes: ["field"],
-										collapse_opposing_edges: false,
-									},
-								)}
+								mermaid={Mermaid.from_transitive_rule(rule).mermaid}
 							/>
-						{/if} -->
+						{/if}
 					</div>
 				{/key}
 			</details>

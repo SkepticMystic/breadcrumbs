@@ -3,10 +3,13 @@ use std::fmt::Debug;
 use petgraph::{
     graph::{EdgeIndex, NodeIndex},
     stable_graph::EdgeReference,
+    visit::EdgeRef,
 };
 use wasm_bindgen::prelude::*;
 
-use crate::{graph::edge_matches_edge_filter, graph_construction::GraphConstructionNodeData};
+use crate::{
+    graph::edge_matches_edge_filter, graph_construction::GraphConstructionNodeData, utils::Result,
+};
 
 pub type NGEdgeIndex = EdgeIndex<u32>;
 pub type NGNodeIndex = NodeIndex<u32>;
@@ -64,6 +67,10 @@ impl EdgeData {
 }
 
 impl EdgeData {
+    pub fn matches_edge_filter(&self, edge_types: Option<&Vec<String>>) -> bool {
+        edge_matches_edge_filter(&self, edge_types)
+    }
+
     pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
         let mut result = vec![];
 
@@ -202,22 +209,19 @@ pub struct EdgeStruct {
     #[wasm_bindgen(skip)]
     pub source: NodeData,
     #[wasm_bindgen(skip)]
+    pub source_index: NGNodeIndex,
+    #[wasm_bindgen(skip)]
     pub target: NodeData,
     #[wasm_bindgen(skip)]
+    pub target_index: NGNodeIndex,
+    #[wasm_bindgen(skip)]
     pub edge: EdgeData,
+    #[wasm_bindgen(skip)]
+    pub edge_index: NGEdgeIndex,
 }
 
 #[wasm_bindgen]
 impl EdgeStruct {
-    #[wasm_bindgen(constructor)]
-    pub fn new(source: NodeData, target: NodeData, edge: EdgeData) -> EdgeStruct {
-        EdgeStruct {
-            source,
-            target,
-            edge,
-        }
-    }
-
     #[wasm_bindgen(getter)]
     pub fn source(&self) -> NodeData {
         self.source.clone()
@@ -263,5 +267,63 @@ impl EdgeStruct {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
+    }
+}
+
+impl EdgeStruct {
+    pub fn new(
+        source: NodeData,
+        source_index: NGNodeIndex,
+        target: NodeData,
+        target_index: NGNodeIndex,
+        edge: EdgeData,
+        edge_index: NGEdgeIndex,
+    ) -> EdgeStruct {
+        EdgeStruct {
+            source,
+            source_index,
+            target,
+            target_index,
+            edge,
+            edge_index,
+        }
+    }
+
+    pub fn from_edge_ref(
+        edge_ref: NGEdgeRef,
+        graph: &crate::graph::NoteGraph,
+    ) -> Option<EdgeStruct> {
+        let source_index = edge_ref.source();
+        let target_index = edge_ref.target();
+        let source = graph.graph.node_weight(source_index)?.clone();
+        let target = graph.graph.node_weight(target_index)?.clone();
+
+        Some(EdgeStruct::new(
+            source,
+            source_index,
+            target,
+            target_index,
+            edge_ref.weight().clone(),
+            edge_ref.id(),
+        ))
+    }
+
+    pub fn from_edge_data(
+        edge_index: NGEdgeIndex,
+        edge_data: EdgeData,
+        graph: &crate::graph::NoteGraph,
+    ) -> Option<EdgeStruct> {
+        let (source_index, target_index) = graph.graph.edge_endpoints(edge_index)?;
+        let source = graph.graph.node_weight(source_index)?.clone();
+        let target = graph.graph.node_weight(target_index)?.clone();
+
+        Some(EdgeStruct::new(
+            source,
+            source_index,
+            target,
+            target_index,
+            edge_data,
+            edge_index,
+        ))
     }
 }

@@ -12,7 +12,7 @@ use crate::{
     graph::NoteGraph,
     graph_data::EdgeData,
     graph_traversal::{EdgeVec, TraversalOptions},
-    utils::{NoteGraphError, Result},
+    utils::{self, NoteGraphError, Result},
 };
 
 pub type AccumulatedEdgeHashMap = HashMap<
@@ -30,6 +30,7 @@ pub struct MermaidGraphOptions {
     collapse_opposing_edges: bool,
     edge_label_attributes: Vec<String>,
     node_label_fn: Option<js_sys::Function>,
+    link_nodes: bool,
 }
 
 #[wasm_bindgen]
@@ -43,6 +44,7 @@ impl MermaidGraphOptions {
         collapse_opposing_edges: bool,
         edge_label_attributes: Vec<String>,
         node_label_fn: Option<js_sys::Function>,
+        link_nodes: bool,
     ) -> MermaidGraphOptions {
         MermaidGraphOptions {
             active_node,
@@ -52,6 +54,7 @@ impl MermaidGraphOptions {
             collapse_opposing_edges,
             edge_label_attributes,
             node_label_fn,
+            link_nodes,
         }
     }
 
@@ -113,6 +116,9 @@ impl NoteGraph {
 
         let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
 
+        // utils::log(format!("{:#?}", nodes));
+        // utils::log(format!("{:#?}", edges));
+
         let traversal_elapsed = now.elapsed();
 
         let mut result = String::new();
@@ -129,6 +135,8 @@ impl NoteGraph {
 
         // accumulate edges by direction, so that we can collapse them in the next step
         let accumulated_edges = NoteGraph::int_accumulate_edges(edges);
+
+        // utils::log(format!("{:#?}", accumulated_edges));
 
         let mut unresolved_nodes = Vec::new();
 
@@ -159,7 +167,7 @@ impl NoteGraph {
 
         // collapse edge data and add them to the graph
         for (from, to, forward, backward) in accumulated_edges.values() {
-            if diagram_options.collapse_opposing_edges {
+            if diagram_options.collapse_opposing_edges || backward.is_empty() {
                 result.push_str(&self.generate_mermaid_edge(
                     from,
                     to,
@@ -192,7 +200,7 @@ impl NoteGraph {
             result.push_str(&format!("class {} BC-active-node\n", index.index()));
         }
 
-        if !nodes.is_empty() {
+        if !nodes.is_empty() && diagram_options.link_nodes {
             result.push_str(&format!(
                 "class {} internal-link\n",
                 nodes.iter().map(|(index, _)| index.index()).join(",")

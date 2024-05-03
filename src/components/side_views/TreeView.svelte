@@ -1,7 +1,4 @@
 <script lang="ts">
-	import {
-		get_edge_sorter,
-	} from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -12,7 +9,7 @@
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import { RecTraversalData, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { TraversalOptions, create_edge_sorter } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -30,16 +27,21 @@
 		field_group_labels,
 	);
 
-	$: tree = plugin.graph.rec_traverse(
-		new TraversalOptions(
-			[$active_file_store!.path],
-			edge_field_labels,
-			100,
-			!merge_fields,
-		),
-	).data;
+	$: tree = $active_file_store && plugin.graph.has_node($active_file_store.path) 
+		? plugin.graph.rec_traverse(
+				new TraversalOptions(
+					[$active_file_store!.path],
+					edge_field_labels,
+					100,
+					!merge_fields,
+				),
+			).data 
+		: [];
 
-	$: sort = get_edge_sorter(edge_sort_id);
+	$: sort = create_edge_sorter(
+		edge_sort_id.field,
+		edge_sort_id.order === -1,
+	);;
 
 	// const base_traversal = (attr: EdgeAttrFilters) =>
 	// 	Traverse.build_tree(

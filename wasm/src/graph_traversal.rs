@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
 use crate::{
+    edge_sorting::EdgeSorter,
     graph::NoteGraph,
     graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
@@ -130,13 +131,17 @@ impl Path {
 #[derive(Clone, Debug)]
 pub struct RecTraversalData {
     // the edge struct that was traversed
-    edge: EdgeStruct,
+    #[wasm_bindgen(skip)]
+    pub edge: EdgeStruct,
     // the depth of the node in the traversal
-    depth: u32,
+    #[wasm_bindgen(skip)]
+    pub depth: u32,
     // the number of total children of the node, so also children of children
-    number_of_children: u32,
+    #[wasm_bindgen(skip)]
+    pub number_of_children: u32,
     // the children of the node
-    children: Vec<RecTraversalData>,
+    #[wasm_bindgen(skip)]
+    pub children: Vec<RecTraversalData>,
 }
 
 #[wasm_bindgen]
@@ -174,6 +179,14 @@ impl RecTraversalData {
     #[wasm_bindgen(setter)]
     pub fn set_children(&mut self, children: Vec<RecTraversalData>) {
         self.children = children;
+    }
+
+    pub fn rec_sort_children(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
+        for child in &mut self.children {
+            child.rec_sort_children(graph, sorter);
+        }
+
+        sorter.sort_traversal_data(graph, &mut self.children);
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -304,8 +317,11 @@ impl NoteGraph {
 
                 let edge_struct = EdgeStruct::new(
                     start_node_weight.clone(),
+                    start_node,
                     self.int_get_node_weight(target)?.clone(),
+                    target,
                     edge.weight().clone(),
+                    edge.id(),
                 );
 
                 traversal_count += 1;
@@ -372,14 +388,17 @@ impl NoteGraph {
 
                     let edge_struct = EdgeStruct::new(
                         edge.target.clone(),
+                        edge.target_index,
                         self.int_get_node_weight(target)?.clone(),
+                        target,
                         edge_data.clone(),
+                        outgoing_edge.id(),
                     );
 
                     *traversal_count += 1;
 
                     if *traversal_count > TRAVERSAL_COUNT_LIMIT {
-                        return Err(NoteGraphError::new("Traversal count limit reached"));
+                        return Err(NoteGraphError::new("Traversal exceeded limit of 10,000 nodes. Try decreasing the max depth."));
                     }
 
                     new_children.push(self.int_rec_traverse(

@@ -2,13 +2,12 @@ import type { EdgeSortId } from "src/const/graph";
 import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 import { Traverse } from "src/graph/traverse";
 import {
-	get_edge_sorter,
 	stringify_node,
 } from "src/graph/utils";
 import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
-import { TraversalOptions, type NoteGraph, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { TraversalOptions, create_edge_sorter, type NoteGraph, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export namespace ListIndex {
 	export type Options = {
@@ -87,8 +86,9 @@ export namespace ListIndex {
 				// Traverse.build_tree(graph, start_node, options, (e) =>
 				// 	has_edge_attrs(e, { $or_fields: options.fields }),
 				// ),
+				graph,
 				graph.rec_traverse(traversal_options).data,
-				get_edge_sorter(options.edge_sort_id),
+				create_edge_sorter(options.edge_sort_id.field, options.edge_sort_id.order === -1),
 			),
 			options,
 		);

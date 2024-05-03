@@ -1,5 +1,10 @@
 use wasm_bindgen::prelude::*;
 
+use crate::{
+    graph::NoteGraph,
+    graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
+};
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct TransitiveGraphRule {
@@ -45,4 +50,45 @@ impl TransitiveGraphRule {
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
     }
+}
+
+#[wasm_bindgen]
+pub fn create_graph_from_rule(rule: TransitiveGraphRule) -> NoteGraph {
+    let mut graph = NoteGraph::new();
+
+    graph.set_transitive_rules(vec![rule.clone()]);
+
+    let mut node_data = vec![];
+    let mut edge_data = vec![];
+
+    let mut counter = 1;
+    for element in rule.path.iter() {
+        node_data.push(GraphConstructionNodeData::new(
+            counter.to_string(),
+            vec![],
+            true,
+            false,
+            false,
+        ));
+        edge_data.push(GraphConstructionEdgeData::new(
+            counter.to_string(),
+            (counter + 1).to_string(),
+            element.clone(),
+            "explicit".to_string(),
+        ));
+
+        counter += 1;
+    }
+
+    node_data.push(GraphConstructionNodeData::new(
+        counter.to_string(),
+        vec![],
+        true,
+        false,
+        false,
+    ));
+
+    graph.build_graph(node_data, edge_data);
+
+    graph
 }

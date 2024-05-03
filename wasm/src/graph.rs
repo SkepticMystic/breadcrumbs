@@ -351,10 +351,7 @@ impl NoteGraph {
     }
 
     pub fn int_edge_ref_to_struct(&self, edge: NGEdgeRef) -> Option<EdgeStruct> {
-        let source = self.graph.node_weight(edge.source())?.clone();
-        let target = self.graph.node_weight(edge.target())?.clone();
-
-        Some(EdgeStruct::new(source, target, edge.weight().clone()))
+        EdgeStruct::from_edge_ref(edge, self)
     }
 
     pub fn int_edge_to_struct(
@@ -362,11 +359,7 @@ impl NoteGraph {
         edge_index: NGEdgeIndex,
         edge_data: EdgeData,
     ) -> Option<EdgeStruct> {
-        let (source_index, target_index) = self.graph.edge_endpoints(edge_index)?;
-        let source = self.graph.node_weight(source_index)?.clone();
-        let target = self.graph.node_weight(target_index)?.clone();
-
-        Some(EdgeStruct::new(source, target, edge_data))
+        EdgeStruct::from_edge_data(edge_index, edge_data, self)
     }
 
     /// Returns the node weight for a specific node index.

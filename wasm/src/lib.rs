@@ -1,3 +1,4 @@
+pub mod edge_sorting;
 pub mod graph;
 pub mod graph_construction;
 pub mod graph_data;

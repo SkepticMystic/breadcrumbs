@@ -117,11 +117,6 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		)
 	});
 
-	for (const rule of transitive_rules) {
-		log.debug(rule.toString());
-	
-	}
-
 	plugin.graph.set_transitive_rules(
 		transitive_rules
 	);

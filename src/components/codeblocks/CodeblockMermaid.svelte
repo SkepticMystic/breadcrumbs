@@ -10,7 +10,7 @@
 	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { MermaidGraphOptions, NodeData, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { MermaidGraphOptions, NodeData, NoteGraphError, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { remove_nullish_keys } from "src/utils/objects";
 	import { Paths } from "src/utils/paths";
 	import { Links } from "src/utils/links";
@@ -21,10 +21,9 @@
 	export let file_path: string;
 
 	let mermaid: string = "";
+	let error: NoteGraphError | undefined = undefined;
 
 	export const update = () => {
-		// TODO pass all the options and then implement them all the options on the rust side
-
 		const max_depth = options.depth[1] ?? 100;
 
 		const traversal_options = new TraversalOptions(
@@ -63,21 +62,25 @@
 						),
 					);
 				}
-			}
+			},
+			true,
 		);
 
-		log.debug(traversal_options.toString());
-		log.debug(mermaid_options.toString());
+		try {
+			mermaid = plugin.graph.generate_mermaid_graph(traversal_options, mermaid_options).mermaid;
+			error = undefined;
+		} catch (e) {
+			log.error("Error generating mermaid graph", e);
 
-		mermaid = plugin.graph.generate_mermaid_graph(traversal_options, mermaid_options).mermaid;
+			if (e instanceof NoteGraphError) {
+				mermaid = "";
+				error = e;
+			}
+		}
 	};
 
 	onMount(() => {
-		try {
-			update();
-		} catch (e) {
-			log.warn("Error updating codeblock mermaid", e);
-		}
+		update();
 	});
 	
 	// const sort = get_edge_sorter(
@@ -212,7 +215,11 @@
 			<MermaidDiagram {plugin} {mermaid} source_path={file_path} />
 		</div>
 	{:else}
-		<!-- TODO(HELP-MSG) -->
-		<p class="search-empty-state">No paths found.</p>
+		{#if error}
+			<p class="search-empty-state">{error.message}</p>
+		{:else}
+			<!-- TODO(HELP-MSG) -->
+			<p class="search-empty-state">No paths found.</p>
+		{/if}
 	{/if}
 </div>

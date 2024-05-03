@@ -1,16 +1,13 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
-	import {
-		get_edge_sorter,
-	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { onMount } from "svelte";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { TraversalOptions, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { NoteGraphError, TraversalOptions, create_edge_sorter, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { log } from "src/logger";
 	import { Timer } from "src/utils/timer";
 
@@ -19,37 +16,45 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	const sort = get_edge_sorter(
-		// @ts-expect-error: ts(2345)
-		options.sort,
+	const sort = create_edge_sorter(
+		options.sort.field,
+		options.sort.order === -1,
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
 	const DEFAULT_MAX_DEPTH = 100;
 
 	let tree: RecTraversalData[] = [];
+	let error: NoteGraphError | undefined = undefined;
 
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
-		tree = plugin.graph.rec_traverse(
-			new TraversalOptions(
-				[file_path],
-				options.fields ?? [],
-				max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
-				!options["merge-fields"],
-			)
-		).data;
+		const traversal_options = new TraversalOptions(
+			[file_path],
+			options.fields ?? [],
+			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
+			!options["merge-fields"],
+		);
+
+		try {
+			tree = plugin.graph.rec_traverse(
+				traversal_options
+			).data;
+			error = undefined;
+		} catch (e) {
+			log.error("Error updating codeblock tree", e);
+			if (e instanceof NoteGraphError) {
+				tree = [];
+				error = e;
+			}
+		}
 	};
 
 	onMount(() => {
 		const timer = new Timer();
 
-		try {
-			update();
-		} catch (e) {
-			log.warn("Error updating codeblock tree", e);
-		}
+		update();
 
 		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
 	});
@@ -143,7 +148,11 @@
 			</div>
 		</div>
 	{:else}
-		<!-- TODO(HELP-MSG) -->
-		<p class="search-empty-state">No paths found</p>
+		{#if error}
+			<p class="search-empty-state">{error.message}</p>
+		{:else}
+			<!-- TODO(HELP-MSG) -->
+			<p class="search-empty-state">No paths found.</p>
+		{/if}
 	{/if}
 </div>

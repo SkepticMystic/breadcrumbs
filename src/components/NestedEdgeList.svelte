@@ -1,12 +1,11 @@
 <script lang="ts">
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import { type EdgeSorter } from "src/graph/utils";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { EdgeSorter, sort_traversal_data, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -29,7 +28,7 @@
 	}
 </script>
 
-{#each tree.sort((a, b) => sort(a.edge, b.edge)) as item, i}
+{#each sort_traversal_data(plugin.graph, tree, sort) as item, i}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if item.children.length}

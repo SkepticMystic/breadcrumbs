@@ -1,6 +1,6 @@
-import type { RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { EdgeSorter, NoteGraph, sort_traversal_data, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 // import { BCGraph, type BCEdge, type BCEdgeAttributes } from "./MyMultiGraph";
-import { type EdgeSorter } from "./utils";
+// import { type EdgeSorter } from "./utils";
 
 // export type TraversalStackItem = {
 // 	edge: BCEdge;
@@ -118,15 +118,16 @@ import { type EdgeSorter } from "./utils";
 // 	return paths;
 // };
 
-/** Sort a nested list of paths on a per-depth level.
- * Mutates the input.
+/** 
+ * Sort a nested list of paths on a per-depth level.
+ * This will mutate the individual traversal data, but it will return a new array.
  */
-const sort_edge_tree = (tree: RecTraversalData[], sorter: EdgeSorter) => {
+const sort_edge_tree = (graph: NoteGraph, tree: RecTraversalData[], sorter: EdgeSorter) => {
 	tree.forEach((nested_path) => {
-		nested_path.children = sort_edge_tree(nested_path.children, sorter);
+		nested_path.rec_sort_children(graph, sorter);
 	});
 
-	return tree.sort((a, b) => sorter(a.edge, b.edge));
+	return sort_traversal_data(graph, tree, sorter);
 };
 
 // // TODO: Not sure how, but we need to filter out paths that included the same target_id twice.

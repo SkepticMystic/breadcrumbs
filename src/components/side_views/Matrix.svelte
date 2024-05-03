@@ -9,6 +9,7 @@
 	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
+	import { create_edge_sorter } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -34,7 +35,10 @@
 				)
 			: null;
 
-	$: sort = get_edge_sorter(edge_sort_id);
+
+	// $: Object.values(grouped_out_edges!).flat().forEach((e) => console.log(e?.toString()));
+
+	$: sort = create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1);
 
 	// $: edge_field_labels = resolve_field_group_labels(
 	// 	plugin.settings.edge_field_groups,

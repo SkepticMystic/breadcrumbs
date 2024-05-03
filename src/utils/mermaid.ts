@@ -8,6 +8,9 @@
 // import { remove_nullish_keys, untyped_pick } from "./objects";
 // import { url_search_params } from "./url";
 
+import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import { MermaidGraphOptions, NodeData, TransitiveGraphRule, TraversalOptions, create_graph_from_rule } from "wasm/pkg/breadcrumbs_graph_wasm";
+
 const MERMAID_DIRECTIONS = ["LR", "RL", "TB", "BT"] as const;
 type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
 
@@ -278,8 +281,46 @@ const to_live_edit_link = (code: string) => {
 	return `https://mermaid.live/edit#base64:${encoded}`;
 };
 
+const from_transitive_rule = (
+	rule: Pick<
+		BreadcrumbsSettings["implied_relations"]["transitive"][number],
+		"chain" | "close_field" | "close_reversed" | "name"
+	>
+) => {
+	const wasm_rule = new TransitiveGraphRule(
+		"",
+		rule.chain.map((attr) => attr.field!),
+		rule.close_field,
+		1,
+		false,
+		rule.close_reversed,
+	);
+
+	const graph = create_graph_from_rule(wasm_rule);
+
+	return graph.generate_mermaid_graph(
+		new TraversalOptions(
+			["1"],
+			undefined,
+			100,
+			false
+		),
+		new MermaidGraphOptions(
+			undefined,
+			"",
+			"graph",
+			"LR",
+			false,
+			["field"],
+			(node: NodeData) => node.path,
+			false,
+		)
+	);
+}
+
 export const Mermaid = {
 	// from_edges,
+	from_transitive_rule,
 
 	to_image_link,
 	to_live_edit_link,

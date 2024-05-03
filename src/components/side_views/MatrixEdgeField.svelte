@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import type { EdgeSorter } from "src/graph/utils";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
-	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { sort_edges, type EdgeSorter, type EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { log } from "src/logger";
 
 	export let edges: EdgeStruct[];
 	export let field: EdgeField;
@@ -18,6 +18,12 @@
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
 	export let sort: EdgeSorter;
+
+	$: _sort_edges(sort);
+
+	const _sort_edges = (_sort: EdgeSorter) => {
+		edges = sort_edges(plugin.graph, edges, _sort);
+	};
 
 	let open = true;
 </script>
@@ -48,7 +54,7 @@
 
 	<div class="tree-item-children flex flex-col">
 		{#key sort}
-			{#each edges.sort(sort) as edge}
+			{#each edges as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
 						<div class="tree-item-inner flex grow">
