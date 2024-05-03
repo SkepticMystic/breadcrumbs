@@ -53,7 +53,7 @@
 			: [];
 </script>
 
-<div class="markdown-rendered BC-tree-view -mt-2">
+<div class="markdown-rendered BC-tree-view">
 	<div class="nav-header">
 		<div class="nav-buttons-container">
 			<RebuildGraphButton
