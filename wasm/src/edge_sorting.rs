@@ -5,7 +5,7 @@ use crate::{
     graph::NoteGraph,
     graph_data::EdgeStruct,
     graph_traversal::RecTraversalData,
-    utils::{self, NoteGraphError, Result},
+    utils::{NoteGraphError, Result},
 };
 
 #[derive(Clone, Debug)]

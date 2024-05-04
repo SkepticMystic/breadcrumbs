@@ -32,16 +32,18 @@
 				new TraversalOptions(
 					[$active_file_store!.path],
 					edge_field_labels,
-					100,
+					20,
 					!merge_fields,
 				),
-			).data 
-		: [];
+			)
+		: undefined;
 
 	$: sort = create_edge_sorter(
 		edge_sort_id.field,
 		edge_sort_id.order === -1,
-	);;
+	);
+
+	$: tree?.sort(plugin.graph, sort);
 
 	// const base_traversal = (attr: EdgeAttrFilters) =>
 	// 	Traverse.build_tree(
@@ -105,14 +107,13 @@
 
 	<div class="BC-tree-view-items">
 		{#key tree || sort}
-			{#if tree.length}
+			{#if tree && !tree.is_empty()}
 				<NestedEdgeList
-					{sort}
 					{plugin}
 					{open_signal}
 					{show_attributes}
 					{show_node_options}
-					{tree}
+					tree={tree.data}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

@@ -15,8 +15,6 @@
 	export let show_node_options: ShowNodeOptions;
 	export let show_attributes: EdgeAttribute[] | undefined;
 
-	export let sort: EdgeSorter;
-
 	let opens = tree.map(() => true);
 
 	$: if (open_signal === true) {
@@ -28,7 +26,7 @@
 	}
 </script>
 
-{#each sort_traversal_data(plugin.graph, tree, sort) as item, i}
+{#each tree as item, i}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
 			{#if item.children.length}
@@ -56,7 +54,6 @@
 		{#if item.children.length}
 			<div class="tree-item-children">
 				<svelte:self
-					{sort}
 					{plugin}
 					{show_attributes}
 					{show_node_options}

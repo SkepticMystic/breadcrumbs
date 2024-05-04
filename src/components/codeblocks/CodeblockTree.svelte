@@ -7,7 +7,7 @@
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { NoteGraphError, TraversalOptions, create_edge_sorter, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { NoteGraphError, RecTraversalResult, TraversalOptions, create_edge_sorter, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { log } from "src/logger";
 	import { Timer } from "src/utils/timer";
 
@@ -24,7 +24,7 @@
 
 	const DEFAULT_MAX_DEPTH = 100;
 
-	let tree: RecTraversalData[] = [];
+	let tree: RecTraversalResult | undefined = undefined;
 	let error: NoteGraphError | undefined = undefined;
 
 	export const update = () => {
@@ -40,12 +40,14 @@
 		try {
 			tree = plugin.graph.rec_traverse(
 				traversal_options
-			).data;
+			);
+			tree.sort(plugin.graph, sort);
+			
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
 			if (e instanceof NoteGraphError) {
-				tree = [];
+				tree = undefined;
 				error = e;
 			}
 		}
@@ -123,12 +125,12 @@
 		</h3>
 	{/if}
 
-	{#if tree.length}
+	{#if tree && !tree.is_empty()}
 		<div class="BC-codeblock-tree-items relative">
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={ListIndex.edge_tree_to_list_index(tree, {
+					text={ListIndex.edge_tree_to_list_index(tree.data, {
 						...plugin.settings.commands.list_index.default_options,
 						show_attributes: options["show-attributes"] ?? [],
 					})}
@@ -138,8 +140,7 @@
 			<!-- NOTE: Padded so that the flair doesn't interfere with the floating buttons -->
 			<div class="pr-10">
 				<NestedEdgeList
-					{sort}
-					{tree}
+					tree={tree.data}
 					{plugin}
 					{show_node_options}
 					open_signal={!options.collapse}

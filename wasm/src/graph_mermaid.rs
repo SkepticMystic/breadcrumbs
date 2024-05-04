@@ -12,7 +12,7 @@ use crate::{
     graph::NoteGraph,
     graph_data::EdgeData,
     graph_traversal::{EdgeVec, TraversalOptions},
-    utils::{self, NoteGraphError, Result},
+    utils::{NoteGraphError, Result},
 };
 
 pub type AccumulatedEdgeHashMap = HashMap<

@@ -27,12 +27,7 @@
 		// Even tho we ensure the graph is built before the views are registered,
 		// Existing views still try render before the graph is built.
 		plugin.graph.has_node($active_file_store.path)
-			? group_by(
-					plugin.graph
-						.get_outgoing_edges($active_file_store.path)
-						.filter((e) => e.matches_edge_filter(edge_field_labels)),
-					(e) => e.edge_type,	
-				)
+			? plugin.graph.get_filtered_grouped_outgoing_edges($active_file_store.path, edge_field_labels)
 			: null;
 
 
@@ -97,13 +92,11 @@
 	{#key grouped_out_edges}
 		{#if grouped_out_edges}
 			<div>
-				<!-- NOTE: Although it's more efficient, iterating over the Object.entries(grouped_out_edges) doesn't result in a stable order. -->
 				{#each plugin.settings.edge_fields as field}
-					{@const edges = grouped_out_edges[field.label]}
+					{@const edges = grouped_out_edges.get_sorted_edges(field.label, plugin.graph, sort)}
 
 					{#if edges?.length}
 						<MatrixEdgeField
-							{sort}
 							{edges}
 							{field}
 							{plugin}

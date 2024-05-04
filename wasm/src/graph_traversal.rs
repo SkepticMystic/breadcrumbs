@@ -24,7 +24,7 @@ pub type NodeEdgeVec<N, E> = (NodeVec<N>, EdgeVec<E>);
 #[derive(Clone, Debug)]
 pub struct TraversalOptions {
     entry_nodes: Vec<String>,
-    // if this is None, all edge types will be traversed
+    /// if this is None, all edge types will be traversed
     edge_types: Option<Vec<String>>,
     max_depth: u32,
     /// if true, multiple traversals - one for each edge type - will be performed and the results will be combined
@@ -130,16 +130,16 @@ impl Path {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalData {
-    // the edge struct that was traversed
+    /// the edge struct that was traversed
     #[wasm_bindgen(skip)]
     pub edge: EdgeStruct,
-    // the depth of the node in the traversal
+    /// the depth of the node in the traversal
     #[wasm_bindgen(skip)]
     pub depth: u32,
-    // the number of total children of the node, so also children of children
+    /// the number of total children of the node, so also children of children
     #[wasm_bindgen(skip)]
     pub number_of_children: u32,
-    // the children of the node
+    /// the children of the node
     #[wasm_bindgen(skip)]
     pub children: Vec<RecTraversalData>,
 }
@@ -287,6 +287,14 @@ impl RecTraversalResult {
         });
 
         paths
+    }
+
+    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
+        for datum in &mut self.data {
+            datum.rec_sort_children(graph, sorter);
+        }
+
+        sorter.sort_traversal_data(graph, &mut self.data);
     }
 }
 
@@ -490,7 +498,7 @@ impl NoteGraph {
     /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only added if the target node is already in the depth map.
+    /// At the depth limit, edges are only visited if they point to already visited nodes.
     pub fn int_traverse_depth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
@@ -516,7 +524,7 @@ impl NoteGraph {
     /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only added if the target node is already in the depth map.
+    /// At the depth limit, edges are only visited if they point to already visited nodes.
     pub fn int_traverse_breadth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,

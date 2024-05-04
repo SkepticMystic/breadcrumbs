@@ -11,7 +11,9 @@ use web_time::Instant;
 
 use crate::{
     graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
-    graph_data::{EdgeData, EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex, NodeData},
+    graph_data::{
+        EdgeData, EdgeStruct, GroupedEdgeList, NGEdgeIndex, NGEdgeRef, NGNodeIndex, NodeData,
+    },
     graph_rules::TransitiveGraphRule,
     graph_update::BatchGraphUpdate,
     utils::{self, NoteGraphError, Result},
@@ -161,6 +163,23 @@ impl NoteGraph {
                 .collect(),
             None => Vec::new(),
         }
+    }
+
+    pub fn get_filtered_grouped_outgoing_edges(
+        &self,
+        node: String,
+        edge_types: Option<Vec<String>>,
+    ) -> GroupedEdgeList {
+        let node_index = self.int_get_node_index(&node);
+
+        GroupedEdgeList::from_vec(match node_index {
+            Some(node_index) => self
+                .int_iter_outgoing_edges(node_index)
+                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
+                .filter(|edge| edge_matches_edge_filter(&edge.edge, edge_types.as_ref()))
+                .collect(),
+            None => Vec::new(),
+        })
     }
 
     pub fn get_incoming_edges(&self, node: String) -> Vec<EdgeStruct> {
