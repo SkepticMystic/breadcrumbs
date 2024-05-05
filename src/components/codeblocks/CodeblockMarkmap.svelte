@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
+	import { ListIndex } from "src/commands/list_index";
 	import { Traverse, type EdgeTree } from "src/graph/traverse";
 	import {
 		get_edge_sorter,
@@ -9,7 +10,6 @@
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { Markmap } from "src/utils/markmap";
 	import { onMount } from "svelte";
 	import MarkmapDiagram from "../Markmap/MarkmapDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
@@ -79,9 +79,10 @@
 		}
 	};
 
-	$: markmap = Markmap.from_tree(tree, {
+	$: markmap = ListIndex.edge_tree_to_list_index(tree, {
+		...plugin.settings.commands.list_index.default_options,
 		show_node_options,
-		show_attributes: options?.["show-attributes"],
+		show_attributes: options["show-attributes"] ?? [],
 	});
 
 	onMount(update);
