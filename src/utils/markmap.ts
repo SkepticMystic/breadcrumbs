@@ -15,19 +15,19 @@ const from_tree = (tree: EdgeTree[], options?: Options) => {
 	let markmap = "";
 
 	tree.forEach((item) => {
-		const hashes = "#".repeat(item.depth);
+		const hashes = "#".repeat(item.depth + 1);
 
 		const link = Links.ify(
 			item.edge.target_id,
 			Paths.show(item.edge.target_id, options?.show_node_options),
-			{ link_kind: "markdown" },
+			{ link_kind: "wiki" },
 		);
 
 		const attr = options?.show_attributes
 			? ` (${url_search_params(untyped_pick(item.edge.attr, options.show_attributes), { trim_lone_param: true })})`
 			: "";
 
-		markmap += `${hashes} ${link}${attr}\n`;
+		markmap += `${hashes} ${link}${attr}\n\n`;
 
 		if (item.children.length) {
 			markmap += from_tree(item.children, options);
