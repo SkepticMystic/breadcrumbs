@@ -20,8 +20,8 @@
 		stringify_transitive_relation,
 		transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
-	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
+	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
@@ -435,9 +435,10 @@
 						</div>
 
 						{#if opens[rule_i]}
-							<MermaidDiagram
+							<RenderExternalCodeblock
 								{plugin}
-								mermaid={Mermaid.from_edges(
+								type="mermaid"
+								code={Mermaid.from_edges(
 									transitive_rule_to_edges(rule),
 									{
 										show_attributes: ["field"],

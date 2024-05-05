@@ -11,8 +11,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { onMount } from "svelte";
-	import MarkmapDiagram from "../Markmap/MarkmapDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
+	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -79,7 +79,7 @@
 		}
 	};
 
-	$: markmap = ListIndex.edge_tree_to_list_index(tree, {
+	$: code = ListIndex.edge_tree_to_list_index(tree, {
 		...plugin.settings.commands.list_index.default_options,
 		show_node_options,
 		show_attributes: options["show-attributes"] ?? [],
@@ -101,12 +101,17 @@
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
-					text={markmap}
+					text={code}
 					cls="clickable-icon nav-action-button"
 				/>
 			</div>
 
-			<MarkmapDiagram {plugin} {markmap} {source_path} />
+			<RenderExternalCodeblock
+				{code}
+				{plugin}
+				{source_path}
+				type="markmap"
+			/>
 		</div>
 	{:else}
 		<!-- TODO(HELP-MSG) -->

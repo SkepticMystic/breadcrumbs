@@ -18,8 +18,8 @@
 	import { is_between } from "src/utils/numbers";
 	import { Paths } from "src/utils/paths";
 	import { onMount } from "svelte";
-	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
+	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -85,7 +85,7 @@
 		.map((item) => item.edge)
 		.sort(sort);
 
-	$: mermaid = Mermaid.from_edges(edges, {
+	$: code = Mermaid.from_edges(edges, {
 		kind: "graph",
 		click: { method: "class" },
 		active_node_id: source_path,
@@ -111,7 +111,7 @@
 		},
 	});
 
-	$: log.debug(mermaid);
+	$: log.debug(code);
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -127,7 +127,7 @@
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
-					text={mermaid}
+					text={code}
 					cls="clickable-icon nav-action-button"
 				/>
 
@@ -136,7 +136,7 @@
 					aria-label="View Image on mermaid.ink"
 					class="clickable-icon nav-action-button"
 					on:click={() => {
-						window.open(Mermaid.to_image_link(mermaid), "_blank");
+						window.open(Mermaid.to_image_link(code), "_blank");
 					}}
 				>
 					<ImageIcon size={ICON_SIZE} />
@@ -147,17 +147,19 @@
 					aria-label="Live Edit on mermaid.live"
 					class="clickable-icon nav-action-button"
 					on:click={() => {
-						window.open(
-							Mermaid.to_live_edit_link(mermaid),
-							"_blank",
-						);
+						window.open(Mermaid.to_live_edit_link(code), "_blank");
 					}}
 				>
 					<PencilIcon size={ICON_SIZE} />
 				</button>
 			</div>
 
-			<MermaidDiagram {plugin} {mermaid} {source_path} />
+			<RenderExternalCodeblock
+				{code}
+				{plugin}
+				{source_path}
+				type="mermaid"
+			/>
 		</div>
 	{:else}
 		<!-- TODO(HELP-MSG) -->
