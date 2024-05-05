@@ -68,9 +68,11 @@
 
 <style>
 	.BC-prev-next-view > div {
+		border-radius: var(--radius-m);
 		border: 1px solid var(--background-modifier-border);
 	}
 
+	/* TODO: Why? */
 	.BC-next-prev-item {
 		border-bottom: 1px solid var(--background-modifier-border);
 	}

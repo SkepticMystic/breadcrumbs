@@ -9,6 +9,7 @@ import { remove_duplicates_by } from "src/utils/arrays";
 import { Paths } from "src/utils/paths";
 import { z } from "zod";
 import { CodeblockSchema, type ICodeblock } from "./schema";
+import { quote_join } from "src/utils/strings";
 
 /** Raw YAML string -> YAML -> zod-parsed */
 const parse_source = (
@@ -70,7 +71,7 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${CodeblockSchema.FIELDS.join(", ")}`,
+			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${quote_join(CodeblockSchema.FIELDS, "`", ", or ")}`,
 		});
 	}
 

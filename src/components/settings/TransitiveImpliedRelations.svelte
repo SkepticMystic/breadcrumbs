@@ -292,7 +292,7 @@
 			<!--  -->
 			<details
 				id={actions.make_id(rule_i)}
-				class="scroll-mt-40 rounded border p-2"
+				class="scroll-mt-40 border p-2"
 				bind:open={opens[rule_i]}
 			>
 				<summary class="flex items-center justify-between gap-2">
@@ -486,6 +486,7 @@
 
 <style>
 	.border {
+		border-radius: var(--radius-m);
 		border: var(--modal-border-width) solid
 			var(--background-modifier-border);
 	}
