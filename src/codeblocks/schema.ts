@@ -106,10 +106,10 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.optional(),
 
 			type: z
-				.enum(["tree", "mermaid"], {
+				.enum(["tree", "mermaid", "markmap"], {
 					message: zod.error.invalid_enum(
 						"type",
-						["tree", "mermaid"],
+						["tree", "mermaid", "markmap"],
 						input["type"],
 					),
 				})
