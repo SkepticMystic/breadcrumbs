@@ -8,26 +8,24 @@ import {
 	group_projection,
 	remove_duplicates,
 } from "src/utils/arrays";
-import { Paths } from "./paths";
 import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { Paths } from "./paths";
 
 const linkify_edge = (
 	plugin: BreadcrumbsPlugin,
-	source_id: string,
-	target_id: string,
-	target_aliases: string[] | undefined,
+	{ source, target }: EdgeStruct,
 ) => {
 	// target_id is a full path
-	const target_file = plugin.app.vault.getFileByPath(target_id);
+	const target_file = plugin.app.vault.getFileByPath(target.path);
 
 	if (!target_file) {
-		return `[[${Paths.drop_ext(target_id)}]]`;
+		return `[[${Paths.drop_ext(target.path)}]]`;
 	} else {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,
-			source_id,
+			source.path,
 			undefined,
-			target_aliases?.at(0),
+			target.aliases?.at(0),
 		);
 	}
 };
@@ -39,16 +37,8 @@ export const drop_crumbs = async (
 	options: { destination: CrumbDestination | "none" },
 ) => {
 	const links_by_field = group_projection(
-		group_by(crumbs, (e) => e.edge_type!),
-		(edges) =>
-			edges.map((e) =>
-				linkify_edge(
-					plugin,
-					e.source.path,
-					e.target.path,
-					e.target.aliases,
-				),
-			),
+		group_by(crumbs, (e) => e.edge_type),
+		(edges) => edges.map((e) => linkify_edge(plugin, e)),
 	);
 
 	switch (options.destination) {
