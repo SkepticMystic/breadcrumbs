@@ -19,8 +19,8 @@
 		show_attributes,
 		show_node_options,
 		field_group_labels,
+		collapse,
 	} = plugin.settings.views.side.tree;
-	let open_signal: boolean | null = plugin.settings.views.side.tree.collapse;
 
 	$: edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
@@ -68,7 +68,7 @@
 	// 		: [];
 </script>
 
-<div class="markdown-rendered BC-tree-view -mt-2">
+<div class="markdown-rendered BC-tree-view">
 	<div class="nav-header">
 		<div class="nav-buttons-container">
 			<RebuildGraphButton
@@ -89,7 +89,7 @@
 
 			<ChevronCollapseButton
 				cls="clickable-icon nav-action-button"
-				bind:open={open_signal}
+				bind:collapse
 			/>
 
 			<MergeFieldsButton
@@ -109,11 +109,12 @@
 		{#key tree || sort}
 			{#if tree && !tree.is_empty()}
 				<NestedEdgeList
+					{tree}
 					{plugin}
-					{open_signal}
 					{show_attributes}
 					{show_node_options}
 					tree={tree.data}
+					open_signal={!collapse}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

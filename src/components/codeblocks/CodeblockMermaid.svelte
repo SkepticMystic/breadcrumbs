@@ -7,8 +7,8 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { Mermaid } from "src/utils/mermaid";
 	import { onMount } from "svelte";
-	import MermaidDiagram from "../Mermaid/MermaidDiagram.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
+	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { MermaidGraphOptions, NodeData, NoteGraphError, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { remove_nullish_keys } from "src/utils/objects";
@@ -55,6 +55,7 @@
 						.slice(2, -2);
 				} else {
 					return Paths.drop_ext(
+
 						Links.resolve_to_absolute_path(
 							plugin.app,
 							node_path,
@@ -167,6 +168,7 @@
 	// });
 
 	// $: log.debug(mermaid);
+
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -182,7 +184,7 @@
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
-					text={mermaid}
+					text={code}
 					cls="clickable-icon nav-action-button"
 				/>
 
@@ -191,7 +193,7 @@
 					aria-label="View Image on mermaid.ink"
 					class="clickable-icon nav-action-button"
 					on:click={() => {
-						window.open(Mermaid.to_image_link(mermaid), "_blank");
+						window.open(Mermaid.to_image_link(code), "_blank");
 					}}
 				>
 					<ImageIcon size={ICON_SIZE} />
@@ -202,17 +204,19 @@
 					aria-label="Live Edit on mermaid.live"
 					class="clickable-icon nav-action-button"
 					on:click={() => {
-						window.open(
-							Mermaid.to_live_edit_link(mermaid),
-							"_blank",
-						);
+						window.open(Mermaid.to_live_edit_link(code), "_blank");
 					}}
 				>
 					<PencilIcon size={ICON_SIZE} />
 				</button>
 			</div>
 
-			<MermaidDiagram {plugin} {mermaid} source_path={file_path} />
+			<RenderExternalCodeblock
+				code={mermaid}
+				{plugin}
+				source_path={file_path}
+				type="mermaid"
+			/>
 		</div>
 	{:else}
 		{#if error}

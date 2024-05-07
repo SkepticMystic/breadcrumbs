@@ -1,5 +1,6 @@
 import { MarkdownRenderChild } from "obsidian";
 import CodeblockErrors from "src/components/codeblocks/CodeblockErrors.svelte";
+import CodeblockMarkmap from "src/components/codeblocks/CodeblockMarkmap.svelte";
 import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte";
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
@@ -96,6 +97,16 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 			});
 		} else if (options.type === "mermaid") {
 			this.component = new CodeblockMermaid({
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
+		} else if (options.type === "markmap") {
+			this.component = new CodeblockMarkmap({
 				target: this.containerEl,
 				props: {
 					errors,

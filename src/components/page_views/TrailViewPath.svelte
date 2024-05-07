@@ -9,7 +9,7 @@
 	const reversed = all_paths.map((path) => path.reverse_edges);
 </script>
 
-<div class="BC-trail-view flex flex-col gap-1 p-1">
+<div class="BC-trail-view flex flex-col gap-1 px-3 py-2">
 	{#each reversed as path}
 		<div class="BC-trail-view-path flex gap-1.5">
 			{#each path as edge, j}
@@ -39,6 +39,8 @@
 
 <style>
 	.BC-trail-view {
+		overflow: hidden;
+		border-radius: var(--radius-m);
 		border: 1px solid var(--background-modifier-border);
 	}
 

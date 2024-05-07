@@ -149,9 +149,10 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 		side: {
 			matrix: {
-				show_attributes: ["source", "implied_kind", "round"],
+				collapse: false,
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				show_attributes: ["source", "implied_kind", "round"],
 				field_group_labels: ["ups", "downs", "sames", "nexts", "prevs"],
 			},
 

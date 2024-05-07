@@ -9,15 +9,14 @@
 	import { log } from "src/logger";
 
 	export let edges: EdgeStruct[];
-	export let field: EdgeField;
+	export let open: boolean;
+  export let field: EdgeField;
 	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
 	// 	so rather pass them in to receive updates
 	export let show_attributes: EdgeAttribute[];
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
-
-	let open = true;
 </script>
 
 <details

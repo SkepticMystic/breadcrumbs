@@ -28,7 +28,11 @@ const ify = (
 			return display;
 		}
 		case "wiki": {
-			return display === path ? `[[${path}]]` : `[[${path}|${display}]]`;
+			const no_ext = Paths.drop_ext(path);
+
+			return display === path
+				? `[[${no_ext}]]`
+				: `[[${no_ext}|${display}]]`;
 		}
 		case "markdown": {
 			return display === path

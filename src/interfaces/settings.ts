@@ -111,6 +111,7 @@ export interface BreadcrumbsSettings {
 		};
 		side: {
 			matrix: {
+				collapse: boolean;
 				edge_sort_id: EdgeSortId;
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];

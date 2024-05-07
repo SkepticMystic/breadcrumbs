@@ -3,17 +3,17 @@
 	import { ICON_SIZE } from "src/const";
 
 	export let cls = "";
-	export let open: boolean | null;
+	export let collapse: boolean | null;
 </script>
 
 <button
 	class={cls}
-	aria-label={open ? "Collapse" : "Expand"}
-	on:click={() => (open = !open)}
+	aria-label={collapse ? "Expand" : "Collapse"}
+	on:click={() => (collapse = !collapse)}
 >
-	{#if open}
-		<ChevronsUpDown size={ICON_SIZE} />
-	{:else}
+	{#if collapse}
 		<ChevronsDownUp size={ICON_SIZE} />
+	{:else}
+		<ChevronsUpDown size={ICON_SIZE} />
 	{/if}
 </button>
