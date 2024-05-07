@@ -7,7 +7,6 @@ use petgraph::{
 };
 use vec_collections::{AbstractVecSet, VecSet};
 use wasm_bindgen::prelude::*;
-use web_time::Instant;
 
 use crate::{
     graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
@@ -16,7 +15,7 @@ use crate::{
     },
     graph_rules::TransitiveGraphRule,
     graph_update::BatchGraphUpdate,
-    utils::{self, NoteGraphError, Result},
+    utils::{NoteGraphError, PerfLogger, Result, LOGGER},
 };
 
 pub fn edge_matches_edge_filter(edge: &EdgeData, edge_types: Option<&Vec<String>>) -> bool {
@@ -64,7 +63,10 @@ impl NoteGraph {
         match &self.update_callback {
             Some(callback) => match callback.call0(&JsValue::NULL) {
                 Ok(_) => {}
-                Err(e) => utils::log(format!("Error calling function: {:?}", e)),
+                Err(e) => LOGGER.warn(&format!(
+                    "Error calling update notification function: {:?}",
+                    e
+                )),
             },
             None => {}
         }
@@ -75,7 +77,8 @@ impl NoteGraph {
         nodes: Vec<GraphConstructionNodeData>,
         edges: Vec<GraphConstructionEdgeData>,
     ) {
-        let now = Instant::now();
+        let mut perf_logger = PerfLogger::new("Building Graph".to_owned());
+        perf_logger.start_split("Adding initial nodes and edges".to_owned());
 
         self.graph = StableGraph::<NodeData, EdgeData, Directed, u32>::default();
         self.edge_types = VecSet::empty();
@@ -86,7 +89,10 @@ impl NoteGraph {
 
         for info_node in nodes.as_slice() {
             if self.node_hash.contains_key(&info_node.path) {
-                utils::log(format!("Node already exists: {}", info_node.path));
+                LOGGER.debug(&format!(
+                    "Duplicate note path in graph construction data: {}",
+                    info_node.path
+                ));
                 continue;
             }
 
@@ -106,27 +112,37 @@ impl NoteGraph {
             );
         }
 
-        let elapsed = now.elapsed();
-        utils::log(format!("Building initial graph took {:.2?}", elapsed));
+        self.int_build_implied_edges(&mut perf_logger);
 
-        self.int_build_implied_edges();
+        perf_logger.start_split("Update notification callback".to_owned());
 
         self.notify_update();
+
+        perf_logger.log();
     }
 
     pub fn apply_update(&mut self, update: BatchGraphUpdate) -> Result<()> {
-        let now = Instant::now();
+        let mut perf_logger = PerfLogger::new("Applying Update".to_owned());
+        perf_logger.start_split("Removing implied edges".to_owned());
+
         self.int_remove_implied_edges();
+
+        perf_logger.start_split("Applying updates".to_owned());
 
         // self.log();
         update.apply(self)?;
         // self.log();
 
+        perf_logger.start_split("Rebuilding edge type tracker".to_owned());
+
         self.int_rebuild_edge_type_tracker();
-        self.int_build_implied_edges();
-        utils::log(format!("Applying update took {:.2?}", now.elapsed()));
+        self.int_build_implied_edges(&mut perf_logger);
+
+        perf_logger.start_split("Update notification callback".to_owned());
 
         self.notify_update();
+
+        perf_logger.log();
 
         Ok(())
     }
@@ -137,7 +153,7 @@ impl NoteGraph {
         self.graph.node_references().for_each(|node| {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
-                Err(e) => utils::log(format!("Error calling function: {:?}", e)),
+                Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}", e)),
             }
         });
     }
@@ -148,7 +164,7 @@ impl NoteGraph {
         self.graph.edge_references().for_each(|edge| {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
-                Err(e) => utils::log(format!("Error calling function: {:?}", e)),
+                Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}", e)),
             }
         });
     }
@@ -204,7 +220,7 @@ impl NoteGraph {
     }
 
     pub fn log(&self) {
-        utils::log(format!("{:#?}", self.graph));
+        LOGGER.info(&format!("{:#?}", self.graph));
     }
 }
 
@@ -218,8 +234,8 @@ impl Default for NoteGraph {
 /// All of these methods are prefixed with `int_`.
 impl NoteGraph {
     /// Builds the implied edges based on the transitive rules.
-    pub fn int_build_implied_edges(&mut self) {
-        let now = Instant::now();
+    pub fn int_build_implied_edges(&mut self, perf_logger: &mut PerfLogger) {
+        let perf_split = perf_logger.start_split("Building Implied Edges".to_owned());
 
         let max_rounds = self
             .transitive_rules
@@ -240,6 +256,8 @@ impl NoteGraph {
         let mut edge_type_tracker = self.edge_types.clone();
 
         for i in 1..(max_rounds + 1) {
+            let round_perf_split = perf_split.start_split(format!("Round {}", i));
+
             if edge_type_tracker.is_empty() {
                 break;
             }
@@ -315,8 +333,7 @@ impl NoteGraph {
 
             let mut current_edge_type_tracker: VecSet<[String; 16]> = VecSet::empty();
 
-            let now2 = Instant::now();
-            utils::log(format!("Adding {} Edges ", edges_to_add.len()));
+            round_perf_split.start_split(format!("Adding {} Edges", edges_to_add.len()));
 
             for (from, to, edge_data) in edges_to_add {
                 self.int_add_edge(
@@ -327,14 +344,12 @@ impl NoteGraph {
                 );
             }
 
-            let elapsed2 = now2.elapsed();
-            utils::log(format!("Adding Implied Edges took {:.2?}", elapsed2));
+            round_perf_split.stop();
 
             edge_type_tracker = current_edge_type_tracker;
         }
 
-        let elapsed = now.elapsed();
-        utils::log(format!("Building Implied Edges took {:.2?}", elapsed));
+        perf_split.stop();
     }
 
     pub fn int_rebuild_edge_type_tracker(&mut self) {
@@ -464,9 +479,7 @@ impl NoteGraph {
     }
 
     pub fn int_remove_implied_edges(&mut self) {
-        let now = Instant::now();
-
-        // let mut edges_to_remove: Vec<NGEdgeIndex> = Vec::new();
+        let edge_count = self.graph.edge_count();
 
         self.graph.retain_edges(|frozen_graph, edge| {
             let weight = frozen_graph.edge_weight(edge).unwrap();
@@ -474,24 +487,11 @@ impl NoteGraph {
             !weight.implied
         });
 
-        // for edge in self.graph.edge_references() {
-        //     let edge_data = edge.weight();
-
-        //     if edge_data.implied {
-        //         edges_to_remove.push(edge.id());
-        //     }
-        // }
-
-        // utils::log(format!("Removing {} of {} Implied Edges", edges_to_remove.len(), self.graph.edge_count()));
-
-        // for edge in edges_to_remove {
-        //     self.graph.remove_edge(edge);
-        // }
-
-        utils::log(format!("{} edges remain", self.graph.edge_count()));
-
-        let elapsed = now.elapsed();
-        utils::log(format!("Removing Implied Edges took {:.2?}", elapsed));
+        LOGGER.debug(&format!(
+            "Removed {} implied edges, {} explicit edges remain",
+            edge_count - self.graph.edge_count(),
+            self.graph.edge_count()
+        ));
     }
 
     fn int_add_node(&mut self, node: &GraphConstructionNodeData) -> Result<()> {

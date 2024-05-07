@@ -8,7 +8,7 @@ use breadcrumbs_graph_wasm::{
     graph_update::{
         AddEdgeGraphUpdate, AddNoteGraphUpdate, BatchGraphUpdate, RemoveNoteGraphUpdate,
     },
-    utils::{graph_eq, log},
+    utils::graph_eq,
 };
 use wasm_bindgen_test::*;
 mod common;

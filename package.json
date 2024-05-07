@@ -15,7 +15,10 @@
 		"version:beta": "node version-bump-beta.mjs && git add manifest-beta.json versions.json package.json",
 		"release:beta": "npm run version:beta && git commit -m 'release:beta' && git push origin master:master && git tag -a $npm_package_version -m \"$npm_package_version\" && git push --tags",
 		"test": "vitest",
-		"coverage:ui": "vitest run --coverage --coverage.include 'src/**' --coverage.reporter html && npx vite preview --outDir ./coverage --open"
+		"coverage:ui": "vitest run --coverage --coverage.include 'src/**' --coverage.reporter html && npx vite preview --outDir ./coverage --open",
+		"wasm:build": "cd wasm && wasm-pack build --target web",
+		"wasm:fmt": "cd wasm && cargo fmt",
+		"wasm:test": "cd wasm && wasm-pack test --node --features test"
 	},
 	"keywords": [],
 	"author": "SkepticMystic",

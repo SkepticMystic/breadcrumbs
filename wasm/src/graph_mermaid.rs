@@ -297,6 +297,8 @@ impl NoteGraph {
     ) -> AccumulatedEdgeHashMap {
         let mut accumulated_edges: AccumulatedEdgeHashMap = HashMap::new();
 
+        // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
+
         for (_, edge_ref) in edges {
             let forward_dir = (edge_ref.source(), edge_ref.target());
 

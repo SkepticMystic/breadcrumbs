@@ -79,6 +79,7 @@ const get_initial_nodes = (all_files: AllFiles) => {
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	const timer = new Timer();
+	const timer2 = new Timer();
 
 	// Get once, send to all builders
 	const all_files = get_all_files(plugin.app);
@@ -105,6 +106,7 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	}
 
 	log.debug(timer.elapsedMessage("Collecting edges and nodes"));
+	timer.reset();
 
 	const transitive_rules = plugin.settings.implied_relations.transitive.map((rule) => {
 		return new TransitiveGraphRule(
@@ -122,6 +124,8 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	);
 
 	plugin.graph.build_graph(nodes, edges);
+	log.debug(timer.elapsedMessage("WASM call"));
+	log.debug(timer2.elapsedMessage("Total"));
 
 	// log.debug(timer.elapsedMessage("Adding initial edges"));
 	// timer.reset();

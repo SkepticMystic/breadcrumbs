@@ -15,5 +15,5 @@ cargo fmt
 ## Test
 
 ```bash
-wasm-pack test --node
+wasm-pack test --node --features test
 ```
