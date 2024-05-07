@@ -26,7 +26,7 @@ pub struct EdgeData {
     #[wasm_bindgen(skip)]
     pub edge_source: String,
     #[wasm_bindgen(skip)]
-    pub implied: bool,
+    pub explicit: bool,
     #[wasm_bindgen(skip)]
     pub round: u8,
 }
@@ -34,11 +34,11 @@ pub struct EdgeData {
 #[wasm_bindgen]
 impl EdgeData {
     #[wasm_bindgen(constructor)]
-    pub fn new(edge_type: String, edge_source: String, implied: bool, round: u8) -> EdgeData {
+    pub fn new(edge_type: String, edge_source: String, explicit: bool, round: u8) -> EdgeData {
         EdgeData {
             edge_type,
             edge_source,
-            implied,
+            explicit,
             round,
         }
     }
@@ -54,8 +54,8 @@ impl EdgeData {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
-        self.implied
+    pub fn explicit(&self) -> bool {
+        self.explicit
     }
 
     #[wasm_bindgen(getter)]
@@ -84,16 +84,16 @@ impl EdgeData {
         for attribute in attributes {
             let data = match attribute.as_str() {
                 "field" => Some(("field", self.edge_type.clone())),
-                "explicit" => Some(("explicit", (!self.implied).to_string())),
+                "explicit" => Some(("explicit", (!self.explicit).to_string())),
                 "source" => {
-                    if !self.implied {
+                    if !self.explicit {
                         Some(("source", self.edge_source.clone()))
                     } else {
                         None
                     }
                 }
                 "implied_kind" => {
-                    if self.implied {
+                    if self.explicit {
                         Some(("implied_kind", self.edge_source.clone()))
                     } else {
                         None
@@ -250,7 +250,7 @@ impl EdgeStruct {
 
     #[wasm_bindgen(getter)]
     pub fn implied(&self) -> bool {
-        self.edge.implied
+        self.edge.explicit
     }
 
     #[wasm_bindgen(getter)]

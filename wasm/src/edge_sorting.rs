@@ -151,9 +151,9 @@ pub struct ImpliedOrdering;
 
 impl EdgeOrdering for ImpliedOrdering {
     fn compare(&self, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
-        if a.edge.implied == b.edge.implied {
+        if a.edge.explicit == b.edge.explicit {
             a.target.path.cmp(&b.target.path)
-        } else if a.edge.implied {
+        } else if a.edge.explicit {
             std::cmp::Ordering::Less
         } else {
             std::cmp::Ordering::Greater

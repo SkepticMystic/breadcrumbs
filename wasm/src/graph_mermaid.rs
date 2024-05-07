@@ -245,9 +245,9 @@ impl NoteGraph {
             .iter()
             .zip_longest(backward.iter())
             .all(|pair| match pair {
-                EitherOrBoth::Both(a, b) => a.implied && b.implied,
-                EitherOrBoth::Left(a) => a.implied,
-                EitherOrBoth::Right(b) => b.implied,
+                EitherOrBoth::Both(a, b) => a.explicit && b.explicit,
+                EitherOrBoth::Left(a) => a.explicit,
+                EitherOrBoth::Right(b) => b.explicit,
             });
 
         let arrow_type = match (backward.is_empty(), all_implied) {

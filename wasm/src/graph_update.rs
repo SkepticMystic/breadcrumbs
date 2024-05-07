@@ -1,4 +1,7 @@
-use crate::{graph::NoteGraph, graph_construction::GraphConstructionNodeData, utils::Result};
+use crate::{
+    graph::NoteGraph, graph_construction::GraphConstructionNodeData,
+    graph_rules::TransitiveGraphRule, utils::Result,
+};
 use wasm_bindgen::prelude::*;
 
 pub trait GraphUpdate {
@@ -178,5 +181,30 @@ impl RemoveEdgeGraphUpdate {
 impl GraphUpdate for RemoveEdgeGraphUpdate {
     fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
         graph.int_safe_delete_edge(&self.from, &self.to, &self.edge_type)
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone)]
+pub struct TransitiveRulesGraphUpdate {
+    new_rules: Vec<TransitiveGraphRule>,
+}
+
+#[wasm_bindgen]
+impl TransitiveRulesGraphUpdate {
+    #[wasm_bindgen(constructor)]
+    pub fn new(new_rules: Vec<TransitiveGraphRule>) -> Self {
+        Self { new_rules }
+    }
+
+    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(Box::new(self.clone()));
+    }
+}
+
+impl GraphUpdate for TransitiveRulesGraphUpdate {
+    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
+        graph.set_transitive_rules(self.new_rules.clone());
+        Ok(())
     }
 }

@@ -60,8 +60,8 @@ fn test_implied_edge_rules_reverse_direction() {
         .int_get_edge_by_name(&"1".to_string(), &"root".to_string(), &"up".to_string())
         .unwrap();
 
-    assert_eq!(up_edge_1.weight().implied, true);
-    assert_eq!(up_edge_2.weight().implied, true);
+    assert_eq!(up_edge_1.weight().explicit, true);
+    assert_eq!(up_edge_2.weight().explicit, true);
     graph.assert_correct_trackers();
 }
 
@@ -111,8 +111,8 @@ fn test_implied_edge_rules_sibling() {
     let same_edge_4 =
         graph.int_get_edge_by_name(&"1".to_string(), &"1".to_string(), &"same".to_string());
 
-    assert_eq!(same_edge_1.weight().implied, true);
-    assert_eq!(same_edge_2.weight().implied, true);
+    assert_eq!(same_edge_1.weight().explicit, true);
+    assert_eq!(same_edge_2.weight().explicit, true);
     assert_eq!(same_edge_3.is_none(), true);
     assert_eq!(same_edge_4.is_none(), true);
     graph.assert_correct_trackers();
@@ -166,10 +166,10 @@ fn test_implied_edge_rules_sibling_can_loop() {
         .int_get_edge_by_name(&"1".to_string(), &"1".to_string(), &"same".to_string())
         .unwrap();
 
-    assert_eq!(same_edge_1.weight().implied, true);
-    assert_eq!(same_edge_2.weight().implied, true);
-    assert_eq!(same_edge_3.weight().implied, true);
-    assert_eq!(same_edge_4.weight().implied, true);
+    assert_eq!(same_edge_1.weight().explicit, true);
+    assert_eq!(same_edge_2.weight().explicit, true);
+    assert_eq!(same_edge_3.weight().explicit, true);
+    assert_eq!(same_edge_4.weight().explicit, true);
     graph.assert_correct_trackers();
 }
 

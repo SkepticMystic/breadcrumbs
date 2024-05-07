@@ -25,17 +25,19 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
+	const DEFAULT_MAX_DEPTH = 100;
+
 	let code: string = "";
 	let error: NoteGraphError | undefined = undefined;
 
 	export const update = () => {
-		const max_depth = options.depth[1] ?? 100;
+		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
 		const traversal_options = new TraversalOptions(
 			[file_path],
 			options.fields,
-			max_depth === Infinity ? 100 : max_depth,
-			!options.collapse,
+			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
+			!options["merge-fields"],
 		);
 
 		const flowchart_init = remove_nullish_keys({

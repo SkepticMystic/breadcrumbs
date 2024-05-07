@@ -310,7 +310,7 @@ impl NoteGraph {
                         }
 
                         let edge_data =
-                            EdgeData::new(rule.edge_type.clone(), rule.get_name(), true, i);
+                            EdgeData::new(rule.edge_type.clone(), rule.get_name(), false, i);
 
                         if rule.close_reversed {
                             edges_to_add.push((end_node, start_node, edge_data));
@@ -480,7 +480,7 @@ impl NoteGraph {
         self.graph.retain_edges(|frozen_graph, edge| {
             let weight = frozen_graph.edge_weight(edge).unwrap();
 
-            !weight.implied
+            weight.explicit
         });
 
         LOGGER.debug(&format!(
@@ -739,7 +739,7 @@ impl NoteGraph {
         self.int_add_edge(
             source_index,
             target_index,
-            EdgeData::new(edge_type.to_owned(), edge_source.to_owned(), false, 0),
+            EdgeData::new(edge_type.to_owned(), edge_source.to_owned(), true, 0),
             &mut None,
         );
     }
