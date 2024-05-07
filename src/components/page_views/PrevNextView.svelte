@@ -50,7 +50,7 @@
 		>
 			{#each grouped_out_edges?.prev ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
-					<span class="BC-field">{edge.attr.field}</span>
+					<span class="BC-field pl-2">{edge.attr.field}</span>
 
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 				</div>
@@ -65,7 +65,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 
-					<span class="BC-field">{edge.attr.field}</span>
+					<span class="BC-field pr-2">{edge.attr.field}</span>
 				</div>
 			{/each}
 		</div>
