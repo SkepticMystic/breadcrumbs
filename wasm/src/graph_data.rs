@@ -108,7 +108,11 @@ impl EdgeData {
             }
         }
 
-        result.join(" ")
+        if result.len() == 1 {
+            result[0].split('=').nth(1).unwrap().to_string()
+        } else {
+            result.join(" ")
+        }
     }
 }
 
