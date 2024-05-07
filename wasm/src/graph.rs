@@ -293,6 +293,7 @@ impl NoteGraph {
 
                         let edge_data = EdgeData::new(
                             rule.edge_type.clone(),
+                            // TODO(RUST): Use stringify_transitive_rule if !name
                             format!("transitive:{}", rule.name),
                             true,
                             i,

@@ -1,4 +1,3 @@
-import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type { Result } from "src/interfaces/result";
 import type { BreadcrumbsSettings, EdgeField } from "src/interfaces/settings";
 import { url_search_params } from "src/utils/url";
@@ -67,7 +66,6 @@ export const input_transitive_rule_schema = (data: { fields: EdgeField[] }) => {
 // 	>,
 // ) => {
 // 	const edges: Omit<BCEdge, "id" | "undirected">[] = [];
-
 
 // 	rule.chain.forEach((attr, i) => {
 // 		edges.push({
