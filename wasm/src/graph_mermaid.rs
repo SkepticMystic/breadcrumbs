@@ -147,7 +147,6 @@ impl NoteGraph {
             let node_label = match diagram_options.node_label_fn {
                 Some(ref function) => {
                     match function.call1(&JsValue::NULL, &weight.clone().into()) {
-                        // TODO: maybe error when the return value is not a string?
                         Ok(value) => value.as_string().unwrap_or(weight.path.clone()),
                         Err(e) => {
                             return Err(NoteGraphError::new(

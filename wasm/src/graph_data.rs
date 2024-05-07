@@ -79,8 +79,7 @@ impl EdgeData {
         // the mapping that exist on the JS side are as follows
         // "field" | "explicit" | "source" | "implied_kind" | "round"
 
-        // TODO: maybe change the attribute options so that the JS side better matches the data
-
+        // TODO(RUST): maybe change the attribute options so that the JS side better matches the data
         for attribute in attributes {
             let data = match attribute.as_str() {
                 "field" => Some(("field", self.edge_type.clone())),

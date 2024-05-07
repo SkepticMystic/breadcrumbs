@@ -9,7 +9,10 @@
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
-	import { TraversalOptions, create_edge_sorter } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import {
+		TraversalOptions,
+		create_edge_sorter,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -27,45 +30,21 @@
 		field_group_labels,
 	);
 
-	$: tree = $active_file_store && plugin.graph.has_node($active_file_store.path) 
-		? plugin.graph.rec_traverse(
-				new TraversalOptions(
-					[$active_file_store!.path],
-					edge_field_labels,
-					20,
-					!merge_fields,
-				),
-			)
-		: undefined;
+	$: tree =
+		$active_file_store && plugin.graph.has_node($active_file_store.path)
+			? plugin.graph.rec_traverse(
+					new TraversalOptions(
+						[$active_file_store!.path],
+						edge_field_labels,
+						20,
+						!merge_fields,
+					),
+				)
+			: undefined;
 
-	$: sort = create_edge_sorter(
-		edge_sort_id.field,
-		edge_sort_id.order === -1,
-	);
+	$: sort = create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1);
 
 	$: tree?.sort(plugin.graph, sort);
-
-	// const base_traversal = (attr: EdgeAttrFilters) =>
-	// 	Traverse.build_tree(
-	// 		plugin.graph,
-	// 		$active_file_store!.path,
-	// 		// TODO: Customisable max depth
-	// 		{ max_depth: 20 },
-	// 		(edge) => has_edge_attrs(edge, attr),
-	// 	);
-
-	// $: sort = get_edge_sorter(edge_sort_id);
-
-
-
-	// $: tree =
-	// 	$active_file_store && plugin.graph.hasNode($active_file_store.path)
-	// 		? merge_fields
-	// 			? base_traversal({ $or_fields: edge_field_labels })
-	// 			: edge_field_labels.flatMap((field) =>
-	// 					base_traversal({ field }),
-	// 				)
-	// 		: [];
 </script>
 
 <div class="markdown-rendered BC-tree-view">
@@ -109,7 +88,6 @@
 		{#key tree || sort}
 			{#if tree && !tree.is_empty()}
 				<NestedEdgeList
-					{tree}
 					{plugin}
 					{show_attributes}
 					{show_node_options}

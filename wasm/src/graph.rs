@@ -233,7 +233,7 @@ impl NoteGraph {
         // rules look like
         // [A, B, C] -> D
 
-        // TODO: maybe we can keep track of edge types that were added in the last round and only check a rule that has any of those edge types on the left side
+        // We can keep track of edge types that were added in the last round and only check a rule that has any of those edge types on the left side
         // we would need to also check back edges though
         // a rule like [A, B] -> (C with back edge D) would do nothing if applied multiple times, since the edges on the left side were not modified
 
@@ -612,7 +612,7 @@ impl NoteGraph {
                     ));
                 }
 
-                // TODO: also update the other things like aliases
+                // TODO(RUST): also update the other things like aliases
                 self.int_set_node_resolved(node_index, true)?;
             }
             None => {

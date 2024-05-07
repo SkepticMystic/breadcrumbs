@@ -10,7 +10,12 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { MermaidGraphOptions, NodeData, NoteGraphError, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import {
+		MermaidGraphOptions,
+		NodeData,
+		NoteGraphError,
+		TraversalOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { remove_nullish_keys } from "src/utils/objects";
 	import { Paths } from "src/utils/paths";
 	import { Links } from "src/utils/links";
@@ -20,7 +25,7 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	let mermaid: string = "";
+	let code: string = "";
 	let error: NoteGraphError | undefined = undefined;
 
 	export const update = () => {
@@ -55,7 +60,6 @@
 						.slice(2, -2);
 				} else {
 					return Paths.drop_ext(
-
 						Links.resolve_to_absolute_path(
 							plugin.app,
 							node_path,
@@ -68,13 +72,16 @@
 		);
 
 		try {
-			mermaid = plugin.graph.generate_mermaid_graph(traversal_options, mermaid_options).mermaid;
+			code = plugin.graph.generate_mermaid_graph(
+				traversal_options,
+				mermaid_options,
+			).mermaid;
 			error = undefined;
 		} catch (e) {
 			log.error("Error generating mermaid graph", e);
 
 			if (e instanceof NoteGraphError) {
-				mermaid = "";
+				code = "";
 				error = e;
 			}
 		}
@@ -83,7 +90,8 @@
 	onMount(() => {
 		update();
 	});
-	
+
+	// TODO(RUST)
 	// const sort = get_edge_sorter(
 	// 	// @ts-expect-error: ts(2345)
 	// 	options.sort,
@@ -168,7 +176,6 @@
 	// });
 
 	// $: log.debug(mermaid);
-
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -180,7 +187,7 @@
 		</h3>
 	{/if}
 
-	{#if mermaid}
+	{#if code}
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
@@ -212,18 +219,16 @@
 			</div>
 
 			<RenderExternalCodeblock
-				code={mermaid}
+				{code}
 				{plugin}
 				source_path={file_path}
 				type="mermaid"
 			/>
 		</div>
+	{:else if error}
+		<p class="search-empty-state">{error.message}</p>
 	{:else}
-		{#if error}
-			<p class="search-empty-state">{error.message}</p>
-		{:else}
-			<!-- TODO(HELP-MSG) -->
-			<p class="search-empty-state">No paths found.</p>
-		{/if}
+		<!-- TODO(HELP-MSG) -->
+		<p class="search-empty-state">No paths found.</p>
 	{/if}
 </div>

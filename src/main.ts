@@ -20,7 +20,7 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import wasmbin from '../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm';
+import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
 import init, {
 	type InitInput,
 	type NoteGraph,
@@ -31,7 +31,7 @@ import init, {
 	BatchGraphUpdate,
 	RemoveNoteGraphUpdate,
 	AddNoteGraphUpdate,
-} from '../wasm/pkg';
+} from "../wasm/pkg";
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
@@ -169,7 +169,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				}),
 			);
 
-			// TODO
+			// TODO(RUST)
 			// /// Vault
 			// this.registerEvent(
 			// 	this.app.vault.on("create", (file) => {
@@ -255,7 +255,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		log.debug("loaded Breadcrumbs plugin");
 	}
 
-	onunload() { }
+	onunload() {}
 
 	async loadSettings() {
 		this.settings = deep_merge_objects(
@@ -366,7 +366,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					(leaf.view as TreeView).onOpen();
 				});
 		}
-	};
+	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {
