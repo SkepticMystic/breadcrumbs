@@ -1,5 +1,4 @@
 import { parseYaml } from "obsidian";
-import type { CodeblockMDRC } from "src/codeblocks/MDRC";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type { BreadcrumbsError } from "src/interfaces/graph";
@@ -112,7 +111,7 @@ const postprocess_options = (
 		try {
 			const pages = dataview_plugin
 				.get_api(plugin.app)
-				?.pages(parsed["dataview-from"]) as
+				?.pages(parsed["dataview-from"], source_path) as
 				| undefined
 				| IDataview.Page[];
 

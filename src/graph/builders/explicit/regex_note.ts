@@ -23,7 +23,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-regex is not a string: '${regex_str}'`,
+			message: `${META_ALIAS["regex-note-regex"]} is not a string: '${regex_str}'`,
 		});
 	}
 
@@ -32,7 +32,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-flags is not a string: '${flags}'`,
+			message: `${META_ALIAS["regex-note-flags"]} is not a string: '${flags}'`,
 		});
 	}
 
@@ -44,7 +44,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-regex is not a valid regex: ${regex_str}`,
+			message: `${META_ALIAS["regex-note-regex"]} is not a valid regex: '${regex_str}'`,
 		});
 	}
 
@@ -58,13 +58,13 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-field is not a string: '${field}'`,
+			message: `${META_ALIAS["regex-note-field"]} is not a string: '${field}'`,
 		});
 	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `dataview-note-field is not a valid field: '${field}'`,
+			message: `${META_ALIAS["regex-note-field"]} is not a valid field: '${field}'`,
 		});
 	}
 
@@ -125,8 +125,8 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 			.forEach((target_id) => {
 				results.edges.push(
 					new GraphConstructionEdgeData(
-						target_id,
 						regex_note.path,
+						target_id,
 						regex_note.info.field,
 						"regex_note",
 					),

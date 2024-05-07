@@ -71,13 +71,19 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 				dataview_note_file.path,
 			);
 			if (!dataview_note_info.ok) {
-				if (dataview_note_info.error)
+				if (dataview_note_info.error) {
 					results.errors.push(dataview_note_info.error);
+				}
 				return;
 			} else {
-				new Notice(
-					"dataview-notes are not implemented without Dataview enabled",
-				);
+				results.errors.push({
+					code: "missing_other_plugin",
+					path: dataview_note_file.path,
+					message:
+						"dataview-notes are not implemented without Dataview enabled",
+				});
+
+				return;
 			}
 		},
 	);
