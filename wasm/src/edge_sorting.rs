@@ -24,9 +24,9 @@ impl SortField {
             "basename" => Some(SortField::Basename),
             "field" => Some(SortField::EdgeType),
             "explicit" => Some(SortField::Implied),
-            s if s.starts_with("neighbour-field:") => {
-                Some(SortField::Neighbour(s["neighbour-field:".len()..].to_string()))
-            }
+            s if s.starts_with("neighbour-field:") => Some(SortField::Neighbour(
+                s["neighbour-field:".len()..].to_string(),
+            )),
             _ => None,
         }
     }

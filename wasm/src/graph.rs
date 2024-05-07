@@ -309,13 +309,8 @@ impl NoteGraph {
                             continue;
                         }
 
-                        let edge_data = EdgeData::new(
-                            rule.edge_type.clone(),
-                            // TODO(RUST): Use stringify_transitive_rule if !name
-                            format!("transitive:{}", rule.name),
-                            true,
-                            i,
-                        );
+                        let edge_data =
+                            EdgeData::new(rule.edge_type.clone(), rule.get_name(), true, i);
 
                         if rule.close_reversed {
                             edges_to_add.push((end_node, start_node, edge_data));

@@ -52,6 +52,25 @@ impl TransitiveGraphRule {
     }
 }
 
+impl TransitiveGraphRule {
+    pub fn stringify(&self) -> String {
+        format!(
+            "[{}] {} {}",
+            self.path.join(", "),
+            if self.close_reversed { "<-" } else { "->" },
+            self.edge_type
+        )
+    }
+
+    pub fn get_name(&self) -> String {
+        if self.name.is_empty() {
+            return self.stringify();
+        } else {
+            self.name.clone()
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub fn create_graph_from_rule(rule: TransitiveGraphRule) -> NoteGraph {
     let mut graph = NoteGraph::new();

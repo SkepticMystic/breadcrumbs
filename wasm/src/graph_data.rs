@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Debug};
 
+use itertools::Itertools;
 use petgraph::{
     graph::{EdgeIndex, NodeIndex},
     stable_graph::EdgeReference,
@@ -79,7 +80,7 @@ impl EdgeData {
         // the mapping that exist on the JS side are as follows
         // "field" | "explicit" | "source" | "implied_kind" | "round"
 
-        // TODO(RUST): maybe change the attribute options so that the JS side better matches the data
+        // TODO(JS): maybe change the attribute options so that the JS side better matches the data
         for attribute in attributes {
             let data = match attribute.as_str() {
                 "field" => Some(("field", self.edge_type.clone())),
@@ -103,14 +104,14 @@ impl EdgeData {
             };
 
             if let Some(data) = data {
-                result.push(format!("{}={}", data.0, data.1));
+                result.push(data);
             }
         }
 
         if result.len() == 1 {
-            result[0].split('=').nth(1).unwrap().to_string()
+            result[0].1.clone()
         } else {
-            result.join(" ")
+            result.iter().map(|x| format!("{}={}", x.0, x.1)).join(" ")
         }
     }
 }
