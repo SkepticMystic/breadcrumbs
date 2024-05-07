@@ -14,7 +14,7 @@
 </script>
 
 {#if Object.values(enabled_views).some(Boolean)}
-	<div class="markdown-rendered mb-4">
+	<div class="markdown-rendered mb-4 flex flex-col gap-2">
 		{#if enabled_views.grid}
 			<TrailView {plugin} {file_path} />
 		{/if}

@@ -42,11 +42,6 @@
 </div>
 
 <style>
-	.BC-trail-view {
-		border-radius: var(--radius-m);
-		border: 1px solid var(--background-modifier-border);
-	}
-
 	.BC-trail-view-item-separator::before {
 		content: ">";
 	}

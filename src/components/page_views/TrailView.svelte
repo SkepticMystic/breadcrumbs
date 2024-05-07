@@ -128,11 +128,13 @@
 				</div>
 			</div>
 
-			{#if plugin.settings.views.page.trail.format === "grid"}
-				<TrailViewGrid {plugin} all_paths={sorted_paths} />
-			{:else if plugin.settings.views.page.trail.format === "path"}
-				<TrailViewPath {plugin} all_paths={sorted_paths} />
-			{/if}
+			<div class="BC-trail-view">
+				{#if plugin.settings.views.page.trail.format === "grid"}
+					<TrailViewGrid {plugin} all_paths={sorted_paths} />
+				{:else if plugin.settings.views.page.trail.format === "path"}
+					<TrailViewPath {plugin} all_paths={sorted_paths} />
+				{/if}
+			</div>
 		{:else if plugin.settings.views.page.trail.no_path_message}
 			<p class="BC-trail-view-no-path search-empty-state">
 				{plugin.settings.views.page.trail.no_path_message}
@@ -140,3 +142,11 @@
 		{/if}
 	{/key}
 </div>
+
+<style>
+	.BC-trail-view {
+		overflow: hidden;
+		border-radius: var(--radius-m);
+		border: 1px solid var(--background-modifier-border);
+	}
+</style>
