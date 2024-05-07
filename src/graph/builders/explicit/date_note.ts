@@ -112,8 +112,8 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 			results.edges.push(
 				new GraphConstructionEdgeData(
-					target_id,
 					date_note.path,
+					target_id,
 					date_note_settings.default_field,
 					"date_note",
 				),

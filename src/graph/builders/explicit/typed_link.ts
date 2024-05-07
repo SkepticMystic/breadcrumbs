@@ -53,8 +53,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				results.edges.push(
 					new GraphConstructionEdgeData(
-						target_id,
 						source_file.path,
+						target_id,
 						field,
 						"typed_link",
 					),

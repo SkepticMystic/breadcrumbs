@@ -1,4 +1,3 @@
-import { Notice } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type { IDataview } from "src/external/dataview/interfaces";
 // import type { BCGraph } from "src/graph/MyMultiGraph";
@@ -203,13 +202,19 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				list_note_file.path,
 			);
 			if (!list_note_info.ok) {
-				if (list_note_info.error)
+				if (list_note_info.error) {
 					results.errors.push(list_note_info.error);
+				}
 				return;
 			} else {
-				new Notice(
-					"list-notes are not implemented without Dataview enabled",
-				);
+				results.errors.push({
+					path: list_note_file.path,
+					code: "missing_other_plugin",
+					message:
+						"list-notes are not implemented without Dataview enabled",
+				});
+
+				return;
 			}
 
 			// TODO: Gonna have to read the contents of the file and parse it pretty manually...
