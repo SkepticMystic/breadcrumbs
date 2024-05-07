@@ -2,8 +2,9 @@ import { Links } from "src/utils/links";
 import { describe, test } from "vitest";
 
 describe("Links.ify", () => {
-	const path = "folder/note.md";
 	const display = "display";
+	const no_ext = "folder/note";
+	const path = "folder/note.md";
 
 	test("kind:none", (t) => {
 		t.expect(
@@ -26,7 +27,7 @@ describe("Links.ify", () => {
 			Links.ify(path, path, {
 				link_kind: "wiki",
 			}),
-		).toBe(`[[${path}]]`);
+		).toBe(`[[${no_ext}]]`);
 	});
 
 	test("kind:wiki (display)", (t) => {
@@ -34,7 +35,7 @@ describe("Links.ify", () => {
 			Links.ify(path, display, {
 				link_kind: "wiki",
 			}),
-		).toBe(`[[${path}|${display}]]`);
+		).toBe(`[[${no_ext}|${display}]]`);
 	});
 
 	test("kind:markdown", (t) => {

@@ -41,22 +41,28 @@
 
 <div class="BC-prev-next-view flex">
 	{#if grouped_out_edges?.prev?.length || grouped_out_edges?.next?.length}
-		<div class="flex w-full flex-col">
+		<div
+			class="flex w-full flex-col"
+			style="border-radius: var(--radius-m) 0 0 var(--radius-m)"
+		>
 			{#each grouped_out_edges?.prev ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
-					<span class="BC-field">{edge.edge_type}</span>
+					<span class="BC-field pl-2">{edge.edge_type}</span>
 
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 				</div>
 			{/each}
 		</div>
 
-		<div class="flex w-full flex-col">
+		<div
+			class="flex w-full flex-col"
+			style="border-radius:  0 var(--radius-m) var(--radius-m) 0"
+		>
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
 					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
 
-					<span class="BC-field">{edge.edge_type}</span>
+					<span class="BC-field pr-2">{edge.edge_type}</span>
 				</div>
 			{/each}
 		</div>
@@ -66,9 +72,5 @@
 <style>
 	.BC-prev-next-view > div {
 		border: 1px solid var(--background-modifier-border);
-	}
-
-	.BC-next-prev-item {
-		border-bottom: 1px solid var(--background-modifier-border);
 	}
 </style>

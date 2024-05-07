@@ -20,9 +20,11 @@
 	);
 </script>
 
+<!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here
+			https://discord.com/channels/686053708261228577/702656734631821413/1234871810185629859 -->
 <div
 	class="BC-trail-view grid"
-	style="grid-template-rows: {'1fr '.repeat(square.length)};
+	style="grid-template-rows: min-content;
 grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 >
 	{#each col_runs as col, j}
@@ -49,7 +51,19 @@ grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 </div>
 
 <style>
-	.BC-trail-view-item {
+	/* Handles the outer border, with some rounding */
+	.BC-trail-view {
+		/* Don't let the inner cell borders overlow */
+		overflow: hidden;
+		border-radius: var(--radius-m);
 		border: 1px solid var(--background-modifier-border);
+	}
+
+	.BC-trail-view-item {
+		/* Undo the effect of the double border on the top and right side */
+		margin: -1px -1px 0 0;
+		/* Only add borders on the top and right sides, to avoid inner duplications, and some outer duplicates */
+		border-right: 1px solid var(--background-modifier-border);
+		border-top: 1px solid var(--background-modifier-border);
 	}
 </style>

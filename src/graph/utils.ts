@@ -53,11 +53,11 @@ export const stringify_node = (
 // 	return list.join(" ");
 // };
 
-// TODO: the sorting should probably happen in the WASM code
 export type EdgeSorter = (a: EdgeStruct, b: EdgeStruct) => number;
 
 const sorters = {
-	path: (order) => (a, b) => a.target.path.localeCompare(b.target.path) * order,
+	path: (order) => (a, b) =>
+		a.target.path.localeCompare(b.target.path) * order,
 
 	basename: (order) => (a, b) => {
 		const [a_field, b_field] = [
@@ -78,9 +78,7 @@ const sorters = {
 	},
 } satisfies Partial<Record<EdgeSortId["field"], (order: number) => EdgeSorter>>;
 
-export const get_edge_sorter: (
-	sort: EdgeSortId,
-) => EdgeSorter = (sort) => {
+export const get_edge_sorter: (sort: EdgeSortId) => EdgeSorter = (sort) => {
 	switch (sort.field) {
 		case "path": {
 			return sorters.path(sort.order);
@@ -96,9 +94,10 @@ export const get_edge_sorter: (
 
 		case "explicit": {
 			return (a, b) => {
-
 				if (a.implied === b.implied) {
-					return a.edge_source.localeCompare(b.edge_source) * sort.order;
+					return (
+						a.edge_source.localeCompare(b.edge_source) * sort.order
+					);
 				} else {
 					return a.implied ? -sort.order : sort.order;
 				}
@@ -116,7 +115,7 @@ export const get_edge_sorter: (
 			}
 
 			switch (sort.field.split(":")[0]) {
-				// TODO
+				// TODO(RUST): I think this has actually been reimplemented though
 				// BREAKING: Deprecate in favour of neighbour-field
 				// case "neighbour":
 				// case "neighbour-field": {

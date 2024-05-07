@@ -203,6 +203,7 @@ describe("migration", () => {
 				},
 				side: {
 					matrix: {
+						collapse: false,
 						edge_sort_id: {
 							field: "basename",
 							order: 1,
@@ -380,6 +381,7 @@ describe("migration", () => {
 				},
 				side: {
 					matrix: {
+						collapse: false,
 						show_node_options: {
 							ext: false,
 							folder: false,

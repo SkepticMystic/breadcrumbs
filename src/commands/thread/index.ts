@@ -5,6 +5,12 @@ import type BreadcrumbsPlugin from "src/main";
 import { drop_crumbs } from "src/utils/drop_crumb";
 import { Paths } from "src/utils/paths";
 import { resolve_templates } from "src/utils/strings";
+import {
+	AddEdgeGraphUpdate,
+	AddNoteGraphUpdate,
+	BatchGraphUpdate,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export const thread = async (
 	plugin: BreadcrumbsPlugin,
@@ -12,22 +18,20 @@ export const thread = async (
 	options: BreadcrumbsSettings["commands"]["thread"]["default_options"],
 ) => {
 	const active_view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-	if (!active_view) return;
+	if (!active_view) return new Notice("No active markdown view");
 	const source_file = active_view.file;
-	if (!source_file) return;
+	if (!source_file) return new Notice("No active file");
 
 	// Resolve the target path template
 	const template_data = {
-		attr: {
-			field,
-		},
+		attr: { field },
 		source: {
 			path: source_file.path,
-			folder: source_file.parent?.path ?? "",
 			basename: source_file.basename,
+			folder: source_file.parent?.path ?? "",
 		},
 	};
-	log.info("template_data", template_data);
+	log.info("thread > template_data", template_data);
 
 	const target_path = Paths.normalise(
 		Paths.ensure_ext(
@@ -46,37 +50,36 @@ export const thread = async (
 		const msg = `Error creating file "${target_path}". ${error instanceof Error ? error.message : error}`;
 
 		new Notice(msg);
-		log.error(msg);
+		log.error("thread > create file error", msg);
 
 		return;
 	}
 
-	// Drop the crumbs
-	// NOTE: You technically can Promise.all, but it's safer to create the file first
-	// TODO
-	// await drop_crumbs(
-	// 	plugin,
-	// 	source_file,
-	// 	[
-	// 		{
-	// 			attr,
-	// 			target_id: target_path,
-	// 			source_id: source_file.path,
-	// 			target_attr: { aliases: [] },
-	// 		},
-	// 	],
-	// 	options,
-	// );
+	// First add the edge so we can access the struct
+	const batch_update = new BatchGraphUpdate();
 
-	// Open the target file
+	new AddNoteGraphUpdate(
+		new GraphConstructionNodeData(target_file.path, [], true, false, false),
+	).add_to_batch(batch_update);
+
+	new AddEdgeGraphUpdate(
+		source_file.path,
+		target_file.path,
+		field,
+		"typed-link",
+	).add_to_batch(batch_update);
+
+	plugin.graph.apply_update(batch_update);
+
+	const edge = plugin.graph
+		.get_outgoing_edges(source_file.path)
+		.find(
+			(e) => e.edge_type === field && e.target.path === target_file!.path,
+		);
+	if (!edge) return;
+
 	await Promise.all([
-		// Let the cache update so that the refresh sees the new file
-		// NOTE: I half-completed a less-flaky solution by listening to app.metadataCache.on("changed", ...)
-		// But this only works if Dataview isn't enabled, and I couldn't find the correct event to listen to for Dataview
-		sleep(500),
+		drop_crumbs(plugin, source_file, [edge], options),
 		active_view.leaf.openFile(target_file),
 	]);
-
-	// Wait till the file is created and crumbs are dropped
-	await plugin.refresh();
 };

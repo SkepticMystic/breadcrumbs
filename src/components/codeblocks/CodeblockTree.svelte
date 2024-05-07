@@ -2,14 +2,20 @@
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
+	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
+	import { active_file_store } from "src/stores/active_file";
+	import { Timer } from "src/utils/timer";
 	import { onMount } from "svelte";
+	import {
+		NoteGraphError,
+		RecTraversalResult,
+		TraversalOptions,
+		create_edge_sorter,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { NoteGraphError, RecTraversalResult, TraversalOptions, create_edge_sorter, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { log } from "src/logger";
-	import { Timer } from "src/utils/timer";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -30,19 +36,26 @@
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
+		const fields =
+			options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+
+		const source_path = file_path
+			? file_path
+			: $active_file_store
+				? $active_file_store.path
+				: "";
+
 		const traversal_options = new TraversalOptions(
-			[file_path],
-			options.fields ?? [],
+			[source_path],
+			fields,
 			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
 			!options["merge-fields"],
 		);
 
 		try {
-			tree = plugin.graph.rec_traverse(
-				traversal_options
-			);
+			tree = plugin.graph.rec_traverse(traversal_options);
 			tree.sort(plugin.graph, sort);
-			
+
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
@@ -61,34 +74,7 @@
 		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
 	});
 
-	// TODO reimplement all this logic
-
-	// // if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	// $: source_path = file_path
-	// 	? file_path
-	// 	: $active_file_store
-	// 		? $active_file_store.path
-	// 		: "";
-
-	// // this is an exposed function that we can call from the outside to update the codeblock
-	// export const update = () => {
-	// 	tree = get_tree();
-	// };
-
-	// const base_traversal = (attr: EdgeAttrFilters) =>
-	// 	Traverse.build_tree(
-	// 		plugin.graph,
-	// 		source_path,
-	// 		{ max_depth: options.depth[1] },
-	// 		(e) =>
-	// 			has_edge_attrs(e, {
-	// 				...attr,
-	// 				$or_target_ids: options["dataview-from-paths"],
-	// 			}),
-	// 	);
-
-	// const edge_field_labels =
-	// 	options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+	// TODO(RUST): reimplement all this logic
 
 	// const get_tree = () => {
 	// 	if (source_path && plugin.graph.hasNode(source_path)) {
@@ -112,8 +98,6 @@
 	// 		return [];
 	// 	}
 	// };
-
-	// onMount(update);
 </script>
 
 <div class="BC-codeblock-tree">
@@ -148,12 +132,10 @@
 				/>
 			</div>
 		</div>
+	{:else if error}
+		<p class="search-empty-state">{error.message}</p>
 	{:else}
-		{#if error}
-			<p class="search-empty-state">{error.message}</p>
-		{:else}
-			<!-- TODO(HELP-MSG) -->
-			<p class="search-empty-state">No paths found.</p>
-		{/if}
+		<!-- TODO(HELP-MSG) -->
+		<p class="search-empty-state">No paths found.</p>
 	{/if}
 </div>

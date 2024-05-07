@@ -145,8 +145,8 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 					// We know path is resolved
 					results.edges.push(
 						new GraphConstructionEdgeData(
-							target_path,
 							folder_note.path,
+							target_path,
 							data.field,
 							"folder_note",
 						),

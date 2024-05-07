@@ -23,14 +23,14 @@ export class BCAPI {
 		await this.plugin.refresh();
 	}
 	/** @deprecated Use refresh */
-	public async refreshIndex() { 
-		await this.refresh(); 
+	public async refreshIndex() {
+		await this.refresh();
 	}
 
 	/** @deprecated Filter edges of plugin.graph instead */
-	public getSubForFields(fields: string[], g = this.plugin.graph) {};
+	public getSubForFields(fields: string[], g = this.plugin.graph) {}
 
-	// TODO
+	// TODO(RUST)
 	// public build_tree = Traverse.build_tree;
 	// public breadth_first_traversal = Traverse.breadth_first;
 
@@ -45,11 +45,11 @@ export class BCAPI {
 			start_node,
 			Object.assign({ ...ListIndex.DEFAULT_OPTIONS }, options),
 		);
-	};
+	}
 
 	// BREAKING
 	/** @deprecated Use flatten_all_paths and flat_paths_to_index_list instead. Or, create_list_index */
-	public createIndex() {};
+	public createIndex() {}
 
 	public get_neighbours(source = get(active_file_store)?.path) {
 		return source && this.plugin.graph.has_node(source)
@@ -58,7 +58,7 @@ export class BCAPI {
 	}
 
 	/** @deprecated Use get_neighbours instead */
-	public getMatrixNeighbours() { 
+	public getMatrixNeighbours() {
 		return this.get_neighbours();
 	}
 }

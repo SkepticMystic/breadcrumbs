@@ -9,7 +9,6 @@ import type { ExplicitEdgeSource } from "src/const/graph";
 // 	/** .md file exists  */
 // 	resolved: boolean;
 // 	aliases?: string[];
-// 	// TODO: All a narrower ignore filter, to ignore only edges from certain sources, for example
 // 	// 	source=list-note
 // 	// The syntax can allow multiple values: source=list-note source=dataview (parse as URLSearchParams)
 // 	/** If true, don't add any edges _to_ this node */

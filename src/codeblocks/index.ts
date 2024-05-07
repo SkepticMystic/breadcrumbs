@@ -1,5 +1,4 @@
 import { parseYaml } from "obsidian";
-import type { CodeblockMDRC } from "src/codeblocks/MDRC";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type { BreadcrumbsError } from "src/interfaces/graph";
@@ -9,6 +8,7 @@ import { remove_duplicates_by } from "src/utils/arrays";
 import { Paths } from "src/utils/paths";
 import { z } from "zod";
 import { CodeblockSchema, type ICodeblock } from "./schema";
+import { quote_join } from "src/utils/strings";
 
 /** Raw YAML string -> YAML -> zod-parsed */
 const parse_source = (
@@ -70,7 +70,7 @@ const parse_source = (
 		errors.push({
 			path: "yaml",
 			code: "invalid_yaml",
-			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${CodeblockSchema.FIELDS.join(", ")}`,
+			message: `The following is not a valid codeblock field: \`${invalid_fields[0]}\`. Valid options are: ${quote_join(CodeblockSchema.FIELDS, "`", ", or ")}`,
 		});
 	}
 
@@ -112,7 +112,7 @@ const postprocess_options = (
 		try {
 			const pages = dataview_plugin
 				.get_api(plugin.app)
-				?.pages(parsed["dataview-from"]) as
+				?.pages(parsed["dataview-from"], source_path) as
 				| undefined
 				| IDataview.Page[];
 

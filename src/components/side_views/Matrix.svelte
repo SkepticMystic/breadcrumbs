@@ -4,6 +4,7 @@
 	import { active_file_store } from "src/stores/active_file";
 	import { group_by } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
+	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
@@ -13,7 +14,7 @@
 
 	export let plugin: BreadcrumbsPlugin;
 
-	let { edge_sort_id, field_group_labels, show_attributes } =
+	let { edge_sort_id, field_group_labels, show_attributes, collapse } =
 		plugin.settings.views.side.matrix;
 
 
@@ -74,6 +75,11 @@
 				bind:edge_sort_id
 			/>
 
+			<ChevronCollapseButton
+				cls="clickable-icon nav-action-button"
+				bind:collapse
+			/>
+
 			<!-- We can exclude alot of attrs, since they're implied by other info on the Matrix -->
 			<ShowAttributesSelectorMenu
 				cls="clickable-icon nav-action-button"
@@ -101,6 +107,7 @@
 							{field}
 							{plugin}
 							{show_attributes}
+							open={!collapse}
 						/>
 					{/if}
 				{/each}

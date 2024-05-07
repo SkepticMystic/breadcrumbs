@@ -14,7 +14,8 @@ export type BreadcrumbsError = {
 		| "deprecated_field"
 		| "invalid_field_value"
 		| "invalid_setting_value"
-		| "invalid_yaml";
+		| "invalid_yaml"
+		| "missing_other_plugin";
 	message: string;
 	path: string;
 };

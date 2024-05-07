@@ -53,8 +53,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 				results.edges.push(
 					new GraphConstructionEdgeData(
-						target_id,
 						source_file.path,
+						target_id,
 						field,
 						"typed_link",
 					),
@@ -85,7 +85,9 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				.forEach((target_link) => {
 					let unsafe_target_path: string | undefined;
 
-					if (typeof target_link === "string") {
+					// Quickly return for null or ''
+					if (!target_link) return;
+					else if (typeof target_link === "string") {
 						// Try parse as a markdown link [](), grabbing the path out of the 2nd match
 						unsafe_target_path =
 							target_link.match(MARKDOWN_LINK_REGEX)?.[2];
