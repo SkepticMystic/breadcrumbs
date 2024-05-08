@@ -36,9 +36,6 @@
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
-		const fields =
-			options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
-
 		const source_path = file_path
 			? file_path
 			: $active_file_store
@@ -47,7 +44,7 @@
 
 		const traversal_options = new TraversalOptions(
 			[source_path],
-			fields,
+			options.fields,
 			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
 			!options["merge-fields"],
 		);
