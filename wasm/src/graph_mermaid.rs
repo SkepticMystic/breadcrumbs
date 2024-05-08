@@ -241,11 +241,11 @@ impl NoteGraph {
             .iter()
             .zip(backward.iter())
             .all(|(a, b)| a.edge_type == b.edge_type);
-        let all_implied = forward
+        let all_implied = !forward
             .iter()
             .zip_longest(backward.iter())
-            .all(|pair| match pair {
-                EitherOrBoth::Both(a, b) => a.explicit && b.explicit,
+            .any(|pair| match pair {
+                EitherOrBoth::Both(a, b) => a.explicit || b.explicit,
                 EitherOrBoth::Left(a) => a.explicit,
                 EitherOrBoth::Right(b) => b.explicit,
             });

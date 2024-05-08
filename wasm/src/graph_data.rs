@@ -84,16 +84,16 @@ impl EdgeData {
         for attribute in attributes {
             let data = match attribute.as_str() {
                 "field" => Some(("field", self.edge_type.clone())),
-                "explicit" => Some(("explicit", (!self.explicit).to_string())),
+                "explicit" => Some(("explicit", self.explicit.to_string())),
                 "source" => {
-                    if !self.explicit {
+                    if self.explicit {
                         Some(("source", self.edge_source.clone()))
                     } else {
                         None
                     }
                 }
                 "implied_kind" => {
-                    if self.explicit {
+                    if !self.explicit {
                         Some(("implied_kind", self.edge_source.clone()))
                     } else {
                         None
@@ -249,7 +249,7 @@ impl EdgeStruct {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
+    pub fn explicit(&self) -> bool {
         self.edge.explicit
     }
 

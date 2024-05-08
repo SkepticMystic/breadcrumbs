@@ -11,6 +11,8 @@ extern "C" {
 
     pub type Logger;
     #[wasm_bindgen(method)]
+    pub fn feat(this: &Logger, message: &str);
+    #[wasm_bindgen(method)]
     pub fn debug(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
     pub fn info(this: &Logger, message: &str);
@@ -24,17 +26,19 @@ extern "C" {
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_name = console)]
-    pub static LOGGER: Console;
+    pub static LOGGER: Logger;
 
-    pub type Console;
-    #[wasm_bindgen(method)]
-    pub fn debug(this: &Console, message: &str);
+    pub type Logger;
     #[wasm_bindgen(method, js_name = log)]
-    pub fn info(this: &Console, message: &str);
+    pub fn feat(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
-    pub fn warn(this: &Console, message: &str);
+    pub fn debug(this: &Logger, message: &str);
+    #[wasm_bindgen(method, js_name = log)]
+    pub fn info(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
-    pub fn error(this: &Console, message: &str);
+    pub fn warn(this: &Logger, message: &str);
+    #[wasm_bindgen(method)]
+    pub fn error(this: &Logger, message: &str);
 }
 
 pub struct PerfLogger {
