@@ -217,6 +217,24 @@ impl RecTraversalData {
     }
 }
 
+pub fn flatten_traversal_data(mut data: Vec<RecTraversalData>) -> Vec<RecTraversalData> {
+    let mut result = Vec::new();
+
+    for datum in data.drain(..) {
+        rec_flatten_traversal_data(datum, &mut result);
+    }
+
+    result
+}
+
+fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTraversalData>) {
+    for child in data.children.drain(..) {
+        rec_flatten_traversal_data(child, result);
+    }
+
+    result.push(data);
+}
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalResult {
@@ -469,7 +487,7 @@ impl NoteGraph {
             let edge_types: &Vec<String> = options.edge_types.as_ref().unwrap_or(&all_edge_types);
 
             for edge_type in edge_types {
-                let (nodes, edges) = self.int_traverse_depth_first(
+                let (nodes, edges) = self.int_traverse_breadth_first(
                     entry_nodes.clone(),
                     Some(&vec![edge_type.clone()]),
                     options.max_depth,
@@ -483,7 +501,7 @@ impl NoteGraph {
 
             Ok((node_list, edge_list))
         } else {
-            Ok(self.int_traverse_depth_first(
+            Ok(self.int_traverse_breadth_first(
                 entry_nodes,
                 options.edge_types.as_ref(),
                 options.max_depth,
