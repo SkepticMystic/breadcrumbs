@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
 	import { Traverse, type EdgeTree } from "src/graph/traverse";
@@ -20,11 +20,9 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	const sort = get_edge_sorter(
-		// @ts-expect-error: ts(2345)
-		options.sort,
-		plugin.graph,
-	);
+	// TODO(RUST): Translate
+
+	const sort = get_edge_sorter(options.sort, plugin.graph);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
 	let tree: EdgeTree[] = [];
@@ -114,7 +112,6 @@
 			/>
 		</div>
 	{:else}
-		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found.</p>
 	{/if}
-</div>
+</div> -->

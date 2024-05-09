@@ -2,15 +2,14 @@
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
-	import { type EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { log } from "src/logger";
 
-	export let edges: EdgeStruct[];
 	export let open: boolean;
-  export let field: EdgeField;
+	export let field: EdgeField;
+	export let edges: EdgeStruct[];
 	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
 	// 	so rather pass them in to receive updates
@@ -59,8 +58,10 @@
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.implied ? "i" : "x"}
-							aria_label={edge.get_attribute_label(show_attributes)}
+							label={edge.explicit ? "i" : "x"}
+							aria_label={edge.get_attribute_label(
+								show_attributes,
+							)}
 						/>
 					</div>
 				</div>

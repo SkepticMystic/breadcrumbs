@@ -31,7 +31,7 @@
 	const DEFAULT_MAX_DEPTH = 100;
 
 	let tree: RecTraversalResult | undefined = undefined;
-	let error: NoteGraphError | undefined = undefined;
+	let error: string | undefined = undefined;
 
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
@@ -42,6 +42,12 @@
 				? $active_file_store.path
 				: "";
 
+		if (!plugin.graph.has_node(source_path)) {
+			tree = undefined;
+			error = "The file does not exist in the graph.";
+			return;
+		}
+
 		const traversal_options = new TraversalOptions(
 			[source_path],
 			options.fields,
@@ -51,16 +57,23 @@
 
 		try {
 			tree = plugin.graph.rec_traverse(traversal_options);
+			if (options.flat) tree.flatten();
 			tree.sort(plugin.graph, sort);
 
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
+
+			tree = undefined;
 			if (e instanceof NoteGraphError) {
-				tree = undefined;
-				error = e;
+				error = e.message;
+			} else {
+				error =
+					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
 			}
 		}
+
+		tree = tree;
 	};
 
 	onMount(() => {
@@ -72,29 +85,6 @@
 	});
 
 	// TODO(RUST): reimplement all this logic
-
-	// const get_tree = () => {
-	// 	if (source_path && plugin.graph.hasNode(source_path)) {
-	// 		const traversal = options["merge-fields"]
-	// 			? base_traversal({ $or_fields: options.fields })
-	// 			: edge_field_labels.flatMap((field) =>
-	// 					base_traversal({ field }),
-	// 				);
-
-	// 		// NOTE: The flattening is done here so that:
-	// 		// - We can use NestedEdgeList for both modes
-	// 		// - ListIndex builds from an EdgeTree[] as well
-	// 		return options.flat
-	// 			? Traverse.flatten_tree(traversal).map((item) => ({
-	// 					depth: 0,
-	// 					children: [],
-	// 					edge: item.edge,
-	// 				}))
-	// 			: traversal;
-	// 	} else {
-	// 		return [];
-	// 	}
-	// };
 </script>
 
 <div class="BC-codeblock-tree">
@@ -121,16 +111,16 @@
 			<!-- NOTE: Padded so that the flair doesn't interfere with the floating buttons -->
 			<div class="pr-10">
 				<NestedEdgeList
-					tree={tree.data}
 					{plugin}
 					{show_node_options}
+					tree={tree.data}
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}
 				/>
 			</div>
 		</div>
 	{:else if error}
-		<p class="search-empty-state">{error.message}</p>
+		<p class="search-empty-state">{error}</p>
 	{:else}
 		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found.</p>

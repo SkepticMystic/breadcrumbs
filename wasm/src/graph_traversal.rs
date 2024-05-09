@@ -10,7 +10,7 @@ use crate::{
     graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
         BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
-        GraphTraversalDataStructure, NoteGraphError, Result,
+        GraphTraversalDataStructure, NoteGraphError, Result, LOGGER,
     },
 };
 
@@ -217,24 +217,6 @@ impl RecTraversalData {
     }
 }
 
-pub fn flatten_traversal_data(mut data: Vec<RecTraversalData>) -> Vec<RecTraversalData> {
-    let mut result = Vec::new();
-
-    for datum in data.drain(..) {
-        rec_flatten_traversal_data(datum, &mut result);
-    }
-
-    result
-}
-
-fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTraversalData>) {
-    for child in data.children.drain(..) {
-        rec_flatten_traversal_data(child, result);
-    }
-
-    result.push(data);
-}
-
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalResult {
@@ -307,6 +289,19 @@ impl RecTraversalResult {
         paths
     }
 
+    /// Flattens the traversal data by removing the tree structure and deduplicating the edges by their target_path
+    pub fn flatten(&mut self) {
+        let mut data = Vec::new();
+
+        for datum in self.data.drain(..) {
+            rec_flatten_traversal_data(datum, &mut data);
+        }
+
+        data.dedup_by(|a, b| a.edge.target.path == b.edge.target.path);
+
+        self.data = data;
+    }
+
     pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
         for datum in &mut self.data {
             datum.rec_sort_children(graph, sorter);
@@ -314,6 +309,14 @@ impl RecTraversalResult {
 
         sorter.sort_traversal_data(graph, &mut self.data);
     }
+}
+
+fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTraversalData>) {
+    for child in data.children.drain(..) {
+        rec_flatten_traversal_data(child, result);
+    }
+
+    result.push(data);
 }
 
 #[wasm_bindgen]

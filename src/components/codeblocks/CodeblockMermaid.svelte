@@ -30,6 +30,7 @@
 	let code: string = "";
 	let error: NoteGraphError | undefined = undefined;
 
+	// TODO: has_node
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
