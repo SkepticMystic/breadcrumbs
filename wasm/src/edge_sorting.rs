@@ -24,9 +24,9 @@ impl SortField {
             "basename" => Some(SortField::Basename),
             "field" => Some(SortField::EdgeType),
             "explicit" => Some(SortField::Implied),
-            s if s.starts_with("neighbour-field:") => {
-                Some(SortField::Neighbour(s["neighbour-field:".len()..].to_string()))
-            }
+            s if s.starts_with("neighbour-field:") => Some(SortField::Neighbour(
+                s["neighbour-field:".len()..].to_string(),
+            )),
             _ => None,
         }
     }
@@ -151,9 +151,9 @@ pub struct ImpliedOrdering;
 
 impl EdgeOrdering for ImpliedOrdering {
     fn compare(&self, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
-        if a.edge.implied == b.edge.implied {
+        if a.edge.explicit == b.edge.explicit {
             a.target.path.cmp(&b.target.path)
-        } else if a.edge.implied {
+        } else if a.edge.explicit {
             std::cmp::Ordering::Less
         } else {
             std::cmp::Ordering::Greater

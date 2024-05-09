@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Debug};
 
+use itertools::Itertools;
 use petgraph::{
     graph::{EdgeIndex, NodeIndex},
     stable_graph::EdgeReference,
@@ -25,7 +26,7 @@ pub struct EdgeData {
     #[wasm_bindgen(skip)]
     pub edge_source: String,
     #[wasm_bindgen(skip)]
-    pub implied: bool,
+    pub explicit: bool,
     #[wasm_bindgen(skip)]
     pub round: u8,
 }
@@ -33,11 +34,11 @@ pub struct EdgeData {
 #[wasm_bindgen]
 impl EdgeData {
     #[wasm_bindgen(constructor)]
-    pub fn new(edge_type: String, edge_source: String, implied: bool, round: u8) -> EdgeData {
+    pub fn new(edge_type: String, edge_source: String, explicit: bool, round: u8) -> EdgeData {
         EdgeData {
             edge_type,
             edge_source,
-            implied,
+            explicit,
             round,
         }
     }
@@ -53,8 +54,8 @@ impl EdgeData {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
-        self.implied
+    pub fn explicit(&self) -> bool {
+        self.explicit
     }
 
     #[wasm_bindgen(getter)]
@@ -79,20 +80,20 @@ impl EdgeData {
         // the mapping that exist on the JS side are as follows
         // "field" | "explicit" | "source" | "implied_kind" | "round"
 
-        // TODO(RUST): maybe change the attribute options so that the JS side better matches the data
+        // TODO(JS): maybe change the attribute options so that the JS side better matches the data
         for attribute in attributes {
             let data = match attribute.as_str() {
                 "field" => Some(("field", self.edge_type.clone())),
-                "explicit" => Some(("explicit", (!self.implied).to_string())),
+                "explicit" => Some(("explicit", self.explicit.to_string())),
                 "source" => {
-                    if !self.implied {
+                    if self.explicit {
                         Some(("source", self.edge_source.clone()))
                     } else {
                         None
                     }
                 }
                 "implied_kind" => {
-                    if self.implied {
+                    if !self.explicit {
                         Some(("implied_kind", self.edge_source.clone()))
                     } else {
                         None
@@ -103,14 +104,14 @@ impl EdgeData {
             };
 
             if let Some(data) = data {
-                result.push(format!("{}={}", data.0, data.1));
+                result.push(data);
             }
         }
 
         if result.len() == 1 {
-            result[0].split('=').nth(1).unwrap().to_string()
+            result[0].1.clone()
         } else {
-            result.join(" ")
+            result.iter().map(|x| format!("{}={}", x.0, x.1)).join(" ")
         }
     }
 }
@@ -248,8 +249,8 @@ impl EdgeStruct {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn implied(&self) -> bool {
-        self.edge.implied
+    pub fn explicit(&self) -> bool {
+        self.edge.explicit
     }
 
     #[wasm_bindgen(getter)]

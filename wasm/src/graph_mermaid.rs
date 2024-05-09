@@ -241,13 +241,13 @@ impl NoteGraph {
             .iter()
             .zip(backward.iter())
             .all(|(a, b)| a.edge_type == b.edge_type);
-        let all_implied = forward
+        let all_implied = !forward
             .iter()
             .zip_longest(backward.iter())
-            .all(|pair| match pair {
-                EitherOrBoth::Both(a, b) => a.implied && b.implied,
-                EitherOrBoth::Left(a) => a.implied,
-                EitherOrBoth::Right(b) => b.implied,
+            .any(|pair| match pair {
+                EitherOrBoth::Both(a, b) => a.explicit || b.explicit,
+                EitherOrBoth::Left(a) => a.explicit,
+                EitherOrBoth::Right(b) => b.explicit,
             });
 
         let arrow_type = match (backward.is_empty(), all_implied) {
@@ -295,6 +295,8 @@ impl NoteGraph {
         edges: EdgeVec<EdgeReference<EdgeData, u32>>,
     ) -> AccumulatedEdgeHashMap {
         let mut accumulated_edges: AccumulatedEdgeHashMap = HashMap::new();
+
+        // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
 
         for (_, edge_ref) in edges {
             let forward_dir = (edge_ref.source(), edge_ref.target());

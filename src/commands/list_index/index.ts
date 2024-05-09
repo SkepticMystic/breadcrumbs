@@ -82,6 +82,7 @@ export namespace ListIndex {
 		);
 
 		return edge_tree_to_list_index(
+			// TODO
 			Traverse.sort_edge_tree(
 				// Traverse.build_tree(graph, start_node, options, (e) =>
 				// 	has_edge_attrs(e, { $or_fields: options.fields }),
