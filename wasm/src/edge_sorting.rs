@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use petgraph::visit::EdgeRef;
 use wasm_bindgen::prelude::*;
 
@@ -17,25 +19,26 @@ pub enum SortField {
     Neighbour(String),
 }
 
-impl SortField {
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for SortField {
+    type Err = NoteGraphError;
+
+    fn from_str(s: &str) -> Result<Self> {
         match s {
-            "path" => Some(SortField::Path),
-            "basename" => Some(SortField::Basename),
-            "field" => Some(SortField::EdgeType),
-            "explicit" => Some(SortField::Implied),
-            s if s.starts_with("neighbour-field:") => Some(SortField::Neighbour(
+            "path" => Ok(SortField::Path),
+            "basename" => Ok(SortField::Basename),
+            "field" => Ok(SortField::EdgeType),
+            "explicit" => Ok(SortField::Implied),
+            s if s.starts_with("neighbour-field:") => Ok(SortField::Neighbour(
                 s["neighbour-field:".len()..].to_string(),
             )),
-            _ => None,
+            _ => Err(NoteGraphError::new("Invalid sort field")),
         }
     }
 }
 
 #[wasm_bindgen]
 pub fn create_edge_sorter(field: String, reverse: bool) -> Result<EdgeSorter> {
-    let sort_field =
-        SortField::from_str(&field).ok_or(NoteGraphError::new("Invalid sort field"))?;
+    let sort_field = SortField::from_str(&field)?;
     Ok(EdgeSorter::new(sort_field, reverse))
 }
 
@@ -76,16 +79,16 @@ impl EdgeSorter {
         EdgeSorter { field, reverse }
     }
 
-    pub fn sort_edges<'a>(&self, graph: &'a NoteGraph, edges: &mut Vec<EdgeStruct>) {
+    pub fn sort_edges(&self, graph: &NoteGraph, edges: &mut [EdgeStruct]) {
         let ordering = self.get_edge_ordering(graph);
 
-        edges.sort_by(|a, b| self.apply_edge_ordering(&ordering, a, b));
+        edges.sort_by(|a, b| self.apply_edge_ordering(ordering.as_ref(), a, b));
     }
 
-    pub fn sort_traversal_data<'a>(&self, graph: &'a NoteGraph, edges: &mut Vec<RecTraversalData>) {
+    pub fn sort_traversal_data(&self, graph: &NoteGraph, edges: &mut [RecTraversalData]) {
         let ordering = self.get_edge_ordering(graph);
 
-        edges.sort_by(|a, b| self.apply_edge_ordering(&ordering, &a.edge, &b.edge));
+        edges.sort_by(|a, b| self.apply_edge_ordering(ordering.as_ref(), &a.edge, &b.edge));
     }
 
     fn get_edge_ordering<'a>(&self, graph: &'a NoteGraph) -> Box<dyn EdgeOrdering + 'a> {
@@ -102,7 +105,7 @@ impl EdgeSorter {
 
     fn apply_edge_ordering<'a>(
         &self,
-        ordering: &Box<dyn EdgeOrdering + 'a>,
+        ordering: &(dyn EdgeOrdering + 'a),
         a: &EdgeStruct,
         b: &EdgeStruct,
     ) -> std::cmp::Ordering {
@@ -135,7 +138,7 @@ impl EdgeOrdering for BasenameOrdering {
         let a_basename = a.target.path.split('/').last().unwrap();
         let b_basename = b.target.path.split('/').last().unwrap();
 
-        a_basename.cmp(&b_basename)
+        a_basename.cmp(b_basename)
     }
 }
 
@@ -182,15 +185,13 @@ impl<'a> EdgeOrdering for NeighbourOrdering<'a> {
         let a_neighbour = self
             .graph
             .int_iter_outgoing_edges(a.target_index)
-            .filter(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
-            .next()
+            .find(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
             .and_then(|x| self.graph.int_get_node_weight(x.target()).ok());
 
         let b_neighbour = self
             .graph
             .int_iter_outgoing_edges(b.target_index)
-            .filter(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
-            .next()
+            .find(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
             .and_then(|x| self.graph.int_get_node_weight(x.target()).ok());
 
         match (a_neighbour, b_neighbour) {

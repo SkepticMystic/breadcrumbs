@@ -116,6 +116,8 @@ impl NoteGraph {
 
         let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
 
+        // TODO(RUST): option to sort edges
+
         // utils::log(format!("{:#?}", nodes));
         // utils::log(format!("{:#?}", edges));
 

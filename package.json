@@ -18,6 +18,7 @@
 		"coverage:ui": "vitest run --coverage --coverage.include 'src/**' --coverage.reporter html && npx vite preview --outDir ./coverage --open",
 		"wasm:build": "cd wasm && wasm-pack build --target web",
 		"wasm:fmt": "cd wasm && cargo fmt",
+		"wasm:lint": "cd wasm && cargo clippy",
 		"wasm:test": "cd wasm && wasm-pack test --node --features test"
 	},
 	"keywords": [],

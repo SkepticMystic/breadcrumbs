@@ -19,6 +19,7 @@
 	import { remove_nullish_keys } from "src/utils/objects";
 	import { Paths } from "src/utils/paths";
 	import { Links } from "src/utils/links";
+	import { active_file_store } from "src/stores/active_file";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let options: ICodeblock["Options"];
@@ -28,11 +29,22 @@
 	const DEFAULT_MAX_DEPTH = 100;
 
 	let code: string = "";
-	let error: NoteGraphError | undefined = undefined;
+	let error: string | undefined = undefined;
 
-	// TODO: has_node
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
+
+		const source_path = file_path
+			? file_path
+			: $active_file_store
+				? $active_file_store.path
+				: "";
+
+		if (!plugin.graph.has_node(source_path)) {
+			code = "";
+			error = "The file does not exist in the graph.";
+			return;
+		}
 
 		const traversal_options = new TraversalOptions(
 			[file_path],
@@ -83,11 +95,16 @@
 		} catch (e) {
 			log.error("Error generating mermaid graph", e);
 
+			code = "";
 			if (e instanceof NoteGraphError) {
-				code = "";
-				error = e;
+				error = e.message;
+			} else {
+				error =
+					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
 			}
 		}
+
+		code = code;
 	};
 
 	onMount(() => {
@@ -229,7 +246,7 @@
 			/>
 		</div>
 	{:else if error}
-		<p class="search-empty-state">{error.message}</p>
+		<p class="search-empty-state">{error}</p>
 	{:else}
 		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found.</p>

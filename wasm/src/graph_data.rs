@@ -71,7 +71,7 @@ impl EdgeData {
 
 impl EdgeData {
     pub fn matches_edge_filter(&self, edge_types: Option<&Vec<String>>) -> bool {
-        edge_matches_edge_filter(&self, edge_types)
+        edge_matches_edge_filter(self, edge_types)
     }
 
     pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
@@ -207,6 +207,17 @@ impl NodeData {
             ignore_out_edges: false,
         }
     }
+
+    pub fn override_with_construction_data(&mut self, data: &GraphConstructionNodeData) {
+        assert_eq!(
+            self.path, data.path,
+            "Can not override with data for another node."
+        );
+        self.aliases = data.aliases.clone();
+        self.resolved = data.resolved;
+        self.ignore_in_edges = data.ignore_in_edges;
+        self.ignore_out_edges = data.ignore_out_edges;
+    }
 }
 
 #[wasm_bindgen]
@@ -335,7 +346,7 @@ impl EdgeStruct {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct EdgeList {
     #[wasm_bindgen(skip)]
     pub edges: Vec<EdgeStruct>,
@@ -382,6 +393,7 @@ impl EdgeList {
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct GroupedEdgeList {
     #[wasm_bindgen(skip)]
     pub edges: HashMap<String, EdgeList>,
@@ -430,5 +442,10 @@ impl GroupedEdgeList {
         self.edges
             .get(edge_type)
             .map(|edge_list| edge_list.get_sorted_edges(graph, sorter))
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
     }
 }

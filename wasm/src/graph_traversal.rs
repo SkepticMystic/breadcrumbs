@@ -10,7 +10,7 @@ use crate::{
     graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
         BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
-        GraphTraversalDataStructure, NoteGraphError, Result, LOGGER,
+        GraphTraversalDataStructure, NoteGraphError, Result,
     },
 };
 
@@ -76,7 +76,7 @@ impl TraversalOptions {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Path {
     edges: Vec<EdgeStruct>,
 }

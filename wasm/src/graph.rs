@@ -608,8 +608,14 @@ impl NoteGraph {
                     ));
                 }
 
-                // TODO(RUST): also update the other things like aliases
-                self.int_set_node_resolved(node_index, true)?;
+                let node = self.graph.node_weight_mut(node_index);
+
+                match node {
+                    Some(node) => {
+                        node.override_with_construction_data(construction_data);
+                    }
+                    None => return Err(NoteGraphError::new("Node not found")),
+                }
             }
             None => {
                 self.int_add_node(construction_data)?;

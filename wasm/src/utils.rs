@@ -68,11 +68,11 @@ impl PerfLogger {
     }
 
     pub fn stop_split(&mut self) {
-        self.splits.last_mut().map(|split| {
+        if let Some(split) = self.splits.last_mut() {
             if !split.stopped() {
                 split.stop()
             }
-        });
+        }
     }
 
     pub fn stop(&mut self) {

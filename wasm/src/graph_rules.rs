@@ -64,7 +64,7 @@ impl TransitiveGraphRule {
 
     pub fn get_name(&self) -> String {
         if self.name.is_empty() {
-            return self.stringify();
+            self.stringify()
         } else {
             self.name.clone()
         }

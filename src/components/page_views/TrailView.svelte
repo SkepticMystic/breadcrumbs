@@ -25,8 +25,6 @@
 		plugin.settings.views.page.trail.field_group_labels,
 	);
 
-	// $: log.debug("edge_field_labels", edge_field_labels);
-
 	$: traversal_options = new TraversalOptions(
 		[file_path],
 		edge_field_labels,
@@ -34,19 +32,8 @@
 		!plugin.settings.views.page.trail.merge_fields,
 	);
 
-	// $: log.debug("traversal_options", traversal_options.toString());
-
 	$: traversal_data = plugin.graph.rec_traverse(traversal_options);
-
 	$: all_paths = traversal_data.to_paths();
-
-	// $: all_paths.forEach((path) => log.debug(path.toString()));
-
-	// $: all_paths = plugin.graph.hasNode(file_path)
-	// 	? plugin.settings.views.page.trail.merge_fields
-	// 		? base_traversal({ $or_fields: edge_field_labels })
-	// 		: edge_field_labels.flatMap((field) => base_traversal({ field }))
-	// 	: [];
 
 	$: selected_paths =
 		plugin.settings.views.page.trail.selection === "all"

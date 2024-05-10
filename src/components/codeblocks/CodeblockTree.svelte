@@ -83,8 +83,6 @@
 
 		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
 	});
-
-	// TODO(RUST): reimplement all this logic
 </script>
 
 <div class="BC-codeblock-tree">

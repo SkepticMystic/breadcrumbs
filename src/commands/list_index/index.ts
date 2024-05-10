@@ -81,16 +81,12 @@ export namespace ListIndex {
 			false,
 		);
 
+		const traversal_result = graph.rec_traverse(traversal_options);
+		const edge_sorter = create_edge_sorter(options.edge_sort_id.field, options.edge_sort_id.order === -1);
+		traversal_result.sort(graph, edge_sorter);
+
 		return edge_tree_to_list_index(
-			// TODO
-			Traverse.sort_edge_tree(
-				// Traverse.build_tree(graph, start_node, options, (e) =>
-				// 	has_edge_attrs(e, { $or_fields: options.fields }),
-				// ),
-				graph,
-				graph.rec_traverse(traversal_options).data,
-				create_edge_sorter(options.edge_sort_id.field, options.edge_sort_id.order === -1),
-			),
+			traversal_result.data,
 			options,
 		);
 	}
