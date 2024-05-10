@@ -71,11 +71,11 @@ export const get_graph_stats = (
 			}
 		});
 
-		const explicit = String(!edge.implied);
+		const explicit = String(edge.explicit);
 		stats.edges.explicit[explicit] =
 			(stats.edges.explicit[explicit] || 0) + 1;
 
-		if (!edge.implied) {
+		if (edge.explicit) {
 			stats.edges.source[edge.edge_source] =
 				(stats.edges.source[edge.edge_source] || 0) + 1;
 		} else {

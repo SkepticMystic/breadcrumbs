@@ -15,6 +15,7 @@
 		NodeData,
 		NoteGraphError,
 		TraversalOptions,
+		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { remove_nullish_keys } from "src/utils/objects";
 	import { Paths } from "src/utils/paths";
@@ -34,11 +35,7 @@
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
-		const source_path = file_path
-			? file_path
-			: $active_file_store
-				? $active_file_store.path
-				: "";
+		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
 
 		if (!plugin.graph.has_node(source_path)) {
 			code = "";
@@ -58,6 +55,11 @@
 			defaultRenderer: options["mermaid-renderer"],
 		});
 
+		const sort = create_edge_sorter(
+			options.sort.field,
+			options.sort.order === -1,
+		);
+
 		const mermaid_options = new MermaidGraphOptions(
 			file_path,
 			`%%{ init: { "flowchart": ${JSON.stringify(flowchart_init)} } }%%`,
@@ -65,6 +67,7 @@
 			options["mermaid-direction"] ?? "LR",
 			true,
 			options["show-attributes"] ?? [],
+			sort,
 			(node: NodeData) => {
 				const node_path = node.path;
 				const file = plugin.app.vault.getFileByPath(node_path);

@@ -69,6 +69,7 @@ pub fn sort_edges(
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug)]
 pub struct EdgeSorter {
     field: SortField,
     reverse: bool,

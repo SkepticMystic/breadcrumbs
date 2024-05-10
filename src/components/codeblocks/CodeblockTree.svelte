@@ -36,11 +36,7 @@
 	export const update = () => {
 		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
-		const source_path = file_path
-			? file_path
-			: $active_file_store
-				? $active_file_store.path
-				: "";
+		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
 
 		if (!plugin.graph.has_node(source_path)) {
 			tree = undefined;

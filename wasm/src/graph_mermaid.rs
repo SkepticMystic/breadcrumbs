@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 
 use itertools::{EitherOrBoth, Itertools};
-use petgraph::{
-    stable_graph::{EdgeReference, NodeIndex},
-    visit::EdgeRef,
-};
+use petgraph::stable_graph::NodeIndex;
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
 use crate::{
+    edge_sorting::EdgeSorter,
     graph::NoteGraph,
-    graph_data::EdgeData,
-    graph_traversal::{EdgeVec, TraversalOptions},
+    graph_data::{EdgeData, EdgeStruct},
+    graph_traversal::TraversalOptions,
     utils::{NoteGraphError, Result},
 };
 
@@ -29,6 +27,7 @@ pub struct MermaidGraphOptions {
     direction: String,
     collapse_opposing_edges: bool,
     edge_label_attributes: Vec<String>,
+    edge_sorter: Option<EdgeSorter>,
     node_label_fn: Option<js_sys::Function>,
     link_nodes: bool,
 }
@@ -43,6 +42,7 @@ impl MermaidGraphOptions {
         direction: String,
         collapse_opposing_edges: bool,
         edge_label_attributes: Vec<String>,
+        edge_sorter: Option<EdgeSorter>,
         node_label_fn: Option<js_sys::Function>,
         link_nodes: bool,
     ) -> MermaidGraphOptions {
@@ -53,6 +53,7 @@ impl MermaidGraphOptions {
             direction,
             collapse_opposing_edges,
             edge_label_attributes,
+            edge_sorter,
             node_label_fn,
             link_nodes,
         }
@@ -115,6 +116,14 @@ impl NoteGraph {
         let now = Instant::now();
 
         let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
+        let mut edge_structs = edges
+            .iter()
+            .filter_map(|edge| EdgeStruct::from_edge_ref(edge.1, self))
+            .collect::<Vec<EdgeStruct>>();
+        
+        if let Some(edge_sorter) = &diagram_options.edge_sorter {
+            edge_sorter.sort_edges(self, &mut edge_structs);
+        }
 
         // TODO(RUST): option to sort edges
 
@@ -136,7 +145,7 @@ impl NoteGraph {
         );
 
         // accumulate edges by direction, so that we can collapse them in the next step
-        let accumulated_edges = NoteGraph::int_accumulate_edges(edges);
+        let accumulated_edges = NoteGraph::int_accumulate_edges(edge_structs);
 
         // utils::log(format!("{:#?}", accumulated_edges));
 
@@ -293,36 +302,34 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_accumulate_edges(
-        edges: EdgeVec<EdgeReference<EdgeData, u32>>,
-    ) -> AccumulatedEdgeHashMap {
+    pub fn int_accumulate_edges(edges: Vec<EdgeStruct>) -> AccumulatedEdgeHashMap {
         let mut accumulated_edges: AccumulatedEdgeHashMap = HashMap::new();
 
         // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
 
-        for (_, edge_ref) in edges {
-            let forward_dir = (edge_ref.source(), edge_ref.target());
+        for edge_struct in edges {
+            let forward_dir = (edge_struct.source_index, edge_struct.target_index);
 
             let entry1 = accumulated_edges.get_mut(&forward_dir);
             match entry1 {
                 Some((_, _, forward, _)) => {
-                    forward.push(edge_ref.weight().clone());
+                    forward.push(edge_struct.edge);
                 }
                 None => {
-                    let backward_dir = (edge_ref.target(), edge_ref.source());
+                    let backward_dir = (edge_struct.target_index, edge_struct.source_index);
 
                     let entry2 = accumulated_edges.get_mut(&backward_dir);
                     match entry2 {
                         Some((_, _, _, backward)) => {
-                            backward.push(edge_ref.weight().clone());
+                            backward.push(edge_struct.edge);
                         }
                         None => {
                             accumulated_edges.insert(
                                 forward_dir,
                                 (
-                                    edge_ref.source(),
-                                    edge_ref.target(),
-                                    vec![edge_ref.weight().clone()],
+                                    edge_struct.source_index,
+                                    edge_struct.target_index,
+                                    vec![edge_struct.edge],
                                     Vec::new(),
                                 ),
                             );

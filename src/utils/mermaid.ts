@@ -312,6 +312,7 @@ const from_transitive_rule = (
 			"LR",
 			false,
 			["field"],
+			undefined,
 			(node: NodeData) => node.path,
 			false,
 		)
