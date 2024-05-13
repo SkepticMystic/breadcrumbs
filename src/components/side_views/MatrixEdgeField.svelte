@@ -58,7 +58,7 @@
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.explicit ? "i" : "x"}
+							label={edge.explicit ? "x" : "i"}
 							aria_label={edge.get_attribute_label(
 								show_attributes,
 							)}
