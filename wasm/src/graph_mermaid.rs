@@ -125,7 +125,6 @@ impl NoteGraph {
             edge_sorter.sort_edges(self, &mut edge_structs);
         }
 
-        // TODO(RUST): option to sort edges
 
         // utils::log(format!("{:#?}", nodes));
         // utils::log(format!("{:#?}", edges));
