@@ -35,51 +35,58 @@
 	$: traversal_data = plugin.graph.rec_traverse(traversal_options);
 	$: all_paths = traversal_data.to_paths();
 
-	$: selected_paths =
-		plugin.settings.views.page.trail.selection === "all"
-			? all_paths
-			: plugin.settings.views.page.trail.selection === "shortest"
-				? all_paths.slice(0, 1)
-				: plugin.settings.views.page.trail.selection === "longest"
-					? all_paths.slice(-1)
-					: [];
+	// $: selected_paths =
+	// 	plugin.settings.views.page.trail.selection === "all"
+	// 		? all_paths
+	// 		: plugin.settings.views.page.trail.selection === "shortest"
+	// 			? all_paths.slice(0, 1)
+	// 			: plugin.settings.views.page.trail.selection === "longest"
+	// 				? all_paths.slice(-1)
+	// 				: [];
 
-	$: MAX_DEPTH = Math.max(0, ...selected_paths.map((p) => p.length()));
+	$: selected_paths = all_paths.select(
+		plugin.settings.views.page.trail.selection,
+	);
+
+
+	$: MAX_DEPTH = Math.max(0, selected_paths.max_depth());
 	$: depth = Math.min(
 		MAX_DEPTH,
 		plugin.settings.views.page.trail.default_depth,
 	);
 
-	// Slice the paths to the chosen max depth.
-	$: truncated_paths = selected_paths.map((path) => path.truncate(depth));
+	// // Slice the paths to the chosen max depth.
+	// $: truncated_paths = selected_paths.map((path) => path.truncate(depth));
 
-	// Remove duplicates by the target_ids of the path.
-	$: deduped_paths =
-		// There are no duplicates if the depth is the max depth.
-		// The traversal wouldn't add them in the first place.
-		depth === MAX_DEPTH
-			? truncated_paths
-			: remove_duplicates_by_equals(truncated_paths, (a, b) => a.equals(b));
+	// // Remove duplicates by the target_ids of the path.
+	// $: deduped_paths =
+	// 	// There are no duplicates if the depth is the max depth.
+	// 	// The traversal wouldn't add them in the first place.
+	// 	depth === MAX_DEPTH
+	// 		? truncated_paths
+	// 		: remove_duplicates_by_equals(truncated_paths, (a, b) => a.equals(b));
 
-	// NOTE: Only sort after slicing, so that the depth is taken into account.
-	$: sorted_paths = deduped_paths.sort((a, b) => {
-		const len_diff = b.length() - a.length();
+	// // NOTE: Only sort after slicing, so that the depth is taken into account.
+	// $: sorted_paths = deduped_paths.sort((a, b) => {
+	// 	const len_diff = b.length() - a.length();
 
-		// Focus on run-length first
-		if (len_diff !== 0) {
-			return len_diff;
-		}
-		// Then focus on the alphabetical order of the target_ids
-		else {
-			const a_target = a.get_first_target();
-			const b_target = b.get_first_target();
+	// 	// Focus on run-length first
+	// 	if (len_diff !== 0) {
+	// 		return len_diff;
+	// 	}
+	// 	// Then focus on the alphabetical order of the target_ids
+	// 	else {
+	// 		const a_target = a.get_first_target();
+	// 		const b_target = b.get_first_target();
 
-			if (a_target === undefined && b_target === undefined) return 0;
-			if (a_target === undefined) return -1;
-			if (b_target === undefined) return 1;
-			else return a_target.localeCompare(b_target);
-		}
-	});
+	// 		if (a_target === undefined && b_target === undefined) return 0;
+	// 		if (a_target === undefined) return -1;
+	// 		if (b_target === undefined) return 1;
+	// 		else return a_target.localeCompare(b_target);
+	// 	}
+	// });
+
+	$: sorted_paths = selected_paths.process(depth);
 </script>
 
 <div>

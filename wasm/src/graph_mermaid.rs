@@ -68,28 +68,14 @@ impl MermaidGraphOptions {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct MermaidGraphData {
-    mermaid: String,
-    traversal_time: u64,
-    total_time: u64,
+    #[wasm_bindgen(getter_with_clone)]
+    pub mermaid: String,
+    pub traversal_time: u64,
+    pub total_time: u64,
 }
 
 #[wasm_bindgen]
 impl MermaidGraphData {
-    #[wasm_bindgen(getter)]
-    pub fn mermaid(&self) -> String {
-        self.mermaid.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn traversal_time(&self) -> u64 {
-        self.traversal_time
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn total_time(&self) -> u64 {
-        self.total_time
-    }
-
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
@@ -120,11 +106,10 @@ impl NoteGraph {
             .iter()
             .filter_map(|edge| EdgeStruct::from_edge_ref(edge.1, self))
             .collect::<Vec<EdgeStruct>>();
-        
+
         if let Some(edge_sorter) = &diagram_options.edge_sorter {
             edge_sorter.sort_edges(self, &mut edge_structs);
         }
-
 
         // utils::log(format!("{:#?}", nodes));
         // utils::log(format!("{:#?}", edges));

@@ -5,31 +5,35 @@
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { EdgeSorter, sort_traversal_data, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { FlatRecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
-	export let tree: RecTraversalData[];
+	// export let tree: RecTraversalData[];
+	export let data: FlatRecTraversalData[];
+	export let items: Uint32Array;
 
 	export let open_signal: boolean | null;
 	export let show_node_options: ShowNodeOptions;
 	export let show_attributes: EdgeAttribute[] | undefined;
 
-	let opens = tree.map(() => true);
+	let opens = Array(items.length).fill(true);
 
 	$: if (open_signal === true) {
-		opens = opens.map(() => true);
+		opens = Array(items.length).fill(true);
 		open_signal = null;
 	} else if (open_signal === false) {
-		opens = opens.map(() => false);
+		opens = Array(items.length).fill(false);
 		open_signal = null;
 	}
 </script>
 
-{#each tree as item, i}
+{#each items as item, i}
+	{@const datum = data[item]}
+	{@const children = datum.children}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
-			{#if item.children.length}
+			{#if children.length}
 				<div class="tree-item-icon collapse-icon mod-collapsible">
 					<ChevronOpener open={opens[i]} />
 				</div>
@@ -38,7 +42,7 @@
 			<div class="tree-item-inner">
 				<EdgeLink
 					{plugin}
-					edge={item.edge}
+					edge={datum.edge}
 					{show_node_options}
 					cls="tree-item-inner-text"
 				/>
@@ -46,18 +50,19 @@
 
 			{#if show_attributes?.length}
 				<TreeItemFlair
-					label={item.edge.get_attribute_label(show_attributes)}
+					label={datum.get_attribute_label(show_attributes)}
 				/>
 			{/if}
 		</summary>
 
-		{#if item.children.length}
+		{#if children.length}
 			<div class="tree-item-children">
 				<svelte:self
 					{plugin}
 					{show_attributes}
 					{show_node_options}
-					tree={item.children}
+					{data}
+					items={children}
 				/>
 			</div>
 		{/if}

@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use itertools::Itertools;
 use petgraph::visit::EdgeRef;
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
@@ -23,13 +24,15 @@ pub type NodeEdgeVec<N, E> = (NodeVec<N>, EdgeVec<E>);
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct TraversalOptions {
-    entry_nodes: Vec<String>,
+    #[wasm_bindgen(getter_with_clone)]
+    pub entry_nodes: Vec<String>,
     /// if this is None, all edge types will be traversed
-    edge_types: Option<Vec<String>>,
-    max_depth: u32,
+    #[wasm_bindgen(getter_with_clone)]
+    pub edge_types: Option<Vec<String>>,
+    pub max_depth: u32,
     /// if true, multiple traversals - one for each edge type - will be performed and the results will be combined
     /// if false, one traversal over all edge types will be performed
-    separate_edges: bool,
+    pub separate_edges: bool,
 }
 
 #[wasm_bindgen]
@@ -49,26 +52,6 @@ impl TraversalOptions {
         }
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn entry_nodes(&self) -> Vec<String> {
-        self.entry_nodes.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_types(&self) -> Option<Vec<String>> {
-        self.edge_types.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn max_depth(&self) -> u32 {
-        self.max_depth
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn separate_edges(&self) -> bool {
-        self.separate_edges
-    }
-
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
@@ -78,7 +61,8 @@ impl TraversalOptions {
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Path {
-    edges: Vec<EdgeStruct>,
+    #[wasm_bindgen(getter_with_clone)]
+    pub edges: Vec<EdgeStruct>,
 }
 
 #[wasm_bindgen]
@@ -91,11 +75,6 @@ impl Path {
         let mut copy = self.clone();
         copy.edges.truncate(limit);
         copy
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edges(&self) -> Vec<EdgeStruct> {
-        self.edges.clone()
     }
 
     #[wasm_bindgen(getter)]
@@ -128,19 +107,90 @@ impl Path {
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PathList {
+    paths: Vec<Path>,
+}
+
+#[wasm_bindgen]
+impl PathList {
+    pub fn to_paths(&self) -> Vec<Path> {
+        self.paths.clone()
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
+    }
+
+    pub fn select(&self, selection: String) -> PathList {
+        match selection.as_str() {
+            "shortest" => self.shortest(),
+            "longest" => self.longest(),
+            _ => self.clone(),
+        }
+    }
+
+    pub fn max_depth(&self) -> usize {
+        self.paths
+            .iter()
+            .map(|path| path.length())
+            .max()
+            .unwrap_or(0)
+    }
+
+    pub fn process(&self, depth: usize) -> Vec<Path> {
+        self.paths
+            .iter()
+            .map(|path| path.truncate(depth))
+            .sorted_by(|a, b| {
+                let a_len = a.edges.len();
+                let b_len = b.edges.len();
+
+                a_len
+                    .cmp(&b_len)
+                    .then_with(|| a.get_first_target().cmp(&b.get_first_target()))
+            })
+            .dedup()
+            .collect_vec()
+    }
+}
+
+impl PathList {
+    /// creates new path list, assumes that the paths are already sorted by length
+    pub fn new(paths: Vec<Path>) -> PathList {
+        PathList { paths }
+    }
+
+    pub fn shortest(&self) -> PathList {
+        if let Some(shortest) = self.paths.first() {
+            PathList::new(vec![shortest.clone()])
+        } else {
+            PathList::new(Vec::new())
+        }
+    }
+
+    pub fn longest(&self) -> PathList {
+        if let Some(longest) = self.paths.last() {
+            PathList::new(vec![longest.clone()])
+        } else {
+            PathList::new(Vec::new())
+        }
+    }
+}
+
+#[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalData {
     /// the edge struct that was traversed
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub edge: EdgeStruct,
     /// the depth of the node in the traversal
-    #[wasm_bindgen(skip)]
     pub depth: u32,
     /// the number of total children of the node, so also children of children
-    #[wasm_bindgen(skip)]
     pub number_of_children: u32,
     /// the children of the node
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub children: Vec<RecTraversalData>,
 }
 
@@ -159,26 +209,6 @@ impl RecTraversalData {
             number_of_children,
             children,
         }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge(&self) -> EdgeStruct {
-        self.edge.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn depth(&self) -> u32 {
-        self.depth
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn children(&self) -> Vec<RecTraversalData> {
-        self.children.clone()
-    }
-
-    #[wasm_bindgen(setter)]
-    pub fn set_children(&mut self, children: Vec<RecTraversalData>) {
-        self.children = children;
     }
 
     pub fn rec_sort_children(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
@@ -220,10 +250,11 @@ impl RecTraversalData {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct RecTraversalResult {
-    data: Vec<RecTraversalData>,
-    node_count: u32,
-    max_depth: u32,
-    traversal_time: u64,
+    #[wasm_bindgen(getter_with_clone)]
+    pub data: Vec<RecTraversalData>,
+    pub node_count: u32,
+    pub max_depth: u32,
+    pub traversal_time: u64,
 }
 
 #[wasm_bindgen]
@@ -243,26 +274,6 @@ impl RecTraversalResult {
         }
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn data(&self) -> Vec<RecTraversalData> {
-        self.data.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn node_count(&self) -> u32 {
-        self.node_count
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn max_depth(&self) -> u32 {
-        self.max_depth
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn traversal_time(&self) -> u64 {
-        self.traversal_time
-    }
-
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
@@ -272,7 +283,7 @@ impl RecTraversalResult {
         format!("{:#?}", self)
     }
 
-    pub fn to_paths(&self) -> Vec<Path> {
+    pub fn to_paths(&self) -> PathList {
         let mut paths = Vec::new();
 
         for datum in &self.data {
@@ -286,7 +297,7 @@ impl RecTraversalResult {
             a_len.cmp(&b_len)
         });
 
-        paths
+        PathList::new(paths)
     }
 
     /// Flattens the traversal data by removing the tree structure and deduplicating the edges by their target_path
@@ -309,6 +320,10 @@ impl RecTraversalResult {
 
         sorter.sort_traversal_data(graph, &mut self.data);
     }
+
+    pub fn to_flat(&self) -> FlatRecTraversalResult {
+        FlatRecTraversalResult::from_rec_traversal_result(self.clone())
+    }
 }
 
 fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTraversalData>) {
@@ -317,6 +332,122 @@ fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTr
     }
 
     result.push(data);
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Debug)]
+pub struct FlatRecTraversalData {
+    /// the edge struct that was traversed
+    #[wasm_bindgen(getter_with_clone)]
+    pub edge: EdgeStruct,
+    /// the depth of the node in the traversal
+    pub depth: u32,
+    /// the number of total children of the node, so also children of children
+    pub number_of_children: u32,
+    /// the children of the node
+    #[wasm_bindgen(getter_with_clone)]
+    pub children: Vec<usize>,
+}
+
+impl FlatRecTraversalData {
+    pub fn new(
+        edge: EdgeStruct,
+        depth: u32,
+        number_of_children: u32,
+        children: Vec<usize>,
+    ) -> FlatRecTraversalData {
+        FlatRecTraversalData {
+            edge,
+            depth,
+            number_of_children,
+            children,
+        }
+    }
+}
+
+#[wasm_bindgen]
+impl FlatRecTraversalData {
+    pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
+        self.edge.get_attribute_label(attributes)
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Debug)]
+pub struct FlatRecTraversalResult {
+    #[wasm_bindgen(getter_with_clone)]
+    pub data: Vec<FlatRecTraversalData>,
+    pub node_count: u32,
+    pub max_depth: u32,
+    pub traversal_time: u64,
+    #[wasm_bindgen(getter_with_clone)]
+    pub entry_nodes: Vec<usize>,
+}
+
+impl FlatRecTraversalResult {
+    pub fn new(
+        data: Vec<FlatRecTraversalData>,
+        node_count: u32,
+        max_depth: u32,
+        traversal_time: u64,
+        entry_nodes: Vec<usize>,
+    ) -> FlatRecTraversalResult {
+        FlatRecTraversalResult {
+            data,
+            node_count,
+            max_depth,
+            traversal_time,
+            entry_nodes,
+        }
+    }
+
+    pub fn from_rec_traversal_result(result: RecTraversalResult) -> FlatRecTraversalResult {
+        let mut flat_data = Vec::new();
+        let mut entry_nodes = Vec::new();
+
+        for datum in result.data {
+            entry_nodes.push(rec_flatten_traversal_data_to_flat(datum, &mut flat_data));
+        }
+
+        FlatRecTraversalResult::new(
+            flat_data,
+            result.node_count,
+            result.max_depth,
+            result.traversal_time,
+            entry_nodes,
+        )
+    }
+}
+
+#[wasm_bindgen]
+impl FlatRecTraversalResult {
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+}
+
+fn rec_flatten_traversal_data_to_flat(
+    mut data: RecTraversalData,
+    result: &mut Vec<FlatRecTraversalData>,
+) -> usize {
+    let children = data
+        .children
+        .drain(..)
+        .map(|datum| rec_flatten_traversal_data_to_flat(datum, result))
+        .collect();
+
+    result.push(FlatRecTraversalData::new(
+        data.edge,
+        data.depth,
+        data.number_of_children,
+        children,
+    ));
+    result.len() - 1
 }
 
 #[wasm_bindgen]

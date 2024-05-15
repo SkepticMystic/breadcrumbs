@@ -602,7 +602,7 @@ impl NoteGraph {
         // if it does, we assert that it is not resolved
         match self.int_get_node_index(&construction_data.path) {
             Some(node_index) => {
-                if self.int_get_node_weight(node_index)?.resolved() {
+                if self.int_get_node_weight(node_index)?.resolved {
                     return Err(NoteGraphError::new(
                         "There already exists a resolved node with the same name.",
                     ));
@@ -628,7 +628,7 @@ impl NoteGraph {
     pub fn int_safe_remove_node(&mut self, node: &String) -> Result<()> {
         match self.int_get_node_index(node) {
             Some(index) => {
-                if !self.int_get_node_weight(index)?.resolved() {
+                if !self.int_get_node_weight(index)?.resolved {
                     return Err(NoteGraphError::new("Cannot remove an unresolved node"));
                 }
 
@@ -669,7 +669,7 @@ impl NoteGraph {
             .edge_endpoints(edge)
             .ok_or(NoteGraphError::new("Edge not found"))?;
         let target_data = self.int_get_node_weight(target)?.clone();
-        let target_resolved = target_data.resolved();
+        let target_resolved = target_data.resolved;
 
         self.graph.remove_edge(edge);
 

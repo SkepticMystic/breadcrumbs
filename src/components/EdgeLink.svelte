@@ -28,7 +28,7 @@
 	{display}
 	path={target_node.path}
 	resolved={target_node.resolved}
-	cls="{cls} BC-edge {!edge.implied
+	cls="{cls} BC-edge {edge.explicit
 		? 'BC-edge-explicit'
 		: `BC-edge-implied BC-edge-implied-${edge.edge_source}`}"
 />

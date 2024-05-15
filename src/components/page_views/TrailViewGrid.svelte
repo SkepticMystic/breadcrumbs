@@ -13,10 +13,12 @@
 
 	const reversed = all_paths.map((path) => path.reverse_edges);
 
+	// this should happen in wasm
 	const square = ensure_square_array(reversed, null, true);
 
+	// this as well
 	const col_runs = transpose(square).map((col) =>
-		gather_by_runs(col, (e) => (e ? e.target.path : null)),
+		gather_by_runs(col, (e) => (e ? e.target_path : null)),
 	);
 </script>
 

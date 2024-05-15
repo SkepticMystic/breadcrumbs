@@ -15,7 +15,7 @@ export const jump_to_neighbour = async (
 		.filter(
 			(e) =>
 				e.matches_edge_filter(options.fields) &&
-				e.target.path !== active_file.path,
+				e.target_path !== active_file.path,
 		);
 
 	if (!matches.length) {
@@ -25,7 +25,7 @@ export const jump_to_neighbour = async (
 		return;
 	} else {
 		await plugin.app.workspace.openLinkText(
-			matches[0].target.path,
+			matches[0].target_path,
 			active_file.path,
 		);
 	}

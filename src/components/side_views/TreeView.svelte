@@ -30,6 +30,8 @@
 		field_group_labels,
 	);
 
+	$: console.log(edge_field_labels);
+
 	$: tree =
 		$active_file_store && plugin.graph.has_node($active_file_store.path)
 			? plugin.graph.rec_traverse(
@@ -44,7 +46,9 @@
 
 	$: sort = create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1);
 
-	$: tree?.sort(plugin.graph, sort);
+	$: {tree?.sort(plugin.graph, sort); tree = tree};
+
+	$: data = tree?.to_flat();
 </script>
 
 <div class="markdown-rendered BC-tree-view">
@@ -85,13 +89,14 @@
 	</div>
 
 	<div class="BC-tree-view-items">
-		{#key tree || sort}
-			{#if tree && !tree.is_empty()}
+		{#key data}
+			{#if data && !data.is_empty()}
 				<NestedEdgeList
 					{plugin}
 					{show_attributes}
 					{show_node_options}
-					tree={tree.data}
+					data={data.data}
+					items={data.entry_nodes}
 					open_signal={!collapse}
 				/>
 			{:else}

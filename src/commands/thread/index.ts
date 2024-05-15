@@ -74,7 +74,7 @@ export const thread = async (
 	const edge = plugin.graph
 		.get_outgoing_edges(source_file.path)
 		.find(
-			(e) => e.edge_type === field && e.target.path === target_file!.path,
+			(e) => e.edge_type === field && e.target_path === target_file!.path,
 		);
 	if (!edge) return;
 

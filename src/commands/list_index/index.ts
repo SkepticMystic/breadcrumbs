@@ -55,7 +55,7 @@ export namespace ListIndex {
 				show_node_options: options.show_node_options,
 			});
 
-			const link = Links.ify(edge.target.path, display, {
+			const link = Links.ify(edge.target_path, display, {
 				link_kind: options.link_kind,
 			});
 

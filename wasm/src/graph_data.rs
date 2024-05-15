@@ -21,13 +21,11 @@ pub type NGEdgeRef<'a> = EdgeReference<'a, EdgeData, u32>;
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct EdgeData {
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub edge_type: String,
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub edge_source: String,
-    #[wasm_bindgen(skip)]
     pub explicit: bool,
-    #[wasm_bindgen(skip)]
     pub round: u8,
 }
 
@@ -41,26 +39,6 @@ impl EdgeData {
             explicit,
             round,
         }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_type(&self) -> String {
-        self.edge_type.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn edge_source(&self) -> String {
-        self.edge_source.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn explicit(&self) -> bool {
-        self.explicit
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn round(&self) -> u8 {
-        self.round
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -125,15 +103,12 @@ impl EdgeData {
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct NodeData {
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub path: String,
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub aliases: Vec<String>,
-    #[wasm_bindgen(skip)]
     pub resolved: bool,
-    #[wasm_bindgen(skip)]
     pub ignore_in_edges: bool,
-    #[wasm_bindgen(skip)]
     pub ignore_out_edges: bool,
 }
 
@@ -154,31 +129,6 @@ impl NodeData {
             ignore_in_edges,
             ignore_out_edges,
         }
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn path(&self) -> String {
-        self.path.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn aliases(&self) -> Vec<String> {
-        self.aliases.clone()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn resolved(&self) -> bool {
-        self.resolved
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn ignore_in_edges(&self) -> bool {
-        self.ignore_in_edges
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn ignore_out_edges(&self) -> bool {
-        self.ignore_out_edges
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -223,15 +173,15 @@ impl NodeData {
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct EdgeStruct {
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub source: NodeData,
     #[wasm_bindgen(skip)]
     pub source_index: NGNodeIndex,
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub target: NodeData,
     #[wasm_bindgen(skip)]
     pub target_index: NGNodeIndex,
-    #[wasm_bindgen(skip)]
+    #[wasm_bindgen(getter_with_clone)]
     pub edge: EdgeData,
     #[wasm_bindgen(skip)]
     pub edge_index: NGEdgeIndex,
@@ -240,13 +190,13 @@ pub struct EdgeStruct {
 #[wasm_bindgen]
 impl EdgeStruct {
     #[wasm_bindgen(getter)]
-    pub fn source(&self) -> NodeData {
-        self.source.clone()
+    pub fn source_path(&self) -> String {
+        self.source.path.clone()
     }
 
     #[wasm_bindgen(getter)]
-    pub fn target(&self) -> NodeData {
-        self.target.clone()
+    pub fn target_path(&self) -> String {
+        self.target.path.clone()
     }
 
     #[wasm_bindgen(getter)]

@@ -8,6 +8,7 @@
 	import { Timer } from "src/utils/timer";
 	import { onMount } from "svelte";
 	import {
+	FlatRecTraversalResult,
 		NoteGraphError,
 		RecTraversalResult,
 		TraversalOptions,
@@ -31,6 +32,7 @@
 	const DEFAULT_MAX_DEPTH = 100;
 
 	let tree: RecTraversalResult | undefined = undefined;
+	let data: FlatRecTraversalResult | undefined = undefined;
 	let error: string | undefined = undefined;
 
 	export const update = () => {
@@ -55,12 +57,14 @@
 			tree = plugin.graph.rec_traverse(traversal_options);
 			if (options.flat) tree.flatten();
 			tree.sort(plugin.graph, sort);
+			data = tree.to_flat();
 
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
 
 			tree = undefined;
+			data = undefined;
 			if (e instanceof NoteGraphError) {
 				error = e.message;
 			} else {
@@ -70,6 +74,7 @@
 		}
 
 		tree = tree;
+		data = data;
 	};
 
 	onMount(() => {
@@ -90,7 +95,7 @@
 		</h3>
 	{/if}
 
-	{#if tree && !tree.is_empty()}
+	{#if tree && !tree.is_empty() && data}
 		<div class="BC-codeblock-tree-items relative">
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
@@ -107,7 +112,8 @@
 				<NestedEdgeList
 					{plugin}
 					{show_node_options}
-					tree={tree.data}
+					data={data.data}
+					items={data.entry_nodes}
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}
 				/>
