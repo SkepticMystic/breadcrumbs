@@ -705,41 +705,27 @@ impl NoteGraph {
         edge_source: &str,
     ) {
         let source = self.node_hash.get(source_path);
-        let target = self.node_hash.get(target_path);
-
         let source_index: NGNodeIndex;
-        let target_index: NGNodeIndex;
-        let mut add_from_to_hash = false;
-        let mut add_to_to_hash = false;
 
         if source.is_none() {
             source_index = self
                 .graph
                 .add_node(NodeData::new_unresolved(source_path.clone()));
-            add_from_to_hash = true;
+            self.node_hash.insert(source_path.clone(), source_index);
         } else {
             source_index = *source.unwrap();
         }
 
+        let target = self.node_hash.get(target_path);
+        let target_index: NGNodeIndex;
+
         if target.is_none() {
-            if source_path == target_path {
-                target_index = source_index;
-            } else {
-                target_index = self
-                    .graph
-                    .add_node(NodeData::new_unresolved(target_path.clone()));
-                add_to_to_hash = true;
-            }
+            target_index = self
+                .graph
+                .add_node(NodeData::new_unresolved(target_path.clone()));
+            self.node_hash.insert(source_path.clone(), target_index);
         } else {
             target_index = *target.unwrap();
-        }
-
-        if add_from_to_hash {
-            self.node_hash.insert(source_path.clone(), source_index);
-        }
-
-        if add_to_to_hash {
-            self.node_hash.insert(source_path.clone(), target_index);
         }
 
         self.int_add_edge(

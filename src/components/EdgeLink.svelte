@@ -7,6 +7,8 @@
 
 	export let edge: EdgeStruct;
 	export let plugin: BreadcrumbsPlugin;
+	// TODO(RUST): make this into a rust struct that we pass. 
+	// Then we can make stringify_node a method of the edge struct with the options struct as a parameter.
 	export let show_node_options: ShowNodeOptions;
 	export let cls = "";
 
@@ -26,8 +28,8 @@
 <ObsidianLink
 	{plugin}
 	{display}
-	path={target_node.path}
-	resolved={target_node.resolved}
+	path={edge.target_path}
+	resolved={edge.target_resolved}
 	cls="{cls} BC-edge {edge.explicit
 		? 'BC-edge-explicit'
 		: `BC-edge-implied BC-edge-implied-${edge.edge_source}`}"

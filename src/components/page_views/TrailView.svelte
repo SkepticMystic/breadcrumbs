@@ -5,7 +5,7 @@
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
-	import { TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { PathList, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { log } from "src/logger";
 
 	export let plugin: BreadcrumbsPlugin;
@@ -20,20 +20,29 @@
 	// 		),
 	// 	);
 
-	$: edge_field_labels = resolve_field_group_labels(
-		plugin.settings.edge_field_groups,
-		plugin.settings.views.page.trail.field_group_labels,
-	);
+	let selected_paths: PathList | undefined = undefined;
 
-	$: traversal_options = new TraversalOptions(
-		[file_path],
-		edge_field_labels,
-		100,
-		!plugin.settings.views.page.trail.merge_fields,
-	);
+	$: {
+		let edge_field_labels = resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			plugin.settings.views.page.trail.field_group_labels,
+		);
 
-	$: traversal_data = plugin.graph.rec_traverse(traversal_options);
-	$: all_paths = traversal_data.to_paths();
+		let traversal_options = new TraversalOptions(
+			[file_path],
+			edge_field_labels,
+			100,
+			!plugin.settings.views.page.trail.merge_fields,
+		);
+
+		let traversal_data = plugin.graph.rec_traverse(traversal_options);
+
+		let all_paths = traversal_data.to_paths();
+
+		selected_paths = all_paths.select(
+			plugin.settings.views.page.trail.selection,
+		);
+	}
 
 	// $: selected_paths =
 	// 	plugin.settings.views.page.trail.selection === "all"
@@ -44,12 +53,8 @@
 	// 				? all_paths.slice(-1)
 	// 				: [];
 
-	$: selected_paths = all_paths.select(
-		plugin.settings.views.page.trail.selection,
-	);
 
-
-	$: MAX_DEPTH = Math.max(0, selected_paths.max_depth());
+	$: MAX_DEPTH = Math.max(0, selected_paths?.max_depth() ?? 0);
 	$: depth = Math.min(
 		MAX_DEPTH,
 		plugin.settings.views.page.trail.default_depth,
@@ -86,12 +91,12 @@
 	// 	}
 	// });
 
-	$: sorted_paths = selected_paths.process(depth);
+	$: sorted_paths = selected_paths?.process(depth);
 </script>
 
 <div>
 	{#key sorted_paths}
-		{#if sorted_paths.length}
+		{#if sorted_paths && sorted_paths.length}
 			<div
 				class="mb-1 flex flex-wrap justify-between gap-3"
 				class:hidden={!plugin.settings.views.page.trail.show_controls}

@@ -200,6 +200,16 @@ impl EdgeStruct {
     }
 
     #[wasm_bindgen(getter)]
+    pub fn source_resolved(&self) -> bool {
+        self.source.resolved
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn target_resolved(&self) -> bool {
+        self.target.resolved
+    }
+
+    #[wasm_bindgen(getter)]
     pub fn edge_type(&self) -> String {
         self.edge.edge_type.clone()
     }
