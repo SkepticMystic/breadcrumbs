@@ -2,7 +2,7 @@
 	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { NodeStringifyOptions, type EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
@@ -16,6 +16,18 @@
 	export let show_attributes: EdgeAttribute[];
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
+
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	let node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	);
+
 </script>
 
 <details
@@ -51,7 +63,7 @@
 							<EdgeLink
 								{edge}
 								{plugin}
-								{show_node_options}
+								{node_stringify_options}
 								cls="grow tree-item-inner-text"
 							/>
 						</div>

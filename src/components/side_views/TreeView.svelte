@@ -51,8 +51,7 @@
 
 		data = tree?.to_flat();
 
-		console.log(data);
-		
+		// console.trace(data, data?.data.length);
 	}
 </script>
 

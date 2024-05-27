@@ -1,4 +1,4 @@
-import { Events, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { Events, Notice, Plugin, TFile, WorkspaceLeaf, debounce } from "obsidian";
 import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -42,6 +42,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 	graph!: NoteGraph;
 	api!: BCAPI;
 	events!: Events;
+	debounced_refresh!: (options?: {
+		rebuild_graph?: boolean;
+		active_file_store?: boolean;
+		redraw_page_views?: boolean;
+		redraw_side_views?: true;
+		redraw_codeblocks?: boolean;
+	}) => void;
 
 	async onload() {
 		// Settings
@@ -67,6 +74,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
 			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
 		});
+
+		// ten milliseconds debounce to prevent multiple refreshes in quick succession
+		// not perfect, but i can't think of a better way to do this rn
+		this.debounced_refresh = debounce((options) => this.refresh(options), 10, true);
 
 		/// Migrations
 		this.settings = migrate_old_settings(this.settings);
@@ -144,7 +155,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.workspace.on("layout-change", async () => {
 					log.debug("on:layout-change");
 
-					await this.refresh({
+					this.debounced_refresh({
 						rebuild_graph:
 							this.settings.commands.rebuild_graph.trigger
 								.layout_change,
@@ -162,7 +173,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					}
 
 					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
-					this.refresh({
+					this.debounced_refresh({
 						rebuild_graph: false,
 						redraw_page_views: false,
 					});
