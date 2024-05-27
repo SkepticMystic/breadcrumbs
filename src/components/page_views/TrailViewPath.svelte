@@ -1,10 +1,22 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "../EdgeLink.svelte";
-	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { NodeStringifyOptions, type Path } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let all_paths: Path[];
+
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	const show_node_options = plugin.settings.views.page.trail.show_node_options
+	const node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	);
 
 	const reversed = all_paths.map((path) => path.reverse_edges);
 </script>
@@ -28,8 +40,7 @@
 					<EdgeLink
 						{edge}
 						{plugin}
-						show_node_options={plugin.settings.views.page.trail
-							.show_node_options}
+						{node_stringify_options}
 					/>
 				</div>
 			{/each}

@@ -5,7 +5,7 @@
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { FlatRecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { FlatRecTraversalData, NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -17,6 +17,17 @@
 	export let show_node_options: ShowNodeOptions;
 	export let show_attributes: EdgeAttribute[] | undefined;
 
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	let node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	)
+
 	let opens = Array(items.length).fill(true);
 
 	$: if (open_signal === true) {
@@ -26,6 +37,8 @@
 		opens = Array(items.length).fill(false);
 		open_signal = null;
 	}
+
+	// $: console.log(opens);
 </script>
 
 {#each items as item, i}
@@ -43,7 +56,7 @@
 				<EdgeLink
 					{plugin}
 					edge={datum.edge}
-					{show_node_options}
+					{node_stringify_options}
 					cls="tree-item-inner-text"
 				/>
 			</div>

@@ -70,7 +70,7 @@ const context = await esbuild.context({
 	outfile: "main.js",
 	plugins: [
 		esbuildSvelte({
-			compilerOptions: { css: true },
+			compilerOptions: { css: true, dev: !prod },
 			preprocess: sveltePreprocess(),
 		}),
 		wasmPlugin,

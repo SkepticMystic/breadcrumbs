@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, path::Path};
 
 use itertools::Itertools;
 use petgraph::{
@@ -209,6 +209,14 @@ impl EdgeStruct {
         self.target.resolved
     }
 
+    pub fn stringify_target(&self, options: &NodeStringifyOptions) -> String {
+        options.stringify_node(&self.target)
+    }
+
+    pub fn stringify_source(&self, options: &NodeStringifyOptions) -> String {
+        options.stringify_node(&self.source)
+    }
+
     #[wasm_bindgen(getter)]
     pub fn edge_type(&self) -> String {
         self.edge.edge_type.clone()
@@ -407,5 +415,58 @@ impl GroupedEdgeList {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Debug, PartialEq)]
+pub struct NodeStringifyOptions {
+    extension: bool,
+    folder: bool,
+    alias: bool,
+    trim_basename_delimiter: Option<String>,
+}
+
+#[wasm_bindgen]
+impl NodeStringifyOptions {
+    #[wasm_bindgen(constructor)]
+    pub fn new(extension: bool, folder: bool, alias: bool, trim_basename_delimiter: Option<String>) -> NodeStringifyOptions {
+        NodeStringifyOptions {
+            extension,
+            folder,
+            alias,
+            trim_basename_delimiter,
+        }
+    }
+}
+
+impl NodeStringifyOptions {
+    pub fn stringify_node(&self, node: &NodeData) -> String {
+        if self.alias && !node.aliases.is_empty() {
+            node.aliases.first().unwrap().clone()
+        } else if self.trim_basename_delimiter.is_some() {
+            node.path.clone()
+        } else {
+            let mut path = Path::new(&node.path);
+            if !self.folder {
+                path = Path::new(path.file_name().unwrap());
+            }
+
+            if !self.extension {
+                path.with_extension("").as_string()
+            } else {
+                path.as_string()
+            }
+        }
+    }
+}
+
+trait AsString {
+    fn as_string(&self) -> String;
+}
+
+impl AsString for Path {
+    fn as_string(&self) -> String {
+        String::from(self.to_string_lossy())
     }
 }

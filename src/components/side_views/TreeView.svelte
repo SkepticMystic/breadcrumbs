@@ -10,6 +10,7 @@
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import {
+		FlatRecTraversalResult,
 		TraversalOptions,
 		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
@@ -25,30 +26,34 @@
 		collapse,
 	} = plugin.settings.views.side.tree;
 
-	$: edge_field_labels = resolve_field_group_labels(
+	const edge_field_labels = resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
 	);
 
-	$: console.log(edge_field_labels);
-
-	$: tree =
-		$active_file_store && plugin.graph.has_node($active_file_store.path)
-			? plugin.graph.rec_traverse(
-					new TraversalOptions(
-						[$active_file_store!.path],
-						edge_field_labels,
-						20,
-						!merge_fields,
-					),
-				)
-			: undefined;
+	let data: FlatRecTraversalResult | undefined = undefined;
 
 	$: sort = create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1);
+	
+	$: tree = $active_file_store && plugin.graph.has_node($active_file_store.path)
+		? plugin.graph.rec_traverse(
+				new TraversalOptions(
+					[$active_file_store!.path],
+					edge_field_labels,
+					20,
+					!merge_fields,
+				),
+			)
+		: undefined;
+	
+	$: {
+		tree?.sort(plugin.graph, sort);
 
-	$: {tree?.sort(plugin.graph, sort); tree = tree};
+		data = tree?.to_flat();
 
-	$: data = tree?.to_flat();
+		console.log(data);
+		
+	}
 </script>
 
 <div class="markdown-rendered BC-tree-view">

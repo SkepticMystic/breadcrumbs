@@ -6,7 +6,7 @@
 		transpose,
 	} from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
-	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { NodeStringifyOptions, type Path } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let all_paths: Path[];
@@ -19,6 +19,18 @@
 	// this as well
 	const col_runs = transpose(square).map((col) =>
 		gather_by_runs(col, (e) => (e ? e.target_path : null)),
+	);
+
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	const show_node_options = plugin.settings.views.page.trail.show_node_options
+	const node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
 	);
 </script>
 
@@ -43,8 +55,7 @@ grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 						{edge}
 						{plugin}
 						cls="p-1 grow flex justify-center items-center"
-						show_node_options={plugin.settings.views.page.trail
-							.show_node_options}
+						{node_stringify_options}
 					/>
 				{/if}
 			</div>
