@@ -18,7 +18,7 @@
 		input_transitive_rule_schema,
 		parse_transitive_relation,
 		stringify_transitive_relation,
-		transitive_rule_to_edges,
+		// transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
@@ -438,13 +438,7 @@
 							<RenderExternalCodeblock
 								{plugin}
 								type="mermaid"
-								code={Mermaid.from_edges(
-									transitive_rule_to_edges(rule),
-									{
-										show_attributes: ["field"],
-										collapse_opposing_edges: false,
-									},
-								)}
+								code={Mermaid.from_transitive_rule(rule).mermaid}
 							/>
 						{/if}
 					</div>

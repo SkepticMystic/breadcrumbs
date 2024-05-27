@@ -1,16 +1,13 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { BCGraph, EdgeAttribute } from "src/graph/MyMultiGraph";
-import { Traverse, type EdgeTree } from "src/graph/traverse";
+import type { EdgeAttribute } from "src/graph/MyMultiGraph";
+import { Traverse } from "src/graph/traverse";
 import {
-	get_edge_sorter,
-	has_edge_attrs,
 	stringify_node,
 } from "src/graph/utils";
 import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
-import { untyped_pick } from "src/utils/objects";
-import { url_search_params } from "src/utils/url";
+import { TraversalOptions, create_edge_sorter, type NoteGraph, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export namespace ListIndex {
 	export type Options = {
@@ -44,7 +41,7 @@ export namespace ListIndex {
 	};
 
 	export const edge_tree_to_list_index = (
-		tree: EdgeTree[],
+		tree: RecTraversalData[],
 		options: Pick<
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes"
@@ -54,20 +51,15 @@ export namespace ListIndex {
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
 		tree.forEach(({ children, depth, edge }) => {
-			const display = stringify_node(edge.target_id, edge.target_attr, {
+			const display = stringify_node(edge.target, {
 				show_node_options: options.show_node_options,
 			});
 
-			const link = Links.ify(edge.target_id, display, {
+			const link = Links.ify(edge.target_path, display, {
 				link_kind: options.link_kind,
 			});
 
-			const attr = options.show_attributes.length
-				? ` (${url_search_params(
-						untyped_pick(edge.attr, options.show_attributes),
-						{ trim_lone_param: true },
-					)})`
-				: "";
+			const attr = edge.get_attribute_label(options.show_attributes);
 
 			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
@@ -78,17 +70,24 @@ export namespace ListIndex {
 	};
 
 	export const build = (
-		graph: BCGraph,
+		graph: NoteGraph,
 		start_node: string,
 		options: Options,
-	) =>
-		edge_tree_to_list_index(
-			Traverse.sort_edge_tree(
-				Traverse.build_tree(graph, start_node, options, (e) =>
-					has_edge_attrs(e, { $or_fields: options.fields }),
-				),
-				get_edge_sorter(options.edge_sort_id, graph),
-			),
+	) => {
+		const traversal_options = new TraversalOptions(
+			[start_node],
+			options.fields,
+			options.max_depth ?? 100,
+			false,
+		);
+
+		const traversal_result = graph.rec_traverse(traversal_options);
+		const edge_sorter = create_edge_sorter(options.edge_sort_id.field, options.edge_sort_id.order === -1);
+		traversal_result.sort(graph, edge_sorter);
+
+		return edge_tree_to_list_index(
+			traversal_result.data,
 			options,
 		);
+	}
 }

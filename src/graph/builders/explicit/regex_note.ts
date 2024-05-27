@@ -1,11 +1,12 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_regex_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -22,7 +23,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-regex is not a string: '${regex_str}'`,
+			message: `${META_ALIAS["regex-note-regex"]} is not a string: '${regex_str}'`,
 		});
 	}
 
@@ -31,7 +32,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-flags is not a string: '${flags}'`,
+			message: `${META_ALIAS["regex-note-flags"]} is not a string: '${flags}'`,
 		});
 	}
 
@@ -43,7 +44,7 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-regex is not a valid regex: ${regex_str}`,
+			message: `${META_ALIAS["regex-note-regex"]} is not a valid regex: '${regex_str}'`,
 		});
 	}
 
@@ -57,13 +58,13 @@ const get_regex_note_info = (
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `regex-note-field is not a string: '${field}'`,
+			message: `${META_ALIAS["regex-note-field"]} is not a string: '${field}'`,
 		});
 	} else if (!plugin.settings.edge_fields.find((f) => f.label === field)) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
-			message: `dataview-note-field is not a valid field: '${field}'`,
+			message: `${META_ALIAS["regex-note-field"]} is not a valid field: '${field}'`,
 		});
 	}
 
@@ -74,11 +75,10 @@ const get_regex_note_info = (
 };
 
 export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	const regex_note_files: {
 		path: string;
@@ -93,7 +93,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	all_files.obsidian?.forEach(({ file, cache }) => {
 		const info = get_regex_note_info(plugin, cache?.frontmatter, file.path);
 		if (!info.ok) {
-			if (info.error) errors.push(info.error);
+			if (info.error) results.errors.push(info.error);
 			return;
 		}
 
@@ -104,7 +104,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 		const { file } = page;
 		const info = get_regex_note_info(plugin, page, file.path);
 		if (!info.ok) {
-			if (info.error) errors.push(info.error);
+			if (info.error) results.errors.push(info.error);
 			return;
 		}
 
@@ -112,23 +112,27 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	});
 
 	// Return early before bringing all nodes into memory
-	if (!regex_note_files) return { errors };
+	if (!regex_note_files) return results;
 
-	const nodes = graph.mapNodes((id) => id);
+	const nodes =
+		all_files.obsidian?.map((note) => note.file.path) ??
+		all_files.dataview?.map((note) => note.file.path) ??
+		[]; // Won't happen, but makes TS happy
 
 	regex_note_files.forEach((regex_note) => {
 		nodes
 			.filter((node) => regex_note.info.regex.test(node))
-			.forEach((target_path) => {
-				// NOTE: We don't need to safe_add_nodes because the list of possible targets is already from the graph
-
-				graph.safe_add_directed_edge(regex_note.path, target_path, {
-					explicit: true,
-					source: "regex_note",
-					field: regex_note.info.field,
-				});
+			.forEach((target_id) => {
+				results.edges.push(
+					new GraphConstructionEdgeData(
+						regex_note.path,
+						target_id,
+						regex_note.info.field,
+						"regex_note",
+					),
+				);
 			});
 	});
 
-	return { errors };
+	return results;
 };

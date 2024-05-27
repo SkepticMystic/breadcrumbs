@@ -1,5 +1,4 @@
 import { parseYaml } from "obsidian";
-import type { CodeblockMDRC } from "src/codeblocks/MDRC";
 import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type { BreadcrumbsError } from "src/interfaces/graph";
@@ -113,7 +112,7 @@ const postprocess_options = (
 		try {
 			const pages = dataview_plugin
 				.get_api(plugin.app)
-				?.pages(parsed["dataview-from"]) as
+				?.pages(parsed["dataview-from"], source_path) as
 				| undefined
 				| IDataview.Page[];
 
@@ -133,27 +132,7 @@ You can use \`app.plugins.plugins.dataview.api.pages("<query>")\` to test your q
 	return { options: parsed, file_path };
 };
 
-const active_codeblocks: Map<string, CodeblockMDRC> = new Map();
-
-const register = (codeBlock: CodeblockMDRC) => {
-	active_codeblocks.set(codeBlock.id, codeBlock);
-};
-
-const unregister = (codeBlock: CodeblockMDRC) => {
-	active_codeblocks.delete(codeBlock.id);
-};
-
-const update_all = () => {
-	for (const codeBlock of active_codeblocks.values()) {
-		void codeBlock.update();
-	}
-};
-
 export const Codeblocks = {
 	parse_source,
 	postprocess_options,
-
-	register,
-	unregister,
-	update_all,
 };

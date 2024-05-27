@@ -141,10 +141,7 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 		plugin.addCommand({
 			id: `breadcrumbs:jump-to-first-neighbour-group:${group.label}`,
 			name: `Jump to first neighbour by group:${group.label}`,
-			callback: () =>
-				jump_to_neighbour(plugin, {
-					attr: { $or_fields: group.fields },
-				}),
+			callback: () => jump_to_neighbour(plugin, { fields: group.fields }),
 		});
 	});
 
@@ -156,7 +153,7 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 			callback: () =>
 				thread(
 					plugin,
-					{ field: label },
+					label,
 					plugin.settings.commands.thread.default_options,
 				),
 		});

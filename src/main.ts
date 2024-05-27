@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import { Events, Notice, Plugin, TFile, WorkspaceLeaf, debounce } from "obsidian";
 import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -12,7 +12,6 @@ import { CodeblockMDRC } from "./codeblocks/MDRC";
 import { init_all_commands } from "./commands/init";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
-import { BCGraph } from "./graph/MyMultiGraph";
 import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { migrate_old_settings } from "./settings/migration";
@@ -21,11 +20,35 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
+import init, {
+	type InitInput,
+	type NoteGraph,
+	TransitiveGraphRule,
+	create_graph,
+	GraphConstructionNodeData,
+	GraphConstructionEdgeData,
+	BatchGraphUpdate,
+	RemoveNoteGraphUpdate,
+	AddNoteGraphUpdate,
+} from "../wasm/pkg";
+
+export enum BCEvent {
+	GRAPH_UPDATE = "graph-update",
+}
 
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
-	graph = new BCGraph();
+	graph!: NoteGraph;
 	api!: BCAPI;
+	events!: Events;
+	debounced_refresh!: (options?: {
+		rebuild_graph?: boolean;
+		active_file_store?: boolean;
+		redraw_page_views?: boolean;
+		redraw_side_views?: true;
+		redraw_codeblocks?: boolean;
+	}) => void;
 
 	async onload() {
 		// Settings
@@ -38,6 +61,23 @@ export default class BreadcrumbsPlugin extends Plugin {
 			`loading plugin "${this.manifest.name}" plugin v${this.manifest.version}`,
 		);
 		log.debug("settings >", this.settings);
+
+		// Init event bus
+		this.events = new Events();
+
+		// Init wasm
+		await init(wasmbin);
+		this.graph = create_graph();
+		this.graph.set_update_callback(() => {
+			// funny micro task so that the rust update function finishes before we access the graph again for the visualization
+			// this is needed because otherwise we get an "recursive use of an object detected which would lead to unsafe aliasing in rust" error
+			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
+			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
+		});
+
+		// ten milliseconds debounce to prevent multiple refreshes in quick succession
+		// not perfect, but i can't think of a better way to do this rn
+		this.debounced_refresh = debounce((options) => this.refresh(options), 10, true);
 
 		/// Migrations
 		this.settings = migrate_old_settings(this.settings);
@@ -115,7 +155,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.workspace.on("layout-change", async () => {
 					log.debug("on:layout-change");
 
-					await this.refresh({
+					this.debounced_refresh({
 						rebuild_graph:
 							this.settings.commands.rebuild_graph.trigger
 								.layout_change,
@@ -133,66 +173,67 @@ export default class BreadcrumbsPlugin extends Plugin {
 					}
 
 					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
-					this.refresh({
+					this.debounced_refresh({
 						rebuild_graph: false,
 						redraw_page_views: false,
 					});
 				}),
 			);
 
-			/// Vault
-			this.registerEvent(
-				this.app.vault.on("create", (file) => {
-					log.debug("on:create >", file.path);
+			// TODO(RUST)
+			// /// Vault
+			// this.registerEvent(
+			// 	this.app.vault.on("create", (file) => {
+			// 		log.debug("on:create >", file.path);
 
-					if (file instanceof TFile) {
-						// This isn't perfect, but it stops any "node doesn't exist" errors
-						// The user will have to refresh to add any relevant edges
-						this.graph.upsert_node(file.path, { resolved: true });
+			// 		if (file instanceof TFile) {
+			// 			// This isn't perfect, but it stops any "node doesn't exist" errors
+			// 			// The user will have to refresh to add any relevant edges
+			// 			this.graph.upsert_node(file.path, { resolved: true });
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
-			this.registerEvent(
-				this.app.vault.on("rename", (file, old_path) => {
-					log.debug("on:rename >", old_path, "->", file.path);
+			// this.registerEvent(
+			// 	this.app.vault.on("rename", (file, old_path) => {
+			// 		log.debug("on:rename >", old_path, "->", file.path);
 
-					if (file instanceof TFile) {
-						const res = this.graph.safe_rename_node(
-							old_path,
-							file.path,
-						);
+			// 		if (file instanceof TFile) {
+			// 			const res = this.graph.safe_rename_node(
+			// 				old_path,
+			// 				file.path,
+			// 			);
 
-						if (!res.ok) {
-							log.error("safe_rename_node >", res.error.message);
-						}
+			// 			if (!res.ok) {
+			// 				log.error("safe_rename_node >", res.error.message);
+			// 			}
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
-			this.registerEvent(
-				this.app.vault.on("delete", (file) => {
-					log.debug("on:delete >", file.path);
+			// this.registerEvent(
+			// 	this.app.vault.on("delete", (file) => {
+			// 		log.debug("on:delete >", file.path);
 
-					if (file instanceof TFile) {
-						// NOTE: Instead of dropping it, we mark it as unresolved.
-						//   There are pros and cons to both, but unresolving it is less intense.
-						//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
-						//   So it's not perfect. Rebuilding the graph is the only way to be sure.
-						this.graph.setNodeAttribute(
-							file.path,
-							"resolved",
-							false,
-						);
+			// 		if (file instanceof TFile) {
+			// 			// NOTE: Instead of dropping it, we mark it as unresolved.
+			// 			//   There are pros and cons to both, but unresolving it is less intense.
+			// 			//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
+			// 			//   So it's not perfect. Rebuilding the graph is the only way to be sure.
+			// 			this.graph.setNodeAttribute(
+			// 				file.path,
+			// 				"resolved",
+			// 				false,
+			// 			);
 
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-					}
-				}),
-			);
+			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+			// 		}
+			// 	}),
+			// );
 
 			// Views
 			this.registerView(
@@ -243,13 +284,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
 	 * Optionally disable any of these steps.
 	 */
-	refresh = async (options?: {
+	async refresh(options?: {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
 		redraw_page_views?: boolean;
 		redraw_side_views?: true;
 		redraw_codeblocks?: boolean;
-	}) => {
+	}) {
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
 			const timer = new Timer();
@@ -259,30 +300,30 @@ export default class BreadcrumbsPlugin extends Plugin {
 				: null;
 
 			const rebuild_results = await rebuild_graph(this);
-			this.graph = rebuild_results.graph;
+			// this.graph = rebuild_results.graph;
 
 			const explicit_edge_errors = rebuild_results.explicit_edge_results
-				.filter((result) => result.errors.length)
+				.filter(({ results }) => results.errors.length)
 				.reduce(
-					(acc, { source, errors }) => {
-						acc[source] = errors;
+					(acc, { source, results }) => {
+						acc[source] = results.errors;
 						return acc;
 					},
 					{} as Record<string, BreadcrumbsError[]>,
 				);
 
-			const implied_edge_results = Object.fromEntries(
-				Object.entries(rebuild_results.implied_edge_results)
-					.filter(([_, errors]) => errors.length)
-					.map(([implied_kind, errors]) => [implied_kind, errors]),
-			);
+			// const implied_edge_results = Object.fromEntries(
+			// 	Object.entries(rebuild_results.implied_edge_results)
+			// 		.filter(([_, errors]) => errors.length)
+			// 		.map(([implied_kind, errors]) => [implied_kind, errors]),
+			// );
 
 			if (Object.keys(explicit_edge_errors).length) {
 				log.warn("explicit_edge_errors >", explicit_edge_errors);
 			}
-			if (Object.keys(implied_edge_results).length) {
-				log.warn("implied_edge_results >", implied_edge_results);
-			}
+			// if (Object.keys(implied_edge_results).length) {
+			// 	log.warn("implied_edge_results >", implied_edge_results);
+			// }
 
 			notice?.setMessage(
 				[
@@ -297,14 +338,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 							`- ${source}: ${errors.length} errors`,
 					),
 
-					implied_edge_results.length
-						? "\nImplied edge errors (see console for details):"
-						: null,
+					// implied_edge_results.length
+					// 	? "\nImplied edge errors (see console for details):"
+					// 	: null,
 
-					...Object.entries(implied_edge_results).map(
-						([implied_kind, errors]) =>
-							`- ${implied_kind}: ${errors.length} errors`,
-					),
+					// ...Object.entries(implied_edge_results).map(
+					// 	([implied_kind, errors]) =>
+					// 		`- ${implied_kind}: ${errors.length} errors`,
+					// ),
 				]
 					.filter(Boolean)
 					.join("\n"),
@@ -320,9 +361,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 			redraw_page_views(this);
 		}
 
-		if (options?.redraw_codeblocks !== false) {
-			Codeblocks.update_all();
-		}
+		// if (options?.redraw_codeblocks !== false) {
+		// 	Codeblocks.update_all();
+		// }
 
 		if (options?.redraw_side_views === true) {
 			this.app.workspace
@@ -336,7 +377,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					(leaf.view as TreeView).onOpen();
 				});
 		}
-	};
+	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {

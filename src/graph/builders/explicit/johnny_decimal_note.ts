@@ -1,13 +1,18 @@
 import { META_ALIAS } from "src/const/metadata_fields";
-import type { BCGraph } from "src/graph/MyMultiGraph";
+// import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
 	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_not_ends_with } from "src/utils/strings";
+import {
+	GraphConstructionEdgeData,
+	GraphConstructionNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_johnny_decimal_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -48,10 +53,9 @@ const get_johnny_decimal_note_info = (
  */
 const handle_johnny_decimal_note = (
 	plugin: BreadcrumbsPlugin,
-	graph: BCGraph,
+	results: EdgeBuilderResults,
 	source_note: JohnnyDecimalNote,
 	notes: JohnnyDecimalNote[],
-	errors: BreadcrumbsError[],
 ) => {
 	const johnny_decimal_note_info = get_johnny_decimal_note_info(
 		plugin,
@@ -60,7 +64,7 @@ const handle_johnny_decimal_note = (
 	);
 	if (!johnny_decimal_note_info.ok) {
 		if (johnny_decimal_note_info.error) {
-			errors.push(johnny_decimal_note_info.error);
+			results.errors.push(johnny_decimal_note_info.error);
 		}
 		return;
 	}
@@ -85,16 +89,27 @@ const handle_johnny_decimal_note = (
 
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
-		graph.safe_add_node(target_note.path, { resolved: false });
+		results.nodes.push(
+			new GraphConstructionNodeData(
+				target_note.path,
+				[],
+				false,
+				false,
+				false,
+			),
+		);
 	}
 
 	const { field } = johnny_decimal_note_info.data;
 
-	graph.safe_add_directed_edge(source_note.path, target_note.path, {
-		field,
-		explicit: true,
-		source: "johnny_decimal_note",
-	});
+	results.edges.push(
+		new GraphConstructionEdgeData(
+			source_note.path,
+			target_note.path,
+			field,
+			"johnny_decimal_note",
+		),
+	);
 };
 
 type JohnnyDecimalNote = {
@@ -105,14 +120,13 @@ type JohnnyDecimalNote = {
 };
 
 export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	if (!plugin.settings.explicit_edge_sources.johnny_decimal_note.enabled) {
-		return { errors };
+		return results;
 	}
 
 	const { delimiter } =
@@ -153,14 +167,8 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	});
 
 	johnny_decimal_notes.forEach((note) => {
-		handle_johnny_decimal_note(
-			plugin,
-			graph,
-			note,
-			johnny_decimal_notes,
-			errors,
-		);
+		handle_johnny_decimal_note(plugin, results, note, johnny_decimal_notes);
 	});
 
-	return { errors };
+	return results;
 };

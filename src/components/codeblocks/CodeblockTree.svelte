@@ -1,16 +1,19 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
-	import { Traverse, type EdgeTree } from "src/graph/traverse";
-	import {
-		get_edge_sorter,
-		has_edge_attrs,
-		type EdgeAttrFilters,
-	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
+	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import { Timer } from "src/utils/timer";
 	import { onMount } from "svelte";
+	import {
+	FlatRecTraversalResult,
+		NoteGraphError,
+		RecTraversalResult,
+		TraversalOptions,
+		create_edge_sorter,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
@@ -20,66 +23,67 @@
 	export let errors: BreadcrumbsError[];
 	export let file_path: string;
 
-	const sort = get_edge_sorter(
-		// @ts-expect-error: ts(2345)
-		options.sort,
-		plugin.graph,
+	const sort = create_edge_sorter(
+		options.sort.field,
+		options.sort.order === -1,
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
-	let tree: EdgeTree[] = [];
+	const DEFAULT_MAX_DEPTH = 100;
 
-	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: source_path = file_path
-		? file_path
-		: $active_file_store
-			? $active_file_store.path
-			: "";
+	let tree: RecTraversalResult | undefined = undefined;
+	let data: FlatRecTraversalResult | undefined = undefined;
+	let error: string | undefined = undefined;
 
-	// this is an exposed function that we can call from the outside to update the codeblock
 	export const update = () => {
-		tree = get_tree();
-	};
+		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
 
-	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.build_tree(
-			plugin.graph,
-			source_path,
-			{ max_depth: options.depth[1] },
-			(e) =>
-				has_edge_attrs(e, {
-					...attr,
-					$or_target_ids: options["dataview-from-paths"],
-				}),
+		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
+
+		if (!plugin.graph.has_node(source_path)) {
+			tree = undefined;
+			error = "The file does not exist in the graph.";
+			return;
+		}
+
+		const traversal_options = new TraversalOptions(
+			[source_path],
+			options.fields,
+			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
+			!options["merge-fields"],
 		);
 
-	const edge_field_labels =
-		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+		try {
+			tree = plugin.graph.rec_traverse(traversal_options);
+			if (options.flat) tree.flatten();
+			tree.sort(plugin.graph, sort);
+			data = tree.to_flat();
 
-	const get_tree = () => {
-		if (source_path && plugin.graph.hasNode(source_path)) {
-			const traversal = options["merge-fields"]
-				? base_traversal({ $or_fields: options.fields })
-				: edge_field_labels.flatMap((field) =>
-						base_traversal({ field }),
-					);
+			error = undefined;
+		} catch (e) {
+			log.error("Error updating codeblock tree", e);
 
-			// NOTE: The flattening is done here so that:
-			// - We can use NestedEdgeList for both modes
-			// - ListIndex builds from an EdgeTree[] as well
-			return options.flat
-				? Traverse.flatten_tree(traversal).map((item) => ({
-						depth: 0,
-						children: [],
-						edge: item.edge,
-					}))
-				: traversal;
-		} else {
-			return [];
+			tree = undefined;
+			data = undefined;
+			if (e instanceof NoteGraphError) {
+				error = e.message;
+			} else {
+				error =
+					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
+			}
 		}
+
+		tree = tree;
+		data = data;
 	};
 
-	onMount(update);
+	onMount(() => {
+		const timer = new Timer();
+
+		update();
+
+		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
+	});
 </script>
 
 <div class="BC-codeblock-tree">
@@ -91,12 +95,12 @@
 		</h3>
 	{/if}
 
-	{#if tree.length}
+	{#if tree && !tree.is_empty() && data}
 		<div class="BC-codeblock-tree-items relative">
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={ListIndex.edge_tree_to_list_index(tree, {
+					text={ListIndex.edge_tree_to_list_index(tree.data, {
 						...plugin.settings.commands.list_index.default_options,
 						show_attributes: options["show-attributes"] ?? [],
 					})}
@@ -106,17 +110,19 @@
 			<!-- NOTE: Padded so that the flair doesn't interfere with the floating buttons -->
 			<div class="pr-10">
 				<NestedEdgeList
-					{sort}
-					{tree}
 					{plugin}
 					{show_node_options}
+					data={data.data}
+					items={data.entry_nodes}
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}
 				/>
 			</div>
 		</div>
+	{:else if error}
+		<p class="search-empty-state">{error}</p>
 	{:else}
 		<!-- TODO(HELP-MSG) -->
-		<p class="search-empty-state">No paths found</p>
+		<p class="search-empty-state">No paths found.</p>
 	{/if}
 </div>

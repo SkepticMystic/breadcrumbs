@@ -1,17 +1,15 @@
 <script lang="ts">
-	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
-	import type { EdgeSorter } from "src/graph/utils";
+	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { untyped_pick } from "src/utils/objects";
-	import { url_search_params } from "src/utils/url";
+	import { NodeStringifyOptions, type EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 
 	export let open: boolean;
-	export let edges: BCEdge[];
 	export let field: EdgeField;
+	export let edges: EdgeStruct[];
 	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
 	// 	so rather pass them in to receive updates
@@ -19,7 +17,17 @@
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
-	export let sort: EdgeSorter;
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	let node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	);
+
 </script>
 
 <details
@@ -47,25 +55,24 @@
 	</summary>
 
 	<div class="tree-item-children flex flex-col">
-		{#key sort}
-			{#each edges.sort(sort) as edge}
+		{#key edges}
+			{#each edges as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
 						<div class="tree-item-inner flex grow">
 							<EdgeLink
 								{edge}
 								{plugin}
-								{show_node_options}
+								{node_stringify_options}
 								cls="grow tree-item-inner-text"
 							/>
 						</div>
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.attr.explicit ? "x" : "i"}
-							aria_label={url_search_params(
-								untyped_pick(edge.attr, show_attributes),
-								{ trim_lone_param: true },
+							label={edge.explicit ? "x" : "i"}
+							aria_label={edge.get_attribute_label(
+								show_attributes,
 							)}
 						/>
 					</div>

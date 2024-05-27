@@ -139,3 +139,17 @@ export const remove_duplicates_by = <T, V>(
 
 	return unique;
 };
+
+export const remove_duplicates_by_equals = <T>(
+	arr: T[],
+	equals: (a: T, b: T) => boolean,
+): T[] => {
+	const unique: T[] = [];
+
+	for (const item of arr) {
+		if (unique.some((existing) => equals(item, existing))) continue;
+		unique.push(item);
+	}
+
+	return unique;
+};
