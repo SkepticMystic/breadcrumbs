@@ -43,26 +43,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.settings = migrate_old_settings(this.settings);
 		await this.saveSettings();
 
-		// Set the edge_fields & BC-meta-fields to the right Properties type
-		try {
-			const all_properties =
-				this.app.metadataTypeManager.getAllProperties();
-
-			for (const field of this.settings.edge_fields) {
-				if (all_properties[field.label]?.type === "multitext") continue;
-				this.app.metadataTypeManager.setType(field.label, "multitext");
-			}
-
-			for (const [field, { property_type }] of Object.entries(
-				METADATA_FIELDS_MAP,
-			)) {
-				if (all_properties[field]?.type === property_type) continue;
-				this.app.metadataTypeManager.setType(field, property_type);
-			}
-		} catch (error) {
-			log.error("metadataTypeManager.setType error >", error);
-		}
-
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
 		// API
@@ -89,6 +69,26 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		this.app.workspace.onLayoutReady(async () => {
 			log.debug("on:layout-ready");
+
+			// Set the edge_fields & BC-meta-fields to the right Properties type
+			try {
+				const all_properties =
+					this.app.metadataTypeManager.getAllProperties();
+	
+				for (const field of this.settings.edge_fields) {
+					if (all_properties[field.label]?.type) continue;
+					this.app.metadataTypeManager.setType(field.label, "multitext");
+				}
+	
+				for (const [field, { property_type }] of Object.entries(
+					METADATA_FIELDS_MAP,
+				)) {
+					if (all_properties[field]?.type === property_type) continue;
+					this.app.metadataTypeManager.setType(field, property_type);
+				}
+			} catch (error) {
+				log.error("metadataTypeManager.setType error >", error);
+			}
 
 			// Wait for DV and metadataCache before refreshing
 			await dataview_plugin.await_if_enabled(this);
