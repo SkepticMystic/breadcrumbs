@@ -9,7 +9,7 @@ use vec_collections::{AbstractVecSet, VecSet};
 use wasm_bindgen::prelude::*;
 
 use crate::{
-    graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
+    graph_construction::{GCEdgeData, GCNodeData},
     graph_data::{
         EdgeData, EdgeStruct, GroupedEdgeList, NGEdgeIndex, NGEdgeRef, NGNodeIndex, NodeData,
     },
@@ -60,23 +60,24 @@ impl NoteGraph {
     }
 
     pub fn notify_update(&self) {
-        match &self.update_callback {
-            Some(callback) => match callback.call0(&JsValue::NULL) {
+        if let Some(callback) = &self.update_callback {
+            match callback.call0(&JsValue::NULL) {
                 Ok(_) => {}
                 Err(e) => LOGGER.warn(&format!(
                     "Error calling update notification function: {:?}",
                     e
                 )),
-            },
-            None => {}
+                // LOGGER.with(|l| {
+                //     l.warn(&format!(
+                //         "Error calling update notification function: {:?}",
+                //         e
+                //     ))
+                // }),
+            }
         }
     }
 
-    pub fn build_graph(
-        &mut self,
-        nodes: Vec<GraphConstructionNodeData>,
-        edges: Vec<GraphConstructionEdgeData>,
-    ) {
+    pub fn build_graph(&mut self, nodes: Vec<GCNodeData>, edges: Vec<GCEdgeData>) {
         let mut perf_logger = PerfLogger::new("Building Graph".to_owned());
         perf_logger.start_split("Adding initial nodes and edges".to_owned());
 
@@ -93,6 +94,12 @@ impl NoteGraph {
                     "Duplicate note path in graph construction data: {}",
                     info_node.path
                 ));
+                // LOGGER.with(|l| {
+                //     l.debug(&format!(
+                //         "Duplicate note path in graph construction data: {}",
+                //         info_node.path
+                //     ))
+                // });
                 continue;
             }
 
@@ -104,12 +111,7 @@ impl NoteGraph {
         }
 
         for edge in edges {
-            self.int_safe_add_edge(
-                &edge.source,
-                &edge.target,
-                &edge.edge_type,
-                &edge.edge_source,
-            );
+            self.int_safe_add_edge(&edge);
         }
 
         self.int_build_implied_edges(&mut perf_logger);
@@ -154,6 +156,7 @@ impl NoteGraph {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}", e)),
+                // LOGGER.with(|l| l.warn(&format!("Error calling node iteration callback: {:?}", e))),
             }
         });
     }
@@ -165,6 +168,7 @@ impl NoteGraph {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}", e)),
+                // LOGGER.with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}", e))),
             }
         });
     }
@@ -221,6 +225,7 @@ impl NoteGraph {
 
     pub fn log(&self) {
         LOGGER.info(&format!("{:#?}", self.graph));
+        // LOGGER.with(|l| l.info(&format!("{:#?}", self.graph)));
     }
 }
 
@@ -356,11 +361,6 @@ impl NoteGraph {
         }
     }
 
-    /// Returns the node index for a specific node weight.
-    pub fn int_get_node_index(&self, node: &String) -> Option<NGNodeIndex> {
-        self.node_hash.get(node).copied()
-    }
-
     /// Adds an edge type to the global edge type tracker and an optional local edge type tracker.
     pub fn int_add_to_edge_type_tracker(
         &mut self,
@@ -372,11 +372,8 @@ impl NoteGraph {
             self.edge_types.insert(edge_type.to_owned());
         }
 
-        match edge_type_tracker {
-            Some(inner) => {
-                inner.insert(edge_type.to_owned());
-            }
-            None => {}
+        if let Some(inner) = edge_type_tracker {
+            inner.insert(edge_type.to_owned());
         }
     }
 
@@ -390,15 +387,6 @@ impl NoteGraph {
         edge_data: EdgeData,
     ) -> Option<EdgeStruct> {
         EdgeStruct::from_edge_data(edge_index, edge_data, self)
-    }
-
-    /// Returns the node weight for a specific node index.
-    ///
-    /// Will return an error if the node is not found.
-    pub fn int_get_node_weight(&self, node: NGNodeIndex) -> Result<&NodeData> {
-        self.graph
-            .node_weight(node)
-            .ok_or(NoteGraphError::new("Node not found"))
     }
 
     pub fn int_has_incoming_edges(&self, node: NGNodeIndex) -> bool {
@@ -434,18 +422,6 @@ impl NoteGraph {
 
         for edge in edges_to_remove {
             self.graph.remove_edge(edge);
-        }
-    }
-
-    pub fn int_set_node_resolved(&mut self, node: NGNodeIndex, resolved: bool) -> Result<()> {
-        let node = self.graph.node_weight_mut(node);
-        match node {
-            Some(node) => {
-                node.resolved = resolved;
-
-                Ok(())
-            }
-            None => Err(NoteGraphError::new("Node not found")),
         }
     }
 
@@ -488,30 +464,19 @@ impl NoteGraph {
             edge_count - self.graph.edge_count(),
             self.graph.edge_count()
         ));
+        // LOGGER.with(|l| {
+        //     l.debug(&format!(
+        //         "Removed {} implied edges, {} explicit edges remain",
+        //         edge_count - self.graph.edge_count(),
+        //         self.graph.edge_count()
+        //     ))
+        // });
     }
 
-    fn int_add_node(&mut self, node: &GraphConstructionNodeData) -> Result<()> {
-        if self.node_hash.contains_key(&node.path) {
-            return Err(NoteGraphError::new("Node already exists"));
-        }
+    // ---------------------
+    // Node Methods
+    // ---------------------
 
-        let node_index = self.graph.add_node(NodeData::from_construction_data(node));
-
-        self.node_hash.insert(node.path.clone(), node_index);
-
-        Ok(())
-    }
-
-    fn int_remove_node(&mut self, node: &String) -> Result<()> {
-        let node_index = self
-            .int_get_node_index(node)
-            .ok_or(NoteGraphError::new("Node not found"))?;
-
-        self.graph.remove_node(node_index);
-        self.node_hash.remove(node);
-
-        Ok(())
-    }
     /// Adds an edge to the graph. will also add the back edge if necessary.
     /// This will not add already existing edges.
     ///
@@ -532,11 +497,79 @@ impl NoteGraph {
         self.graph.add_edge(from, to, edge_data);
     }
 
+    fn int_remove_node(&mut self, node: &str) -> Result<()> {
+        let node_index = self
+            .int_get_node_index(node)
+            .ok_or(NoteGraphError::new("Node not found"))?;
+
+        self.graph.remove_node(node_index);
+        self.node_hash.remove(node);
+
+        Ok(())
+    }
+
+    /// Returns the node index for a specific node weight.
+    pub fn int_get_node_index(&self, node: &str) -> Option<NGNodeIndex> {
+        self.node_hash.get(node).copied()
+    }
+
+    pub fn int_get_or_create_unresolved_node(&mut self, node: &str) -> NGNodeIndex {
+        match self.int_get_node_index(node) {
+            Some(node_index) => node_index,
+            None => {
+                let node_index = self
+                    .graph
+                    .add_node(NodeData::new_unresolved(node.to_owned()));
+
+                self.node_hash.insert(node.to_owned(), node_index);
+
+                node_index
+            }
+        }
+    }
+
+    /// Returns the node weight for a specific node index.
+    ///
+    /// Will return an error if the node is not found.
+    pub fn int_get_node_weight(&self, node: NGNodeIndex) -> Result<&NodeData> {
+        self.graph
+            .node_weight(node)
+            .ok_or(NoteGraphError::new("Node not found"))
+    }
+
+    pub fn int_set_node_resolved(&mut self, node: NGNodeIndex, resolved: bool) -> Result<()> {
+        let node = self.graph.node_weight_mut(node);
+        match node {
+            Some(node) => {
+                node.resolved = resolved;
+
+                Ok(())
+            }
+            None => Err(NoteGraphError::new("Node not found")),
+        }
+    }
+
+    fn int_add_node(&mut self, node: &GCNodeData) -> Result<()> {
+        if self.node_hash.contains_key(&node.path) {
+            return Err(NoteGraphError::new("Node already exists"));
+        }
+
+        let node_index = self.graph.add_node(NodeData::from_construction_data(node));
+
+        self.node_hash.insert(node.path.clone(), node_index);
+
+        Ok(())
+    }
+
+    // ---------------------
+    // Edge Methods
+    // ---------------------
+
     fn int_remove_edge(
         &mut self,
         from: NGNodeIndex,
         to: NGNodeIndex,
-        edge_type: &String,
+        edge_type: &str,
     ) -> Result<()> {
         let edge = self
             .graph
@@ -556,19 +589,14 @@ impl NoteGraph {
         &self,
         from: NGNodeIndex,
         to: NGNodeIndex,
-        edge_type: &String,
+        edge_type: &str,
     ) -> Option<NGEdgeRef> {
         self.graph
             .edges(from)
             .find(|e| e.target() == to && *e.weight().edge_type == *edge_type)
     }
 
-    pub fn int_get_edge_by_name(
-        &self,
-        from: &String,
-        to: &String,
-        edge_type: &String,
-    ) -> Option<NGEdgeRef> {
+    pub fn int_get_edge_by_name(&self, from: &str, to: &str, edge_type: &str) -> Option<NGEdgeRef> {
         let from_index = self.int_get_node_index(from)?;
         let to_index = self.int_get_node_index(to)?;
 
@@ -576,13 +604,13 @@ impl NoteGraph {
     }
 
     /// Checks if an edge exists between two nodes with a specific edge type.
-    pub fn int_has_edge(&self, from: NGNodeIndex, to: NGNodeIndex, edge_type: &String) -> bool {
+    pub fn int_has_edge(&self, from: NGNodeIndex, to: NGNodeIndex, edge_type: &str) -> bool {
         self.graph
             .edges(from)
             .any(|e| e.target() == to && *e.weight().edge_type == *edge_type)
     }
 
-    pub fn int_has_edge_by_name(&self, from: &String, to: &String, edge_type: &String) -> bool {
+    pub fn int_has_edge_by_name(&self, from: &str, to: &str, edge_type: &str) -> bool {
         let from_index = self.int_get_node_index(from);
         let to_index = self.int_get_node_index(to);
 
@@ -594,10 +622,11 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_safe_add_node(
-        &mut self,
-        construction_data: &GraphConstructionNodeData,
-    ) -> Result<()> {
+    // ----------------
+    // Safe Methods
+    // ----------------
+
+    pub fn int_safe_add_node(&mut self, construction_data: &GCNodeData) -> Result<()> {
         // we check if the node already exists in the graph
         // if it does, we assert that it is not resolved
         match self.int_get_node_index(&construction_data.path) {
@@ -625,7 +654,7 @@ impl NoteGraph {
         Ok(())
     }
 
-    pub fn int_safe_remove_node(&mut self, node: &String) -> Result<()> {
+    pub fn int_safe_remove_node(&mut self, node: &str) -> Result<()> {
         match self.int_get_node_index(node) {
             Some(index) => {
                 if !self.int_get_node_weight(index)?.resolved {
@@ -651,7 +680,7 @@ impl NoteGraph {
         Ok(())
     }
 
-    pub fn int_safe_rename_node(&mut self, old_name: &String, new_name: &str) -> Result<()> {
+    pub fn int_safe_rename_node(&mut self, old_name: &str, new_name: &str) -> Result<()> {
         let node_index = self
             .int_get_node_index(old_name)
             .ok_or(NoteGraphError::new("Old node not found"))?;
@@ -680,12 +709,7 @@ impl NoteGraph {
         Ok(())
     }
 
-    pub fn int_safe_delete_edge(
-        &mut self,
-        from: &String,
-        to: &String,
-        edge_type: &String,
-    ) -> Result<()> {
+    pub fn int_safe_delete_edge(&mut self, from: &str, to: &str, edge_type: &str) -> Result<()> {
         match (self.int_get_node_index(from), self.int_get_node_index(to)) {
             (Some(from_index), Some(to_index)) => {
                 match self.int_get_edge(from_index, to_index, edge_type) {
@@ -697,44 +721,21 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_safe_add_edge(
-        &mut self,
-        source_path: &String,
-        target_path: &String,
-        edge_type: &str,
-        edge_source: &str,
-    ) {
-        let source = self.node_hash.get(source_path);
-        let source_index: NGNodeIndex;
-
-        if source.is_none() {
-            source_index = self
-                .graph
-                .add_node(NodeData::new_unresolved(source_path.clone()));
-            self.node_hash.insert(source_path.clone(), source_index);
-        } else {
-            source_index = *source.unwrap();
-        }
-
-        let target = self.node_hash.get(target_path);
-        let target_index: NGNodeIndex;
-
-        if target.is_none() {
-            target_index = self
-                .graph
-                .add_node(NodeData::new_unresolved(target_path.clone()));
-            self.node_hash.insert(source_path.clone(), target_index);
-        } else {
-            target_index = *target.unwrap();
-        }
+    pub fn int_safe_add_edge(&mut self, construction_data: &GCEdgeData) {
+        let source = self.int_get_or_create_unresolved_node(&construction_data.source);
+        let target = self.int_get_or_create_unresolved_node(&construction_data.target);
 
         self.int_add_edge(
-            source_index,
-            target_index,
-            EdgeData::new(edge_type.to_owned(), edge_source.to_owned(), true, 0),
+            source,
+            target,
+            construction_data.to_explicit_edge(),
             &mut None,
         );
     }
+
+    // ----------------
+    // Debugging
+    // ----------------
 
     pub fn assert_correct_trackers(&self) {
         let mut edge_types: VecSet<[String; 16]> = VecSet::empty();

@@ -6,7 +6,7 @@ import type {
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_regex_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -124,7 +124,7 @@ export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 			.filter((node) => regex_note.info.regex.test(node))
 			.forEach((target_id) => {
 				results.edges.push(
-					new GraphConstructionEdgeData(
+					new GCEdgeData(
 						regex_note.path,
 						target_id,
 						regex_note.info.field,

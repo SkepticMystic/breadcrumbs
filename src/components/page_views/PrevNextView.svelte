@@ -3,12 +3,24 @@
 	import { group_by, remove_duplicates } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
+	import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	export let file_path: string;
 	export let plugin: BreadcrumbsPlugin;
 
 	const { field_group_labels, show_node_options } =
 		plugin.settings.views.page.prev_next;
+
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	let node_stringify_options = new NodeStringifyOptions(
+		show_node_options.ext,
+		show_node_options.folder,
+		show_node_options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	);
 
 	const edge_field_labels = {
 		prev: resolve_field_group_labels(
@@ -49,7 +61,7 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field pl-2">{edge.edge_type}</span>
 
-					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
+					<EdgeLink cls="grow" {edge} {plugin} {node_stringify_options} />
 				</div>
 			{/each}
 		</div>
@@ -60,7 +72,7 @@
 		>
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-					<EdgeLink cls="grow" {edge} {plugin} {show_node_options} />
+					<EdgeLink cls="grow" {edge} {plugin} {node_stringify_options} />
 
 					<span class="BC-field pr-2">{edge.edge_type}</span>
 				</div>

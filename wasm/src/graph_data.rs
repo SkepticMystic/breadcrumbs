@@ -11,7 +11,7 @@ use wasm_bindgen::prelude::*;
 use crate::{
     edge_sorting::EdgeSorter,
     graph::{edge_matches_edge_filter, NoteGraph},
-    graph_construction::GraphConstructionNodeData,
+    graph_construction::GCNodeData,
 };
 
 pub type NGEdgeIndex = EdgeIndex<u32>;
@@ -86,10 +86,10 @@ impl EdgeData {
             }
         }
 
-        if result.len() == 1 {
-            result[0].1.clone()
-        } else {
-            result.iter().map(|x| format!("{}={}", x.0, x.1)).join(" ")
+        match result.len() {
+            0 => "".to_string(),
+            1 => result[0].1.clone(),
+            _ => result.iter().map(|x| format!("{}={}", x.0, x.1)).join(" "),
         }
     }
 }
@@ -138,7 +138,7 @@ impl NodeData {
 }
 
 impl NodeData {
-    pub fn from_construction_data(data: &GraphConstructionNodeData) -> NodeData {
+    pub fn from_construction_data(data: &GCNodeData) -> NodeData {
         NodeData {
             path: data.path.clone(),
             aliases: data.aliases.clone(),
@@ -158,7 +158,7 @@ impl NodeData {
         }
     }
 
-    pub fn override_with_construction_data(&mut self, data: &GraphConstructionNodeData) {
+    pub fn override_with_construction_data(&mut self, data: &GCNodeData) {
         assert_eq!(
             self.path, data.path,
             "Can not override with data for another node."
@@ -391,7 +391,7 @@ impl GroupedEdgeList {
 
     pub fn add_edge(&mut self, edge_struct: EdgeStruct) {
         let edge_type = edge_struct.edge.edge_type.clone();
-        let edge_list = self.edges.entry(edge_type).or_insert(EdgeList::new());
+        let edge_list = self.edges.entry(edge_type).or_default();
         edge_list.edges.push(edge_struct);
     }
 
@@ -430,7 +430,12 @@ pub struct NodeStringifyOptions {
 #[wasm_bindgen]
 impl NodeStringifyOptions {
     #[wasm_bindgen(constructor)]
-    pub fn new(extension: bool, folder: bool, alias: bool, trim_basename_delimiter: Option<String>) -> NodeStringifyOptions {
+    pub fn new(
+        extension: bool,
+        folder: bool,
+        alias: bool,
+        trim_basename_delimiter: Option<String>,
+    ) -> NodeStringifyOptions {
         NodeStringifyOptions {
             extension,
             folder,

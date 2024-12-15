@@ -7,7 +7,7 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
-import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_tag_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -164,7 +164,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
 			results.edges.push(
-				new GraphConstructionEdgeData(
+				new GCEdgeData(
 					tag_note.source_path,
 					target_path,
 					tag_note.field,

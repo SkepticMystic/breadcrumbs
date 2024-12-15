@@ -5,8 +5,8 @@ import type {
 import { ensure_is_array } from "src/utils/arrays";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import {
-	GraphConstructionEdgeData,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
@@ -41,7 +41,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				if (!target_file) {
 					// Unresolved nodes don't have aliases
 					results.nodes.push(
-						new GraphConstructionNodeData(
+						new GCNodeData(
 							target_id,
 							[],
 							false,
@@ -52,7 +52,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				}
 
 				results.edges.push(
-					new GraphConstructionEdgeData(
+					new GCEdgeData(
 						source_file.path,
 						target_id,
 						field,
@@ -127,7 +127,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						// It's an unresolved link, so we add a node for it
 						// But still do it safely, as a previous file may point to the same unresolved node
 						results.nodes.push(
-							new GraphConstructionNodeData(
+							new GCNodeData(
 								target_path,
 								[],
 								false,
@@ -139,7 +139,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
 					results.edges.push(
-						new GraphConstructionEdgeData(
+						new GCEdgeData(
 							source_file.path,
 							target_path,
 							field,

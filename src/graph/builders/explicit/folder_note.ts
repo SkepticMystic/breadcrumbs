@@ -7,7 +7,7 @@ import type {
 import type { Result } from "src/interfaces/result";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 type FolderNoteData = {
 	field: string;
@@ -144,7 +144,7 @@ export const _add_explicit_edges_folder_note: ExplicitEdgeBuilder = async (
 
 					// We know path is resolved
 					results.edges.push(
-						new GraphConstructionEdgeData(
+						new GCEdgeData(
 							folder_note.path,
 							target_path,
 							data.field,

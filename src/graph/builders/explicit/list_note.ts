@@ -9,8 +9,8 @@ import type BreadcrumbsPlugin from "src/main";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import {
-	GraphConstructionEdgeData,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_list_note_info = (
@@ -171,13 +171,13 @@ const handle_neighbour_list_item = ({
 
 	if (!file) {
 		results.nodes.push(
-			new GraphConstructionNodeData(target_id, [], false, false, false),
+			new GCNodeData(target_id, [], false, false, false),
 		);
 	}
 
 	// NOTE: Currently no support for field overrides for neighbour-fields
 	results.edges.push(
-		new GraphConstructionEdgeData(
+		new GCEdgeData(
 			source_id,
 			target_id,
 			list_note_info.data.neighbour_field,
@@ -254,7 +254,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
 					results.nodes.push(
-						new GraphConstructionNodeData(
+						new GCNodeData(
 							source_path,
 							[],
 							false,
@@ -285,7 +285,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					}
 
 					results.edges.push(
-						new GraphConstructionEdgeData(
+						new GCEdgeData(
 							list_note_page.file.path,
 							source_path,
 							list_note_info.data.field,
@@ -337,7 +337,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					// This way we can guarentee the target exists
 					if (!target_file) {
 						results.nodes.push(
-							new GraphConstructionNodeData(
+							new GCNodeData(
 								target_path,
 								[],
 								false,
@@ -348,7 +348,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					}
 
 					results.edges.push(
-						new GraphConstructionEdgeData(
+						new GCEdgeData(
 							source_path,
 							target_path,
 							list_note_info.data.field,

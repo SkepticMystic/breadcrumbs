@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{
     graph::NoteGraph,
-    graph_construction::{GraphConstructionEdgeData, GraphConstructionNodeData},
+    graph_construction::{GCEdgeData, GCNodeData},
 };
 
 #[wasm_bindgen]
@@ -82,14 +82,14 @@ pub fn create_graph_from_rule(rule: TransitiveGraphRule) -> NoteGraph {
 
     let mut counter = 1;
     for element in rule.path.iter() {
-        node_data.push(GraphConstructionNodeData::new(
+        node_data.push(GCNodeData::new(
             counter.to_string(),
             vec![],
             true,
             false,
             false,
         ));
-        edge_data.push(GraphConstructionEdgeData::new(
+        edge_data.push(GCEdgeData::new(
             counter.to_string(),
             (counter + 1).to_string(),
             element.clone(),
@@ -99,7 +99,7 @@ pub fn create_graph_from_rule(rule: TransitiveGraphRule) -> NoteGraph {
         counter += 1;
     }
 
-    node_data.push(GraphConstructionNodeData::new(
+    node_data.push(GCNodeData::new(
         counter.to_string(),
         vec![],
         true,

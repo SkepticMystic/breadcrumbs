@@ -1,8 +1,10 @@
 use wasm_bindgen::prelude::*;
 
+use crate::graph_data::EdgeData;
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct GraphConstructionNodeData {
+pub struct GCNodeData {
     #[wasm_bindgen(skip)]
     pub path: String,
     #[wasm_bindgen(skip)]
@@ -16,7 +18,7 @@ pub struct GraphConstructionNodeData {
 }
 
 #[wasm_bindgen]
-impl GraphConstructionNodeData {
+impl GCNodeData {
     #[wasm_bindgen(constructor)]
     pub fn new(
         path: String,
@@ -24,8 +26,8 @@ impl GraphConstructionNodeData {
         resolved: bool,
         ignore_in_edges: bool,
         ignore_out_edges: bool,
-    ) -> GraphConstructionNodeData {
-        GraphConstructionNodeData {
+    ) -> GCNodeData {
+        GCNodeData {
             path,
             aliases,
             resolved,
@@ -40,9 +42,9 @@ impl GraphConstructionNodeData {
     }
 }
 
-impl GraphConstructionNodeData {
-    pub fn new_unresolved(path: String) -> GraphConstructionNodeData {
-        GraphConstructionNodeData {
+impl GCNodeData {
+    pub fn new_unresolved(path: String) -> GCNodeData {
+        GCNodeData {
             path,
             aliases: Vec::new(),
             resolved: false,
@@ -54,7 +56,7 @@ impl GraphConstructionNodeData {
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct GraphConstructionEdgeData {
+pub struct GCEdgeData {
     #[wasm_bindgen(skip)]
     pub source: String,
     #[wasm_bindgen(skip)]
@@ -66,15 +68,15 @@ pub struct GraphConstructionEdgeData {
 }
 
 #[wasm_bindgen]
-impl GraphConstructionEdgeData {
+impl GCEdgeData {
     #[wasm_bindgen(constructor)]
     pub fn new(
         source: String,
         target: String,
         edge_type: String,
         edge_source: String,
-    ) -> GraphConstructionEdgeData {
-        GraphConstructionEdgeData {
+    ) -> GCEdgeData {
+        GCEdgeData {
             source,
             target,
             edge_type,
@@ -85,5 +87,11 @@ impl GraphConstructionEdgeData {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
+    }
+}
+
+impl GCEdgeData {
+    pub fn to_explicit_edge(&self) -> EdgeData {
+        EdgeData::new(self.edge_type.clone(), self.edge_source.clone(), true, 0)
     }
 }

@@ -179,7 +179,7 @@ impl<'a> NeighbourOrdering<'a> {
     }
 }
 
-impl<'a> EdgeOrdering for NeighbourOrdering<'a> {
+impl EdgeOrdering for NeighbourOrdering<'_> {
     fn compare(&self, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         let neighbour_field = vec![self.neighbour_field.clone()];
 

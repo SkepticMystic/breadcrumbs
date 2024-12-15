@@ -29,14 +29,14 @@
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
-	const DEFAULT_MAX_DEPTH = 100;
+	const DEFAULT_MAX_DEPTH = 10;
 
 	let tree: RecTraversalResult | undefined = undefined;
 	let data: FlatRecTraversalResult | undefined = undefined;
 	let error: string | undefined = undefined;
 
 	export const update = () => {
-		const max_depth = options.depth[1] ?? DEFAULT_MAX_DEPTH;
+		const max_depth = options.depth[1] === Infinity ? DEFAULT_MAX_DEPTH : (options.depth[1] ?? DEFAULT_MAX_DEPTH);
 
 		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
 
@@ -49,7 +49,7 @@
 		const traversal_options = new TraversalOptions(
 			[source_path],
 			options.fields,
-			max_depth === Infinity ? DEFAULT_MAX_DEPTH : max_depth,
+			max_depth,
 			!options["merge-fields"],
 		);
 

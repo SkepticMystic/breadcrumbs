@@ -9,7 +9,8 @@ import {
 	AddEdgeGraphUpdate,
 	AddNoteGraphUpdate,
 	BatchGraphUpdate,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export const thread = async (
@@ -59,15 +60,15 @@ export const thread = async (
 	const batch_update = new BatchGraphUpdate();
 
 	new AddNoteGraphUpdate(
-		new GraphConstructionNodeData(target_file.path, [], true, false, false),
+		new GCNodeData(target_file.path, [], true, false, false),
 	).add_to_batch(batch_update);
 
-	new AddEdgeGraphUpdate(
+	new AddEdgeGraphUpdate(new GCEdgeData(
 		source_file.path,
 		target_file.path,
 		field,
 		"typed-link",
-	).add_to_batch(batch_update);
+	)).add_to_batch(batch_update);
 
 	plugin.graph.apply_update(batch_update);
 

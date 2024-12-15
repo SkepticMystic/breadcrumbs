@@ -3,8 +3,8 @@ import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
 import {
-	GraphConstructionEdgeData,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export type BreadcrumbsError = {
@@ -28,8 +28,8 @@ export type BreadcrumbsError = {
 // };
 
 export type EdgeBuilderResults = {
-	nodes: GraphConstructionNodeData[];
-	edges: GraphConstructionEdgeData[];
+	nodes: GCNodeData[];
+	edges: GCEdgeData[];
 	errors: BreadcrumbsError[];
 };
 

@@ -8,8 +8,8 @@ import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import {
-	GraphConstructionEdgeData,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_dendron_note_info = (
@@ -90,7 +90,7 @@ const handle_dendron_note = (
 
 	if (!target_file) {
 		results.nodes.push(
-			new GraphConstructionNodeData(target_id, [], false, false, false),
+			new GCNodeData(target_id, [], false, false, false),
 		);
 
 		// If !target_file, we can recursively call handle_dendron_note
@@ -108,7 +108,7 @@ const handle_dendron_note = (
 	}
 
 	results.edges.push(
-		new GraphConstructionEdgeData(
+		new GCEdgeData(
 			source_id,
 			target_id,
 			field,

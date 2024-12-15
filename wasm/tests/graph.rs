@@ -3,7 +3,7 @@
 extern crate wasm_bindgen_test;
 use breadcrumbs_graph_wasm::{
     graph::NoteGraph,
-    graph_construction::GraphConstructionNodeData,
+    graph_construction::{GCEdgeData, GCNodeData},
     graph_rules::TransitiveGraphRule,
     graph_update::{
         AddEdgeGraphUpdate, AddNoteGraphUpdate, BatchGraphUpdate, RemoveNoteGraphUpdate,
@@ -213,27 +213,21 @@ fn test_remove_add_update() {
 
     let mut batch = BatchGraphUpdate::new();
     RemoveNoteGraphUpdate::new("0".to_string()).add_to_batch(&mut batch);
-    AddNoteGraphUpdate::new(GraphConstructionNodeData::new(
-        "0".to_string(),
-        vec![],
-        true,
-        false,
-        false,
-    ))
-    .add_to_batch(&mut batch);
-    AddEdgeGraphUpdate::new(
+    AddNoteGraphUpdate::new(GCNodeData::new("0".to_string(), vec![], true, false, false))
+        .add_to_batch(&mut batch);
+    AddEdgeGraphUpdate::new(GCEdgeData::new(
         "0".to_string(),
         "00".to_string(),
         "down".to_string(),
         "typed-link".to_string(),
-    )
+    ))
     .add_to_batch(&mut batch);
-    AddEdgeGraphUpdate::new(
+    AddEdgeGraphUpdate::new(GCEdgeData::new(
         "0".to_string(),
         "01".to_string(),
         "down".to_string(),
         "typed-link".to_string(),
-    )
+    ))
     .add_to_batch(&mut batch);
 
     graph_1.apply_update(batch).unwrap();
@@ -255,27 +249,21 @@ fn test_remove_add_separate_updates() {
     graph_1.apply_update(batch_1).unwrap();
 
     let mut batch_2 = BatchGraphUpdate::new();
-    AddNoteGraphUpdate::new(GraphConstructionNodeData::new(
-        "0".to_string(),
-        vec![],
-        true,
-        false,
-        false,
-    ))
-    .add_to_batch(&mut batch_2);
-    AddEdgeGraphUpdate::new(
+    AddNoteGraphUpdate::new(GCNodeData::new("0".to_string(), vec![], true, false, false))
+        .add_to_batch(&mut batch_2);
+    AddEdgeGraphUpdate::new(GCEdgeData::new(
         "0".to_string(),
         "00".to_string(),
         "down".to_string(),
         "typed-link".to_string(),
-    )
+    ))
     .add_to_batch(&mut batch_2);
-    AddEdgeGraphUpdate::new(
+    AddEdgeGraphUpdate::new(GCEdgeData::new(
         "0".to_string(),
         "01".to_string(),
         "down".to_string(),
         "typed-link".to_string(),
-    )
+    ))
     .add_to_batch(&mut batch_2);
     graph_1.apply_update(batch_2).unwrap();
 

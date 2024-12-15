@@ -1,6 +1,8 @@
 use crate::{
-    graph::NoteGraph, graph_construction::GraphConstructionNodeData,
-    graph_rules::TransitiveGraphRule, utils::Result,
+    graph::NoteGraph,
+    graph_construction::{GCEdgeData, GCNodeData},
+    graph_rules::TransitiveGraphRule,
+    utils::Result,
 };
 use wasm_bindgen::prelude::*;
 
@@ -46,13 +48,13 @@ impl BatchGraphUpdate {
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct AddNoteGraphUpdate {
-    data: GraphConstructionNodeData,
+    data: GCNodeData,
 }
 
 #[wasm_bindgen]
 impl AddNoteGraphUpdate {
     #[wasm_bindgen(constructor)]
-    pub fn new(data: GraphConstructionNodeData) -> Self {
+    pub fn new(data: GCNodeData) -> Self {
         Self { data }
     }
 
@@ -119,22 +121,14 @@ impl GraphUpdate for RenameNoteGraphUpdate {
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct AddEdgeGraphUpdate {
-    source: String,
-    target: String,
-    edge_type: String,
-    edge_source: String,
+    data: GCEdgeData,
 }
 
 #[wasm_bindgen]
 impl AddEdgeGraphUpdate {
     #[wasm_bindgen(constructor)]
-    pub fn new(source: String, target: String, edge_type: String, edge_source: String) -> Self {
-        Self {
-            source,
-            target,
-            edge_type,
-            edge_source,
-        }
+    pub fn new(data: GCEdgeData) -> Self {
+        Self { data }
     }
 
     pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
@@ -144,12 +138,7 @@ impl AddEdgeGraphUpdate {
 
 impl GraphUpdate for AddEdgeGraphUpdate {
     fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        graph.int_safe_add_edge(
-            &self.source,
-            &self.target,
-            &self.edge_type,
-            &self.edge_source,
-        );
+        graph.int_safe_add_edge(&self.data);
         Ok(())
     }
 }

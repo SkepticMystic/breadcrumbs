@@ -22,15 +22,11 @@ import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
 import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
 import init, {
-	type InitInput,
 	type NoteGraph,
-	TransitiveGraphRule,
 	create_graph,
-	GraphConstructionNodeData,
-	GraphConstructionEdgeData,
 	BatchGraphUpdate,
 	RemoveNoteGraphUpdate,
-	AddNoteGraphUpdate,
+	RenameNoteGraphUpdate,
 } from "../wasm/pkg";
 
 export enum BCEvent {
@@ -180,60 +176,52 @@ export default class BreadcrumbsPlugin extends Plugin {
 				}),
 			);
 
-			// TODO(RUST)
-			// /// Vault
-			// this.registerEvent(
-			// 	this.app.vault.on("create", (file) => {
-			// 		log.debug("on:create >", file.path);
+			/// Vault
+			this.registerEvent(
+				this.app.vault.on("create", (file) => {
+					log.debug("on:create >", file.path);
 
-			// 		if (file instanceof TFile) {
-			// 			// This isn't perfect, but it stops any "node doesn't exist" errors
-			// 			// The user will have to refresh to add any relevant edges
-			// 			this.graph.upsert_node(file.path, { resolved: true });
+					if (file instanceof TFile) {
+						// This isn't perfect, but it stops any "node doesn't exist" errors
+						// The user will have to refresh to add any relevant edges
+						// this.graph.upsert_node(file.path, { resolved: true });
 
-			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-			// 		}
-			// 	}),
-			// );
+						const batch = new BatchGraphUpdate();
+						new RemoveNoteGraphUpdate(file.path).add_to_batch(batch);
+						this.graph.apply_update(batch);
 
-			// this.registerEvent(
-			// 	this.app.vault.on("rename", (file, old_path) => {
-			// 		log.debug("on:rename >", old_path, "->", file.path);
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+					}
+				}),
+			);
 
-			// 		if (file instanceof TFile) {
-			// 			const res = this.graph.safe_rename_node(
-			// 				old_path,
-			// 				file.path,
-			// 			);
+			this.registerEvent(
+				this.app.vault.on("rename", (file, old_path) => {
+					log.debug("on:rename >", old_path, "->", file.path);
 
-			// 			if (!res.ok) {
-			// 				log.error("safe_rename_node >", res.error.message);
-			// 			}
+					if (file instanceof TFile) {
+						const batch = new BatchGraphUpdate();
+						new RenameNoteGraphUpdate(old_path, file.path).add_to_batch(batch);
+						this.graph.apply_update(batch);
 
-			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-			// 		}
-			// 	}),
-			// );
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+					}
+				}),
+			);
 
-			// this.registerEvent(
-			// 	this.app.vault.on("delete", (file) => {
-			// 		log.debug("on:delete >", file.path);
+			this.registerEvent(
+				this.app.vault.on("delete", (file) => {
+					log.debug("on:delete >", file.path);
 
-			// 		if (file instanceof TFile) {
-			// 			// NOTE: Instead of dropping it, we mark it as unresolved.
-			// 			//   There are pros and cons to both, but unresolving it is less intense.
-			// 			//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
-			// 			//   So it's not perfect. Rebuilding the graph is the only way to be sure.
-			// 			this.graph.setNodeAttribute(
-			// 				file.path,
-			// 				"resolved",
-			// 				false,
-			// 			);
+					if (file instanceof TFile) {
+						const batch = new BatchGraphUpdate();
+						new RemoveNoteGraphUpdate(file.path).add_to_batch(batch);
+						this.graph.apply_update(batch);
 
-			// 			// NOTE: No need to this.refresh. The event triggers a layout-change anyway
-			// 		}
-			// 	}),
-			// );
+						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+					}
+				}),
+			);
 
 			// Views
 			this.registerView(

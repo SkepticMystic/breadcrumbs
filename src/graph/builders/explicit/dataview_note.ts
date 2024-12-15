@@ -9,7 +9,7 @@ import type {
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import { GraphConstructionEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_dataview_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -123,7 +123,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 		pages.forEach((page) => {
 			// NOTE: I _believe_ we don't need to even safe_add_node, since dv will only return resolved notes
 			results.edges.push(
-				new GraphConstructionEdgeData(
+				new GCEdgeData(
 					dataview_note_page.file.path,
 					page.file.path,
 					field,

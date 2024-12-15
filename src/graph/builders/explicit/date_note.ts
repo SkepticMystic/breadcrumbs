@@ -5,8 +5,8 @@ import type {
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
 import {
-	GraphConstructionEdgeData,
-	GraphConstructionNodeData,
+	GCEdgeData,
+	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 // TODO: Option to point up to month, (and for month to point up to year?)
@@ -100,7 +100,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			const target_file = plugin.app.vault.getFileByPath(target_id);
 			if (!target_file) {
 				results.nodes.push(
-					new GraphConstructionNodeData(
+					new GCNodeData(
 						target_id,
 						[],
 						false,
@@ -111,7 +111,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			}
 
 			results.edges.push(
-				new GraphConstructionEdgeData(
+				new GCEdgeData(
 					date_note.path,
 					target_id,
 					date_note_settings.default_field,
