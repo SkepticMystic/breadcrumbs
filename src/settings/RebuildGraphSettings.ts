@@ -14,7 +14,7 @@ export const _add_settings_rebuild_graph = (
 			cb: async (value) => {
 				plugin.settings.commands.rebuild_graph.notify = value;
 
-				await Promise.all([plugin.saveSettings(), plugin.refresh({})]);
+				await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 			},
 		},
 	});
@@ -34,7 +34,7 @@ export const _add_settings_rebuild_graph = (
 			cb: async (value) => {
 				plugin.settings.commands.rebuild_graph.trigger = value;
 
-				await Promise.all([plugin.saveSettings(), plugin.refresh({})]);
+				await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 			},
 		},
 	});

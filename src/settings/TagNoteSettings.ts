@@ -14,7 +14,7 @@ export const _add_settings_tag_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.tag_note.default_field =
 					value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});

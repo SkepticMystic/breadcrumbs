@@ -500,7 +500,7 @@ impl NoteGraph {
     fn int_remove_node(&mut self, node: &str) -> Result<()> {
         let node_index = self
             .int_get_node_index(node)
-            .ok_or(NoteGraphError::new("Node not found"))?;
+            .ok_or(NoteGraphError::new(&format!("Node {:?} not found", node)))?;
 
         self.graph.remove_node(node_index);
         self.node_hash.remove(node);
@@ -532,9 +532,9 @@ impl NoteGraph {
     ///
     /// Will return an error if the node is not found.
     pub fn int_get_node_weight(&self, node: NGNodeIndex) -> Result<&NodeData> {
-        self.graph
-            .node_weight(node)
-            .ok_or(NoteGraphError::new("Node not found"))
+        self.graph.node_weight(node).ok_or(NoteGraphError::new(
+            "failed to get node weight, node not found",
+        ))
     }
 
     pub fn int_set_node_resolved(&mut self, node: NGNodeIndex, resolved: bool) -> Result<()> {
@@ -545,7 +545,9 @@ impl NoteGraph {
 
                 Ok(())
             }
-            None => Err(NoteGraphError::new("Node not found")),
+            None => Err(NoteGraphError::new(
+                "Failed to set node resolved, node not found",
+            )),
         }
     }
 
@@ -643,7 +645,11 @@ impl NoteGraph {
                     Some(node) => {
                         node.override_with_construction_data(construction_data);
                     }
-                    None => return Err(NoteGraphError::new("Node not found")),
+                    None => {
+                        return Err(NoteGraphError::new(
+                            "failed to override node, node data not found",
+                        ))
+                    }
                 }
             }
             None => {
@@ -673,7 +679,7 @@ impl NoteGraph {
                 }
             }
             None => {
-                return Err(NoteGraphError::new("Node not found"));
+                return Err(NoteGraphError::new("failed to remove node, node not found"));
             }
         }
 
@@ -683,7 +689,9 @@ impl NoteGraph {
     pub fn int_safe_rename_node(&mut self, old_name: &str, new_name: &str) -> Result<()> {
         let node_index = self
             .int_get_node_index(old_name)
-            .ok_or(NoteGraphError::new("Old node not found"))?;
+            .ok_or(NoteGraphError::new(
+                "failed to rename node, old node not found",
+            ))?;
 
         self.graph.node_weight_mut(node_index).unwrap().path = new_name.to_owned();
         self.node_hash.remove(old_name);
@@ -717,7 +725,9 @@ impl NoteGraph {
                     None => Err(NoteGraphError::new("Edge not found")),
                 }
             }
-            _ => Err(NoteGraphError::new("Node not found")),
+            _ => Err(NoteGraphError::new(
+                "failed to delete edge, connecting node not found",
+            )),
         }
     }
 

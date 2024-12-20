@@ -19,7 +19,7 @@
 		save: async () => {
 			await Promise.all([
 				plugin.saveSettings(),
-				plugin.refresh({ redraw_side_views: true }),
+				plugin.rebuildGraph(),
 			]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react

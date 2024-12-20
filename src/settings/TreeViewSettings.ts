@@ -19,10 +19,7 @@ export const _add_settings_tree_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({
-						redraw_side_views: true,
-						rebuild_graph: false,
-					}),
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -36,10 +33,7 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({
-				redraw_side_views: true,
-				rebuild_graph: false,
-			}),
+			plugin.refreshViews(),
 		]);
 	});
 
@@ -53,10 +47,7 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({
-				redraw_side_views: true,
-				rebuild_graph: false,
-			}),
+			plugin.refreshViews(),
 		]);
 	});
 
@@ -72,10 +63,7 @@ export const _add_settings_tree_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({
-				redraw_side_views: true,
-				rebuild_graph: false,
-			}),
+			plugin.refreshViews(),
 		]);
 	});
 
@@ -89,10 +77,7 @@ export const _add_settings_tree_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({
-						redraw_side_views: true,
-						rebuild_graph: false,
-					}),
+					plugin.refreshViews(),
 				]);
 			},
 		},

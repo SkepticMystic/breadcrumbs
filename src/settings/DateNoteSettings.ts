@@ -13,7 +13,7 @@ export const _add_settings_date_note = (
 			value: plugin.settings.explicit_edge_sources.date_note.enabled,
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.date_note.enabled = value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});
@@ -28,7 +28,7 @@ export const _add_settings_date_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.date_note.default_field =
 					value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});
@@ -52,7 +52,7 @@ export const _add_settings_date_note = (
 					plugin.settings.explicit_edge_sources.date_note.date_format =
 						value;
 					await Promise.all([
-						plugin.refresh(),
+						plugin.rebuildGraph(),
 						plugin.saveSettings(),
 					]);
 				}
@@ -69,7 +69,7 @@ export const _add_settings_date_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.date_note.stretch_to_existing =
 					value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});

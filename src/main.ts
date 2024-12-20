@@ -27,10 +27,15 @@ import init, {
 	BatchGraphUpdate,
 	RemoveNoteGraphUpdate,
 	RenameNoteGraphUpdate,
+	AddNoteGraphUpdate,
+	GCNodeData,
 } from "../wasm/pkg";
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
+	REDRAW_CODEBLOCKS = "redraw-codeblocks",
+	REDRAW_PAGE_VIEWS = "redraw-page-views",
+	REDRAW_SIDE_VIEWS = "redraw-side-views",
 }
 
 export default class BreadcrumbsPlugin extends Plugin {
@@ -38,6 +43,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 	graph!: NoteGraph;
 	api!: BCAPI;
 	events!: Events;
+	/**
+	 * @deprecated
+	 */
 	debounced_refresh!: (options?: {
 		rebuild_graph?: boolean;
 		active_file_store?: boolean;
@@ -60,6 +68,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// Init event bus
 		this.events = new Events();
+		// A graph update triggers a redraw of all views
+		this.events.on(BCEvent.GRAPH_UPDATE, () => {
+			this.refreshViews();
+		});
+		this.events.on(BCEvent.REDRAW_PAGE_VIEWS, () => {
+			redraw_page_views(this);
+		});
 
 		// Init wasm
 		await init(wasmbin);
@@ -132,14 +147,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 			if (this.app.metadataCache.initialized) {
 				log.debug("metadataCache:initialized");
 
-				await this.refresh();
+				await this.rebuildGraph();
 			} else {
 				const metadatacache_init_event = this.app.metadataCache.on(
 					"initialized",
 					async () => {
 						log.debug("on:metadatacache-initialized");
 
-						await this.refresh();
+						await this.rebuildGraph();
 						this.app.metadataCache.offref(metadatacache_init_event);
 					},
 				);
@@ -151,11 +166,19 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.workspace.on("layout-change", async () => {
 					log.debug("on:layout-change");
 
-					this.debounced_refresh({
-						rebuild_graph:
-							this.settings.commands.rebuild_graph.trigger
-								.layout_change,
-					});
+					// active_file_store.refresh(this.app);
+
+					if (this.settings.commands.rebuild_graph.trigger.layout_change) {
+						this.rebuildGraph();
+					} else {
+						this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
+					}
+
+					// this.debounced_refresh({
+					// 	rebuild_graph:
+					// 		this.settings.commands.rebuild_graph.trigger
+					// 			.layout_change,
+					// });
 				}),
 			);
 
@@ -168,11 +191,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 						return;
 					}
 
+					active_file_store.refresh(this.app);
+					this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
+
 					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
-					this.debounced_refresh({
-						rebuild_graph: false,
-						redraw_page_views: false,
-					});
+					// this.debounced_refresh({
+					// 	rebuild_graph: false,
+					// 	redraw_page_views: false,
+					// });
 				}),
 			);
 
@@ -181,16 +207,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("create", (file) => {
 					log.debug("on:create >", file.path);
 
+					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
-						// This isn't perfect, but it stops any "node doesn't exist" errors
-						// The user will have to refresh to add any relevant edges
-						// this.graph.upsert_node(file.path, { resolved: true });
-
 						const batch = new BatchGraphUpdate();
-						new RemoveNoteGraphUpdate(file.path).add_to_batch(batch);
+						new AddNoteGraphUpdate(new GCNodeData(
+							file.path,
+							[],
+							true,
+							false,
+							false,
+						)).add_to_batch(batch);
 						this.graph.apply_update(batch);
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
@@ -199,12 +226,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("rename", (file, old_path) => {
 					log.debug("on:rename >", old_path, "->", file.path);
 
+					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
 						const batch = new BatchGraphUpdate();
 						new RenameNoteGraphUpdate(old_path, file.path).add_to_batch(batch);
 						this.graph.apply_update(batch);
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
@@ -213,12 +239,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("delete", (file) => {
 					log.debug("on:delete >", file.path);
 
+					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
 						const batch = new BatchGraphUpdate();
 						new RemoveNoteGraphUpdate(file.path).add_to_batch(batch);
 						this.graph.apply_update(batch);
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
 					}
 				}),
 			);
@@ -269,8 +294,70 @@ export default class BreadcrumbsPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	/**
+	 * Rebuilds the graph.
+	 * When done, Rust will emit a `graph-update` event.
+	 */
+	async rebuildGraph() {
+		const timer = new Timer();
+
+		const notice = this.settings.commands.rebuild_graph.notify
+			? new Notice("Rebuilding graph")
+			: null;
+
+		const rebuild_results = await rebuild_graph(this);
+
+		const explicit_edge_errors = rebuild_results.explicit_edge_results
+			.filter(({ results }) => results.errors.length)
+			.reduce(
+				(acc, { source, results }) => {
+					acc[source] = results.errors;
+					return acc;
+				},
+				{} as Record<string, BreadcrumbsError[]>,
+			);
+
+		if (Object.keys(explicit_edge_errors).length) {
+			log.warn("explicit_edge_errors >", explicit_edge_errors);
+		}
+
+		notice?.setMessage(
+			[
+				`Rebuilt graph in ${timer.elapsed_str()}ms`,
+
+				explicit_edge_errors.length
+					? "\nExplicit edge errors (see console for details):"
+					: null,
+
+				...Object.entries(explicit_edge_errors).map(
+					([source, errors]) =>
+						`- ${source}: ${errors.length} errors`,
+				),
+
+				// implied_edge_results.length
+				// 	? "\nImplied edge errors (see console for details):"
+				// 	: null,
+
+				// ...Object.entries(implied_edge_results).map(
+				// 	([implied_kind, errors]) =>
+				// 		`- ${implied_kind}: ${errors.length} errors`,
+				// ),
+			]
+				.filter(Boolean)
+				.join("\n"),
+		);
+	}
+
+	refreshViews() {
+		this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
+		this.events.trigger(BCEvent.REDRAW_CODEBLOCKS);
+		this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
+	}
+
 	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
 	 * Optionally disable any of these steps.
+	 * 
+	 * @deprecated
 	 */
 	async refresh(options?: {
 		rebuild_graph?: boolean;
@@ -281,63 +368,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 	}) {
 		// Rebuild the graph
 		if (options?.rebuild_graph !== false) {
-			const timer = new Timer();
-
-			const notice = this.settings.commands.rebuild_graph.notify
-				? new Notice("Rebuilding graph")
-				: null;
-
-			const rebuild_results = await rebuild_graph(this);
-			// this.graph = rebuild_results.graph;
-
-			const explicit_edge_errors = rebuild_results.explicit_edge_results
-				.filter(({ results }) => results.errors.length)
-				.reduce(
-					(acc, { source, results }) => {
-						acc[source] = results.errors;
-						return acc;
-					},
-					{} as Record<string, BreadcrumbsError[]>,
-				);
-
-			// const implied_edge_results = Object.fromEntries(
-			// 	Object.entries(rebuild_results.implied_edge_results)
-			// 		.filter(([_, errors]) => errors.length)
-			// 		.map(([implied_kind, errors]) => [implied_kind, errors]),
-			// );
-
-			if (Object.keys(explicit_edge_errors).length) {
-				log.warn("explicit_edge_errors >", explicit_edge_errors);
-			}
-			// if (Object.keys(implied_edge_results).length) {
-			// 	log.warn("implied_edge_results >", implied_edge_results);
-			// }
-
-			notice?.setMessage(
-				[
-					`Rebuilt graph in ${timer.elapsed_str()}ms`,
-
-					explicit_edge_errors.length
-						? "\nExplicit edge errors (see console for details):"
-						: null,
-
-					...Object.entries(explicit_edge_errors).map(
-						([source, errors]) =>
-							`- ${source}: ${errors.length} errors`,
-					),
-
-					// implied_edge_results.length
-					// 	? "\nImplied edge errors (see console for details):"
-					// 	: null,
-
-					// ...Object.entries(implied_edge_results).map(
-					// 	([implied_kind, errors]) =>
-					// 		`- ${implied_kind}: ${errors.length} errors`,
-					// ),
-				]
-					.filter(Boolean)
-					.join("\n"),
-			);
+			this.rebuildGraph();
 		}
 
 		// _Then_ react
@@ -346,7 +377,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		if (options?.redraw_page_views !== false) {
-			redraw_page_views(this);
+			
 		}
 
 		// if (options?.redraw_codeblocks !== false) {

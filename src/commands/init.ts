@@ -17,7 +17,7 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 	plugin.addCommand({
 		id: "breadcrumbs:rebuild-graph",
 		name: "Rebuild graph",
-		callback: async () => await plugin.refresh(),
+		callback: async () => await plugin.rebuildGraph(),
 	});
 
 	Object.keys(VIEW_IDS).forEach((view_id) => {

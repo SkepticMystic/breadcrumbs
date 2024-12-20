@@ -18,7 +18,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([plugin.saveSettings()]);
 				// Don't await if not rebuilding the graph
-				plugin.refresh({ rebuild_graph: false });
+				plugin.refreshViews();
 			},
 		},
 	});
@@ -34,7 +34,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews()
 				]);
 			},
 		},
@@ -51,7 +51,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews()
 				]);
 			},
 		},
@@ -74,7 +74,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -92,7 +92,7 @@ export const _add_settings_trail_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refreshViews(),
 		]);
 	});
 
@@ -106,7 +106,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -122,7 +122,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -138,7 +138,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refresh({ rebuild_graph: false }),
+					plugin.refreshViews(),
 				]);
 			},
 		},

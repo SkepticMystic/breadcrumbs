@@ -34,7 +34,7 @@ export const _add_settings_show_node_options = (
 				if (options?.save_and_refresh !== false) {
 					await Promise.all([plugin.saveSettings()]);
 					// Don't await if not rebuilding
-					plugin.refresh({ rebuild_graph: false });
+					plugin.refreshViews();
 				}
 			});
 	});
@@ -52,7 +52,7 @@ export const _add_settings_show_node_options = (
 				if (options?.save_and_refresh !== false) {
 					await Promise.all([plugin.saveSettings()]);
 					// Don't await if not rebuilding
-					plugin.refresh({ rebuild_graph: false });
+					plugin.refreshViews();
 				}
 			});
 	});
@@ -70,7 +70,7 @@ export const _add_settings_show_node_options = (
 				if (options?.save_and_refresh !== false) {
 					await Promise.all([plugin.saveSettings()]);
 					// Don't await if not rebuilding
-					plugin.refresh({ rebuild_graph: false });
+					plugin.refreshViews();
 				}
 			});
 	});

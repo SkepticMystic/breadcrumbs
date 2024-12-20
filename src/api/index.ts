@@ -20,7 +20,7 @@ export class BCAPI {
 	}
 
 	public async refresh() {
-		await this.plugin.refresh();
+		await this.plugin.rebuildGraph();
 	}
 	/** @deprecated Use refresh */
 	public async refreshIndex() {

@@ -18,10 +18,7 @@ export const _add_settings_prev_next_view = (
 
 					await Promise.all([plugin.saveSettings()]);
 					// Don't await if not rebuilding the graph
-					plugin.refresh({
-						rebuild_graph: false,
-						active_file_store: false,
-					});
+					plugin.refreshViews();
 				});
 		});
 
@@ -40,7 +37,7 @@ export const _add_settings_prev_next_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refreshViews()
 		]);
 	});
 
@@ -59,7 +56,7 @@ export const _add_settings_prev_next_view = (
 
 		await Promise.all([
 			plugin.saveSettings(),
-			plugin.refresh({ rebuild_graph: false }),
+			plugin.refreshViews(),
 		]);
 	});
 

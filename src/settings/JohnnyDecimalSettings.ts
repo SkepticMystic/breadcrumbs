@@ -15,7 +15,7 @@ export const _add_settings_johnny_decimal_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.johnny_decimal_note.enabled =
 					value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});
@@ -32,7 +32,7 @@ export const _add_settings_johnny_decimal_note = (
 					plugin.settings.explicit_edge_sources.johnny_decimal_note.delimiter =
 						value;
 					await Promise.all([
-						plugin.refresh(),
+						plugin.rebuildGraph(),
 						plugin.saveSettings(),
 					]);
 				}
@@ -50,7 +50,7 @@ export const _add_settings_johnny_decimal_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.johnny_decimal_note.default_field =
 					value;
-				await Promise.all([plugin.refresh(), plugin.saveSettings()]);
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
 			},
 		},
 	});
