@@ -43,16 +43,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 	graph!: NoteGraph;
 	api!: BCAPI;
 	events!: Events;
-	/**
-	 * @deprecated
-	 */
-	debounced_refresh!: (options?: {
-		rebuild_graph?: boolean;
-		active_file_store?: boolean;
-		redraw_page_views?: boolean;
-		redraw_side_views?: true;
-		redraw_codeblocks?: boolean;
-	}) => void;
 
 	async onload() {
 		// Settings
@@ -85,10 +75,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
 			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
 		});
-
-		// ten milliseconds debounce to prevent multiple refreshes in quick succession
-		// not perfect, but i can't think of a better way to do this rn
-		this.debounced_refresh = debounce((options) => this.refresh(options), 10, true);
 
 		/// Migrations
 		this.settings = migrate_old_settings(this.settings);
@@ -352,50 +338,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
 		this.events.trigger(BCEvent.REDRAW_CODEBLOCKS);
 		this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
-	}
-
-	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
-	 * Optionally disable any of these steps.
-	 * 
-	 * @deprecated
-	 */
-	async refresh(options?: {
-		rebuild_graph?: boolean;
-		active_file_store?: boolean;
-		redraw_page_views?: boolean;
-		redraw_side_views?: true;
-		redraw_codeblocks?: boolean;
-	}) {
-		// Rebuild the graph
-		if (options?.rebuild_graph !== false) {
-			this.rebuildGraph();
-		}
-
-		// _Then_ react
-		if (options?.active_file_store !== false) {
-			active_file_store.refresh(this.app);
-		}
-
-		if (options?.redraw_page_views !== false) {
-			
-		}
-
-		// if (options?.redraw_codeblocks !== false) {
-		// 	Codeblocks.update_all();
-		// }
-
-		if (options?.redraw_side_views === true) {
-			this.app.workspace
-				.getLeavesOfType(VIEW_IDS.matrix)
-				.forEach((leaf) => {
-					(leaf.view as MatrixView).onOpen();
-				});
-			this.app.workspace
-				.getLeavesOfType(VIEW_IDS.tree)
-				.forEach((leaf) => {
-					(leaf.view as TreeView).onOpen();
-				});
-		}
 	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views

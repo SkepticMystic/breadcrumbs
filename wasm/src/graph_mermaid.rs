@@ -13,10 +13,20 @@ use crate::{
     utils::{NoteGraphError, Result},
 };
 
-pub type AccumulatedEdgeHashMap = HashMap<
-    (NodeIndex<u32>, NodeIndex<u32>),
-    (NodeIndex<u32>, NodeIndex<u32>, Vec<EdgeData>, Vec<EdgeData>),
->;
+pub struct AccumulatedEdgeHashMap<'a> {
+    map: HashMap<
+        (NodeIndex<u32>, NodeIndex<u32>),
+        (NodeIndex<u32>, NodeIndex<u32>, Vec<&'a EdgeData>, Vec<&'a EdgeData>),
+    >
+}
+
+impl Default for AccumulatedEdgeHashMap<'_> {
+    fn default() -> Self {
+        AccumulatedEdgeHashMap {
+            map: HashMap::new(),
+        }
+    }
+}
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
@@ -104,7 +114,7 @@ impl NoteGraph {
         let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
         let mut edge_structs = edges
             .iter()
-            .filter_map(|edge| EdgeStruct::from_edge_ref(edge.1, self))
+            .map(|edge| EdgeStruct::from_edge_ref(edge.1))
             .collect::<Vec<EdgeStruct>>();
 
         if let Some(edge_sorter) = &diagram_options.edge_sorter {
@@ -129,7 +139,7 @@ impl NoteGraph {
         );
 
         // accumulate edges by direction, so that we can collapse them in the next step
-        let accumulated_edges = NoteGraph::int_accumulate_edges(edge_structs);
+        let accumulated_edges = NoteGraph::int_accumulate_edges(self, edge_structs);
 
         // utils::log(format!("{:#?}", accumulated_edges));
 
@@ -160,7 +170,7 @@ impl NoteGraph {
         }
 
         // collapse edge data and add them to the graph
-        for (from, to, forward, backward) in accumulated_edges.values() {
+        for (from, to, forward, backward) in accumulated_edges.map.values() {
             if diagram_options.collapse_opposing_edges || backward.is_empty() {
                 result.push_str(&self.generate_mermaid_edge(
                     from,
@@ -226,8 +236,8 @@ impl NoteGraph {
         &self,
         source: &NodeIndex<u32>,
         target: &NodeIndex<u32>,
-        forward: Vec<EdgeData>,
-        backward: Vec<EdgeData>,
+        forward: Vec<&EdgeData>,
+        backward: Vec<&EdgeData>,
         diagram_options: &MermaidGraphOptions,
     ) -> String {
         let mut label = String::new();
@@ -286,34 +296,34 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_accumulate_edges(edges: Vec<EdgeStruct>) -> AccumulatedEdgeHashMap {
-        let mut accumulated_edges: AccumulatedEdgeHashMap = HashMap::new();
+    pub fn int_accumulate_edges<'a>(graph: &'a NoteGraph, edges: Vec<EdgeStruct>) -> AccumulatedEdgeHashMap<'a> {
+        let mut accumulated_edges = AccumulatedEdgeHashMap::default();
 
         // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
 
         for edge_struct in edges {
             let forward_dir = (edge_struct.source_index, edge_struct.target_index);
 
-            let entry1 = accumulated_edges.get_mut(&forward_dir);
+            let entry1 = accumulated_edges.map.get_mut(&forward_dir);
             match entry1 {
                 Some((_, _, forward, _)) => {
-                    forward.push(edge_struct.edge);
+                    forward.push(edge_struct.edge_data_ref(graph));
                 }
                 None => {
                     let backward_dir = (edge_struct.target_index, edge_struct.source_index);
 
-                    let entry2 = accumulated_edges.get_mut(&backward_dir);
+                    let entry2 = accumulated_edges.map.get_mut(&backward_dir);
                     match entry2 {
                         Some((_, _, _, backward)) => {
-                            backward.push(edge_struct.edge);
+                            backward.push(edge_struct.edge_data_ref(graph));
                         }
                         None => {
-                            accumulated_edges.insert(
+                            accumulated_edges.map.insert(
                                 forward_dir,
                                 (
                                     edge_struct.source_index,
                                     edge_struct.target_index,
-                                    vec![edge_struct.edge],
+                                    vec![edge_struct.edge_data_ref(graph)],
                                     Vec::new(),
                                 ),
                             );

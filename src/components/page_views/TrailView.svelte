@@ -91,7 +91,7 @@
 	// 	}
 	// });
 
-	$: sorted_paths = selected_paths?.process(depth);
+	$: sorted_paths = selected_paths?.process(plugin.graph, depth);
 </script>
 
 <div>

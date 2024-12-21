@@ -86,8 +86,8 @@ impl Path {
         self.edges == other.edges
     }
 
-    pub fn get_first_target(&self) -> Option<String> {
-        self.edges.first().map(|edge| edge.target.path.clone())
+    pub fn get_first_target(&self, graph: &NoteGraph) -> Option<String> {
+        self.edges.first().map(|edge| edge.target_path(graph))
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -139,7 +139,7 @@ impl PathList {
             .unwrap_or(0)
     }
 
-    pub fn process(&self, depth: usize) -> Vec<Path> {
+    pub fn process(&self, graph: &NoteGraph, depth: usize) -> Vec<Path> {
         self.paths
             .iter()
             .map(|path| path.truncate(depth))
@@ -149,7 +149,7 @@ impl PathList {
 
                 a_len
                     .cmp(&b_len)
-                    .then_with(|| a.get_first_target().cmp(&b.get_first_target()))
+                    .then_with(|| a.get_first_target(graph).cmp(&b.get_first_target(graph)))
             })
             .dedup()
             .collect_vec()
@@ -301,14 +301,14 @@ impl RecTraversalResult {
     }
 
     /// Flattens the traversal data by removing the tree structure and deduplicating the edges by their target_path
-    pub fn flatten(&mut self) {
+    pub fn flatten(&mut self, graph: &NoteGraph) {
         let mut data = Vec::new();
 
         for datum in self.data.drain(..) {
             rec_flatten_traversal_data(datum, &mut data);
         }
 
-        data.dedup_by(|a, b| a.edge.target.path == b.edge.target.path);
+        data.dedup_by(|a, b| a.edge.target_path(graph) == b.edge.target_path(graph));
 
         self.data = data;
     }
@@ -367,8 +367,8 @@ impl FlatRecTraversalData {
 
 #[wasm_bindgen]
 impl FlatRecTraversalData {
-    pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
-        self.edge.get_attribute_label(attributes)
+    pub fn get_attribute_label(&self, graph: &NoteGraph, attributes: Vec<String>) -> String {
+        self.edge.get_attribute_label(graph, attributes)
     }
 }
 
@@ -466,8 +466,6 @@ impl NoteGraph {
                 .int_get_node_index(entry_node)
                 .ok_or(NoteGraphError::new("Node not found"))?;
 
-            let start_node_weight = self.int_get_node_weight(start_node)?;
-
             for edge in self.graph.edges(start_node) {
                 if !self.int_edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
                     continue;
@@ -476,12 +474,10 @@ impl NoteGraph {
                 let target = edge.target();
 
                 let edge_struct = EdgeStruct::new(
-                    start_node_weight.clone(),
                     start_node,
-                    self.int_get_node_weight(target)?.clone(),
                     target,
-                    edge.weight().clone(),
                     edge.id(),
+                    edge.weight().edge_type.clone(),
                 );
 
                 traversal_count += 1;
@@ -490,7 +486,7 @@ impl NoteGraph {
                     result.push(self.int_rec_traverse(
                         target,
                         edge_struct.clone(),
-                        Some(&vec![edge_struct.edge_type()]),
+                        Some(&vec![edge_struct.edge_type]),
                         0,
                         options.max_depth,
                         &mut traversal_count,
@@ -547,12 +543,10 @@ impl NoteGraph {
                     // assert!(*self.int_get_node_weight(node).unwrap() == edge.target);
 
                     let edge_struct = EdgeStruct::new(
-                        edge.target.clone(),
                         edge.target_index,
-                        self.int_get_node_weight(target)?.clone(),
                         target,
-                        edge_data.clone(),
                         outgoing_edge.id(),
+                        edge_data.edge_type.clone(),
                     );
 
                     *traversal_count += 1;

@@ -1,13 +1,10 @@
 import type { EdgeSortId } from "src/const/graph";
-import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-import { Traverse } from "src/graph/traverse";
-import {
-	stringify_node,
-} from "src/graph/utils";
 import type { LinkKind } from "src/interfaces/links";
 import type { ShowNodeOptions } from "src/interfaces/settings";
+import type BreadcrumbsPlugin from "src/main";
 import { Links } from "src/utils/links";
-import { TraversalOptions, create_edge_sorter, type NoteGraph, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
+import { TraversalOptions, create_edge_sorter, type RecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export namespace ListIndex {
 	export type Options = {
@@ -41,6 +38,7 @@ export namespace ListIndex {
 	};
 
 	export const edge_tree_to_list_index = (
+		plugin: BreadcrumbsPlugin,
 		tree: RecTraversalData[],
 		options: Pick<
 			Options,
@@ -51,26 +49,27 @@ export namespace ListIndex {
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
 		tree.forEach(({ children, depth, edge }) => {
-			const display = stringify_node(edge.target, {
-				show_node_options: options.show_node_options,
-			});
+			const display = edge.stringify_target(
+				plugin.graph, 
+				toNodeStringifyOptions(plugin, options.show_node_options)
+			);
 
-			const link = Links.ify(edge.target_path, display, {
+			const link = Links.ify(edge.target_path(plugin.graph), display, {
 				link_kind: options.link_kind,
 			});
 
-			const attr = edge.get_attribute_label(options.show_attributes);
+			const attr = edge.get_attribute_label(plugin.graph, options.show_attributes);
 
 			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
 
-			index += edge_tree_to_list_index(children, options);
+			index += edge_tree_to_list_index(plugin, children, options);
 		});
 
 		return index;
 	};
 
 	export const build = (
-		graph: NoteGraph,
+		plugin: BreadcrumbsPlugin,
 		start_node: string,
 		options: Options,
 	) => {
@@ -81,11 +80,12 @@ export namespace ListIndex {
 			false,
 		);
 
-		const traversal_result = graph.rec_traverse(traversal_options);
+		const traversal_result = plugin.graph.rec_traverse(traversal_options);
 		const edge_sorter = create_edge_sorter(options.edge_sort_id.field, options.edge_sort_id.order === -1);
-		traversal_result.sort(graph, edge_sorter);
+		traversal_result.sort(plugin.graph, edge_sorter);
 
 		return edge_tree_to_list_index(
+			plugin,
 			traversal_result.data,
 			options,
 		);

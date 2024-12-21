@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
+	import type { EdgeAttribute } from "src/graph/utils";
 	import { createEventDispatcher } from "svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import SettingItem from "./SettingItem.svelte";

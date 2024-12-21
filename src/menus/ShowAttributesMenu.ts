@@ -1,5 +1,5 @@
 import { Menu } from "obsidian";
-import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/utils";
 
 export const ShowAttributesSelectorMenu = ({
 	cb,

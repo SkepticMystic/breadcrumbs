@@ -3,7 +3,7 @@
 	import { group_by, remove_duplicates } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { toNodeStringifyOptions } from "src/graph/utils";
 
 	export let file_path: string;
 	export let plugin: BreadcrumbsPlugin;
@@ -11,16 +11,7 @@
 	const { field_group_labels, show_node_options } =
 		plugin.settings.views.page.prev_next;
 
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
-
-	let node_stringify_options = new NodeStringifyOptions(
-		show_node_options.ext,
-		show_node_options.folder,
-		show_node_options.alias,
-		dendron_note.enabled && dendron_note.display_trimmed
-			? dendron_note.delimiter
-			: undefined,
-	);
+	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
 
 	const edge_field_labels = {
 		prev: resolve_field_group_labels(
@@ -41,7 +32,7 @@
 	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
 				plugin.graph.get_outgoing_edges(file_path).filter((e) =>
-					e.matches_edge_filter(merged_field_labels),
+					e.matches_edge_filter(plugin.graph, merged_field_labels),
 				),
 				(e) =>
 					edge_field_labels.prev.includes(e.edge_type)

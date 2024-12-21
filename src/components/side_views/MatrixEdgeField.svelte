@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { NodeStringifyOptions, type EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
+	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
 	export let open: boolean;
 	export let field: EdgeField;
@@ -17,17 +17,7 @@
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
-
-	let node_stringify_options = new NodeStringifyOptions(
-		show_node_options.ext,
-		show_node_options.folder,
-		show_node_options.alias,
-		dendron_note.enabled && dendron_note.display_trimmed
-			? dendron_note.delimiter
-			: undefined,
-	);
-
+	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
 </script>
 
 <details
@@ -70,8 +60,9 @@
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.explicit ? "x" : "i"}
+							label={edge.explicit(plugin.graph) ? "x" : "i"}
 							aria_label={edge.get_attribute_label(
+								plugin.graph,
 								show_attributes,
 							)}
 						/>

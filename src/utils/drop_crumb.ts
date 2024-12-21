@@ -13,19 +13,21 @@ import { Paths } from "./paths";
 
 const linkify_edge = (
 	plugin: BreadcrumbsPlugin,
-	{ source, target }: EdgeStruct,
+	struct: EdgeStruct,
 ) => {
+	const target_path = struct.target_path(plugin.graph);
+
 	// target_id is a full path
-	const target_file = plugin.app.vault.getFileByPath(target.path);
+	const target_file = plugin.app.vault.getFileByPath(target_path);
 
 	if (!target_file) {
-		return `[[${Paths.drop_ext(target.path)}]]`;
+		return `[[${Paths.drop_ext(target_path)}]]`;
 	} else {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,
-			source.path,
+			struct.source_path(plugin.graph),
 			undefined,
-			target.aliases?.at(0),
+			struct.target_data(plugin.graph).aliases?.at(0),
 		);
 	}
 };

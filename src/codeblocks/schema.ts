@@ -1,5 +1,5 @@
 import { SIMPLE_EDGE_SORT_FIELDS } from "src/const/graph";
-import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES } from "src/graph/utils";
 import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 import { remove_duplicates } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";

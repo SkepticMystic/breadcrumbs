@@ -51,14 +51,19 @@ impl NoteGraph {
         }
     }
 
+    /// Sets the transitive rules for the graph.
+    /// Does not rebuild the graph.
     pub fn set_transitive_rules(&mut self, rules: Vec<TransitiveGraphRule>) {
         self.transitive_rules = rules;
     }
 
+    /// Set the update callback.
+    /// This will be called after every update to the graph.
     pub fn set_update_callback(&mut self, callback: js_sys::Function) {
         self.update_callback = Some(callback);
     }
 
+    /// Call the update callback.
     pub fn notify_update(&self) {
         if let Some(callback) = &self.update_callback {
             match callback.call0(&JsValue::NULL) {
@@ -77,6 +82,8 @@ impl NoteGraph {
         }
     }
 
+    /// Builds the graph from a list of nodes and edges.
+    /// Will delete all existing data.
     pub fn build_graph(&mut self, nodes: Vec<GCNodeData>, edges: Vec<GCEdgeData>) {
         let mut perf_logger = PerfLogger::new("Building Graph".to_owned());
         perf_logger.start_split("Adding initial nodes and edges".to_owned());
@@ -123,11 +130,13 @@ impl NoteGraph {
         perf_logger.log();
     }
 
+    /// Applies a batch update to the graph.
+    /// Throws an error if the update fails.
     pub fn apply_update(&mut self, update: BatchGraphUpdate) -> Result<()> {
         let mut perf_logger = PerfLogger::new("Applying Update".to_owned());
         perf_logger.start_split("Removing implied edges".to_owned());
 
-        self.int_remove_implied_edges();
+        self.int_remove_implied_edges_unchecked();
 
         perf_logger.start_split("Applying updates".to_owned());
 
@@ -149,6 +158,7 @@ impl NoteGraph {
         Ok(())
     }
 
+    /// Iterate all nodes in the graph and call the provided function with the [NodeData] of each node.
     pub fn iterate_nodes(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
@@ -161,6 +171,7 @@ impl NoteGraph {
         });
     }
 
+    /// Iterate all edges in the graph and call the provided function with the [EdgeData] of each edge.
     pub fn iterate_edges(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
@@ -173,18 +184,20 @@ impl NoteGraph {
         });
     }
 
+    /// Get all outgoing edges from a node.
     pub fn get_outgoing_edges(&self, node: String) -> Vec<EdgeStruct> {
         let node_index = self.int_get_node_index(&node);
 
         match node_index {
             Some(node_index) => self
                 .int_iter_outgoing_edges(node_index)
-                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
+                .map(|edge| self.int_edge_ref_to_struct(edge))
                 .collect(),
             None => Vec::new(),
         }
     }
 
+    /// Get all outgoing edges from a node, filtered and grouped by edge type.
     pub fn get_filtered_grouped_outgoing_edges(
         &self,
         node: String,
@@ -195,27 +208,43 @@ impl NoteGraph {
         GroupedEdgeList::from_vec(match node_index {
             Some(node_index) => self
                 .int_iter_outgoing_edges(node_index)
-                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
-                .filter(|edge| edge_matches_edge_filter(&edge.edge, edge_types.as_ref()))
+                .filter(|edge_ref| edge_matches_edge_filter(edge_ref.weight(), edge_types.as_ref()))
+                .map(|edge| self.int_edge_ref_to_struct(edge))
                 .collect(),
             None => Vec::new(),
         })
     }
 
+    /// Get all incoming edges to a node.
     pub fn get_incoming_edges(&self, node: String) -> Vec<EdgeStruct> {
         let node_index = self.int_get_node_index(&node);
 
         match node_index {
             Some(node_index) => self
                 .int_iter_incoming_edges(node_index)
-                .filter_map(|edge| self.int_edge_ref_to_struct(edge))
+                .map(|edge| self.int_edge_ref_to_struct(edge))
                 .collect(),
             None => Vec::new(),
         }
     }
 
+    /// Checks if a node exists in the graph.
     pub fn has_node(&self, node: String) -> bool {
         self.node_hash.contains_key(&node)
+    }
+
+    /// Checks if a node is resolved.
+    /// Returns false if the node is not found.
+    pub fn is_node_resolved(&self, node: String) -> bool {
+        self.int_get_node_index(&node)
+            .and_then(|node_index| self.graph.node_weight(node_index))
+            .map(|node| node.resolved)
+            .unwrap_or(false)
+    }
+
+    pub fn get_node(&self, node: String) -> Option<NodeData> {
+        self.int_get_node_index(&node)
+            .and_then(|node_index| self.graph.node_weight(node_index).cloned())
     }
 
     /// Returns all edge types that are present in the graph.
@@ -341,7 +370,7 @@ impl NoteGraph {
                     from,
                     to,
                     edge_data,
-                    &mut Some(&mut current_edge_type_tracker),
+                    Some(&mut current_edge_type_tracker),
                 );
             }
 
@@ -365,26 +394,23 @@ impl NoteGraph {
     pub fn int_add_to_edge_type_tracker(
         &mut self,
         edge_type: &str,
-        edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
-        add_to_global: bool,
+        edge_type_tracker: Option<&mut VecSet<[String; 16]>>,
     ) {
-        if add_to_global {
-            self.edge_types.insert(edge_type.to_owned());
-        }
+        self.edge_types.insert(edge_type.to_owned());
 
         if let Some(inner) = edge_type_tracker {
             inner.insert(edge_type.to_owned());
         }
     }
 
-    pub fn int_edge_ref_to_struct(&self, edge: NGEdgeRef) -> Option<EdgeStruct> {
-        EdgeStruct::from_edge_ref(edge, self)
+    pub fn int_edge_ref_to_struct(&self, edge: NGEdgeRef) -> EdgeStruct {
+        EdgeStruct::from_edge_ref(edge)
     }
 
     pub fn int_edge_to_struct(
         &self,
         edge_index: NGEdgeIndex,
-        edge_data: EdgeData,
+        edge_data: &EdgeData,
     ) -> Option<EdgeStruct> {
         EdgeStruct::from_edge_data(edge_index, edge_data, self)
     }
@@ -413,18 +439,6 @@ impl NoteGraph {
             .edges_directed(node, petgraph::Direction::Outgoing)
     }
 
-    pub fn int_remove_outgoing_edges(&mut self, node: NGNodeIndex) {
-        let mut edges_to_remove: Vec<NGEdgeIndex> = Vec::new();
-
-        for edge in self.graph.edges(node) {
-            edges_to_remove.push(edge.id());
-        }
-
-        for edge in edges_to_remove {
-            self.graph.remove_edge(edge);
-        }
-    }
-
     pub fn int_node_count(&self) -> usize {
         self.graph.node_count()
     }
@@ -450,7 +464,9 @@ impl NoteGraph {
         edge_matches_edge_filter(edge, edge_types)
     }
 
-    pub fn int_remove_implied_edges(&mut self) {
+    /// Removes all implied edges from the graph.
+    /// UNCHECKED: This does not update the edge type tracker.
+    pub fn int_remove_implied_edges_unchecked(&mut self) {
         let edge_count = self.graph.edge_count();
 
         self.graph.retain_edges(|frozen_graph, edge| {
@@ -486,24 +502,24 @@ impl NoteGraph {
         from: NGNodeIndex,
         to: NGNodeIndex,
         edge_data: EdgeData,
-        edge_type_tracker: &mut Option<&mut VecSet<[String; 16]>>,
+        edge_type_tracker: Option<&mut VecSet<[String; 16]>>,
     ) {
         if self.int_has_edge(from, to, &edge_data.edge_type) {
             return;
         }
 
-        self.int_add_to_edge_type_tracker(&edge_data.edge_type, edge_type_tracker, true);
+        self.int_add_to_edge_type_tracker(&edge_data.edge_type, edge_type_tracker);
 
         self.graph.add_edge(from, to, edge_data);
     }
 
-    fn int_remove_node(&mut self, node: &str) -> Result<()> {
-        let node_index = self
-            .int_get_node_index(node)
-            .ok_or(NoteGraphError::new(&format!("Node {:?} not found", node)))?;
+    fn int_remove_node(&mut self, node_index: NGNodeIndex) -> Result<()> {
+        let node_path = &self.graph.node_weight(node_index).ok_or(NoteGraphError::new(
+            "failed to remove node, node not found",
+        ))?.path;
 
+        self.node_hash.remove(node_path);
         self.graph.remove_node(node_index);
-        self.node_hash.remove(node);
 
         Ok(())
     }
@@ -567,7 +583,8 @@ impl NoteGraph {
     // Edge Methods
     // ---------------------
 
-    fn int_remove_edge(
+    /// UNCHECKED: This does not rebuild the edge type tracker.
+    fn int_remove_edge_unchecked(
         &mut self,
         from: NGNodeIndex,
         to: NGNodeIndex,
@@ -628,6 +645,8 @@ impl NoteGraph {
     // Safe Methods
     // ----------------
 
+    /// Adds a node to the graph.
+    /// Throws an error if the node already exists and is resolved.
     pub fn int_safe_add_node(&mut self, construction_data: &GCNodeData) -> Result<()> {
         // we check if the node already exists in the graph
         // if it does, we assert that it is not resolved
@@ -660,6 +679,8 @@ impl NoteGraph {
         Ok(())
     }
 
+    /// Safely remove a resolved node from the graph.
+    /// Will also safely remove all outgoing edges.
     pub fn int_safe_remove_node(&mut self, node: &str) -> Result<()> {
         match self.int_get_node_index(node) {
             Some(index) => {
@@ -700,6 +721,8 @@ impl NoteGraph {
         Ok(())
     }
 
+    /// Safely deletes an edge by reference.
+    /// Will remove the target node if it is unresolved and has no other incoming edges.
     fn int_safe_delete_edge_ref(&mut self, edge: NGEdgeIndex) -> Result<()> {
         let (_, target) = self
             .graph
@@ -711,7 +734,8 @@ impl NoteGraph {
         self.graph.remove_edge(edge);
 
         if !target_resolved && self.int_iter_incoming_edges(target).count() == 0 {
-            self.int_remove_node(&target_data.path)?;
+            // INVARIANT: target node is unresolved and has no incoming edges
+            self.int_remove_node(target)?;
         }
 
         Ok(())
@@ -722,7 +746,7 @@ impl NoteGraph {
             (Some(from_index), Some(to_index)) => {
                 match self.int_get_edge(from_index, to_index, edge_type) {
                     Some(edge) => self.int_safe_delete_edge_ref(edge.id()),
-                    None => Err(NoteGraphError::new("Edge not found")),
+                    None => Err(NoteGraphError::new("failed to delete edge, edge not found")),
                 }
             }
             _ => Err(NoteGraphError::new(
@@ -739,7 +763,7 @@ impl NoteGraph {
             source,
             target,
             construction_data.to_explicit_edge(),
-            &mut None,
+            None,
         );
     }
 

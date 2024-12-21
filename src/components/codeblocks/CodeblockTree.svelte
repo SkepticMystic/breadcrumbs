@@ -55,7 +55,7 @@
 
 		try {
 			tree = plugin.graph.rec_traverse(traversal_options);
-			if (options.flat) tree.flatten();
+			if (options.flat) tree.flatten(plugin.graph);
 			tree.sort(plugin.graph, sort);
 			data = tree.to_flat();
 
@@ -100,7 +100,7 @@
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={ListIndex.edge_tree_to_list_index(tree.data, {
+					text={ListIndex.edge_tree_to_list_index(plugin, tree.data, {
 						...plugin.settings.commands.list_index.default_options,
 						show_attributes: options["show-attributes"] ?? [],
 					})}

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { FlatRecTraversalData, NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { FlatRecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 
@@ -17,16 +17,7 @@
 	export let show_node_options: ShowNodeOptions;
 	export let show_attributes: EdgeAttribute[] | undefined;
 
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
-
-	let node_stringify_options = new NodeStringifyOptions(
-		show_node_options.ext,
-		show_node_options.folder,
-		show_node_options.alias,
-		dendron_note.enabled && dendron_note.display_trimmed
-			? dendron_note.delimiter
-			: undefined,
-	)
+	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
 
 	let opens = Array(items.length).fill(true);
 
@@ -63,7 +54,7 @@
 
 			{#if show_attributes?.length}
 				<TreeItemFlair
-					label={datum.get_attribute_label(show_attributes)}
+					label={datum.get_attribute_label(plugin.graph, show_attributes)}
 				/>
 			{/if}
 		</summary>

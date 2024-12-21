@@ -6,7 +6,8 @@
 		transpose,
 	} from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { NodeStringifyOptions, type Path } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { toNodeStringifyOptions } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 	export let all_paths: Path[];
@@ -18,20 +19,11 @@
 
 	// this as well
 	const col_runs = transpose(square).map((col) =>
-		gather_by_runs(col, (e) => (e ? e.target_path : null)),
+		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
 	);
-
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
 	const show_node_options = plugin.settings.views.page.trail.show_node_options
-	const node_stringify_options = new NodeStringifyOptions(
-		show_node_options.ext,
-		show_node_options.folder,
-		show_node_options.alias,
-		dendron_note.enabled && dendron_note.display_trimmed
-			? dendron_note.delimiter
-			: undefined,
-	);
+	const node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
 </script>
 
 <!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here

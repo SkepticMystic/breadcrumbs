@@ -173,80 +173,76 @@ impl NodeData {
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct EdgeStruct {
-    #[wasm_bindgen(getter_with_clone)]
-    pub source: NodeData,
     #[wasm_bindgen(skip)]
     pub source_index: NGNodeIndex,
-    #[wasm_bindgen(getter_with_clone)]
-    pub target: NodeData,
     #[wasm_bindgen(skip)]
     pub target_index: NGNodeIndex,
-    #[wasm_bindgen(getter_with_clone)]
-    pub edge: EdgeData,
     #[wasm_bindgen(skip)]
     pub edge_index: NGEdgeIndex,
+    #[wasm_bindgen(getter_with_clone)]
+    pub edge_type: String
 }
 
 #[wasm_bindgen]
 impl EdgeStruct {
-    #[wasm_bindgen(getter)]
-    pub fn source_path(&self) -> String {
-        self.source.path.clone()
+    pub fn source_data(&self, graph: &NoteGraph) -> NodeData {
+        self.source_data_ref(graph).clone()
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn target_path(&self) -> String {
-        self.target.path.clone()
+    pub fn target_data(&self, graph: &NoteGraph) -> NodeData {
+        self.target_data_ref(graph).clone()
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn source_resolved(&self) -> bool {
-        self.source.resolved
+    pub fn source_path(&self, graph: &NoteGraph) -> String {
+        self.source_data_ref(graph).path.clone()
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn target_resolved(&self) -> bool {
-        self.target.resolved
+    pub fn target_path(&self, graph: &NoteGraph) -> String {
+        self.target_data_ref(graph).path.clone()
     }
 
-    pub fn stringify_target(&self, options: &NodeStringifyOptions) -> String {
-        options.stringify_node(&self.target)
+    pub fn source_resolved(&self, graph: &NoteGraph) -> bool {
+        self.source_data_ref(graph).resolved.clone()
     }
 
-    pub fn stringify_source(&self, options: &NodeStringifyOptions) -> String {
-        options.stringify_node(&self.source)
+    pub fn target_resolved(&self, graph: &NoteGraph) -> bool {
+        self.target_data_ref(graph).resolved.clone()
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn edge_type(&self) -> String {
-        self.edge.edge_type.clone()
+    pub fn stringify_target(&self, graph: &NoteGraph, options: &NodeStringifyOptions) -> String {
+        options.stringify_node(self.target_data_ref(graph))
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn edge_source(&self) -> String {
-        self.edge.edge_source.clone()
+    pub fn stringify_source(&self, graph: &NoteGraph, options: &NodeStringifyOptions) -> String {
+        options.stringify_node(self.source_data_ref(graph))
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn explicit(&self) -> bool {
-        self.edge.explicit
+    pub fn edge_data(&self, graph: &NoteGraph) -> EdgeData {
+        graph.graph.edge_weight(self.edge_index).unwrap().clone()
     }
 
-    #[wasm_bindgen(getter)]
-    pub fn round(&self) -> u8 {
-        self.edge.round
+    pub fn edge_source(&self, graph: &NoteGraph) -> String {
+        self.edge_data_ref(graph).edge_source.clone()
     }
 
-    pub fn get_attribute_label(&self, attributes: Vec<String>) -> String {
-        self.edge.get_attribute_label(&attributes)
+    pub fn explicit(&self, graph: &NoteGraph) -> bool {
+        self.edge_data_ref(graph).explicit
     }
 
-    pub fn matches_edge_filter(&self, edge_types: Option<Vec<String>>) -> bool {
-        edge_matches_edge_filter(&self.edge, edge_types.as_ref())
+    pub fn round(&self, graph: &NoteGraph) -> u8 {
+        self.edge_data_ref(graph).round
+    }
+
+    pub fn get_attribute_label(&self, graph: &NoteGraph, attributes: Vec<String>) -> String {
+        self.edge_data_ref(graph).get_attribute_label(&attributes)
+    }
+
+    pub fn matches_edge_filter(&self, graph: &NoteGraph, edge_types: Option<Vec<String>>) -> bool {
+        edge_matches_edge_filter(self.edge_data_ref(graph), edge_types.as_ref())
     }
 
     pub fn is_self_loop(&self) -> bool {
-        self.source.path == self.target.path
+        self.source_index == self.target_index
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -257,60 +253,68 @@ impl EdgeStruct {
 
 impl EdgeStruct {
     pub fn new(
-        source: NodeData,
         source_index: NGNodeIndex,
-        target: NodeData,
         target_index: NGNodeIndex,
-        edge: EdgeData,
         edge_index: NGEdgeIndex,
+        edge_type: String,
     ) -> EdgeStruct {
         EdgeStruct {
-            source,
             source_index,
-            target,
             target_index,
-            edge,
             edge_index,
+            edge_type,
         }
     }
 
     pub fn from_edge_ref(
-        edge_ref: NGEdgeRef,
-        graph: &crate::graph::NoteGraph,
-    ) -> Option<EdgeStruct> {
+        edge_ref: NGEdgeRef
+    ) -> EdgeStruct {
         let source_index = edge_ref.source();
         let target_index = edge_ref.target();
-        let source = graph.graph.node_weight(source_index)?.clone();
-        let target = graph.graph.node_weight(target_index)?.clone();
 
-        Some(EdgeStruct::new(
-            source,
+        EdgeStruct::new(
             source_index,
-            target,
             target_index,
-            edge_ref.weight().clone(),
             edge_ref.id(),
-        ))
+            edge_ref.weight().edge_source.clone(),
+        )
     }
 
     pub fn from_edge_data(
         edge_index: NGEdgeIndex,
-        edge_data: EdgeData,
+        edge_data: &EdgeData,
         graph: &crate::graph::NoteGraph,
     ) -> Option<EdgeStruct> {
         let (source_index, target_index) = graph.graph.edge_endpoints(edge_index)?;
-        let source = graph.graph.node_weight(source_index)?.clone();
-        let target = graph.graph.node_weight(target_index)?.clone();
 
         Some(EdgeStruct::new(
-            source,
             source_index,
-            target,
             target_index,
-            edge_data,
             edge_index,
+            edge_data.edge_source.clone(),
         ))
     }
+
+    pub fn edge_data_ref<'a>(&self, graph: &'a NoteGraph) -> &'a EdgeData {
+        graph.graph.edge_weight(self.edge_index).unwrap()
+    }
+
+    pub fn source_data_ref<'a>(&self, graph: &'a NoteGraph) -> &'a NodeData {
+        graph.graph.node_weight(self.source_index).unwrap()
+    }
+
+    pub fn target_data_ref<'a>(&self, graph: &'a NoteGraph) -> &'a NodeData {
+        graph.graph.node_weight(self.target_index).unwrap()
+    }
+
+    pub fn target_path_ref<'a>(&self, graph: &'a NoteGraph) -> &'a str {
+        &self.target_data_ref(graph).path
+    }
+
+    pub fn source_path_ref<'a>(&self, graph: &'a NoteGraph) -> &'a str {
+        &self.source_data_ref(graph).path
+    }
+
 }
 
 #[wasm_bindgen]
@@ -322,11 +326,6 @@ pub struct EdgeList {
 
 #[wasm_bindgen]
 impl EdgeList {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> EdgeList {
-        EdgeList { edges: Vec::new() }
-    }
-
     pub fn get_edges(&self) -> Vec<EdgeStruct> {
         self.edges.clone()
     }
@@ -355,6 +354,10 @@ impl EdgeList {
 }
 
 impl EdgeList {
+    pub fn new() -> EdgeList {
+        EdgeList { edges: Vec::new() }
+    }
+
     pub fn from_vec(edges: Vec<EdgeStruct>) -> EdgeList {
         EdgeList { edges }
     }
@@ -368,6 +371,30 @@ pub struct GroupedEdgeList {
 }
 
 #[wasm_bindgen]
+impl GroupedEdgeList {
+    pub fn get_edges(&self, edge_type: &str) -> Option<Vec<EdgeStruct>> {
+        self.edges
+            .get(edge_type)
+            .map(|edge_list| edge_list.get_edges())
+    }
+
+    pub fn get_sorted_edges(
+        &self,
+        edge_type: &str,
+        graph: &NoteGraph,
+        sorter: &EdgeSorter,
+    ) -> Option<Vec<EdgeStruct>> {
+        self.edges
+            .get(edge_type)
+            .map(|edge_list| edge_list.get_sorted_edges(graph, sorter))
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
+    }
+}
+
 impl GroupedEdgeList {
     pub fn new() -> GroupedEdgeList {
         GroupedEdgeList {
@@ -390,31 +417,9 @@ impl GroupedEdgeList {
     }
 
     pub fn add_edge(&mut self, edge_struct: EdgeStruct) {
-        let edge_type = edge_struct.edge.edge_type.clone();
+        let edge_type = edge_struct.edge_type.clone();
         let edge_list = self.edges.entry(edge_type).or_default();
         edge_list.edges.push(edge_struct);
-    }
-
-    pub fn get_edges(&self, edge_type: &str) -> Option<Vec<EdgeStruct>> {
-        self.edges
-            .get(edge_type)
-            .map(|edge_list| edge_list.get_edges())
-    }
-
-    pub fn get_sorted_edges(
-        &self,
-        edge_type: &str,
-        graph: &NoteGraph,
-        sorter: &EdgeSorter,
-    ) -> Option<Vec<EdgeStruct>> {
-        self.edges
-            .get(edge_type)
-            .map(|edge_list| edge_list.get_sorted_edges(graph, sorter))
-    }
-
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
     }
 }
 

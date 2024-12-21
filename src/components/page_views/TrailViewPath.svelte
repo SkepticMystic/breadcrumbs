@@ -29,7 +29,7 @@
 					{#if j !== 0}
 						<span
 							class="BC-trail-view-item-separator"
-							aria-label={edge.get_attribute_label([
+							aria-label={edge.get_attribute_label(plugin.graph, [
 								"source",
 								"implied_kind",
 								"round",
