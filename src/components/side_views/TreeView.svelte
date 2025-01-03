@@ -40,7 +40,7 @@
 				new TraversalOptions(
 					[$active_file_store!.path],
 					edge_field_labels,
-					20,
+					5,
 					!merge_fields,
 				),
 			)

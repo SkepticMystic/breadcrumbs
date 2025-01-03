@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, rc::Rc};
 
 use itertools::Itertools;
 use petgraph::visit::EdgeRef;
@@ -429,6 +429,10 @@ impl FlatRecTraversalResult {
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
+
+    pub fn data_at_index(&self, index: usize) -> Option<FlatRecTraversalData> {
+        self.data.get(index).cloned()
+    }
 }
 
 fn rec_flatten_traversal_data_to_flat(
@@ -457,7 +461,12 @@ impl NoteGraph {
 
         let mut result = Vec::new();
 
-        let edge_types = options.edge_types.unwrap_or(self.edge_types());
+        let edge_types = options
+            .edge_types
+            .unwrap_or(self.edge_types())
+            .into_iter()
+            .map(Rc::from)
+            .collect();
 
         let mut traversal_count = 0;
 
@@ -487,7 +496,7 @@ impl NoteGraph {
                         target,
                         edge_struct.clone(),
                         Some(&vec![edge_struct.edge_type]),
-                        0,
+                        1,
                         options.max_depth,
                         &mut traversal_count,
                     )?);
@@ -496,7 +505,7 @@ impl NoteGraph {
                         target,
                         edge_struct,
                         Some(&edge_types),
-                        0,
+                        1,
                         options.max_depth,
                         &mut traversal_count,
                     )?);
@@ -526,7 +535,7 @@ impl NoteGraph {
         &self,
         node: NGNodeIndex,
         edge: EdgeStruct,
-        edge_types: Option<&Vec<String>>,
+        edge_types: Option<&Vec<Rc<str>>>,
         depth: u32,
         max_depth: u32,
         traversal_count: &mut u32,
@@ -607,17 +616,22 @@ impl NoteGraph {
             })
             .collect::<Result<Vec<NGNodeIndex>>>()?;
 
+        let opt_edge_types = options
+            .edge_types
+            .as_ref()
+            .map(|v| v.iter().map(|x| Rc::from(x.clone())).collect());
+
         if options.separate_edges {
             let mut node_list = Vec::new();
             let mut edge_list = Vec::new();
 
-            let all_edge_types = self.edge_types();
-            let edge_types: &Vec<String> = options.edge_types.as_ref().unwrap_or(&all_edge_types);
+            let all_edge_types = self.int_edge_types();
+            let edge_types = opt_edge_types.unwrap_or(all_edge_types);
 
             for edge_type in edge_types {
                 let (nodes, edges) = self.int_traverse_breadth_first(
                     entry_nodes.clone(),
-                    Some(&vec![edge_type.clone()]),
+                    Some(&vec![edge_type]),
                     options.max_depth,
                     |_, depth| depth,
                     |edge| edge,
@@ -631,7 +645,7 @@ impl NoteGraph {
         } else {
             Ok(self.int_traverse_breadth_first(
                 entry_nodes,
-                options.edge_types.as_ref(),
+                opt_edge_types.as_ref(),
                 options.max_depth,
                 |_, depth| depth,
                 |edge| edge,
@@ -648,7 +662,7 @@ impl NoteGraph {
     pub fn int_traverse_depth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
-        edge_types: Option<&Vec<String>>,
+        edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,
@@ -674,7 +688,7 @@ impl NoteGraph {
     pub fn int_traverse_breadth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
-        edge_types: Option<&Vec<String>>,
+        edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,
@@ -695,7 +709,7 @@ impl NoteGraph {
         &'a self,
         traversal_data_structure: &mut impl GraphTraversalDataStructure<(NGNodeIndex, u32)>,
         entry_nodes: Vec<NGNodeIndex>,
-        edge_types: Option<&Vec<String>>,
+        edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,

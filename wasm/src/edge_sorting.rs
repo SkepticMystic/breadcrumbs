@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use enum_dispatch::enum_dispatch;
 use petgraph::visit::EdgeRef;
 use wasm_bindgen::prelude::*;
 
@@ -81,37 +82,37 @@ impl EdgeSorter {
     }
 
     pub fn sort_edges(&self, graph: &NoteGraph, edges: &mut [EdgeStruct]) {
-        let ordering = self.get_edge_ordering(graph);
+        let comparer = self.get_edge_comparer(graph);
 
-        edges.sort_by(|a, b| self.apply_edge_ordering(graph, ordering.as_ref(), a, b));
+        edges.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, a, b));
     }
 
     pub fn sort_traversal_data(&self, graph: &NoteGraph, edges: &mut [RecTraversalData]) {
-        let ordering = self.get_edge_ordering(graph);
+        let comparer = self.get_edge_comparer(graph);
 
-        edges.sort_by(|a, b| self.apply_edge_ordering(graph, ordering.as_ref(), &a.edge, &b.edge));
+        edges.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, &a.edge, &b.edge));
     }
 
-    fn get_edge_ordering<'a>(&self, graph: &'a NoteGraph) -> Box<dyn EdgeOrdering + 'a> {
+    fn get_edge_comparer<'a>(&self, graph: &'a NoteGraph) -> Comparer<'a> {
         match self.field.clone() {
-            SortField::Path => Box::from(PathOrdering),
-            SortField::Basename => Box::from(BasenameOrdering),
-            SortField::EdgeType => Box::from(EdgeTypeOrdering),
-            SortField::Implied => Box::from(ImpliedOrdering),
+            SortField::Path => PathComparer.into(),
+            SortField::Basename => BasenameComparer.into(),
+            SortField::EdgeType => EdgeTypeComparer.into(),
+            SortField::Implied => ImpliedComparer.into(),
             SortField::Neighbour(neighbour_field) => {
-                Box::from(NeighbourOrdering::new(neighbour_field, graph))
+                NeighbourComparer::new(neighbour_field, graph).into()
             }
         }
     }
 
-    fn apply_edge_ordering<'a>(
+    fn apply_edge_ordering(
         &self,
         graph: &NoteGraph,
-        ordering: &(dyn EdgeOrdering + 'a),
+        comparer: &impl EdgeComparer,
         a: &EdgeStruct,
         b: &EdgeStruct,
     ) -> std::cmp::Ordering {
-        let ordering = ordering.compare(graph, a, b);
+        let ordering = comparer.compare(graph, a, b);
 
         if self.reverse {
             ordering.reverse()
@@ -121,21 +122,33 @@ impl EdgeSorter {
     }
 }
 
-pub trait EdgeOrdering {
+#[enum_dispatch]
+pub trait EdgeComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering;
 }
 
-pub struct PathOrdering;
+#[enum_dispatch(EdgeComparer)]
+pub enum Comparer<'a> {
+    PathComparer,
+    BasenameComparer,
+    EdgeTypeComparer,
+    ImpliedComparer,
+    NeighbourOrdering(NeighbourComparer<'a>),
+}
 
-impl EdgeOrdering for PathOrdering {
+#[derive(Default)]
+pub struct PathComparer;
+
+impl EdgeComparer for PathComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         a.target_path_ref(graph).cmp(b.target_path_ref(graph))
     }
 }
 
-pub struct BasenameOrdering;
+#[derive(Default)]
+pub struct BasenameComparer;
 
-impl EdgeOrdering for BasenameOrdering {
+impl EdgeComparer for BasenameComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         let a_target = a.target_path_ref(graph);
         let b_target = b.target_path_ref(graph);
@@ -146,20 +159,22 @@ impl EdgeOrdering for BasenameOrdering {
     }
 }
 
-pub struct EdgeTypeOrdering;
+#[derive(Default)]
+pub struct EdgeTypeComparer;
 
-impl EdgeOrdering for EdgeTypeOrdering {
+impl EdgeComparer for EdgeTypeComparer {
     fn compare(&self, _graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         a.edge_type.cmp(&b.edge_type)
     }
 }
 
-pub struct ImpliedOrdering;
+#[derive(Default)]
+pub struct ImpliedComparer;
 
-impl EdgeOrdering for ImpliedOrdering {
+impl EdgeComparer for ImpliedComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         if a.explicit(graph) == b.explicit(graph) {
-            a.target_path_ref(graph).cmp(&b.target_path_ref(graph))
+            a.target_path_ref(graph).cmp(b.target_path_ref(graph))
         } else if a.explicit(graph) {
             std::cmp::Ordering::Less
         } else {
@@ -168,41 +183,47 @@ impl EdgeOrdering for ImpliedOrdering {
     }
 }
 
-pub struct NeighbourOrdering<'a> {
+pub struct NeighbourComparer<'a> {
     neighbour_field: String,
     graph: &'a NoteGraph,
 }
 
-impl<'a> NeighbourOrdering<'a> {
+impl<'a> NeighbourComparer<'a> {
     pub fn new(neighbour_field: String, graph: &'a NoteGraph) -> Self {
-        NeighbourOrdering {
+        NeighbourComparer {
             neighbour_field,
             graph,
         }
     }
 }
 
-impl EdgeOrdering for NeighbourOrdering<'_> {
+impl EdgeComparer for NeighbourComparer<'_> {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         let neighbour_field = vec![self.neighbour_field.clone()];
 
         let a_neighbour = self
             .graph
             .int_iter_outgoing_edges(a.target_index)
-            .find(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
+            .find(|edge| {
+                edge.weight()
+                    .matches_edge_filter_string(Some(&neighbour_field))
+            })
             .and_then(|x| self.graph.int_get_node_weight(x.target()).ok());
 
         let b_neighbour = self
             .graph
             .int_iter_outgoing_edges(b.target_index)
-            .find(|edge| edge.weight().matches_edge_filter(Some(&neighbour_field)))
+            .find(|edge| {
+                edge.weight()
+                    .matches_edge_filter_string(Some(&neighbour_field))
+            })
             .and_then(|x| self.graph.int_get_node_weight(x.target()).ok());
 
         match (a_neighbour, b_neighbour) {
             (Some(a_neighbour), Some(b_neighbour)) => a_neighbour.path.cmp(&b_neighbour.path),
             (Some(_), None) => std::cmp::Ordering::Less,
             (None, Some(_)) => std::cmp::Ordering::Greater,
-            (None, None) => a.target_path_ref(graph).cmp(&b.target_path_ref(graph)),
+            (None, None) => a.target_path_ref(graph).cmp(b.target_path_ref(graph)),
         }
     }
 }

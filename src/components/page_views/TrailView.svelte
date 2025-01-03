@@ -31,7 +31,7 @@
 		let traversal_options = new TraversalOptions(
 			[file_path],
 			edge_field_labels,
-			100,
+			5,
 			!plugin.settings.views.page.trail.merge_fields,
 		);
 

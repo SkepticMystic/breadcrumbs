@@ -13,19 +13,19 @@ use crate::{
     utils::{NoteGraphError, Result},
 };
 
-pub struct AccumulatedEdgeHashMap<'a> {
-    map: HashMap<
-        (NodeIndex<u32>, NodeIndex<u32>),
-        (NodeIndex<u32>, NodeIndex<u32>, Vec<&'a EdgeData>, Vec<&'a EdgeData>),
-    >
-}
+type AccumulatedEdgeMap<'a> = HashMap<
+    (NodeIndex<u32>, NodeIndex<u32>),
+    (
+        NodeIndex<u32>,
+        NodeIndex<u32>,
+        Vec<&'a EdgeData>,
+        Vec<&'a EdgeData>,
+    ),
+>;
 
-impl Default for AccumulatedEdgeHashMap<'_> {
-    fn default() -> Self {
-        AccumulatedEdgeHashMap {
-            map: HashMap::new(),
-        }
-    }
+#[derive(Default)]
+pub struct AccumulatedEdgeHashMap<'a> {
+    map: AccumulatedEdgeMap<'a>,
 }
 
 #[wasm_bindgen]
@@ -175,23 +175,23 @@ impl NoteGraph {
                 result.push_str(&self.generate_mermaid_edge(
                     from,
                     to,
-                    forward.clone(),
-                    backward.clone(),
+                    forward,
+                    backward,
                     &diagram_options,
                 ));
             } else {
                 result.push_str(&self.generate_mermaid_edge(
                     from,
                     to,
-                    forward.clone(),
-                    Vec::new(),
+                    forward,
+                    &Vec::new(),
                     &diagram_options,
                 ));
                 result.push_str(&self.generate_mermaid_edge(
                     to,
                     from,
-                    backward.clone(),
-                    Vec::new(),
+                    backward,
+                    &Vec::new(),
                     &diagram_options,
                 ));
             }
@@ -236,8 +236,8 @@ impl NoteGraph {
         &self,
         source: &NodeIndex<u32>,
         target: &NodeIndex<u32>,
-        forward: Vec<&EdgeData>,
-        backward: Vec<&EdgeData>,
+        forward: &[&EdgeData],
+        backward: &[&EdgeData],
         diagram_options: &MermaidGraphOptions,
     ) -> String {
         let mut label = String::new();
@@ -296,7 +296,10 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_accumulate_edges<'a>(graph: &'a NoteGraph, edges: Vec<EdgeStruct>) -> AccumulatedEdgeHashMap<'a> {
+    pub fn int_accumulate_edges(
+        graph: &NoteGraph,
+        edges: Vec<EdgeStruct>,
+    ) -> AccumulatedEdgeHashMap<'_> {
         let mut accumulated_edges = AccumulatedEdgeHashMap::default();
 
         // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed

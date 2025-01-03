@@ -91,7 +91,7 @@ impl GCEdgeData {
 }
 
 impl GCEdgeData {
-    pub fn to_explicit_edge(&self) -> EdgeData {
-        EdgeData::new(self.edge_type.clone(), self.edge_source.clone(), true, 0)
+    pub fn to_explicit_edge(self) -> EdgeData {
+        EdgeData::new(self.edge_type.into(), self.edge_source.into(), true, 0)
     }
 }

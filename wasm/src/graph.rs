@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use petgraph::{
     stable_graph::{Edges, StableGraph},
@@ -18,9 +18,17 @@ use crate::{
     utils::{NoteGraphError, PerfLogger, Result, LOGGER},
 };
 
-pub fn edge_matches_edge_filter(edge: &EdgeData, edge_types: Option<&Vec<String>>) -> bool {
+pub fn edge_matches_edge_filter(edge: &EdgeData, edge_types: Option<&Vec<Rc<str>>>) -> bool {
     match edge_types {
         Some(types) => types.contains(&edge.edge_type),
+        None => true,
+    }
+}
+
+pub fn edge_matches_edge_filter_string(edge: &EdgeData, edge_types: Option<&Vec<String>>) -> bool {
+    match edge_types {
+        // sadly we can't use contains with Rc<str> and String
+        Some(types) => types.iter().any(|t| t == edge.edge_type.as_ref()),
         None => true,
     }
 }
@@ -33,7 +41,7 @@ pub struct NoteGraph {
     #[wasm_bindgen(skip)]
     pub transitive_rules: Vec<TransitiveGraphRule>,
     #[wasm_bindgen(skip)]
-    pub edge_types: VecSet<[String; 16]>,
+    pub edge_types: VecSet<[Rc<str>; 16]>,
     #[wasm_bindgen(skip)]
     pub node_hash: HashMap<String, NGNodeIndex>,
     update_callback: Option<js_sys::Function>,
@@ -118,7 +126,7 @@ impl NoteGraph {
         }
 
         for edge in edges {
-            self.int_safe_add_edge(&edge);
+            self.int_safe_add_edge(edge);
         }
 
         self.int_build_implied_edges(&mut perf_logger);
@@ -208,7 +216,9 @@ impl NoteGraph {
         GroupedEdgeList::from_vec(match node_index {
             Some(node_index) => self
                 .int_iter_outgoing_edges(node_index)
-                .filter(|edge_ref| edge_matches_edge_filter(edge_ref.weight(), edge_types.as_ref()))
+                .filter(|edge_ref| {
+                    edge_matches_edge_filter_string(edge_ref.weight(), edge_types.as_ref())
+                })
                 .map(|edge| self.int_edge_ref_to_struct(edge))
                 .collect(),
             None => Vec::new(),
@@ -249,7 +259,7 @@ impl NoteGraph {
 
     /// Returns all edge types that are present in the graph.
     pub fn edge_types(&self) -> Vec<String> {
-        self.edge_types.iter().cloned().collect()
+        self.edge_types.iter().map(|x| x.to_string()).collect()
     }
 
     pub fn log(&self) {
@@ -274,7 +284,7 @@ impl NoteGraph {
         let max_rounds = self
             .transitive_rules
             .iter()
-            .map(|rule| rule.rounds)
+            .map(|rule| rule.rounds())
             .max()
             .unwrap_or(0);
         // utils::log(format!("Max rounds: {}", max_rounds));
@@ -301,8 +311,7 @@ impl NoteGraph {
             for rule in self.transitive_rules.iter() {
                 // if there is any edge type that the graph doesn't have, we can skip the rule
                 if rule
-                    .path
-                    .iter()
+                    .iter_path()
                     .any(|edge_type| !self.edge_types.contains(edge_type))
                 {
                     // utils::log(format!("Skipping rule: {}", rule.edge_type));
@@ -311,8 +320,7 @@ impl NoteGraph {
 
                 // if all edge types of a rule didn't see any changes in the last round, we can skip the rule
                 if rule
-                    .path
-                    .iter()
+                    .iter_path()
                     .all(|edge_type| !edge_type_tracker.contains(edge_type))
                 {
                     // utils::log(format!("Skipping rule: {}", rule.edge_type));
@@ -323,12 +331,12 @@ impl NoteGraph {
                     // let path = rule.path.clone();
                     let mut current_nodes = vec![start_node];
 
-                    for edge_type in rule.path.iter() {
+                    for edge_type in rule.iter_path() {
                         let mut next_nodes = Vec::new();
 
                         for current_node in current_nodes {
                             for edge in self.graph.edges(current_node) {
-                                if *edge.weight().edge_type == *edge_type {
+                                if edge.weight().edge_type == *edge_type {
                                     next_nodes.push(edge.target());
                                 }
                             }
@@ -339,14 +347,13 @@ impl NoteGraph {
 
                     for end_node in current_nodes {
                         // if the rule can't loop and the start and end node are the same, we skip the edge
-                        if !rule.can_loop && start_node == end_node {
+                        if !rule.can_loop() && start_node == end_node {
                             continue;
                         }
 
-                        let edge_data =
-                            EdgeData::new(rule.edge_type.clone(), rule.get_name(), false, i);
+                        let edge_data = EdgeData::new(rule.edge_type(), rule.name(), false, i);
 
-                        if rule.close_reversed {
+                        if rule.close_reversed() {
                             edges_to_add.push((end_node, start_node, edge_data));
                         } else {
                             edges_to_add.push((start_node, end_node, edge_data));
@@ -361,17 +368,12 @@ impl NoteGraph {
 
             // utils::log(format!("New edge count: {}", edges_to_add.len()));
 
-            let mut current_edge_type_tracker: VecSet<[String; 16]> = VecSet::empty();
+            let mut current_edge_type_tracker: VecSet<[Rc<str>; 16]> = VecSet::empty();
 
             round_perf_split.start_split(format!("Adding {} Edges", edges_to_add.len()));
 
             for (from, to, edge_data) in edges_to_add {
-                self.int_add_edge(
-                    from,
-                    to,
-                    edge_data,
-                    Some(&mut current_edge_type_tracker),
-                );
+                self.int_add_edge(from, to, edge_data, Some(&mut current_edge_type_tracker));
             }
 
             round_perf_split.stop();
@@ -393,14 +395,18 @@ impl NoteGraph {
     /// Adds an edge type to the global edge type tracker and an optional local edge type tracker.
     pub fn int_add_to_edge_type_tracker(
         &mut self,
-        edge_type: &str,
-        edge_type_tracker: Option<&mut VecSet<[String; 16]>>,
+        edge_type: &Rc<str>,
+        edge_type_tracker: Option<&mut VecSet<[Rc<str>; 16]>>,
     ) {
-        self.edge_types.insert(edge_type.to_owned());
+        self.edge_types.insert(Rc::clone(edge_type));
 
         if let Some(inner) = edge_type_tracker {
-            inner.insert(edge_type.to_owned());
+            inner.insert(Rc::clone(edge_type));
         }
+    }
+
+    pub fn int_edge_types(&self) -> Vec<Rc<str>> {
+        self.edge_types.iter().cloned().collect()
     }
 
     pub fn int_edge_ref_to_struct(&self, edge: NGEdgeRef) -> EdgeStruct {
@@ -459,7 +465,7 @@ impl NoteGraph {
     pub fn int_edge_matches_edge_filter(
         &self,
         edge: &EdgeData,
-        edge_types: Option<&Vec<String>>,
+        edge_types: Option<&Vec<Rc<str>>>,
     ) -> bool {
         edge_matches_edge_filter(edge, edge_types)
     }
@@ -502,7 +508,7 @@ impl NoteGraph {
         from: NGNodeIndex,
         to: NGNodeIndex,
         edge_data: EdgeData,
-        edge_type_tracker: Option<&mut VecSet<[String; 16]>>,
+        edge_type_tracker: Option<&mut VecSet<[Rc<str>; 16]>>,
     ) {
         if self.int_has_edge(from, to, &edge_data.edge_type) {
             return;
@@ -514,9 +520,11 @@ impl NoteGraph {
     }
 
     fn int_remove_node(&mut self, node_index: NGNodeIndex) -> Result<()> {
-        let node_path = &self.graph.node_weight(node_index).ok_or(NoteGraphError::new(
-            "failed to remove node, node not found",
-        ))?.path;
+        let node_path = &self
+            .graph
+            .node_weight(node_index)
+            .ok_or(NoteGraphError::new("failed to remove node, node not found"))?
+            .path;
 
         self.node_hash.remove(node_path);
         self.graph.remove_node(node_index);
@@ -755,16 +763,11 @@ impl NoteGraph {
         }
     }
 
-    pub fn int_safe_add_edge(&mut self, construction_data: &GCEdgeData) {
+    pub fn int_safe_add_edge(&mut self, construction_data: GCEdgeData) {
         let source = self.int_get_or_create_unresolved_node(&construction_data.source);
         let target = self.int_get_or_create_unresolved_node(&construction_data.target);
 
-        self.int_add_edge(
-            source,
-            target,
-            construction_data.to_explicit_edge(),
-            None,
-        );
+        self.int_add_edge(source, target, construction_data.to_explicit_edge(), None);
     }
 
     // ----------------
@@ -772,7 +775,7 @@ impl NoteGraph {
     // ----------------
 
     pub fn assert_correct_trackers(&self) {
-        let mut edge_types: VecSet<[String; 16]> = VecSet::empty();
+        let mut edge_types: VecSet<[Rc<str>; 16]> = VecSet::empty();
 
         for edge in self.graph.edge_references() {
             edge_types.insert(edge.weight().edge_type.clone());

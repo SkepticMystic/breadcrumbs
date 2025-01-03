@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug, path::Path};
+use std::{collections::HashMap, fmt::Debug, path::Path, rc::Rc};
 
 use itertools::Itertools;
 use petgraph::{
@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{
     edge_sorting::EdgeSorter,
-    graph::{edge_matches_edge_filter, NoteGraph},
+    graph::{edge_matches_edge_filter_string, NoteGraph},
     graph_construction::GCNodeData,
 };
 
@@ -21,18 +21,34 @@ pub type NGEdgeRef<'a> = EdgeReference<'a, EdgeData, u32>;
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct EdgeData {
-    #[wasm_bindgen(getter_with_clone)]
-    pub edge_type: String,
-    #[wasm_bindgen(getter_with_clone)]
-    pub edge_source: String,
+    #[wasm_bindgen(skip)]
+    pub edge_type: Rc<str>,
+    #[wasm_bindgen(skip)]
+    pub edge_source: Rc<str>,
     pub explicit: bool,
     pub round: u8,
 }
 
 #[wasm_bindgen]
 impl EdgeData {
-    #[wasm_bindgen(constructor)]
-    pub fn new(edge_type: String, edge_source: String, explicit: bool, round: u8) -> EdgeData {
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
+    }
+
+    #[wasm_bindgen(js_name = edge_type, getter)]
+    pub fn get_edge_type(&self) -> String {
+        self.edge_type.to_string()
+    }
+
+    #[wasm_bindgen(js_name = edge_source, getter)]
+    pub fn get_edge_source(&self) -> String {
+        self.edge_source.to_string()
+    }
+}
+
+impl EdgeData {
+    pub fn new(edge_type: Rc<str>, edge_source: Rc<str>, explicit: bool, round: u8) -> EdgeData {
         EdgeData {
             edge_type,
             edge_source,
@@ -41,15 +57,8 @@ impl EdgeData {
         }
     }
 
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
-    }
-}
-
-impl EdgeData {
-    pub fn matches_edge_filter(&self, edge_types: Option<&Vec<String>>) -> bool {
-        edge_matches_edge_filter(self, edge_types)
+    pub fn matches_edge_filter_string(&self, edge_types: Option<&Vec<String>>) -> bool {
+        edge_matches_edge_filter_string(self, edge_types)
     }
 
     pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
@@ -61,18 +70,18 @@ impl EdgeData {
         // TODO(JS): maybe change the attribute options so that the JS side better matches the data
         for attribute in attributes {
             let data = match attribute.as_str() {
-                "field" => Some(("field", self.edge_type.clone())),
+                "field" => Some(("field", self.edge_type.to_string())),
                 "explicit" => Some(("explicit", self.explicit.to_string())),
                 "source" => {
                     if self.explicit {
-                        Some(("source", self.edge_source.clone()))
+                        Some(("source", self.edge_source.to_string()))
                     } else {
                         None
                     }
                 }
                 "implied_kind" => {
                     if !self.explicit {
-                        Some(("implied_kind", self.edge_source.clone()))
+                        Some(("implied_kind", self.edge_source.to_string()))
                     } else {
                         None
                     }
@@ -179,8 +188,8 @@ pub struct EdgeStruct {
     pub target_index: NGNodeIndex,
     #[wasm_bindgen(skip)]
     pub edge_index: NGEdgeIndex,
-    #[wasm_bindgen(getter_with_clone)]
-    pub edge_type: String
+    #[wasm_bindgen(skip)]
+    pub edge_type: Rc<str>,
 }
 
 #[wasm_bindgen]
@@ -202,11 +211,11 @@ impl EdgeStruct {
     }
 
     pub fn source_resolved(&self, graph: &NoteGraph) -> bool {
-        self.source_data_ref(graph).resolved.clone()
+        self.source_data_ref(graph).resolved
     }
 
     pub fn target_resolved(&self, graph: &NoteGraph) -> bool {
-        self.target_data_ref(graph).resolved.clone()
+        self.target_data_ref(graph).resolved
     }
 
     pub fn stringify_target(&self, graph: &NoteGraph, options: &NodeStringifyOptions) -> String {
@@ -221,8 +230,13 @@ impl EdgeStruct {
         graph.graph.edge_weight(self.edge_index).unwrap().clone()
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn edge_type(&self) -> String {
+        self.edge_type.to_string()
+    }
+
     pub fn edge_source(&self, graph: &NoteGraph) -> String {
-        self.edge_data_ref(graph).edge_source.clone()
+        self.edge_data_ref(graph).get_edge_source()
     }
 
     pub fn explicit(&self, graph: &NoteGraph) -> bool {
@@ -238,7 +252,7 @@ impl EdgeStruct {
     }
 
     pub fn matches_edge_filter(&self, graph: &NoteGraph, edge_types: Option<Vec<String>>) -> bool {
-        edge_matches_edge_filter(self.edge_data_ref(graph), edge_types.as_ref())
+        edge_matches_edge_filter_string(self.edge_data_ref(graph), edge_types.as_ref())
     }
 
     pub fn is_self_loop(&self) -> bool {
@@ -256,7 +270,7 @@ impl EdgeStruct {
         source_index: NGNodeIndex,
         target_index: NGNodeIndex,
         edge_index: NGEdgeIndex,
-        edge_type: String,
+        edge_type: Rc<str>,
     ) -> EdgeStruct {
         EdgeStruct {
             source_index,
@@ -266,9 +280,7 @@ impl EdgeStruct {
         }
     }
 
-    pub fn from_edge_ref(
-        edge_ref: NGEdgeRef
-    ) -> EdgeStruct {
+    pub fn from_edge_ref(edge_ref: NGEdgeRef) -> EdgeStruct {
         let source_index = edge_ref.source();
         let target_index = edge_ref.target();
 
@@ -276,7 +288,7 @@ impl EdgeStruct {
             source_index,
             target_index,
             edge_ref.id(),
-            edge_ref.weight().edge_source.clone(),
+            Rc::clone(&edge_ref.weight().edge_type),
         )
     }
 
@@ -291,7 +303,7 @@ impl EdgeStruct {
             source_index,
             target_index,
             edge_index,
-            edge_data.edge_source.clone(),
+            Rc::clone(&edge_data.edge_type),
         ))
     }
 
@@ -314,7 +326,6 @@ impl EdgeStruct {
     pub fn source_path_ref<'a>(&self, graph: &'a NoteGraph) -> &'a str {
         &self.source_data_ref(graph).path
     }
-
 }
 
 #[wasm_bindgen]
@@ -367,7 +378,7 @@ impl EdgeList {
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct GroupedEdgeList {
     #[wasm_bindgen(skip)]
-    pub edges: HashMap<String, EdgeList>,
+    pub edges: HashMap<Rc<str>, EdgeList>,
 }
 
 #[wasm_bindgen]

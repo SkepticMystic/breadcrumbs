@@ -4,15 +4,27 @@ use crate::{
     graph_rules::TransitiveGraphRule,
     utils::Result,
 };
+use enum_dispatch::enum_dispatch;
 use wasm_bindgen::prelude::*;
 
+#[enum_dispatch]
 pub trait GraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()>;
+    fn apply(self, graph: &mut NoteGraph) -> Result<()>;
+}
+
+#[enum_dispatch(GraphUpdate)]
+pub enum Update {
+    AddNoteGraphUpdate,
+    RemoveNoteGraphUpdate,
+    RenameNoteGraphUpdate,
+    AddEdgeGraphUpdate,
+    RemoveEdgeGraphUpdate,
+    TransitiveRulesGraphUpdate,
 }
 
 #[wasm_bindgen]
 pub struct BatchGraphUpdate {
-    updates: Vec<Box<dyn GraphUpdate>>,
+    updates: Vec<Update>,
 }
 
 #[wasm_bindgen]
@@ -32,12 +44,12 @@ impl Default for BatchGraphUpdate {
 }
 
 impl BatchGraphUpdate {
-    pub fn add_update(&mut self, update: Box<dyn GraphUpdate>) {
+    fn add_update(&mut self, update: Update) {
         self.updates.push(update);
     }
 
-    pub fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        for update in &self.updates {
+    pub fn apply(self, graph: &mut NoteGraph) -> Result<()> {
+        for update in self.updates {
             update.apply(graph)?;
         }
 
@@ -58,13 +70,13 @@ impl AddNoteGraphUpdate {
         Self { data }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for AddNoteGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
         graph.int_safe_add_node(&self.data)
     }
 }
@@ -82,13 +94,13 @@ impl RemoveNoteGraphUpdate {
         Self { data }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for RemoveNoteGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
         graph.int_safe_remove_node(&self.data)
     }
 }
@@ -107,13 +119,13 @@ impl RenameNoteGraphUpdate {
         Self { old_name, new_name }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for RenameNoteGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
         graph.int_safe_rename_node(&self.old_name, &self.new_name)
     }
 }
@@ -131,14 +143,14 @@ impl AddEdgeGraphUpdate {
         Self { data }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for AddEdgeGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        graph.int_safe_add_edge(&self.data);
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
+        graph.int_safe_add_edge(self.data);
         Ok(())
     }
 }
@@ -162,13 +174,13 @@ impl RemoveEdgeGraphUpdate {
         }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for RemoveEdgeGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
         graph.int_safe_delete_edge(&self.from, &self.to, &self.edge_type)
     }
 }
@@ -186,14 +198,14 @@ impl TransitiveRulesGraphUpdate {
         Self { new_rules }
     }
 
-    pub fn add_to_batch(&self, batch: &mut BatchGraphUpdate) {
-        batch.add_update(Box::new(self.clone()));
+    pub fn add_to_batch(self, batch: &mut BatchGraphUpdate) {
+        batch.add_update(self.into());
     }
 }
 
 impl GraphUpdate for TransitiveRulesGraphUpdate {
-    fn apply(&self, graph: &mut NoteGraph) -> Result<()> {
-        graph.set_transitive_rules(self.new_rules.clone());
+    fn apply(self, graph: &mut NoteGraph) -> Result<()> {
+        graph.set_transitive_rules(self.new_rules);
         Ok(())
     }
 }
