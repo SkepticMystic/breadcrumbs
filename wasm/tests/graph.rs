@@ -30,26 +30,30 @@ fn test_implied_edge_rules_reverse_direction() {
     let data = common::tdata_generate_tree(3, 2);
     let mut graph = NoteGraph::new();
 
-    graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["down".to_string()],
-            "up".to_string(),
-            5,
-            false,
-            true,
-        ),
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["up".to_string()],
-            "down".to_string(),
-            5,
-            false,
-            true,
-        ),
-    ]);
-
-    graph.build_graph(data.0, data.1);
+    graph
+        .build_graph(
+            data.0,
+            data.1,
+            vec![
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["down".to_string()],
+                    "up".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["up".to_string()],
+                    "down".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+            ],
+        )
+        .unwrap();
 
     assert_eq!(graph.int_edge_count(), 28);
 
@@ -70,34 +74,39 @@ fn test_implied_edge_rules_sibling() {
     let data = common::tdata_generate_tree(3, 2);
     let mut graph = NoteGraph::new();
 
-    graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["down".to_string()],
-            "up".to_string(),
-            5,
-            false,
-            true,
-        ),
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["up".to_string()],
-            "down".to_string(),
-            5,
-            false,
-            true,
-        ),
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["up".to_string(), "down".to_string()],
-            "same".to_string(),
-            5,
-            false,
-            false,
-        ),
-    ]);
+    graph
+        .build_graph(
+            data.0,
+            data.1,
+            vec![
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["down".to_string()],
+                    "up".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["up".to_string()],
+                    "down".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["up".to_string(), "down".to_string()],
+                    "same".to_string(),
+                    5,
+                    false,
+                    false,
+                ),
+            ],
+        )
+        .unwrap();
 
-    graph.build_graph(data.0, data.1);
     // same edges between siblings exist
     let same_edge_1 = graph
         .int_get_edge_by_name(&"0".to_string(), &"1".to_string(), &"same".to_string())
@@ -123,34 +132,38 @@ fn test_implied_edge_rules_sibling_can_loop() {
     let data = common::tdata_generate_tree(3, 2);
     let mut graph = NoteGraph::new();
 
-    graph.set_transitive_rules(vec![
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["down".to_string()],
-            "up".to_string(),
-            5,
-            false,
-            true,
-        ),
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["up".to_string()],
-            "down".to_string(),
-            5,
-            false,
-            true,
-        ),
-        TransitiveGraphRule::new(
-            "".to_string(),
-            vec!["up".to_string(), "down".to_string()],
-            "same".to_string(),
-            5,
-            true,
-            false,
-        ),
-    ]);
-
-    graph.build_graph(data.0, data.1);
+    graph
+        .build_graph(
+            data.0,
+            data.1,
+            vec![
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["down".to_string()],
+                    "up".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["up".to_string()],
+                    "down".to_string(),
+                    5,
+                    false,
+                    true,
+                ),
+                TransitiveGraphRule::new(
+                    "".to_string(),
+                    vec!["up".to_string(), "down".to_string()],
+                    "same".to_string(),
+                    5,
+                    true,
+                    false,
+                ),
+            ],
+        )
+        .unwrap();
     // same edges between siblings exist
     let same_edge_1 = graph
         .int_get_edge_by_name(&"0".to_string(), &"1".to_string(), &"same".to_string())

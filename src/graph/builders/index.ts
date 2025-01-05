@@ -117,11 +117,7 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 		)
 	});
 
-	plugin.graph.set_transitive_rules(
-		transitive_rules
-	);
-
-	plugin.graph.build_graph(nodes, edges);
+	plugin.graph.build_graph(nodes, edges, transitive_rules);
 	log.debug(timer.elapsedMessage("WASM call"));
 	log.debug(timer2.elapsedMessage("Total"));
 

@@ -47,7 +47,7 @@ pub fn tdata_generate_tree(depth: u32, branches: u32) -> (Vec<GCNodeData>, Vec<G
 pub fn tdata_to_graph(data: (Vec<GCNodeData>, Vec<GCEdgeData>)) -> NoteGraph {
     let mut graph = NoteGraph::new();
 
-    graph.build_graph(data.0, data.1);
+    graph.build_graph(data.0, data.1, vec![]).unwrap();
 
     graph
 }

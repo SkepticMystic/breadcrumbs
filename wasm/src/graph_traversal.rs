@@ -7,7 +7,7 @@ use web_time::Instant;
 
 use crate::{
     edge_sorting::EdgeSorter,
-    graph::NoteGraph,
+    graph::{edge_matches_edge_filter, NoteGraph},
     graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
         BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
@@ -476,7 +476,7 @@ impl NoteGraph {
                 .ok_or(NoteGraphError::new("Node not found"))?;
 
             for edge in self.graph.edges(start_node) {
-                if !self.int_edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
+                if !edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
                     continue;
                 }
 
@@ -546,7 +546,7 @@ impl NoteGraph {
             for outgoing_edge in self.graph.edges(node) {
                 let edge_data = outgoing_edge.weight();
 
-                if self.int_edge_matches_edge_filter(edge_data, edge_types) {
+                if edge_matches_edge_filter(edge_data, edge_types) {
                     let target = outgoing_edge.target();
 
                     // assert!(*self.int_get_node_weight(node).unwrap() == edge.target);
@@ -732,7 +732,7 @@ impl NoteGraph {
                 let target = edge.target();
                 let edge_data = edge.weight();
 
-                if self.int_edge_matches_edge_filter(edge_data, edge_types) {
+                if edge_matches_edge_filter(edge_data, edge_types) {
                     let already_visited = visited_nodes.contains(&target);
 
                     // we only add the edge if we are not at the depth limit or if we are at the depth limit and the target node is already in the depth map
