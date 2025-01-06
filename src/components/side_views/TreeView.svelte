@@ -10,49 +10,52 @@
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import {
-		FlatRecTraversalResult,
 		TraversalOptions,
+		TraversalPostprocessOptions,
 		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
-
-	export let plugin: BreadcrumbsPlugin;
+	import { derived } from "svelte/store";
 
 	let {
-		edge_sort_id,
-		merge_fields,
-		show_attributes,
-		show_node_options,
-		field_group_labels,
-		collapse,
-	} = plugin.settings.views.side.tree;
+		plugin
+	}: {
+		plugin: BreadcrumbsPlugin;
+	} = $props();
 
-	const edge_field_labels = resolve_field_group_labels(
+	let edge_sort_id = $state(plugin.settings.views.side.tree.edge_sort_id);
+	let merge_fields = $state(plugin.settings.views.side.tree.merge_fields);
+	let show_attributes = $state(plugin.settings.views.side.tree.show_attributes);
+	let show_node_options = $state(plugin.settings.views.side.tree.show_node_options);
+	let field_group_labels = $state(plugin.settings.views.side.tree.field_group_labels);
+	let collapse = $state(plugin.settings.views.side.tree.collapse);
+
+	let edge_field_labels = $derived(resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
 		field_group_labels,
-	);
+	));
 
-	let data: FlatRecTraversalResult | undefined = undefined;
+	let sort = $derived(create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1));
 
-	$: sort = create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1);
-	
-	$: tree = $active_file_store && plugin.graph.has_node($active_file_store.path)
-		? plugin.graph.rec_traverse(
+	let tree = $derived.by(() => {
+		if ($active_file_store && plugin.graph.has_node($active_file_store.path)) {
+			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
 					[$active_file_store!.path],
 					edge_field_labels,
 					5,
 					!merge_fields,
 				),
-			)
-		: undefined;
-	
-	$: {
-		tree?.sort(plugin.graph, sort);
+				new TraversalPostprocessOptions(
+					undefined,
+					false,
+				),
+			);
+		} else {
+			return undefined;
+		}
+	});
 
-		data = tree?.to_flat();
-
-		// console.trace(data, data?.data.length);
-	}
+	$effect(() => tree?.sort(plugin.graph, sort));
 </script>
 
 <div class="markdown-rendered BC-tree-view">
@@ -93,14 +96,14 @@
 	</div>
 
 	<div class="BC-tree-view-items">
-		{#key data}
-			{#if data && !data.is_empty()}
+		{#key tree}
+			{#if tree && !tree.is_empty()}
 				<NestedEdgeList
 					{plugin}
 					{show_attributes}
 					{show_node_options}
-					data={data.data}
-					items={data.entry_nodes}
+					data={tree.data}
+					items={tree.entry_nodes}
 					open_signal={!collapse}
 				/>
 			{:else}

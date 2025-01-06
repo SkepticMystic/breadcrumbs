@@ -7,7 +7,7 @@ use wasm_bindgen::prelude::*;
 use crate::{
     graph::NoteGraph,
     graph_data::EdgeStruct,
-    graph_traversal::RecTraversalData,
+    graph_traversal::TraversalData,
     utils::{NoteGraphError, Result},
 };
 
@@ -46,13 +46,13 @@ pub fn create_edge_sorter(field: String, reverse: bool) -> Result<EdgeSorter> {
 #[wasm_bindgen]
 pub fn sort_traversal_data(
     graph: &NoteGraph,
-    traversal_data: Vec<RecTraversalData>,
+    traversal_data: Vec<TraversalData>,
     sorter: &EdgeSorter,
-) -> Vec<RecTraversalData> {
+) -> Result<Vec<TraversalData>> {
     let mut traversal_data = traversal_data.clone();
-    sorter.sort_traversal_data(graph, &mut traversal_data);
+    sorter.sort_traversal_data(graph, &mut traversal_data)?;
 
-    traversal_data
+    Ok(traversal_data)
 }
 
 #[wasm_bindgen]
@@ -60,13 +60,13 @@ pub fn sort_edges(
     graph: &NoteGraph,
     edges: Vec<EdgeStruct>,
     sorter: &EdgeSorter,
-) -> Vec<EdgeStruct> {
+) -> Result<Vec<EdgeStruct>> {
     // utils::log(format!("Sorting edges: {:?}", edges));
 
     let mut edges = edges.clone();
-    sorter.sort_edges(graph, &mut edges);
+    sorter.sort_edges(graph, &mut edges)?;
 
-    edges
+    Ok(edges)
 }
 
 #[wasm_bindgen]
@@ -81,16 +81,49 @@ impl EdgeSorter {
         EdgeSorter { field, reverse }
     }
 
-    pub fn sort_edges(&self, graph: &NoteGraph, edges: &mut [EdgeStruct]) {
+    pub fn sort_edges(&self, graph: &NoteGraph, edges: &mut [EdgeStruct]) -> Result<()> {
         let comparer = self.get_edge_comparer(graph);
+
+        // Check that all edges are still valid. The comparers will panic on any errors.
+        for edge in edges.iter() {
+            edge.check_revision(graph)?;
+        }
 
         edges.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, a, b));
+        Ok(())
     }
 
-    pub fn sort_traversal_data(&self, graph: &NoteGraph, edges: &mut [RecTraversalData]) {
+    pub fn sort_traversal_data(
+        &self,
+        graph: &NoteGraph,
+        data: &mut [TraversalData],
+    ) -> Result<()> {
         let comparer = self.get_edge_comparer(graph);
 
-        edges.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, &a.edge, &b.edge));
+        // Check that all edges are still valid. The comparers will panic on any errors.
+        for datum in data.iter() {
+            datum.edge.check_revision(graph)?;
+        }
+
+        data.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, &a.edge, &b.edge));
+        Ok(())
+    }
+
+    pub fn sort_flat_traversal_data(
+        &self,
+        graph: &NoteGraph,
+        edges: &[EdgeStruct],
+        data: &mut [usize],
+    ) -> Result<()> {
+        let comparer = self.get_edge_comparer(graph);
+
+        // Check that all edges are still valid. The comparers will panic on any errors.
+        for index in data.iter() {
+            edges[*index].check_revision(graph)?;
+        }
+
+        data.sort_by(|a, b| self.apply_edge_ordering(graph, &comparer, &edges[*a], &edges[*b]));
+        Ok(())
     }
 
     fn get_edge_comparer<'a>(&self, graph: &'a NoteGraph) -> Comparer<'a> {
@@ -141,7 +174,9 @@ pub struct PathComparer;
 
 impl EdgeComparer for PathComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
-        a.target_path_ref(graph).cmp(b.target_path_ref(graph))
+        a.target_path_ref(graph)
+            .unwrap()
+            .cmp(b.target_path_ref(graph).unwrap())
     }
 }
 
@@ -150,8 +185,8 @@ pub struct BasenameComparer;
 
 impl EdgeComparer for BasenameComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
-        let a_target = a.target_path_ref(graph);
-        let b_target = b.target_path_ref(graph);
+        let a_target = a.target_path_ref(graph).unwrap();
+        let b_target = b.target_path_ref(graph).unwrap();
         let a_basename = a_target.split('/').last().unwrap();
         let b_basename = b_target.split('/').last().unwrap();
 
@@ -173,9 +208,11 @@ pub struct ImpliedComparer;
 
 impl EdgeComparer for ImpliedComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
-        if a.explicit(graph) == b.explicit(graph) {
-            a.target_path_ref(graph).cmp(b.target_path_ref(graph))
-        } else if a.explicit(graph) {
+        if a.explicit(graph).unwrap() == b.explicit(graph).unwrap() {
+            a.target_path_ref(graph)
+                .unwrap()
+                .cmp(b.target_path_ref(graph).unwrap())
+        } else if a.explicit(graph).unwrap() {
             std::cmp::Ordering::Less
         } else {
             std::cmp::Ordering::Greater
@@ -223,7 +260,10 @@ impl EdgeComparer for NeighbourComparer<'_> {
             (Some(a_neighbour), Some(b_neighbour)) => a_neighbour.path.cmp(&b_neighbour.path),
             (Some(_), None) => std::cmp::Ordering::Less,
             (None, Some(_)) => std::cmp::Ordering::Greater,
-            (None, None) => a.target_path_ref(graph).cmp(b.target_path_ref(graph)),
+            (None, None) => a
+                .target_path_ref(graph)
+                .unwrap()
+                .cmp(b.target_path_ref(graph).unwrap()),
         }
     }
 }

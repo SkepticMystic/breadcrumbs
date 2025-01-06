@@ -114,11 +114,11 @@ impl NoteGraph {
         let (nodes, edges) = self.int_traverse_basic(&traversal_options)?;
         let mut edge_structs = edges
             .iter()
-            .map(|edge| EdgeStruct::from_edge_ref(edge.1))
+            .map(|edge| EdgeStruct::from_edge_ref(edge.1, self))
             .collect::<Vec<EdgeStruct>>();
 
         if let Some(edge_sorter) = &diagram_options.edge_sorter {
-            edge_sorter.sort_edges(self, &mut edge_structs);
+            edge_sorter.sort_edges(self, &mut edge_structs)?;
         }
 
         // utils::log(format!("{:#?}", nodes));
@@ -139,7 +139,7 @@ impl NoteGraph {
         );
 
         // accumulate edges by direction, so that we can collapse them in the next step
-        let accumulated_edges = NoteGraph::int_accumulate_edges(self, edge_structs);
+        let accumulated_edges = NoteGraph::int_accumulate_edges(self, edge_structs)?;
 
         // utils::log(format!("{:#?}", accumulated_edges));
 
@@ -299,18 +299,20 @@ impl NoteGraph {
     pub fn int_accumulate_edges(
         graph: &NoteGraph,
         edges: Vec<EdgeStruct>,
-    ) -> AccumulatedEdgeHashMap<'_> {
+    ) -> Result<AccumulatedEdgeHashMap<'_>> {
         let mut accumulated_edges = AccumulatedEdgeHashMap::default();
 
         // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
 
         for edge_struct in edges {
+            edge_struct.check_revision(graph)?;
+
             let forward_dir = (edge_struct.source_index, edge_struct.target_index);
 
             let entry1 = accumulated_edges.map.get_mut(&forward_dir);
             match entry1 {
                 Some((_, _, forward, _)) => {
-                    forward.push(edge_struct.edge_data_ref(graph));
+                    forward.push(edge_struct.edge_data_ref(graph).unwrap());
                 }
                 None => {
                     let backward_dir = (edge_struct.target_index, edge_struct.source_index);
@@ -318,7 +320,7 @@ impl NoteGraph {
                     let entry2 = accumulated_edges.map.get_mut(&backward_dir);
                     match entry2 {
                         Some((_, _, _, backward)) => {
-                            backward.push(edge_struct.edge_data_ref(graph));
+                            backward.push(edge_struct.edge_data_ref(graph).unwrap());
                         }
                         None => {
                             accumulated_edges.map.insert(
@@ -326,7 +328,7 @@ impl NoteGraph {
                                 (
                                     edge_struct.source_index,
                                     edge_struct.target_index,
-                                    vec![edge_struct.edge_data_ref(graph)],
+                                    vec![edge_struct.edge_data_ref(graph).unwrap()],
                                     Vec::new(),
                                 ),
                             );
@@ -336,6 +338,6 @@ impl NoteGraph {
             }
         }
 
-        accumulated_edges
+        Ok(accumulated_edges)
     }
 }

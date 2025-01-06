@@ -4,13 +4,13 @@
 	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { FlatRecTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { FlatTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
 	export let plugin: BreadcrumbsPlugin;
 
 	// export let tree: RecTraversalData[];
-	export let data: FlatRecTraversalData[];
+	export let data: FlatTraversalData[];
 	export let items: Uint32Array;
 
 	export let open_signal: boolean | null;

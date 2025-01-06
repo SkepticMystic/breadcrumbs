@@ -8,10 +8,10 @@
 	import { Timer } from "src/utils/timer";
 	import { onMount } from "svelte";
 	import {
-	FlatRecTraversalResult,
+		FlatTraversalResult,
 		NoteGraphError,
-		RecTraversalResult,
 		TraversalOptions,
+		TraversalPostprocessOptions,
 		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
@@ -31,8 +31,7 @@
 
 	const DEFAULT_MAX_DEPTH = 10;
 
-	let tree: RecTraversalResult | undefined = undefined;
-	let data: FlatRecTraversalResult | undefined = undefined;
+	let data: FlatTraversalResult | undefined = undefined;
 	let error: string | undefined = undefined;
 
 	export const update = () => {
@@ -41,7 +40,7 @@
 		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
 
 		if (!plugin.graph.has_node(source_path)) {
-			tree = undefined;
+			data = undefined;
 			error = "The file does not exist in the graph.";
 			return;
 		}
@@ -53,17 +52,18 @@
 			!options["merge-fields"],
 		);
 
+		const postprocess_options = new TraversalPostprocessOptions(
+			sort,
+			options.flat
+		);
+
 		try {
-			tree = plugin.graph.rec_traverse(traversal_options);
-			if (options.flat) tree.flatten(plugin.graph);
-			tree.sort(plugin.graph, sort);
-			data = tree.to_flat();
+			data = plugin.graph.rec_traverse_and_process(traversal_options, postprocess_options);
 
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
 
-			tree = undefined;
 			data = undefined;
 			if (e instanceof NoteGraphError) {
 				error = e.message;
@@ -73,7 +73,6 @@
 			}
 		}
 
-		tree = tree;
 		data = data;
 	};
 
@@ -95,12 +94,12 @@
 		</h3>
 	{/if}
 
-	{#if tree && !tree.is_empty() && data}
+	{#if data && !data.is_empty()}
 		<div class="BC-codeblock-tree-items relative">
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={ListIndex.edge_tree_to_list_index(plugin, tree.data, {
+					text={ListIndex.edge_tree_to_list_index(plugin, data, {
 						...plugin.settings.commands.list_index.default_options,
 						show_attributes: options["show-attributes"] ?? [],
 					})}

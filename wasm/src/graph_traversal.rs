@@ -59,6 +59,28 @@ impl TraversalOptions {
 }
 
 #[wasm_bindgen]
+#[derive(Clone, Debug)]
+pub struct TraversalPostprocessOptions {
+    #[wasm_bindgen(getter_with_clone)]
+    pub sorter: Option<EdgeSorter>,
+    #[wasm_bindgen(getter_with_clone)]
+    pub flatten: bool,
+}
+
+#[wasm_bindgen]
+impl TraversalPostprocessOptions {
+    #[wasm_bindgen(constructor)]
+    pub fn new(sorter: Option<EdgeSorter>, flatten: bool) -> TraversalPostprocessOptions {
+        TraversalPostprocessOptions { sorter, flatten }
+    }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn to_fancy_string(&self) -> String {
+        format!("{:#?}", self)
+    }
+}
+
+#[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Path {
     #[wasm_bindgen(getter_with_clone)]
@@ -86,8 +108,12 @@ impl Path {
         self.edges == other.edges
     }
 
-    pub fn get_first_target(&self, graph: &NoteGraph) -> Option<String> {
-        self.edges.first().map(|edge| edge.target_path(graph))
+    pub fn get_first_target(&self, graph: &NoteGraph) -> Result<Option<String>> {
+        let first = self.edges.first();
+        match first {
+            Some(edge) => Ok(Some(edge.target_path(graph)?)),
+            None => Ok(None),
+        }
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -139,20 +165,33 @@ impl PathList {
             .unwrap_or(0)
     }
 
-    pub fn process(&self, graph: &NoteGraph, depth: usize) -> Vec<Path> {
-        self.paths
+    pub fn process(&self, graph: &NoteGraph, depth: usize) -> Result<Vec<Path>> {
+        let paths = self
+            .paths
             .iter()
             .map(|path| path.truncate(depth))
+            .collect_vec();
+
+        for path in &paths {
+            for edge in &path.edges {
+                edge.check_revision(graph)?;
+            }
+        }
+
+        Ok(paths
+            .into_iter()
             .sorted_by(|a, b| {
                 let a_len = a.edges.len();
                 let b_len = b.edges.len();
 
-                a_len
-                    .cmp(&b_len)
-                    .then_with(|| a.get_first_target(graph).cmp(&b.get_first_target(graph)))
+                a_len.cmp(&b_len).then_with(|| {
+                    a.get_first_target(graph)
+                        .unwrap()
+                        .cmp(&b.get_first_target(graph).unwrap())
+                })
             })
             .dedup()
-            .collect_vec()
+            .collect_vec())
     }
 }
 
@@ -181,7 +220,7 @@ impl PathList {
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct RecTraversalData {
+pub struct TraversalData {
     /// the edge struct that was traversed
     #[wasm_bindgen(getter_with_clone)]
     pub edge: EdgeStruct,
@@ -191,19 +230,19 @@ pub struct RecTraversalData {
     pub number_of_children: u32,
     /// the children of the node
     #[wasm_bindgen(getter_with_clone)]
-    pub children: Vec<RecTraversalData>,
+    pub children: Vec<TraversalData>,
 }
 
 #[wasm_bindgen]
-impl RecTraversalData {
+impl TraversalData {
     #[wasm_bindgen(constructor)]
     pub fn new(
         edge: EdgeStruct,
         depth: u32,
         number_of_children: u32,
-        children: Vec<RecTraversalData>,
-    ) -> RecTraversalData {
-        RecTraversalData {
+        children: Vec<TraversalData>,
+    ) -> TraversalData {
+        TraversalData {
             edge,
             depth,
             number_of_children,
@@ -211,12 +250,12 @@ impl RecTraversalData {
         }
     }
 
-    pub fn rec_sort_children(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
+    pub fn rec_sort_children(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
         for child in &mut self.children {
-            child.rec_sort_children(graph, sorter);
+            child.rec_sort_children(graph, sorter)?;
         }
 
-        sorter.sort_traversal_data(graph, &mut self.children);
+        sorter.sort_traversal_data(graph, &mut self.children)
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -225,7 +264,7 @@ impl RecTraversalData {
     }
 }
 
-impl RecTraversalData {
+impl TraversalData {
     fn to_paths(&self) -> Vec<Path> {
         let mut paths = Vec::new();
 
@@ -249,24 +288,24 @@ impl RecTraversalData {
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct RecTraversalResult {
+pub struct TraversalResult {
     #[wasm_bindgen(getter_with_clone)]
-    pub data: Vec<RecTraversalData>,
+    pub data: Vec<TraversalData>,
     pub node_count: u32,
     pub max_depth: u32,
     pub traversal_time: u64,
 }
 
 #[wasm_bindgen]
-impl RecTraversalResult {
+impl TraversalResult {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        data: Vec<RecTraversalData>,
+        data: Vec<TraversalData>,
         node_count: u32,
         max_depth: u32,
         traversal_time: u64,
-    ) -> RecTraversalResult {
-        RecTraversalResult {
+    ) -> TraversalResult {
+        TraversalResult {
             data,
             node_count,
             max_depth,
@@ -299,34 +338,40 @@ impl RecTraversalResult {
 
         PathList::new(paths)
     }
+}
 
+impl TraversalResult {
     /// Flattens the traversal data by removing the tree structure and deduplicating the edges by their target_path
-    pub fn flatten(&mut self, graph: &NoteGraph) {
+    pub fn flatten(&mut self, graph: &NoteGraph) -> Result<()> {
         let mut data = Vec::new();
 
         for datum in self.data.drain(..) {
             rec_flatten_traversal_data(datum, &mut data);
         }
 
-        data.dedup_by(|a, b| a.edge.target_path(graph) == b.edge.target_path(graph));
-
-        self.data = data;
-    }
-
-    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) {
-        for datum in &mut self.data {
-            datum.rec_sort_children(graph, sorter);
+        for datum in &data {
+            datum.edge.check_revision(graph)?;
         }
 
-        sorter.sort_traversal_data(graph, &mut self.data);
+        data.dedup_by(|a, b| {
+            a.edge.target_path(graph).unwrap() == b.edge.target_path(graph).unwrap()
+        });
+
+        self.data = data;
+
+        Ok(())
     }
 
-    pub fn to_flat(&self) -> FlatRecTraversalResult {
-        FlatRecTraversalResult::from_rec_traversal_result(self.clone())
+    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
+        for datum in &mut self.data {
+            datum.rec_sort_children(graph, sorter)?;
+        }
+
+        sorter.sort_traversal_data(graph, &mut self.data)
     }
 }
 
-fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTraversalData>) {
+fn rec_flatten_traversal_data(mut data: TraversalData, result: &mut Vec<TraversalData>) {
     for child in data.children.drain(..) {
         rec_flatten_traversal_data(child, result);
     }
@@ -336,7 +381,7 @@ fn rec_flatten_traversal_data(mut data: RecTraversalData, result: &mut Vec<RecTr
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct FlatRecTraversalData {
+pub struct FlatTraversalData {
     /// the edge struct that was traversed
     #[wasm_bindgen(getter_with_clone)]
     pub edge: EdgeStruct,
@@ -349,14 +394,14 @@ pub struct FlatRecTraversalData {
     pub children: Vec<usize>,
 }
 
-impl FlatRecTraversalData {
+impl FlatTraversalData {
     pub fn new(
         edge: EdgeStruct,
         depth: u32,
         number_of_children: u32,
         children: Vec<usize>,
-    ) -> FlatRecTraversalData {
-        FlatRecTraversalData {
+    ) -> FlatTraversalData {
+        FlatTraversalData {
             edge,
             depth,
             number_of_children,
@@ -366,17 +411,21 @@ impl FlatRecTraversalData {
 }
 
 #[wasm_bindgen]
-impl FlatRecTraversalData {
-    pub fn get_attribute_label(&self, graph: &NoteGraph, attributes: Vec<String>) -> String {
+impl FlatTraversalData {
+    pub fn get_attribute_label(
+        &self,
+        graph: &NoteGraph,
+        attributes: Vec<String>,
+    ) -> Result<String> {
         self.edge.get_attribute_label(graph, attributes)
     }
 }
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct FlatRecTraversalResult {
+pub struct FlatTraversalResult {
     #[wasm_bindgen(getter_with_clone)]
-    pub data: Vec<FlatRecTraversalData>,
+    pub data: Vec<FlatTraversalData>,
     pub node_count: u32,
     pub max_depth: u32,
     pub traversal_time: u64,
@@ -384,15 +433,15 @@ pub struct FlatRecTraversalResult {
     pub entry_nodes: Vec<usize>,
 }
 
-impl FlatRecTraversalResult {
+impl FlatTraversalResult {
     pub fn new(
-        data: Vec<FlatRecTraversalData>,
+        data: Vec<FlatTraversalData>,
         node_count: u32,
         max_depth: u32,
         traversal_time: u64,
         entry_nodes: Vec<usize>,
-    ) -> FlatRecTraversalResult {
-        FlatRecTraversalResult {
+    ) -> FlatTraversalResult {
+        FlatTraversalResult {
             data,
             node_count,
             max_depth,
@@ -401,7 +450,7 @@ impl FlatRecTraversalResult {
         }
     }
 
-    pub fn from_rec_traversal_result(result: RecTraversalResult) -> FlatRecTraversalResult {
+    pub fn from_rec_traversal_result(result: TraversalResult) -> FlatTraversalResult {
         let mut flat_data = Vec::new();
         let mut entry_nodes = Vec::new();
 
@@ -409,7 +458,7 @@ impl FlatRecTraversalResult {
             entry_nodes.push(rec_flatten_traversal_data_to_flat(datum, &mut flat_data));
         }
 
-        FlatRecTraversalResult::new(
+        FlatTraversalResult::new(
             flat_data,
             result.node_count,
             result.max_depth,
@@ -420,7 +469,7 @@ impl FlatRecTraversalResult {
 }
 
 #[wasm_bindgen]
-impl FlatRecTraversalResult {
+impl FlatTraversalResult {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
@@ -430,14 +479,28 @@ impl FlatRecTraversalResult {
         self.data.is_empty()
     }
 
-    pub fn data_at_index(&self, index: usize) -> Option<FlatRecTraversalData> {
+    pub fn data_at_index(&self, index: usize) -> Option<FlatTraversalData> {
         self.data.get(index).cloned()
+    }
+
+    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
+        let cloned_edges = self.data.iter()
+            .map(|datum| datum.edge.clone()).collect_vec();
+
+
+        for datum in &mut self.data {
+            sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut datum.children)?;
+        }
+
+        sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut self.entry_nodes)?;
+
+        Ok(())
     }
 }
 
 fn rec_flatten_traversal_data_to_flat(
-    mut data: RecTraversalData,
-    result: &mut Vec<FlatRecTraversalData>,
+    mut data: TraversalData,
+    result: &mut Vec<FlatTraversalData>,
 ) -> usize {
     let children = data
         .children
@@ -445,7 +508,7 @@ fn rec_flatten_traversal_data_to_flat(
         .map(|datum| rec_flatten_traversal_data_to_flat(datum, result))
         .collect();
 
-    result.push(FlatRecTraversalData::new(
+    result.push(FlatTraversalData::new(
         data.edge,
         data.depth,
         data.number_of_children,
@@ -456,7 +519,8 @@ fn rec_flatten_traversal_data_to_flat(
 
 #[wasm_bindgen]
 impl NoteGraph {
-    pub fn rec_traverse(&self, options: TraversalOptions) -> Result<RecTraversalResult> {
+    /// Runs a recursive traversal of the graph.
+    pub fn rec_traverse(&self, options: TraversalOptions) -> Result<TraversalResult> {
         let now = Instant::now();
 
         let mut result = Vec::new();
@@ -487,6 +551,7 @@ impl NoteGraph {
                     target,
                     edge.id(),
                     edge.weight().edge_type.clone(),
+                    self.get_revision(),
                 );
 
                 traversal_count += 1;
@@ -518,12 +583,28 @@ impl NoteGraph {
 
         let total_elapsed = now.elapsed();
 
-        Ok(RecTraversalResult::new(
+        Ok(TraversalResult::new(
             result,
             node_count,
             max_depth,
             total_elapsed.as_millis() as u64,
         ))
+    }
+
+    /// Runs a recursive traversal of the graph and post-processes the result.
+    /// The post-processed result is more efficient to work with from JavaScript.
+    pub fn rec_traverse_and_process(&self, options: TraversalOptions, postprocess_options: TraversalPostprocessOptions) -> Result<FlatTraversalResult> {
+        let mut result = self.rec_traverse(options)?;
+
+        if postprocess_options.flatten {
+            result.flatten(self)?;
+        }
+
+        if let Some(sorter) = &postprocess_options.sorter {
+            result.sort(self, sorter)?;
+        }
+
+        Ok(FlatTraversalResult::from_rec_traversal_result(result))
     }
 }
 
@@ -539,7 +620,7 @@ impl NoteGraph {
         depth: u32,
         max_depth: u32,
         traversal_count: &mut u32,
-    ) -> Result<RecTraversalData> {
+    ) -> Result<TraversalData> {
         let mut new_children = Vec::new();
 
         if depth < max_depth {
@@ -556,6 +637,7 @@ impl NoteGraph {
                         target,
                         outgoing_edge.id(),
                         edge_data.edge_type.clone(),
+                        self.get_revision(),
                     );
 
                     *traversal_count += 1;
@@ -576,10 +658,10 @@ impl NoteGraph {
             }
         }
 
-        Ok(RecTraversalData::new(edge, depth, 0, new_children))
+        Ok(TraversalData::new(edge, depth, 0, new_children))
     }
 
-    pub fn int_rec_traversal_data_count_children(data: &mut [RecTraversalData]) -> u32 {
+    pub fn int_rec_traversal_data_count_children(data: &mut [TraversalData]) -> u32 {
         let mut total_children = 0;
 
         for datum in data.iter_mut() {
@@ -591,7 +673,7 @@ impl NoteGraph {
         total_children
     }
 
-    pub fn int_rec_traversal_data_max_depth(data: &[RecTraversalData]) -> u32 {
+    pub fn int_rec_traversal_data_max_depth(data: &[TraversalData]) -> u32 {
         data.iter()
             .map(|datum| {
                 u32::max(

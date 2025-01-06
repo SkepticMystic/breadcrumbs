@@ -46,6 +46,9 @@ pub struct NoteGraph {
     #[wasm_bindgen(skip)]
     pub node_hash: HashMap<String, NGNodeIndex>,
     update_callback: Option<js_sys::Function>,
+    /// A revision number that is incremented after every update.
+    /// This can be used to check if the graph has changed.
+    revision: u32,
 }
 
 #[wasm_bindgen]
@@ -57,6 +60,7 @@ impl NoteGraph {
             edge_types: VecSet::empty(),
             node_hash: HashMap::new(),
             update_callback: None,
+            revision: 0,
         }
     }
 
@@ -129,6 +133,7 @@ impl NoteGraph {
 
         self.int_rebuild_edge_type_tracker();
         self.int_build_implied_edges(&mut perf_logger);
+        self.revision += 1;
 
         perf_logger.start_split("Update notification callback".to_owned());
 
@@ -172,7 +177,7 @@ impl NoteGraph {
         match node_index {
             Some(node_index) => self
                 .int_iter_outgoing_edges(node_index)
-                .map(|edge| EdgeStruct::from_edge_ref(edge))
+                .map(|edge| EdgeStruct::from_edge_ref(edge, self))
                 .collect(),
             None => Vec::new(),
         }
@@ -192,7 +197,7 @@ impl NoteGraph {
                 .filter(|edge_ref| {
                     edge_matches_edge_filter_string(edge_ref.weight(), edge_types.as_ref())
                 })
-                .map(|edge| EdgeStruct::from_edge_ref(edge))
+                .map(|edge| EdgeStruct::from_edge_ref(edge, self))
                 .collect(),
             None => Vec::new(),
         })
@@ -205,7 +210,7 @@ impl NoteGraph {
         match node_index {
             Some(node_index) => self
                 .int_iter_incoming_edges(node_index)
-                .map(|edge| EdgeStruct::from_edge_ref(edge))
+                .map(|edge| EdgeStruct::from_edge_ref(edge, self))
                 .collect(),
             None => Vec::new(),
         }
@@ -250,6 +255,10 @@ impl Default for NoteGraph {
 /// Internal methods, not exposed to the wasm interface.
 /// All of these methods are prefixed with `int_`.
 impl NoteGraph {
+    pub fn get_revision(&self) -> u32 {
+        self.revision
+    }
+
     /// Builds the implied edges based on the transitive rules.
     pub fn int_build_implied_edges(&mut self, perf_logger: &mut PerfLogger) {
         let perf_split = perf_logger.start_split("Building Implied Edges".to_owned());

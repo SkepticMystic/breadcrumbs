@@ -2,7 +2,7 @@ import builtins from "builtin-modules";
 import esbuild from "esbuild";
 import esbuildSvelte from "esbuild-svelte";
 import process from "process";
-import sveltePreprocess from "svelte-preprocess";
+import { sveltePreprocess } from "svelte-preprocess";
 import path from 'node:path';
 import fs from 'node:fs';
 
@@ -70,7 +70,7 @@ const context = await esbuild.context({
 	outfile: "main.js",
 	plugins: [
 		esbuildSvelte({
-			compilerOptions: { css: true, dev: !prod },
+			compilerOptions: { css: 'injected', dev: !prod },
 			preprocess: sveltePreprocess(),
 		}),
 		wasmPlugin,
