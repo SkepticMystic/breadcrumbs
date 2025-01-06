@@ -82,19 +82,20 @@ export const _add_settings_trail_view = (
 	});
 
 	mount(FieldGroupLabelsSettingItem, {
-    		target: containerEl,
-    		props: {
-    			edge_field_groups: plugin.settings.edge_field_groups,
-    			field_group_labels:
-    				plugin.settings.views.page.trail.field_group_labels,
-    		},
-    	}).$on("select", async (e) => {
-		plugin.settings.views.page.trail.field_group_labels = e.detail;
+		target: containerEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
+				plugin.settings.views.page.trail.field_group_labels,
+			select_cb: async (value: string[]) => {
+				plugin.settings.views.page.trail.field_group_labels = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refreshViews(),
-		]);
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refreshViews(),
+				]);
+			}
+		},
 	});
 
 	new_setting(containerEl, {

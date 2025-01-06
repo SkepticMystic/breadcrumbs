@@ -10,9 +10,6 @@
 	import { FlatTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
-
-	
-
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 		// export let tree: RecTraversalData[];
@@ -83,6 +80,7 @@
 					{show_attributes}
 					{show_node_options}
 					{data}
+					{open_signal}
 					items={children}
 				/>
 			</div>

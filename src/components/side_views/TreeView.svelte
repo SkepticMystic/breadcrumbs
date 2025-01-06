@@ -10,11 +10,12 @@
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import {
+	FlatTraversalResult,
 		TraversalOptions,
 		TraversalPostprocessOptions,
 		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { derived } from "svelte/store";
+	import { untrack } from "svelte";
 
 	let {
 		plugin
@@ -28,6 +29,15 @@
 	let show_node_options = $state(plugin.settings.views.side.tree.show_node_options);
 	let field_group_labels = $state(plugin.settings.views.side.tree.field_group_labels);
 	let collapse = $state(plugin.settings.views.side.tree.collapse);
+	$effect(() => {
+		plugin.settings.views.side.tree.edge_sort_id = edge_sort_id;
+		plugin.settings.views.side.tree.merge_fields = merge_fields;
+		plugin.settings.views.side.tree.show_attributes = show_attributes;
+		plugin.settings.views.side.tree.show_node_options = show_node_options;
+		plugin.settings.views.side.tree.field_group_labels = field_group_labels;
+		plugin.settings.views.side.tree.collapse = collapse;
+		untrack(() => void plugin.saveSettings());
+	});
 
 	let edge_field_labels = $derived(resolve_field_group_labels(
 		plugin.settings.edge_field_groups,
@@ -36,7 +46,7 @@
 
 	let sort = $derived(create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1));
 
-	let tree = $derived.by(() => {
+	let tree: FlatTraversalResult | undefined = $derived.by(() => {
 		if ($active_file_store && plugin.graph.has_node($active_file_store.path)) {
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
@@ -46,7 +56,7 @@
 					!merge_fields,
 				),
 				new TraversalPostprocessOptions(
-					undefined,
+					sort,
 					false,
 				),
 			);
@@ -55,7 +65,6 @@
 		}
 	});
 
-	$effect(() => tree?.sort(plugin.graph, sort));
 </script>
 
 <div class="markdown-rendered BC-tree-view">

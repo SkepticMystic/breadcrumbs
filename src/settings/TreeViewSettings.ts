@@ -5,6 +5,8 @@ import { new_setting } from "src/utils/settings";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { mount } from "svelte";
+import type { EdgeAttribute } from "src/graph/utils";
+import type { EdgeSortId } from "src/const/graph";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -28,29 +30,34 @@ export const _add_settings_tree_view = (
 
 	mount(EdgeSortIdSettingItem, {
     		target: containerEl,
-    		props: { edge_sort_id: plugin.settings.views.side.tree.edge_sort_id },
-    	}).$on("select", async (e) => {
-		plugin.settings.views.side.tree.edge_sort_id = e.detail;
+    		props: { 
+				edge_sort_id: plugin.settings.views.side.tree.edge_sort_id,
+				select_cb: async (value: EdgeSortId) => {
+					plugin.settings.views.side.tree.edge_sort_id = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refreshViews(),
-		]);
+					await Promise.all([
+						plugin.saveSettings(),
+						plugin.refreshViews(),
+					]);
+				}
+			},
+    	
 	});
 
 	mount(ShowAttributesSettingItem, {
     		target: containerEl,
     		props: {
     			show_attributes: plugin.settings.views.side.tree.show_attributes,
-    		},
-    	}).$on("select", async (e) => {
-		plugin.settings.views.side.tree.show_attributes = e.detail;
+				select_cb: async (value: EdgeAttribute[]) => {
+					plugin.settings.views.side.tree.show_attributes = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refreshViews(),
-		]);
-	});
+					await Promise.all([
+						plugin.saveSettings(),
+						plugin.refreshViews(),
+					]);
+				}
+    		},
+    	});
 
 	mount(FieldGroupLabelsSettingItem, {
     		target: containerEl,
@@ -58,15 +65,16 @@ export const _add_settings_tree_view = (
     			edge_field_groups: plugin.settings.edge_field_groups,
     			field_group_labels:
     				plugin.settings.views.side.tree.field_group_labels,
-    		},
-    	}).$on("select", async (e) => {
-		plugin.settings.views.side.tree.field_group_labels = e.detail;
+				select_cb: async (value: string[]) => {
+					plugin.settings.views.side.tree.field_group_labels = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refreshViews(),
-		]);
-	});
+					await Promise.all([
+						plugin.saveSettings(),
+						plugin.refreshViews(),
+					]);
+				}
+    		},
+    	});
 
 	new_setting(containerEl, {
 		name: "Merge Fields",

@@ -12,6 +12,8 @@ import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
 import { mount } from "svelte";
+import type { EdgeSortId } from "src/const/graph";
+import type { EdgeAttribute } from "src/graph/utils";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -39,20 +41,21 @@ export class CreateListIndexModal extends Modal {
 		});
 
 		mount(FieldGroupLabelsSettingItem, {
-        			target: contentEl,
-        			props: {
-        				field_group_labels: this.options.field_group_labels,
-        				edge_field_groups: plugin.settings.edge_field_groups,
-        			},
-        		}).$on("select", (e) => {
-			// Tracking groups for the UI
-			this.options.field_group_labels = e.detail;
+			target: contentEl,
+			props: {
+				field_group_labels: this.options.field_group_labels,
+				edge_field_groups: plugin.settings.edge_field_groups,
+				select_cb: (value: string[]) => {
+					// Tracking groups for the UI
+					this.options.field_group_labels = value;
 
-			// Settings fields for the build call
-			this.options.fields = resolve_field_group_labels(
-				plugin.settings.edge_field_groups,
-				this.options.field_group_labels,
-			);
+					// Settings fields for the build call
+					this.options.fields = resolve_field_group_labels(
+						plugin.settings.edge_field_groups,
+						this.options.field_group_labels,
+					);
+				}
+			},
 		});
 
 		new_setting(contentEl, {
@@ -75,17 +78,23 @@ export class CreateListIndexModal extends Modal {
 		});
 
 		mount(EdgeSortIdSettingItem, {
-        			target: contentEl,
-        			props: { edge_sort_id: this.options.edge_sort_id },
-        		}).$on("select", (e) => {
-			this.options.edge_sort_id = e.detail;
+			target: contentEl,
+			props: { 
+				edge_sort_id: this.options.edge_sort_id,
+				select_cb: (value: EdgeSortId) => {
+					this.options.edge_sort_id = value;
+				}
+			},	
 		});
 
 		mount(ShowAttributesSettingItem, {
-        			target: contentEl,
-        			props: { show_attributes: this.options.show_attributes },
-        		}).$on("select", (e) => {
-			this.options.show_attributes = e.detail;
+			target: contentEl,
+			props: { 
+				show_attributes: this.options.show_attributes,
+				select_cb: (value: EdgeAttribute[]) => {
+					this.options.show_attributes = value;
+				}
+			},
 		});
 
 		_add_settings_show_node_options(

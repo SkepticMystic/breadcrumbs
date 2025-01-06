@@ -20,7 +20,7 @@ import { _add_settings_regex_note } from "./RegexNoteSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_thread } from "./ThreadSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
-import { mount } from "svelte";
+import { mount, unmount } from "svelte";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -51,7 +51,7 @@ const make_details_el = (
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
-	components: (EdgeFieldSettings | TransitiveImpliedRelations)[] = [];
+	components: (ReturnType<typeof EdgeFieldSettings> | ReturnType<typeof TransitiveImpliedRelations>)[] = [];
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app, plugin);
@@ -67,11 +67,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		this.components.push(
 			mount(EdgeFieldSettings, {
-            				props: { plugin },
-            				target: make_details_el(containerEl, {
-            					s: { text: "> Edge Fields" },
-            				}).children,
-            			}),
+				props: { plugin },
+				target: make_details_el(containerEl, {
+					s: { text: "> Edge Fields" },
+				}).children,
+			}),
 		);
 
 		// Implied Relations
@@ -80,11 +80,11 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 
 		this.components.push(
 			mount(TransitiveImpliedRelations, {
-            				props: { plugin },
-            				target: make_details_el(containerEl, {
-            					s: { text: "> Transitive" },
-            				}).children,
-            			}),
+				props: { plugin },
+				target: make_details_el(containerEl, {
+					s: { text: "> Transitive" },
+				}).children,
+			}),
 		);
 
 		// Edge Sources
@@ -217,6 +217,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			);
 		}
 
-		this.components.forEach((c) => c.$destroy());
+		this.components.forEach((c) => unmount(c));
 	}
 }

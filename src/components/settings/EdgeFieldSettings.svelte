@@ -373,9 +373,9 @@
 								<Tag
 									tag={group_label}
 									title="Jump to group. Right click for more actions."
-									on:click={() =>
+									onclick={() =>
 										actions.groups.scroll_to(group_label)}
-									on:contextmenu={context_menus.field_group(
+									oncontextmenu={context_menus.field_group(
 										field,
 										group_label,
 									)}
@@ -494,9 +494,9 @@
 							<Tag
 								tag={field_label}
 								title="Jump to field. Right click for more actions."
-								on:click={() =>
+								onclick={() =>
 									actions.fields.scroll_to(field_label)}
-								on:contextmenu={context_menus.group_field(
+								oncontextmenu={context_menus.group_field(
 									group,
 									field_label,
 								)}

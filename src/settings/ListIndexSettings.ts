@@ -7,6 +7,8 @@ import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { mount } from "svelte";
+import type { EdgeSortId } from "src/const/graph";
+import type { EdgeAttribute } from "src/graph/utils";
 
 export const _add_settings_list_index = (
 	plugin: BreadcrumbsPlugin,
@@ -15,25 +17,26 @@ export const _add_settings_list_index = (
 	const { settings } = plugin;
 
 	mount(FieldGroupLabelsSettingItem, {
-    		target: contentEl,
-    		props: {
-    			edge_field_groups: plugin.settings.edge_field_groups,
-    			field_group_labels:
-    				settings.commands.list_index.default_options.field_group_labels,
-    		},
-    	}).$on("select", async (e) => {
-		// Tracking groups for the UI
-		settings.commands.list_index.default_options.field_group_labels =
-			e.detail;
-
-		// Settings fields for the build call
-		settings.commands.list_index.default_options.fields =
-			resolve_field_group_labels(
-				plugin.settings.edge_field_groups,
+		target: contentEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
 				settings.commands.list_index.default_options.field_group_labels,
-			);
+			select_cb: async (value: string[]) => {
+				// Tracking groups for the UI
+				settings.commands.list_index.default_options.field_group_labels =
+					value;
 
-		await plugin.saveSettings();
+				// Settings fields for the build call
+				settings.commands.list_index.default_options.fields =
+					resolve_field_group_labels(
+						plugin.settings.edge_field_groups,
+						settings.commands.list_index.default_options.field_group_labels,
+					);
+
+				await plugin.saveSettings();
+			}
+		},
 	});
 
 	new_setting(contentEl, {
@@ -64,27 +67,30 @@ export const _add_settings_list_index = (
 	});
 
 	mount(EdgeSortIdSettingItem, {
-    		target: contentEl,
-    		props: {
-    			edge_sort_id:
-    				settings.commands.list_index.default_options.edge_sort_id,
-    		},
-    	}).$on("select", async (e) => {
-		settings.commands.list_index.default_options.edge_sort_id = e.detail;
+		target: contentEl,
+		props: {
+			edge_sort_id:
+				settings.commands.list_index.default_options.edge_sort_id,
+			select_cb: async (value: EdgeSortId) => {
+				settings.commands.list_index.default_options.edge_sort_id = value;
 
-		await plugin.saveSettings();
+				await plugin.saveSettings();
+			}
+		},
 	});
 
 	mount(ShowAttributesSettingItem, {
-    		target: contentEl,
-    		props: {
-    			show_attributes:
-    				settings.commands.list_index.default_options.show_attributes,
-    		},
-    	}).$on("select", async (e) => {
-		settings.commands.list_index.default_options.show_attributes = e.detail;
+		target: contentEl,
+		props: {
+			show_attributes:
+				settings.commands.list_index.default_options.show_attributes,
+			select_cb: async (value: EdgeAttribute[]) => {
+				settings.commands.list_index.default_options.show_attributes = value;
 
-		await plugin.saveSettings();
+				await plugin.saveSettings();
+
+			}
+		},
 	});
 
 	_add_settings_show_node_options(plugin, contentEl, {

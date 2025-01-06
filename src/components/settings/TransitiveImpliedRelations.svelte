@@ -349,7 +349,7 @@
 										<Tag
 											tag={attr.field ?? ""}
 											title="Right click for more actions."
-											on:contextmenu={context_menus.chain_field(
+											oncontextmenu={context_menus.chain_field(
 												rule_i,
 												attr_i,
 											)}

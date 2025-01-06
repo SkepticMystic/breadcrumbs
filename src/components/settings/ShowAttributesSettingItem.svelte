@@ -9,15 +9,18 @@
 	interface Props {
 		show_attributes: EdgeAttribute[];
 		exclude_attributes?: EdgeAttribute[];
+		select_cb?: (value: EdgeAttribute[]) => void;
 	}
 
-	let { show_attributes = $bindable(), exclude_attributes = [] }: Props = $props();
+	let { 
+		show_attributes = $bindable(), 
+		exclude_attributes = [],
+		select_cb = () => {},
+	}: Props = $props();
 
-	const dispatch = createEventDispatcher<{ select: EdgeAttribute[] }>();
-
-	run(() => {
+	$effect(() => {
 		if (show_attributes) {
-			dispatch("select", show_attributes);
+			select_cb(show_attributes);
 		}
 	});
 </script>

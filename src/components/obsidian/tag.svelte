@@ -1,18 +1,25 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	interface Props {
 		tag: string;
 		href?: string | undefined;
 		title?: string | undefined;
+		onclick?: (e: MouseEvent) => void;
+		oncontextmenu?: (e: MouseEvent) => void;
+		onkeydown?: (e: KeyboardEvent) => void;
 	}
 
-	let { tag, href = undefined, title = undefined }: Props = $props();
+	let { 
+		tag, 
+		href = undefined, 
+		title = undefined, 
+		onclick = () => {},
+		oncontextmenu = () => {},
+		onkeydown = () => {}, 
+	 }: Props = $props();
 </script>
 
 {#if href !== undefined}
-	<a {href} {title} class="tag" onclick={bubble('click')} oncontextmenu={bubble('contextmenu')}>
+	<a {href} {title} class="tag" onclick={onclick} oncontextmenu={oncontextmenu}>
 		{tag}
 	</a>
 {:else}
@@ -22,9 +29,9 @@
 		class="tag"
 		tabindex="0"
 		role="button"
-		onclick={bubble('click')}
-		onkeydown={bubble('keydown')}
-		oncontextmenu={bubble('contextmenu')}
+		onclick={onclick}
+		onkeydown={onkeydown}
+		oncontextmenu={oncontextmenu}
 	>
 		{tag}
 	</a>

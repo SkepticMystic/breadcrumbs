@@ -93,11 +93,7 @@ impl EdgeSorter {
         Ok(())
     }
 
-    pub fn sort_traversal_data(
-        &self,
-        graph: &NoteGraph,
-        data: &mut [TraversalData],
-    ) -> Result<()> {
+    pub fn sort_traversal_data(&self, graph: &NoteGraph, data: &mut [TraversalData]) -> Result<()> {
         let comparer = self.get_edge_comparer(graph);
 
         // Check that all edges are still valid. The comparers will panic on any errors.

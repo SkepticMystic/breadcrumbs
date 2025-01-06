@@ -1,14 +1,10 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type BreadcrumbsPlugin from "src/main";
-	import { remove_duplicates_by_equals } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
 	import { PathList, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { log } from "src/logger";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -26,9 +22,7 @@
 	// 		),
 	// 	);
 
-	let selected_paths: PathList | undefined = $state(undefined);
-
-	run(() => {
+	let selected_paths: PathList | undefined = $derived.by(() => {
 		let edge_field_labels = resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
 			plugin.settings.views.page.trail.field_group_labels,
@@ -45,19 +39,18 @@
 
 		let all_paths = traversal_data.to_paths();
 
-		selected_paths = all_paths.select(
+		return all_paths.select(
 			plugin.settings.views.page.trail.selection,
 		);
 	});
 
 	let MAX_DEPTH = $derived(Math.max(0, selected_paths?.max_depth() ?? 0));
-	let depth;
-	run(() => {
+	let depth = $state(0);
+	$effect(() => {
 		depth = Math.min(
-			MAX_DEPTH,
-			plugin.settings.views.page.trail.default_depth,
-		);
-	});
+		MAX_DEPTH,
+		plugin.settings.views.page.trail.default_depth,
+	)});
 
 	let sorted_paths = $derived(selected_paths?.process(plugin.graph, depth));
 </script>
@@ -72,7 +65,7 @@
 				<select
 					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.format}
-					onchange={async () => await plugin.saveSettings()}
+					onchange={async (e) => await plugin.saveSettings()}
 				>
 					{#each ["grid", "path"] as format}
 						<option value={format}> {format} </option>

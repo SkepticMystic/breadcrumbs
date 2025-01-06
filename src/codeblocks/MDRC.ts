@@ -8,12 +8,12 @@ import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
 import { Codeblocks } from ".";
 import { BCEvent } from "src/main";
-import { mount } from "svelte";
+import { mount, unmount } from "svelte";
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
-	component: CodeblockTree | CodeblockMermaid | undefined;
+	component: ReturnType<typeof CodeblockTree> | ReturnType<typeof CodeblockMermaid> | undefined;
 	file_path: string;
 	id: string;
 
@@ -107,15 +107,16 @@ export class CodeblockMDRC extends MarkdownRenderChild {
             				},
             			});
 		} else if (options.type === "markmap") {
-			this.component = mount(CodeblockMarkmap, {
-            				target: this.containerEl,
-            				props: {
-            					errors,
-            					options,
-            					file_path,
-            					plugin: this.plugin,
-            				},
-            			});
+			// TODO
+			// this.component = mount(CodeblockMarkmap, {
+            // 				target: this.containerEl,
+            // 				props: {
+            // 					errors,
+            // 					options,
+            // 					file_path,
+            // 					plugin: this.plugin,
+            // 				},
+            // 			});
 		} else {
 			log.error("CodeblockMDRC unknown type", options.type);
 		}
@@ -131,6 +132,8 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	onunload(): void {
 		log.debug("CodeblockMDRC.unload");
 
-		this.component?.$destroy();
+		if (this.component) {
+			unmount(this.component);
+		}
 	}
 }

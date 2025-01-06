@@ -11,7 +11,7 @@ use crate::{
     graph_data::{EdgeStruct, NGEdgeIndex, NGEdgeRef, NGNodeIndex},
     utils::{
         BreadthFirstTraversalDataStructure, DepthFirstTraversalDataStructure,
-        GraphTraversalDataStructure, NoteGraphError, Result,
+        GraphTraversalDataStructure, NoteGraphError, Result, LOGGER,
     },
 };
 
@@ -70,8 +70,18 @@ pub struct TraversalPostprocessOptions {
 #[wasm_bindgen]
 impl TraversalPostprocessOptions {
     #[wasm_bindgen(constructor)]
-    pub fn new(sorter: Option<EdgeSorter>, flatten: bool) -> TraversalPostprocessOptions {
-        TraversalPostprocessOptions { sorter, flatten }
+    pub fn new(sorter: &EdgeSorter, flatten: bool) -> TraversalPostprocessOptions {
+        TraversalPostprocessOptions {
+            sorter: Some(sorter.clone()),
+            flatten,
+        }
+    }
+
+    pub fn without_sorter(flatten: bool) -> TraversalPostprocessOptions {
+        TraversalPostprocessOptions {
+            sorter: None,
+            flatten,
+        }
     }
 
     #[wasm_bindgen(js_name = toString)]
@@ -484,15 +494,21 @@ impl FlatTraversalResult {
     }
 
     pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
-        let cloned_edges = self.data.iter()
-            .map(|datum| datum.edge.clone()).collect_vec();
+        LOGGER.warn(&format!("Entry nodes: {:?}", self.entry_nodes));
 
+        let cloned_edges = self
+            .data
+            .iter()
+            .map(|datum| datum.edge.clone())
+            .collect_vec();
 
         for datum in &mut self.data {
             sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut datum.children)?;
         }
 
         sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut self.entry_nodes)?;
+
+        LOGGER.warn(&format!("Entry nodes: {:?}", self.entry_nodes));
 
         Ok(())
     }
@@ -593,7 +609,11 @@ impl NoteGraph {
 
     /// Runs a recursive traversal of the graph and post-processes the result.
     /// The post-processed result is more efficient to work with from JavaScript.
-    pub fn rec_traverse_and_process(&self, options: TraversalOptions, postprocess_options: TraversalPostprocessOptions) -> Result<FlatTraversalResult> {
+    pub fn rec_traverse_and_process(
+        &self,
+        options: TraversalOptions,
+        postprocess_options: TraversalPostprocessOptions,
+    ) -> Result<FlatTraversalResult> {
         let mut result = self.rec_traverse(options)?;
 
         if postprocess_options.flatten {

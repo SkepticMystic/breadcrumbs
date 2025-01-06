@@ -1,22 +1,21 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { type EdgeSortId } from "src/const/graph";
-	import { createEventDispatcher } from "svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import SettingItem from "./SettingItem.svelte";
 
 	interface Props {
 		edge_sort_id: EdgeSortId;
+		select_cb?: (value: EdgeSortId) => void;
 	}
 
-	let { edge_sort_id = $bindable() }: Props = $props();
+	let { 
+		edge_sort_id = $bindable(),
+		select_cb = () => {},
+	 }: Props = $props();
 
-	const dispatch = createEventDispatcher<{ select: EdgeSortId }>();
-
-	run(() => {
+	$effect(() => {
 		if (edge_sort_id) {
-			dispatch("select", edge_sort_id);
+			select_cb(edge_sort_id);
 		}
 	});
 </script>

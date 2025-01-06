@@ -2,11 +2,11 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import TreeViewComponent from "src/components/side_views/TreeView.svelte";
 import { VIEW_IDS } from "src/const/views";
 import BreadcrumbsPlugin, { BCEvent } from "src/main";
-import { mount } from "svelte";
+import { mount, unmount } from "svelte";
 
 export class TreeView extends ItemView {
 	plugin: BreadcrumbsPlugin;
-	component!: TreeViewComponent;
+	component!: ReturnType<typeof TreeViewComponent>;
 
 	constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
 		super(leaf);
@@ -42,6 +42,8 @@ export class TreeView extends ItemView {
 	}
 
 	async onClose() {
-		this.component?.$destroy();
+		if (this.component) {
+					unmount(this.component);
+				}
 	}
 }

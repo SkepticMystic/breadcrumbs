@@ -93,45 +93,46 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 
 			new GenericModal(plugin.app, (modal) => {
 				mount(SimpleInput, {
-                					target: modal.contentEl,
-                					props: {
-                						label: `Type '${PROMPT_TARGET}' to confirm`,
-                						disabled_cb: (value: string) => value !== PROMPT_TARGET,
-                					},
-                				}).$on("submit", async (e) => {
-					if (e.detail !== PROMPT_TARGET) {
-						new Notice("Command cancelled");
-					} else {
-						const timer = new Timer();
-
-						const notice = new Notice(
-							"Freezing implied edges to all notes in vault...",
-						);
-
-						await Promise.all(
-							plugin.app.vault
-								.getMarkdownFiles()
-								.map((file) =>
-									freeze_implied_edges_to_note(
-										plugin,
-										file,
-										plugin.settings.commands
-											.freeze_implied_edges
-											.default_options,
-									),
-								),
-						);
-
-						log.debug(
-							`freeze-implied-edges-to-vault > took ${timer.elapsed_str()}ms`,
-						);
-
-						notice.setMessage(
-							`Implied edges frozen to all notes in ${timer.elapsed_str()}ms`,
-						);
-					}
-
-					modal.close();
+					target: modal.contentEl,
+					props: {
+						label: `Type '${PROMPT_TARGET}' to confirm`,
+						disabled_cb: (value: string) => value !== PROMPT_TARGET,
+						submit_cb: async (value: string) => {
+							if (value !== PROMPT_TARGET) {
+								new Notice("Command cancelled");
+							} else {
+								const timer = new Timer();
+		
+								const notice = new Notice(
+									"Freezing implied edges to all notes in vault...",
+								);
+		
+								await Promise.all(
+									plugin.app.vault
+										.getMarkdownFiles()
+										.map((file) =>
+											freeze_implied_edges_to_note(
+												plugin,
+												file,
+												plugin.settings.commands
+													.freeze_implied_edges
+													.default_options,
+											),
+										),
+								);
+		
+								log.debug(
+									`freeze-implied-edges-to-vault > took ${timer.elapsed_str()}ms`,
+								);
+		
+								notice.setMessage(
+									`Implied edges frozen to all notes in ${timer.elapsed_str()}ms`,
+								);
+							}
+		
+							modal.close();
+						}
+					},
 				});
 			}).open();
 		},
