@@ -3,9 +3,14 @@
 	import PrevNextView from "./PrevNextView.svelte";
 	import TrailView from "./TrailView.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
-	// NOTE: We can't rely on $active_file_store, since there may be multiple notes open at once, only one of which is active
-	export let file_path: string;
+	
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		// NOTE: We can't rely on $active_file_store, since there may be multiple notes open at once, only one of which is active
+		file_path: string;
+	}
+
+	let { plugin, file_path }: Props = $props();
 
 	const enabled_views = {
 		grid: plugin.settings.views.page.trail.enabled,

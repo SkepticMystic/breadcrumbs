@@ -12,6 +12,7 @@ import { freeze_implied_edges_to_note } from "./freeze_edges";
 import { jump_to_neighbour } from "./jump";
 import { get_graph_stats } from "./stats";
 import { thread } from "./thread";
+import { mount } from "svelte";
 
 export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 	plugin.addCommand({
@@ -91,13 +92,13 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 			const PROMPT_TARGET = "FREEZE TO VAULT";
 
 			new GenericModal(plugin.app, (modal) => {
-				new SimpleInput({
-					target: modal.contentEl,
-					props: {
-						label: `Type '${PROMPT_TARGET}' to confirm`,
-						disabled_cb: (value: string) => value !== PROMPT_TARGET,
-					},
-				}).$on("submit", async (e) => {
+				mount(SimpleInput, {
+                					target: modal.contentEl,
+                					props: {
+                						label: `Type '${PROMPT_TARGET}' to confirm`,
+                						disabled_cb: (value: string) => value !== PROMPT_TARGET,
+                					},
+                				}).$on("submit", async (e) => {
 					if (e.detail !== PROMPT_TARGET) {
 						new Notice("Command cancelled");
 					} else {

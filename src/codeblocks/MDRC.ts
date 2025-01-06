@@ -8,6 +8,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
 import { Codeblocks } from ".";
 import { BCEvent } from "src/main";
+import { mount } from "svelte";
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
@@ -61,10 +62,10 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		if (!parsed) {
 			log.warn("fatal codeblock errors", errors);
 
-			new CodeblockErrors({
-				target: this.containerEl,
-				props: { errors, plugin: this.plugin },
-			});
+			mount(CodeblockErrors, {
+            				target: this.containerEl,
+            				props: { errors, plugin: this.plugin },
+            			});
 
 			return;
 		}
@@ -86,35 +87,35 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		if (errors.length) log.warn("non-fatal codeblock errors", errors);
 
 		if (options.type === "tree") {
-			this.component = new CodeblockTree({
-				target: this.containerEl,
-				props: {
-					errors,
-					options,
-					file_path,
-					plugin: this.plugin,
-				},
-			});
+			this.component = mount(CodeblockTree, {
+            				target: this.containerEl,
+            				props: {
+            					errors,
+            					options,
+            					file_path,
+            					plugin: this.plugin,
+            				},
+            			});
 		} else if (options.type === "mermaid") {
-			this.component = new CodeblockMermaid({
-				target: this.containerEl,
-				props: {
-					errors,
-					options,
-					file_path,
-					plugin: this.plugin,
-				},
-			});
+			this.component = mount(CodeblockMermaid, {
+            				target: this.containerEl,
+            				props: {
+            					errors,
+            					options,
+            					file_path,
+            					plugin: this.plugin,
+            				},
+            			});
 		} else if (options.type === "markmap") {
-			this.component = new CodeblockMarkmap({
-				target: this.containerEl,
-				props: {
-					errors,
-					options,
-					file_path,
-					plugin: this.plugin,
-				},
-			});
+			this.component = mount(CodeblockMarkmap, {
+            				target: this.containerEl,
+            				props: {
+            					errors,
+            					options,
+            					file_path,
+            					plugin: this.plugin,
+            				},
+            			});
 		} else {
 			log.error("CodeblockMDRC unknown type", options.type);
 		}

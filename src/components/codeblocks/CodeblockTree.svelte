@@ -18,10 +18,19 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let options: ICodeblock["Options"];
-	export let errors: BreadcrumbsError[];
-	export let file_path: string;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		options: ICodeblock["Options"];
+		errors: BreadcrumbsError[];
+		file_path: string;
+	}
+
+	let {
+		plugin,
+		options,
+		errors,
+		file_path
+	}: Props = $props();
 
 	const sort = create_edge_sorter(
 		options.sort.field,
@@ -31,8 +40,8 @@
 
 	const DEFAULT_MAX_DEPTH = 10;
 
-	let data: FlatTraversalResult | undefined = undefined;
-	let error: string | undefined = undefined;
+	let data: FlatTraversalResult | undefined = $state(undefined);
+	let error: string | undefined = $state(undefined);
 
 	export const update = () => {
 		const max_depth = options.depth[1] === Infinity ? DEFAULT_MAX_DEPTH : (options.depth[1] ?? DEFAULT_MAX_DEPTH);

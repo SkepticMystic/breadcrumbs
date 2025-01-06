@@ -1,15 +1,26 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { MarkdownRenderer } from "obsidian";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 
-	export let cls = "";
-	export let markdown: string;
-	export let plugin: BreadcrumbsPlugin;
-	export let source_path: string | undefined = undefined;
+	interface Props {
+		cls?: string;
+		markdown: string;
+		plugin: BreadcrumbsPlugin;
+		source_path?: string | undefined;
+	}
 
-	let el: HTMLElement | undefined;
+	let {
+		cls = "",
+		markdown,
+		plugin,
+		source_path = undefined
+	}: Props = $props();
+
+	let el: HTMLElement | undefined = $state();
 
 	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
 	// and for the initial render the target element is undefined, so we need to check for that
@@ -29,7 +40,9 @@
 		);
 	};
 
-	$: render(markdown, el);
+	run(() => {
+		render(markdown, el);
+	});
 </script>
 
 <div class="markdown-rendered {cls}" bind:this={el}></div>

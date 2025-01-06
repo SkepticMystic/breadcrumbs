@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
 
-	export let label = "";
-	export let disabled_cb: (value: string) => boolean = (_value) => false;
+	interface Props {
+		label?: string;
+		disabled_cb?: (value: string) => boolean;
+	}
 
-	let value = "";
+	let { label = "", disabled_cb = (_value) => false }: Props = $props();
+
+	let value = $state("");
 
 	const dispatch = createEventDispatcher<{ submit: string }>();
 </script>
@@ -20,7 +24,7 @@
 
 	<button
 		disabled={disabled_cb(value)}
-		on:click={() => dispatch("submit", value)}
+		onclick={() => dispatch("submit", value)}
 	>
 		Submit
 	</button>

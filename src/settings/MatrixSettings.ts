@@ -4,6 +4,7 @@ import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSet
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { new_setting } from "src/utils/settings";
+import { mount } from "svelte";
 
 export const _add_settings_matrix = (
 	plugin: BreadcrumbsPlugin,
@@ -25,10 +26,10 @@ export const _add_settings_matrix = (
 		},
 	});
 
-	new EdgeSortIdSettingItem({
-		target: containerEl,
-		props: { edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id },
-	}).$on("select", async (e) => {
+	mount(EdgeSortIdSettingItem, {
+    		target: containerEl,
+    		props: { edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id },
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.matrix.edge_sort_id = e.detail;
 
 		await Promise.all([
@@ -37,13 +38,13 @@ export const _add_settings_matrix = (
 		]);
 	});
 
-	new ShowAttributesSettingItem({
-		target: containerEl,
-		props: {
-			exclude_attributes: ["field", "explicit"],
-			show_attributes: plugin.settings.views.side.matrix.show_attributes,
-		},
-	}).$on("select", async (e) => {
+	mount(ShowAttributesSettingItem, {
+    		target: containerEl,
+    		props: {
+    			exclude_attributes: ["field", "explicit"],
+    			show_attributes: plugin.settings.views.side.matrix.show_attributes,
+    		},
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.matrix.show_attributes = e.detail;
 
 		await Promise.all([
@@ -52,14 +53,14 @@ export const _add_settings_matrix = (
 		]);
 	});
 
-	new FieldGroupLabelsSettingItem({
-		target: containerEl,
-		props: {
-			edge_field_groups: plugin.settings.edge_field_groups,
-			field_group_labels:
-				plugin.settings.views.side.matrix.field_group_labels,
-		},
-	}).$on("select", async (e) => {
+	mount(FieldGroupLabelsSettingItem, {
+    		target: containerEl,
+    		props: {
+    			edge_field_groups: plugin.settings.edge_field_groups,
+    			field_group_labels:
+    				plugin.settings.views.side.matrix.field_group_labels,
+    		},
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.matrix.field_group_labels = e.detail;
 
 		await Promise.all([

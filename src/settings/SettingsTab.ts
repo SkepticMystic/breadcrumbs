@@ -20,6 +20,7 @@ import { _add_settings_regex_note } from "./RegexNoteSettings";
 import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_thread } from "./ThreadSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
+import { mount } from "svelte";
 
 const make_details_el = (
 	parent: HTMLElement,
@@ -65,12 +66,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.addClass("BC-settings-tab");
 
 		this.components.push(
-			new EdgeFieldSettings({
-				props: { plugin },
-				target: make_details_el(containerEl, {
-					s: { text: "> Edge Fields" },
-				}).children,
-			}),
+			mount(EdgeFieldSettings, {
+            				props: { plugin },
+            				target: make_details_el(containerEl, {
+            					s: { text: "> Edge Fields" },
+            				}).children,
+            			}),
 		);
 
 		// Implied Relations
@@ -78,12 +79,12 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.createEl("h3", { text: "Implied Relations" });
 
 		this.components.push(
-			new TransitiveImpliedRelations({
-				props: { plugin },
-				target: make_details_el(containerEl, {
-					s: { text: "> Transitive" },
-				}).children,
-			}),
+			mount(TransitiveImpliedRelations, {
+            				props: { plugin },
+            				target: make_details_el(containerEl, {
+            					s: { text: "> Transitive" },
+            				}).children,
+            			}),
 		);
 
 		// Edge Sources

@@ -1,4 +1,7 @@
 <script lang="ts">
+	import NestedEdgeList from './NestedEdgeList.svelte';
+	import { run } from 'svelte/legacy';
+
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "./EdgeLink.svelte";
@@ -7,27 +10,41 @@
 	import { FlatTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
-	export let plugin: BreadcrumbsPlugin;
 
-	// export let tree: RecTraversalData[];
-	export let data: FlatTraversalData[];
-	export let items: Uint32Array;
+	
 
-	export let open_signal: boolean | null;
-	export let show_node_options: ShowNodeOptions;
-	export let show_attributes: EdgeAttribute[] | undefined;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		// export let tree: RecTraversalData[];
+		data: FlatTraversalData[];
+		items: Uint32Array;
+		open_signal: boolean | null;
+		show_node_options: ShowNodeOptions;
+		show_attributes: EdgeAttribute[] | undefined;
+	}
+
+	let {
+		plugin,
+		data,
+		items,
+		open_signal = $bindable(),
+		show_node_options,
+		show_attributes
+	}: Props = $props();
 
 	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
 
-	let opens = Array(items.length).fill(true);
+	let opens = $state(Array(items.length).fill(true));
 
-	$: if (open_signal === true) {
-		opens = Array(items.length).fill(true);
-		open_signal = null;
-	} else if (open_signal === false) {
-		opens = Array(items.length).fill(false);
-		open_signal = null;
-	}
+	run(() => {
+		if (open_signal === true) {
+			opens = Array(items.length).fill(true);
+			open_signal = null;
+		} else if (open_signal === false) {
+			opens = Array(items.length).fill(false);
+			open_signal = null;
+		}
+	});
 
 	// $: console.log(opens);
 </script>
@@ -61,7 +78,7 @@
 
 		{#if children.length}
 			<div class="tree-item-children">
-				<svelte:self
+				<NestedEdgeList
 					{plugin}
 					{show_attributes}
 					{show_node_options}

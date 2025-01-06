@@ -1,17 +1,25 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { EdgeAttribute } from "src/graph/utils";
 	import { createEventDispatcher } from "svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import SettingItem from "./SettingItem.svelte";
 
-	export let show_attributes: EdgeAttribute[];
-	export let exclude_attributes: EdgeAttribute[] = [];
+	interface Props {
+		show_attributes: EdgeAttribute[];
+		exclude_attributes?: EdgeAttribute[];
+	}
+
+	let { show_attributes = $bindable(), exclude_attributes = [] }: Props = $props();
 
 	const dispatch = createEventDispatcher<{ select: EdgeAttribute[] }>();
 
-	$: if (show_attributes) {
-		dispatch("select", show_attributes);
-	}
+	run(() => {
+		if (show_attributes) {
+			dispatch("select", show_attributes);
+		}
+	});
 </script>
 
 <SettingItem

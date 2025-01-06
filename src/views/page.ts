@@ -2,6 +2,7 @@ import { MarkdownView } from "obsidian";
 import PageViewsComponent from "src/components/page_views/index.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+import { mount } from "svelte";
 
 export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 	const markdown_views = plugin.app.workspace.getLeavesOfType("markdown");
@@ -73,9 +74,9 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 		}
 
 		// Render the component into the container
-		new PageViewsComponent({
-			target: page_views_el,
-			props: { plugin, file_path: markdown_view.file?.path ?? "" },
-		});
+		mount(PageViewsComponent, {
+        			target: page_views_el,
+        			props: { plugin, file_path: markdown_view.file?.path ?? "" },
+        		});
 	});
 };

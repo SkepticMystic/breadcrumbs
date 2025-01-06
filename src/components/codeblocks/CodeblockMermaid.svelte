@@ -22,15 +22,24 @@
 	import { Links } from "src/utils/links";
 	import { active_file_store } from "src/stores/active_file";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let options: ICodeblock["Options"];
-	export let errors: BreadcrumbsError[];
-	export let file_path: string;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		options: ICodeblock["Options"];
+		errors: BreadcrumbsError[];
+		file_path: string;
+	}
+
+	let {
+		plugin,
+		options,
+		errors,
+		file_path
+	}: Props = $props();
 
 	const DEFAULT_MAX_DEPTH = 10;
 
-	let code: string = "";
-	let error: string | undefined = undefined;
+	let code: string = $state("");
+	let error: string | undefined = $state(undefined);
 
 	export const update = () => {
 		const max_depth = options.depth[1] === Infinity ? DEFAULT_MAX_DEPTH : (options.depth[1] ?? DEFAULT_MAX_DEPTH);
@@ -136,7 +145,7 @@
 					role="link"
 					aria-label="View Image on mermaid.ink"
 					class="clickable-icon nav-action-button"
-					on:click={() => {
+					onclick={() => {
 						window.open(Mermaid.to_image_link(code), "_blank");
 					}}
 				>
@@ -147,7 +156,7 @@
 					role="link"
 					aria-label="Live Edit on mermaid.live"
 					class="clickable-icon nav-action-button"
-					on:click={() => {
+					onclick={() => {
 						window.open(Mermaid.to_live_edit_link(code), "_blank");
 					}}
 				>

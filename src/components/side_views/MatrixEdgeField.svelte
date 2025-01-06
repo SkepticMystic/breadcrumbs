@@ -7,13 +7,24 @@
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 
-	export let open: boolean;
-	export let field: EdgeField;
-	export let edges: EdgeStruct[];
-	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
-	// 	so rather pass them in to receive updates
-	export let show_attributes: EdgeAttribute[];
+	
+	interface Props {
+		open: boolean;
+		field: EdgeField;
+		edges: EdgeStruct[];
+		plugin: BreadcrumbsPlugin;
+		// 	so rather pass them in to receive updates
+		show_attributes: EdgeAttribute[];
+	}
+
+	let {
+		open = $bindable(),
+		field,
+		edges,
+		plugin,
+		show_attributes
+	}: Props = $props();
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
@@ -24,8 +35,8 @@
 	class="BC-matrix-view-field BC-matrix-view-field-{field.label} tree-item"
 	bind:open
 >
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<summary class="tree-item-self is-clickable mod-collapsible text-lg">
 		<div class="tree-item-icon collapse-icon">
 			<ChevronOpener {open} />

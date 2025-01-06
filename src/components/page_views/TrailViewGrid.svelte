@@ -9,8 +9,12 @@
 	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { toNodeStringifyOptions } from "src/graph/utils";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let all_paths: Path[];
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		all_paths: Path[];
+	}
+
+	let { plugin, all_paths }: Props = $props();
 
 	const reversed = all_paths.map((path) => path.reverse_edges);
 

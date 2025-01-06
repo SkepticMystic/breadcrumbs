@@ -3,10 +3,19 @@
 	import BreadcrumbsPlugin from "src/main";
 	import type { EdgeStruct, NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-	export let edge: EdgeStruct;
-	export let plugin: BreadcrumbsPlugin;
-	export let node_stringify_options: NodeStringifyOptions;
-	export let cls = "";
+	interface Props {
+		edge: EdgeStruct;
+		plugin: BreadcrumbsPlugin;
+		node_stringify_options: NodeStringifyOptions;
+		cls?: string;
+	}
+
+	let {
+		edge,
+		plugin,
+		node_stringify_options,
+		cls = ""
+	}: Props = $props();
 
 	const display = edge.stringify_target(plugin.graph, node_stringify_options);
 </script>

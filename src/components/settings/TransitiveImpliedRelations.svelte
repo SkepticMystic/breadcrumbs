@@ -25,13 +25,17 @@
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+	}
 
-	const settings = plugin.settings;
+	let { plugin = $bindable() }: Props = $props();
 
-	let filter = "";
-	let transitives = [...settings.implied_relations.transitive];
-	const opens = transitives.map(() => false);
+	const settings = $state(plugin.settings);
+
+	let filter = $state("");
+	let transitives = $state([...settings.implied_relations.transitive]);
+	const opens = $state(transitives.map(() => false));
 
 	const actions = {
 		save: async () => {
@@ -249,7 +253,7 @@
 	</p>
 
 	<div class="my-2 flex items-center gap-2">
-		<button class="flex items-center gap-1" on:click={actions.save}>
+		<button class="flex items-center gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
@@ -264,7 +268,7 @@
 				class="w-8"
 				aria-label="Clear Filter"
 				disabled={filter === ""}
-				on:click={() => (filter = "")}
+				onclick={() => (filter = "")}
 			>
 				X
 			</button>
@@ -274,7 +278,7 @@
 			<button
 				class="w-10"
 				aria-label="Jump to bottom"
-				on:click={() => actions.scroll_to(transitives.length - 1)}
+				onclick={() => actions.scroll_to(transitives.length - 1)}
 			>
 				<ArrowDown size={ICON_SIZE} />
 			</button>
@@ -305,14 +309,14 @@
 					<div class="flex gap-1">
 						<button
 							disabled={rule_i === 0}
-							on:click={() =>
+							onclick={() =>
 								actions.reorder_transitive(rule_i, rule_i - 1)}
 						>
 							<ArrowUp size={ICON_SIZE} />
 						</button>
 						<button
 							disabled={rule_i === transitives.length - 1}
-							on:click={() =>
+							onclick={() =>
 								actions.reorder_transitive(rule_i, rule_i + 1)}
 						>
 							<ArrowDown size={ICON_SIZE} />
@@ -320,14 +324,14 @@
 
 						<button
 							aria-label="Copy Transitive Implied Relation"
-							on:click={() => actions.copy_transitive(rule_i)}
+							onclick={() => actions.copy_transitive(rule_i)}
 						>
 							<ClipboardIcon size={ICON_SIZE} />
 						</button>
 
 						<button
 							aria-label="Delete Transitive Implied Relation"
-							on:click={() => actions.remove_transitive(rule_i)}
+							onclick={() => actions.remove_transitive(rule_i)}
 						>
 							X
 						</button>
@@ -385,7 +389,7 @@
 							<input
 								type="checkbox"
 								bind:checked={rule.close_reversed}
-								on:click={(e) =>
+								onclick={(e) =>
 									actions.set_close_reversed(
 										rule_i,
 										e.currentTarget.checked,
@@ -401,7 +405,7 @@
 								min={0}
 								max={100}
 								value={rule.rounds}
-								on:blur={(e) =>
+								onblur={(e) =>
 									actions.set_rounds(
 										rule_i,
 										+e.currentTarget.value,
@@ -417,7 +421,7 @@
 									type="text"
 									value={rule.name}
 									placeholder="Rule Name"
-									on:blur={(e) =>
+									onblur={(e) =>
 										actions.rename_transitive(
 											rule_i,
 											e.currentTarget.value,
@@ -426,7 +430,7 @@
 
 								<button
 									aria-label="Reset Name"
-									on:click={() =>
+									onclick={() =>
 										actions.rename_transitive(rule_i, "")}
 								>
 									X
@@ -448,7 +452,7 @@
 
 		<button
 			class="flex items-center gap-1"
-			on:click={actions.add_transitive}
+			onclick={actions.add_transitive}
 		>
 			<PlusIcon size={ICON_SIZE} />
 			Add New Transitive Implied Relation
@@ -471,7 +475,7 @@
 					placeholder="[up] <- down"
 				></textarea>
 
-				<button class="w-60" on:click={actions.add_bulk}>
+				<button class="w-60" onclick={actions.add_bulk}>
 					Bulk Add
 				</button>
 			</div>

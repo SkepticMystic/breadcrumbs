@@ -4,6 +4,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import { mount } from "svelte";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -25,10 +26,10 @@ export const _add_settings_tree_view = (
 		},
 	});
 
-	new EdgeSortIdSettingItem({
-		target: containerEl,
-		props: { edge_sort_id: plugin.settings.views.side.tree.edge_sort_id },
-	}).$on("select", async (e) => {
+	mount(EdgeSortIdSettingItem, {
+    		target: containerEl,
+    		props: { edge_sort_id: plugin.settings.views.side.tree.edge_sort_id },
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.tree.edge_sort_id = e.detail;
 
 		await Promise.all([
@@ -37,12 +38,12 @@ export const _add_settings_tree_view = (
 		]);
 	});
 
-	new ShowAttributesSettingItem({
-		target: containerEl,
-		props: {
-			show_attributes: plugin.settings.views.side.tree.show_attributes,
-		},
-	}).$on("select", async (e) => {
+	mount(ShowAttributesSettingItem, {
+    		target: containerEl,
+    		props: {
+    			show_attributes: plugin.settings.views.side.tree.show_attributes,
+    		},
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.tree.show_attributes = e.detail;
 
 		await Promise.all([
@@ -51,14 +52,14 @@ export const _add_settings_tree_view = (
 		]);
 	});
 
-	new FieldGroupLabelsSettingItem({
-		target: containerEl,
-		props: {
-			edge_field_groups: plugin.settings.edge_field_groups,
-			field_group_labels:
-				plugin.settings.views.side.tree.field_group_labels,
-		},
-	}).$on("select", async (e) => {
+	mount(FieldGroupLabelsSettingItem, {
+    		target: containerEl,
+    		props: {
+    			edge_field_groups: plugin.settings.edge_field_groups,
+    			field_group_labels:
+    				plugin.settings.views.side.tree.field_group_labels,
+    		},
+    	}).$on("select", async (e) => {
 		plugin.settings.views.side.tree.field_group_labels = e.detail;
 
 		await Promise.all([

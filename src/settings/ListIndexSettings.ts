@@ -6,6 +6,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import { mount } from "svelte";
 
 export const _add_settings_list_index = (
 	plugin: BreadcrumbsPlugin,
@@ -13,14 +14,14 @@ export const _add_settings_list_index = (
 ) => {
 	const { settings } = plugin;
 
-	new FieldGroupLabelsSettingItem({
-		target: contentEl,
-		props: {
-			edge_field_groups: plugin.settings.edge_field_groups,
-			field_group_labels:
-				settings.commands.list_index.default_options.field_group_labels,
-		},
-	}).$on("select", async (e) => {
+	mount(FieldGroupLabelsSettingItem, {
+    		target: contentEl,
+    		props: {
+    			edge_field_groups: plugin.settings.edge_field_groups,
+    			field_group_labels:
+    				settings.commands.list_index.default_options.field_group_labels,
+    		},
+    	}).$on("select", async (e) => {
 		// Tracking groups for the UI
 		settings.commands.list_index.default_options.field_group_labels =
 			e.detail;
@@ -62,25 +63,25 @@ export const _add_settings_list_index = (
 		},
 	});
 
-	new EdgeSortIdSettingItem({
-		target: contentEl,
-		props: {
-			edge_sort_id:
-				settings.commands.list_index.default_options.edge_sort_id,
-		},
-	}).$on("select", async (e) => {
+	mount(EdgeSortIdSettingItem, {
+    		target: contentEl,
+    		props: {
+    			edge_sort_id:
+    				settings.commands.list_index.default_options.edge_sort_id,
+    		},
+    	}).$on("select", async (e) => {
 		settings.commands.list_index.default_options.edge_sort_id = e.detail;
 
 		await plugin.saveSettings();
 	});
 
-	new ShowAttributesSettingItem({
-		target: contentEl,
-		props: {
-			show_attributes:
-				settings.commands.list_index.default_options.show_attributes,
-		},
-	}).$on("select", async (e) => {
+	mount(ShowAttributesSettingItem, {
+    		target: contentEl,
+    		props: {
+    			show_attributes:
+    				settings.commands.list_index.default_options.show_attributes,
+    		},
+    	}).$on("select", async (e) => {
 		settings.commands.list_index.default_options.show_attributes = e.detail;
 
 		await plugin.saveSettings();

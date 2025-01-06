@@ -11,6 +11,7 @@ import { active_file_store } from "src/stores/active_file";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
+import { mount } from "svelte";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
@@ -37,13 +38,13 @@ export class CreateListIndexModal extends Modal {
 			text: "Create List Index",
 		});
 
-		new FieldGroupLabelsSettingItem({
-			target: contentEl,
-			props: {
-				field_group_labels: this.options.field_group_labels,
-				edge_field_groups: plugin.settings.edge_field_groups,
-			},
-		}).$on("select", (e) => {
+		mount(FieldGroupLabelsSettingItem, {
+        			target: contentEl,
+        			props: {
+        				field_group_labels: this.options.field_group_labels,
+        				edge_field_groups: plugin.settings.edge_field_groups,
+        			},
+        		}).$on("select", (e) => {
 			// Tracking groups for the UI
 			this.options.field_group_labels = e.detail;
 
@@ -73,17 +74,17 @@ export class CreateListIndexModal extends Modal {
 			},
 		});
 
-		new EdgeSortIdSettingItem({
-			target: contentEl,
-			props: { edge_sort_id: this.options.edge_sort_id },
-		}).$on("select", (e) => {
+		mount(EdgeSortIdSettingItem, {
+        			target: contentEl,
+        			props: { edge_sort_id: this.options.edge_sort_id },
+        		}).$on("select", (e) => {
 			this.options.edge_sort_id = e.detail;
 		});
 
-		new ShowAttributesSettingItem({
-			target: contentEl,
-			props: { show_attributes: this.options.show_attributes },
-		}).$on("select", (e) => {
+		mount(ShowAttributesSettingItem, {
+        			target: contentEl,
+        			props: { show_attributes: this.options.show_attributes },
+        		}).$on("select", (e) => {
 			this.options.show_attributes = e.detail;
 		});
 

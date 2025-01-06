@@ -2,6 +2,7 @@ import BreadcrumbsPlugin, { BCEvent } from "src/main";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import MatrixComponent from "src/components/side_views/Matrix.svelte";
 import { VIEW_IDS } from "src/const/views";
+import { mount } from "svelte";
 
 export class MatrixView extends ItemView {
 	plugin: BreadcrumbsPlugin;
@@ -34,10 +35,10 @@ export class MatrixView extends ItemView {
 		const container = this.containerEl.children[1];
 		container.empty();
 
-		this.component = new MatrixComponent({
-			target: this.contentEl,
-			props: { plugin: this.plugin },
-		});
+		this.component = mount(MatrixComponent, {
+        			target: this.contentEl,
+        			props: { plugin: this.plugin },
+        		});
 	}
 
 	async onClose() {

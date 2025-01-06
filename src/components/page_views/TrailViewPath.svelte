@@ -3,8 +3,12 @@
 	import EdgeLink from "../EdgeLink.svelte";
 	import { NodeStringifyOptions, type Path } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let all_paths: Path[];
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		all_paths: Path[];
+	}
+
+	let { plugin, all_paths }: Props = $props();
 
 	const { dendron_note } = plugin.settings.explicit_edge_sources;
 

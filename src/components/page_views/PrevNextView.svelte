@@ -5,8 +5,12 @@
 	import EdgeLink from "../EdgeLink.svelte";
 	import { toNodeStringifyOptions } from "src/graph/utils";
 
-	export let file_path: string;
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		file_path: string;
+		plugin: BreadcrumbsPlugin;
+	}
+
+	let { file_path, plugin }: Props = $props();
 
 	const { field_group_labels, show_node_options } =
 		plugin.settings.views.page.prev_next;

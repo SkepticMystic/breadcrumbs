@@ -4,15 +4,19 @@
 	import { type EdgeSortId } from "src/const/graph";
 	import { EdgeSortIdMenu } from "src/menus/EdgeSortIdMenu";
 
-	export let edge_sort_id: EdgeSortId;
-	export let exclude_fields: EdgeSortId["field"][] = [];
-	export let cls = "";
+	interface Props {
+		edge_sort_id: EdgeSortId;
+		exclude_fields?: EdgeSortId["field"][];
+		cls?: string;
+	}
+
+	let { edge_sort_id = $bindable(), exclude_fields = [], cls = "" }: Props = $props();
 </script>
 
 <button
 	class="flex gap-1 {cls}"
 	aria-label="Change sort field/order"
-	on:click={(e) => {
+	onclick={(e) => {
 		EdgeSortIdMenu({
 			exclude_fields,
 			value: edge_sort_id,

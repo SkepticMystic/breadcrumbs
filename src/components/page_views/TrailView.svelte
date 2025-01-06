@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type BreadcrumbsPlugin from "src/main";
 	import { remove_duplicates_by_equals } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -8,8 +10,12 @@
 	import { PathList, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { log } from "src/logger";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let file_path: string;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		file_path: string;
+	}
+
+	let { plugin = $bindable(), file_path }: Props = $props();
 
 	// TODO: I've copped-out here, building the view from edge_tree seems crazy hard.
 	// So I just use all_paths
@@ -20,9 +26,9 @@
 	// 		),
 	// 	);
 
-	let selected_paths: PathList | undefined = undefined;
+	let selected_paths: PathList | undefined = $state(undefined);
 
-	$: {
+	run(() => {
 		let edge_field_labels = resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
 			plugin.settings.views.page.trail.field_group_labels,
@@ -42,15 +48,18 @@
 		selected_paths = all_paths.select(
 			plugin.settings.views.page.trail.selection,
 		);
-	}
+	});
 
-	$: MAX_DEPTH = Math.max(0, selected_paths?.max_depth() ?? 0);
-	$: depth = Math.min(
-		MAX_DEPTH,
-		plugin.settings.views.page.trail.default_depth,
-	);
+	let MAX_DEPTH = $derived(Math.max(0, selected_paths?.max_depth() ?? 0));
+	let depth;
+	run(() => {
+		depth = Math.min(
+			MAX_DEPTH,
+			plugin.settings.views.page.trail.default_depth,
+		);
+	});
 
-	$: sorted_paths = selected_paths?.process(plugin.graph, depth);
+	let sorted_paths = $derived(selected_paths?.process(plugin.graph, depth));
 </script>
 
 <div>
@@ -63,7 +72,7 @@
 				<select
 					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.format}
-					on:change={async () => await plugin.saveSettings()}
+					onchange={async () => await plugin.saveSettings()}
 				>
 					{#each ["grid", "path"] as format}
 						<option value={format}> {format} </option>
@@ -73,7 +82,7 @@
 				<select
 					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.selection}
-					on:change={async () => await plugin.saveSettings()}
+					onchange={async () => await plugin.saveSettings()}
 				>
 					{#each ["all", "shortest", "longest"] as s}
 						<option value={s}> {s} </option>
@@ -90,7 +99,7 @@
 						class="aspect-square text-lg"
 						aria-label="Decrease max depth"
 						disabled={depth <= 1}
-						on:click={() => (depth = Math.max(1, depth - 1))}
+						onclick={() => (depth = Math.max(1, depth - 1))}
 					>
 						-
 					</button>
@@ -103,7 +112,7 @@
 						class="aspect-square text-lg"
 						aria-label="Increase max depth"
 						disabled={depth >= MAX_DEPTH}
-						on:click={() => (depth = Math.min(MAX_DEPTH, depth + 1))}
+						onclick={() => (depth = Math.min(MAX_DEPTH, depth + 1))}
 					>
 						+
 					</button>

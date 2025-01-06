@@ -1,7 +1,11 @@
 <script lang="ts">
-	export let cls = "";
-	export let label = "";
-	export let aria_label = "";
+	interface Props {
+		cls?: string;
+		label?: string;
+		aria_label?: string;
+	}
+
+	let { cls = "", label = "", aria_label = "" }: Props = $props();
 </script>
 
 <div class="tree-item-flair-outer">

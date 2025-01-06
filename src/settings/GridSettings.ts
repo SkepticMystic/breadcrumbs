@@ -3,6 +3,7 @@ import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabel
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import { mount } from "svelte";
 
 export const _add_settings_trail_view = (
 	plugin: BreadcrumbsPlugin,
@@ -80,14 +81,14 @@ export const _add_settings_trail_view = (
 		},
 	});
 
-	new FieldGroupLabelsSettingItem({
-		target: containerEl,
-		props: {
-			edge_field_groups: plugin.settings.edge_field_groups,
-			field_group_labels:
-				plugin.settings.views.page.trail.field_group_labels,
-		},
-	}).$on("select", async (e) => {
+	mount(FieldGroupLabelsSettingItem, {
+    		target: containerEl,
+    		props: {
+    			edge_field_groups: plugin.settings.edge_field_groups,
+    			field_group_labels:
+    				plugin.settings.views.page.trail.field_group_labels,
+    		},
+    	}).$on("select", async (e) => {
 		plugin.settings.views.page.trail.field_group_labels = e.detail;
 
 		await Promise.all([

@@ -4,15 +4,19 @@
 	import type { EdgeFieldGroup } from "src/interfaces/settings";
 	import { FieldGroupsSelectorMenu } from "src/menus/FieldGroupsSelector";
 
-	export let cls = "";
-	export let field_group_labels: string[];
-	export let edge_field_groups: EdgeFieldGroup[];
+	interface Props {
+		cls?: string;
+		field_group_labels: string[];
+		edge_field_groups: EdgeFieldGroup[];
+	}
+
+	let { cls = "", field_group_labels = $bindable(), edge_field_groups }: Props = $props();
 </script>
 
 <button
 	class={cls}
 	aria-label="Choose edge field groups"
-	on:click={(e) => {
+	onclick={(e) => {
 		FieldGroupsSelectorMenu({
 			edge_field_groups,
 			value: field_group_labels,
