@@ -10,7 +10,11 @@
 		cls?: string;
 	}
 
-	let { show_attributes = $bindable(), exclude_attributes = [], cls = "" }: Props = $props();
+	let {
+		show_attributes = $bindable(),
+		exclude_attributes = [],
+		cls = "",
+	}: Props = $props();
 
 	// Remove any excluded items in the initial value
 	// This makes it cleaner to pass in EDGE_ATTRIBUTES as the starter, then immediately exclude some

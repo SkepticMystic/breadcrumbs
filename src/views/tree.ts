@@ -27,7 +27,7 @@ export class TreeView extends ItemView {
 		this.registerEvent(
 			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
 				this.onOpen();
-			})
+			}),
 		);
 	}
 
@@ -36,14 +36,14 @@ export class TreeView extends ItemView {
 		container.empty();
 
 		this.component = mount(TreeViewComponent, {
-        			target: this.contentEl,
-        			props: { plugin: this.plugin },
-        		});
+			target: this.contentEl,
+			props: { plugin: this.plugin },
+		});
 	}
 
 	async onClose() {
 		if (this.component) {
-					unmount(this.component);
-				}
+			unmount(this.component);
+		}
 	}
 }

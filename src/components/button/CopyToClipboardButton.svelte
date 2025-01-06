@@ -14,7 +14,7 @@
 		cls = "",
 		text,
 		aria_label = "Copy to Clipboard",
-		options = {}
+		options = {},
 	}: Props = $props();
 
 	let copied = $state(false);

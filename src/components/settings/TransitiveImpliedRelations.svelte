@@ -47,10 +47,7 @@
 
 			settings.implied_relations.transitive = transitives;
 
-			await Promise.all([
-				plugin.saveSettings(),
-				plugin.rebuildGraph(),
-			]);
+			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
 			plugin = plugin;
@@ -442,7 +439,8 @@
 							<RenderExternalCodeblock
 								{plugin}
 								type="mermaid"
-								code={Mermaid.from_transitive_rule(rule).mermaid}
+								code={Mermaid.from_transitive_rule(rule)
+									.mermaid}
 							/>
 						{/if}
 					</div>

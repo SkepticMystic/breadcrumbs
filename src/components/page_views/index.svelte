@@ -3,7 +3,6 @@
 	import PrevNextView from "./PrevNextView.svelte";
 	import TrailView from "./TrailView.svelte";
 
-	
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 		// NOTE: We can't rely on $active_file_store, since there may be multiple notes open at once, only one of which is active

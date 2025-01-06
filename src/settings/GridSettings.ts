@@ -35,7 +35,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refreshViews()
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -52,7 +52,7 @@ export const _add_settings_trail_view = (
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refreshViews()
+					plugin.refreshViews(),
 				]);
 			},
 		},
@@ -94,7 +94,7 @@ export const _add_settings_trail_view = (
 					plugin.saveSettings(),
 					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
 	});
 

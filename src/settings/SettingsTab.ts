@@ -51,7 +51,10 @@ const make_details_el = (
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
-	components: (ReturnType<typeof EdgeFieldSettings> | ReturnType<typeof TransitiveImpliedRelations>)[] = [];
+	components: (
+		| ReturnType<typeof EdgeFieldSettings>
+		| ReturnType<typeof TransitiveImpliedRelations>
+	)[] = [];
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app, plugin);

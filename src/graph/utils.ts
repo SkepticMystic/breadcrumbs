@@ -2,10 +2,13 @@ import type BreadcrumbsPlugin from "src/main";
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-export function toNodeStringifyOptions(plugin: BreadcrumbsPlugin, options: ShowNodeOptions): NodeStringifyOptions {
-    const { dendron_note } = plugin.settings.explicit_edge_sources;
+export function toNodeStringifyOptions(
+	plugin: BreadcrumbsPlugin,
+	options: ShowNodeOptions,
+): NodeStringifyOptions {
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
-    return new NodeStringifyOptions(
+	return new NodeStringifyOptions(
 		options.ext,
 		options.folder,
 		options.alias,
@@ -23,7 +26,7 @@ export type EdgeAttrFilters = Partial<
 		$or_target_ids: string[];
 	}>;
 
-	import type { ExplicitEdgeSource } from "src/const/graph";
+import type { ExplicitEdgeSource } from "src/const/graph";
 
 export const EDGE_ATTRIBUTES = [
 	"field",

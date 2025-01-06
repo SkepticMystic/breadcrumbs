@@ -29,52 +29,51 @@ export const _add_settings_tree_view = (
 	});
 
 	mount(EdgeSortIdSettingItem, {
-    		target: containerEl,
-    		props: { 
-				edge_sort_id: plugin.settings.views.side.tree.edge_sort_id,
-				select_cb: async (value: EdgeSortId) => {
-					plugin.settings.views.side.tree.edge_sort_id = value;
+		target: containerEl,
+		props: {
+			edge_sort_id: plugin.settings.views.side.tree.edge_sort_id,
+			select_cb: async (value: EdgeSortId) => {
+				plugin.settings.views.side.tree.edge_sort_id = value;
 
-					await Promise.all([
-						plugin.saveSettings(),
-						plugin.refreshViews(),
-					]);
-				}
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refreshViews(),
+				]);
 			},
-    	
+		},
 	});
 
 	mount(ShowAttributesSettingItem, {
-    		target: containerEl,
-    		props: {
-    			show_attributes: plugin.settings.views.side.tree.show_attributes,
-				select_cb: async (value: EdgeAttribute[]) => {
-					plugin.settings.views.side.tree.show_attributes = value;
+		target: containerEl,
+		props: {
+			show_attributes: plugin.settings.views.side.tree.show_attributes,
+			select_cb: async (value: EdgeAttribute[]) => {
+				plugin.settings.views.side.tree.show_attributes = value;
 
-					await Promise.all([
-						plugin.saveSettings(),
-						plugin.refreshViews(),
-					]);
-				}
-    		},
-    	});
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refreshViews(),
+				]);
+			},
+		},
+	});
 
 	mount(FieldGroupLabelsSettingItem, {
-    		target: containerEl,
-    		props: {
-    			edge_field_groups: plugin.settings.edge_field_groups,
-    			field_group_labels:
-    				plugin.settings.views.side.tree.field_group_labels,
-				select_cb: async (value: string[]) => {
-					plugin.settings.views.side.tree.field_group_labels = value;
+		target: containerEl,
+		props: {
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels:
+				plugin.settings.views.side.tree.field_group_labels,
+			select_cb: async (value: string[]) => {
+				plugin.settings.views.side.tree.field_group_labels = value;
 
-					await Promise.all([
-						plugin.saveSettings(),
-						plugin.refreshViews(),
-					]);
-				}
-    		},
-    	});
+				await Promise.all([
+					plugin.saveSettings(),
+					plugin.refreshViews(),
+				]);
+			},
+		},
+	});
 
 	new_setting(containerEl, {
 		name: "Merge Fields",

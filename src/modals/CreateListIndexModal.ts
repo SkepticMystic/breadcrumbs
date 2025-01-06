@@ -54,7 +54,7 @@ export class CreateListIndexModal extends Modal {
 						plugin.settings.edge_field_groups,
 						this.options.field_group_labels,
 					);
-				}
+				},
 			},
 		});
 
@@ -79,21 +79,21 @@ export class CreateListIndexModal extends Modal {
 
 		mount(EdgeSortIdSettingItem, {
 			target: contentEl,
-			props: { 
+			props: {
 				edge_sort_id: this.options.edge_sort_id,
 				select_cb: (value: EdgeSortId) => {
 					this.options.edge_sort_id = value;
-				}
-			},	
+				},
+			},
 		});
 
 		mount(ShowAttributesSettingItem, {
 			target: contentEl,
-			props: { 
+			props: {
 				show_attributes: this.options.show_attributes,
 				select_cb: (value: EdgeAttribute[]) => {
 					this.options.show_attributes = value;
-				}
+				},
 			},
 		});
 

@@ -13,7 +13,10 @@ import { mount, unmount } from "svelte";
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
-	component: ReturnType<typeof CodeblockTree> | ReturnType<typeof CodeblockMermaid> | undefined;
+	component:
+		| ReturnType<typeof CodeblockTree>
+		| ReturnType<typeof CodeblockMermaid>
+		| undefined;
 	file_path: string;
 	id: string;
 
@@ -63,9 +66,9 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 			log.warn("fatal codeblock errors", errors);
 
 			mount(CodeblockErrors, {
-            				target: this.containerEl,
-            				props: { errors, plugin: this.plugin },
-            			});
+				target: this.containerEl,
+				props: { errors, plugin: this.plugin },
+			});
 
 			return;
 		}
@@ -88,35 +91,35 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 		if (options.type === "tree") {
 			this.component = mount(CodeblockTree, {
-            				target: this.containerEl,
-            				props: {
-            					errors,
-            					options,
-            					file_path,
-            					plugin: this.plugin,
-            				},
-            			});
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
 		} else if (options.type === "mermaid") {
 			this.component = mount(CodeblockMermaid, {
-            				target: this.containerEl,
-            				props: {
-            					errors,
-            					options,
-            					file_path,
-            					plugin: this.plugin,
-            				},
-            			});
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
 		} else if (options.type === "markmap") {
 			// TODO
 			// this.component = mount(CodeblockMarkmap, {
-            // 				target: this.containerEl,
-            // 				props: {
-            // 					errors,
-            // 					options,
-            // 					file_path,
-            // 					plugin: this.plugin,
-            // 				},
-            // 			});
+			// 				target: this.containerEl,
+			// 				props: {
+			// 					errors,
+			// 					options,
+			// 					file_path,
+			// 					plugin: this.plugin,
+			// 				},
+			// 			});
 		} else {
 			log.error("CodeblockMDRC unknown type", options.type);
 		}
@@ -124,9 +127,11 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		log.debug(timer_inner.elapsedMessage("component creation", true));
 		log.debug(timer_outer.elapsedMessage("CodeblockMDRC.onload"));
 
-		this.registerEvent(this.plugin.events.on(BCEvent.GRAPH_UPDATE, () => {
-			this.update();
-		}));
+		this.registerEvent(
+			this.plugin.events.on(BCEvent.GRAPH_UPDATE, () => {
+				this.update();
+			}),
+		);
 	}
 
 	onunload(): void {

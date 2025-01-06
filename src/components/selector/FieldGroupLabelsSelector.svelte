@@ -10,7 +10,11 @@
 		edge_field_groups: EdgeFieldGroup[];
 	}
 
-	let { cls = "", field_group_labels = $bindable(), edge_field_groups }: Props = $props();
+	let {
+		cls = "",
+		field_group_labels = $bindable(),
+		edge_field_groups,
+	}: Props = $props();
 </script>
 
 <button

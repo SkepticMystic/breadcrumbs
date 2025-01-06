@@ -106,16 +106,18 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	log.debug(timer.elapsedMessage("Collecting edges and nodes"));
 	timer.reset();
 
-	const transitive_rules = plugin.settings.implied_relations.transitive.map((rule) => {
-		return new TransitiveGraphRule(
-			rule.name,
-			rule.chain.map((attr) => attr.field!),
-			rule.close_field,
-			rule.rounds,
-			false,
-			rule.close_reversed
-		)
-	});
+	const transitive_rules = plugin.settings.implied_relations.transitive.map(
+		(rule) => {
+			return new TransitiveGraphRule(
+				rule.name,
+				rule.chain.map((attr) => attr.field!),
+				rule.close_field,
+				rule.rounds,
+				false,
+				rule.close_reversed,
+			);
+		},
+	);
 
 	plugin.graph.build_graph(nodes, edges, transitive_rules);
 	log.debug(timer.elapsedMessage("WASM call"));

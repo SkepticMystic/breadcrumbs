@@ -1,5 +1,9 @@
 import type { EdgeFieldGroup } from "src/interfaces/settings";
-import type { EdgeData, NodeData, NoteGraph } from "wasm/pkg/breadcrumbs_graph_wasm";
+import type {
+	EdgeData,
+	NodeData,
+	NoteGraph,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 type GraphStats = {
 	nodes: {

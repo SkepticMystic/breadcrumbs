@@ -25,12 +25,7 @@
 		file_path: string;
 	}
 
-	let {
-		plugin,
-		options,
-		errors,
-		file_path
-	}: Props = $props();
+	let { plugin, options, errors, file_path }: Props = $props();
 
 	const sort = create_edge_sorter(
 		options.sort.field,
@@ -44,9 +39,16 @@
 	let error: string | undefined = $state(undefined);
 
 	export const update = () => {
-		const max_depth = options.depth[1] === Infinity ? DEFAULT_MAX_DEPTH : (options.depth[1] ?? DEFAULT_MAX_DEPTH);
+		const max_depth =
+			options.depth[1] === Infinity
+				? DEFAULT_MAX_DEPTH
+				: (options.depth[1] ?? DEFAULT_MAX_DEPTH);
 
-		const source_path =  options["start-note"] || file_path || $active_file_store?.path || "";
+		const source_path =
+			options["start-note"] ||
+			file_path ||
+			$active_file_store?.path ||
+			"";
 
 		if (!plugin.graph.has_node(source_path)) {
 			data = undefined;
@@ -63,11 +65,14 @@
 
 		const postprocess_options = new TraversalPostprocessOptions(
 			sort,
-			options.flat
+			options.flat,
 		);
 
 		try {
-			data = plugin.graph.rec_traverse_and_process(traversal_options, postprocess_options);
+			data = plugin.graph.rec_traverse_and_process(
+				traversal_options,
+				postprocess_options,
+			);
 
 			error = undefined;
 		} catch (e) {

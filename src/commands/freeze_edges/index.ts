@@ -10,10 +10,12 @@ export const freeze_implied_edges_to_note = async (
 	source_file: TFile,
 	options: BreadcrumbsSettings["commands"]["freeze_implied_edges"]["default_options"],
 ) => {
-	const implied_edges = plugin.graph.get_outgoing_edges(source_file.path).filter(
-		// Don't freeze a note to itself (self_is_sibling)
-		(e) => !e.is_self_loop() && !e.explicit,
-	);
+	const implied_edges = plugin.graph
+		.get_outgoing_edges(source_file.path)
+		.filter(
+			// Don't freeze a note to itself (self_is_sibling)
+			(e) => !e.is_self_loop() && !e.explicit,
+		);
 
 	await drop_crumbs(plugin, source_file, implied_edges, options);
 };

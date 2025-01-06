@@ -9,7 +9,13 @@
 // import { url_search_params } from "./url";
 
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
-import { MermaidGraphOptions, NodeData, TransitiveGraphRule, TraversalOptions, create_graph_from_rule } from "wasm/pkg/breadcrumbs_graph_wasm";
+import {
+	MermaidGraphOptions,
+	NodeData,
+	TransitiveGraphRule,
+	TraversalOptions,
+	create_graph_from_rule,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const MERMAID_DIRECTIONS = ["LR", "RL", "TB", "BT"] as const;
 type MermaidDirection = (typeof MERMAID_DIRECTIONS)[number];
@@ -285,7 +291,7 @@ const from_transitive_rule = (
 	rule: Pick<
 		BreadcrumbsSettings["implied_relations"]["transitive"][number],
 		"chain" | "close_field" | "close_reversed" | "name"
-	>
+	>,
 ) => {
 	const wasm_rule = new TransitiveGraphRule(
 		"",
@@ -299,12 +305,7 @@ const from_transitive_rule = (
 	const graph = create_graph_from_rule(wasm_rule);
 
 	return graph.generate_mermaid_graph(
-		new TraversalOptions(
-			["1"],
-			undefined,
-			100,
-			false
-		),
+		new TraversalOptions(["1"], undefined, 100, false),
 		new MermaidGraphOptions(
 			undefined,
 			"",
@@ -315,9 +316,9 @@ const from_transitive_rule = (
 			undefined,
 			(node: NodeData) => node.path,
 			false,
-		)
+		),
 	);
-}
+};
 
 export const Mermaid = {
 	// from_edges,

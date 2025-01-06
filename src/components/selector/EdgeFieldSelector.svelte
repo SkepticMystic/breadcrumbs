@@ -8,7 +8,11 @@
 		field?: EdgeField | undefined;
 	}
 
-	let { fields, undefine_on_change = true, field = $bindable(undefined) }: Props = $props();
+	let {
+		fields,
+		undefine_on_change = true,
+		field = $bindable(undefined),
+	}: Props = $props();
 
 	const dispatch = createEventDispatcher<{
 		select: typeof field | undefined;

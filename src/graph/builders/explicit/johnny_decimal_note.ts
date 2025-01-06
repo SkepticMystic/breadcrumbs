@@ -9,10 +9,7 @@ import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_not_ends_with } from "src/utils/strings";
-import {
-	GCEdgeData,
-	GCNodeData,
-} from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_johnny_decimal_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -90,13 +87,7 @@ const handle_johnny_decimal_note = (
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
 		results.nodes.push(
-			new GCNodeData(
-				target_note.path,
-				[],
-				false,
-				false,
-				false,
-			),
+			new GCNodeData(target_note.path, [], false, false, false),
 		);
 	}
 

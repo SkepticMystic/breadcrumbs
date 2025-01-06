@@ -75,8 +75,8 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 
 		// Render the component into the container
 		mount(PageViewsComponent, {
-        			target: page_views_el,
-        			props: { plugin, file_path: markdown_view.file?.path ?? "" },
-        		});
+			target: page_views_el,
+			props: { plugin, file_path: markdown_view.file?.path ?? "" },
+		});
 	});
 };

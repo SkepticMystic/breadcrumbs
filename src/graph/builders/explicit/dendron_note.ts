@@ -7,10 +7,7 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import {
-	GCEdgeData,
-	GCNodeData,
-} from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_dendron_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -89,9 +86,7 @@ const handle_dendron_note = (
 	const target_file = plugin.app.vault.getFileByPath(target_id);
 
 	if (!target_file) {
-		results.nodes.push(
-			new GCNodeData(target_id, [], false, false, false),
-		);
+		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
 
 		// If !target_file, we can recursively call handle_dendron_note
 		//   To add the unresolved edges along the way
@@ -108,12 +103,7 @@ const handle_dendron_note = (
 	}
 
 	results.edges.push(
-		new GCEdgeData(
-			source_id,
-			target_id,
-			field,
-			"dendron_note",
-		),
+		new GCEdgeData(source_id, target_id, field, "dendron_note"),
 	);
 };
 

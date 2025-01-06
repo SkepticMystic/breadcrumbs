@@ -10,7 +10,11 @@
 		cls?: string;
 	}
 
-	let { edge_sort_id = $bindable(), exclude_fields = [], cls = "" }: Props = $props();
+	let {
+		edge_sort_id = $bindable(),
+		exclude_fields = [],
+		cls = "",
+	}: Props = $props();
 </script>
 
 <button

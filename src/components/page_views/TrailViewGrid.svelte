@@ -26,8 +26,12 @@
 		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
 	);
 
-	const show_node_options = plugin.settings.views.page.trail.show_node_options
-	const node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
+	const show_node_options =
+		plugin.settings.views.page.trail.show_node_options;
+	const node_stringify_options = toNodeStringifyOptions(
+		plugin,
+		show_node_options,
+	);
 </script>
 
 <!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here

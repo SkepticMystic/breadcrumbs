@@ -21,10 +21,7 @@
 
 	const actions = {
 		save: async () => {
-			await Promise.all([
-				plugin.saveSettings(),
-				plugin.rebuildGraph(),
-			]);
+			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
 			plugin = plugin;

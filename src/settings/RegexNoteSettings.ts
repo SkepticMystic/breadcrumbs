@@ -15,7 +15,10 @@ export const _add_settings_regex_note = (
 			cb: async (value) => {
 				plugin.settings.explicit_edge_sources.regex_note.default_field =
 					value;
-				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+				await Promise.all([
+					plugin.rebuildGraph(),
+					plugin.saveSettings(),
+				]);
 			},
 		},
 	});

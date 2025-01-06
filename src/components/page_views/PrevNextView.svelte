@@ -15,7 +15,10 @@
 	const { field_group_labels, show_node_options } =
 		plugin.settings.views.page.prev_next;
 
-	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
+	let node_stringify_options = toNodeStringifyOptions(
+		plugin,
+		show_node_options,
+	);
 
 	const edge_field_labels = {
 		prev: resolve_field_group_labels(
@@ -35,9 +38,14 @@
 
 	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
-				plugin.graph.get_outgoing_edges(file_path).filter((e) =>
-					e.matches_edge_filter(plugin.graph, merged_field_labels),
-				),
+				plugin.graph
+					.get_outgoing_edges(file_path)
+					.filter((e) =>
+						e.matches_edge_filter(
+							plugin.graph,
+							merged_field_labels,
+						),
+					),
 				(e) =>
 					edge_field_labels.prev.includes(e.edge_type)
 						? ("prev" as const)
@@ -56,7 +64,12 @@
 				<div class="BC-next-prev-item flex gap-3 p-1 text-left">
 					<span class="BC-field pl-2">{edge.edge_type}</span>
 
-					<EdgeLink cls="grow" {edge} {plugin} {node_stringify_options} />
+					<EdgeLink
+						cls="grow"
+						{edge}
+						{plugin}
+						{node_stringify_options}
+					/>
 				</div>
 			{/each}
 		</div>
@@ -67,7 +80,12 @@
 		>
 			{#each grouped_out_edges?.next ?? [] as edge}
 				<div class="BC-next-prev-item flex gap-3 p-1 text-right">
-					<EdgeLink cls="grow" {edge} {plugin} {node_stringify_options} />
+					<EdgeLink
+						cls="grow"
+						{edge}
+						{plugin}
+						{node_stringify_options}
+					/>
 
 					<span class="BC-field pr-2">{edge.edge_type}</span>
 				</div>

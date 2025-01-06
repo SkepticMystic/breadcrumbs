@@ -63,19 +63,18 @@ export const thread = async (
 		new GCNodeData(target_file.path, [], true, false, false),
 	).add_to_batch(batch_update);
 
-	new AddEdgeGraphUpdate(new GCEdgeData(
-		source_file.path,
-		target_file.path,
-		field,
-		"typed-link",
-	)).add_to_batch(batch_update);
+	new AddEdgeGraphUpdate(
+		new GCEdgeData(source_file.path, target_file.path, field, "typed-link"),
+	).add_to_batch(batch_update);
 
 	plugin.graph.apply_update(batch_update);
 
 	const edge = plugin.graph
 		.get_outgoing_edges(source_file.path)
 		.find(
-			(e) => e.edge_type === field && e.target_path(plugin.graph) === target_file!.path,
+			(e) =>
+				e.edge_type === field &&
+				e.target_path(plugin.graph) === target_file!.path,
 		);
 	if (!edge) return;
 

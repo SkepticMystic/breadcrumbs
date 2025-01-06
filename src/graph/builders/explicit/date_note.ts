@@ -4,10 +4,7 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
-import {
-	GCEdgeData,
-	GCNodeData,
-} from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 // TODO: Option to point up to month, (and for month to point up to year?)
 
@@ -87,7 +84,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				.toFormat(date_note_settings.date_format);
 
 			const target_basename = date_note_settings.stretch_to_existing
-				? date_notes.at(i + 1)?.basename ?? basename_plus_one_day
+				? (date_notes.at(i + 1)?.basename ?? basename_plus_one_day)
 				: basename_plus_one_day;
 
 			const target_id = Paths.build(
@@ -100,13 +97,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			const target_file = plugin.app.vault.getFileByPath(target_id);
 			if (!target_file) {
 				results.nodes.push(
-					new GCNodeData(
-						target_id,
-						[],
-						false,
-						false,
-						false,
-					),
+					new GCNodeData(target_id, [], false, false, false),
 				);
 			}
 

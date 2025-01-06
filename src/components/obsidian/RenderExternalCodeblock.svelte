@@ -3,7 +3,6 @@
 	import { wrap_in_codeblock } from "src/utils/strings";
 	import RenderMarkdown from "../obsidian/RenderMarkdown.svelte";
 
-	
 	interface Props {
 		/** **not** wrapped in a codeblock */
 		code: string;
@@ -16,7 +15,7 @@
 		code,
 		type,
 		plugin = $bindable(),
-		source_path = undefined
+		source_path = undefined,
 	}: Props = $props();
 </script>
 

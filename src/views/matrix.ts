@@ -23,22 +23,22 @@ export class MatrixView extends ItemView {
 
 	icon = "blinds";
 
-		onload(): void {
-			this.registerEvent(
-				this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
-					this.onOpen();
-				})
-			);
-		}
+	onload(): void {
+		this.registerEvent(
+			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
+				this.onOpen();
+			}),
+		);
+	}
 
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
 
 		this.component = mount(MatrixComponent, {
-        			target: this.contentEl,
-        			props: { plugin: this.plugin },
-        		});
+			target: this.contentEl,
+			props: { plugin: this.plugin },
+		});
 	}
 
 	async onClose() {

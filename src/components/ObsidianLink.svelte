@@ -13,13 +13,7 @@
 		cls?: string;
 	}
 
-	let {
-		path,
-		display,
-		resolved,
-		plugin,
-		cls = ""
-	}: Props = $props();
+	let { path, display, resolved, plugin, cls = "" }: Props = $props();
 
 	const no_ext = Paths.drop_ext(path);
 </script>

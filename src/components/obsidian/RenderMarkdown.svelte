@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
+	import { run } from "svelte/legacy";
 
 	import { MarkdownRenderer } from "obsidian";
 	import { log } from "src/logger";
@@ -17,7 +17,7 @@
 		cls = "",
 		markdown,
 		plugin,
-		source_path = undefined
+		source_path = undefined,
 	}: Props = $props();
 
 	let el: HTMLElement | undefined = $state();

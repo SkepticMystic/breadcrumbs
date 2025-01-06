@@ -2,7 +2,7 @@
 	interface Props {
 		name: string;
 		description: string;
-		children?: import('svelte').Snippet;
+		children?: import("svelte").Snippet;
 	}
 
 	let { name, description, children }: Props = $props();

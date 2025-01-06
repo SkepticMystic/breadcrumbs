@@ -8,10 +8,7 @@
 		select_cb?: (value: EdgeSortId) => void;
 	}
 
-	let { 
-		edge_sort_id = $bindable(),
-		select_cb = () => {},
-	 }: Props = $props();
+	let { edge_sort_id = $bindable(), select_cb = () => {} }: Props = $props();
 
 	$effect(() => {
 		if (edge_sort_id) {

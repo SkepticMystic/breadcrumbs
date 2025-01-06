@@ -11,10 +11,7 @@ import {
 import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 import { Paths } from "./paths";
 
-const linkify_edge = (
-	plugin: BreadcrumbsPlugin,
-	struct: EdgeStruct,
-) => {
+const linkify_edge = (plugin: BreadcrumbsPlugin, struct: EdgeStruct) => {
 	const target_path = struct.target_path(plugin.graph);
 
 	// target_id is a full path

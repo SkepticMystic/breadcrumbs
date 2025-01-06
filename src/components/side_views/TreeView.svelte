@@ -10,7 +10,7 @@
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import {
-	FlatTraversalResult,
+		FlatTraversalResult,
 		TraversalOptions,
 		TraversalPostprocessOptions,
 		create_edge_sorter,
@@ -18,16 +18,22 @@
 	import { untrack } from "svelte";
 
 	let {
-		plugin
+		plugin,
 	}: {
 		plugin: BreadcrumbsPlugin;
 	} = $props();
 
 	let edge_sort_id = $state(plugin.settings.views.side.tree.edge_sort_id);
 	let merge_fields = $state(plugin.settings.views.side.tree.merge_fields);
-	let show_attributes = $state(plugin.settings.views.side.tree.show_attributes);
-	let show_node_options = $state(plugin.settings.views.side.tree.show_node_options);
-	let field_group_labels = $state(plugin.settings.views.side.tree.field_group_labels);
+	let show_attributes = $state(
+		plugin.settings.views.side.tree.show_attributes,
+	);
+	let show_node_options = $state(
+		plugin.settings.views.side.tree.show_node_options,
+	);
+	let field_group_labels = $state(
+		plugin.settings.views.side.tree.field_group_labels,
+	);
 	let collapse = $state(plugin.settings.views.side.tree.collapse);
 	$effect(() => {
 		plugin.settings.views.side.tree.edge_sort_id = edge_sort_id;
@@ -39,15 +45,22 @@
 		untrack(() => void plugin.saveSettings());
 	});
 
-	let edge_field_labels = $derived(resolve_field_group_labels(
-		plugin.settings.edge_field_groups,
-		field_group_labels,
-	));
+	let edge_field_labels = $derived(
+		resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			field_group_labels,
+		),
+	);
 
-	let sort = $derived(create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1));
+	let sort = $derived(
+		create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1),
+	);
 
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
-		if ($active_file_store && plugin.graph.has_node($active_file_store.path)) {
+		if (
+			$active_file_store &&
+			plugin.graph.has_node($active_file_store.path)
+		) {
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
 					[$active_file_store!.path],
@@ -55,16 +68,12 @@
 					5,
 					!merge_fields,
 				),
-				new TraversalPostprocessOptions(
-					sort,
-					false,
-				),
+				new TraversalPostprocessOptions(sort, false),
 			);
 		} else {
 			return undefined;
 		}
 	});
-
 </script>
 
 <div class="markdown-rendered BC-tree-view">

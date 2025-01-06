@@ -8,18 +8,18 @@
 		onkeydown?: (e: KeyboardEvent) => void;
 	}
 
-	let { 
-		tag, 
-		href = undefined, 
-		title = undefined, 
+	let {
+		tag,
+		href = undefined,
+		title = undefined,
 		onclick = () => {},
 		oncontextmenu = () => {},
-		onkeydown = () => {}, 
-	 }: Props = $props();
+		onkeydown = () => {},
+	}: Props = $props();
 </script>
 
 {#if href !== undefined}
-	<a {href} {title} class="tag" onclick={onclick} oncontextmenu={oncontextmenu}>
+	<a {href} {title} class="tag" {onclick} {oncontextmenu}>
 		{tag}
 	</a>
 {:else}
@@ -29,9 +29,9 @@
 		class="tag"
 		tabindex="0"
 		role="button"
-		onclick={onclick}
-		onkeydown={onkeydown}
-		oncontextmenu={oncontextmenu}
+		{onclick}
+		{onkeydown}
+		{oncontextmenu}
 	>
 		{tag}
 	</a>

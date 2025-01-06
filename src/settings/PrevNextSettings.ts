@@ -33,13 +33,14 @@ export const _add_settings_prev_next_view = (
 			field_group_labels:
 				plugin.settings.views.page.prev_next.field_group_labels.prev,
 			select_cb: async (value: string[]) => {
-				plugin.settings.views.page.prev_next.field_group_labels.prev = value;
+				plugin.settings.views.page.prev_next.field_group_labels.prev =
+					value;
 
 				await Promise.all([
 					plugin.saveSettings(),
-					plugin.refreshViews()
+					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
 	});
 
@@ -53,13 +54,14 @@ export const _add_settings_prev_next_view = (
 			field_group_labels:
 				plugin.settings.views.page.prev_next.field_group_labels.next,
 			select_cb: async (value: string[]) => {
-				plugin.settings.views.page.prev_next.field_group_labels.next = value;
+				plugin.settings.views.page.prev_next.field_group_labels.next =
+					value;
 
 				await Promise.all([
 					plugin.saveSettings(),
 					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
 	});
 

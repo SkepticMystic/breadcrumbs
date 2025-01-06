@@ -39,9 +39,8 @@ export const _add_settings_matrix = (
 					plugin.saveSettings(),
 					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
-
 	});
 
 	mount(ShowAttributesSettingItem, {
@@ -56,7 +55,7 @@ export const _add_settings_matrix = (
 					plugin.saveSettings(),
 					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
 	});
 
@@ -73,7 +72,7 @@ export const _add_settings_matrix = (
 					plugin.saveSettings(),
 					plugin.refreshViews(),
 				]);
-			}
+			},
 		},
 	});
 

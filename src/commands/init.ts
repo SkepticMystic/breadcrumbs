@@ -102,11 +102,11 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 								new Notice("Command cancelled");
 							} else {
 								const timer = new Timer();
-		
+
 								const notice = new Notice(
 									"Freezing implied edges to all notes in vault...",
 								);
-		
+
 								await Promise.all(
 									plugin.app.vault
 										.getMarkdownFiles()
@@ -120,18 +120,18 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 											),
 										),
 								);
-		
+
 								log.debug(
 									`freeze-implied-edges-to-vault > took ${timer.elapsed_str()}ms`,
 								);
-		
+
 								notice.setMessage(
 									`Implied edges frozen to all notes in ${timer.elapsed_str()}ms`,
 								);
 							}
-		
+
 							modal.close();
-						}
+						},
 					},
 				});
 			}).open();

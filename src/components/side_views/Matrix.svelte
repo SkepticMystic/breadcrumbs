@@ -19,23 +19,28 @@
 	let { edge_sort_id, field_group_labels, show_attributes, collapse } =
 		$state(plugin.settings.views.side.matrix);
 
-	let edge_field_labels = $derived(resolve_field_group_labels(
-		plugin.settings.edge_field_groups,
-		field_group_labels,
-	));
+	let edge_field_labels = $derived(
+		resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			field_group_labels,
+		),
+	);
 
-	let grouped_out_edges =
-		$derived($active_file_store &&
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.has_node($active_file_store.path)
+	let grouped_out_edges = $derived(
+		$active_file_store &&
+			// Even tho we ensure the graph is built before the views are registered,
+			// Existing views still try render before the graph is built.
+			plugin.graph.has_node($active_file_store.path)
 			? plugin.graph.get_filtered_grouped_outgoing_edges(
 					$active_file_store.path,
 					edge_field_labels,
 				)
-			: null);
+			: null,
+	);
 
-	let sort = $derived(create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1));
+	let sort = $derived(
+		create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1),
+	);
 </script>
 
 <div class="markdown-rendered BC-matrix-view">

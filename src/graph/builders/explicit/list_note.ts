@@ -8,10 +8,7 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import {
-	GCEdgeData,
-	GCNodeData,
-} from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -170,9 +167,7 @@ const handle_neighbour_list_item = ({
 	);
 
 	if (!file) {
-		results.nodes.push(
-			new GCNodeData(target_id, [], false, false, false),
-		);
+		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
 	}
 
 	// NOTE: Currently no support for field overrides for neighbour-fields
@@ -254,13 +249,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
 					results.nodes.push(
-						new GCNodeData(
-							source_path,
-							[],
-							false,
-							false,
-							false,
-						),
+						new GCNodeData(source_path, [], false, false, false),
 					);
 				}
 

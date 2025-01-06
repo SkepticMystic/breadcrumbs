@@ -1,4 +1,11 @@
-import { Events, Notice, Plugin, TFile, WorkspaceLeaf, debounce } from "obsidian";
+import {
+	Events,
+	Notice,
+	Plugin,
+	TFile,
+	WorkspaceLeaf,
+	debounce,
+} from "obsidian";
 import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -154,7 +161,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 					// active_file_store.refresh(this.app);
 
-					if (this.settings.commands.rebuild_graph.trigger.layout_change) {
+					if (
+						this.settings.commands.rebuild_graph.trigger
+							.layout_change
+					) {
 						this.rebuildGraph();
 					} else {
 						this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
@@ -196,13 +206,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
 						const batch = new BatchGraphUpdate();
-						new AddNoteGraphUpdate(new GCNodeData(
-							file.path,
-							[],
-							true,
-							false,
-							false,
-						)).add_to_batch(batch);
+						new AddNoteGraphUpdate(
+							new GCNodeData(file.path, [], true, false, false),
+						).add_to_batch(batch);
 						this.graph.apply_update(batch);
 					}
 				}),
@@ -215,7 +221,10 @@ export default class BreadcrumbsPlugin extends Plugin {
 					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
 						const batch = new BatchGraphUpdate();
-						new RenameNoteGraphUpdate(old_path, file.path).add_to_batch(batch);
+						new RenameNoteGraphUpdate(
+							old_path,
+							file.path,
+						).add_to_batch(batch);
 						this.graph.apply_update(batch);
 					}
 				}),
@@ -228,7 +237,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 					// TODO: we should probably check for markdown files only
 					if (file instanceof TFile) {
 						const batch = new BatchGraphUpdate();
-						new RemoveNoteGraphUpdate(file.path).add_to_batch(batch);
+						new RemoveNoteGraphUpdate(file.path).add_to_batch(
+							batch,
+						);
 						this.graph.apply_update(batch);
 					}
 				}),

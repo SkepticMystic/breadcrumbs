@@ -31,11 +31,12 @@ export const _add_settings_list_index = (
 				settings.commands.list_index.default_options.fields =
 					resolve_field_group_labels(
 						plugin.settings.edge_field_groups,
-						settings.commands.list_index.default_options.field_group_labels,
+						settings.commands.list_index.default_options
+							.field_group_labels,
 					);
 
 				await plugin.saveSettings();
-			}
+			},
 		},
 	});
 
@@ -72,10 +73,11 @@ export const _add_settings_list_index = (
 			edge_sort_id:
 				settings.commands.list_index.default_options.edge_sort_id,
 			select_cb: async (value: EdgeSortId) => {
-				settings.commands.list_index.default_options.edge_sort_id = value;
+				settings.commands.list_index.default_options.edge_sort_id =
+					value;
 
 				await plugin.saveSettings();
-			}
+			},
 		},
 	});
 
@@ -85,11 +87,11 @@ export const _add_settings_list_index = (
 			show_attributes:
 				settings.commands.list_index.default_options.show_attributes,
 			select_cb: async (value: EdgeAttribute[]) => {
-				settings.commands.list_index.default_options.show_attributes = value;
+				settings.commands.list_index.default_options.show_attributes =
+					value;
 
 				await plugin.saveSettings();
-
-			}
+			},
 		},
 	});
 

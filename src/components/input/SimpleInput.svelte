@@ -5,7 +5,11 @@
 		submit_cb?: (value: string) => void;
 	}
 
-	let { label = "", disabled_cb = (_value) => false, submit_cb = () => {} }: Props = $props();
+	let {
+		label = "",
+		disabled_cb = (_value) => false,
+		submit_cb = () => {},
+	}: Props = $props();
 
 	let value = $state("");
 </script>
@@ -19,10 +23,7 @@
 
 	<input name="input" type="text" bind:value />
 
-	<button
-		disabled={disabled_cb(value)}
-		onclick={() => submit_cb(value)}
-	>
+	<button disabled={disabled_cb(value)} onclick={() => submit_cb(value)}>
 		Submit
 	</button>
 </div>

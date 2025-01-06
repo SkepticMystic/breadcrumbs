@@ -2,10 +2,7 @@
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
 import type { MaybePromise } from ".";
-import {
-	GCEdgeData,
-	GCNodeData,
-} from "wasm/pkg/breadcrumbs_graph_wasm";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export type BreadcrumbsError = {
 	// TODO: Differentiate between invalid edge-field and invalid metadata-field values

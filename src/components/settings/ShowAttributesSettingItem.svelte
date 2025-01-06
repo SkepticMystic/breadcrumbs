@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
+	import { run } from "svelte/legacy";
 
 	import type { EdgeAttribute } from "src/graph/utils";
 	import { createEventDispatcher } from "svelte";
@@ -12,8 +12,8 @@
 		select_cb?: (value: EdgeAttribute[]) => void;
 	}
 
-	let { 
-		show_attributes = $bindable(), 
+	let {
+		show_attributes = $bindable(),
 		exclude_attributes = [],
 		select_cb = () => {},
 	}: Props = $props();

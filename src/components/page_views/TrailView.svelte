@@ -4,7 +4,10 @@
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import TrailViewGrid from "./TrailViewGrid.svelte";
 	import TrailViewPath from "./TrailViewPath.svelte";
-	import { PathList, TraversalOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import {
+		PathList,
+		TraversalOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -39,18 +42,17 @@
 
 		let all_paths = traversal_data.to_paths();
 
-		return all_paths.select(
-			plugin.settings.views.page.trail.selection,
-		);
+		return all_paths.select(plugin.settings.views.page.trail.selection);
 	});
 
 	let MAX_DEPTH = $derived(Math.max(0, selected_paths?.max_depth() ?? 0));
 	let depth = $state(0);
 	$effect(() => {
 		depth = Math.min(
-		MAX_DEPTH,
-		plugin.settings.views.page.trail.default_depth,
-	)});
+			MAX_DEPTH,
+			plugin.settings.views.page.trail.default_depth,
+		);
+	});
 
 	let sorted_paths = $derived(selected_paths?.process(plugin.graph, depth));
 </script>

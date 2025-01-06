@@ -1,7 +1,10 @@
 <script lang="ts">
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { NodeStringifyOptions, type Path } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import {
+		NodeStringifyOptions,
+		type Path,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -12,7 +15,8 @@
 
 	const { dendron_note } = plugin.settings.explicit_edge_sources;
 
-	const show_node_options = plugin.settings.views.page.trail.show_node_options
+	const show_node_options =
+		plugin.settings.views.page.trail.show_node_options;
 	const node_stringify_options = new NodeStringifyOptions(
 		show_node_options.ext,
 		show_node_options.folder,
@@ -41,11 +45,7 @@
 						></span>
 					{/if}
 
-					<EdgeLink
-						{edge}
-						{plugin}
-						{node_stringify_options}
-					/>
+					<EdgeLink {edge} {plugin} {node_stringify_options} />
 				</div>
 			{/each}
 		</div>

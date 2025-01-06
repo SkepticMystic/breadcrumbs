@@ -1,6 +1,6 @@
 <script lang="ts">
-	import NestedEdgeList from './NestedEdgeList.svelte';
-	import { run } from 'svelte/legacy';
+	import NestedEdgeList from "./NestedEdgeList.svelte";
+	import { run } from "svelte/legacy";
 
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
@@ -8,7 +8,10 @@
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
 	import { FlatTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
+	import {
+		toNodeStringifyOptions,
+		type EdgeAttribute,
+	} from "src/graph/utils";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -26,10 +29,13 @@
 		items,
 		open_signal = $bindable(),
 		show_node_options,
-		show_attributes
+		show_attributes,
 	}: Props = $props();
 
-	let node_stringify_options = toNodeStringifyOptions(plugin, show_node_options);
+	let node_stringify_options = toNodeStringifyOptions(
+		plugin,
+		show_node_options,
+	);
 
 	let opens = $state(Array(items.length).fill(true));
 
@@ -68,7 +74,10 @@
 
 			{#if show_attributes?.length}
 				<TreeItemFlair
-					label={datum.get_attribute_label(plugin.graph, show_attributes)}
+					label={datum.get_attribute_label(
+						plugin.graph,
+						show_attributes,
+					)}
 				/>
 			{/if}
 		</summary>
