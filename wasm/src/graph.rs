@@ -10,12 +10,16 @@ use vec_collections::{AbstractVecSet, VecSet};
 use wasm_bindgen::prelude::*;
 
 use crate::{
-    graph_construction::{GCEdgeData, GCNodeData},
-    graph_data::{
-        EdgeData, EdgeStruct, GroupedEdgeList, NGEdgeIndex, NGEdgeRef, NGNodeIndex, NodeData,
+    data::{
+        construction::{GCEdgeData, GCNodeData},
+        edge::EdgeData,
+        edge_list::GroupedEdgeList,
+        edge_struct::EdgeStruct,
+        node::NodeData,
+        rules::TransitiveGraphRule,
+        NGEdgeIndex, NGEdgeRef, NGNodeIndex,
     },
-    graph_rules::TransitiveGraphRule,
-    graph_update::{AddEdgeGraphUpdate, AddNoteGraphUpdate, BatchGraphUpdate},
+    update::{batch::BatchGraphUpdate, AddEdgeGraphUpdate, AddNoteGraphUpdate},
     utils::{NoteGraphError, PerfLogger, Result, LOGGER},
 };
 

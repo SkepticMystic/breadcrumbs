@@ -2,15 +2,18 @@
 
 extern crate wasm_bindgen_test;
 use breadcrumbs_graph_wasm::{
+    data::{
+        construction::{GCEdgeData, GCNodeData},
+        rules::TransitiveGraphRule,
+    },
     graph::NoteGraph,
-    graph_construction::{GCEdgeData, GCNodeData},
-    graph_rules::TransitiveGraphRule,
-    graph_update::{
-        AddEdgeGraphUpdate, AddNoteGraphUpdate, BatchGraphUpdate, RemoveNoteGraphUpdate,
+    update::{
+        batch::BatchGraphUpdate, AddEdgeGraphUpdate, AddNoteGraphUpdate, RemoveNoteGraphUpdate,
     },
     utils::graph_eq,
 };
 use wasm_bindgen_test::*;
+
 mod common;
 
 // wasm_bindgen_test_configure!(run_in_browser);

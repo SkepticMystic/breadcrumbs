@@ -3,8 +3,8 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 
 use crate::{
+    data::construction::{GCEdgeData, GCNodeData},
     graph::NoteGraph,
-    graph_construction::{GCEdgeData, GCNodeData},
     utils::Result,
 };
 

@@ -39,7 +39,7 @@
 
 	let opens = $state(Array(items.length).fill(true));
 
-	run(() => {
+	$effect(() => {
 		if (open_signal === true) {
 			opens = Array(items.length).fill(true);
 			open_signal = null;

@@ -6,10 +6,10 @@ use wasm_bindgen::prelude::*;
 use web_time::Instant;
 
 use crate::{
+    data::{edge::EdgeData, edge_struct::EdgeStruct},
     edge_sorting::EdgeSorter,
     graph::NoteGraph,
-    graph_data::{EdgeData, EdgeStruct},
-    graph_traversal::TraversalOptions,
+    traversal::options::TraversalOptions,
     utils::{NoteGraphError, Result},
 };
 

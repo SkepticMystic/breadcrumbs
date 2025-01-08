@@ -1,5 +1,6 @@
-use petgraph::visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences};
 use std::{collections::VecDeque, error::Error, fmt};
+
+use petgraph::visit::{EdgeRef, IntoEdgeReferences, IntoNodeReferences};
 use wasm_bindgen::prelude::*;
 use web_time::Instant;
 

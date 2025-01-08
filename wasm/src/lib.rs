@@ -1,11 +1,9 @@
+pub mod data;
 pub mod edge_sorting;
 pub mod graph;
-pub mod graph_construction;
-pub mod graph_data;
-pub mod graph_mermaid;
-pub mod graph_rules;
-pub mod graph_traversal;
-pub mod graph_update;
+pub mod mermaid;
+pub mod traversal;
+pub mod update;
 pub mod utils;
 
 use wasm_bindgen::prelude::*;

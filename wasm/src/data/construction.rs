@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use crate::graph_data::EdgeData;
+use crate::data::edge::EdgeData;
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
@@ -91,7 +91,7 @@ impl GCEdgeData {
 }
 
 impl GCEdgeData {
-    pub fn to_explicit_edge(self) -> EdgeData {
+    pub fn to_edge_data(self) -> EdgeData {
         EdgeData::new(self.edge_type.into(), self.edge_source.into(), true, 0)
     }
 }

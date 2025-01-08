@@ -64,6 +64,7 @@
 				class="mb-1 flex flex-wrap justify-between gap-3"
 				class:hidden={!plugin.settings.views.page.trail.show_controls}
 			>
+				<!-- TODO: make states out of these binds and add an effect to update the actual settings  -->
 				<select
 					class="dropdown"
 					bind:value={plugin.settings.views.page.trail.format}

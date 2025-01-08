@@ -1,6 +1,6 @@
 use breadcrumbs_graph_wasm::{
+    data::construction::{GCEdgeData, GCNodeData},
     graph::NoteGraph,
-    graph_construction::{GCEdgeData, GCNodeData},
 };
 
 /// Generate a tree of nodes with explicit down edges for testing purposes.

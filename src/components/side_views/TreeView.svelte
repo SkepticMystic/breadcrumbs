@@ -74,6 +74,16 @@
 			return undefined;
 		}
 	});
+
+	// We want to re-sort, when the sorter changes.
+	// Because svelte can't track changes to the tree, we need to wrap it in an object.
+	let sorted_tree = $derived.by(() => {
+		const s = sort;
+		untrack(() => tree?.sort(plugin.graph, s));
+		return {
+			tree: tree,
+		}
+	});
 </script>
 
 <div class="markdown-rendered BC-tree-view">
@@ -114,14 +124,14 @@
 	</div>
 
 	<div class="BC-tree-view-items">
-		{#key tree}
-			{#if tree && !tree.is_empty()}
+		{#key sorted_tree}
+			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
 				<NestedEdgeList
 					{plugin}
 					{show_attributes}
 					{show_node_options}
-					data={tree.data}
-					items={tree.entry_nodes}
+					data={sorted_tree.tree.data}
+					items={sorted_tree.tree.entry_nodes}
 					open_signal={!collapse}
 				/>
 			{:else}

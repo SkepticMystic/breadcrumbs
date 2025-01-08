@@ -5,9 +5,8 @@ use petgraph::visit::EdgeRef;
 use wasm_bindgen::prelude::*;
 
 use crate::{
+    data::{edge_struct::EdgeStruct, traversal::TraversalData},
     graph::NoteGraph,
-    graph_data::EdgeStruct,
-    graph_traversal::TraversalData,
     utils::{NoteGraphError, Result},
 };
 
