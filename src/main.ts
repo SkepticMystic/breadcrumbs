@@ -1,12 +1,4 @@
-import {
-	Events,
-	Notice,
-	Plugin,
-	TFile,
-	WorkspaceLeaf,
-	debounce,
-} from "obsidian";
-import { Codeblocks } from "src/codeblocks";
+import { Events, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -203,8 +195,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("create", (file) => {
 					log.debug("on:create >", file.path);
 
-					// TODO: we should probably check for markdown files only
-					if (file instanceof TFile) {
+					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new AddNoteGraphUpdate(
 							new GCNodeData(file.path, [], true, false, false),
@@ -218,8 +209,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("rename", (file, old_path) => {
 					log.debug("on:rename >", old_path, "->", file.path);
 
-					// TODO: we should probably check for markdown files only
-					if (file instanceof TFile) {
+					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new RenameNoteGraphUpdate(
 							old_path,
@@ -234,8 +224,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("delete", (file) => {
 					log.debug("on:delete >", file.path);
 
-					// TODO: we should probably check for markdown files only
-					if (file instanceof TFile) {
+					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new RemoveNoteGraphUpdate(file.path).add_to_batch(
 							batch,

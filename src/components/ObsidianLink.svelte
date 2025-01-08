@@ -16,6 +16,8 @@
 	let { path, display, resolved, plugin, cls = "" }: Props = $props();
 
 	const no_ext = Paths.drop_ext(path);
+
+	let active_file = $derived($active_file_store);
 </script>
 
 <!-- TODO: draggable -->
@@ -26,7 +28,7 @@
 	role="link"
 	class="internal-link cursor-pointer {cls}"
 	class:is-unresolved={!resolved}
-	class:BC-active-note={$active_file_store?.path === path}
+	class:BC-active-note={active_file?.path === path}
 	data-href={path}
 	aria-label={no_ext === display ? "" : path}
 	onmouseover={(event) => {

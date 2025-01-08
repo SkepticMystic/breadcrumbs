@@ -36,6 +36,8 @@
 	let code: string = $state("");
 	let error: string | undefined = $state(undefined);
 
+	let active_file = $derived($active_file_store);
+
 	export const update = () => {
 		const max_depth =
 			options.depth[1] === Infinity
@@ -43,10 +45,7 @@
 				: (options.depth[1] ?? DEFAULT_MAX_DEPTH);
 
 		const source_path =
-			options["start-note"] ||
-			file_path ||
-			$active_file_store?.path ||
-			"";
+			options["start-note"] || file_path || active_file?.path || "";
 
 		if (!plugin.graph.has_node(source_path)) {
 			code = "";

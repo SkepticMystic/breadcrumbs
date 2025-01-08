@@ -6,7 +6,7 @@ use crate::{
     edge_sorting::EdgeSorter,
     graph::NoteGraph,
     traversal::path::{Path, PathList},
-    utils::{self, LOGGER},
+    utils,
 };
 
 #[wasm_bindgen]
@@ -22,6 +22,8 @@ pub struct TraversalData {
     /// the children of the node
     #[wasm_bindgen(getter_with_clone)]
     pub children: Vec<TraversalData>,
+    /// whether the node has a cut of children due to being at the depth limit of a traversal, or similar
+    pub has_cut_of_children: bool,
 }
 
 #[wasm_bindgen]
@@ -32,12 +34,14 @@ impl TraversalData {
         depth: u32,
         number_of_children: u32,
         children: Vec<TraversalData>,
+        has_cut_of_children: bool,
     ) -> TraversalData {
         TraversalData {
             edge,
             depth,
             number_of_children,
             children,
+            has_cut_of_children,
         }
     }
 
@@ -88,22 +92,23 @@ pub struct TraversalResult {
     pub data: Vec<TraversalData>,
     pub node_count: u32,
     pub max_depth: u32,
+    pub hit_depth_limit: bool,
     pub traversal_time: u64,
 }
 
 #[wasm_bindgen]
 impl TraversalResult {
     #[wasm_bindgen(constructor)]
-    pub fn new(
-        data: Vec<TraversalData>,
-        node_count: u32,
-        max_depth: u32,
-        traversal_time: u64,
-    ) -> TraversalResult {
+    pub fn new(mut data: Vec<TraversalData>, traversal_time: u64) -> TraversalResult {
+        let node_count = rec_count_children(&mut data);
+        let max_depth = rec_find_max_depth(&data);
+        let hit_depth_limit = data.iter().any(|datum| datum.has_cut_of_children);
+
         TraversalResult {
             data,
             node_count,
             max_depth,
+            hit_depth_limit,
             traversal_time,
         }
     }
@@ -136,12 +141,13 @@ impl TraversalResult {
 }
 
 impl TraversalResult {
-    /// Flattens the traversal data by removing the tree structure and deduplicating the edges by their target_path
-    pub fn flatten(&mut self, graph: &NoteGraph) -> utils::Result<()> {
+    /// Squashes the traversal data by removing the tree structure and deduplicating the edges by their target_path
+    /// Essentially, this will result in some kind of reachability set.
+    pub fn squash(&mut self, graph: &NoteGraph) -> utils::Result<()> {
         let mut data = Vec::new();
 
         for datum in self.data.drain(..) {
-            rec_flatten_traversal_data(datum, &mut data);
+            rec_squash_traversal_data(datum, &mut data);
         }
 
         for datum in &data {
@@ -164,11 +170,36 @@ impl TraversalResult {
 
         sorter.sort_traversal_data(graph, &mut self.data)
     }
+
+    pub fn flatten(self) -> FlatTraversalResult {
+        FlatTraversalResult::from_traversal_result(self)
+    }
 }
 
-fn rec_flatten_traversal_data(mut data: TraversalData, result: &mut Vec<TraversalData>) {
+/// Recursively counts the number of children of the given traversal data.
+/// This also updates the number_of_children field of each traversal data.
+fn rec_count_children(data: &mut [TraversalData]) -> u32 {
+    let mut total_children = 0;
+
+    for datum in data.iter_mut() {
+        datum.number_of_children = rec_count_children(&mut datum.children);
+        total_children += 1 + datum.number_of_children;
+    }
+
+    total_children
+}
+
+/// Recursively finds the maximum depth of the given traversal data.
+fn rec_find_max_depth(data: &[TraversalData]) -> u32 {
+    data.iter()
+        .map(|datum| u32::max(rec_find_max_depth(&datum.children), datum.depth))
+        .max()
+        .unwrap_or(0)
+}
+
+fn rec_squash_traversal_data(mut data: TraversalData, result: &mut Vec<TraversalData>) {
     for child in data.children.drain(..) {
-        rec_flatten_traversal_data(child, result);
+        rec_squash_traversal_data(child, result);
     }
 
     result.push(data);
@@ -187,6 +218,7 @@ pub struct FlatTraversalData {
     /// the children of the node
     #[wasm_bindgen(getter_with_clone)]
     pub children: Vec<usize>,
+    pub has_cut_of_children: bool,
 }
 
 impl FlatTraversalData {
@@ -195,12 +227,14 @@ impl FlatTraversalData {
         depth: u32,
         number_of_children: u32,
         children: Vec<usize>,
+        has_cut_of_children: bool,
     ) -> FlatTraversalData {
         FlatTraversalData {
             edge,
             depth,
             number_of_children,
             children,
+            has_cut_of_children,
         }
     }
 }
@@ -223,6 +257,7 @@ pub struct FlatTraversalResult {
     pub data: Vec<FlatTraversalData>,
     pub node_count: u32,
     pub max_depth: u32,
+    pub hit_depth_limit: bool,
     pub traversal_time: u64,
     #[wasm_bindgen(getter_with_clone)]
     pub entry_nodes: Vec<usize>,
@@ -233,6 +268,7 @@ impl FlatTraversalResult {
         data: Vec<FlatTraversalData>,
         node_count: u32,
         max_depth: u32,
+        hit_depth_limit: bool,
         traversal_time: u64,
         entry_nodes: Vec<usize>,
     ) -> FlatTraversalResult {
@@ -240,23 +276,25 @@ impl FlatTraversalResult {
             data,
             node_count,
             max_depth,
+            hit_depth_limit,
             traversal_time,
             entry_nodes,
         }
     }
 
-    pub fn from_rec_traversal_result(result: TraversalResult) -> FlatTraversalResult {
+    pub fn from_traversal_result(result: TraversalResult) -> FlatTraversalResult {
         let mut flat_data = Vec::new();
         let mut entry_nodes = Vec::new();
 
         for datum in result.data {
-            entry_nodes.push(rec_flatten_traversal_data_to_flat(datum, &mut flat_data));
+            entry_nodes.push(rec_flatten_traversal_data(datum, &mut flat_data));
         }
 
         FlatTraversalResult::new(
             flat_data,
             result.node_count,
             result.max_depth,
+            result.hit_depth_limit,
             result.traversal_time,
             entry_nodes,
         )
@@ -278,9 +316,9 @@ impl FlatTraversalResult {
         self.data.get(index).cloned()
     }
 
+    /// Sorts the flat traversal data with a given edge sorter.
+    /// This is not as efficient as sorting the traversal data before flattening it, but it's still a lot better than sorting then re-flatten.
     pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> utils::Result<()> {
-        LOGGER.warn(&format!("Entry nodes: {:?}", self.entry_nodes));
-
         let cloned_edges = self
             .data
             .iter()
@@ -290,23 +328,20 @@ impl FlatTraversalResult {
         for datum in &mut self.data {
             sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut datum.children)?;
         }
-
         sorter.sort_flat_traversal_data(graph, &cloned_edges, &mut self.entry_nodes)?;
-
-        LOGGER.warn(&format!("Entry nodes: {:?}", self.entry_nodes));
 
         Ok(())
     }
 }
 
-fn rec_flatten_traversal_data_to_flat(
+fn rec_flatten_traversal_data(
     mut data: TraversalData,
     result: &mut Vec<FlatTraversalData>,
 ) -> usize {
     let children = data
         .children
         .drain(..)
-        .map(|datum| rec_flatten_traversal_data_to_flat(datum, result))
+        .map(|datum| rec_flatten_traversal_data(datum, result))
         .collect();
 
     result.push(FlatTraversalData::new(
@@ -314,6 +349,7 @@ fn rec_flatten_traversal_data_to_flat(
         data.depth,
         data.number_of_children,
         children,
+        data.has_cut_of_children,
     ));
     result.len() - 1
 }

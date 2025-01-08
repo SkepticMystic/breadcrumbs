@@ -26,13 +26,15 @@
 		),
 	);
 
+	let active_file = $derived($active_file_store);
+
 	let grouped_out_edges = $derived(
-		$active_file_store &&
+		active_file &&
 			// Even tho we ensure the graph is built before the views are registered,
 			// Existing views still try render before the graph is built.
-			plugin.graph.has_node($active_file_store.path)
+			plugin.graph.has_node(active_file.path)
 			? plugin.graph.get_filtered_grouped_outgoing_edges(
-					$active_file_store.path,
+					active_file.path,
 					edge_field_labels,
 				)
 			: null,

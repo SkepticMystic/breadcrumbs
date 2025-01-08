@@ -40,16 +40,6 @@ impl NodeData {
 }
 
 impl NodeData {
-    pub fn from_construction_data(data: GCNodeData) -> NodeData {
-        NodeData {
-            path: data.path,
-            aliases: data.aliases,
-            resolved: data.resolved,
-            ignore_in_edges: data.ignore_in_edges,
-            ignore_out_edges: data.ignore_out_edges,
-        }
-    }
-
     pub fn new_unresolved(path: String) -> NodeData {
         NodeData {
             path,
@@ -69,5 +59,17 @@ impl NodeData {
         self.resolved = data.resolved;
         self.ignore_in_edges = data.ignore_in_edges;
         self.ignore_out_edges = data.ignore_out_edges;
+    }
+}
+
+impl From<GCNodeData> for NodeData {
+    fn from(data: GCNodeData) -> NodeData {
+        NodeData {
+            path: data.path,
+            aliases: data.aliases,
+            resolved: data.resolved,
+            ignore_in_edges: data.ignore_in_edges,
+            ignore_out_edges: data.ignore_out_edges,
+        }
     }
 }

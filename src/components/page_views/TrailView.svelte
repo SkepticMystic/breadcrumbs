@@ -16,16 +16,22 @@
 
 	let { plugin = $bindable(), file_path }: Props = $props();
 
-	// TODO: I've copped-out here, building the view from edge_tree seems crazy hard.
-	// So I just use all_paths
-	// const base_traversal = (attr: EdgeAttrFilters) =>
-	// 	Traverse.tree_to_all_paths(
-	// 		Traverse.build_tree(plugin.graph, file_path, {}, (e) =>
-	// 			has_edge_attrs(e, attr),
-	// 		),
-	// 	);
+	let format = $state(plugin.settings.views.page.trail.format);
+	let selection = $state(plugin.settings.views.page.trail.selection);
+	let merge_fields = $state(plugin.settings.views.page.trail.merge_fields);
 
-	let selected_paths: PathList | undefined = $derived.by(() => {
+	$effect(() => {
+		plugin.settings.views.page.trail.format = format;
+		plugin.settings.views.page.trail.selection = selection;
+		plugin.settings.views.page.trail.merge_fields = merge_fields;
+
+		void plugin.saveSettings();
+	});
+
+	let data: {
+		selected_paths: PathList | undefined;
+		hit_depth_limit: boolean;
+	} = $derived.by(() => {
 		let edge_field_labels = resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
 			plugin.settings.views.page.trail.field_group_labels,
@@ -35,17 +41,22 @@
 			[file_path],
 			edge_field_labels,
 			5,
-			!plugin.settings.views.page.trail.merge_fields,
+			!merge_fields,
 		);
 
 		let traversal_data = plugin.graph.rec_traverse(traversal_options);
 
 		let all_paths = traversal_data.to_paths();
 
-		return all_paths.select(plugin.settings.views.page.trail.selection);
+		return {
+			selected_paths: all_paths.select(selection),
+			hit_depth_limit: traversal_data.hit_depth_limit,
+		};
 	});
 
-	let MAX_DEPTH = $derived(Math.max(0, selected_paths?.max_depth() ?? 0));
+	let MAX_DEPTH = $derived(
+		Math.max(0, data.selected_paths?.max_depth() ?? 0),
+	);
 	let depth = $state(0);
 	$effect(() => {
 		depth = Math.min(
@@ -54,7 +65,9 @@
 		);
 	});
 
-	let sorted_paths = $derived(selected_paths?.process(plugin.graph, depth));
+	let sorted_paths = $derived(
+		data.selected_paths?.process(plugin.graph, depth),
+	);
 </script>
 
 <div>
@@ -67,7 +80,7 @@
 				<!-- TODO: make states out of these binds and add an effect to update the actual settings  -->
 				<select
 					class="dropdown"
-					bind:value={plugin.settings.views.page.trail.format}
+					bind:value={format}
 					onchange={async (e) => await plugin.saveSettings()}
 				>
 					{#each ["grid", "path"] as format}
@@ -77,7 +90,7 @@
 
 				<select
 					class="dropdown"
-					bind:value={plugin.settings.views.page.trail.selection}
+					bind:value={selection}
 					onchange={async () => await plugin.saveSettings()}
 				>
 					{#each ["all", "shortest", "longest"] as s}
@@ -85,10 +98,7 @@
 					{/each}
 				</select>
 
-				<MergeFieldsButton
-					bind:merge_fields={plugin.settings.views.page.trail
-						.merge_fields}
-				/>
+				<MergeFieldsButton bind:merge_fields />
 
 				<div class="flex items-center gap-1">
 					<button
@@ -100,8 +110,14 @@
 						-
 					</button>
 
-					<span class="font-mono" aria-label="Max depth">
+					<span
+						class="font-mono"
+						aria-label={data.hit_depth_limit
+							? "Some paths have been truncated"
+							: ""}
+					>
 						{depth}/{MAX_DEPTH}
+						{data.hit_depth_limit ? " (truncated)" : ""}
 					</span>
 
 					<button
@@ -115,9 +131,9 @@
 				</div>
 			</div>
 
-			{#if plugin.settings.views.page.trail.format === "grid"}
+			{#if format === "grid"}
 				<TrailViewGrid {plugin} all_paths={sorted_paths} />
-			{:else if plugin.settings.views.page.trail.format === "path"}
+			{:else if format === "path"}
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
 		{:else if plugin.settings.views.page.trail.no_path_message}

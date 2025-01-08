@@ -39,7 +39,7 @@ impl UpdateableGraph for NoteGraph {
             }
             None => {
                 let node_path = data.path.clone();
-                let node_index = self.graph.add_node(NodeData::from_construction_data(data));
+                let node_index = self.graph.add_node(data.into());
                 self.node_hash.insert(node_path, node_index);
             }
         }

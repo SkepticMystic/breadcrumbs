@@ -53,6 +53,44 @@ impl TransitiveGraphRule {
         }
     }
 
+    pub fn create_example_graph(&self) -> Result<NoteGraph> {
+        let mut graph = NoteGraph::new();
+
+        let mut node_data = vec![];
+        let mut edge_data = vec![];
+
+        let mut counter = 1;
+        for element in self.path.iter() {
+            node_data.push(GCNodeData::new(
+                counter.to_string(),
+                vec![],
+                true,
+                false,
+                false,
+            ));
+            edge_data.push(GCEdgeData::new(
+                counter.to_string(),
+                (counter + 1).to_string(),
+                element.to_string(),
+                "explicit".to_string(),
+            ));
+
+            counter += 1;
+        }
+
+        node_data.push(GCNodeData::new(
+            counter.to_string(),
+            vec![],
+            true,
+            false,
+            false,
+        ));
+
+        graph.build_graph(node_data, edge_data, vec![self.clone()])?;
+
+        Ok(graph)
+    }
+
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
@@ -83,43 +121,4 @@ impl TransitiveGraphRule {
     pub fn close_reversed(&self) -> bool {
         self.close_reversed
     }
-}
-
-#[wasm_bindgen]
-pub fn create_graph_from_rule(rule: TransitiveGraphRule) -> Result<NoteGraph> {
-    let mut graph = NoteGraph::new();
-
-    let mut node_data = vec![];
-    let mut edge_data = vec![];
-
-    let mut counter = 1;
-    for element in rule.path.iter() {
-        node_data.push(GCNodeData::new(
-            counter.to_string(),
-            vec![],
-            true,
-            false,
-            false,
-        ));
-        edge_data.push(GCEdgeData::new(
-            counter.to_string(),
-            (counter + 1).to_string(),
-            element.to_string(),
-            "explicit".to_string(),
-        ));
-
-        counter += 1;
-    }
-
-    node_data.push(GCNodeData::new(
-        counter.to_string(),
-        vec![],
-        true,
-        false,
-        false,
-    ));
-
-    graph.build_graph(node_data, edge_data, vec![rule])?;
-
-    Ok(graph)
 }

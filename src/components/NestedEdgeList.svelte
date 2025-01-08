@@ -57,7 +57,7 @@
 	{@const children = datum.children}
 	<details class="tree-item" bind:open={opens[i]}>
 		<summary class="tree-item-self is-clickable flex items-center">
-			{#if children.length}
+			{#if children.length || datum.has_cut_of_children}
 				<div class="tree-item-icon collapse-icon mod-collapsible">
 					<ChevronOpener open={opens[i]} />
 				</div>
@@ -92,6 +92,18 @@
 					{open_signal}
 					items={children}
 				/>
+			</div>
+		{/if}
+
+		{#if datum.has_cut_of_children}
+			<div class="tree-item-children">
+				<details class="tree-item">
+					<summary class="tree-item-self flex items-center">
+						<div class="tree-item-inner">
+							<span>Depth limit reached...</span>
+						</div>
+					</summary>
+				</details>
 			</div>
 		{/if}
 	</details>

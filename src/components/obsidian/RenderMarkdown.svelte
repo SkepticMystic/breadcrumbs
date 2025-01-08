@@ -22,6 +22,8 @@
 
 	let el: HTMLElement | undefined = $state();
 
+	let active_file = $derived($active_file_store);
+
 	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
 	// and for the initial render the target element is undefined, so we need to check for that
 	const render = (markdown: string, el: HTMLElement | undefined) => {
@@ -35,7 +37,7 @@
 			plugin.app,
 			markdown,
 			el,
-			source_path ?? $active_file_store?.path ?? "",
+			source_path ?? active_file?.path ?? "",
 			plugin,
 		);
 	};

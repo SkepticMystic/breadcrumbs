@@ -3,7 +3,7 @@ use std::rc::Rc;
 use itertools::Itertools;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::graph::edge_matches_edge_filter_string;
+use crate::graph::{edge_matches_edge_filter, edge_matches_edge_filter_string};
 
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq)]
@@ -48,7 +48,11 @@ impl EdgeData {
         edge_matches_edge_filter_string(self, edge_types)
     }
 
-    pub fn get_attribute_label(&self, attributes: &Vec<String>) -> String {
+    pub fn matches_edge_filter(&self, edge_types: Option<&Vec<Rc<str>>>) -> bool {
+        edge_matches_edge_filter(self, edge_types)
+    }
+
+    pub fn attribute_label(&self, attributes: &Vec<String>) -> String {
         let mut result = vec![];
 
         // the mapping that exist on the JS side are as follows

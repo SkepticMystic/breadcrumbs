@@ -56,14 +56,13 @@
 		create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1),
 	);
 
+	let active_file = $derived($active_file_store);
+
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
-		if (
-			$active_file_store &&
-			plugin.graph.has_node($active_file_store.path)
-		) {
+		if (active_file && plugin.graph.has_node(active_file.path)) {
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
-					[$active_file_store!.path],
+					[active_file!.path],
 					edge_field_labels,
 					5,
 					!merge_fields,
@@ -82,7 +81,7 @@
 		untrack(() => tree?.sort(plugin.graph, s));
 		return {
 			tree: tree,
-		}
+		};
 	});
 </script>
 

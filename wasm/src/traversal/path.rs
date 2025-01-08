@@ -88,6 +88,7 @@ impl PathList {
             .unwrap_or(0)
     }
 
+    /// Cuts off all paths at a given depth, then sorts and deduplicates them.
     pub fn process(&self, graph: &NoteGraph, depth: usize) -> utils::Result<Vec<Path>> {
         let paths = self
             .paths

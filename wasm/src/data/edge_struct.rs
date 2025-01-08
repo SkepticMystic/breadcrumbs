@@ -94,7 +94,7 @@ impl EdgeStruct {
         graph: &NoteGraph,
         attributes: Vec<String>,
     ) -> utils::Result<String> {
-        Ok(self.edge_data_ref(graph)?.get_attribute_label(&attributes))
+        Ok(self.edge_data_ref(graph)?.attribute_label(&attributes))
     }
 
     pub fn matches_edge_filter(

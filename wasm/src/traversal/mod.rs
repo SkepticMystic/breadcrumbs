@@ -88,15 +88,10 @@ impl NoteGraph {
             }
         }
 
-        let node_count = NoteGraph::int_rec_traversal_data_count_children(&mut result);
-        let max_depth = NoteGraph::int_rec_traversal_data_max_depth(&result);
-
         let total_elapsed = now.elapsed();
 
         Ok(TraversalResult::new(
             result,
-            node_count,
-            max_depth,
             total_elapsed.as_millis() as u64,
         ))
     }
@@ -111,14 +106,14 @@ impl NoteGraph {
         let mut result = self.rec_traverse(options)?;
 
         if postprocess_options.flatten {
-            result.flatten(self)?;
+            result.squash(self)?;
         }
 
         if let Some(sorter) = &postprocess_options.sorter {
             result.sort(self, sorter)?;
         }
 
-        Ok(FlatTraversalResult::from_rec_traversal_result(result))
+        Ok(result.flatten())
     }
 }
 
@@ -136,8 +131,9 @@ impl NoteGraph {
         traversal_count: &mut u32,
     ) -> Result<TraversalData> {
         let mut new_children = Vec::new();
+        let at_depth_limit = depth >= max_depth;
 
-        if depth < max_depth {
+        if !at_depth_limit {
             for outgoing_edge in self.graph.edges(node) {
                 let edge_data = outgoing_edge.weight();
 
@@ -172,31 +168,13 @@ impl NoteGraph {
             }
         }
 
-        Ok(TraversalData::new(edge, depth, 0, new_children))
-    }
-
-    fn int_rec_traversal_data_count_children(data: &mut [TraversalData]) -> u32 {
-        let mut total_children = 0;
-
-        for datum in data.iter_mut() {
-            datum.number_of_children =
-                NoteGraph::int_rec_traversal_data_count_children(&mut datum.children);
-            total_children += 1 + datum.number_of_children;
-        }
-
-        total_children
-    }
-
-    fn int_rec_traversal_data_max_depth(data: &[TraversalData]) -> u32 {
-        data.iter()
-            .map(|datum| {
-                u32::max(
-                    NoteGraph::int_rec_traversal_data_max_depth(&datum.children),
-                    datum.depth,
-                )
-            })
-            .max()
-            .unwrap_or(0)
+        Ok(TraversalData::new(
+            edge,
+            depth,
+            0,
+            new_children,
+            at_depth_limit,
+        ))
     }
 
     pub fn int_traverse_basic(
@@ -255,7 +233,7 @@ impl NoteGraph {
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
     /// At the depth limit, edges are only visited if they point to already visited nodes.
-    fn int_traverse_depth_first<'a, N, E>(
+    pub fn int_traverse_depth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<Rc<str>>>,
@@ -281,7 +259,7 @@ impl NoteGraph {
     /// These lists are ordered by the order in which the nodes and edges were visited.
     /// Each node and edge is only visited once.
     /// At the depth limit, edges are only visited if they point to already visited nodes.
-    fn int_traverse_breadth_first<'a, N, E>(
+    pub fn int_traverse_breadth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<Rc<str>>>,

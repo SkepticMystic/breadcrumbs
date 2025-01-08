@@ -265,7 +265,7 @@ impl NoteGraph {
         label.push_str(
             forward
                 .iter()
-                .map(|edge| edge.get_attribute_label(&diagram_options.edge_label_attributes))
+                .map(|edge| edge.attribute_label(&diagram_options.edge_label_attributes))
                 .collect::<Vec<String>>()
                 .join(", ")
                 .as_str(),
@@ -276,7 +276,7 @@ impl NoteGraph {
             label.push_str(
                 backward
                     .iter()
-                    .map(|edge| edge.get_attribute_label(&diagram_options.edge_label_attributes))
+                    .map(|edge| edge.attribute_label(&diagram_options.edge_label_attributes))
                     .collect::<Vec<String>>()
                     .join(", ")
                     .as_str(),
