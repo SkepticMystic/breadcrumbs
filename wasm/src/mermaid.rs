@@ -302,7 +302,8 @@ impl NoteGraph {
     ) -> Result<AccumulatedEdgeHashMap<'_>> {
         let mut accumulated_edges = AccumulatedEdgeHashMap::default();
 
-        // sorting the two node indices in the edge tuple could be a speedup, since then only one lookup is needed
+        // sorting the two node indices in the edge tuple could be a speedup, since then
+        // only one lookup is needed
 
         for edge_struct in edges {
             edge_struct.check_revision(graph)?;

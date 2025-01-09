@@ -120,7 +120,8 @@ impl PathList {
 }
 
 impl PathList {
-    /// creates new path list, assumes that the paths are already sorted by length
+    /// creates new path list, assumes that the paths are already sorted by
+    /// length
     pub fn new(paths: Vec<Path>) -> PathList {
         PathList { paths }
     }

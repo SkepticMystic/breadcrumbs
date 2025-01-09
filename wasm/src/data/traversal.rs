@@ -22,7 +22,8 @@ pub struct TraversalData {
     /// the children of the node
     #[wasm_bindgen(getter_with_clone)]
     pub children: Vec<TraversalData>,
-    /// whether the node has a cut of children due to being at the depth limit of a traversal, or similar
+    /// whether the node has a cut of children due to being at the depth limit
+    /// of a traversal, or similar
     pub has_cut_of_children: bool,
 }
 
@@ -141,8 +142,9 @@ impl TraversalResult {
 }
 
 impl TraversalResult {
-    /// Squashes the traversal data by removing the tree structure and deduplicating the edges by their target_path
-    /// Essentially, this will result in some kind of reachability set.
+    /// Squashes the traversal data by removing the tree structure and
+    /// deduplicating the edges by their target_path Essentially, this will
+    /// result in some kind of reachability set.
     pub fn squash(&mut self, graph: &NoteGraph) -> utils::Result<()> {
         let mut data = Vec::new();
 
@@ -317,7 +319,8 @@ impl FlatTraversalResult {
     }
 
     /// Sorts the flat traversal data with a given edge sorter.
-    /// This is not as efficient as sorting the traversal data before flattening it, but it's still a lot better than sorting then re-flatten.
+    /// This is not as efficient as sorting the traversal data before flattening
+    /// it, but it's still a lot better than sorting then re-flatten.
     pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> utils::Result<()> {
         let cloned_edges = self
             .data

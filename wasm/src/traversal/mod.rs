@@ -97,7 +97,8 @@ impl NoteGraph {
     }
 
     /// Runs a recursive traversal of the graph and post-processes the result.
-    /// The post-processed result is more efficient to work with from JavaScript.
+    /// The post-processed result is more efficient to work with from
+    /// JavaScript.
     pub fn rec_traverse_and_process(
         &self,
         options: TraversalOptions,
@@ -120,7 +121,8 @@ impl NoteGraph {
 impl NoteGraph {
     /// Recursively traverses the graph using DFS and builds a tree structure.
     ///
-    /// Will return an error if the node weight for any node along the traversal is not found.
+    /// Will return an error if the node weight for any node along the traversal
+    /// is not found.
     fn int_rec_traverse(
         &self,
         node: NGNodeIndex,
@@ -227,12 +229,15 @@ impl NoteGraph {
         }
     }
 
-    /// Traverses the tree in a depth first manner and calls the provided callbacks for each node and edge.
-    /// The depth metric **might not** accurately represent the intuitive understanding of depth on a graph.
-    /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
-    /// These lists are ordered by the order in which the nodes and edges were visited.
-    /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only visited if they point to already visited nodes.
+    /// Traverses the tree in a depth first manner and calls the provided
+    /// callbacks for each node and edge. The depth metric **might not**
+    /// accurately represent the intuitive understanding of depth on a graph.
+    /// A list of tuples of node indices and the result of the node callback and
+    /// a list of tuples of edge indices and the result of the edge callback are
+    /// returned. These lists are ordered by the order in which the nodes
+    /// and edges were visited. Each node and edge is only visited once.
+    /// At the depth limit, edges are only visited if they point to already
+    /// visited nodes.
     pub fn int_traverse_depth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
@@ -253,12 +258,15 @@ impl NoteGraph {
         )
     }
 
-    /// Traverses the tree in a breadth first manner and calls the provided callbacks for each node and edge.
-    /// The depth metric accurately represent the intuitive understanding of depth on a graph.
-    /// A list of tuples of node indices and the result of the node callback and a list of tuples of edge indices and the result of the edge callback are returned.
-    /// These lists are ordered by the order in which the nodes and edges were visited.
-    /// Each node and edge is only visited once.
-    /// At the depth limit, edges are only visited if they point to already visited nodes.
+    /// Traverses the tree in a breadth first manner and calls the provided
+    /// callbacks for each node and edge. The depth metric accurately
+    /// represent the intuitive understanding of depth on a graph. A list of
+    /// tuples of node indices and the result of the node callback and a list of
+    /// tuples of edge indices and the result of the edge callback are returned.
+    /// These lists are ordered by the order in which the nodes and edges were
+    /// visited. Each node and edge is only visited once.
+    /// At the depth limit, edges are only visited if they point to already
+    /// visited nodes.
     pub fn int_traverse_breadth_first<'a, N, E>(
         &'a self,
         entry_nodes: Vec<NGNodeIndex>,
@@ -309,13 +317,16 @@ impl NoteGraph {
                 if edge_matches_edge_filter(edge_data, edge_types) {
                     let already_visited = visited_nodes.contains(&target);
 
-                    // we only add the edge if we are not at the depth limit or if we are at the depth limit and the target node is already in the depth map
-                    // this captures all the outgoing edges from the nodes at the depth limit to nodes already present in the depth map
+                    // we only add the edge if we are not at the depth limit or if we are at the
+                    // depth limit and the target node is already in the depth map
+                    // this captures all the outgoing edges from the nodes at the depth limit to
+                    // nodes already present in the depth map
                     if !at_depth_limit || already_visited {
                         edge_list.push((edge.id(), edge_callback(edge)));
                     }
 
-                    // we only insert the new node when we are not at the depth limit and the node is not already in the depth map
+                    // we only insert the new node when we are not at the depth limit and the node
+                    // is not already in the depth map
                     if !at_depth_limit && !already_visited {
                         node_list.push((target, node_callback(target, current_depth + 1)));
                         visited_nodes.insert(target);

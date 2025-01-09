@@ -40,6 +40,7 @@
 		? group_by(
 				plugin.graph
 					.get_outgoing_edges(file_path)
+					.get_edges()
 					.filter((e) =>
 						e.matches_edge_filter(
 							plugin.graph,

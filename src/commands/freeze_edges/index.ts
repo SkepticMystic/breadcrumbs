@@ -12,6 +12,7 @@ export const freeze_implied_edges_to_note = async (
 ) => {
 	const implied_edges = plugin.graph
 		.get_outgoing_edges(source_file.path)
+		.get_edges()
 		.filter(
 			// Don't freeze a note to itself (self_is_sibling)
 			(e) => !e.is_self_loop() && !e.explicit,

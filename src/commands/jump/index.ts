@@ -12,6 +12,7 @@ export const jump_to_neighbour = async (
 
 	const matches = plugin.graph
 		.get_outgoing_edges(active_file.path)
+		.get_edges()
 		.filter(
 			(e) =>
 				e.matches_edge_filter(plugin.graph, options.fields) &&

@@ -40,8 +40,11 @@ pub fn edge_matches_edge_filter_string(edge: &EdgeData, edge_types: Option<&Vec<
 
 /// A graph that stores notes and their relationships.
 ///
-/// INVARIANT: The edge type tracker should contain exactly the edge types that are present in the graph.
-/// INVARIANT: The node hash should contain exactly the node paths that are present in the graph.
+/// INVARIANT: The edge type tracker should contain exactly the edge types that
+/// are present in the graph.
+///
+/// INVARIANT: The node hash should contain exactly the node paths that are
+/// present in the graph.
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct NoteGraph {
@@ -53,7 +56,8 @@ pub struct NoteGraph {
     pub edge_types: VecSet<[Rc<str>; 16]>,
     #[wasm_bindgen(skip)]
     pub node_hash: HashMap<String, NGNodeIndex>,
-    /// A JS function that is called after every update to the graph, notifying the JS side that there were changes in the graph, but not which changes.
+    /// A JS function that is called after every update to the graph, notifying
+    /// the JS side that there were changes in the graph, but not which changes.
     update_callback: Option<js_sys::Function>,
     /// A revision number that is incremented after every update.
     /// This can be used to check if the graph has changed.
@@ -125,9 +129,11 @@ impl NoteGraph {
     }
 
     /// Applies a batch update to the graph.
-    /// Throws an error if the update fails, and leave the graph in an inconsistent state.
+    /// Throws an error if the update fails, and leave the graph in an
+    /// inconsistent state.
     ///
-    /// TODO: some security against errors leaving the graph in an inconsistent state. Maybe safely clear the entire graph.
+    /// TODO: some security against errors leaving the graph in an inconsistent
+    /// state. Maybe safely clear the entire graph.
     pub fn apply_update(&mut self, update: BatchGraphUpdate) -> Result<()> {
         let mut perf_logger = PerfLogger::new("Applying Update".to_owned());
         perf_logger.start_split("Removing implied edges".to_owned());
@@ -155,7 +161,8 @@ impl NoteGraph {
         Ok(())
     }
 
-    /// Iterate all nodes in the graph and call the provided function with each [NodeData].
+    /// Iterate all nodes in the graph and call the provided function with each
+    /// [NodeData].
     pub fn iterate_nodes(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
@@ -163,12 +170,14 @@ impl NoteGraph {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}", e)),
-                // LOGGER.with(|l| l.warn(&format!("Error calling node iteration callback: {:?}", e))),
+                // LOGGER.with(|l| l.warn(&format!("Error calling node iteration callback: {:?}",
+                // e))),
             }
         });
     }
 
-    /// Iterate all edges in the graph and call the provided function with each [EdgeData].
+    /// Iterate all edges in the graph and call the provided function with each
+    /// [EdgeData].
     pub fn iterate_edges(&self, f: &js_sys::Function) {
         let this = JsValue::NULL;
 
@@ -176,7 +185,8 @@ impl NoteGraph {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}", e)),
-                // LOGGER.with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}", e))),
+                // LOGGER.with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}",
+                // e))),
             }
         });
     }
@@ -265,7 +275,8 @@ impl Default for NoteGraph {
 
 /// Internal methods, not exposed to the wasm interface.
 impl NoteGraph {
-    /// Get the current revision number of the graph, useful to check if [EdgeStruct]s have changed.
+    /// Get the current revision number of the graph, useful to check if
+    /// [EdgeStruct]s have changed.
     pub fn get_revision(&self) -> u32 {
         self.revision
     }
@@ -286,9 +297,10 @@ impl NoteGraph {
         // rules look like
         // [A, B, C] -> D
 
-        // We can keep track of edge types that were added in the last round and only check a rule that has any of those edge types on the left side
-        // we would need to also check back edges though
-        // a rule like [A, B] -> (C with back edge D) would do nothing if applied multiple times, since the edges on the left side were not modified
+        // We can keep track of edge types that were added in the last round and only
+        // check a rule that has any of those edge types on the left side.
+        // A rule like [A, B] -> C would do nothing if applied
+        // multiple times, since the edges on the left side were not modified.
 
         let mut edge_type_tracker = self.edge_types.clone();
         let mut edges_to_add: Vec<(NGNodeIndex, NGNodeIndex, &TransitiveGraphRule)> = Vec::new();
@@ -296,6 +308,8 @@ impl NoteGraph {
         for i in 1..=max_rounds {
             let round_perf_split = perf_split.start_split(format!("Round {}", i));
 
+            // if the edge type tracker is empty, we didn't add any edges last round, so we
+            // can stop
             if edge_type_tracker.is_empty() {
                 break;
             }
@@ -310,7 +324,8 @@ impl NoteGraph {
                     continue;
                 }
 
-                // if all edge types of a rule didn't see any changes in the last round, we can skip the rule
+                // if all edge types of a rule didn't see any changes in the last round, we can
+                // skip the rule
                 if rule
                     .iter_path()
                     .all(|edge_type| !edge_type_tracker.contains(edge_type))
@@ -319,15 +334,19 @@ impl NoteGraph {
                     continue;
                 }
 
-                // For every rule (outer loop) we iterate over all nodes in the graph (this loop)
-                // and check for all possible applications of that rule for that node.
+                // For every rule (outer loop) we iterate over all nodes in the graph (this
+                // loop) and check for all possible applications of that rule
+                // for that node.
                 for start_node in self.graph.node_indices() {
                     // We start with the start node.
                     let mut current_nodes = vec![start_node];
 
                     // Now we iterate the path of the rule and each step, for all current nodes,
-                    // we check for outgoing edges that match the edge type of the current element of the rule path.
+                    // we check for outgoing edges that match the edge type of the current element
+                    // of the rule path.
                     for edge_type in rule.iter_path() {
+                        // TODO: We are creating a new vec here in a hot loop, maybe we can only
+                        // create it once and reuse it.
                         let mut next_nodes = Vec::new();
 
                         for current_node in current_nodes {
@@ -341,9 +360,11 @@ impl NoteGraph {
                         current_nodes = next_nodes;
                     }
 
-                    // Now we are left with end nodes. For each end node, there exists a path from the start node to the end node that matches the rule.
+                    // Now we are left with end nodes. For each end node, there exists a path from
+                    // the start node to the end node that matches the rule.
                     for end_node in current_nodes {
-                        // If the rule can't loop, that means the start and end nodes can't be the same.
+                        // If the rule can't loop, that means the start and end nodes can't be the
+                        // same.
                         if !rule.can_loop() && start_node == end_node {
                             continue;
                         }
@@ -355,6 +376,11 @@ impl NoteGraph {
                         }
                     }
                 }
+            }
+
+            // if there are no edges to add, we can stop
+            if edges_to_add.is_empty() {
+                break;
             }
 
             edge_type_tracker.retain(|_| false);

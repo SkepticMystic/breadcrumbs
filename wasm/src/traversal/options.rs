@@ -11,8 +11,9 @@ pub struct TraversalOptions {
     #[wasm_bindgen(getter_with_clone)]
     pub edge_types: Option<Vec<String>>,
     pub max_depth: u32,
-    /// if true, multiple traversals - one for each edge type - will be performed and the results will be combined
-    /// if false, one traversal over all edge types will be performed
+    /// if true, multiple traversals - one for each edge type - will be
+    /// performed and the results will be combined if false, one traversal
+    /// over all edge types will be performed
     pub separate_edges: bool,
 }
 
