@@ -102,8 +102,16 @@ impl TransitiveGraphRule {
         Rc::clone(&self.name)
     }
 
+    pub fn name_ref(&self) -> &str {
+        &self.name
+    }
+
     pub fn edge_type(&self) -> Rc<str> {
         Rc::clone(&self.edge_type)
+    }
+
+    pub fn edge_type_ref(&self) -> &str {
+        &self.edge_type
     }
 
     pub fn iter_path(&self) -> impl Iterator<Item = &Rc<str>> {

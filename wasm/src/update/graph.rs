@@ -124,7 +124,11 @@ impl UpdateableGraph for NoteGraph {
     }
 }
 
+/// Helper methods for the impl above.
 impl NoteGraph {
+    /// Given an edge index, removes the edge from the graph.
+    /// If the target node is unresolved and has no incoming edges, it will be removed as well.
+    ///
     /// INVARIANT: This function does not update the edge type tracker.
     fn remove_edge_by_index(&mut self, edge_index: NGEdgeIndex) -> utils::Result<()> {
         let (_, target) = self
@@ -145,6 +149,8 @@ impl NoteGraph {
         Ok(())
     }
 
+    /// Given a node index and the name of a node, removes it from the graph and the node hash.
+    ///
     /// INVARIANT: This function does not update the edge type tracker.
     fn remove_node_by_index_and_name(&mut self, node_index: NGNodeIndex, name: &str) {
         self.node_hash.remove(name);
