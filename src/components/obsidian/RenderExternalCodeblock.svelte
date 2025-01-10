@@ -14,13 +14,13 @@
 	let {
 		code,
 		type,
-		plugin = $bindable(),
+		plugin,
 		source_path = undefined,
 	}: Props = $props();
 </script>
 
 <RenderMarkdown
-	bind:plugin
+	{plugin}
 	{source_path}
 	markdown={wrap_in_codeblock(code, type)}
 />

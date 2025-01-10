@@ -16,6 +16,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 	component:
 		| ReturnType<typeof CodeblockTree>
 		| ReturnType<typeof CodeblockMermaid>
+		| ReturnType<typeof CodeblockMarkmap>
 		| undefined;
 	file_path: string;
 	id: string;
@@ -110,16 +111,15 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 				},
 			});
 		} else if (options.type === "markmap") {
-			// TODO
-			// this.component = mount(CodeblockMarkmap, {
-			// 				target: this.containerEl,
-			// 				props: {
-			// 					errors,
-			// 					options,
-			// 					file_path,
-			// 					plugin: this.plugin,
-			// 				},
-			// 			});
+			this.component = mount(CodeblockMarkmap, {
+				target: this.containerEl,
+				props: {
+					errors,
+					options,
+					file_path,
+					plugin: this.plugin,
+				},
+			});
 		} else {
 			log.error("CodeblockMDRC unknown type", options.type);
 		}

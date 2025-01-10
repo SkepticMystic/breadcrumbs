@@ -38,7 +38,7 @@
 
 	let active_file = $derived($active_file_store);
 
-	export const update = () => {
+	export function update() {
 		const max_depth =
 			options.depth[1] === Infinity
 				? DEFAULT_MAX_DEPTH

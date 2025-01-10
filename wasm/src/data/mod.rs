@@ -47,6 +47,7 @@ impl NodeStringifyOptions {
     }
 }
 
+#[wasm_bindgen]
 impl NodeStringifyOptions {
     pub fn stringify_node(&self, node: &NodeData) -> String {
         if self.alias && !node.aliases.is_empty() {

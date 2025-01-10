@@ -204,15 +204,15 @@ impl NoteGraph {
         })
     }
 
-    /// Get all outgoing edges from a node, filtered and grouped by edge type.
-    pub fn get_filtered_grouped_outgoing_edges(
+    /// Get all outgoing edges from a node, filtered by edge type.
+    pub fn get_filtered_outgoing_edges(
         &self,
         node: String,
         edge_types: Option<Vec<String>>,
-    ) -> GroupedEdgeList {
+    ) -> EdgeList {
         let node_index = self.int_get_node_index(&node);
 
-        GroupedEdgeList::from_vec(match node_index {
+        EdgeList::from_vec(match node_index {
             Some(node_index) => self
                 .int_iter_outgoing_edges(node_index)
                 .filter(|edge_ref| {
@@ -222,6 +222,15 @@ impl NoteGraph {
                 .collect(),
             None => Vec::new(),
         })
+    }
+
+    /// Get all outgoing edges from a node, filtered and grouped by edge type.
+    pub fn get_filtered_grouped_outgoing_edges(
+        &self,
+        node: String,
+        edge_types: Option<Vec<String>>,
+    ) -> GroupedEdgeList {
+        GroupedEdgeList::from_edge_list(self.get_filtered_outgoing_edges(node, edge_types))
     }
 
     /// Get all incoming edges to a node.

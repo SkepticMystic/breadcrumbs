@@ -39,14 +39,8 @@
 	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
 				plugin.graph
-					.get_outgoing_edges(file_path)
-					.get_edges()
-					.filter((e) =>
-						e.matches_edge_filter(
-							plugin.graph,
-							merged_field_labels,
-						),
-					),
+					.get_filtered_outgoing_edges(file_path, merged_field_labels)
+					.get_edges(),
 				(e) =>
 					edge_field_labels.prev.includes(e.edge_type)
 						? ("prev" as const)

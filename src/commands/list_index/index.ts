@@ -14,6 +14,7 @@ import {
 
 export namespace ListIndex {
 	export type Options = {
+		show_entry_nodes: boolean;
 		// TODO: merge_fields: boolean;
 		indent: string;
 		fields: string[];
@@ -27,6 +28,7 @@ export namespace ListIndex {
 	};
 
 	export const DEFAULT_OPTIONS: Options = {
+		show_entry_nodes: false,
 		fields: [],
 		indent: "\\t",
 		link_kind: "wiki",
@@ -49,19 +51,50 @@ export namespace ListIndex {
 		tree: FlatTraversalResult,
 		options: Pick<
 			Options,
-			"link_kind" | "indent" | "show_node_options" | "show_attributes"
+			"link_kind" | "indent" | "show_node_options" | "show_attributes" | "show_entry_nodes"
 		>,
 	) => {
 		const all_traversal_data = tree.data;
-		const current_nodes = Array.from(tree.entry_nodes).map(
-			(node_index) => all_traversal_data[node_index],
-		);
-		return edge_tree_to_list_index_inner(
-			plugin,
-			all_traversal_data,
-			current_nodes,
-			options,
-		);
+
+		if (options.show_entry_nodes) {
+			return Array.from(tree.entry_nodes).map(
+				(node_index) => { 
+					const datum = all_traversal_data[node_index];
+					const edge = datum.edge;
+
+					const display = edge.stringify_source(
+						plugin.graph,
+						toNodeStringifyOptions(plugin, options.show_node_options),
+					);
+
+					const link = Links.ify(edge.source_path(plugin.graph), display, {
+						link_kind: options.link_kind,
+					});
+		
+					const attr = edge.get_attribute_label(
+						plugin.graph,
+						options.show_attributes,
+					);
+
+					return `- ${link} ${attr}\n` + edge_tree_to_list_index_inner(
+						plugin,
+						all_traversal_data,
+						[datum],
+						options,
+					);
+				},
+			).join("\n");
+		} else {
+			const current_nodes = Array.from(tree.entry_nodes).map(
+				(node_index) => all_traversal_data[node_index],
+			);
+			return edge_tree_to_list_index_inner(
+				plugin,
+				all_traversal_data,
+				current_nodes,
+				options,
+			);
+		}
 	};
 
 	export const edge_tree_to_list_index_inner = (
@@ -76,7 +109,9 @@ export namespace ListIndex {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
-		current_nodes.forEach(({ children, depth, edge }) => {
+		current_nodes.forEach((datum) => {
+			const { edge, children, depth } = datum;
+
 			const display = edge.stringify_target(
 				plugin.graph,
 				toNodeStringifyOptions(plugin, options.show_node_options),
@@ -91,7 +126,7 @@ export namespace ListIndex {
 				options.show_attributes,
 			);
 
-			index += real_indent.repeat(depth) + `- ${link}${attr}\n`;
+			index += real_indent.repeat(depth - 1) + `- ${link} ${attr}\n`;
 
 			const new_children = Array.from(children).map(
 				(child_id) => all_traversal_data[child_id],

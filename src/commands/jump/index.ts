@@ -11,12 +11,10 @@ export const jump_to_neighbour = async (
 	if (!active_file) return;
 
 	const matches = plugin.graph
-		.get_outgoing_edges(active_file.path)
+		.get_filtered_outgoing_edges(active_file.path, options.fields)
 		.get_edges()
 		.filter(
-			(e) =>
-				e.matches_edge_filter(plugin.graph, options.fields) &&
-				e.target_path(plugin.graph) !== active_file.path,
+			(e) => e.target_path(plugin.graph) !== active_file.path,
 		);
 
 	if (!matches.length) {

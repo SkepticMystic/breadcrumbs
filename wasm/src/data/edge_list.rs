@@ -13,10 +13,18 @@ pub struct EdgeList {
 
 #[wasm_bindgen]
 impl EdgeList {
+    /// Returns a clone of the edges.
     pub fn get_edges(&self) -> Vec<EdgeStruct> {
         self.edges.clone()
     }
 
+    /// Consumes the [EdgeList] and returns the edges as a Vec (or array for
+    /// JS).
+    pub fn to_array(self) -> Vec<EdgeStruct> {
+        self.edges
+    }
+
+    /// Returns a sorted clone of the edges.
     pub fn get_sorted_edges(
         &self,
         graph: &NoteGraph,
@@ -36,6 +44,14 @@ impl EdgeList {
         }
 
         grouped_edges
+    }
+
+    pub fn first(&self) -> Option<EdgeStruct> {
+        self.edges.first().cloned()
+    }
+
+    pub fn last(&self) -> Option<EdgeStruct> {
+        self.edges.last().cloned()
     }
 
     #[wasm_bindgen(js_name = toString)]

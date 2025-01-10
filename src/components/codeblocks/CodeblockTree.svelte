@@ -33,14 +33,14 @@
 	);
 	const { show_node_options } = plugin.settings.views.codeblocks;
 
-	const DEFAULT_MAX_DEPTH = 10;
+	const DEFAULT_MAX_DEPTH = 5;
 
 	let data: FlatTraversalResult | undefined = $state(undefined);
 	let error: string | undefined = $state(undefined);
 
 	let active_file = $derived($active_file_store);
 
-	export const update = () => {
+	export function update() {
 		const max_depth =
 			options.depth[1] === Infinity
 				? DEFAULT_MAX_DEPTH
@@ -85,8 +85,6 @@
 					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
 			}
 		}
-
-		data = data;
 	};
 
 	onMount(() => {
