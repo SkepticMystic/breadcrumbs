@@ -35,6 +35,6 @@ wasm-bindgen-test = "0.3.34"
 
 [profile.release]
 opt-level = 3               # Highest level of optimization.
-lto = "fat"                 # Enable link-time optimization.
+lto = "thin"                # Enable link-time optimization.
 overflow-checks = false     # Disable integer overflow checks.
 incremental = true          # Enable incremental compilation for faster builds.

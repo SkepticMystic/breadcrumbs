@@ -129,7 +129,7 @@
 					{plugin}
 					{show_attributes}
 					{show_node_options}
-					data={sorted_tree.tree.data}
+					data={sorted_tree.tree}
 					items={sorted_tree.tree.entry_nodes}
 					open_signal={!collapse}
 				/>

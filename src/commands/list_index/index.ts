@@ -48,12 +48,16 @@ export namespace ListIndex {
 	// TODO(Rust): This should probably be moved to the Rust side
 	export const edge_tree_to_list_index = (
 		plugin: BreadcrumbsPlugin,
-		tree: FlatTraversalResult,
+		tree: FlatTraversalResult | undefined,
 		options: Pick<
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes" | "show_entry_nodes"
 		>,
 	) => {
+		if (!tree) {
+			return "";
+		}
+
 		const all_traversal_data = tree.data;
 
 		if (options.show_entry_nodes) {

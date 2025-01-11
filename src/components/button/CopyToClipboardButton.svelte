@@ -5,7 +5,7 @@
 
 	interface Props {
 		cls?: string;
-		text: string;
+		text: string | (() => string);
 		aria_label?: string;
 		options?: { notify?: boolean; log?: boolean };
 	}
@@ -26,7 +26,7 @@
 	onclick={() => {
 		copied = true;
 
-		copy_to_clipboard(text, options);
+		copy_to_clipboard(typeof text === 'string' ? text : text(), options);
 
 		setTimeout(() => (copied = false), 2_500);
 	}}

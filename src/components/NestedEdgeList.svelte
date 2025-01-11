@@ -1,22 +1,20 @@
 <script lang="ts">
 	import NestedEdgeList from "./NestedEdgeList.svelte";
-	import { run } from "svelte/legacy";
-
 	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { FlatTraversalData } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { FlatTraversalResult } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import {
 		toNodeStringifyOptions,
 		type EdgeAttribute,
 	} from "src/graph/utils";
+	import ObsidianLink from "./ObsidianLink.svelte";
+	import { onMount } from "svelte";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
-		// export let tree: RecTraversalData[];
-		data: FlatTraversalData[];
+		data: FlatTraversalResult;
 		items: Uint32Array;
 		open_signal: boolean | null;
 		show_node_options: ShowNodeOptions;
@@ -53,58 +51,67 @@
 </script>
 
 {#each items as item, i}
-	{@const datum = data[item]}
-	{@const children = datum.children}
-	<details class="tree-item" bind:open={opens[i]}>
-		<summary class="tree-item-self is-clickable flex items-center">
-			{#if children.length || datum.has_cut_of_children}
-				<div class="tree-item-icon collapse-icon mod-collapsible">
-					<ChevronOpener open={opens[i]} />
+	{@const children = data.children_at_index(item)}
+	{@const render_data = data.rendering_obj_at_index(item, plugin.graph, node_stringify_options, show_attributes ?? []) as EdgeRenderingData}
+	{#if children && render_data}
+		<details class="tree-item" bind:open={opens[i]}>
+			<summary class="tree-item-self is-clickable flex items-center">
+				{#if children.length || render_data.has_cut_of_children}
+					<div class="tree-item-icon collapse-icon mod-collapsible">
+						<ChevronOpener open={opens[i]} />
+					</div>
+				{/if}
+
+				<div class="tree-item-inner">
+					<!-- <EdgeLink
+						{plugin}
+						edge={datum.edge}
+						{node_stringify_options}
+						cls="tree-item-inner-text"
+					/> -->
+					
+					<ObsidianLink
+						{plugin}
+						display={render_data.link_display}
+						path={render_data.link_path}
+						resolved={render_data.target_resolved}
+						cls="tree-item-inner-text BC-edge {render_data.explicit
+							? 'BC-edge-explicit'
+							: `BC-edge-implied BC-edge-implied-${render_data.edge_source}`}"
+					/>
+				</div>
+
+				{#if show_attributes?.length}
+					<TreeItemFlair
+						label={render_data.attribute_label}
+					/>
+				{/if}
+			</summary>
+
+			{#if children.length}
+				<div class="tree-item-children">
+					<NestedEdgeList
+						{plugin}
+						{show_attributes}
+						{show_node_options}
+						{data}
+						{open_signal}
+						items={children}
+					/>
 				</div>
 			{/if}
 
-			<div class="tree-item-inner">
-				<EdgeLink
-					{plugin}
-					edge={datum.edge}
-					{node_stringify_options}
-					cls="tree-item-inner-text"
-				/>
-			</div>
-
-			{#if show_attributes?.length}
-				<TreeItemFlair
-					label={datum.get_attribute_label(
-						plugin.graph,
-						show_attributes,
-					)}
-				/>
+			{#if render_data.has_cut_of_children}
+				<div class="tree-item-children">
+					<details class="tree-item">
+						<summary class="tree-item-self flex items-center">
+							<div class="tree-item-inner">
+								<span>Depth limit reached...</span>
+							</div>
+						</summary>
+					</details>
+				</div>
 			{/if}
-		</summary>
-
-		{#if children.length}
-			<div class="tree-item-children">
-				<NestedEdgeList
-					{plugin}
-					{show_attributes}
-					{show_node_options}
-					{data}
-					{open_signal}
-					items={children}
-				/>
-			</div>
-		{/if}
-
-		{#if datum.has_cut_of_children}
-			<div class="tree-item-children">
-				<details class="tree-item">
-					<summary class="tree-item-self flex items-center">
-						<div class="tree-item-inner">
-							<span>Depth limit reached...</span>
-						</div>
-					</summary>
-				</details>
-			</div>
-		{/if}
-	</details>
+		</details>		
+	{/if}
 {/each}

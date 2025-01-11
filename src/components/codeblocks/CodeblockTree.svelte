@@ -110,7 +110,7 @@
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={ListIndex.edge_tree_to_list_index(plugin, data, {
+					text={() => ListIndex.edge_tree_to_list_index(plugin, data, {
 						...plugin.settings.commands.list_index.default_options,
 						show_attributes: options["show-attributes"] ?? [],
 					})}
@@ -122,7 +122,7 @@
 				<NestedEdgeList
 					{plugin}
 					{show_node_options}
-					data={data.data}
+					data={data}
 					items={data.entry_nodes}
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}

@@ -1,12 +1,13 @@
 use itertools::Itertools;
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
 
+use super::NodeStringifyOptions;
 use crate::{
     data::edge_struct::EdgeStruct,
     edge_sorting::EdgeSorter,
     graph::NoteGraph,
     traversal::path::{Path, PathList},
-    utils,
+    utils::Result,
 };
 
 #[wasm_bindgen]
@@ -46,11 +47,7 @@ impl TraversalData {
         }
     }
 
-    pub fn rec_sort_children(
-        &mut self,
-        graph: &NoteGraph,
-        sorter: &EdgeSorter,
-    ) -> utils::Result<()> {
+    pub fn rec_sort_children(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
         for child in &mut self.children {
             child.rec_sort_children(graph, sorter)?;
         }
@@ -145,7 +142,7 @@ impl TraversalResult {
     /// Squashes the traversal data by removing the tree structure and
     /// deduplicating the edges by their target_path Essentially, this will
     /// result in some kind of reachability set.
-    pub fn squash(&mut self, graph: &NoteGraph) -> utils::Result<()> {
+    pub fn squash(&mut self, graph: &NoteGraph) -> Result<()> {
         let mut data = Vec::new();
 
         for datum in self.data.drain(..) {
@@ -165,7 +162,7 @@ impl TraversalResult {
         Ok(())
     }
 
-    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> utils::Result<()> {
+    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
         for datum in &mut self.data {
             datum.rec_sort_children(graph, sorter)?;
         }
@@ -247,8 +244,57 @@ impl FlatTraversalData {
         &self,
         graph: &NoteGraph,
         attributes: Vec<String>,
-    ) -> utils::Result<String> {
+    ) -> Result<String> {
         self.edge.get_attribute_label(graph, attributes)
+    }
+
+    pub fn to_js_rendering_obj(
+        &self,
+        graph: &NoteGraph,
+        str_opt: &NodeStringifyOptions,
+        attributes: Vec<String>,
+    ) -> Result<JsValue> {
+        let target_data = self.edge.target_data_ref(graph)?;
+        let edge_data = self.edge.edge_data_ref(graph)?;
+
+        let obj = js_sys::Object::new();
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("link_display"),
+            &JsValue::from_str(&str_opt.stringify_node(target_data)),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("link_path"),
+            &JsValue::from_str(&target_data.path),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("target_resolved"),
+            &JsValue::from_bool(target_data.resolved),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("explicit"),
+            &JsValue::from_bool(edge_data.explicit),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("edge_source"),
+            &JsValue::from_str(edge_data.edge_source.as_ref()),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("attribute_label"),
+            &JsValue::from_str(&self.get_attribute_label(graph, attributes)?),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &JsValue::from_str("has_cut_of_children"),
+            &JsValue::from_bool(self.has_cut_of_children),
+        );
+
+        Ok(obj.into())
     }
 }
 
@@ -318,10 +364,27 @@ impl FlatTraversalResult {
         self.data.get(index).cloned()
     }
 
+    pub fn children_at_index(&self, index: usize) -> Option<Vec<usize>> {
+        self.data.get(index).map(|datum| datum.children.clone())
+    }
+
+    pub fn rendering_obj_at_index(
+        &self,
+        index: usize,
+        graph: &NoteGraph,
+        str_opt: &NodeStringifyOptions,
+        attributes: Vec<String>,
+    ) -> Result<JsValue> {
+        self.data
+            .get(index)
+            .map(|datum| datum.to_js_rendering_obj(graph, str_opt, attributes))
+            .unwrap_or(Ok(JsValue::UNDEFINED))
+    }
+
     /// Sorts the flat traversal data with a given edge sorter.
     /// This is not as efficient as sorting the traversal data before flattening
     /// it, but it's still a lot better than sorting then re-flatten.
-    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> utils::Result<()> {
+    pub fn sort(&mut self, graph: &NoteGraph, sorter: &EdgeSorter) -> Result<()> {
         let cloned_edges = self
             .data
             .iter()
