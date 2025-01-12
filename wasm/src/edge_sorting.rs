@@ -150,6 +150,15 @@ impl EdgeSorter {
     }
 }
 
+impl Default for EdgeSorter {
+    fn default() -> Self {
+        EdgeSorter {
+            field: SortField::Path,
+            reverse: false,
+        }
+    }
+}
+
 #[enum_dispatch]
 pub trait EdgeComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering;

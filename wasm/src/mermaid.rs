@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use indexmap::IndexMap;
 use itertools::{EitherOrBoth, Itertools};
 use petgraph::stable_graph::NodeIndex;
 use wasm_bindgen::prelude::*;
@@ -13,7 +12,7 @@ use crate::{
     utils::{NoteGraphError, Result},
 };
 
-type AccumulatedEdgeMap<'a> = HashMap<
+type AccumulatedEdgeMap<'a> = IndexMap<
     (NodeIndex<u32>, NodeIndex<u32>),
     (
         NodeIndex<u32>,
@@ -21,6 +20,7 @@ type AccumulatedEdgeMap<'a> = HashMap<
         Vec<&'a EdgeData>,
         Vec<&'a EdgeData>,
     ),
+    hashbrown::DefaultHashBuilder,
 >;
 
 #[derive(Default)]
@@ -31,15 +31,24 @@ pub struct AccumulatedEdgeHashMap<'a> {
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct MermaidGraphOptions {
-    active_node: Option<String>,
-    init_line: String,
-    chart_type: String,
-    direction: String,
-    collapse_opposing_edges: bool,
-    edge_label_attributes: Vec<String>,
-    edge_sorter: Option<EdgeSorter>,
-    node_label_fn: Option<js_sys::Function>,
-    link_nodes: bool,
+    #[wasm_bindgen(skip)]
+    pub active_node: Option<String>,
+    #[wasm_bindgen(skip)]
+    pub init_line: String,
+    #[wasm_bindgen(skip)]
+    pub chart_type: String,
+    #[wasm_bindgen(skip)]
+    pub direction: String,
+    #[wasm_bindgen(skip)]
+    pub collapse_opposing_edges: bool,
+    #[wasm_bindgen(skip)]
+    pub edge_label_attributes: Vec<String>,
+    #[wasm_bindgen(skip)]
+    pub edge_sorter: Option<EdgeSorter>,
+    #[wasm_bindgen(skip)]
+    pub node_label_fn: Option<js_sys::Function>,
+    #[wasm_bindgen(skip)]
+    pub link_nodes: bool,
 }
 
 #[wasm_bindgen]
@@ -72,6 +81,22 @@ impl MermaidGraphOptions {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
         format!("{:#?}", self)
+    }
+}
+
+impl Default for MermaidGraphOptions {
+    fn default() -> Self {
+        MermaidGraphOptions {
+            active_node: None,
+            init_line: "%%{ init: { \"flowchart\": {} } }%%".to_string(),
+            chart_type: "graph".to_string(),
+            direction: "LR".to_string(),
+            collapse_opposing_edges: true,
+            edge_label_attributes: vec!["field".to_string()],
+            edge_sorter: Some(EdgeSorter::default()),
+            node_label_fn: None,
+            link_nodes: false,
+        }
     }
 }
 
@@ -139,7 +164,11 @@ impl NoteGraph {
         );
 
         // accumulate edges by direction, so that we can collapse them in the next step
-        let accumulated_edges = NoteGraph::int_accumulate_edges(self, edge_structs)?;
+        let accumulated_edges = NoteGraph::int_accumulate_edges(
+            self,
+            edge_structs,
+            diagram_options.collapse_opposing_edges,
+        )?;
 
         // utils::log(format!("{:#?}", accumulated_edges));
 
@@ -299,6 +328,7 @@ impl NoteGraph {
     pub fn int_accumulate_edges(
         graph: &NoteGraph,
         edges: Vec<EdgeStruct>,
+        collapse_opposing_edges: bool,
     ) -> Result<AccumulatedEdgeHashMap<'_>> {
         let mut accumulated_edges = AccumulatedEdgeHashMap::default();
 
@@ -311,32 +341,29 @@ impl NoteGraph {
             let forward_dir = (edge_struct.source_index, edge_struct.target_index);
 
             let entry1 = accumulated_edges.map.get_mut(&forward_dir);
-            match entry1 {
-                Some((_, _, forward, _)) => {
-                    forward.push(edge_struct.edge_data_ref(graph).unwrap());
-                }
-                None => {
-                    let backward_dir = (edge_struct.target_index, edge_struct.source_index);
+            if let Some((_, _, forward, _)) = entry1 {
+                forward.push(edge_struct.edge_data_ref(graph).unwrap());
+                continue;
+            }
 
-                    let entry2 = accumulated_edges.map.get_mut(&backward_dir);
-                    match entry2 {
-                        Some((_, _, _, backward)) => {
-                            backward.push(edge_struct.edge_data_ref(graph).unwrap());
-                        }
-                        None => {
-                            accumulated_edges.map.insert(
-                                forward_dir,
-                                (
-                                    edge_struct.source_index,
-                                    edge_struct.target_index,
-                                    vec![edge_struct.edge_data_ref(graph).unwrap()],
-                                    Vec::new(),
-                                ),
-                            );
-                        }
-                    }
+            if collapse_opposing_edges {
+                let backward_dir = (edge_struct.target_index, edge_struct.source_index);
+
+                if let Some((_, _, _, backward)) = accumulated_edges.map.get_mut(&backward_dir) {
+                    backward.push(edge_struct.edge_data_ref(graph).unwrap());
+                    continue;
                 }
             }
+
+            accumulated_edges.map.insert(
+                forward_dir,
+                (
+                    edge_struct.source_index,
+                    edge_struct.target_index,
+                    vec![edge_struct.edge_data_ref(graph).unwrap()],
+                    Vec::new(),
+                ),
+            );
         }
 
         Ok(accumulated_edges)
