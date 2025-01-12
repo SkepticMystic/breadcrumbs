@@ -1,9 +1,10 @@
 // import { get_graph_stats } from "src/commands/stats";
 // import { BCGraph } from "src/graph/MyMultiGraph";
 // import { _mock_edge } from "tests/__mocks__/graph";
-// import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
-// describe("get_graph_stats", () => {
+
+describe("get_graph_stats", () => {
 // 	test("straight-line", () => {
 // 		const graph = new BCGraph({
 // 			edges: [
@@ -58,4 +59,7 @@
 // 			},
 // 		});
 // 	});
-// });
+    test("placeholder", () => {
+        expect(true).toBe(true);
+    })
+});

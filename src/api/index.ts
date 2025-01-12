@@ -41,8 +41,9 @@ export class BCAPI {
 		if (!start_node) throw new Error("No active file");
 
 		return ListIndex.build(
-			this.plugin,
+			this.plugin.graph,
 			start_node,
+			this.plugin.settings,
 			Object.assign({ ...ListIndex.DEFAULT_OPTIONS }, options),
 		);
 	}

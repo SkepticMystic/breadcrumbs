@@ -1,6 +1,6 @@
 // import { Mermaid } from "src/utils/mermaid";
 // import { _mock_edge } from "tests/__mocks__/graph";
-// import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 // describe("from_edges", () => {
 // 	const edges = [
@@ -78,3 +78,9 @@
 // });
 
 // // TODO: I need to test more cases here
+
+describe("foo", () => {
+    test("placeholder", () => {
+        expect(true).toBe(true);
+    });
+});

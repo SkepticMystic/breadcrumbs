@@ -31,7 +31,7 @@
 	}: Props = $props();
 
 	let node_stringify_options = toNodeStringifyOptions(
-		plugin,
+		plugin.settings,
 		show_node_options,
 	);
 

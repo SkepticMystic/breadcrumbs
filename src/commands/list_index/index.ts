@@ -1,12 +1,12 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { LinkKind } from "src/interfaces/links";
-import type { ShowNodeOptions } from "src/interfaces/settings";
-import type BreadcrumbsPlugin from "src/main";
+import type { BreadcrumbsSettings, ShowNodeOptions } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 import {
 	FlatTraversalData,
 	FlatTraversalResult,
+	NoteGraph,
 	TraversalOptions,
 	TraversalPostprocessOptions,
 	create_edge_sorter,
@@ -14,7 +14,6 @@ import {
 
 export namespace ListIndex {
 	export type Options = {
-		show_entry_nodes: boolean;
 		// TODO: merge_fields: boolean;
 		indent: string;
 		fields: string[];
@@ -28,7 +27,6 @@ export namespace ListIndex {
 	};
 
 	export const DEFAULT_OPTIONS: Options = {
-		show_entry_nodes: false,
 		fields: [],
 		indent: "\\t",
 		link_kind: "wiki",
@@ -47,11 +45,12 @@ export namespace ListIndex {
 
 	// TODO(Rust): This should probably be moved to the Rust side
 	export const edge_tree_to_list_index = (
-		plugin: BreadcrumbsPlugin,
+		graph: NoteGraph,
 		tree: FlatTraversalResult | undefined,
+		plugin_settings: BreadcrumbsSettings | undefined,
 		options: Pick<
 			Options,
-			"link_kind" | "indent" | "show_node_options" | "show_attributes" | "show_entry_nodes"
+			"link_kind" | "indent" | "show_node_options" | "show_attributes"
 		>,
 	) => {
 		if (!tree) {
@@ -60,51 +59,23 @@ export namespace ListIndex {
 
 		const all_traversal_data = tree.data;
 
-		if (options.show_entry_nodes) {
-			return Array.from(tree.entry_nodes).map(
-				(node_index) => { 
-					const datum = all_traversal_data[node_index];
-					const edge = datum.edge;
-
-					const display = edge.stringify_source(
-						plugin.graph,
-						toNodeStringifyOptions(plugin, options.show_node_options),
-					);
-
-					const link = Links.ify(edge.source_path(plugin.graph), display, {
-						link_kind: options.link_kind,
-					});
-		
-					const attr = edge.get_attribute_label(
-						plugin.graph,
-						options.show_attributes,
-					);
-
-					return `- ${link} ${attr}\n` + edge_tree_to_list_index_inner(
-						plugin,
-						all_traversal_data,
-						[datum],
-						options,
-					);
-				},
-			).join("\n");
-		} else {
-			const current_nodes = Array.from(tree.entry_nodes).map(
-				(node_index) => all_traversal_data[node_index],
-			);
-			return edge_tree_to_list_index_inner(
-				plugin,
-				all_traversal_data,
-				current_nodes,
-				options,
-			);
-		}
+		const current_nodes = Array.from(tree.entry_nodes).map(
+			(node_index) => all_traversal_data[node_index],
+		);
+		return edge_tree_to_list_index_inner(
+			graph,
+			all_traversal_data,
+			current_nodes,
+			plugin_settings,
+			options,
+		);
 	};
 
 	export const edge_tree_to_list_index_inner = (
-		plugin: BreadcrumbsPlugin,
+		graph: NoteGraph,
 		all_traversal_data: FlatTraversalData[],
 		current_nodes: FlatTraversalData[],
+		plugin_settings: BreadcrumbsSettings | undefined,
 		options: Pick<
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes"
@@ -117,29 +88,30 @@ export namespace ListIndex {
 			const { edge, children, depth } = datum;
 
 			const display = edge.stringify_target(
-				plugin.graph,
-				toNodeStringifyOptions(plugin, options.show_node_options),
+				graph,
+				toNodeStringifyOptions(plugin_settings, options.show_node_options),
 			);
 
-			const link = Links.ify(edge.target_path(plugin.graph), display, {
+			const link = Links.ify(edge.target_path(graph), display, {
 				link_kind: options.link_kind,
 			});
 
 			const attr = edge.get_attribute_label(
-				plugin.graph,
+				graph,
 				options.show_attributes,
 			);
 
-			index += real_indent.repeat(depth - 1) + `- ${link} ${attr}\n`;
+			index += real_indent.repeat(depth - 1) + (attr ? `- ${link} (${attr})\n` : `- ${link}\n`);
 
 			const new_children = Array.from(children).map(
 				(child_id) => all_traversal_data[child_id],
 			);
 
 			index += edge_tree_to_list_index_inner(
-				plugin,
+				graph,
 				all_traversal_data,
 				new_children,
+				plugin_settings,
 				options,
 			);
 		});
@@ -148,8 +120,9 @@ export namespace ListIndex {
 	};
 
 	export const build = (
-		plugin: BreadcrumbsPlugin,
+		graph: NoteGraph,
 		start_node: string,
+		plugin_settings: BreadcrumbsSettings | undefined,
 		options: Options,
 	) => {
 		const traversal_options = new TraversalOptions(
@@ -167,11 +140,11 @@ export namespace ListIndex {
 			false,
 		);
 
-		const traversal_result = plugin.graph.rec_traverse_and_process(
+		const traversal_result = graph.rec_traverse_and_process(
 			traversal_options,
 			postprocess_options,
 		);
 
-		return edge_tree_to_list_index(plugin, traversal_result, options);
+		return edge_tree_to_list_index(graph, traversal_result, plugin_settings, options);
 	};
 }

@@ -28,7 +28,7 @@ import init, {
 	RenameNoteGraphUpdate,
 	AddNoteGraphUpdate,
 	GCNodeData,
-} from "../wasm/pkg";
+} from "../wasm/pkg/breadcrumbs_graph_wasm";
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
