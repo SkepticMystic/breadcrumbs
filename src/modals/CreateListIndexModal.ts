@@ -115,8 +115,9 @@ export class CreateListIndexModal extends Modal {
 					log.debug("build_list_index options", this.options);
 
 					const list_index = ListIndex.build(
-						plugin,
+						plugin.graph,
 						this.active_file!.path,
+						plugin.settings,
 						this.options,
 					);
 
