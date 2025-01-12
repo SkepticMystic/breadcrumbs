@@ -21,7 +21,7 @@
 		"wasm:profile": "cd wasm && wasm-pack build --profiling --target web",
 		"wasm:fmt": "cd wasm && cargo fmt",
 		"wasm:lint": "cd wasm && cargo clippy",
-		"wasm:test": "cd wasm && wasm-pack test --node --features test --release"
+		"wasm:test": "cd wasm && wasm-pack test --node --features test"
 	},
 	"keywords": [],
 	"author": "SkepticMystic",

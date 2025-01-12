@@ -16,7 +16,6 @@ pub struct TransitiveGraphRule {
     path: Vec<Rc<str>>,
     // the edge type to add
     edge_type: Rc<str>,
-    // the edge type to add
     rounds: u8,
     can_loop: bool,
     close_reversed: bool,

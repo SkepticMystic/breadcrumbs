@@ -182,8 +182,8 @@ impl EdgeComparer for BasenameComparer {
     fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
         let a_target = a.target_path_ref(graph).unwrap();
         let b_target = b.target_path_ref(graph).unwrap();
-        let a_basename = a_target.split('/').last().unwrap();
-        let b_basename = b_target.split('/').last().unwrap();
+        let a_basename = a_target.split('/').next_back().unwrap();
+        let b_basename = b_target.split('/').next_back().unwrap();
 
         a_basename.cmp(b_basename)
     }

@@ -68,7 +68,7 @@ impl UpdateableGraph for NoteGraph {
                     .collect();
 
                 for edge in edges_to_remove {
-                    self.remove_edge_by_index(edge)?;
+                    self.graph.remove_edge(edge);
                 }
             }
             None => {
@@ -119,7 +119,10 @@ impl UpdateableGraph for NoteGraph {
         ))?;
 
         match self.int_get_edge(from, to, edge_type) {
-            Some(edge) => self.remove_edge_by_index(edge.id()),
+            Some(edge) => {
+                self.graph.remove_edge(edge.id());
+                Ok(())
+            }
             None => Err(NoteGraphError::new("failed to delete edge, edge not found")),
         }
     }
@@ -127,39 +130,6 @@ impl UpdateableGraph for NoteGraph {
 
 /// Helper methods for the impl above.
 impl NoteGraph {
-    /// Given an edge index, removes the edge from the graph.
-    /// If the target node is unresolved and has no incoming edges, it will be
-    /// removed as well.
-    ///
-    /// INVARIANT: This function does not update the edge type tracker.
-    fn remove_edge_by_index(&mut self, edge_index: NGEdgeIndex) -> utils::Result<()> {
-        let (_, target) = self
-            .graph
-            .edge_endpoints(edge_index)
-            .ok_or(NoteGraphError::new("Edge not found"))?;
-        let target_data = self.int_get_node_weight(target)?;
-        let target_name = target_data.path.clone();
-        let target_unresolved = !target_data.resolved;
-
-        self.graph.remove_edge(edge_index);
-
-        if target_unresolved && !self.int_has_incoming_edges(target) {
-            // INVARIANT: target node is unresolved and has no incoming edges
-            self.remove_node_by_index_and_name(target, &target_name);
-        }
-
-        Ok(())
-    }
-
-    /// Given a node index and the name of a node, removes it from the graph and
-    /// the node hash.
-    ///
-    /// INVARIANT: This function does not update the edge type tracker.
-    fn remove_node_by_index_and_name(&mut self, node_index: NGNodeIndex, name: &str) {
-        self.node_hash.remove(name);
-        self.graph.remove_node(node_index);
-    }
-
     /// Gets the node index for a specific node.
     /// If the node does not exist, a new unresolved node will be created and
     /// the index of the new node returned.

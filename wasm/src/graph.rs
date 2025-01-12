@@ -148,6 +148,7 @@ impl NoteGraph {
 
         perf_logger.start_split("Rebuilding edge type tracker".to_owned());
 
+        self.int_remove_orphan_unresolved_nodes();
         self.int_rebuild_edge_type_tracker();
         self.int_build_implied_edges(&mut perf_logger);
         self.revision += 1;
@@ -451,6 +452,31 @@ impl NoteGraph {
         // });
     }
 
+    /// Removes all unresolved notes with no incoming or outgoing edges.
+    ///
+    /// INVARIANT: This updates the node hash.
+    /// INVARIANT: This keeps the edge type tracker up to date, as only nodes
+    /// with no connecting edges are removed.
+    pub fn int_remove_orphan_unresolved_nodes(&mut self) {
+        let mut nodes_to_remove: Vec<(NGNodeIndex, String)> = Vec::new();
+
+        for node in self.graph.node_indices() {
+            let node_weight = self.graph.node_weight(node).unwrap();
+
+            if !node_weight.resolved
+                && !self.int_has_incoming_edges(node)
+                && !self.int_has_outgoing_edges(node)
+            {
+                nodes_to_remove.push((node, node_weight.path.clone()));
+            }
+        }
+
+        for (node_index, name) in nodes_to_remove {
+            self.node_hash.remove(&name);
+            self.graph.remove_node(node_index);
+        }
+    }
+
     // ---------------------
     // Node Methods
     // ---------------------
@@ -483,15 +509,15 @@ impl NoteGraph {
     pub fn int_has_incoming_edges(&self, node: NGNodeIndex) -> bool {
         self.graph
             .edges_directed(node, petgraph::Direction::Incoming)
-            .count()
-            > 0
+            .next()
+            .is_some()
     }
 
     pub fn int_has_outgoing_edges(&self, node: NGNodeIndex) -> bool {
         self.graph
             .edges_directed(node, petgraph::Direction::Outgoing)
-            .count()
-            > 0
+            .next()
+            .is_some()
     }
 
     pub fn int_iter_incoming_edges(&self, node: NGNodeIndex) -> Edges<'_, EdgeData, Directed, u32> {
