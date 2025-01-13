@@ -66,7 +66,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		// Init wasm
-		await init(wasmbin);
+		await init({ module_or_path: wasmbin });
 		this.graph = create_graph();
 		this.graph.set_update_callback(() => {
 			// funny micro task so that the rust update function finishes before we access the graph again for the visualization

@@ -1,12 +1,17 @@
 import type BreadcrumbsPlugin from "src/main";
-import type { BreadcrumbsSettings, ShowNodeOptions } from "src/interfaces/settings";
+import type {
+	BreadcrumbsSettings,
+	ShowNodeOptions,
+} from "src/interfaces/settings";
 import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 export function toNodeStringifyOptions(
 	settings: BreadcrumbsSettings | undefined,
 	options: ShowNodeOptions,
 ): NodeStringifyOptions {
-	const dendron_note = settings?.explicit_edge_sources.dendron_note ?? { enabled: false };
+	const dendron_note = settings?.explicit_edge_sources?.dendron_note ?? {
+		enabled: false,
+	};
 
 	return new NodeStringifyOptions(
 		options.ext,

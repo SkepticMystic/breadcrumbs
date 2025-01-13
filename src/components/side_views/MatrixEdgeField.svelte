@@ -32,7 +32,7 @@
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
 	let node_stringify_options = toNodeStringifyOptions(
-		plugin,
+		plugin.settings,
 		show_node_options,
 	);
 </script>

@@ -16,7 +16,7 @@
 		plugin.settings.views.page.prev_next;
 
 	let node_stringify_options = toNodeStringifyOptions(
-		plugin,
+		plugin.settings,
 		show_node_options,
 	);
 

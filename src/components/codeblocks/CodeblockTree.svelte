@@ -85,7 +85,7 @@
 					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
 			}
 		}
-	};
+	}
 
 	onMount(() => {
 		const timer = new Timer();
@@ -110,10 +110,18 @@
 			<div class="absolute bottom-2 right-2 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
-					text={() => ListIndex.edge_tree_to_list_index(plugin, data, {
-						...plugin.settings.commands.list_index.default_options,
-						show_attributes: options["show-attributes"] ?? [],
-					})}
+					text={() =>
+						ListIndex.edge_tree_to_list_index(
+							plugin.graph,
+							data,
+							plugin.settings,
+							{
+								...plugin.settings.commands.list_index
+									.default_options,
+								show_attributes:
+									options["show-attributes"] ?? [],
+							},
+						)}
 				/>
 			</div>
 
@@ -122,7 +130,7 @@
 				<NestedEdgeList
 					{plugin}
 					{show_node_options}
-					data={data}
+					{data}
 					items={data.entry_nodes}
 					open_signal={!options.collapse}
 					show_attributes={options["show-attributes"]}

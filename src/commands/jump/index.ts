@@ -13,9 +13,7 @@ export const jump_to_neighbour = async (
 	const matches = plugin.graph
 		.get_filtered_outgoing_edges(active_file.path, options.fields)
 		.get_edges()
-		.filter(
-			(e) => e.target_path(plugin.graph) !== active_file.path,
-		);
+		.filter((e) => e.target_path(plugin.graph) !== active_file.path);
 
 	if (!matches.length) {
 		new Notice(

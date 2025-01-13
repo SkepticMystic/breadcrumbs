@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FileJson } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
+	import type { EdgeAttribute } from "src/graph/utils";
 	import { ShowAttributesSelectorMenu } from "src/menus/ShowAttributesMenu";
 
 	interface Props {

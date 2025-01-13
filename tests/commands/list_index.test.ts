@@ -1,6 +1,10 @@
 import { ListIndex } from "src/commands/list_index";
 import { describe, expect, test, beforeEach } from "vitest";
-import init, { create_graph, GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import init, {
+	create_graph,
+	GCEdgeData,
+	GCNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 import fs from "node:fs/promises";
 
 function getEdges() {
@@ -39,20 +43,21 @@ function getNodes() {
 		new GCNodeData("2.2.md", [], true, false, false),
 		new GCNodeData("2.2.1.md", [], true, false, false),
 		new GCNodeData("2.2.2.md", [], true, false, false),
-	]
+	];
 }
 
-
 beforeEach(async () => {
-	const wasmSource = await fs.readFile("wasm/pkg/breadcrumbs_graph_wasm_bg.wasm");
-  	const wasmModule = await WebAssembly.compile(wasmSource);
+	const wasmSource = await fs.readFile(
+		"wasm/pkg/breadcrumbs_graph_wasm_bg.wasm",
+	);
+	const wasmModule = await WebAssembly.compile(wasmSource);
 	await init(wasmModule);
 });
 
 describe("build", () => {
 	test("binary-tree > defaults", () => {
 		const graph = create_graph();
-        graph.build_graph(getNodes(), getEdges(), []);
+		graph.build_graph(getNodes(), getEdges(), []);
 
 		const list_index = ListIndex.build(graph, "index.md", undefined, {
 			indent: " ",
@@ -94,7 +99,7 @@ describe("build", () => {
 
 	test("binary-tree > indent + show-attributes + link_kind + edge_sort_id", () => {
 		const graph = create_graph();
-        graph.build_graph(getNodes(), getEdges(), []);
+		graph.build_graph(getNodes(), getEdges(), []);
 
 		const list_index = ListIndex.build(graph, "index.md", undefined, {
 			indent: ".",

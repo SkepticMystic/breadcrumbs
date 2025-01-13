@@ -24,3 +24,6 @@ data.json
 
 # test files
 coverage
+
+# build 
+meta.txt

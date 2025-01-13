@@ -2,7 +2,7 @@
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
 	import {
-	toNodeStringifyOptions,
+		toNodeStringifyOptions,
 		type EdgeAttrFilters,
 	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
@@ -12,7 +12,13 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
-	import { create_edge_sorter, FlatTraversalResult, NoteGraphError, TraversalOptions, TraversalPostprocessOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
+	import {
+		create_edge_sorter,
+		FlatTraversalResult,
+		NoteGraphError,
+		TraversalOptions,
+		TraversalPostprocessOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { log } from "src/logger";
 	import { Links } from "src/utils/links";
 
@@ -87,19 +93,37 @@
 
 	let code = $derived.by(() => {
 		if (data) {
-			const stringify_options = toNodeStringifyOptions(plugin, show_node_options);
+			const stringify_options = toNodeStringifyOptions(
+				plugin.settings,
+				show_node_options,
+			);
 			const node_data = plugin.graph.get_node(file_path)!;
 
-			const link = Links.ify(file_path, stringify_options.stringify_node(node_data), {
-				link_kind: plugin.settings.commands.list_index.default_options.link_kind,
-			});
+			const link = Links.ify(
+				file_path,
+				stringify_options.stringify_node(node_data),
+				{
+					link_kind:
+						plugin.settings.commands.list_index.default_options
+							.link_kind,
+				},
+			);
 
-			return "# " + link + "\n" + ListIndex.edge_tree_to_list_index(plugin, data, {
-				...plugin.settings.commands.list_index.default_options,
-				show_node_options,
-				show_attributes: options["show-attributes"] ?? [],
-				show_entry_nodes: false,
-			});
+			return (
+				"# " +
+				link +
+				"\n" +
+				ListIndex.edge_tree_to_list_index(
+					plugin.graph,
+					data,
+					plugin.settings,
+					{
+						...plugin.settings.commands.list_index.default_options,
+						show_node_options,
+						show_attributes: options["show-attributes"] ?? [],
+					},
+				)
+			);
 		} else {
 			return "";
 		}

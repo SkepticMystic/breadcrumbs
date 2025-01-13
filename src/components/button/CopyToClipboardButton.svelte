@@ -26,7 +26,7 @@
 	onclick={() => {
 		copied = true;
 
-		copy_to_clipboard(typeof text === 'string' ? text : text(), options);
+		copy_to_clipboard(typeof text === "string" ? text : text(), options);
 
 		setTimeout(() => (copied = false), 2_500);
 	}}

@@ -54,10 +54,12 @@ impl UpdateableGraph for NoteGraph {
                 let node_weight = self.int_get_node_weight_mut(index)?;
 
                 if !node_weight.resolved {
-                    LOGGER.warn(&format!(
-                        "Attempted to remove unresolved node {} from the graph",
-                        node_weight.path
-                    ));
+                    LOGGER.with(|l| {
+                        l.warn(&format!(
+                            "Attempted to remove unresolved node {} from the graph",
+                            node_weight.path
+                        ))
+                    });
                 }
 
                 node_weight.resolved = false;

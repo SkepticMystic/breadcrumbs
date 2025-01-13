@@ -118,7 +118,7 @@
 		}
 
 		code = code;
-	};
+	}
 
 	onMount(() => {
 		update();

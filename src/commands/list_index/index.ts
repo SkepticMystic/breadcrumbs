@@ -1,6 +1,9 @@
 import type { EdgeSortId } from "src/const/graph";
 import type { LinkKind } from "src/interfaces/links";
-import type { BreadcrumbsSettings, ShowNodeOptions } from "src/interfaces/settings";
+import type {
+	BreadcrumbsSettings,
+	ShowNodeOptions,
+} from "src/interfaces/settings";
 import { Links } from "src/utils/links";
 import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
 import {
@@ -89,7 +92,10 @@ export namespace ListIndex {
 
 			const display = edge.stringify_target(
 				graph,
-				toNodeStringifyOptions(plugin_settings, options.show_node_options),
+				toNodeStringifyOptions(
+					plugin_settings,
+					options.show_node_options,
+				),
 			);
 
 			const link = Links.ify(edge.target_path(graph), display, {
@@ -101,7 +107,9 @@ export namespace ListIndex {
 				options.show_attributes,
 			);
 
-			index += real_indent.repeat(depth - 1) + (attr ? `- ${link} (${attr})\n` : `- ${link}\n`);
+			index +=
+				real_indent.repeat(depth - 1) +
+				(attr ? `- ${link} (${attr})\n` : `- ${link}\n`);
 
 			const new_children = Array.from(children).map(
 				(child_id) => all_traversal_data[child_id],
@@ -145,6 +153,11 @@ export namespace ListIndex {
 			postprocess_options,
 		);
 
-		return edge_tree_to_list_index(graph, traversal_result, plugin_settings, options);
+		return edge_tree_to_list_index(
+			graph,
+			traversal_result,
+			plugin_settings,
+			options,
+		);
 	};
 }

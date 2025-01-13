@@ -52,7 +52,12 @@
 
 {#each items as item, i}
 	{@const children = data.children_at_index(item)}
-	{@const render_data = data.rendering_obj_at_index(item, plugin.graph, node_stringify_options, show_attributes ?? []) as EdgeRenderingData}
+	{@const render_data = data.rendering_obj_at_index(
+		item,
+		plugin.graph,
+		node_stringify_options,
+		show_attributes ?? [],
+	) as EdgeRenderingData}
 	{#if children && render_data}
 		<details class="tree-item" bind:open={opens[i]}>
 			<summary class="tree-item-self is-clickable flex items-center">
@@ -69,7 +74,7 @@
 						{node_stringify_options}
 						cls="tree-item-inner-text"
 					/> -->
-					
+
 					<ObsidianLink
 						{plugin}
 						display={render_data.link_display}
@@ -82,9 +87,7 @@
 				</div>
 
 				{#if show_attributes?.length}
-					<TreeItemFlair
-						label={render_data.attribute_label}
-					/>
+					<TreeItemFlair label={render_data.attribute_label} />
 				{/if}
 			</summary>
 
@@ -112,6 +115,6 @@
 					</details>
 				</div>
 			{/if}
-		</details>		
+		</details>
 	{/if}
 {/each}

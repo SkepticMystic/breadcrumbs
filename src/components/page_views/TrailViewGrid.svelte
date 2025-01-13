@@ -29,7 +29,7 @@
 	const show_node_options =
 		plugin.settings.views.page.trail.show_node_options;
 	const node_stringify_options = toNodeStringifyOptions(
-		plugin,
+		plugin.settings,
 		show_node_options,
 	);
 </script>

@@ -12,7 +12,7 @@ default = ["console_error_panic_hook"]
 test = []
 
 [dependencies]
-wasm-bindgen = "=0.2.92"
+wasm-bindgen = "=0.2.100"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -21,7 +21,7 @@ wasm-bindgen = "=0.2.92"
 console_error_panic_hook = { version = "0.1.7", optional = true }
 petgraph = "0.6.4"
 web-time = "1.1.0"
-js-sys = "0.3.69"
+js-sys = "0.3.77"
 itertools = "0.12.1"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
@@ -33,7 +33,7 @@ indoc = "2.0.5"
 indexmap = "2.7.0"
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.34"
+wasm-bindgen-test = "0.3.50"
 
 [profile.release]
 opt-level = 3               # Highest level of optimization.

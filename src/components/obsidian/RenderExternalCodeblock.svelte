@@ -11,12 +11,7 @@
 		source_path?: string | undefined;
 	}
 
-	let {
-		code,
-		type,
-		plugin,
-		source_path = undefined,
-	}: Props = $props();
+	let { code, type, plugin, source_path = undefined }: Props = $props();
 </script>
 
 <RenderMarkdown

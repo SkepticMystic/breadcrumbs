@@ -7,7 +7,7 @@ use web_time::Instant;
 #[cfg(not(feature = "test"))]
 #[wasm_bindgen(module = "src/logger/index.ts")]
 extern "C" {
-    #[wasm_bindgen(js_name = log)]
+    #[wasm_bindgen(thread_local_v2, js_name = log)]
     pub static LOGGER: Logger;
 
     pub type Logger;
@@ -26,7 +26,7 @@ extern "C" {
 #[cfg(feature = "test")]
 #[wasm_bindgen]
 extern "C" {
-    #[wasm_bindgen(js_name = console)]
+    #[wasm_bindgen(thread_local_v2, js_name = console)]
     pub static LOGGER: Logger;
 
     pub type Logger;
@@ -78,7 +78,7 @@ impl PerfLogger {
 
     pub fn stop(&mut self) {
         if self.stopped() {
-            LOGGER.warn(&format!("PerfLogger {} is already stopped", self.name));
+            LOGGER.with(|l| l.warn(&format!("PerfLogger {} is already stopped", self.name)));
         } else {
             self.elapsed = Some(self.start.elapsed().as_micros());
             self.stop_split();
@@ -113,7 +113,7 @@ impl PerfLogger {
     }
 
     pub fn log(&mut self) {
-        LOGGER.debug(&self.get_log_message().join("\n"));
+        LOGGER.with(|l| l.debug(&self.get_log_message().join("\n")));
     }
 }
 

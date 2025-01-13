@@ -12,7 +12,7 @@ use wasm_bindgen::prelude::*;
 pub fn create_graph() -> graph::NoteGraph {
     console_error_panic_hook::set_once();
 
-    utils::LOGGER.debug("Hello, from WASM!");
+    utils::LOGGER.with(|l| l.debug("Hello, from WASM!"));
 
     graph::NoteGraph::new()
 }

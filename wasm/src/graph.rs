@@ -88,16 +88,16 @@ impl NoteGraph {
         if let Some(callback) = &self.update_callback {
             match callback.call0(&JsValue::NULL) {
                 Ok(_) => {}
-                Err(e) => LOGGER.warn(&format!(
-                    "Error calling update notification function: {:?}",
-                    e
-                )),
-                // LOGGER.with(|l| {
-                //     l.warn(&format!(
-                //         "Error calling update notification function: {:?}",
-                //         e
-                //     ))
-                // }),
+                // Err(e) => LOGGER.warn(&format!(
+                //     "Error calling update notification function: {:?}",
+                //     e
+                // )),
+                Err(e) => LOGGER.with(|l| {
+                    l.warn(&format!(
+                        "Error calling update notification function: {:?}",
+                        e
+                    ))
+                }),
             }
         }
     }
@@ -110,7 +110,7 @@ impl NoteGraph {
         edges: Vec<GCEdgeData>,
         transitive_rules: Vec<TransitiveGraphRule>,
     ) -> Result<()> {
-        LOGGER.info("Building Graph");
+        LOGGER.with(|l| l.info("Building Graph"));
 
         self.graph = StableGraph::<NodeData, EdgeData, Directed, u32>::default();
         self.edge_types = VecSet::empty();
@@ -170,9 +170,10 @@ impl NoteGraph {
         self.graph.node_references().for_each(|node| {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
-                Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}", e)),
-                // LOGGER.with(|l| l.warn(&format!("Error calling node iteration callback: {:?}",
-                // e))),
+                // Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}",
+                // e)),
+                Err(e) => LOGGER
+                    .with(|l| l.warn(&format!("Error calling node iteration callback: {:?}", e))),
             }
         });
     }
@@ -185,9 +186,10 @@ impl NoteGraph {
         self.graph.edge_references().for_each(|edge| {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
-                Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}", e)),
-                // LOGGER.with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}",
-                // e))),
+                // Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}",
+                // e)),
+                Err(e) => LOGGER
+                    .with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}", e))),
             }
         });
     }
@@ -272,8 +274,8 @@ impl NoteGraph {
     }
 
     pub fn log(&self) {
-        LOGGER.info(&format!("{:#?}", self.graph));
-        // LOGGER.with(|l| l.info(&format!("{:#?}", self.graph)));
+        // LOGGER.info(&format!("{:#?}", self.graph));
+        LOGGER.with(|l| l.info(&format!("{:#?}", self.graph)));
     }
 }
 
@@ -438,18 +440,18 @@ impl NoteGraph {
             weight.explicit
         });
 
-        LOGGER.debug(&format!(
-            "Removed {} implied edges, {} explicit edges remain",
-            edge_count - self.graph.edge_count(),
-            self.graph.edge_count()
-        ));
-        // LOGGER.with(|l| {
-        //     l.debug(&format!(
-        //         "Removed {} implied edges, {} explicit edges remain",
-        //         edge_count - self.graph.edge_count(),
-        //         self.graph.edge_count()
-        //     ))
-        // });
+        // LOGGER.debug(&format!(
+        //     "Removed {} implied edges, {} explicit edges remain",
+        //     edge_count - self.graph.edge_count(),
+        //     self.graph.edge_count()
+        // ));
+        LOGGER.with(|l| {
+            l.debug(&format!(
+                "Removed {} implied edges, {} explicit edges remain",
+                edge_count - self.graph.edge_count(),
+                self.graph.edge_count()
+            ))
+        });
     }
 
     /// Removes all unresolved notes with no incoming or outgoing edges.
