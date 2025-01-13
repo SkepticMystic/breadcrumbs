@@ -1,4 +1,7 @@
+#![cfg(target_arch = "wasm32")]
+
 extern crate wasm_bindgen_test;
+
 use breadcrumbs_graph_wasm::{
     data::{
         construction::{GCEdgeData, GCNodeData},

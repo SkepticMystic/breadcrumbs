@@ -316,6 +316,9 @@ impl NoteGraph {
 
         let mut edge_type_tracker = self.edge_types.clone();
         let mut edges_to_add: Vec<(NGNodeIndex, NGNodeIndex, &TransitiveGraphRule)> = Vec::new();
+        // we reuse these two vectors to avoid allocations
+        let mut node_vec_1: Vec<NGNodeIndex> = Vec::new();
+        let mut node_vec_2: Vec<NGNodeIndex> = Vec::new();
 
         for i in 1..=max_rounds {
             let round_perf_split = perf_split.start_split(format!("Round {}", i));
@@ -325,6 +328,8 @@ impl NoteGraph {
             if edge_type_tracker.is_empty() {
                 break;
             }
+
+            round_perf_split.start_split(format!("Applying Rules"));
 
             for rule in self.transitive_rules.iter() {
                 // if there is any edge type that the graph doesn't have, we can skip the rule
@@ -350,41 +355,41 @@ impl NoteGraph {
                 // loop) and check for all possible applications of that rule
                 // for that node.
                 for start_node in self.graph.node_indices() {
+                    node_vec_1.clear();
+                    node_vec_2.clear();
+
                     // We start with the start node.
-                    let mut current_nodes = vec![start_node];
+                    node_vec_1.push(start_node);
 
                     // Now we iterate the path of the rule and each step, for all current nodes,
                     // we check for outgoing edges that match the edge type of the current element
                     // of the rule path.
                     for edge_type in rule.iter_path() {
-                        // TODO: We are creating a new vec here in a hot loop, maybe we can only
-                        // create it once and reuse it.
-                        let mut next_nodes = Vec::new();
-
-                        for current_node in current_nodes {
-                            for edge in self.graph.edges(current_node) {
+                        for current_node in &node_vec_1 {
+                            for edge in self.graph.edges(*current_node) {
                                 if edge.weight().edge_type == *edge_type {
-                                    next_nodes.push(edge.target());
+                                    node_vec_2.push(edge.target());
                                 }
                             }
                         }
 
-                        current_nodes = next_nodes;
+                        std::mem::swap(&mut node_vec_1, &mut node_vec_2);
+                        node_vec_2.clear();
                     }
 
                     // Now we are left with end nodes. For each end node, there exists a path from
                     // the start node to the end node that matches the rule.
-                    for end_node in current_nodes {
+                    for end_node in &node_vec_1 {
                         // If the rule can't loop, that means the start and end nodes can't be the
                         // same.
-                        if !rule.can_loop() && start_node == end_node {
+                        if !rule.can_loop() && start_node == *end_node {
                             continue;
                         }
 
                         if rule.close_reversed() {
-                            edges_to_add.push((end_node, start_node, rule));
+                            edges_to_add.push((*end_node, start_node, rule));
                         } else {
-                            edges_to_add.push((start_node, end_node, rule));
+                            edges_to_add.push((start_node, *end_node, rule));
                         }
                     }
                 }
