@@ -86,7 +86,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 
 			const process_tag = ( tag: string) => {
 				// Ensure consistent tag formatting, since some have the # and some don't
-				const formatted_tag = tag[0] === "#" ? tag : "#" + tag
+				const formatted_tag = ensure_starts_with(tag, "#");
 				// Quite happy with this trick :)
 				// Try get the existing_paths, and mutate it if it exists
 				// Push returns the new length (guarenteed to be atleast 1 - truthy)
