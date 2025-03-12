@@ -55,7 +55,7 @@ export const stringify_edge = (
 export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
 
 const sorters = {
-	path: (order) => (a, b) => a.target_id.localeCompare(b.target_id) * order,
+	path: (order) => (a, b) => a.target_id.localeCompare(b.target_id, undefined, {numeric:true}) * order,
 
 	basename: (order) => (a, b) => {
 		const [a_field, b_field] = [
@@ -63,7 +63,7 @@ const sorters = {
 			Paths.drop_folder(b.target_id),
 		];
 
-		return a_field.localeCompare(b_field) * order;
+		return a_field.localeCompare(b_field, undefined, {numeric:true}) * order;
 	},
 
 	field: (order) => (a, b) => {
@@ -72,7 +72,7 @@ const sorters = {
 			b.attr.field ?? "null",
 		];
 
-		return a_field.localeCompare(b_field) * order;
+		return a_field.localeCompare(b_field, undefined, {numeric:true}) * order;
 	},
 } satisfies Partial<Record<EdgeSortId["field"], (order: number) => EdgeSorter>>;
 
@@ -97,14 +97,14 @@ export const get_edge_sorter: (
 			return (a, b) => {
 				if (a.attr.explicit === true && b.attr.explicit === true) {
 					return (
-						a.attr.source.localeCompare(b.attr.source) * sort.order
+						a.attr.source.localeCompare(b.attr.source, undefined, {numeric:true}) * sort.order
 					);
 				} else if (
 					a.attr.explicit === false &&
 					b.attr.explicit === false
 				) {
 					return (
-						a.attr.implied_kind.localeCompare(b.attr.implied_kind) *
+						a.attr.implied_kind.localeCompare(b.attr.implied_kind, undefined, {numeric:true}) *
 						sort.order
 					);
 				} else {
