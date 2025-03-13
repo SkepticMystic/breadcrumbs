@@ -23,37 +23,24 @@
 		plugin: BreadcrumbsPlugin;
 	} = $props();
 
-	let edge_sort_id = $state(plugin.settings.views.side.tree.edge_sort_id);
-	let merge_fields = $state(plugin.settings.views.side.tree.merge_fields);
-	let show_attributes = $state(
-		plugin.settings.views.side.tree.show_attributes,
-	);
-	let show_node_options = $state(
-		plugin.settings.views.side.tree.show_node_options,
-	);
-	let field_group_labels = $state(
-		plugin.settings.views.side.tree.field_group_labels,
-	);
-	let collapse = $state(plugin.settings.views.side.tree.collapse);
+	let settings = $state(structuredClone(plugin.settings.views.side.tree));
 	$effect(() => {
-		plugin.settings.views.side.tree.edge_sort_id = edge_sort_id;
-		plugin.settings.views.side.tree.merge_fields = merge_fields;
-		plugin.settings.views.side.tree.show_attributes = show_attributes;
-		plugin.settings.views.side.tree.show_node_options = show_node_options;
-		plugin.settings.views.side.tree.field_group_labels = field_group_labels;
-		plugin.settings.views.side.tree.collapse = collapse;
+		plugin.settings.views.side.tree = $state.snapshot(settings);
 		untrack(() => void plugin.saveSettings());
 	});
 
 	let edge_field_labels = $derived(
 		resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
-			field_group_labels,
+			settings.field_group_labels,
 		),
 	);
 
 	let sort = $derived(
-		create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1),
+		create_edge_sorter(
+			settings.edge_sort_id.field,
+			settings.edge_sort_id.order === -1,
+		),
 	);
 
 	let active_file = $derived($active_file_store);
@@ -65,7 +52,7 @@
 					[active_file!.path],
 					edge_field_labels,
 					5,
-					!merge_fields,
+					!settings.merge_fields,
 				),
 				new TraversalPostprocessOptions(sort, false),
 			);
@@ -96,28 +83,28 @@
 			<EdgeSortIdSelector
 				cls="clickable-icon nav-action-button"
 				exclude_fields={[]}
-				bind:edge_sort_id
+				bind:edge_sort_id={settings.edge_sort_id}
 			/>
 
 			<ShowAttributesSelectorMenu
 				cls="clickable-icon nav-action-button"
-				bind:show_attributes
+				bind:show_attributes={settings.show_attributes}
 			/>
 
 			<ChevronCollapseButton
 				cls="clickable-icon nav-action-button"
-				bind:collapse
+				bind:collapse={settings.collapse}
 			/>
 
 			<MergeFieldsButton
 				cls="clickable-icon nav-action-button"
-				bind:merge_fields
+				bind:merge_fields={settings.merge_fields}
 			/>
 
 			<FieldGroupLabelsSelector
 				cls="clickable-icon nav-action-button"
 				edge_field_groups={plugin.settings.edge_field_groups}
-				bind:field_group_labels
+				bind:field_group_labels={settings.field_group_labels}
 			/>
 		</div>
 	</div>
@@ -127,11 +114,11 @@
 			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
 				<NestedEdgeList
 					{plugin}
-					{show_attributes}
-					{show_node_options}
+					show_attributes={settings.show_attributes}
+					show_node_options={settings.show_node_options}
 					data={sorted_tree.tree}
 					items={sorted_tree.tree.entry_nodes}
-					open_signal={!collapse}
+					open_signal={!settings.collapse}
 				/>
 			{:else}
 				<div class="search-empty-state">No paths found</div>

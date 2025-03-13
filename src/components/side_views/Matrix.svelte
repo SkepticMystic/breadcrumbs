@@ -9,6 +9,7 @@
 	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
+	import { untrack } from "svelte";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -16,13 +17,16 @@
 
 	let { plugin }: Props = $props();
 
-	let { edge_sort_id, field_group_labels, show_attributes, collapse } =
-		$state(plugin.settings.views.side.matrix);
+	let settings = $state(structuredClone(plugin.settings.views.side.matrix));
+	$effect(() => {
+		plugin.settings.views.side.matrix = $state.snapshot(settings);
+		untrack(() => void plugin.saveSettings());
+	});
 
 	let edge_field_labels = $derived(
 		resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
-			field_group_labels,
+			settings.field_group_labels,
 		),
 	);
 
@@ -41,7 +45,10 @@
 	);
 
 	let sort = $derived(
-		create_edge_sorter(edge_sort_id.field, edge_sort_id.order === -1),
+		create_edge_sorter(
+			settings.edge_sort_id.field,
+			settings.edge_sort_id.order === -1,
+		),
 	);
 </script>
 
@@ -56,25 +63,25 @@
 			<EdgeSortIdSelector
 				cls="clickable-icon nav-action-button"
 				exclude_fields={["field", "neighbour-field:"]}
-				bind:edge_sort_id
+				bind:edge_sort_id={settings.edge_sort_id}
 			/>
 
 			<ChevronCollapseButton
 				cls="clickable-icon nav-action-button"
-				bind:collapse
+				bind:collapse={settings.collapse}
 			/>
 
 			<!-- We can exclude alot of attrs, since they're implied by other info on the Matrix -->
 			<ShowAttributesSelectorMenu
 				cls="clickable-icon nav-action-button"
 				exclude_attributes={["field", "explicit"]}
-				bind:show_attributes
+				bind:show_attributes={settings.show_attributes}
 			/>
 
 			<FieldGroupSelector
 				cls="clickable-icon nav-action-button"
 				edge_field_groups={plugin.settings.edge_field_groups}
-				bind:field_group_labels
+				bind:field_group_labels={settings.field_group_labels}
 			/>
 		</div>
 	</div>
@@ -94,8 +101,8 @@
 							{edges}
 							{field}
 							{plugin}
-							{show_attributes}
-							open={!collapse}
+							show_attributes={settings.show_attributes}
+							open={!settings.collapse}
 						/>
 					{/if}
 				{/each}

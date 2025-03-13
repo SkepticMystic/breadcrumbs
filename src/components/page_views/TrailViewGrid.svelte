@@ -26,11 +26,9 @@
 		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
 	);
 
-	const show_node_options =
-		plugin.settings.views.page.trail.show_node_options;
 	const node_stringify_options = toNodeStringifyOptions(
 		plugin.settings,
-		show_node_options,
+		plugin.settings.views.page.trail.show_node_options,
 	);
 </script>
 

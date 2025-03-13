@@ -5,6 +5,7 @@
 		NodeStringifyOptions,
 		type Path,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { toNodeStringifyOptions } from "src/graph/utils";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -13,17 +14,9 @@
 
 	let { plugin, all_paths }: Props = $props();
 
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
-
-	const show_node_options =
-		plugin.settings.views.page.trail.show_node_options;
-	const node_stringify_options = new NodeStringifyOptions(
-		show_node_options.ext,
-		show_node_options.folder,
-		show_node_options.alias,
-		dendron_note.enabled && dendron_note.display_trimmed
-			? dendron_note.delimiter
-			: undefined,
+	const node_stringify_options = toNodeStringifyOptions(
+		plugin.settings,
+		plugin.settings.views.page.trail.show_node_options,
 	);
 
 	const reversed = all_paths.map((path) => path.reverse_edges);

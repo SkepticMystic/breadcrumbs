@@ -11,19 +11,17 @@
 
 	let { plugin, file_path }: Props = $props();
 
-	const enabled_views = {
-		grid: plugin.settings.views.page.trail.enabled,
-		prev_next: plugin.settings.views.page.prev_next.enabled,
-	};
+	const grid_enabled = plugin.settings.views.page.trail.enabled;
+	const prev_next_enabled = plugin.settings.views.page.prev_next.enabled;
 </script>
 
-{#if Object.values(enabled_views).some(Boolean)}
+{#if grid_enabled || prev_next_enabled}
 	<div class="markdown-rendered mb-4 flex flex-col gap-2">
-		{#if enabled_views.grid}
+		{#if grid_enabled}
 			<TrailView {plugin} {file_path} />
 		{/if}
 
-		{#if enabled_views.prev_next}
+		{#if prev_next_enabled}
 			<PrevNextView {plugin} {file_path} />
 		{/if}
 	</div>

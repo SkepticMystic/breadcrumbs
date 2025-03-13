@@ -8,6 +8,7 @@
 		PathList,
 		TraversalOptions,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { untrack } from "svelte";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -16,16 +17,10 @@
 
 	let { plugin = $bindable(), file_path }: Props = $props();
 
-	let format = $state(plugin.settings.views.page.trail.format);
-	let selection = $state(plugin.settings.views.page.trail.selection);
-	let merge_fields = $state(plugin.settings.views.page.trail.merge_fields);
-
+	let settings = $state(structuredClone(plugin.settings.views.page.trail));
 	$effect(() => {
-		plugin.settings.views.page.trail.format = format;
-		plugin.settings.views.page.trail.selection = selection;
-		plugin.settings.views.page.trail.merge_fields = merge_fields;
-
-		void plugin.saveSettings();
+		plugin.settings.views.page.trail = $state.snapshot(settings);
+		untrack(() => void plugin.saveSettings());
 	});
 
 	let data: {
@@ -41,7 +36,7 @@
 			[file_path],
 			edge_field_labels,
 			5,
-			!merge_fields,
+			!settings.merge_fields,
 		);
 
 		let traversal_data = plugin.graph.rec_traverse(traversal_options);
@@ -49,7 +44,7 @@
 		let all_paths = traversal_data.to_paths();
 
 		return {
-			selected_paths: all_paths.select(selection),
+			selected_paths: all_paths.select(settings.selection),
 			hit_depth_limit: traversal_data.hit_depth_limit,
 		};
 	});
@@ -80,7 +75,7 @@
 				<!-- TODO: make states out of these binds and add an effect to update the actual settings  -->
 				<select
 					class="dropdown"
-					bind:value={format}
+					bind:value={settings.format}
 					onchange={async (e) => await plugin.saveSettings()}
 				>
 					{#each ["grid", "path"] as format}
@@ -90,7 +85,7 @@
 
 				<select
 					class="dropdown"
-					bind:value={selection}
+					bind:value={settings.selection}
 					onchange={async () => await plugin.saveSettings()}
 				>
 					{#each ["all", "shortest", "longest"] as s}
@@ -98,7 +93,7 @@
 					{/each}
 				</select>
 
-				<MergeFieldsButton bind:merge_fields />
+				<MergeFieldsButton bind:merge_fields={settings.merge_fields} />
 
 				<div class="flex items-center gap-1">
 					<button
@@ -131,9 +126,9 @@
 				</div>
 			</div>
 
-			{#if format === "grid"}
+			{#if settings.format === "grid"}
 				<TrailViewGrid {plugin} all_paths={sorted_paths} />
-			{:else if format === "path"}
+			{:else if settings.format === "path"}
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
 		{:else if plugin.settings.views.page.trail.no_path_message}
