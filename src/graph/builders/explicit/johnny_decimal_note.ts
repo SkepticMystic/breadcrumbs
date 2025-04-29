@@ -14,7 +14,7 @@ const get_johnny_decimal_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	// NOTE: Don't return early here. Johnny Decimal notes can be valid without any metadata in them
+	// NOTE: Don't return early here. Johnny.Decimal notes can be valid without any metadata in them
 	//   We just have to iterate and check each note
 	// if (!metadata) return fail(undefined);
 

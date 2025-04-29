@@ -123,7 +123,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		_add_settings_johnny_decimal_note(
 			plugin,
 			make_details_el(containerEl, {
-				s: { text: "> Johnny Decimal Notes" },
+				s: { text: "> Johnny.Decimal Notes" },
 			}).children,
 		);
 
