@@ -2,7 +2,7 @@
 	"extends": "@tsconfig/svelte/tsconfig.json",
 
 	"compilerOptions": {
-		"types": ["svelte", "node"],
+		"types": ["svelte", "node", "obsidian-typings"],
 		"baseUrl": ".",
 		"inlineSources": true,
 		"module": "ESNext",

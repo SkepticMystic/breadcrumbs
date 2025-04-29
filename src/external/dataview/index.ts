@@ -1,17 +1,15 @@
-// TODO: Maybe use this when adding dv fields to the graph
-// parseField
 import {
 	getAPI as get_api,
 	isPluginEnabled as is_enabled,
 } from "obsidian-dataview";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 
 const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 	new Promise<void>((resolve) => {
 		if (is_enabled(plugin.app)) {
-			// TODO: The docs say the obsidian-dataview lib comes with types... figure that out
 			if (get_api(plugin.app)?.index.initialized) {
-				console.log("dataview index already initialized");
+				log.debug("dataview > already initialized");
 				resolve();
 			}
 
@@ -20,13 +18,13 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 					//@ts-ignore: It's there if dataview is enabled
 					"dataview:index-ready",
 					() => {
-						console.log("dataview:index-ready");
+						log.debug("dataview > ready");
 						resolve();
-					}
-				)
+					},
+				),
 			);
 		} else {
-			console.log("dataview not enabled");
+			log.debug("dataview > not enabled");
 			resolve();
 		}
 	});

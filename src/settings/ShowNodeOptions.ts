@@ -19,6 +19,8 @@ export const _add_settings_show_node_options = (
 		.setName("Note display options")
 		.setDesc("How to display note links");
 
+	setting.controlEl.addClasses(["flex", "flex-wrap", "gap-2"]);
+
 	setting.addToggle((toggle) => {
 		toggle.toggleEl.before("Folder");
 		toggle
@@ -30,7 +32,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});
@@ -47,7 +50,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});
@@ -64,7 +68,8 @@ export const _add_settings_show_node_options = (
 				cb.set(show_node_options);
 
 				if (options?.save_and_refresh !== false) {
-					await plugin.saveSettings();
+					await Promise.all([plugin.saveSettings()]);
+					// Don't await if not rebuilding
 					plugin.refresh({ rebuild_graph: false });
 				}
 			});

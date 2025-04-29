@@ -5,7 +5,7 @@ import type {
 } from "./MyMultiGraph";
 
 /** Wraps the arguments of a graphology.EdgeIterator callback into an object */
-export const objectify_edge_mapper =
+const objectify_edge_mapper =
 	<R>(
 		cb: (edge: BCEdge) => R,
 	): ((
@@ -35,3 +35,6 @@ export const objectify_edge_mapper =
 			target_attr,
 			undirected,
 		});
+
+/** The most commonly used approach of objectify_edge_mapper */
+export const objectify_edge = objectify_edge_mapper((e) => e);

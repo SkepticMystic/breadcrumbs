@@ -1,118 +1,91 @@
 import { App, Modal, Notice, Setting, TFile } from "obsidian";
-import { DIRECTIONS, type Direction } from "src/const/hierarchies";
+import { ListIndex } from "src/commands/list_index";
+import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
 import { LINK_KINDS } from "src/const/links";
-import { Traverse } from "src/graph/traverse";
-import type { LinkKind } from "src/interfaces/links";
-import type { ShowNodeOptions } from "src/interfaces/settings";
+import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
-import { stringify_hierarchy } from "src/utils/hierarchies";
+import { resolve_field_group_labels } from "src/utils/edge_fields";
+import { new_setting } from "src/utils/settings";
 import { get } from "svelte/store";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
+	options: ListIndex.Options;
 	active_file: TFile | null = get(active_file_store);
-	options: {
-		indent: string;
-		dir: Direction;
-		link_kind: LinkKind;
-		// -1 means all (no filter)
-		hierarchy_i: number;
-		show_node_options: ShowNodeOptions;
-	} = {
-		dir: "down",
-		indent: "\\t",
-		hierarchy_i: -1,
-		link_kind: "wiki",
-		show_node_options: {
-			ext: false,
-			alias: true,
-			folder: false,
-		},
-	};
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app);
 
 		this.plugin = plugin;
+		this.options = plugin.settings.commands.list_index.default_options;
 	}
 
 	onOpen() {
 		// TODO: Rather don't show the command at all
 		if (!this.active_file) {
 			new Notice("No active file");
-			this.close();
-			return;
+			return this.close();
 		}
 
 		const { contentEl, plugin } = this;
-		const { settings } = plugin;
 
 		contentEl.createEl("h2", {
 			text: "Create List Index",
 		});
 
-		new Setting(contentEl)
-			.setName("Hierarchy")
-			.setDesc(
-				"Optionally constrain the traversal to a specific hierarchy",
-			)
-			.addDropdown((dropdown) => {
-				dropdown.addOption("-1", "All");
+		new FieldGroupLabelsSettingItem({
+			target: contentEl,
+			props: {
+				field_group_labels: this.options.field_group_labels,
+				edge_field_groups: plugin.settings.edge_field_groups,
+			},
+		}).$on("select", (e) => {
+			// Tracking groups for the UI
+			this.options.field_group_labels = e.detail;
 
-				settings.hierarchies.forEach((hierarchy, i) => {
-					dropdown.addOption(
-						String(i),
-						stringify_hierarchy(hierarchy),
-					);
-				});
+			// Settings fields for the build call
+			this.options.fields = resolve_field_group_labels(
+				plugin.settings.edge_field_groups,
+				this.options.field_group_labels,
+			);
+		});
 
-				dropdown.setValue(String(this.options.hierarchy_i));
+		new_setting(contentEl, {
+			name: "Link Kind",
+			desc: "Format to use for links",
+			select: {
+				options: LINK_KINDS,
+				value: this.options.link_kind,
+				cb: (value) => (this.options.link_kind = value),
+			},
+		});
 
-				dropdown.onChange((value) => {
-					this.options.hierarchy_i = Number(value);
-				});
-			});
+		new_setting(contentEl, {
+			name: "Indent",
+			desc: "Indentation to use for each level",
+			input: {
+				value: this.options.indent,
+				cb: (value) => (this.options.indent = value),
+			},
+		});
 
-		new Setting(contentEl)
-			.setName("Direction")
-			.setDesc("Direction to traverse")
-			.addDropdown((dropdown) => {
-				DIRECTIONS.forEach((dir) => {
-					dropdown.addOption(dir, dir);
-				});
+		new EdgeSortIdSettingItem({
+			target: contentEl,
+			props: { edge_sort_id: this.options.edge_sort_id },
+		}).$on("select", (e) => {
+			this.options.edge_sort_id = e.detail;
+		});
 
-				dropdown.setValue(this.options.dir);
-
-				dropdown.onChange((value) => {
-					this.options.dir = value as Direction;
-				});
-			});
-
-		new Setting(contentEl)
-			.setName("Link Kind")
-			.setDesc("Format to use for links")
-			.addDropdown((dropdown) => {
-				LINK_KINDS.forEach((kind) => {
-					dropdown.addOption(kind, kind);
-				});
-
-				dropdown.setValue(this.options.link_kind);
-
-				dropdown.onChange((value) => {
-					this.options.link_kind = value as LinkKind;
-				});
-			});
-
-		new Setting(contentEl)
-			.setName("Indent")
-			.setDesc("Indentation to use for each level")
-			.addText((text) => {
-				text.setValue(this.options.indent).onChange((value) => {
-					this.options.indent = value;
-				});
-			});
+		new ShowAttributesSettingItem({
+			target: contentEl,
+			props: { show_attributes: this.options.show_attributes },
+		}).$on("select", (e) => {
+			this.options.show_attributes = e.detail;
+		});
 
 		_add_settings_show_node_options(
 			plugin,
@@ -129,31 +102,26 @@ export class CreateListIndexModal extends Modal {
 				.setButtonText("Build & Copy to Clipboard")
 				.setCta()
 				.onClick(async () => {
-					console.log("build_list_index", this.options);
-					const list_index = this.build_list_index();
-					console.log("list_index\n", list_index);
-					await navigator.clipboard.writeText(list_index);
+					log.debug("build_list_index options", this.options);
 
-					new Notice("List index copied to clipboard");
+					const list_index = ListIndex.build(
+						plugin.graph,
+						this.active_file!.path,
+						this.options,
+					);
+
+					if (list_index) {
+						await navigator.clipboard.writeText(list_index);
+
+						new Notice("List index copied to clipboard");
+					} else {
+						new Notice("No list items to copy");
+					}
 
 					this.close();
 				}),
 		);
 	}
-
-	build_list_index = () =>
-		Traverse.paths_to_index_list(
-			Traverse.all_paths(
-				"depth_first",
-				this.plugin.graph,
-				this.active_file!.path,
-				(e) =>
-					e.attr.dir === this.options.dir &&
-					(this.options.hierarchy_i === -1 ||
-						e.attr.hierarchy_i === this.options.hierarchy_i),
-			),
-			this.options,
-		);
 
 	onClose() {
 		this.contentEl.empty();

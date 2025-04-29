@@ -10,20 +10,23 @@
 	export let show_node_options: ShowNodeOptions;
 	export let cls = "";
 
-	const path = edge.target_id;
-	const display = stringify_node(path, edge.target_attr, {
+	const { dendron_note } = plugin.settings.explicit_edge_sources;
+
+	const display = stringify_node(edge.target_id, edge.target_attr, {
 		show_node_options,
+		trim_basename_delimiter:
+			dendron_note.enabled && dendron_note.display_trimmed
+				? dendron_note.delimiter
+				: undefined,
 	});
 </script>
 
 <ObsidianLink
-	{path}
 	{plugin}
 	{display}
+	path={edge.target_id}
 	resolved={edge.target_attr.resolved}
-	cls="{cls} {edge.attr.explicit ? 'BC-edge-explicit' : 'BC-edge-implied'} "
+	cls="{cls} BC-edge {edge.attr.explicit
+		? 'BC-edge-explicit'
+		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`}"
 />
-
-<!-- TODO: Add the implied_kind or source. Maybe as a data attribute, but maybe just as a class -->
-
-<!-- BREAKING: BC-edge-implied used to be BC-implied, I believe -->

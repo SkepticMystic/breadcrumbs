@@ -1,4 +1,4 @@
-import type { Pos, TFile } from "obsidian";
+import type { Pos } from "obsidian";
 
 export declare namespace IDataview {
 	export type Link = {
@@ -32,9 +32,16 @@ export declare namespace IDataview {
 	};
 
 	export type Page = {
-		file: TFile & {
+		file: {
 			// NOTE: Other fields are not fully fleshed out.
 			// I generally add them as I need
+			ext: string;
+			folder: string;
+			/** What Obisidian calls 'basename' */
+			name: string;
+			path: string;
+
+			frontmatter: Record<string, unknown>;
 
 			aliases: Proxy<string>;
 
@@ -54,6 +61,6 @@ export declare namespace IDataview {
 		[
 			key: string
 		]: // Add a type that's _not_ a Link, so that TS shouts if we don't check
-		string | Link | Link[];
+		string | Link | Link[] | null;
 	};
 }

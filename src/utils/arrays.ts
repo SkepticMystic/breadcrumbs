@@ -68,7 +68,7 @@ export const gather_by_runs = <I, V extends Primitive>(
 	}[] = [];
 
 	for (let i = 0; i < arr.length; i++) {
-		const last_run = runs.last();
+		const last_run = runs.at(-1);
 		const value = get_value(arr[i]);
 
 		if (last_run && last_run.value === value) {
@@ -101,4 +101,41 @@ export const group_by = <T extends P, S extends string, P = T>(
 	});
 
 	return grouped;
+};
+
+/** Run an array-level projection on an already grouped record */
+export const group_projection = <T, S extends string, P>(
+	grouped: Partial<Record<S, T[]>>,
+	projector: (items: T[]) => P,
+) => {
+	const projected: Partial<Record<S, P>> = {};
+
+	Object.entries(grouped).forEach(([key, items]) => {
+		projected[key as S] = projector(items as T[]);
+	});
+
+	return projected;
+};
+
+export const remove_duplicates = <T>(arr: T[]): T[] => {
+	const set = new Set(arr);
+	return Array.from(set);
+};
+
+export const remove_duplicates_by = <T, V>(
+	arr: T[],
+	get_value: (item: T) => V,
+): T[] => {
+	const set = new Set<V>();
+	const unique: T[] = [];
+
+	arr.forEach((item) => {
+		const value = get_value(item);
+		if (set.has(value)) return;
+
+		set.add(value);
+		unique.push(item);
+	});
+
+	return unique;
 };

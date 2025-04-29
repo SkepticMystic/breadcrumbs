@@ -1,139 +1,173 @@
-import type { LinkKind } from "src/interfaces/links";
-import type { ShowNodeOptions } from "src/interfaces/settings";
-import { Links } from "src/utils/links";
-import type { BCEdge, BCGraph } from "./MyMultiGraph";
-import { objectify_edge_mapper } from "./objectify_mappers";
-import { is_self_loop, stringify_node } from "./utils";
+import { BCGraph, type BCEdge, type BCEdgeAttributes } from "./MyMultiGraph";
+import { has_edge_attrs, type EdgeSorter } from "./utils";
 
-type StackItem = {
-	path: BCEdge[];
+export type TraversalStackItem = {
+	edge: BCEdge;
+	depth: number;
 };
 
-type Traverser = (
+const breadth_first = (
 	graph: BCGraph,
 	start_node: string,
-	callback: (
-		current_stack_item: StackItem,
-		filtered_out_edges: BCEdge[],
-	) => void,
-	edge_filter?: (edge: BCEdge) => boolean,
-) => void;
-
-const depth_first: Traverser = (graph, start_node, callback, edge_filter?) => {
-	// edge_ids visited so far
-	const visited = new Set<string>();
+	callback: (item: TraversalStackItem) => void,
+	edge_filter?: (item: TraversalStackItem) => boolean,
+) => {
+	const visited_edge_ids = new Set<string>();
 
 	// Initial stack contains the filtered_out_edges of the start_node
-	const stack: StackItem[] = graph
-		.mapOutEdges(
-			start_node,
-			objectify_edge_mapper((e) => e),
-		)
-		.filter((e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)))
-		.map((edge) => ({
-			edge,
-			// NOTE: It's a little redundant to add the start_edge,
-			//    but it makes the code simpler (e.g. GridView)
-			path: [edge],
-		}));
+	const stack: TraversalStackItem[] = graph
+		.get_out_edges(start_node)
+		.map((edge) => ({ edge, depth: 0 }))
+		.filter((item) => !edge_filter || edge_filter(item));
 
 	while (stack.length > 0) {
-		const stack_item = stack.pop()!;
-		const current_edge = stack_item.path.last()!;
+		const item = stack.shift()!;
 
-		if (visited.has(current_edge.id)) continue;
-		else visited.add(current_edge.id);
+		if (visited_edge_ids.has(item.edge.id)) continue;
+		else visited_edge_ids.add(item.edge.id);
 
-		const filtered_out_edges = graph
-			.mapOutEdges(
-				current_edge.target_id,
-				objectify_edge_mapper((e) => e),
-			)
-			.filter(
-				(e) => !is_self_loop(e) && (!edge_filter || edge_filter(e)),
-			);
+		callback(item);
 
-		// Act on the current stack item
-		callback(stack_item, filtered_out_edges);
-
-		// And push the next edges
-		filtered_out_edges.forEach((out_edge) => {
-			// But push the next edge
-			stack.push({ path: stack_item.path.concat(out_edge) });
-		});
+		graph
+			.get_out_edges(item.edge.target_id)
+			.map((out_edge) => ({ edge: out_edge, depth: item.depth + 1 }))
+			.filter((out_item) => !edge_filter || edge_filter(out_item))
+			.forEach((item) => stack.push(item));
 	}
 };
 
-const alg = {
-	depth_first,
-};
-
-const all_paths = (
-	alg_name: keyof typeof alg,
+const gather_items = (
 	graph: BCGraph,
 	start_node: string,
-	edge_filter?: (edge: BCEdge) => boolean,
+	edge_filter?: (item: TraversalStackItem) => boolean,
 ) => {
+	const items: TraversalStackItem[] = [];
+
+	breadth_first(graph, start_node, (item) => items.push(item), edge_filter);
+
+	return items;
+};
+
+export type EdgeTree = {
+	edge: BCEdge;
+	depth: number;
+	children: EdgeTree[];
+};
+
+const MAX_DEPTH = 100;
+
+const build_tree = (
+	graph: BCGraph,
+	source_id: string,
+	{ depth, max_depth }: { depth?: number; max_depth?: number },
+	edge_filter?: (edge: BCEdge, depth: number) => boolean,
+	visited_edge_ids = new Set<string>(),
+) => {
+	depth ??= 0;
+	max_depth ??= MAX_DEPTH;
+
+	const tree: EdgeTree[] = [];
+
+	if (depth <= max_depth) {
+		for (const edge of graph
+			.get_out_edges(source_id)
+			.filter((edge) => !edge_filter || edge_filter(edge, depth!))) {
+			if (visited_edge_ids.has(edge.id)) continue;
+			else visited_edge_ids.add(edge.id);
+
+			const children = build_tree(
+				graph,
+				edge.target_id,
+				{ depth: depth + 1, max_depth },
+				edge_filter,
+				visited_edge_ids,
+			);
+
+			tree.push({ edge, depth, children });
+		}
+	}
+
+	return tree;
+};
+
+const flatten_tree = (tree: EdgeTree[]) => {
+	const traversal_items: TraversalStackItem[] = [];
+
+	tree.forEach(({ edge, depth, children }) => {
+		traversal_items.push({ edge, depth });
+		traversal_items.push(...flatten_tree(children));
+	});
+
+	return traversal_items;
+};
+
+const tree_to_all_paths = (tree: EdgeTree[]): BCEdge[][] => {
 	const paths: BCEdge[][] = [];
 
-	alg[alg_name](
-		graph,
-		start_node,
-		({ path }, filtered_out_edges) => {
-			if (!filtered_out_edges.length) {
-				paths.push(path);
-			}
-		},
-		edge_filter,
-	);
+	tree.forEach(({ edge, children }) => {
+		if (children.length === 0) {
+			paths.push([edge]);
+		} else {
+			const child_paths = tree_to_all_paths(children);
+
+			child_paths.forEach((path) => paths.push([edge, ...path]));
+		}
+	});
 
 	return paths;
 };
 
-const paths_to_index_list = (
-	paths: BCEdge[][],
-	{
-		indent,
-		link_kind,
-		show_node_options,
-	}: {
-		indent: string;
-		link_kind: LinkKind;
-		show_node_options: ShowNodeOptions;
-	},
-) => {
-	let index = "";
-	const visited = new Set<string>();
-
-	const real_indent = indent.replace(/\\t/g, "\t");
-
-	paths.forEach((path) => {
-		path.forEach((edge, depth) => {
-			const key = `${depth}-${edge.target_id}`;
-
-			if (!visited.has(key)) {
-				visited.add(key);
-
-				const display = stringify_node(
-					edge.target_id,
-					edge.target_attr,
-					{ show_node_options },
-				);
-
-				const link = Links.ify(edge.target_id, display, {
-					link_kind,
-				});
-
-				index += real_indent.repeat(depth) + `- ${link}\n`;
-			}
-		});
+/** Sort a nested list of paths on a per-depth level.
+ * Mutates the input.
+ */
+const sort_edge_tree = (tree: EdgeTree[], sorter: EdgeSorter) => {
+	tree.forEach((nested_path) => {
+		nested_path.children = sort_edge_tree(nested_path.children, sorter);
 	});
 
-	return index;
+	return tree.sort((a, b) => sorter(a.edge, b.edge));
+};
+
+// TODO: Not sure how, but we need to filter out paths that included the same target_id twice.
+// e.g. me -> spouse -> sibling-in-law under the rule [spouse, sibling, sibling] -> sibling-in-law
+// Yields me -->|sibling-in-law| spouse
+/** Find all paths of nodes connected by edges that pair-wise match the attrs in the chain */
+const get_transitive_chain_target_ids = (
+	graph: BCGraph,
+	start_node: string,
+	chain: Partial<BCEdgeAttributes>[],
+	edge_filter?: (item: TraversalStackItem) => boolean,
+) => {
+	const target_ids: string[] = [];
+
+	Traverse.breadth_first(
+		graph,
+		start_node,
+		(item) => {
+			// Only push the target_id if we're at the end of the chain
+			if (item.depth === chain.length - 1) {
+				target_ids.push(item.edge.target_id);
+			}
+		},
+		(item) =>
+			// Ensures we don't go over the chain length ("max_depth")
+			chain[item.depth] &&
+			// Check if the edge has the attrs we're looking for
+			has_edge_attrs(item.edge, chain[item.depth]) &&
+			(!edge_filter || edge_filter(item)),
+	);
+
+	return target_ids;
 };
 
 export const Traverse = {
-	alg,
-	all_paths,
-	paths_to_index_list,
+	breadth_first,
+	gather_items,
+	build_tree,
+	flatten_tree,
+	tree_to_all_paths,
+
+	sort_edge_tree,
+
+	get_transitive_chain_target_ids,
 };

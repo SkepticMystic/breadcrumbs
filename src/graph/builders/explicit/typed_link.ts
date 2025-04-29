@@ -1,18 +1,22 @@
 import type {
+	BreadcrumbsError,
 	ExplicitEdgeBuilder,
-	GraphBuildError,
 } from "src/interfaces/graph";
 import { ensure_is_array } from "src/utils/arrays";
-import { get_field_hierarchy } from "src/utils/hierarchies";
-import { Links } from "src/utils/links";
-import { Paths } from "src/utils/paths";
+import { resolve_relative_target_path } from "src/utils/obsidian";
+
+const MARKDOWN_LINK_REGEX = /\[(.+?)\]\((.+?)\)/;
 
 export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: GraphBuildError[] = [];
+	const errors: BreadcrumbsError[] = [];
+
+	const field_labels = new Set(
+		plugin.settings.edge_fields.map((f) => f.label),
+	);
 
 	all_files.obsidian?.forEach(
 		({ file: source_file, cache: source_cache }) => {
@@ -23,43 +27,23 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				// We only want the field name, so we split on the dot and take the first element
 				// This implies that we can't have a field name with a dot in it...
 				const field = target_link.key.split(".")[0];
+				if (!field_labels.has(field)) return;
 
-				const field_hierarchy = get_field_hierarchy(
-					plugin.settings.hierarchies,
-					field,
-				);
-				if (!field_hierarchy) return;
-
-				const maybe_resolved_target_path = Paths.ensure_ext(
+				const [target_path, target_file] = resolve_relative_target_path(
+					plugin.app,
 					target_link.link,
+					source_file.path,
 				);
-				const target_file =
-					plugin.app.metadataCache.getFirstLinkpathDest(
-						maybe_resolved_target_path,
-						source_file.path,
-					);
-
-				const target_path =
-					target_file?.path ??
-					Links.resolve_to_absolute_path(
-						plugin.app,
-						maybe_resolved_target_path,
-						source_file.path,
-					);
 
 				if (!target_file) {
-					// It's an unresolved link, so we add a node for it
-					//   (still using safe_add, as a different builder may have already added it)
 					// Unresolved nodes don't have aliases
 					graph.safe_add_node(target_path, { resolved: false });
 				}
 
-				graph.addDirectedEdge(source_file.path, target_path, {
+				graph.safe_add_directed_edge(source_file.path, target_path, {
 					field,
 					explicit: true,
 					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
 				});
 			});
 		},
@@ -68,66 +52,80 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
 
+		// NOTE: Instead of iterating all keys, I could use the edge_fields...
+		// But I'm assuming there are probably more edge fields than page fields
+		// So this is probably more efficient
 		Object.keys(page).forEach((field) => {
-			// NOTE: Implies that a hierarchy field can't be in this list,
+			// NOTE: Implies that an edge-field can't be in this list,
 			//   But Dataview probably enforces that anyway
-			if (["file", "aliases"].includes(field)) return;
+			if (
+				!field_labels.has(field) ||
+				["file", "aliases"].includes(field)
+			) {
+				return;
+			}
 
-			const field_hierarchy = get_field_hierarchy(
-				plugin.settings.hierarchies,
-				field,
-			);
-			if (!field_hierarchy) return;
+			// page[field]: Link | Link[] | Link[][]
+			ensure_is_array(page[field])
+				.flat()
+				.forEach((target_link) => {
+					let unsafe_target_path: string | undefined;
 
-			// page[field]: Link | Link[]
-			ensure_is_array(page[field]).forEach((target_link) => {
-				if (
-					// It _should_ be a Link, as we've confirmed the field is in a BC hierarchy
-					// But, just in case, we check that it has a path
-					typeof target_link !== "object" ||
-					!target_link.path
-				) {
-					return errors.push({
-						code: "invalid_field_value",
-						message: `Invalid field value for '${field}'`,
-						path: source_file.path,
-					});
-				}
+					// Quickly return for null or ''
+					if (!target_link) return;
+					else if (typeof target_link === "string") {
+						// Try parse as a markdown link [](), grabbing the path out of the 2nd match
+						unsafe_target_path =
+							target_link.match(MARKDOWN_LINK_REGEX)?.[2];
+					} else if (
+						typeof target_link === "object" &&
+						target_link?.path
+					) {
+						unsafe_target_path = target_link.path;
+					} else if (
+						// @ts-expect-error: instanceof didn't work here?
+						target_link?.isLuxonDateTime
+					) {
+						errors.push({
+							path: source_file.path,
+							code: "invalid_field_value",
+							message: `Invalid value for field '${field}': '${target_link}'. Dataview DateTime values are not supported, since they don't preserve the original date string.`,
+						});
+					} else {
+						// It's a BC field, with a definitely invalid value, cause it's not a link
+						errors.push({
+							path: source_file.path,
+							code: "invalid_field_value",
+							message: `Invalid value for field '${field}': '${target_link}'. Expected wikilink or markdown link.`,
+						});
+					}
 
-				// Dataview does a weird thing... it adds the ext to _resolved_ links, but not unresolved links.
-				// So, we ensure it here
-				const maybe_resolved_target_path = Paths.ensure_ext(
-					target_link.path,
-				);
-				const target_file =
-					plugin.app.metadataCache.getFirstLinkpathDest(
-						maybe_resolved_target_path,
+					if (!unsafe_target_path) return;
+
+					const [target_path, target_file] =
+						resolve_relative_target_path(
+							plugin.app,
+							unsafe_target_path,
+							source_file.path,
+						);
+
+					if (!target_file) {
+						// It's an unresolved link, so we add a node for it
+						// But still do it safely, as a previous file may point to the same unresolved node
+						graph.safe_add_node(target_path, { resolved: false });
+					}
+
+					// If the file exists, we should have already added a node for it in the simple loop over all markdown files
+					graph.safe_add_directed_edge(
 						source_file.path,
+						target_path,
+						{
+							field,
+							explicit: true,
+							source: "typed_link",
+						},
 					);
-
-				const target_path =
-					target_file?.path ??
-					Links.resolve_to_absolute_path(
-						plugin.app,
-						maybe_resolved_target_path,
-						source_file.path,
-					);
-
-				if (!target_file) {
-					// It's an unresolved link, so we add a node for it
-					// But still do it safely, as a previous file may point to the same unresolved node
-					graph.safe_add_node(target_path, { resolved: false });
-				}
-
-				// If the file exists, we should have already added a node for it in the simple loop over all markdown files
-				graph.addDirectedEdge(source_file.path, target_path, {
-					field,
-					explicit: true,
-					source: "typed_link",
-					dir: field_hierarchy.dir,
-					hierarchy_i: field_hierarchy.hierarchy_i,
 				});
-			});
 		});
 	});
 
