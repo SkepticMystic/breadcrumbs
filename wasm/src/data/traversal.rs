@@ -57,7 +57,7 @@ impl TraversalData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 
@@ -117,7 +117,7 @@ impl TraversalResult {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 
     pub fn to_paths(&self) -> PathList {
@@ -353,7 +353,7 @@ impl FlatTraversalResult {
 impl FlatTraversalResult {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 
     pub fn is_empty(&self) -> bool {

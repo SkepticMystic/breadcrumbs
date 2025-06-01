@@ -60,8 +60,6 @@ pub fn sort_edges(
     edges: Vec<EdgeStruct>,
     sorter: &EdgeSorter,
 ) -> Result<Vec<EdgeStruct>> {
-    // utils::log(format!("Sorting edges: {:?}", edges));
-
     let mut edges = edges.clone();
     sorter.sort_edges(graph, &mut edges)?;
 

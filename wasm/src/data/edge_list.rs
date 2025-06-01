@@ -56,7 +56,7 @@ impl EdgeList {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}",)
     }
 }
 
@@ -70,6 +70,7 @@ impl EdgeList {
     }
 }
 
+/// A edge list that is grouped by edge type.
 #[wasm_bindgen]
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct GroupedEdgeList {
@@ -99,7 +100,7 @@ impl GroupedEdgeList {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}",)
     }
 }
 

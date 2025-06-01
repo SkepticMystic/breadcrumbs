@@ -104,7 +104,7 @@ impl PerfLogger {
             let mut sub_message = split
                 .get_log_message()
                 .iter()
-                .map(|s| format!(" | {}", s))
+                .map(|s| format!(" | {s}"))
                 .collect::<Vec<String>>();
             message.append(&mut sub_message);
         }
@@ -141,7 +141,7 @@ impl NoteGraphError {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 

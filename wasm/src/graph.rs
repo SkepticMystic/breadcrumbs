@@ -88,14 +88,9 @@ impl NoteGraph {
         if let Some(callback) = &self.update_callback {
             match callback.call0(&JsValue::NULL) {
                 Ok(_) => {}
-                // Err(e) => LOGGER.warn(&format!(
-                //     "Error calling update notification function: {:?}",
-                //     e
-                // )),
                 Err(e) => LOGGER.with(|l| {
                     l.warn(&format!(
-                        "Error calling update notification function: {:?}",
-                        e
+                        "Error calling update notification function: {e:?}"
                     ))
                 }),
             }
@@ -170,10 +165,8 @@ impl NoteGraph {
         self.graph.node_references().for_each(|node| {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
-                // Err(e) => LOGGER.warn(&format!("Error calling node iteration callback: {:?}",
-                // e)),
                 Err(e) => LOGGER
-                    .with(|l| l.warn(&format!("Error calling node iteration callback: {:?}", e))),
+                    .with(|l| l.warn(&format!("Error calling node iteration callback: {e:?}"))),
             }
         });
     }
@@ -186,10 +179,8 @@ impl NoteGraph {
         self.graph.edge_references().for_each(|edge| {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
-                // Err(e) => LOGGER.warn(&format!("Error calling edge iteration callback: {:?}",
-                // e)),
                 Err(e) => LOGGER
-                    .with(|l| l.warn(&format!("Error calling edge iteration callback: {:?}", e))),
+                    .with(|l| l.warn(&format!("Error calling edge iteration callback: {e:?}",))),
             }
         });
     }
@@ -274,7 +265,6 @@ impl NoteGraph {
     }
 
     pub fn log(&self) {
-        // LOGGER.info(&format!("{:#?}", self.graph));
         LOGGER.with(|l| l.info(&format!("{:#?}", self.graph)));
     }
 }
@@ -303,8 +293,6 @@ impl NoteGraph {
             .map(|rule| rule.rounds())
             .max()
             .unwrap_or(0);
-        // utils::log(format!("Max rounds: {}", max_rounds));
-        // utils::log(format!("Rules count: {}", self.transitive_rules.len()));
 
         // rules look like
         // [A, B, C] -> D
@@ -321,7 +309,7 @@ impl NoteGraph {
         let mut node_vec_2: Vec<NGNodeIndex> = Vec::new();
 
         for i in 1..=max_rounds {
-            let round_perf_split = perf_split.start_split(format!("Round {}", i));
+            let round_perf_split = perf_split.start_split(format!("Round {i}",));
 
             // if the edge type tracker is empty, we didn't add any edges last round, so we
             // can stop
@@ -329,7 +317,7 @@ impl NoteGraph {
                 break;
             }
 
-            round_perf_split.start_split(format!("Applying Rules"));
+            round_perf_split.start_split("Applying Rules".to_string());
 
             for rule in self.transitive_rules.iter() {
                 // if there is any edge type that the graph doesn't have, we can skip the rule
@@ -337,7 +325,6 @@ impl NoteGraph {
                     .iter_path()
                     .any(|edge_type| !self.edge_types.contains(edge_type))
                 {
-                    // utils::log(format!("Skipping rule: {}", rule.edge_type));
                     continue;
                 }
 
@@ -347,7 +334,6 @@ impl NoteGraph {
                     .iter_path()
                     .all(|edge_type| !edge_type_tracker.contains(edge_type))
                 {
-                    // utils::log(format!("Skipping rule: {}", rule.edge_type));
                     continue;
                 }
 
@@ -445,11 +431,6 @@ impl NoteGraph {
             weight.explicit
         });
 
-        // LOGGER.debug(&format!(
-        //     "Removed {} implied edges, {} explicit edges remain",
-        //     edge_count - self.graph.edge_count(),
-        //     self.graph.edge_count()
-        // ));
         LOGGER.with(|l| {
             l.debug(&format!(
                 "Removed {} implied edges, {} explicit edges remain",

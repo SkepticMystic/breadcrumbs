@@ -38,7 +38,7 @@ impl GCNodeData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 
@@ -86,7 +86,7 @@ impl GCEdgeData {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 

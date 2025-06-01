@@ -80,7 +80,7 @@ impl MermaidGraphOptions {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 
@@ -113,7 +113,7 @@ pub struct MermaidGraphData {
 impl MermaidGraphData {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}",)
     }
 }
 
@@ -146,9 +146,6 @@ impl NoteGraph {
             edge_sorter.sort_edges(self, &mut edge_structs)?;
         }
 
-        // utils::log(format!("{:#?}", nodes));
-        // utils::log(format!("{:#?}", edges));
-
         let traversal_elapsed = now.elapsed();
 
         let mut result = String::new();
@@ -170,8 +167,6 @@ impl NoteGraph {
             diagram_options.collapse_opposing_edges,
         )?;
 
-        // utils::log(format!("{:#?}", accumulated_edges));
-
         let mut unresolved_nodes = Vec::new();
 
         // add nodes to the graph
@@ -184,7 +179,7 @@ impl NoteGraph {
                         Ok(value) => value.as_string().unwrap_or(weight.path.clone()),
                         Err(e) => {
                             return Err(NoteGraphError::new(
-                                format!("Error calling function: {:?}", e).as_str(),
+                                format!("Error calling function: {e:?}").as_str(),
                             ));
                         }
                     }
@@ -243,10 +238,7 @@ impl NoteGraph {
         if !unresolved_nodes.is_empty() {
             result.push_str(&format!(
                 "class {} is-unresolved",
-                unresolved_nodes
-                    .iter()
-                    .map(|index| format!("{}", index))
-                    .join(",")
+                unresolved_nodes.iter().map(usize::to_string).join(",")
             ));
         }
 

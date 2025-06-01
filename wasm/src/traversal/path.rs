@@ -45,7 +45,7 @@ impl Path {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 
@@ -77,7 +77,7 @@ impl PathList {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 
     pub fn select(&self, selection: String) -> PathList {

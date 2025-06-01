@@ -1,6 +1,5 @@
 use std::rc::Rc;
 
-use petgraph::adj::NodeIndex;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
@@ -47,7 +46,7 @@ impl TraversalOptions {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }
 
@@ -100,6 +99,6 @@ impl TraversalPostprocessOptions {
 
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}")
     }
 }

@@ -20,7 +20,7 @@ pub struct EdgeData {
 impl EdgeData {
     #[wasm_bindgen(js_name = toString)]
     pub fn to_fancy_string(&self) -> String {
-        format!("{:#?}", self)
+        format!("{self:#?}",)
     }
 
     #[wasm_bindgen(js_name = edge_type, getter)]

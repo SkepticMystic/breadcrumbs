@@ -64,7 +64,7 @@ fn get_test_graph() -> NoteGraph {
 }
 
 fn get_traversal_options() -> TraversalOptions {
-    TraversalOptions::new(vec!["a.md".to_string()], None, 5, false)
+    TraversalOptions::new(vec!["a.md".to_string()], None, 5, 100, false)
 }
 
 #[wasm_bindgen_test]
