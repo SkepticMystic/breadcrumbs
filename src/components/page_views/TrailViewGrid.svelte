@@ -7,7 +7,7 @@
 	} from "src/utils/arrays";
 	import EdgeLink from "../EdgeLink.svelte";
 	import type { Path } from "wasm/pkg/breadcrumbs_graph_wasm";
-	import { toNodeStringifyOptions } from "src/graph/utils";
+	import { to_node_stringify_options } from "src/graph/utils";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -26,7 +26,7 @@
 		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
 	);
 
-	const node_stringify_options = toNodeStringifyOptions(
+	const node_stringify_options = to_node_stringify_options(
 		plugin.settings,
 		plugin.settings.views.page.trail.show_node_options,
 	);

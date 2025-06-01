@@ -6,7 +6,7 @@
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
 	import {
-		toNodeStringifyOptions,
+		to_node_stringify_options,
 		type EdgeAttribute,
 	} from "src/graph/utils";
 
@@ -31,7 +31,7 @@
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
-	let node_stringify_options = toNodeStringifyOptions(
+	let node_stringify_options = to_node_stringify_options(
 		plugin.settings,
 		show_node_options,
 	);

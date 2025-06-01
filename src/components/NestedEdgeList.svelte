@@ -6,7 +6,7 @@
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
 	import { FlatTraversalResult } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import {
-		toNodeStringifyOptions,
+		to_node_stringify_options,
 		type EdgeAttribute,
 	} from "src/graph/utils";
 	import ObsidianLink from "./ObsidianLink.svelte";
@@ -30,7 +30,7 @@
 		show_attributes,
 	}: Props = $props();
 
-	let node_stringify_options = toNodeStringifyOptions(
+	let node_stringify_options = to_node_stringify_options(
 		plugin.settings,
 		show_node_options,
 	);
@@ -109,7 +109,7 @@
 					<details class="tree-item">
 						<summary class="tree-item-self flex items-center">
 							<div class="tree-item-inner">
-								<span>Depth limit reached...</span>
+								<span>Traversal limit reached...</span>
 							</div>
 						</summary>
 					</details>

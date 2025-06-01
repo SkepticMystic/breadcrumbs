@@ -19,18 +19,18 @@ wasm-bindgen = "=0.2.100"
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
 console_error_panic_hook = { version = "0.1.7", optional = true }
-petgraph = "0.6.4"
+petgraph = "0.8.1"
 web-time = "1.1.0"
 js-sys = "0.3.77"
-itertools = "0.12.1"
+itertools = "0.14.0"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
-smallvec = "1.13.2"
+smallvec = "1.15.0"
 vec-collections = "0.4.3"
 enum_dispatch = "0.3.13"
-hashbrown = "0.15.2"
-indoc = "2.0.5"
-indexmap = "2.7.0"
+hashbrown = "0.15.3"
+indoc = "2.0.6"
+indexmap = "2.9.0"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.50"

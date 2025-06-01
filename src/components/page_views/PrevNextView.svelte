@@ -3,7 +3,7 @@
 	import { group_by, remove_duplicates } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { toNodeStringifyOptions } from "src/graph/utils";
+	import { to_node_stringify_options } from "src/graph/utils";
 
 	interface Props {
 		file_path: string;
@@ -15,7 +15,7 @@
 	const { field_group_labels, show_node_options } =
 		plugin.settings.views.page.prev_next;
 
-	let node_stringify_options = toNodeStringifyOptions(
+	let node_stringify_options = to_node_stringify_options(
 		plugin.settings,
 		show_node_options,
 	);

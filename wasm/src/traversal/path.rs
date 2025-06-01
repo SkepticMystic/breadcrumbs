@@ -17,8 +17,12 @@ impl Path {
     }
 
     pub fn truncate(&self, limit: usize) -> Path {
-        let mut copy = self.clone();
-        copy.edges.truncate(limit);
+        let mut copy = Path::empty();
+        copy.edges.reserve(limit);
+
+        for edge in self.edges.iter().take(limit) {
+            copy.edges.push(edge.clone());
+        }
         copy
     }
 
@@ -48,6 +52,10 @@ impl Path {
 impl Path {
     pub fn new(edges: Vec<EdgeStruct>) -> Path {
         Path { edges }
+    }
+
+    pub fn empty() -> Path {
+        Path { edges: Vec::new() }
     }
 
     pub fn new_start(edge: EdgeStruct) -> Path {

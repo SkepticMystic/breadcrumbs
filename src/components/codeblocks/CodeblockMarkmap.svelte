@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ListIndex } from "src/commands/list_index";
-	import {
-		toNodeStringifyOptions,
-		type EdgeAttrFilters,
-	} from "src/graph/utils";
+	import { to_node_stringify_options } from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
@@ -63,6 +60,7 @@
 			[source_path],
 			options.fields,
 			max_depth,
+			100, // max nodes to traverse
 			!options["merge-fields"],
 		);
 
@@ -93,7 +91,7 @@
 
 	let code = $derived.by(() => {
 		if (data) {
-			const stringify_options = toNodeStringifyOptions(
+			const stringify_options = to_node_stringify_options(
 				plugin.settings,
 				show_node_options,
 			);

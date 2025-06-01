@@ -64,6 +64,12 @@ const to_live_edit_link = (code: string) => {
 	return `https://mermaid.live/edit#base64:${encoded}`;
 };
 
+/**
+ * Creates an example mermaid graph for a transitive rule.
+ *
+ * @param rule
+ * @returns
+ */
 const from_transitive_rule = (
 	rule: Pick<
 		BreadcrumbsSettings["implied_relations"]["transitive"][number],
@@ -82,7 +88,7 @@ const from_transitive_rule = (
 	const graph = wasm_rule.create_example_graph();
 
 	return graph.generate_mermaid_graph(
-		new TraversalOptions(["1"], undefined, 100, false),
+		new TraversalOptions(["1"], undefined, 100, 1000, false),
 		new MermaidGraphOptions(
 			undefined,
 			"",

@@ -52,6 +52,7 @@
 					[active_file!.path],
 					edge_field_labels,
 					5,
+					100,
 					!settings.merge_fields,
 				),
 				new TraversalPostprocessOptions(sort, false),

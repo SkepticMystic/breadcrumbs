@@ -34,20 +34,16 @@ impl NoteGraph {
         let now = Instant::now();
 
         let mut result = Vec::new();
-
-        let edge_types = options
-            .edge_types
-            .unwrap_or(self.edge_types())
-            .into_iter()
-            .map(Rc::from)
-            .collect();
-
         let mut traversal_count = 0;
+
+        let edge_types = options.edge_types_as_rcs().unwrap_or(self.int_edge_types());
 
         for entry_node in &options.entry_nodes {
             let start_node = self
                 .int_get_node_index(entry_node)
-                .ok_or(NoteGraphError::new("Node not found"))?;
+                .ok_or(NoteGraphError::new(&format!(
+                    "Node \"{entry_node}\" not found"
+                )))?;
 
             for edge in self.graph.edges(start_node) {
                 if !edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
@@ -74,6 +70,7 @@ impl NoteGraph {
                         1,
                         options.max_depth,
                         &mut traversal_count,
+                        options.max_traversal_count,
                     )?);
                 } else {
                     result.push(self.int_rec_traverse(
@@ -83,6 +80,7 @@ impl NoteGraph {
                         1,
                         options.max_depth,
                         &mut traversal_count,
+                        options.max_traversal_count,
                     )?);
                 }
             }
@@ -131,11 +129,12 @@ impl NoteGraph {
         depth: u32,
         max_depth: u32,
         traversal_count: &mut u32,
+        max_traversal_count: u32,
     ) -> Result<TraversalData> {
         let mut new_children = Vec::new();
-        let at_depth_limit = depth >= max_depth;
+        let stop_traversal = depth >= max_depth || *traversal_count >= max_traversal_count;
 
-        if !at_depth_limit {
+        if !stop_traversal {
             for outgoing_edge in self.graph.edges(node) {
                 let edge_data = outgoing_edge.weight();
 
@@ -165,6 +164,7 @@ impl NoteGraph {
                         depth + 1,
                         max_depth,
                         traversal_count,
+                        max_traversal_count,
                     )?)
                 }
             }
@@ -175,7 +175,7 @@ impl NoteGraph {
             depth,
             0,
             new_children,
-            at_depth_limit,
+            stop_traversal,
         ))
     }
 
@@ -183,19 +183,8 @@ impl NoteGraph {
         &self,
         options: &TraversalOptions,
     ) -> Result<NodeEdgeVec<u32, NGEdgeRef>> {
-        let entry_nodes = options
-            .entry_nodes
-            .iter()
-            .map(|node| {
-                self.int_get_node_index(node)
-                    .ok_or(NoteGraphError::new("Node not found"))
-            })
-            .collect::<Result<Vec<NGNodeIndex>>>()?;
-
-        let opt_edge_types = options
-            .edge_types
-            .as_ref()
-            .map(|v| v.iter().map(|x| Rc::from(x.clone())).collect());
+        let entry_nodes = options.indices_of_entry_nodes(self)?;
+        let opt_edge_types = options.edge_types_as_rcs();
 
         if options.separate_edges {
             let mut node_list = Vec::new();

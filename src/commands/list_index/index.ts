@@ -5,7 +5,7 @@ import type {
 	ShowNodeOptions,
 } from "src/interfaces/settings";
 import { Links } from "src/utils/links";
-import { toNodeStringifyOptions, type EdgeAttribute } from "src/graph/utils";
+import { to_node_stringify_options, type EdgeAttribute } from "src/graph/utils";
 import {
 	FlatTraversalData,
 	FlatTraversalResult,
@@ -20,7 +20,7 @@ export namespace ListIndex {
 		// TODO: merge_fields: boolean;
 		indent: string;
 		fields: string[];
-		// TODO
+		max_count?: number;
 		max_depth?: number;
 		link_kind: LinkKind;
 		edge_sort_id: EdgeSortId;
@@ -55,7 +55,7 @@ export namespace ListIndex {
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes"
 		>,
-	) => {
+	): string => {
 		if (!tree) {
 			return "";
 		}
@@ -83,7 +83,7 @@ export namespace ListIndex {
 			Options,
 			"link_kind" | "indent" | "show_node_options" | "show_attributes"
 		>,
-	) => {
+	): string => {
 		let index = "";
 		const real_indent = options.indent.replace(/\\t/g, "\t");
 
@@ -92,7 +92,7 @@ export namespace ListIndex {
 
 			const display = edge.stringify_target(
 				graph,
-				toNodeStringifyOptions(
+				to_node_stringify_options(
 					plugin_settings,
 					options.show_node_options,
 				),
@@ -132,11 +132,12 @@ export namespace ListIndex {
 		start_node: string,
 		plugin_settings: BreadcrumbsSettings | undefined,
 		options: Options,
-	) => {
+	): string => {
 		const traversal_options = new TraversalOptions(
 			[start_node],
 			options.fields,
 			options.max_depth ?? 100,
+			options.max_count ?? 1000,
 			false,
 		);
 

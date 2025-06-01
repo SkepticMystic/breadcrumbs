@@ -5,7 +5,7 @@ import type {
 } from "src/interfaces/settings";
 import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-export function toNodeStringifyOptions(
+export function to_node_stringify_options(
 	settings: BreadcrumbsSettings | undefined,
 	options: ShowNodeOptions,
 ): NodeStringifyOptions {
@@ -23,6 +23,11 @@ export function toNodeStringifyOptions(
 	);
 }
 
+/**
+ * Legacy type
+ *
+ * @deprecated
+ */
 export type EdgeAttrFilters = Partial<
 	Pick<BCEdgeAttributes, "explicit" | "field">
 > &
@@ -43,6 +48,11 @@ export const EDGE_ATTRIBUTES = [
 
 export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
 
+/**
+ * Legacy type
+ *
+ * @deprecated
+ */
 export type BCEdgeAttributes = {
 	field: string;
 } & (

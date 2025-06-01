@@ -35,7 +35,8 @@
 		let traversal_options = new TraversalOptions(
 			[file_path],
 			edge_field_labels,
-			5,
+			5, // depth limit
+			100, // max nodes to traverse
 			!settings.merge_fields,
 		);
 

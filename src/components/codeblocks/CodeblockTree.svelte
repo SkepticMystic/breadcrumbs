@@ -59,6 +59,7 @@
 			[source_path],
 			options.fields,
 			max_depth,
+			100, // max nodes to traverse
 			!options["merge-fields"],
 		);
 
