@@ -1,9 +1,13 @@
 {
 	"extends": "@tsconfig/svelte/tsconfig.json",
-
 	"compilerOptions": {
-		"types": ["svelte", "node", "obsidian-typings"],
+		"types": [
+			"svelte",
+			"node",
+			"obsidian-typings"
+		],
 		"baseUrl": ".",
+		"sourceMap": true,
 		"inlineSources": true,
 		"module": "ESNext",
 		"target": "ES6",
@@ -13,7 +17,14 @@
 		"importHelpers": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,
-		"lib": ["DOM", "ES5", "ES6", "ES7"]
+		"lib": [
+			"DOM",
+			"ES5",
+			"ES6",
+			"ES7"
+		]
 	},
-	"include": ["**/*.ts"]
+	"include": [
+		"**/*.ts"
+	]
 }
