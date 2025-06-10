@@ -21,7 +21,6 @@
 	"author": "SkepticMystic",
 	"license": "MIT",
 	"devDependencies": {
-		"@aidenlx/folder-note-core": "^1.3.6",
 		"@tsconfig/svelte": "^5.0.2",
 		"@types/luxon": "^3.4.2",
 		"@types/node": "^20.11.0",
