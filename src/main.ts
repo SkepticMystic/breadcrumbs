@@ -29,8 +29,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 	async onload() {
 		// Settings
+		console.log("hit");
 		await this.loadSettings();
-
 		// Logger
 		log.set_level(this.settings.debug.level);
 
