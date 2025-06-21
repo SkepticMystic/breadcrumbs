@@ -279,6 +279,8 @@ describe("migration", () => {
 				freeze_implied_edges: {
 					default_options: {
 						destination: "frontmatter",
+						included_fields: [],
+						use_alias: true,
 					},
 				},
 				thread: {
@@ -456,6 +458,8 @@ describe("migration", () => {
 				freeze_implied_edges: {
 					default_options: {
 						destination: "frontmatter",
+						included_fields: [],
+						use_alias: true,
 					},
 				},
 				thread: {
