@@ -1,4 +1,9 @@
-import { TFile } from "obsidian";
+import { 
+  TFile,
+  TFolder,
+  Vault,
+  Notice
+} from "obsidian";
 import { is_self_loop } from "src/graph/utils";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
@@ -22,3 +27,17 @@ export const freeze_implied_edges_to_note = async (
 
 	await drop_crumbs(plugin, source_file, implied_edges, options);
 };
+
+export async function freeze_edges_in_folder(plugin: BreadcrumbsPlugin, folder: TFolder): Promise<void> {
+	const promises: Promise<void>[] = [];
+	new Notice("Freezing implied edges in the selected folder.");
+	await plugin.refresh({rebuild_graph: true, active_file_store: true, redraw_page_views: true, redraw_side_views: true, redraw_codeblocks: true});
+	Vault.recurseChildren(folder, (child) => {
+		if (child instanceof TFile) {
+			const p = freeze_implied_edges_to_note(plugin, child, plugin.settings.commands.freeze_implied_edges.default_options);
+			promises.push(p);
+		}
+	});
+	await Promise.all(promises);
+	new Notice("Finished freezing implied edges in folder.");
+}
