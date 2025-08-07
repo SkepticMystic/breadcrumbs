@@ -13,7 +13,7 @@ import { log } from "src/logger";
 import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
 import { stringify_transitive_relation } from "src/utils/transitive_rules";
 
-const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
+function get_opposite_direction(dir: OLD_DIRECTION): OLD_DIRECTION {
 	switch (dir) {
 		case "up":
 			return "down";
@@ -26,9 +26,9 @@ const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 		case "prev":
 			return "next";
 	}
-};
+}
 
-export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
+export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	const old = settings as BreadcrumbsSettings &
 		Partial<BreadcrumbsSettingsWithDirection> &
 		Partial<OLD_BREADCRUMBS_SETTINGS>;
@@ -68,7 +68,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 					...acc,
 					[dir]: hierarchy[dir],
 				}),
-				{} as OLD_HIERARCHY["dirs"],
+				{} as OLD_HIERARCHY["dirs"]
 			),
 			implied_relationships,
 		}));
@@ -86,7 +86,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 			const label = `${dir}s`;
 			const existing = settings.edge_field_groups.find(
-				(group) => group.label === label,
+				(group) => group.label === label
 			);
 
 			if (existing) {
@@ -102,11 +102,9 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 				.flatMap((fields) => fields)
 				.filter(Boolean)
 				.forEach((label) => {
-					if (
-						!settings.edge_fields.find(
-							(field) => field.label === label,
-						)
-					) {
+					if (!settings.edge_fields.find(
+						(field) => field.label === label
+					)) {
 						settings.edge_fields.push({ label });
 					}
 				});
@@ -127,8 +125,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 						case "opposite_direction": {
 							OLD_DIRECTIONS.forEach((dir) => {
 								const field = fields[dir];
-								const close_field =
-									fields[get_opposite_direction(dir)];
+								const close_field = fields[get_opposite_direction(dir)];
 								if (!field || !close_field) return;
 
 								settings.implied_relations.transitive.push({
@@ -233,7 +230,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 							break;
 						}
 					}
-				},
+				}
 			);
 		});
 
@@ -241,12 +238,11 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 		settings.edge_field_groups = remove_duplicates_by(
 			settings.edge_field_groups,
-			(group) => group.label,
+			(group) => group.label
 		);
 	}
 
 	// !SECTION
-
 	// SECTION: custom_implied_relations
 	if (old.custom_implied_relations) {
 		old.custom_implied_relations.transitive.forEach((rel) => {
@@ -262,10 +258,9 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 
 	settings.implied_relations.transitive = remove_duplicates_by(
 		settings.implied_relations.transitive,
-		stringify_transitive_relation,
+		stringify_transitive_relation
 	);
 	// !SECTION
-
 	// SECTION: Explicit edge sources
 	/// Tag note
 	if (old.tagNoteField !== undefined) {
@@ -276,11 +271,9 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	/// List note
-	if (
-		old.hierarchyNotes !== undefined &&
+	if (old.hierarchyNotes !== undefined &&
 		old.hierarchyNoteIsParent !== undefined &&
-		old.HNUpField !== undefined
-	) {
+		old.HNUpField !== undefined) {
 		if (old.hierarchyNotes.length > 0) {
 			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`;
 			log.warn(msg);
@@ -292,12 +285,10 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	/// Dendron
-	if (
-		old.addDendronNotes !== undefined &&
+	if (old.addDendronNotes !== undefined &&
 		old.dendronNoteField !== undefined &&
 		old.trimDendronNotes !== undefined &&
-		old.dendronNoteDelimiter !== undefined
-	) {
+		old.dendronNoteDelimiter !== undefined) {
 		settings.explicit_edge_sources.dendron_note = {
 			enabled: old.addDendronNotes,
 			default_field: old.dendronNoteField,
@@ -312,11 +303,9 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	/// Date notes
-	if (
-		old.addDateNotes !== undefined &&
+	if (old.addDateNotes !== undefined &&
 		old.dateNoteField !== undefined &&
-		old.dateNoteFormat !== undefined
-	) {
+		old.dateNoteFormat !== undefined) {
 		settings.explicit_edge_sources.date_note = {
 			...DEFAULT_SETTINGS.explicit_edge_sources.date_note,
 			enabled: old.addDateNotes,
@@ -329,7 +318,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.dateNoteFormat;
 	}
 	// !SECTION
-
 	// SECTION: Views
 	/// Page
 	if (old.respectReadableLineLength !== undefined) {
@@ -385,14 +373,11 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete settings.codeblocks;
 	}
 	// !SECTION
-
 	// SECTION: Commands
 	/// Rebuild Graph
-	if (
-		old.showRefreshNotice !== undefined &&
+	if (old.showRefreshNotice !== undefined &&
 		old.refreshOnNoteSave !== undefined &&
-		old.refreshOnNoteChange !== undefined
-	) {
+		old.refreshOnNoteChange !== undefined) {
 		settings.commands.rebuild_graph.notify = old.showRefreshNotice;
 
 		settings.commands.rebuild_graph.trigger = {
@@ -406,11 +391,9 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	/// List Index
-	if (
-		old.wikilinkIndex !== undefined &&
+	if (old.wikilinkIndex !== undefined &&
 		old.aliasesInIndex !== undefined &&
-		old.createIndexIndent !== undefined
-	) {
+		old.createIndexIndent !== undefined) {
 		settings.commands.list_index.default_options = {
 			...settings.commands.list_index.default_options,
 
@@ -453,7 +436,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.threadUnderCursor;
 	}
 	// !SECTION
-
 	// SECTION: Suggestors
 	/// Hierarchy Field
 	if (old.enableRelationSuggestor !== undefined) {
@@ -475,7 +457,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.suggestors.hierarchy_field;
 	}
 	// !SECTION
-
 	// SECTION: Misc
 	if (old.alphaSortAsc !== undefined) {
 		delete old.alphaSortAsc;
@@ -502,6 +483,5 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	// !SECTION
-
 	return settings;
-};
+}

@@ -48,6 +48,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// Settings
 		await this.loadSettings();
 
+		await this.backup_old_settings();
+
+		/// Migrations
+		this.settings = migrate_old_settings(this.settings);
+		await this.saveSettings();
+
 		// Logger
 		log.set_level(this.settings.debug.level);
 
@@ -75,10 +81,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
 			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
 		});
-
-		/// Migrations
-		this.settings = migrate_old_settings(this.settings);
-		await this.saveSettings();
 
 		// Set the edge_fields & BC-meta-fields to the right Properties type
 		try {
@@ -272,6 +274,17 @@ export default class BreadcrumbsPlugin extends Plugin {
 		this.settings.is_dirty = false;
 
 		await this.saveData(this.settings);
+	}
+
+	async backup_old_settings(): Promise<void> {
+		const backup_path = `${this.app.vault.configDir}/plugins/${this.manifest.id}/data-backup__no-directions-migration.json`;
+		if (!await this.app.vault.adapter.exists(backup_path)) {
+			await this.app.vault.adapter.write(
+				backup_path,
+				JSON.stringify(this.settings, null, "\t"),
+			);
+			log.info(`old settings backed up to ${backup_path}`);
+		}
 	}
 
 	/**
