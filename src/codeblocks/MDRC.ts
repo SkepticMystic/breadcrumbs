@@ -5,13 +5,22 @@ import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte"
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+import { BCEvent } from "src/main";
 import { Timer } from "src/utils/timer";
+import { mount, unmount } from "svelte";
 import { Codeblocks } from ".";
+
+/* eslint-disable */
+type SvelteComponent =
+	| ReturnType<typeof CodeblockTree>
+	| ReturnType<typeof CodeblockMermaid>
+	| ReturnType<typeof CodeblockMarkmap>;
+/* eslint-enable */
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
-	component: CodeblockTree | CodeblockMermaid | undefined;
+	component: SvelteComponent | undefined;
 	file_path: string;
 	id: string;
 
@@ -29,11 +38,12 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		this.id = window.crypto.randomUUID();
 	}
 
-	async update(): Promise<void> {
+	update(): void {
 		log.debug("CodeblockMDRC.update");
 
 		if (this.component) {
 			try {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				this.component.update();
 			} catch (e) {
 				log.error("CodeblockMDRC.update error >", e);
@@ -41,12 +51,10 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		}
 	}
 
-	async onload(): Promise<void> {
+	onload(): void {
 		const timer_outer = new Timer();
 
 		log.debug("CodeblockMDRC.load");
-
-		Codeblocks.register(this);
 
 		this.containerEl.empty();
 
@@ -62,7 +70,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		if (!parsed) {
 			log.warn("fatal codeblock errors", errors);
 
-			new CodeblockErrors({
+			mount(CodeblockErrors, {
 				target: this.containerEl,
 				props: { errors, plugin: this.plugin },
 			});
@@ -87,7 +95,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		if (errors.length) log.warn("non-fatal codeblock errors", errors);
 
 		if (options.type === "tree") {
-			this.component = new CodeblockTree({
+			this.component = mount(CodeblockTree, {
 				target: this.containerEl,
 				props: {
 					errors,
@@ -97,7 +105,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 				},
 			});
 		} else if (options.type === "mermaid") {
-			this.component = new CodeblockMermaid({
+			this.component = mount(CodeblockMermaid, {
 				target: this.containerEl,
 				props: {
 					errors,
@@ -107,7 +115,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 				},
 			});
 		} else if (options.type === "markmap") {
-			this.component = new CodeblockMarkmap({
+			this.component = mount(CodeblockMarkmap, {
 				target: this.containerEl,
 				props: {
 					errors,
@@ -122,12 +130,19 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 		log.debug(timer_inner.elapsedMessage("component creation", true));
 		log.debug(timer_outer.elapsedMessage("CodeblockMDRC.onload"));
+
+		this.registerEvent(
+			this.plugin.events.on(BCEvent.GRAPH_UPDATE, () => {
+				this.update();
+			}),
+		);
 	}
 
 	onunload(): void {
 		log.debug("CodeblockMDRC.unload");
-		Codeblocks.unregister(this);
 
-		this.component?.$destroy();
+		if (this.component) {
+			void unmount(this.component);
+		}
 	}
 }

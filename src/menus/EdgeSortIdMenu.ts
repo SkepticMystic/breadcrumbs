@@ -1,5 +1,6 @@
 import { Menu } from "obsidian";
-import { SIMPLE_EDGE_SORT_FIELDS, type EdgeSortId } from "src/const/graph";
+import type { EdgeSortId } from "src/const/graph";
+import { SIMPLE_EDGE_SORT_FIELDS } from "src/const/graph";
 
 const ORDERS = [1, -1] as const;
 

@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { type EdgeSortId } from "src/const/graph";
-	import { createEventDispatcher } from "svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import SettingItem from "./SettingItem.svelte";
 
-	export let edge_sort_id: EdgeSortId;
-
-	const dispatch = createEventDispatcher<{ select: EdgeSortId }>();
-
-	$: if (edge_sort_id) {
-		dispatch("select", edge_sort_id);
+	interface Props {
+		edge_sort_id: EdgeSortId;
+		select_cb?: (value: EdgeSortId) => void;
 	}
+
+	let { edge_sort_id = $bindable(), select_cb = () => {} }: Props = $props();
+
+	$effect(() => {
+		if (edge_sort_id) {
+			select_cb(edge_sort_id);
+		}
+	});
 </script>
 
 <SettingItem

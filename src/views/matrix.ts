@@ -1,11 +1,14 @@
-import BreadcrumbsPlugin from "src/main";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
+import { ItemView } from "obsidian";
 import MatrixComponent from "src/components/side_views/Matrix.svelte";
 import { VIEW_IDS } from "src/const/views";
+import type BreadcrumbsPlugin from "src/main";
+import { BCEvent } from "src/main";
+import { mount, unmount } from "svelte";
 
 export class MatrixView extends ItemView {
 	plugin: BreadcrumbsPlugin;
-	component!: MatrixComponent;
+	component!: ReturnType<typeof MatrixComponent>;
 
 	constructor(leaf: WorkspaceLeaf, plugin: BreadcrumbsPlugin) {
 		super(leaf);
@@ -22,17 +25,27 @@ export class MatrixView extends ItemView {
 
 	icon = "blinds";
 
+	onload(): void {
+		this.registerEvent(
+			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
+				void this.onOpen();
+			}),
+		);
+	}
+
 	async onOpen() {
 		const container = this.containerEl.children[1];
 		container.empty();
 
-		this.component = new MatrixComponent({
+		this.component = mount(MatrixComponent, {
 			target: this.contentEl,
 			props: { plugin: this.plugin },
 		});
 	}
 
 	async onClose() {
-		this.component?.$destroy();
+		if (this.component) {
+			await unmount(this.component);
+		}
 	}
 }

@@ -1,5 +1,7 @@
-import { App, Notice, PluginSettingTab } from "obsidian";
+import type { App } from "obsidian";
+import { Notice, PluginSettingTab } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import { mount, unmount } from "svelte";
 import EdgeFieldSettings from "../components/settings/EdgeFieldSettings.svelte";
 import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
 import { _add_settings_codeblocks } from "./CodeblockSettings";
@@ -21,36 +23,34 @@ import { _add_settings_tag_note } from "./TagNoteSettings";
 import { _add_settings_thread } from "./ThreadSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
 
-const make_details_el = (
+function make_details_el(
 	parent: HTMLElement,
 	o?: { d?: DomElementInfo; s?: DomElementInfo },
-) => {
-	let details: HTMLDetailsElement;
-	let summary: HTMLElement;
-	let children: HTMLDivElement;
-
-	details = parent.createEl("details", {
+) {
+	const details: HTMLDetailsElement = parent.createEl("details", {
 		cls: "tree-item",
 		...o?.d,
 	});
 
-	summary = details.createEl("summary", {
+	const summary: HTMLElement = details.createEl("summary", {
 		cls: "text-xl p-1 tree-item-self is-clickable",
 		...o?.s,
 	});
 
-	children = details.createEl("div", { cls: "tree-item-children pl-4" });
+	const children: HTMLDivElement = details.createEl("div", {
+		cls: "tree-item-children pl-4",
+	});
 
 	return {
 		details,
 		summary,
 		children,
 	};
-};
+}
 
 export class BreadcrumbsSettingTab extends PluginSettingTab {
 	plugin: BreadcrumbsPlugin;
-	components: (EdgeFieldSettings | TransitiveImpliedRelations)[] = [];
+	components: ReturnType<typeof EdgeFieldSettings>[] = [];
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
 		super(app, plugin);
@@ -65,7 +65,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.addClass("BC-settings-tab");
 
 		this.components.push(
-			new EdgeFieldSettings({
+			mount(EdgeFieldSettings, {
 				props: { plugin },
 				target: make_details_el(containerEl, {
 					s: { text: "> Edge Fields" },
@@ -78,7 +78,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		containerEl.createEl("h3", { text: "Implied Relations" });
 
 		this.components.push(
-			new TransitiveImpliedRelations({
+			mount(TransitiveImpliedRelations, {
 				props: { plugin },
 				target: make_details_el(containerEl, {
 					s: { text: "> Transitive" },
@@ -216,6 +216,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			);
 		}
 
-		this.components.forEach((c) => c.$destroy());
+		this.components.forEach((c) => void unmount(c));
 	}
 }

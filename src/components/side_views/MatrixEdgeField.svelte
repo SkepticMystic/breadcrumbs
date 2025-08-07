@@ -1,33 +1,48 @@
 <script lang="ts">
-	import type { BCEdge, EdgeAttribute } from "src/graph/MyMultiGraph";
-	import type { EdgeSorter } from "src/graph/utils";
 	import type { EdgeField } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
-	import { untyped_pick } from "src/utils/objects";
-	import { url_search_params } from "src/utils/url";
+	import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import EdgeLink from "../EdgeLink.svelte";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import TreeItemFlair from "../obsidian/TreeItemFlair.svelte";
+	import {
+		to_node_stringify_options,
+		type EdgeAttribute,
+	} from "src/graph/utils";
 
-	export let open: boolean;
-	export let edges: BCEdge[];
-	export let field: EdgeField;
-	export let plugin: BreadcrumbsPlugin;
 	// NOTE: These are available on settings, but they're modified in the parent component,
-	// 	so rather pass them in to receive updates
-	export let show_attributes: EdgeAttribute[];
+
+	interface Props {
+		open: boolean;
+		field: EdgeField;
+		edges: EdgeStruct[];
+		plugin: BreadcrumbsPlugin;
+		// 	so rather pass them in to receive updates
+		show_attributes: EdgeAttribute[];
+	}
+
+	let {
+		open = $bindable(),
+		field,
+		edges,
+		plugin,
+		show_attributes,
+	}: Props = $props();
 
 	let { show_node_options } = plugin.settings.views.side.matrix;
 
-	export let sort: EdgeSorter;
+	let node_stringify_options = to_node_stringify_options(
+		plugin.settings,
+		show_node_options,
+	);
 </script>
 
 <details
 	class="BC-matrix-view-field BC-matrix-view-field-{field.label} tree-item"
 	bind:open
 >
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<summary class="tree-item-self is-clickable mod-collapsible text-lg">
 		<div class="tree-item-icon collapse-icon">
 			<ChevronOpener {open} />
@@ -47,25 +62,25 @@
 	</summary>
 
 	<div class="tree-item-children flex flex-col">
-		{#key sort}
-			{#each edges.sort(sort) as edge}
+		{#key edges}
+			{#each edges as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
 						<div class="tree-item-inner flex grow">
 							<EdgeLink
 								{edge}
 								{plugin}
-								{show_node_options}
+								{node_stringify_options}
 								cls="grow tree-item-inner-text"
 							/>
 						</div>
 
 						<TreeItemFlair
 							cls="font-mono"
-							label={edge.attr.explicit ? "x" : "i"}
-							aria_label={url_search_params(
-								untyped_pick(edge.attr, show_attributes),
-								{ trim_lone_param: true },
+							label={edge.explicit(plugin.graph) ? "x" : "i"}
+							aria_label={edge.get_attribute_label(
+								plugin.graph,
+								show_attributes,
 							)}
 						/>
 					</div>

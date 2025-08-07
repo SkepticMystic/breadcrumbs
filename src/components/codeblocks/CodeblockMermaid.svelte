@@ -2,116 +2,128 @@
 	import { ImageIcon, PencilIcon } from "lucide-svelte";
 	import type { ICodeblock } from "src/codeblocks/schema";
 	import { ICON_SIZE } from "src/const";
-	import { Distance } from "src/graph/distance";
-	import { Traverse, type TraversalStackItem } from "src/graph/traverse";
-	import {
-		get_edge_sorter,
-		has_edge_attrs,
-		type EdgeAttrFilters,
-	} from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
-	import { active_file_store } from "src/stores/active_file";
-	import { Links } from "src/utils/links";
 	import { Mermaid } from "src/utils/mermaid";
-	import { is_between } from "src/utils/numbers";
-	import { Paths } from "src/utils/paths";
 	import { onMount } from "svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import {
+		MermaidGraphOptions,
+		NodeData,
+		NoteGraphError,
+		TraversalOptions,
+		create_edge_sorter,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { remove_nullish_keys } from "src/utils/objects";
+	import { Paths } from "src/utils/paths";
+	import { Links } from "src/utils/links";
+	import { active_file_store } from "src/stores/active_file";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let options: ICodeblock["Options"];
-	export let errors: BreadcrumbsError[];
-	export let file_path: string;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		options: ICodeblock["Options"];
+		errors: BreadcrumbsError[];
+		file_path: string;
+	}
 
-	const sort = get_edge_sorter(
-		// @ts-expect-error: ts(2345)
-		options.sort,
-		plugin.graph,
-	);
+	let { plugin, options, errors, file_path }: Props = $props();
 
-	let traversal_items: TraversalStackItem[] = [];
-	let distances: Map<string, number> = new Map();
+	const DEFAULT_MAX_DEPTH = 10;
 
-	// if the file_path is an empty string, so the code block is not rendered inside note, we fall back to the active file store
-	$: source_path = file_path
-		? file_path
-		: $active_file_store
-			? $active_file_store.path
-			: "";
+	let code: string = $state("");
+	let error: string | undefined = $state(undefined);
 
-	// this is an exposed function that we can call from the outside to update the codeblock
-	export const update = () => {
-		traversal_items = get_traversal_items();
-		distances = Distance.from_traversal_items(traversal_items);
-	};
+	let active_file = $derived($active_file_store);
 
-	const base_traversal = (attr: EdgeAttrFilters) =>
-		Traverse.gather_items(plugin.graph, source_path, (item) =>
-			has_edge_attrs(item.edge, {
-				...attr,
-				$or_target_ids: options["dataview-from-paths"],
-			}),
+	export function update() {
+		const max_depth =
+			options.depth[1] === Infinity
+				? DEFAULT_MAX_DEPTH
+				: (options.depth[1] ?? DEFAULT_MAX_DEPTH);
+
+		const source_path =
+			options["start-note"] || file_path || active_file?.path || "";
+
+		if (!plugin.graph.has_node(source_path)) {
+			code = "";
+			error = "The file does not exist in the graph.";
+			return;
+		}
+
+		const traversal_options = new TraversalOptions(
+			[file_path],
+			options.fields,
+			max_depth,
+			100, // max nodes to traverse
+			!options["merge-fields"],
 		);
 
-	const edge_field_labels =
-		options.fields ?? plugin.settings.edge_fields.map((f) => f.label);
+		const flowchart_init = remove_nullish_keys({
+			curve: options["mermaid-curve"],
+			defaultRenderer: options["mermaid-renderer"],
+		});
 
-	const get_traversal_items = () => {
-		if (source_path && plugin.graph.hasNode(source_path)) {
-			return options["merge-fields"]
-				? base_traversal({ $or_fields: options.fields })
-				: edge_field_labels.flatMap((field) =>
-						base_traversal({ field }),
-					);
-		} else {
-			return [];
-		}
-	};
+		const sort = create_edge_sorter(
+			options.sort.field,
+			options.sort.order === -1,
+		);
 
-	onMount(update);
+		const mermaid_options = new MermaidGraphOptions(
+			file_path,
+			`%%{ init: { "flowchart": ${JSON.stringify(flowchart_init)} } }%%`,
+			"graph",
+			options["mermaid-direction"] ?? "LR",
+			true,
+			options["show-attributes"] ?? [],
+			sort,
+			(node: NodeData) => {
+				const node_path = node.path;
+				const file = plugin.app.vault.getFileByPath(node_path);
 
-	$: edges = traversal_items
-		.filter((item) =>
-			is_between(
-				distances.get(item.edge.target_id) ?? 0,
-				options.depth[0] + 1,
-				options.depth[1],
-			),
-		)
-		.map((item) => item.edge)
-		.sort(sort);
-
-	$: code = Mermaid.from_edges(edges, {
-		kind: "graph",
-		click: { method: "class" },
-		active_node_id: source_path,
-		renderer: options["mermaid-renderer"],
-		curve_style: options["mermaid-curve"],
-		direction: options["mermaid-direction"],
-		show_attributes: options["show-attributes"],
-
-		get_node_label: (node_id, _attr) => {
-			const file = plugin.app.vault.getFileByPath(node_id);
-
-			return file
-				? plugin.app.fileManager
-						.generateMarkdownLink(file, source_path)
-						.slice(2, -2)
-				: Paths.drop_ext(
+				if (file) {
+					return plugin.app.fileManager
+						.generateMarkdownLink(file, file_path)
+						.slice(2, -2);
+				} else {
+					return Paths.drop_ext(
 						Links.resolve_to_absolute_path(
 							plugin.app,
-							node_id,
-							source_path,
+							node_path,
+							file_path,
 						),
 					);
-		},
-	});
+				}
+			},
+			true,
+		);
 
-	$: log.debug(code);
+		try {
+			code = plugin.graph.generate_mermaid_graph(
+				traversal_options,
+				mermaid_options,
+			).mermaid;
+			error = undefined;
+		} catch (e) {
+			log.error("Error generating mermaid graph", e);
+
+			code = "";
+			if (e instanceof NoteGraphError) {
+				error = e.message;
+			} else {
+				error =
+					"An error occurred while updating the codeblock tree. Check the console for more information (Ctrl + Shift + I).";
+			}
+		}
+
+		code = code;
+	}
+
+	onMount(() => {
+		update();
+	});
 </script>
 
 <div class="BC-codeblock-mermaid">
@@ -123,7 +135,7 @@
 		</h3>
 	{/if}
 
-	{#if traversal_items.length}
+	{#if code}
 		<div class="relative">
 			<div class="absolute left-2 top-2 flex">
 				<CopyToClipboardButton
@@ -135,7 +147,7 @@
 					role="link"
 					aria-label="View Image on mermaid.ink"
 					class="clickable-icon nav-action-button"
-					on:click={() => {
+					onclick={() => {
 						window.open(Mermaid.to_image_link(code), "_blank");
 					}}
 				>
@@ -146,7 +158,7 @@
 					role="link"
 					aria-label="Live Edit on mermaid.live"
 					class="clickable-icon nav-action-button"
-					on:click={() => {
+					onclick={() => {
 						window.open(Mermaid.to_live_edit_link(code), "_blank");
 					}}
 				>
@@ -157,10 +169,12 @@
 			<RenderExternalCodeblock
 				{code}
 				{plugin}
-				{source_path}
+				source_path={file_path}
 				type="mermaid"
 			/>
 		</div>
+	{:else if error}
+		<p class="search-empty-state">{error}</p>
 	{:else}
 		<!-- TODO(HELP-MSG) -->
 		<p class="search-empty-state">No paths found.</p>

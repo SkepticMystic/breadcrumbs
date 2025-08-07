@@ -1,30 +1,65 @@
-import { ListIndex } from "src/commands/list_index";
-import { BCGraph } from "src/graph/MyMultiGraph";
-import { _mock_edge } from "tests/__mocks__/graph";
-import { describe, expect, test } from "vitest";
+import { build_list_index } from "src/commands/list_index";
+import { describe, expect, test, beforeEach } from "vitest";
+import init, {
+	create_graph,
+	GCEdgeData,
+	GCNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
+import fs from "node:fs/promises";
 
-const edges = [
-	_mock_edge("index.md", "1.md", {}),
-	_mock_edge("1.md", "1.1.md", {}),
-	_mock_edge("1.1.md", "1.1.1.md", {}),
-	_mock_edge("1.1.md", "1.1.2.md", {}),
-	_mock_edge("1.md", "1.2.md", {}),
-	_mock_edge("1.2.md", "1.2.1.md", {}),
-	_mock_edge("1.2.md", "1.2.2.md", {}),
-	_mock_edge("index.md", "2.md", {}),
-	_mock_edge("2.md", "2.1.md", {}),
-	_mock_edge("2.1.md", "2.1.1.md", {}),
-	_mock_edge("2.1.md", "2.1.2.md", {}),
-	_mock_edge("2.md", "2.2.md", {}),
-	_mock_edge("2.2.md", "2.2.1.md", {}),
-	_mock_edge("2.2.md", "2.2.2.md", {}),
-];
+function getEdges() {
+	return [
+		new GCEdgeData("index.md", "1.md", "down", ""),
+		new GCEdgeData("1.md", "1.1.md", "down", ""),
+		new GCEdgeData("1.1.md", "1.1.1.md", "down", ""),
+		new GCEdgeData("1.1.md", "1.1.2.md", "down", ""),
+		new GCEdgeData("1.md", "1.2.md", "down", ""),
+		new GCEdgeData("1.2.md", "1.2.1.md", "down", ""),
+		new GCEdgeData("1.2.md", "1.2.2.md", "down", ""),
+		new GCEdgeData("index.md", "2.md", "down", ""),
+		new GCEdgeData("2.md", "2.1.md", "down", ""),
+		new GCEdgeData("2.1.md", "2.1.1.md", "down", ""),
+		new GCEdgeData("2.1.md", "2.1.2.md", "down", ""),
+		new GCEdgeData("2.md", "2.2.md", "down", ""),
+		new GCEdgeData("2.2.md", "2.2.1.md", "down", ""),
+		new GCEdgeData("2.2.md", "2.2.2.md", "down", ""),
+	];
+}
+
+function getNodes() {
+	return [
+		new GCNodeData("index.md", [], true, false, false),
+		new GCNodeData("1.md", [], true, false, false),
+		new GCNodeData("1.1.md", [], true, false, false),
+		new GCNodeData("1.1.1.md", [], true, false, false),
+		new GCNodeData("1.1.2.md", [], true, false, false),
+		new GCNodeData("1.2.md", [], true, false, false),
+		new GCNodeData("1.2.1.md", [], true, false, false),
+		new GCNodeData("1.2.2.md", [], true, false, false),
+		new GCNodeData("2.md", [], true, false, false),
+		new GCNodeData("2.1.md", [], true, false, false),
+		new GCNodeData("2.1.1.md", [], true, false, false),
+		new GCNodeData("2.1.2.md", [], true, false, false),
+		new GCNodeData("2.2.md", [], true, false, false),
+		new GCNodeData("2.2.1.md", [], true, false, false),
+		new GCNodeData("2.2.2.md", [], true, false, false),
+	];
+}
+
+beforeEach(async () => {
+	const wasmSource = await fs.readFile(
+		"wasm/pkg/breadcrumbs_graph_wasm_bg.wasm",
+	);
+	const wasmModule = await WebAssembly.compile(wasmSource);
+	await init(wasmModule);
+});
 
 describe("build", () => {
 	test("binary-tree > defaults", () => {
-		const graph = new BCGraph({ edges });
+		const graph = create_graph();
+		graph.build_graph(getNodes(), getEdges(), []);
 
-		const list_index = ListIndex.build(graph, "index.md", {
+		const list_index = build_list_index(graph, "index.md", undefined, {
 			indent: " ",
 			fields: ["down"],
 			show_attributes: [],
@@ -63,14 +98,15 @@ describe("build", () => {
 	});
 
 	test("binary-tree > indent + show-attributes + link_kind + edge_sort_id", () => {
-		const graph = new BCGraph({ edges });
+		const graph = create_graph();
+		graph.build_graph(getNodes(), getEdges(), []);
 
-		const list_index = ListIndex.build(graph, "index.md", {
+		const list_index = build_list_index(graph, "index.md", undefined, {
 			indent: ".",
 			fields: ["down"],
 			link_kind: "wiki",
 			field_group_labels: [],
-			show_attributes: ["explicit", "field"],
+			show_attributes: ["field", "explicit"],
 			edge_sort_id: {
 				order: -1,
 				field: "basename",

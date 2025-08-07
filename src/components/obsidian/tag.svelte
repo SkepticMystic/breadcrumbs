@@ -1,23 +1,37 @@
 <script lang="ts">
-	export let tag: string;
-	export let href: string | undefined = undefined;
-	export let title: string | undefined = undefined;
+	interface Props {
+		tag: string;
+		href?: string | undefined;
+		title?: string | undefined;
+		onclick?: (e: MouseEvent) => void;
+		oncontextmenu?: (e: MouseEvent) => void;
+		onkeydown?: (e: KeyboardEvent) => void;
+	}
+
+	let {
+		tag,
+		href = undefined,
+		title = undefined,
+		onclick = () => {},
+		oncontextmenu = () => {},
+		onkeydown = () => {},
+	}: Props = $props();
 </script>
 
 {#if href !== undefined}
-	<a {href} {title} class="tag" on:click on:contextmenu>
+	<a {href} {title} class="tag" {onclick} {oncontextmenu}>
 		{tag}
 	</a>
 {:else}
-	<!-- svelte-ignore a11y-missing-attribute -->
+	<!-- svelte-ignore a11y_missing_attribute -->
 	<a
 		{title}
 		class="tag"
 		tabindex="0"
 		role="button"
-		on:click
-		on:keydown
-		on:contextmenu
+		{onclick}
+		{onkeydown}
+		{oncontextmenu}
 	>
 		{tag}
 	</a>
