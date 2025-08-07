@@ -6,23 +6,24 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { remove_duplicates_by } from "src/utils/arrays";
 import { Paths } from "src/utils/paths";
-import { z } from "zod";
-import { CodeblockSchema, type ICodeblock } from "./schema";
 import { quote_join } from "src/utils/strings";
+import type { z } from "zod";
+import type { ICodeblock } from "./schema";
+import { CodeblockSchema } from "./schema";
 
 /** Raw YAML string -> YAML -> zod-parsed */
-const parse_source = (
+function parse_source(
 	source: string,
 	data: ICodeblock["InputData"],
 ): {
 	errors: BreadcrumbsError[];
 	parsed: z.infer<ReturnType<typeof CodeblockSchema.build>> | null;
-} => {
+} {
 	const errors: BreadcrumbsError[] = [];
 
 	let yaml: Record<string, unknown>;
 	try {
-		yaml = parseYaml(source) ?? {};
+		yaml = (parseYaml(source) as Record<string, unknown>) ?? {};
 
 		log.debug("Codeblock > parsed_yaml >", yaml);
 	} catch (error) {
@@ -63,6 +64,7 @@ const parse_source = (
 	}
 
 	const invalid_fields = Object.keys(parsed.data).filter(
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
 		(key) => !CodeblockSchema.FIELDS.includes(key as any),
 	);
 
@@ -75,25 +77,25 @@ const parse_source = (
 	}
 
 	return { parsed: parsed.data, errors };
-};
+}
 
 /** Refine the results of parsing, with the plugin now available in context */
-const postprocess_options = (
+function postprocess_options(
 	/** Where the codeblock is */
 	source_path: string,
 	parsed: ICodeblock["Options"],
 	errors: BreadcrumbsError[],
 	plugin: BreadcrumbsPlugin,
-) => {
+) {
 	let file_path = source_path;
 
 	if (parsed["start-note"]) {
-		const normalised = Paths.normalise(
+		const normalized = Paths.normalize(
 			Paths.ensure_ext(parsed["start-note"], "md"),
 		);
 
 		const start_file = plugin.app.metadataCache.getFirstLinkpathDest(
-			normalised,
+			normalized,
 			file_path,
 		);
 
@@ -103,13 +105,14 @@ const postprocess_options = (
 			errors.push({
 				path: "start-note",
 				code: "invalid_field_value",
-				message: `Could not find note \`${normalised}\` in your vault. Try a different path.`,
+				message: `Could not find note \`${normalized}\` in your vault. Try a different path.`,
 			});
 		}
 	}
 
 	if (parsed["dataview-from"]) {
 		try {
+			/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 			const pages = dataview_plugin
 				.get_api(plugin.app)
 				?.pages(parsed["dataview-from"], source_path) as
@@ -119,7 +122,8 @@ const postprocess_options = (
 			parsed["dataview-from-paths"] = pages?.map(
 				(page) => page.file.path,
 			);
-		} catch (error) {
+			/* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+		} catch (_) {
 			errors.push({
 				path: "dataview-from",
 				code: "invalid_field_value",
@@ -130,7 +134,7 @@ You can use \`app.plugins.plugins.dataview.api.pages("<query>")\` to test your q
 	}
 
 	return { options: parsed, file_path };
-};
+}
 
 export const Codeblocks = {
 	parse_source,

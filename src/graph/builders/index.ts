@@ -1,26 +1,28 @@
+import { parseFrontMatterAliases } from "obsidian";
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
-import { add_explicit_edges } from "./explicit";
-import { get_all_files, type AllFiles } from "./explicit/files";
+import type { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 import {
-	GCEdgeData,
 	GCNodeData,
 	TransitiveGraphRule,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { add_explicit_edges } from "./explicit";
+import type { AllFiles } from "./explicit/files";
+import { get_all_files } from "./explicit/files";
 
-const get_initial_nodes = (all_files: AllFiles) => {
+function get_initial_nodes(all_files: AllFiles) {
 	const nodes: GCNodeData[] = [];
 
 	if (all_files.obsidian) {
 		all_files.obsidian.forEach(({ file, cache }) => {
-			let node_aliases = [];
+			let node_aliases: string[] = [];
 			let ignore_in_edges = false;
 			let ignore_out_edges = false;
 
-			const aliases = cache?.frontmatter?.aliases as unknown;
+			const aliases = parseFrontMatterAliases(cache?.frontmatter);
 			if (Array.isArray(aliases) && aliases.length > 0) {
 				node_aliases = aliases;
 			}
@@ -44,7 +46,7 @@ const get_initial_nodes = (all_files: AllFiles) => {
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
-			let node_aliases = [];
+			let node_aliases: string[] = [];
 			let ignore_in_edges = false;
 			let ignore_out_edges = false;
 
@@ -63,7 +65,7 @@ const get_initial_nodes = (all_files: AllFiles) => {
 			nodes.push(
 				new GCNodeData(
 					page.file.path,
-					aliases,
+					node_aliases,
 					true,
 					ignore_in_edges,
 					ignore_out_edges,
@@ -73,7 +75,7 @@ const get_initial_nodes = (all_files: AllFiles) => {
 	}
 
 	return nodes;
-};
+}
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	const timer = new Timer();

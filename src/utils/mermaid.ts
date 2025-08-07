@@ -1,7 +1,7 @@
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
+import type { NodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 import {
 	MermaidGraphOptions,
-	NodeData,
 	TransitiveGraphRule,
 	TraversalOptions,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
@@ -26,17 +26,18 @@ const MERMAID_CURVE_STYLES = [
 	"stepAfter",
 	"stepBefore",
 ] as const;
-type MermaidCurveStyle = (typeof MERMAID_CURVE_STYLES)[number];
+// type MermaidCurveStyle = (typeof MERMAID_CURVE_STYLES)[number];
 
-const _encode = (code: string) => {
+function _encode(code: string) {
 	const bytes = new TextEncoder().encode(code);
 	return btoa(String.fromCharCode(...bytes));
-};
+}
 
-const to_image_link = (code: string) =>
-	`https://mermaid.ink/img/${_encode(code)}`;
+function to_image_link(code: string) {
+	return `https://mermaid.ink/img/${_encode(code)}`;
+}
 
-type MermaidState = {
+interface MermaidState {
 	code: string;
 	mermaid: {
 		theme: string;
@@ -47,10 +48,10 @@ type MermaidState = {
 	panZoom?: boolean;
 	pan?: { x: number; y: number };
 	zoom?: number;
-};
+}
 
 // SOURCE: https://mermaid.js.org/ecosystem/tutorials.html#jupyter-integration-with-mermaid-js
-const to_live_edit_link = (code: string) => {
+function to_live_edit_link(code: string) {
 	const state: MermaidState = {
 		code,
 		// NOTE: For some reason, having both true doesn't trigger the initial render?
@@ -62,7 +63,7 @@ const to_live_edit_link = (code: string) => {
 	const encoded = _encode(JSON.stringify(state, undefined, 2));
 
 	return `https://mermaid.live/edit#base64:${encoded}`;
-};
+}
 
 /**
  * Creates an example mermaid graph for a transitive rule.
@@ -70,12 +71,12 @@ const to_live_edit_link = (code: string) => {
  * @param rule
  * @returns
  */
-const from_transitive_rule = (
+function from_transitive_rule(
 	rule: Pick<
 		BreadcrumbsSettings["implied_relations"]["transitive"][number],
 		"chain" | "close_field" | "close_reversed" | "name"
 	>,
-) => {
+) {
 	const wasm_rule = new TransitiveGraphRule(
 		"",
 		rule.chain.map((attr) => attr.field!),
@@ -101,7 +102,7 @@ const from_transitive_rule = (
 			false,
 		),
 	);
-};
+}
 
 export const Mermaid = {
 	// from_edges,
@@ -115,7 +116,7 @@ export const Mermaid = {
 	CURVE_STYLES: MERMAID_CURVE_STYLES,
 };
 
-export type Mermaid = {
+export interface Mermaid {
 	Renderer: MermaidRenderer;
 	Direction: MermaidDirection;
-};
+}

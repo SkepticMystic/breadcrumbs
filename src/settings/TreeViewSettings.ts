@@ -1,12 +1,12 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import type { EdgeSortId } from "src/const/graph";
+import type { EdgeAttribute } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
+import { mount } from "svelte";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
-import { mount } from "svelte";
-import type { EdgeAttribute } from "src/graph/utils";
-import type { EdgeSortId } from "src/const/graph";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -20,10 +20,8 @@ export const _add_settings_tree_view = (
 			cb: async (checked) => {
 				plugin.settings.views.side.tree.collapse = checked;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -35,10 +33,8 @@ export const _add_settings_tree_view = (
 			select_cb: async (value: EdgeSortId) => {
 				plugin.settings.views.side.tree.edge_sort_id = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -50,10 +46,8 @@ export const _add_settings_tree_view = (
 			select_cb: async (value: EdgeAttribute[]) => {
 				plugin.settings.views.side.tree.show_attributes = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -67,10 +61,8 @@ export const _add_settings_tree_view = (
 			select_cb: async (value: string[]) => {
 				plugin.settings.views.side.tree.field_group_labels = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -83,10 +75,8 @@ export const _add_settings_tree_view = (
 			cb: async (value) => {
 				plugin.settings.views.side.tree.merge_fields = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});

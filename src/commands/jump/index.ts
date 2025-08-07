@@ -3,10 +3,10 @@ import type BreadcrumbsPlugin from "src/main";
 import { active_file_store } from "src/stores/active_file";
 import { get } from "svelte/store";
 
-export const jump_to_neighbour = async (
+export async function jump_to_neighbour(
 	plugin: BreadcrumbsPlugin,
 	options: { fields: string[] },
-) => {
+) {
 	const active_file = get(active_file_store);
 	if (!active_file) return;
 
@@ -26,4 +26,4 @@ export const jump_to_neighbour = async (
 			active_file.path,
 		);
 	}
-};
+}

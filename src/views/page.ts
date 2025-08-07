@@ -4,7 +4,7 @@ import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { mount } from "svelte";
 
-export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
+export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 	const markdown_views = plugin.app.workspace.getLeavesOfType("markdown");
 	if (!markdown_views.length) {
 		log.info("redraw_page_views > No markdown views found");
@@ -50,9 +50,8 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 				".markdown-reading-view > .markdown-preview-view",
 			);
 			if (!view_parent) {
-				return log.info(
-					"redraw_page_views > No view_parent (mode=preview)",
-				);
+				log.info("redraw_page_views > No view_parent (mode=preview)");
+				return;
 			}
 
 			view_parent.insertBefore(page_views_el, view_parent.firstChild);
@@ -60,9 +59,8 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 			const view_parent =
 				markdown_view.containerEl.querySelector(".cm-scroller");
 			if (!view_parent) {
-				return log.info(
-					"redraw_page_views > No view_parent (mode=source)",
-				);
+				log.info("redraw_page_views > No view_parent (mode=source)");
+				return;
 			}
 
 			// See here for an in-depth discussion on why it's done this way:
@@ -79,4 +77,4 @@ export const redraw_page_views = (plugin: BreadcrumbsPlugin) => {
 			props: { plugin, file_path: markdown_view.file?.path ?? "" },
 		});
 	});
-};
+}

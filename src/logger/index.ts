@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument */
+
 export const LOG_LEVELS = [
 	"DEBUG",
 	"INFO",

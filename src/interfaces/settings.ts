@@ -1,17 +1,22 @@
-import type { ListIndex } from "src/commands/list_index";
+import type { ListIndexOptions } from "src/commands/list_index";
 import type { EdgeSortId } from "src/const/graph";
 import type { BCEdgeAttributes, EdgeAttribute } from "src/graph/utils";
 import type { EdgeAttrFilters } from "src/graph/utils";
 import type { LogLevels } from "src/logger";
 
-export type EdgeField = { label: string };
-export type EdgeFieldGroup = { label: string; fields: EdgeField["label"][] };
+export interface EdgeField {
+	label: string;
+}
+export interface EdgeFieldGroup {
+	label: string;
+	fields: EdgeField["label"][];
+}
 
-export type ShowNodeOptions = {
+export interface ShowNodeOptions {
 	ext: boolean;
 	folder: boolean;
 	alias: boolean;
-};
+}
 
 export type CrumbDestination = "frontmatter" | "dataview-inline";
 
@@ -41,7 +46,7 @@ export interface BreadcrumbsSettings {
 	explicit_edge_sources: {
 		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
 		// The two are not distinguished, because Dataview doesn't distinguish them
-		typed_link: {};
+		typed_link: object;
 		tag_note: {
 			default_field: string;
 		};
@@ -145,7 +150,7 @@ export interface BreadcrumbsSettings {
 		};
 
 		list_index: {
-			default_options: ListIndex.Options;
+			default_options: ListIndexOptions;
 		};
 
 		freeze_implied_edges: {
@@ -178,7 +183,7 @@ export interface BreadcrumbsSettings {
 export const OLD_DIRECTIONS = ["up", "down", "same", "prev", "next"] as const;
 export type OLD_DIRECTION = (typeof OLD_DIRECTIONS)[number];
 
-export type OLD_HIERARCHY = {
+export interface OLD_HIERARCHY {
 	dirs: Record<OLD_DIRECTION, string[]>;
 	implied_relationships: Record<
 		| "self_is_sibling"
@@ -190,7 +195,7 @@ export type OLD_HIERARCHY = {
 		| "parents_sibling_is_parent",
 		{ rounds: number }
 	>;
-};
+}
 
 export interface BreadcrumbsSettingsWithDirection {
 	// Once I've reach settings parity with old BC, I can add this flag to skip over all the checks in migrate_old_settings
@@ -211,7 +216,7 @@ export interface BreadcrumbsSettingsWithDirection {
 	explicit_edge_sources: {
 		// Just a regular `up: [[link]]` or `down:: [[link]]` in the content/frontmatter of a note
 		// The two are not distinguished, because Dataview doesn't distinguish them
-		typed_link: {};
+		typed_link: object;
 		tag_note: {
 			default_field: string;
 		};
@@ -292,7 +297,7 @@ export interface BreadcrumbsSettingsWithDirection {
 			};
 		};
 		list_index: {
-			default_options: ListIndex.Options;
+			default_options: ListIndexOptions;
 		};
 		freeze_implied_edges: {
 			default_options: {

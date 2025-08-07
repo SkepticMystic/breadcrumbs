@@ -9,15 +9,14 @@ import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-const get_dendron_note_info = (
+function get_dendron_note_info(
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
 	path: string,
-) => {
+) {
 	// NOTE: Don't return early here. Dendron notes can be valid without any metadata in them
 	//   We just have to iterate and check each note
 	// if (!metadata) return fail(undefined);
-
 	const field =
 		metadata?.[META_ALIAS["dendron-note-field"]] ??
 		//   Which is why we have a default_field on dendron_note
@@ -26,6 +25,7 @@ const get_dendron_note_info = (
 	if (!field) {
 		return fail(undefined);
 	} else if (typeof field !== "string") {
+		// eslint-disable @typescript-eslint/no-base-to-string
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
@@ -40,19 +40,19 @@ const get_dendron_note_info = (
 	}
 
 	return succ({ field });
-};
+}
 
 /** Take in the info of a _potential_ dendron note.
  * Check that it has the delimeter in it's basename
  * Get the field info from the note or default settings
  * Add the directed edge to the target
  */
-const handle_dendron_note = (
+function handle_dendron_note(
 	plugin: BreadcrumbsPlugin,
 	results: EdgeBuilderResults,
 	source_id: string,
 	source_metadata: Record<string, unknown> | undefined,
-) => {
+) {
 	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
 
 	// NOTE: There are easier ways to do alot of the below.
@@ -105,7 +105,7 @@ const handle_dendron_note = (
 	results.edges.push(
 		new GCEdgeData(source_id, target_id, field, "dendron_note"),
 	);
-};
+}
 
 export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	plugin,

@@ -30,7 +30,7 @@ export const COMPLEX_EDGE_SORT_FIELD_PREFIXES = ["neighbour-field"] as const;
 export type ComplexEdgeSortFieldPrefix =
 	(typeof COMPLEX_EDGE_SORT_FIELD_PREFIXES)[number];
 
-export type EdgeSortId = {
+export interface EdgeSortId {
 	field: SimpleEdgeSortField | `${ComplexEdgeSortFieldPrefix}:${string}`;
 	order: 1 | -1;
-};
+}

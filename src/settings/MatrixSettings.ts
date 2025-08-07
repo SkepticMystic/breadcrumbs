@@ -1,12 +1,12 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
+import type { EdgeSortId } from "src/const/graph";
+import type { EdgeAttribute } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
-import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { new_setting } from "src/utils/settings";
 import { mount } from "svelte";
-import type { EdgeAttribute } from "src/graph/utils";
-import type { EdgeSortId } from "src/const/graph";
+import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_matrix = (
 	plugin: BreadcrumbsPlugin,
@@ -20,10 +20,8 @@ export const _add_settings_matrix = (
 			cb: async (checked) => {
 				plugin.settings.views.side.matrix.collapse = checked;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -35,10 +33,8 @@ export const _add_settings_matrix = (
 			select_cb: async (value: EdgeSortId) => {
 				plugin.settings.views.side.matrix.edge_sort_id = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -51,10 +47,8 @@ export const _add_settings_matrix = (
 			select_cb: async (value: EdgeAttribute[]) => {
 				plugin.settings.views.side.matrix.show_attributes = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -68,10 +62,8 @@ export const _add_settings_matrix = (
 			select_cb: async (value: string[]) => {
 				plugin.settings.views.side.matrix.field_group_labels = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});

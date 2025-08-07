@@ -1,8 +1,8 @@
 import { Setting } from "obsidian";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
-import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { mount } from "svelte";
+import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_prev_next_view = (
 	plugin: BreadcrumbsPlugin,
@@ -17,9 +17,8 @@ export const _add_settings_prev_next_view = (
 				.onChange(async (value) => {
 					plugin.settings.views.page.prev_next.enabled = value;
 
-					await Promise.all([plugin.saveSettings()]);
-					// Don't await if not rebuilding the graph
 					plugin.refreshViews();
+					await plugin.saveSettings();
 				});
 		});
 
@@ -36,10 +35,8 @@ export const _add_settings_prev_next_view = (
 				plugin.settings.views.page.prev_next.field_group_labels.prev =
 					value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -57,10 +54,8 @@ export const _add_settings_prev_next_view = (
 				plugin.settings.views.page.prev_next.field_group_labels.next =
 					value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});

@@ -182,7 +182,7 @@ impl NoteGraph {
     pub fn int_traverse_basic(
         &self,
         options: &TraversalOptions,
-    ) -> Result<NodeEdgeVec<u32, NGEdgeRef>> {
+    ) -> Result<NodeEdgeVec<u32, NGEdgeRef<'_>>> {
         let entry_nodes = options.indices_of_entry_nodes(self)?;
         let opt_edge_types = options.edge_types_as_rcs();
 

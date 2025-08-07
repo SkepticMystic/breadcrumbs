@@ -2,8 +2,8 @@ import { Notice } from "obsidian";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
-import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { mount } from "svelte";
+import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_trail_view = (
 	plugin: BreadcrumbsPlugin,
@@ -17,9 +17,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.enabled = value;
 
-				await Promise.all([plugin.saveSettings()]);
-				// Don't await if not rebuilding the graph
 				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -33,10 +32,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.format = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -50,10 +47,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.selection = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -66,17 +61,17 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				const int = parseInt(value);
 				if (isNaN(int)) {
-					return new Notice("Depth must be a number");
+					new Notice("Depth must be a number");
+					return;
 				} else if (int < 0) {
-					return new Notice("Depth must be a non-negative number");
+					new Notice("Depth must be a non-negative number");
+					return;
 				}
 
 				plugin.settings.views.page.trail.default_depth = int;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -90,10 +85,8 @@ export const _add_settings_trail_view = (
 			select_cb: async (value: string[]) => {
 				plugin.settings.views.page.trail.field_group_labels = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -106,10 +99,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.merge_fields = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -122,10 +113,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.show_controls = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
@@ -138,10 +127,8 @@ export const _add_settings_trail_view = (
 			cb: async (value) => {
 				plugin.settings.views.page.trail.no_path_message = value;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refreshViews(),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});

@@ -7,14 +7,14 @@ import { CreateListIndexModal } from "src/modals/CreateListIndexModal";
 import { GenericModal } from "src/modals/GenericModal";
 import { active_file_store } from "src/stores/active_file";
 import { Timer } from "src/utils/timer";
+import { mount } from "svelte";
 import { get } from "svelte/store";
 import { freeze_implied_edges_to_note } from "./freeze_edges";
 import { jump_to_neighbour } from "./jump";
 import { get_graph_stats } from "./stats";
 import { thread } from "./thread";
-import { mount } from "svelte";
 
-export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
+export function init_all_commands(plugin: BreadcrumbsPlugin) {
 	plugin.addCommand({
 		id: "breadcrumbs:rebuild-graph",
 		name: "Rebuild graph",
@@ -160,4 +160,4 @@ export const init_all_commands = (plugin: BreadcrumbsPlugin) => {
 				),
 		});
 	});
-};
+}

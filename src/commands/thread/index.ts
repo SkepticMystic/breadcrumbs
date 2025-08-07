@@ -1,4 +1,5 @@
-import { MarkdownView, Notice, TFile } from "obsidian";
+import type { TFile } from "obsidian";
+import { MarkdownView, Notice } from "obsidian";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
@@ -13,11 +14,11 @@ import {
 	GCNodeData,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-export const thread = async (
+export async function thread(
 	plugin: BreadcrumbsPlugin,
 	field: string,
 	options: BreadcrumbsSettings["commands"]["thread"]["default_options"],
-) => {
+) {
 	const active_view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
 	if (!active_view) return new Notice("No active markdown view");
 	const source_file = active_view.file;
@@ -34,7 +35,7 @@ export const thread = async (
 	};
 	log.info("thread > template_data", template_data);
 
-	const target_path = Paths.normalise(
+	const target_path = Paths.normalize(
 		Paths.ensure_ext(
 			resolve_templates(options.target_path_template, template_data),
 			"md",
@@ -75,7 +76,7 @@ export const thread = async (
 		.find(
 			(e) =>
 				e.edge_type === field &&
-				e.target_path(plugin.graph) === target_file!.path,
+				e.target_path(plugin.graph) === target_file.path,
 		);
 	if (!edge) return;
 
@@ -83,4 +84,4 @@ export const thread = async (
 		drop_crumbs(plugin, source_file, [edge], options),
 		active_view.leaf.openFile(target_file),
 	]);
-};
+}

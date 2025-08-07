@@ -1,23 +1,25 @@
-import { App, Modal, Notice, Setting, TFile } from "obsidian";
-import { ListIndex } from "src/commands/list_index";
+import type { App, TFile } from "obsidian";
+import { Modal, Notice, Setting } from "obsidian";
+import type { ListIndexOptions } from "src/commands/list_index";
+import { build_list_index } from "src/commands/list_index";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
+import type { EdgeSortId } from "src/const/graph";
 import { LINK_KINDS } from "src/const/links";
+import type { EdgeAttribute } from "src/graph/utils";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
-import { get } from "svelte/store";
 import { mount } from "svelte";
-import type { EdgeSortId } from "src/const/graph";
-import type { EdgeAttribute } from "src/graph/utils";
+import { get } from "svelte/store";
 
 export class CreateListIndexModal extends Modal {
 	plugin: BreadcrumbsPlugin;
-	options: ListIndex.Options;
+	options: ListIndexOptions;
 	active_file: TFile | null = get(active_file_store);
 
 	constructor(app: App, plugin: BreadcrumbsPlugin) {
@@ -31,7 +33,8 @@ export class CreateListIndexModal extends Modal {
 		// TODO: Rather don't show the command at all
 		if (!this.active_file) {
 			new Notice("No active file");
-			return this.close();
+			this.close();
+			return;
 		}
 
 		const { contentEl, plugin } = this;
@@ -64,7 +67,7 @@ export class CreateListIndexModal extends Modal {
 			select: {
 				options: LINK_KINDS,
 				value: this.options.link_kind,
-				cb: (value) => (this.options.link_kind = value),
+				cb: (value) => void (this.options.link_kind = value),
 			},
 		});
 
@@ -73,7 +76,7 @@ export class CreateListIndexModal extends Modal {
 			desc: "Indentation to use for each level",
 			input: {
 				value: this.options.indent,
-				cb: (value) => (this.options.indent = value),
+				cb: (value) => void (this.options.indent = value),
 			},
 		});
 
@@ -114,7 +117,7 @@ export class CreateListIndexModal extends Modal {
 				.onClick(async () => {
 					log.debug("build_list_index options", this.options);
 
-					const list_index = ListIndex.build(
+					const list_index = build_list_index(
 						plugin.graph,
 						this.active_file!.path,
 						plugin.settings,

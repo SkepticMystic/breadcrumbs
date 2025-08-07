@@ -1,7 +1,9 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
+import { ItemView } from "obsidian";
 import TreeViewComponent from "src/components/side_views/TreeView.svelte";
 import { VIEW_IDS } from "src/const/views";
-import BreadcrumbsPlugin, { BCEvent } from "src/main";
+import type BreadcrumbsPlugin from "src/main";
+import { BCEvent } from "src/main";
 import { mount, unmount } from "svelte";
 
 export class TreeView extends ItemView {
@@ -26,7 +28,7 @@ export class TreeView extends ItemView {
 	onload(): void {
 		this.registerEvent(
 			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
-				this.onOpen();
+				void this.onOpen();
 			}),
 		);
 	}
@@ -43,7 +45,7 @@ export class TreeView extends ItemView {
 
 	async onClose() {
 		if (this.component) {
-			unmount(this.component);
+			await unmount(this.component);
 		}
 	}
 }

@@ -1,11 +1,10 @@
-import {
-	Editor,
-	EditorSuggest,
-	TFile,
-	type EditorPosition,
-	type EditorSuggestContext,
-	type EditorSuggestTriggerInfo,
+import type { Editor, TFile } from "obsidian";
+import type {
+	EditorPosition,
+	EditorSuggestContext,
+	EditorSuggestTriggerInfo,
 } from "obsidian";
+import { EditorSuggest } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
 
 export class EdgeFieldSuggestor extends EditorSuggest<string> {

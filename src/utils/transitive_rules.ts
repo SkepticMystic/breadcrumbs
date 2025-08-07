@@ -31,7 +31,7 @@ export const parse_transitive_relation = (
 	Pick<TransitiveRule, "chain" | "close_field" | "close_reversed">,
 	null
 > => {
-	const match = str.match(regex);
+	const match = regex.exec(str);
 
 	if (!match) {
 		return fail(null);

@@ -85,7 +85,7 @@ const resolve_field_override = (
 	list_item: IDataview.NoteList,
 	path: string,
 ) => {
-	const field = list_item.text.match(FIELD_OVERRIDE_REGEX)?.[1];
+	const field = FIELD_OVERRIDE_REGEX.exec(list_item.text)?.[1];
 
 	// No override, use the list_note_info field
 	if (!field) {

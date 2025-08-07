@@ -1,14 +1,14 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
+import type { EdgeSortId } from "src/const/graph";
 import { LINK_KINDS } from "src/const/links";
+import type { EdgeAttribute } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
 import { new_setting } from "src/utils/settings";
-import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { mount } from "svelte";
-import type { EdgeSortId } from "src/const/graph";
-import type { EdgeAttribute } from "src/graph/utils";
+import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_list_index = (
 	plugin: BreadcrumbsPlugin,

@@ -1,4 +1,4 @@
-import type BreadcrumbsPlugin from "src/main";
+import type { ExplicitEdgeSource } from "src/const/graph";
 import type {
 	BreadcrumbsSettings,
 	ShowNodeOptions,
@@ -35,8 +35,6 @@ export type EdgeAttrFilters = Partial<
 		$or_fields: string[];
 		$or_target_ids: string[];
 	}>;
-
-import type { ExplicitEdgeSource } from "src/const/graph";
 
 export const EDGE_ATTRIBUTES = [
 	"field",

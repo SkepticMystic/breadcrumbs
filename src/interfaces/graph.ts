@@ -1,10 +1,10 @@
 // import type { BCEdgeAttributes, BCNode } from "src/graph/MyMultiGraph";
 import type { AllFiles } from "src/graph/builders/explicit/files";
 import type BreadcrumbsPlugin from "src/main";
+import type { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 import type { MaybePromise } from ".";
-import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-export type BreadcrumbsError = {
+export interface BreadcrumbsError {
 	// TODO: Differentiate between invalid edge-field and invalid metadata-field values
 	// BUT: Some errors might be a metadata field with an invalid edge-field value
 	code:
@@ -15,7 +15,7 @@ export type BreadcrumbsError = {
 		| "missing_other_plugin";
 	message: string;
 	path: string;
-};
+}
 
 /** The values passed into safe_add_edge */
 // export type EdgeToAdd = {
@@ -24,11 +24,11 @@ export type BreadcrumbsError = {
 // 	attr: BCEdgeAttributes;
 // };
 
-export type EdgeBuilderResults = {
+export interface EdgeBuilderResults {
 	nodes: GCNodeData[];
 	edges: GCEdgeData[];
 	errors: BreadcrumbsError[];
-};
+}
 
 // NOTE: A completely different approach is to do it on a single node level
 //   This way, we could rebuild the edges for a particular node as needed

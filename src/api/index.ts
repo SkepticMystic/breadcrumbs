@@ -1,9 +1,13 @@
-import { ListIndex } from "src/commands/list_index";
+import type { ListIndexOptions } from "src/commands/list_index";
+import {
+	build_list_index,
+	LIST_INDEX_DEFAULT_OPTIONS,
+} from "src/commands/list_index";
 // import { Traverse } from "src/graph/traverse";
 import { active_file_store } from "src/stores/active_file";
 import { get } from "svelte/store";
-import type BCPlugin from "../main";
 import type { EdgeList } from "wasm/pkg/breadcrumbs_graph_wasm";
+import type BCPlugin from "../main";
 
 export class BCAPI {
 	plugin: BCPlugin;
@@ -38,16 +42,16 @@ export class BCAPI {
 	 */
 	public create_list_index(
 		start_node?: string,
-		options?: ListIndex.Options,
+		options?: ListIndexOptions,
 	): string {
 		start_node ??= get(active_file_store)?.path;
 		if (!start_node) throw new Error("No active file");
 
-		return ListIndex.build(
+		return build_list_index(
 			this.plugin.graph,
 			start_node,
 			this.plugin.settings,
-			Object.assign({ ...ListIndex.DEFAULT_OPTIONS }, options),
+			Object.assign({ ...LIST_INDEX_DEFAULT_OPTIONS }, options),
 		);
 	}
 

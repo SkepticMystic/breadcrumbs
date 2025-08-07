@@ -5,19 +5,22 @@ import CodeblockMermaid from "src/components/codeblocks/CodeblockMermaid.svelte"
 import CodeblockTree from "src/components/codeblocks/CodeblockTree.svelte";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
-import { Timer } from "src/utils/timer";
-import { Codeblocks } from ".";
 import { BCEvent } from "src/main";
+import { Timer } from "src/utils/timer";
 import { mount, unmount } from "svelte";
+import { Codeblocks } from ".";
+
+/* eslint-disable */
+type SvelteComponent =
+	| ReturnType<typeof CodeblockTree>
+	| ReturnType<typeof CodeblockMermaid>
+	| ReturnType<typeof CodeblockMarkmap>;
+/* eslint-enable */
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
 	plugin: BreadcrumbsPlugin;
-	component:
-		| ReturnType<typeof CodeblockTree>
-		| ReturnType<typeof CodeblockMermaid>
-		| ReturnType<typeof CodeblockMarkmap>
-		| undefined;
+	component: SvelteComponent | undefined;
 	file_path: string;
 	id: string;
 
@@ -35,11 +38,12 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		this.id = window.crypto.randomUUID();
 	}
 
-	async update(): Promise<void> {
+	update(): void {
 		log.debug("CodeblockMDRC.update");
 
 		if (this.component) {
 			try {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 				this.component.update();
 			} catch (e) {
 				log.error("CodeblockMDRC.update error >", e);
@@ -47,7 +51,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		}
 	}
 
-	async onload(): Promise<void> {
+	onload(): void {
 		const timer_outer = new Timer();
 
 		log.debug("CodeblockMDRC.load");
@@ -138,7 +142,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		log.debug("CodeblockMDRC.unload");
 
 		if (this.component) {
-			unmount(this.component);
+			void unmount(this.component);
 		}
 	}
 }

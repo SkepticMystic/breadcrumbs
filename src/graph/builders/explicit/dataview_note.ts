@@ -1,4 +1,3 @@
-import { Notice } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
 import type { IDataview } from "src/external/dataview/interfaces";
@@ -11,11 +10,11 @@ import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-const get_dataview_note_info = (
+function get_dataview_note_info(
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
 	path: string,
-) => {
+) {
 	if (!metadata) {
 		return fail(undefined);
 	}
@@ -31,7 +30,6 @@ const get_dataview_note_info = (
 		});
 	}
 	// NOTE: We check that the query is actually valid later
-
 	const field = metadata[META_ALIAS["dataview-note-field"]];
 	if (!field) {
 		return fail(undefined);
@@ -53,7 +51,7 @@ const get_dataview_note_info = (
 		field,
 		query,
 	});
-};
+}
 
 export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	plugin,
@@ -105,8 +103,10 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 		let pages: IDataview.Page[] = [];
 		try {
+			/* eslint-disable */
 			pages = dataview_plugin.get_api()!.pages(query, dataview_note_path)
 				.values as IDataview.Page[];
+			/* eslint-enable */
 		} catch (error) {
 			log.warn(
 				"dataview-note > DV API error:",

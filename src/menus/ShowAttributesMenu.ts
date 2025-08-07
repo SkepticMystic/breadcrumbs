@@ -1,5 +1,6 @@
 import { Menu } from "obsidian";
-import { EDGE_ATTRIBUTES, type EdgeAttribute } from "src/graph/utils";
+import type { EdgeAttribute } from "src/graph/utils";
+import { EDGE_ATTRIBUTES } from "src/graph/utils";
 
 export const ShowAttributesSelectorMenu = ({
 	cb,
@@ -42,19 +43,19 @@ export const ShowAttributesSelectorMenu = ({
 		);
 	};
 
-	(<const>["field", "explicit"])
+	(["field", "explicit"] as const)
 		.filter((attr) => !exclude_attributes?.includes(attr))
 		.forEach(add_item);
 
 	menu.addSeparator();
 
-	(<const>["source"])
+	(["source"] as const)
 		.filter((attr) => !exclude_attributes?.includes(attr))
 		.forEach(add_item);
 
 	menu.addSeparator();
 
-	(<const>["implied_kind", "round"])
+	(["implied_kind", "round"] as const)
 		.filter((attr) => !exclude_attributes?.includes(attr))
 		.forEach(add_item);
 

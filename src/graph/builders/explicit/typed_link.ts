@@ -81,7 +81,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 					else if (typeof target_link === "string") {
 						// Try parse as a markdown link [](), grabbing the path out of the 2nd match
 						unsafe_target_path =
-							target_link.match(MARKDOWN_LINK_REGEX)?.[2];
+							MARKDOWN_LINK_REGEX.exec(target_link)?.[2];
 					} else if (
 						typeof target_link === "object" &&
 						target_link?.path
@@ -91,6 +91,7 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 						// @ts-expect-error: instanceof didn't work here?
 						target_link?.isLuxonDateTime
 					) {
+						// eslint-disable @typescript-eslint/no-base-to-string
 						results.errors.push({
 							path: source_file.path,
 							code: "invalid_field_value",

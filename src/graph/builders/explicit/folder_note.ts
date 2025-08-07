@@ -9,10 +9,10 @@ import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-type FolderNoteData = {
+interface FolderNoteData {
 	field: string;
 	recurse: boolean;
-};
+}
 
 const get_folder_note_info = (
 	plugin: BreadcrumbsPlugin,

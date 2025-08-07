@@ -8,11 +8,11 @@ import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-const get_regex_note_info = (
+function get_regex_note_info(
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
 	path: string,
-) => {
+) {
 	if (!metadata) return fail(undefined);
 
 	// NOTE: Check for a regex first, then the field, since there may be a default and we would do more work than necessary before failing if there is no regex
@@ -38,9 +38,10 @@ const get_regex_note_info = (
 
 	let regex: RegExp;
 	try {
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		regex = new RegExp(regex_str, (flags || "") as string);
 		log.debug(`get_regex_note_info > regex:`, regex);
-	} catch (e) {
+	} catch (_) {
 		return graph_build_fail({
 			path,
 			code: "invalid_field_value",
@@ -72,7 +73,7 @@ const get_regex_note_info = (
 		field,
 		regex,
 	});
-};
+}
 
 export const _add_explicit_edges_regex_note: ExplicitEdgeBuilder = (
 	plugin,

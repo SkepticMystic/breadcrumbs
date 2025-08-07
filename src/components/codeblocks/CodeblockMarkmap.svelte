@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
-	import { ListIndex } from "src/commands/list_index";
+	import { edge_tree_to_list_index } from "src/commands/list_index";
 	import { to_node_stringify_options } from "src/graph/utils";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import type BreadcrumbsPlugin from "src/main";
@@ -111,16 +111,11 @@
 				"# " +
 				link +
 				"\n" +
-				ListIndex.edge_tree_to_list_index(
-					plugin.graph,
-					data,
-					plugin.settings,
-					{
-						...plugin.settings.commands.list_index.default_options,
-						show_node_options,
-						show_attributes: options["show-attributes"] ?? [],
-					},
-				)
+				edge_tree_to_list_index(plugin.graph, data, plugin.settings, {
+					...plugin.settings.commands.list_index.default_options,
+					show_node_options,
+					show_attributes: options["show-attributes"] ?? [],
+				})
 			);
 		} else {
 			return "";

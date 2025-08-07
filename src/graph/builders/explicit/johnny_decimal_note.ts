@@ -1,7 +1,5 @@
 import { META_ALIAS } from "src/const/metadata_fields";
-// import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
-	BreadcrumbsError,
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
@@ -103,12 +101,12 @@ const handle_johnny_decimal_note = (
 	);
 };
 
-type JohnnyDecimalNote = {
+interface JohnnyDecimalNote {
 	path: string;
 	basename: string;
 	decimals: string;
 	metadata?: Record<string, unknown>;
-};
+}
 
 export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	plugin,

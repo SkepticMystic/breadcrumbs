@@ -1,7 +1,9 @@
-import BreadcrumbsPlugin, { BCEvent } from "src/main";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
+import { ItemView } from "obsidian";
 import MatrixComponent from "src/components/side_views/Matrix.svelte";
 import { VIEW_IDS } from "src/const/views";
+import type BreadcrumbsPlugin from "src/main";
+import { BCEvent } from "src/main";
 import { mount, unmount } from "svelte";
 
 export class MatrixView extends ItemView {
@@ -26,7 +28,7 @@ export class MatrixView extends ItemView {
 	onload(): void {
 		this.registerEvent(
 			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, () => {
-				this.onOpen();
+				void this.onOpen();
 			}),
 		);
 	}
@@ -43,7 +45,7 @@ export class MatrixView extends ItemView {
 
 	async onClose() {
 		if (this.component) {
-			unmount(this.component);
+			await unmount(this.component);
 		}
 	}
 }

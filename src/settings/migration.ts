@@ -1,14 +1,14 @@
-import { ListIndex } from "src/commands/list_index";
+import { LIST_INDEX_DEFAULT_OPTIONS } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
-import {
-	OLD_DIRECTIONS,
-	type BreadcrumbsSettings,
-	type BreadcrumbsSettingsWithDirection,
-	type OLD_BREADCRUMBS_SETTINGS,
-	type OLD_DIRECTION,
-	type OLD_HIERARCHY,
+import type {
+	BreadcrumbsSettings,
+	BreadcrumbsSettingsWithDirection,
+	OLD_BREADCRUMBS_SETTINGS,
+	OLD_DIRECTION,
+	OLD_HIERARCHY,
 } from "src/interfaces/settings";
+import { OLD_DIRECTIONS } from "src/interfaces/settings";
 import { log } from "src/logger";
 import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
 import { stringify_transitive_relation } from "src/utils/transitive_rules";
@@ -97,7 +97,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			}
 		});
 
-		old.hierarchies.forEach((hier, hier_i) => {
+		old.hierarchies.forEach((hier) => {
 			Object.values(hier.dirs)
 				.flatMap((fields) => fields)
 				.filter(Boolean)
@@ -378,6 +378,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	// @ts-ignore: This previously wasn't "considered" a view
 	if (settings.codeblocks !== undefined) {
 		// @ts-ignore: This previously wasn't "considered" a view
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		settings.views.codeblocks = settings.codeblocks;
 
 		// @ts-ignore: This previously wasn't "considered" a view
@@ -416,7 +417,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			indent: old.createIndexIndent,
 			link_kind: old.wikilinkIndex ? "wiki" : "none",
 			show_node_options: {
-				...ListIndex.DEFAULT_OPTIONS.show_node_options,
+				...LIST_INDEX_DEFAULT_OPTIONS.show_node_options,
 				alias: old.aliasesInIndex,
 			},
 		};

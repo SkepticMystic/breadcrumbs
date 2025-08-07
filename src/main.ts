@@ -1,4 +1,5 @@
-import { Events, Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
+import type { WorkspaceLeaf } from "obsidian";
+import { Events, Notice, Plugin, TFile } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -6,6 +7,16 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
+import type { NoteGraph } from "../wasm/pkg/breadcrumbs_graph_wasm";
+import init, {
+	create_graph,
+	BatchGraphUpdate,
+	RemoveNoteGraphUpdate,
+	RenameNoteGraphUpdate,
+	AddNoteGraphUpdate,
+	GCNodeData,
+} from "../wasm/pkg/breadcrumbs_graph_wasm";
+import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
 import { BCAPI } from "./api";
 import { CodeblockMDRC } from "./codeblocks/MDRC";
 import { init_all_commands } from "./commands/init";
@@ -19,16 +30,6 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
-import init, {
-	type NoteGraph,
-	create_graph,
-	BatchGraphUpdate,
-	RemoveNoteGraphUpdate,
-	RenameNoteGraphUpdate,
-	AddNoteGraphUpdate,
-	GCNodeData,
-} from "../wasm/pkg/breadcrumbs_graph_wasm";
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
@@ -86,14 +87,20 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			for (const field of this.settings.edge_fields) {
 				if (all_properties[field.label]?.type === "multitext") continue;
-				this.app.metadataTypeManager.setType(field.label, "multitext");
+				await this.app.metadataTypeManager.setType(
+					field.label,
+					"multitext",
+				);
 			}
 
 			for (const [field, { property_type }] of Object.entries(
 				METADATA_FIELDS_MAP,
 			)) {
 				if (all_properties[field]?.type === property_type) continue;
-				this.app.metadataTypeManager.setType(field, property_type);
+				await this.app.metadataTypeManager.setType(
+					field,
+					property_type,
+				);
 			}
 		} catch (error) {
 			log.error("metadataTypeManager.setType error >", error);
@@ -136,10 +143,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 			} else {
 				const metadatacache_init_event = this.app.metadataCache.on(
 					"initialized",
-					async () => {
+					() => {
 						log.debug("on:metadatacache-initialized");
 
-						await this.rebuildGraph();
+						void this.rebuildGraph();
+
 						this.app.metadataCache.offref(metadatacache_init_event);
 					},
 				);
@@ -148,30 +156,22 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// Events
 			/// Workspace
 			this.registerEvent(
-				this.app.workspace.on("layout-change", async () => {
+				this.app.workspace.on("layout-change", () => {
 					log.debug("on:layout-change");
-
-					// active_file_store.refresh(this.app);
 
 					if (
 						this.settings.commands.rebuild_graph.trigger
 							.layout_change
 					) {
-						this.rebuildGraph();
+						void this.rebuildGraph();
 					} else {
 						this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
 					}
-
-					// this.debounced_refresh({
-					// 	rebuild_graph:
-					// 		this.settings.commands.rebuild_graph.trigger
-					// 			.layout_change,
-					// });
 				}),
 			);
 
 			this.registerEvent(
-				this.app.workspace.on("active-leaf-change", async (leaf) => {
+				this.app.workspace.on("active-leaf-change", (leaf) => {
 					log.debug("on:active-leaf-change");
 
 					// NOTE: We only want to refresh the store when changing to another md note
@@ -181,12 +181,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 					active_file_store.refresh(this.app);
 					this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
-
-					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
-					// this.debounced_refresh({
-					// 	rebuild_graph: false,
-					// 	redraw_page_views: false,
-					// });
 				}),
 			);
 
@@ -268,9 +262,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = deep_merge_objects(
-			(await this.loadData()) ?? {},
-			DEFAULT_SETTINGS as any,
+		this.settings = deep_merge_objects<BreadcrumbsSettings>(
+			((await this.loadData()) ?? {}) as BreadcrumbsSettings,
+			DEFAULT_SETTINGS,
 		);
 	}
 
@@ -319,15 +313,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 					([source, errors]) =>
 						`- ${source}: ${errors.length} errors`,
 				),
-
-				// implied_edge_results.length
-				// 	? "\nImplied edge errors (see console for details):"
-				// 	: null,
-
-				// ...Object.entries(implied_edge_results).map(
-				// 	([implied_kind, errors]) =>
-				// 		`- ${implied_kind}: ${errors.length} errors`,
-				// ),
 			]
 				.filter(Boolean)
 				.join("\n"),
@@ -367,6 +352,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		// "Reveal" the leaf in case it is in a collapsed sidebar
-		workspace.revealLeaf(leaf);
+		await workspace.revealLeaf(leaf);
 	}
 }

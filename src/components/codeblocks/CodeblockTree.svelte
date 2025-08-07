@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ICodeblock } from "src/codeblocks/schema";
-	import { ListIndex } from "src/commands/list_index";
+	import { edge_tree_to_list_index } from "src/commands/list_index";
 	import type { BreadcrumbsError } from "src/interfaces/graph";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
@@ -116,7 +116,7 @@
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
 					text={() =>
-						ListIndex.edge_tree_to_list_index(
+						edge_tree_to_list_index(
 							plugin.graph,
 							data,
 							plugin.settings,
