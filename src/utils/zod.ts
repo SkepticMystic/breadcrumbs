@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { quote_join } from "./strings";
 
+export type Literal = string | number | boolean;
+
 function not_string_msg(field: string, received: unknown) {
 	return `Expected a string (text), but got: \`${received}\` (${typeof received}). _Try wrapping the value in quotes._
 **Example**: \`${field}: "${received}"\``;
@@ -8,7 +10,7 @@ function not_string_msg(field: string, received: unknown) {
 
 function invalid_enum_msg(
 	field: string,
-	options: string[] | readonly string[],
+	options: Literal[] | readonly Literal[],
 	received: unknown,
 ) {
 	return `Expected one of the following options: ${quote_join(options, "`", ", or ")}, but got: \`${received}\`.
@@ -17,7 +19,7 @@ function invalid_enum_msg(
 
 function not_array_msg(
 	field: string,
-	options: string[] | readonly string[],
+	options: Literal[] | readonly Literal[],
 	received: unknown,
 ) {
 	return `This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
