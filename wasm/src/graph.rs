@@ -541,7 +541,12 @@ impl NoteGraph {
 
     /// Gets an edge between two nodes based on a specific edge type.
     /// Returns None if the edge does not exist.
-    pub fn int_get_edge_by_name(&self, from: &str, to: &str, edge_type: &str) -> Option<NGEdgeRef<'_>> {
+    pub fn int_get_edge_by_name(
+        &self,
+        from: &str,
+        to: &str,
+        edge_type: &str,
+    ) -> Option<NGEdgeRef<'_>> {
         let from_index = self.int_get_node_index(from)?;
         let to_index = self.int_get_node_index(to)?;
 

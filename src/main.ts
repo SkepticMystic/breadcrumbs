@@ -278,7 +278,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 	async backup_old_settings(): Promise<void> {
 		const backup_path = `${this.app.vault.configDir}/plugins/${this.manifest.id}/data-backup__no-directions-migration.json`;
-		if (!await this.app.vault.adapter.exists(backup_path)) {
+		if (!(await this.app.vault.adapter.exists(backup_path))) {
 			await this.app.vault.adapter.write(
 				backup_path,
 				JSON.stringify(this.settings, null, "\t"),

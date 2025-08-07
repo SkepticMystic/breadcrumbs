@@ -68,7 +68,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 					...acc,
 					[dir]: hierarchy[dir],
 				}),
-				{} as OLD_HIERARCHY["dirs"]
+				{} as OLD_HIERARCHY["dirs"],
 			),
 			implied_relationships,
 		}));
@@ -86,7 +86,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 
 			const label = `${dir}s`;
 			const existing = settings.edge_field_groups.find(
-				(group) => group.label === label
+				(group) => group.label === label,
 			);
 
 			if (existing) {
@@ -102,9 +102,11 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 				.flatMap((fields) => fields)
 				.filter(Boolean)
 				.forEach((label) => {
-					if (!settings.edge_fields.find(
-						(field) => field.label === label
-					)) {
+					if (
+						!settings.edge_fields.find(
+							(field) => field.label === label,
+						)
+					) {
 						settings.edge_fields.push({ label });
 					}
 				});
@@ -125,7 +127,8 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 						case "opposite_direction": {
 							OLD_DIRECTIONS.forEach((dir) => {
 								const field = fields[dir];
-								const close_field = fields[get_opposite_direction(dir)];
+								const close_field =
+									fields[get_opposite_direction(dir)];
 								if (!field || !close_field) return;
 
 								settings.implied_relations.transitive.push({
@@ -230,7 +233,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 							break;
 						}
 					}
-				}
+				},
 			);
 		});
 
@@ -238,7 +241,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 
 		settings.edge_field_groups = remove_duplicates_by(
 			settings.edge_field_groups,
-			(group) => group.label
+			(group) => group.label,
 		);
 	}
 
@@ -258,7 +261,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 
 	settings.implied_relations.transitive = remove_duplicates_by(
 		settings.implied_relations.transitive,
-		stringify_transitive_relation
+		stringify_transitive_relation,
 	);
 	// !SECTION
 	// SECTION: Explicit edge sources
@@ -271,9 +274,11 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	}
 
 	/// List note
-	if (old.hierarchyNotes !== undefined &&
+	if (
+		old.hierarchyNotes !== undefined &&
 		old.hierarchyNoteIsParent !== undefined &&
-		old.HNUpField !== undefined) {
+		old.HNUpField !== undefined
+	) {
 		if (old.hierarchyNotes.length > 0) {
 			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`;
 			log.warn(msg);
@@ -285,10 +290,12 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	}
 
 	/// Dendron
-	if (old.addDendronNotes !== undefined &&
+	if (
+		old.addDendronNotes !== undefined &&
 		old.dendronNoteField !== undefined &&
 		old.trimDendronNotes !== undefined &&
-		old.dendronNoteDelimiter !== undefined) {
+		old.dendronNoteDelimiter !== undefined
+	) {
 		settings.explicit_edge_sources.dendron_note = {
 			enabled: old.addDendronNotes,
 			default_field: old.dendronNoteField,
@@ -303,9 +310,11 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	}
 
 	/// Date notes
-	if (old.addDateNotes !== undefined &&
+	if (
+		old.addDateNotes !== undefined &&
 		old.dateNoteField !== undefined &&
-		old.dateNoteFormat !== undefined) {
+		old.dateNoteFormat !== undefined
+	) {
 		settings.explicit_edge_sources.date_note = {
 			...DEFAULT_SETTINGS.explicit_edge_sources.date_note,
 			enabled: old.addDateNotes,
@@ -375,9 +384,11 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	// !SECTION
 	// SECTION: Commands
 	/// Rebuild Graph
-	if (old.showRefreshNotice !== undefined &&
+	if (
+		old.showRefreshNotice !== undefined &&
 		old.refreshOnNoteSave !== undefined &&
-		old.refreshOnNoteChange !== undefined) {
+		old.refreshOnNoteChange !== undefined
+	) {
 		settings.commands.rebuild_graph.notify = old.showRefreshNotice;
 
 		settings.commands.rebuild_graph.trigger = {
@@ -391,9 +402,11 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	}
 
 	/// List Index
-	if (old.wikilinkIndex !== undefined &&
+	if (
+		old.wikilinkIndex !== undefined &&
 		old.aliasesInIndex !== undefined &&
-		old.createIndexIndent !== undefined) {
+		old.createIndexIndent !== undefined
+	) {
 		settings.commands.list_index.default_options = {
 			...settings.commands.list_index.default_options,
 
