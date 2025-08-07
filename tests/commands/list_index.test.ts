@@ -1,4 +1,4 @@
-import { ListIndex } from "src/commands/list_index";
+import { build_list_index } from "src/commands/list_index";
 import { describe, expect, test, beforeEach } from "vitest";
 import init, {
 	create_graph,
@@ -59,7 +59,7 @@ describe("build", () => {
 		const graph = create_graph();
 		graph.build_graph(getNodes(), getEdges(), []);
 
-		const list_index = ListIndex.build(graph, "index.md", undefined, {
+		const list_index = build_list_index(graph, "index.md", undefined, {
 			indent: " ",
 			fields: ["down"],
 			show_attributes: [],
@@ -101,7 +101,7 @@ describe("build", () => {
 		const graph = create_graph();
 		graph.build_graph(getNodes(), getEdges(), []);
 
-		const list_index = ListIndex.build(graph, "index.md", undefined, {
+		const list_index = build_list_index(graph, "index.md", undefined, {
 			indent: ".",
 			fields: ["down"],
 			link_kind: "wiki",
