@@ -50,6 +50,7 @@ beforeEach(async () => {
 	const wasmSource = await fs.readFile(
 		"wasm/pkg/breadcrumbs_graph_wasm_bg.wasm",
 	);
+	// @ts-ignore TS2345
 	const wasmModule = await WebAssembly.compile(wasmSource);
 	await init(wasmModule);
 });

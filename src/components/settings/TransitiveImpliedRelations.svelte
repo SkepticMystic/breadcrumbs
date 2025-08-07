@@ -35,6 +35,7 @@
 
 	let filter = $state("");
 	let transitives = $state([...settings.implied_relations.transitive]);
+	// svelte-ignore state_referenced_locally
 	const opens = $state(transitives.map(() => false));
 
 	const actions = {

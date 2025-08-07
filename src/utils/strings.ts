@@ -1,3 +1,4 @@
+import type { Literal } from "./zod";
 import { deep_access } from "./objects";
 
 export function split_and_trim(str: string, delimiter = ","): string[] {
@@ -6,7 +7,7 @@ export function split_and_trim(str: string, delimiter = ","): string[] {
 }
 
 export function quote_join(
-	arr: string[] | readonly string[],
+	arr: Literal[] | readonly Literal[],
 	quote = '"',
 	joiner = ", ",
 ): string {
