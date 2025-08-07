@@ -23,13 +23,6 @@ export class BCAPI {
 	public async refresh() {
 		await this.plugin.rebuildGraph();
 	}
-	/** @deprecated Use refresh */
-	public async refreshIndex() {
-		await this.refresh();
-	}
-
-	/** @deprecated Filter edges of plugin.graph instead */
-	public getSubForFields(fields: string[], g = this.plugin.graph) {}
 
 	// TODO(RUST)
 	// public build_tree = Traverse.build_tree;
@@ -58,10 +51,6 @@ export class BCAPI {
 		);
 	}
 
-	// BREAKING
-	/** @deprecated Use flatten_all_paths and flat_paths_to_index_list instead. Or, create_list_index */
-	public createIndex() {}
-
 	/**
 	 * Gets all outgoing edges from a node in the graph.
 	 * If no node is specified, it defaults to the active file.
@@ -74,10 +63,5 @@ export class BCAPI {
 		return node && this.plugin.graph.has_node(node)
 			? this.plugin.graph.get_outgoing_edges(node)
 			: undefined;
-	}
-
-	/** @deprecated Use get_neighbours instead */
-	public getMatrixNeighbours() {
-		return this.get_neighbours();
 	}
 }

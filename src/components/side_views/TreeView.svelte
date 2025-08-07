@@ -16,6 +16,7 @@
 		create_edge_sorter,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { untrack } from "svelte";
+	import { to_node_stringify_options } from "src/graph/utils";
 
 	let {
 		plugin,
@@ -71,6 +72,10 @@
 			tree: tree,
 		};
 	});
+
+	let node_stringify_options = $derived(
+		to_node_stringify_options(plugin.settings, settings.show_node_options),
+	);
 </script>
 
 <div class="markdown-rendered BC-tree-view">
@@ -115,8 +120,8 @@
 			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
 				<NestedEdgeList
 					{plugin}
+					{node_stringify_options}
 					show_attributes={settings.show_attributes}
-					show_node_options={settings.show_node_options}
 					data={sorted_tree.tree}
 					items={sorted_tree.tree.entry_nodes}
 					open_signal={!settings.collapse}

@@ -17,6 +17,7 @@
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
+	import { to_node_stringify_options } from "src/graph/utils";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -31,7 +32,10 @@
 		options.sort.field,
 		options.sort.order === -1,
 	);
-	const { show_node_options } = plugin.settings.views.codeblocks;
+	const node_stringify_options = to_node_stringify_options(
+		plugin.settings,
+		plugin.settings.views.codeblocks.show_node_options,
+	);
 
 	const DEFAULT_MAX_DEPTH = 5;
 
@@ -130,7 +134,7 @@
 			<div class="pr-10">
 				<NestedEdgeList
 					{plugin}
-					{show_node_options}
+					{node_stringify_options}
 					{data}
 					items={data.entry_nodes}
 					open_signal={!options.collapse}

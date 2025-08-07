@@ -1,23 +1,21 @@
 <script lang="ts">
 	import NestedEdgeList from "./NestedEdgeList.svelte";
-	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
-	import { FlatTraversalResult } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import {
-		to_node_stringify_options,
-		type EdgeAttribute,
-	} from "src/graph/utils";
+		FlatTraversalResult,
+		NodeStringifyOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { EdgeAttribute } from "src/graph/utils";
 	import ObsidianLink from "./ObsidianLink.svelte";
-	import { onMount } from "svelte";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 		data: FlatTraversalResult;
 		items: Uint32Array;
 		open_signal: boolean | null;
-		show_node_options: ShowNodeOptions;
+		node_stringify_options: NodeStringifyOptions;
 		show_attributes: EdgeAttribute[] | undefined;
 	}
 
@@ -26,14 +24,9 @@
 		data,
 		items,
 		open_signal = $bindable(),
-		show_node_options,
+		node_stringify_options,
 		show_attributes,
 	}: Props = $props();
-
-	let node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		show_node_options,
-	);
 
 	let opens = $state(Array(items.length).fill(true));
 
@@ -46,8 +39,6 @@
 			open_signal = null;
 		}
 	});
-
-	// $: console.log(opens);
 </script>
 
 {#each items as item, i}
@@ -58,7 +49,12 @@
 		node_stringify_options,
 		show_attributes ?? [],
 	) as EdgeRenderingData}
+
 	{#if children && render_data}
+		{@const link_class = render_data.explicit
+			? "BC-edge BC-edge-explicit"
+			: `BC-edge BC-edge-implied BC-edge-implied-${render_data.edge_source}`}
+
 		<details class="tree-item" bind:open={opens[i]}>
 			<summary class="tree-item-self is-clickable flex items-center">
 				{#if children.length || render_data.has_cut_of_children}
@@ -80,9 +76,7 @@
 						display={render_data.link_display}
 						path={render_data.link_path}
 						resolved={render_data.target_resolved}
-						cls="tree-item-inner-text BC-edge {render_data.explicit
-							? 'BC-edge-explicit'
-							: `BC-edge-implied BC-edge-implied-${render_data.edge_source}`}"
+						cls="tree-item-inner-text BC-edge {link_class}"
 					/>
 				</div>
 
@@ -91,12 +85,12 @@
 				{/if}
 			</summary>
 
-			{#if children.length}
+			{#if children.length && opens[i]}
 				<div class="tree-item-children">
 					<NestedEdgeList
 						{plugin}
 						{show_attributes}
-						{show_node_options}
+						{node_stringify_options}
 						{data}
 						{open_signal}
 						items={children}
@@ -104,7 +98,7 @@
 				</div>
 			{/if}
 
-			{#if render_data.has_cut_of_children}
+			{#if render_data.has_cut_of_children && opens[i]}
 				<div class="tree-item-children">
 					<details class="tree-item">
 						<summary class="tree-item-self flex items-center">
