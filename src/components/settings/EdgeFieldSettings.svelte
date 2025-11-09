@@ -12,7 +12,10 @@
 
 	let { plugin = $bindable() }: Props = $props();
 
-	const settings = $state(plugin.settings);
+	const settings = $state(structuredClone(plugin.settings));
+	$effect(() => {
+		plugin.settings = $state.snapshot(settings);
+	});
 
 	let filters = $state({
 		fields: "",
@@ -21,6 +24,7 @@
 
 	const actions = {
 		save: async () => {
+			settings.is_dirty = false;
 			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react

@@ -31,12 +31,18 @@
 
 	let { plugin = $bindable() }: Props = $props();
 
-	const settings = $state(plugin.settings);
+	const settings = $state(structuredClone(plugin.settings));
+	$effect(() => {
+		plugin.settings = $state.snapshot(settings);
+	});
 
 	let filter = $state("");
 	let transitives = $state([...settings.implied_relations.transitive]);
 	// svelte-ignore state_referenced_locally
 	const opens = $state(transitives.map(() => false));
+	$effect(() => {
+		settings.implied_relations.transitive = $state.snapshot(transitives);
+	});
 
 	const actions = {
 		save: async () => {
@@ -46,7 +52,7 @@
 				}
 			}
 
-			settings.implied_relations.transitive = transitives;
+			settings.is_dirty = false;
 
 			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
