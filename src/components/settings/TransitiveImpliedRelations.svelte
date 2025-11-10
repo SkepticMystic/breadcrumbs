@@ -18,7 +18,6 @@
 		input_transitive_rule_schema,
 		parse_transitive_relation,
 		stringify_transitive_relation,
-		// transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
@@ -256,7 +255,7 @@
 		</code>. In other words, your spouse's sibling is your sibling-in-law.
 	</p>
 
-	<div class="my-2 flex items-center gap-2">
+	<div class="sticky-top my-2 flex items-center gap-2">
 		<button class="flex items-center gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
@@ -493,5 +492,11 @@
 		border-radius: var(--radius-m);
 		border: var(--modal-border-width) solid
 			var(--background-modifier-border);
+	}
+
+	.sticky-top {
+		position: sticky;
+		top: -2rem;
+		background-color: var(--background-secondary);
 	}
 </style>

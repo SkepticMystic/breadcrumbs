@@ -292,7 +292,7 @@
 </script>
 
 <div class="flex flex-col">
-	<div class="my-2 flex items-center gap-2">
+	<div class="sticky-top my-2 flex items-center gap-2">
 		<button class="flex items-center gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
@@ -543,3 +543,11 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	.sticky-top {
+		position: sticky;
+		top: -2rem;
+		background-color: var(--background-secondary);
+	}
+</style>
