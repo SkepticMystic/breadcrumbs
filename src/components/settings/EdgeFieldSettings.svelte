@@ -2,8 +2,13 @@
 	import { ArrowDown, PlusIcon, SaveIcon } from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
+	import type {
+		BreadcrumbsSettings,
+		EdgeField,
+		EdgeFieldGroup,
+	} from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
+	import { log } from "src/logger";
 	import Tag from "../obsidian/tag.svelte";
 
 	interface Props {
@@ -12,7 +17,93 @@
 
 	let { plugin = $bindable() }: Props = $props();
 
-	const settings = $state(structuredClone(plugin.settings));
+	let _cloned_settings: BreadcrumbsSettings;
+	try {
+		// Sanitize arrays that might have been proxied by reactive state before cloning
+		const s = plugin.settings;
+		const sanitized: BreadcrumbsSettings = {
+			...s,
+			views: {
+				...s.views,
+				side: {
+					...s.views.side,
+					matrix: {
+						...s.views.side.matrix,
+						show_attributes: [
+							...s.views.side.matrix.show_attributes,
+						],
+					},
+					tree: {
+						...s.views.side.tree,
+						show_attributes: [...s.views.side.tree.show_attributes],
+					},
+				},
+			},
+		};
+		_cloned_settings = structuredClone(sanitized);
+	} catch (e) {
+		// <<< debug <<<
+		type UncloneableDetail = {
+			path: (string | number)[];
+			type: string;
+			error: string;
+		} | null;
+		function find_uncloneable(
+			value: unknown,
+			path: (string | number)[] = [],
+		): UncloneableDetail {
+			try {
+				// @ts-ignore
+				structuredClone(value);
+				return null;
+			} catch (err) {
+				if (Array.isArray(value)) {
+					for (let i = 0; i < value.length; i++) {
+						const res: UncloneableDetail = find_uncloneable(
+							value[i],
+							path.concat(i),
+						);
+						if (res) return res;
+					}
+					return {
+						path,
+						type: Object.prototype.toString.call(value),
+						error: (err as Error).message,
+					};
+				} else if (value && typeof value === "object") {
+					for (const [k, v] of Object.entries(
+						value as Record<string, unknown>,
+					)) {
+						const res: UncloneableDetail = find_uncloneable(
+							v,
+							path.concat(k),
+						);
+						if (res) return res;
+					}
+					return {
+						path,
+						type: Object.prototype.toString.call(value),
+						error: (err as Error).message,
+					};
+				} else {
+					return {
+						path,
+						type: typeof value,
+						error: (err as Error).message,
+					};
+				}
+			}
+		}
+		const detail: UncloneableDetail = find_uncloneable(plugin.settings);
+		log.error(
+			"EdgeFieldSettings structuredClone(plugin.settings) failed >",
+			e,
+			detail,
+		);
+		// >>> debug >>>
+		_cloned_settings = plugin.settings;
+	}
+	const settings = $state(_cloned_settings);
 	$effect(() => {
 		plugin.settings = $state.snapshot(settings);
 	});
