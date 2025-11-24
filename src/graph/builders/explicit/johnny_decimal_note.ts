@@ -14,7 +14,7 @@ const get_johnny_decimal_note_info = (
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	// NOTE: Don't return early here. Johnny Decimal notes can be valid without any metadata in them
+	// NOTE: Don't return early here. Johnny.Decimal notes can be valid without any metadata in them
 	//   We just have to iterate and check each note
 	// if (!metadata) return fail(undefined);
 
@@ -121,7 +121,7 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	const { delimiter } =
 		plugin.settings.explicit_edge_sources.johnny_decimal_note;
 
-	// This regex is actually less strict than the real Johnny Decimal system
+	// This regex is actually less strict than the real Johnny.Decimal system
 	// Match a delimiter-separated list of chars and nums, followed by a space or the delimiter at the end
 	const regex = new RegExp(`^([\\w\\d\\${delimiter}]+)(\\s|\\${delimiter}$)`);
 
