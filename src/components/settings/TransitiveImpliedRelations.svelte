@@ -29,11 +29,12 @@
 		plugin: BreadcrumbsPlugin;
 	}
 
-	let { plugin = $bindable() }: Props = $props();
+	let { plugin }: Props = $props();
 
-	const settings = $state(plugin.settings);
+	let settings = $state(plugin.settings);
 
 	let filter = $state("");
+	// svelte-ignore state_referenced_locally
 	let transitives = $state([...settings.implied_relations.transitive]);
 	// svelte-ignore state_referenced_locally
 	const opens = $state(transitives.map(() => false));
@@ -50,14 +51,14 @@
 
 			// WORKAROUND: `settings` is a reactive proxy around plugin.settings
 			// that, most importantly, does not pass through mutations. We have
-			// to manually reassign it an un-reactivied copy to ensure that
+			// to manually reassign it an un-reactified copy to ensure that
 			// `plugin.saveSettings()` actually uses our updated settings.
 			plugin.settings = $state.snapshot(settings);
 
 			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
-			plugin = plugin;
+			settings = plugin.settings;
 		},
 
 		make_id: (rule_i: number) => `BC-transitive-rule-${rule_i}`,

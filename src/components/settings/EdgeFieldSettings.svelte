@@ -10,9 +10,9 @@
 		plugin: BreadcrumbsPlugin;
 	}
 
-	let { plugin = $bindable() }: Props = $props();
+	let { plugin }: Props = $props();
 
-	const settings = $state(plugin.settings);
+	let settings = $state(plugin.settings);
 
 	let filters = $state({
 		fields: "",
@@ -23,14 +23,14 @@
 		save: async () => {
 			// WORKAROUND: `settings` is a reactive proxy around plugin.settings
 			// that, most importantly, does not pass through mutations. We have
-			// to manually reassign it an un-reactivied copy to ensure that
+			// to manually reassign it an un-reactified copy to ensure that
 			// `plugin.saveSettings()` actually uses our updated settings.
 			plugin.settings = $state.snapshot(settings);
 
 			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
-			plugin = plugin;
+			settings = plugin.settings;
 		},
 
 		fields: {
@@ -58,7 +58,6 @@
 				setTimeout(() => actions.fields.scroll_to(field.label), 0);
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 			remove: (edge_field: EdgeField) => {
 				settings.edge_fields = settings.edge_fields.filter(
@@ -72,7 +71,6 @@
 				});
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 
 			rename: (edge_field: EdgeField, new_label: string) => {
@@ -151,7 +149,6 @@
 				edge_field.label = new_label;
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 		},
 
@@ -181,7 +178,6 @@
 				setTimeout(() => actions.groups.scroll_to(group.label), 0);
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 
 			remove: (group: EdgeFieldGroup) => {
@@ -190,7 +186,6 @@
 				);
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 
 			rename: (group: EdgeFieldGroup, new_label: string) => {
@@ -224,7 +219,6 @@
 				group.label = new_label;
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 
 			add_field: (
@@ -236,7 +230,6 @@
 				group.fields.push(field_label);
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 
 			remove_field: (
@@ -248,7 +241,6 @@
 				group.fields = group.fields.filter((f) => f !== field_label);
 
 				settings.is_dirty = true;
-				plugin = plugin;
 			},
 		},
 	};
