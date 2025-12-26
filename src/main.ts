@@ -115,17 +115,26 @@ export default class BreadcrumbsPlugin extends Plugin {
 			try {
 				const all_properties =
 					this.app.metadataTypeManager.getAllProperties();
-	
+
 				for (const field of this.settings.edge_fields) {
-					if (all_properties[field.label]?.type) continue;
-					this.app.metadataTypeManager.setType(field.label, "multitext");
+					if (
+						all_properties[field.label]?.widget === "multitext" ||
+						all_properties[field.label]?.widget === "text"
+					) continue;
+					await this.app.metadataTypeManager.setType(
+						field.label,
+						"multitext",
+					);
 				}
-	
+
 				for (const [field, { property_type }] of Object.entries(
 					METADATA_FIELDS_MAP,
 				)) {
 					if (all_properties[field]?.type === property_type) continue;
-					this.app.metadataTypeManager.setType(field, property_type);
+					await this.app.metadataTypeManager.setType(
+						field,
+						property_type,
+					);
 				}
 			} catch (error) {
 				log.error("metadataTypeManager.setType error >", error);
