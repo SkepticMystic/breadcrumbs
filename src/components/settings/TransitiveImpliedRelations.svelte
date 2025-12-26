@@ -48,6 +48,12 @@
 
 			settings.implied_relations.transitive = transitives;
 
+			// WORKAROUND: `settings` is a reactive proxy around plugin.settings
+			// that, most importantly, does not pass through mutations. We have
+			// to manually reassign it an un-reactivied copy to ensure that
+			// `plugin.saveSettings()` actually uses our updated settings.
+			plugin.settings = $state.snapshot(settings);
+
 			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
