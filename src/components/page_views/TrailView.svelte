@@ -18,7 +18,16 @@
 	let { plugin = $bindable(), file_path }: Props = $props();
 
 	let settings = $state(structuredClone(plugin.settings.views.page.trail));
+	let is_initial_mount = true;
+
 	$effect(() => {
+		// We only want to run this when *we* have changed `settings`,
+		// and not when the component is initially mounted into the DOM,
+		// or when the settings have been updated externally.
+		if (is_initial_mount) {
+			is_initial_mount = false;
+			return;
+		}
 		plugin.settings.views.page.trail = $state.snapshot(settings);
 		untrack(() => void plugin.saveSettings());
 	});
