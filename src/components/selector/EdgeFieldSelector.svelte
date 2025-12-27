@@ -6,12 +6,14 @@
 		fields: EdgeField[];
 		undefine_on_change?: boolean;
 		field?: EdgeField | undefined;
+		placeholder?: string | undefined;
 	}
 
 	let {
 		fields,
 		undefine_on_change = true,
 		field = $bindable(undefined),
+		placeholder = undefined,
 	}: Props = $props();
 
 	const dispatch = createEventDispatcher<{
@@ -29,7 +31,7 @@
 		if (undefine_on_change) field = undefined;
 	}}
 >
-	<option value="" disabled>Select Field</option>
+	<option value="" disabled>{placeholder ?? "Select Field"}</option>
 
 	{#each fields as { label }}
 		<option value={label}>{label}</option>
