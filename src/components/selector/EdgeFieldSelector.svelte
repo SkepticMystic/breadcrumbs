@@ -21,7 +21,7 @@
 
 <select
 	class="dropdown"
-	value={field?.label}
+	value={field?.label ?? ""}
 	onchange={(e) => {
 		field = fields.find((field) => field.label === e.currentTarget.value);
 		dispatch("select", field);
@@ -29,7 +29,7 @@
 		if (undefine_on_change) field = undefined;
 	}}
 >
-	<option value={undefined} disabled>Select Field</option>
+	<option value="" disabled>Select Field</option>
 
 	{#each fields as { label }}
 		<option value={label}>{label}</option>
