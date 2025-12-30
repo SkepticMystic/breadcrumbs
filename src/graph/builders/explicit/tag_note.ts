@@ -85,16 +85,22 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		({ file: tag_note_file, cache: tag_note_cache }) => {
 			if (!tag_note_cache) return;
 
-			// Check if the tag_note itself has any tags for other tags notes
-			tag_note_cache?.tags?.forEach(({ tag }) => {
+			const process_tag = ( tag: string) => {
+				// Ensure consistent tag formatting, since some have the # and some don't
+				const formatted_tag = ensure_starts_with(tag, "#");
 				// Quite happy with this trick :)
 				// Try get the existing_paths, and mutate it if it exists
 				// Push returns the new length (guarenteed to be atleast 1 - truthy)
 				// So it will only be false if the key doesn't exist
-				if (!tag_paths_map.get(tag)?.push(tag_note_file.path)) {
-					tag_paths_map.set(tag, [tag_note_file.path]);
+				if (!tag_paths_map.get(formatted_tag)?.push(tag_note_file.path)) {
+					tag_paths_map.set(formatted_tag, [tag_note_file.path]);
 				}
-			});
+			}
+
+			// Check if the tag_note itself has any tags for other tags notes
+			// We must iterate over both the frontmatter and body tags independently
+			tag_note_cache?.frontmatter?.tags?.forEach(process_tag);
+			tag_note_cache?.tags?.map((item) => item.tag)?.forEach(process_tag)
 
 			const tag_note_info = get_tag_note_info(
 				plugin,
