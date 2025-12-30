@@ -1,173 +1,33 @@
-import {
-	COMPLEX_EDGE_SORT_FIELD_PREFIXES,
-	type EdgeSortId,
-} from "src/const/graph";
-import type { ShowNodeOptions } from "src/interfaces/settings";
-import { Paths } from "src/utils/paths";
+import type { ExplicitEdgeSource } from "src/const/graph";
 import type {
-	BCEdge,
-	BCEdgeAttributes,
-	BCGraph,
-	BCNodeAttributes,
-} from "./MyMultiGraph";
+	BreadcrumbsSettings,
+	ShowNodeOptions,
+} from "src/interfaces/settings";
+import { NodeStringifyOptions } from "wasm/pkg/breadcrumbs_graph_wasm";
 
-export const is_self_loop = (edge: Pick<BCEdge, "source_id" | "target_id">) =>
-	edge.source_id === edge.target_id;
+export function to_node_stringify_options(
+	settings: BreadcrumbsSettings | undefined,
+	options: ShowNodeOptions,
+): NodeStringifyOptions {
+	const dendron_note = settings?.explicit_edge_sources?.dendron_note ?? {
+		enabled: false,
+	};
 
-export const stringify_node = (
-	node_id: string,
-	node_attr: BCNodeAttributes,
-	options?: {
-		show_node_options?: ShowNodeOptions;
-		trim_basename_delimiter?: string;
-	},
-) => {
-	if (options?.show_node_options?.alias && node_attr.aliases?.length) {
-		return node_attr.aliases.at(0)!;
-	} else if (options?.trim_basename_delimiter) {
-		return Paths.drop_ext(node_id)
-			.split("/")
-			.pop()!
-			.split(options.trim_basename_delimiter)
-			.last()!;
-	} else {
-		return Paths.show(node_id, options?.show_node_options);
-	}
-};
-export const stringify_edge = (
-	edge: BCEdge,
-	options?: {
-		rtl?: boolean;
-		edge_id?: boolean;
-		show_node_options?: ShowNodeOptions;
-	},
-) => {
-	const source_id = Paths.show(edge.source_id, options?.show_node_options);
-	const target_id = Paths.show(edge.target_id, options?.show_node_options);
+	return new NodeStringifyOptions(
+		options.ext,
+		options.folder,
+		options.alias,
+		dendron_note.enabled && dendron_note.display_trimmed
+			? dendron_note.delimiter
+			: undefined,
+	);
+}
 
-	const list = options?.rtl
-		? [target_id, `<-${edge.attr.field}-`, source_id]
-		: [source_id, `-${edge.attr.field}->`, target_id];
-
-	return list.join(" ");
-};
-
-export type EdgeSorter = (a: BCEdge, b: BCEdge) => number;
-
-const sorters = {
-	path: (order) => (a, b) => a.target_id.localeCompare(b.target_id) * order,
-
-	basename: (order) => (a, b) => {
-		const [a_field, b_field] = [
-			Paths.drop_folder(a.target_id),
-			Paths.drop_folder(b.target_id),
-		];
-
-		return a_field.localeCompare(b_field) * order;
-	},
-
-	field: (order) => (a, b) => {
-		const [a_field, b_field] = [
-			a.attr.field ?? "null",
-			b.attr.field ?? "null",
-		];
-
-		return a_field.localeCompare(b_field) * order;
-	},
-} satisfies Partial<Record<EdgeSortId["field"], (order: number) => EdgeSorter>>;
-
-export const get_edge_sorter: (
-	sort: EdgeSortId,
-	graph: BCGraph,
-) => EdgeSorter = (sort, graph) => {
-	switch (sort.field) {
-		case "path": {
-			return sorters.path(sort.order);
-		}
-
-		case "basename": {
-			return sorters.basename(sort.order);
-		}
-
-		case "field": {
-			return sorters.field(sort.order);
-		}
-
-		case "explicit": {
-			return (a, b) => {
-				if (a.attr.explicit === true && b.attr.explicit === true) {
-					return (
-						a.attr.source.localeCompare(b.attr.source) * sort.order
-					);
-				} else if (
-					a.attr.explicit === false &&
-					b.attr.explicit === false
-				) {
-					return (
-						a.attr.implied_kind.localeCompare(b.attr.implied_kind) *
-						sort.order
-					);
-				} else {
-					return a.attr.explicit ? sort.order : -sort.order;
-				}
-			};
-		}
-
-		default: {
-			// Rather check externally, so this should never happen
-			if (
-				!COMPLEX_EDGE_SORT_FIELD_PREFIXES.some((f) =>
-					sort.field.startsWith(f + ":"),
-				)
-			) {
-				throw new Error(`Invalid sort field: ${sort.field}`);
-			}
-
-			switch (sort.field.split(":")[0]) {
-				// BREAKING: Deprecate in favour of neighbour-field
-				case "neighbour":
-				case "neighbour-field": {
-					const field = sort.field.split(":", 2).at(1);
-					const cache: Record<string, BCEdge | undefined> = {};
-
-					return (a, b) => {
-						const [a_neighbour, b_neighbour] = [
-							(cache[a.target_id] ??= graph
-								.get_out_edges(a.target_id)
-								.filter((e) => has_edge_attrs(e, { field }))
-								.at(0)),
-
-							(cache[b.target_id] ??= graph
-								.get_out_edges(b.target_id)
-								.filter((e) => has_edge_attrs(e, { field }))
-								.at(0)),
-						];
-
-						if (!a_neighbour || !b_neighbour) {
-							// NOTE: This puts the node with no neighbours last
-							// Which makes sense, I think. It simulates a traversal, where the node with no neighbours is the end of the path
-							return a_neighbour
-								? -sort.order
-								: b_neighbour
-									? sort.order
-									: 0;
-						} else {
-							return sorters.path(sort.order)(
-								a_neighbour,
-								b_neighbour,
-							);
-						}
-					};
-				}
-
-				default: {
-					return (_a, _b) => sort.order;
-				}
-			}
-		}
-	}
-};
-
+/**
+ * Legacy type
+ *
+ * @deprecated
+ */
 export type EdgeAttrFilters = Partial<
 	Pick<BCEdgeAttributes, "explicit" | "field">
 > &
@@ -176,15 +36,36 @@ export type EdgeAttrFilters = Partial<
 		$or_target_ids: string[];
 	}>;
 
-// NOTE: Technically the source and implied_kind fields could be implemented here, but missions for now
-export const has_edge_attrs = (edge: BCEdge, attrs?: EdgeAttrFilters) =>
-	attrs === undefined ||
-	[
-		attrs.field === undefined || edge.attr.field === attrs.field,
-		attrs.explicit === undefined || edge.attr.explicit === attrs.explicit,
+export const EDGE_ATTRIBUTES = [
+	"field",
+	"explicit",
+	"source",
+	"implied_kind",
+	"round",
+] as const;
 
-		attrs.$or_fields === undefined ||
-			attrs.$or_fields.includes(edge.attr.field ?? "null"),
-		attrs.$or_target_ids === undefined ||
-			attrs.$or_target_ids.includes(edge.target_id),
-	].every(Boolean);
+export type EdgeAttribute = (typeof EDGE_ATTRIBUTES)[number];
+
+/**
+ * Legacy type
+ *
+ * @deprecated
+ */
+export type BCEdgeAttributes = {
+	field: string;
+} & (
+	| {
+			explicit: true;
+			source: ExplicitEdgeSource;
+	  }
+	| {
+			explicit: false;
+			implied_kind: `transitive:${string}`;
+			/** Which round of implied_building this edge got added in.
+			 * Starts at 1 - you can think of real edges as being added in round 0.
+			 * The way {@link BCGraph.safe_add_directed_edge} works, currently only the first instance of an edge will be added.
+			 *   If the same edge tries again in a future round, _that_ one will be blocked.
+			 */
+			round: number;
+	  }
+);

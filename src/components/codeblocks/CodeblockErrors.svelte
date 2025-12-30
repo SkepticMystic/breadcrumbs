@@ -3,8 +3,12 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import RenderMarkdown from "../obsidian/RenderMarkdown.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let errors: BreadcrumbsError[];
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		errors: BreadcrumbsError[];
+	}
+
+	let { plugin, errors }: Props = $props();
 
 	const markdown = errors
 		.map((e) => `- **\`${e.path}\`**: ${e.message}`)

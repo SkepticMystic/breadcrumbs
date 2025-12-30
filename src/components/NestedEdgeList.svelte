@@ -1,74 +1,114 @@
 <script lang="ts">
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import type { EdgeTree } from "src/graph/traverse";
-	import { type EdgeSorter } from "src/graph/utils";
-	import type { ShowNodeOptions } from "src/interfaces/settings";
+	import NestedEdgeList from "./NestedEdgeList.svelte";
 	import type BreadcrumbsPlugin from "src/main";
-	import { untyped_pick } from "src/utils/objects";
-	import { url_search_params } from "src/utils/url";
-	import EdgeLink from "./EdgeLink.svelte";
 	import ChevronOpener from "./button/ChevronOpener.svelte";
 	import TreeItemFlair from "./obsidian/TreeItemFlair.svelte";
+	import {
+		FlatTraversalResult,
+		NodeStringifyOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import type { EdgeAttribute } from "src/graph/utils";
+	import ObsidianLink from "./ObsidianLink.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
-
-	export let tree: EdgeTree[];
-
-	export let open_signal: boolean | null;
-	export let show_node_options: ShowNodeOptions;
-	export let show_attributes: EdgeAttribute[] | undefined;
-
-	export let sort: EdgeSorter;
-
-	let opens = tree.map(() => true);
-
-	$: if (open_signal === true) {
-		opens = opens.map(() => true);
-		open_signal = null;
-	} else if (open_signal === false) {
-		opens = opens.map(() => false);
-		open_signal = null;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		data: FlatTraversalResult;
+		items: Uint32Array;
+		open_signal: boolean | null;
+		node_stringify_options: NodeStringifyOptions;
+		show_attributes: EdgeAttribute[] | undefined;
 	}
+
+	let {
+		plugin,
+		data,
+		items,
+		open_signal = $bindable(),
+		node_stringify_options,
+		show_attributes,
+	}: Props = $props();
+
+	let opens = $state(Array(items.length).fill(true));
+
+	$effect(() => {
+		if (open_signal === true) {
+			opens = Array(items.length).fill(true);
+			open_signal = null;
+		} else if (open_signal === false) {
+			opens = Array(items.length).fill(false);
+			open_signal = null;
+		}
+	});
 </script>
 
-{#each tree.sort((a, b) => sort(a.edge, b.edge)) as item, i}
-	<details class="tree-item" bind:open={opens[i]}>
-		<summary class="tree-item-self is-clickable flex items-center">
-			{#if item.children.length}
-				<div class="tree-item-icon collapse-icon mod-collapsible">
-					<ChevronOpener open={opens[i]} />
+{#each items as item, i}
+	{@const children = data.children_at_index(item)}
+	{@const render_data = data.rendering_obj_at_index(
+		item,
+		plugin.graph,
+		node_stringify_options,
+		show_attributes ?? [],
+	) as EdgeRenderingData}
+
+	{#if children && render_data}
+		{@const link_class = render_data.explicit
+			? "BC-edge BC-edge-explicit"
+			: `BC-edge BC-edge-implied BC-edge-implied-${render_data.edge_source}`}
+
+		<details class="tree-item" bind:open={opens[i]}>
+			<summary class="tree-item-self is-clickable flex items-center">
+				{#if children.length || render_data.has_cut_of_children}
+					<div class="tree-item-icon collapse-icon mod-collapsible">
+						<ChevronOpener open={opens[i]} />
+					</div>
+				{/if}
+
+				<div class="tree-item-inner">
+					<!-- <EdgeLink
+						{plugin}
+						edge={datum.edge}
+						{node_stringify_options}
+						cls="tree-item-inner-text"
+					/> -->
+
+					<ObsidianLink
+						{plugin}
+						display={render_data.link_display}
+						path={render_data.link_path}
+						resolved={render_data.target_resolved}
+						cls="tree-item-inner-text BC-edge {link_class}"
+					/>
+				</div>
+
+				{#if show_attributes?.length}
+					<TreeItemFlair label={render_data.attribute_label} />
+				{/if}
+			</summary>
+
+			{#if children.length && opens[i]}
+				<div class="tree-item-children">
+					<NestedEdgeList
+						{plugin}
+						{show_attributes}
+						{node_stringify_options}
+						{data}
+						{open_signal}
+						items={children}
+					/>
 				</div>
 			{/if}
 
-			<div class="tree-item-inner">
-				<EdgeLink
-					{plugin}
-					edge={item.edge}
-					{show_node_options}
-					cls="tree-item-inner-text"
-				/>
-			</div>
-
-			{#if show_attributes?.length}
-				<TreeItemFlair
-					label={url_search_params(
-						untyped_pick(item.edge.attr, show_attributes),
-						{ trim_lone_param: true },
-					)}
-				/>
+			{#if render_data.has_cut_of_children && opens[i]}
+				<div class="tree-item-children">
+					<details class="tree-item">
+						<summary class="tree-item-self flex items-center">
+							<div class="tree-item-inner">
+								<span>Traversal limit reached...</span>
+							</div>
+						</summary>
+					</details>
+				</div>
 			{/if}
-		</summary>
-
-		{#if item.children.length}
-			<div class="tree-item-children">
-				<svelte:self
-					{sort}
-					{plugin}
-					{show_attributes}
-					{show_node_options}
-					tree={item.children}
-				/>
-			</div>
-		{/if}
-	</details>
+		</details>
+	{/if}
 {/each}

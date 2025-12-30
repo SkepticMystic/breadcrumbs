@@ -1,14 +1,25 @@
 <script lang="ts">
-	import type { BCEdge } from "src/graph/MyMultiGraph";
 	import type BreadcrumbsPlugin from "src/main";
 	import EdgeLink from "../EdgeLink.svelte";
-	import { url_search_params } from "src/utils/url";
-	import { untyped_pick } from "src/utils/objects";
+	import {
+		NodeStringifyOptions,
+		type Path,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
+	import { to_node_stringify_options } from "src/graph/utils";
 
-	export let plugin: BreadcrumbsPlugin;
-	export let all_paths: BCEdge[][];
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+		all_paths: Path[];
+	}
 
-	const reversed = all_paths.map((path) => [...path].reverse());
+	let { plugin, all_paths }: Props = $props();
+
+	const node_stringify_options = to_node_stringify_options(
+		plugin.settings,
+		plugin.settings.views.page.trail.show_node_options,
+	);
+
+	const reversed = all_paths.map((path) => path.reverse_edges);
 </script>
 
 <div class="BC-trail-view flex flex-col gap-1 px-3 py-2">
@@ -19,22 +30,15 @@
 					{#if j !== 0}
 						<span
 							class="BC-trail-view-item-separator"
-							aria-label={url_search_params(
-								untyped_pick(edge.attr, [
-									"source",
-									"implied_kind",
-									"round",
-								]),
-							)}
+							aria-label={edge.get_attribute_label(plugin.graph, [
+								"source",
+								"implied_kind",
+								"round",
+							])}
 						></span>
 					{/if}
 
-					<EdgeLink
-						{edge}
-						{plugin}
-						show_node_options={plugin.settings.views.page.trail
-							.show_node_options}
-					/>
+					<EdgeLink {edge} {plugin} {node_stringify_options} />
 				</div>
 			{/each}
 		</div>

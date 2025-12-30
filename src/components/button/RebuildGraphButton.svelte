@@ -3,14 +3,18 @@
 	import { ICON_SIZE } from "src/const";
 	import type BreadcrumbsPlugin from "src/main";
 
-	export let cls = "";
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		cls?: string;
+		plugin: BreadcrumbsPlugin;
+	}
+
+	let { cls = "", plugin }: Props = $props();
 </script>
 
 <button
 	class={cls}
 	aria-label="Rebuild Graph"
-	on:click={() => plugin.refresh()}
+	onclick={() => plugin.rebuildGraph()}
 >
 	<RotateCcw size={ICON_SIZE} />
 </button>

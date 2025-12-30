@@ -1,147 +1,129 @@
+import { parseFrontMatterAliases } from "obsidian";
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
-import type { BreadcrumbsError, EdgeToAdd } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
-import { BCGraph, type BCNodeAttributes } from "../MyMultiGraph";
+import type { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import {
+	GCNodeData,
+	TransitiveGraphRule,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 import { add_explicit_edges } from "./explicit";
-import { get_all_files, type AllFiles } from "./explicit/files";
-import { _add_implied_edges_transitive } from "./implied/transitive";
+import type { AllFiles } from "./explicit/files";
+import { get_all_files } from "./explicit/files";
 
-const add_initial_nodes = (graph: BCGraph, all_files: AllFiles) => {
+function get_initial_nodes(all_files: AllFiles) {
+	const nodes: GCNodeData[] = [];
+
 	if (all_files.obsidian) {
 		all_files.obsidian.forEach(({ file, cache }) => {
-			const node_attr: BCNodeAttributes = {
-				resolved: true,
-			};
+			let node_aliases: string[] = [];
+			let ignore_in_edges = false;
+			let ignore_out_edges = false;
 
-			const aliases = cache?.frontmatter?.aliases as unknown;
+			const aliases = parseFrontMatterAliases(cache?.frontmatter);
 			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_attr.aliases = aliases;
+				node_aliases = aliases;
 			}
 
 			if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
-				node_attr.ignore_in_edges = true;
+				ignore_in_edges = true;
 			}
 			if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
-				node_attr.ignore_out_edges = true;
+				ignore_out_edges = true;
 			}
 
-			graph.addNode(file.path, node_attr);
+			nodes.push(
+				new GCNodeData(
+					file.path,
+					node_aliases,
+					true,
+					ignore_in_edges,
+					ignore_out_edges,
+				),
+			);
 		});
 	} else {
 		all_files.dataview.forEach((page) => {
-			const node_attr: BCNodeAttributes = {
-				resolved: true,
-			};
+			let node_aliases: string[] = [];
+			let ignore_in_edges = false;
+			let ignore_out_edges = false;
 
 			const aliases = page.file.aliases.values;
 			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_attr.aliases = aliases;
+				node_aliases = aliases;
 			}
 
 			if (page[META_ALIAS["ignore-in-edges"]]) {
-				node_attr.ignore_in_edges = true;
+				ignore_in_edges = true;
 			}
 			if (page[META_ALIAS["ignore-out-edges"]]) {
-				node_attr.ignore_out_edges = true;
+				ignore_out_edges = true;
 			}
 
-			graph.addNode(page.file.path, node_attr);
+			nodes.push(
+				new GCNodeData(
+					page.file.path,
+					node_aliases,
+					true,
+					ignore_in_edges,
+					ignore_out_edges,
+				),
+			);
 		});
 	}
-};
+
+	return nodes;
+}
 
 export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 	const timer = new Timer();
 	const timer2 = new Timer();
 
-	// Make a new graph, instead of mutating the old one
-	const graph = new BCGraph();
-
 	// Get once, send to all builders
 	const all_files = get_all_files(plugin.app);
 
 	// Add initial nodes
-	add_initial_nodes(graph, all_files);
+	const nodes = get_initial_nodes(all_files);
 
-	log.debug(timer.elapsedMessage("Adding initial nodes"));
+	log.debug(timer.elapsedMessage("get_initial_nodes"));
 	timer.reset();
 
 	// Explicit edges
 	const explicit_edge_results = await Promise.all(
 		EXPLICIT_EDGE_SOURCES.map(async (source) => {
-			const result = await add_explicit_edges[source](
-				graph,
-				plugin,
-				all_files,
-			);
+			const results = await add_explicit_edges[source](plugin, all_files);
 
-			return { source, errors: result.errors };
+			return { source, results };
 		}),
 	);
 
-	log.debug(timer.elapsedMessage("Adding initial edges"));
+	const edges: GCEdgeData[] = [];
+	for (const { results } of explicit_edge_results) {
+		nodes.push(...results.nodes);
+		edges.push(...results.edges);
+	}
+
+	log.debug(timer.elapsedMessage("Collecting edges and nodes"));
 	timer.reset();
 
-	const max_implied_relationship_rounds = Math.max(
-		...plugin.settings.implied_relations.transitive.map(
-			(imp) => imp.rounds,
-		),
+	const transitive_rules = plugin.settings.implied_relations.transitive.map(
+		(rule) => {
+			return new TransitiveGraphRule(
+				rule.name,
+				rule.chain.map((attr) => attr.field!),
+				rule.close_field,
+				rule.rounds,
+				false,
+				rule.close_reversed,
+			);
+		},
 	);
 
-	const implied_edge_results: { transitive: BreadcrumbsError[] } = {
-		transitive: [],
-	};
+	plugin.graph.build_graph(nodes, edges, transitive_rules);
+	log.debug(timer.elapsedMessage("WASM call"));
+	log.debug(timer2.elapsedMessage("Total"));
 
-	// Track which fields get added, clearing each round
-	// This lets us check if a transitive rule even needs to be considered
-	const added_fields = new Set<string>();
-
-	// Add all the fields from the initial edges
-	for (const edge of graph.edgeEntries()) {
-		added_fields.add(edge.attributes.field);
-	}
-
-	for (let round = 1; round <= max_implied_relationship_rounds; round++) {
-		const edges: EdgeToAdd[] = [];
-
-		plugin.settings.implied_relations.transitive.forEach((rule) => {
-			// If none of the fields added in the previous round are in this rule, skip it
-			if (!rule.chain.some((attr) => added_fields.has(attr.field!))) {
-				return;
-			}
-
-			const result = _add_implied_edges_transitive(
-				graph,
-				plugin,
-				rule,
-				round,
-			);
-
-			edges.push(...result.edges);
-			implied_edge_results.transitive.push(...result.errors);
-		});
-
-		// We don't need the previous fields anymore
-		added_fields.clear();
-
-		// PERF: Break if no edges were added. We've reached a fixed point
-		if (edges.length === 0) break;
-		else {
-			edges.forEach((edge) => {
-				graph.safe_add_directed_edge(
-					edge.source_id,
-					edge.target_id,
-					edge.attr,
-				) && added_fields.add(edge.attr.field);
-			});
-		}
-	}
-
-	log.debug(timer.elapsedMessage("Adding implied edges"));
-	log.debug(timer2.elapsedMessage("Total Graph building"));
-
-	return { graph, explicit_edge_results, implied_edge_results };
+	return { explicit_edge_results };
 };

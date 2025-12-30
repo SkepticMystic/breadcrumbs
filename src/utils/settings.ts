@@ -1,6 +1,6 @@
 import { Setting } from "obsidian";
 
-export const new_setting = <
+export function new_setting<
 	SO extends string,
 	CL extends Partial<Record<string, boolean>>,
 >(
@@ -10,24 +10,24 @@ export const new_setting = <
 		desc: string | DocumentFragment;
 		toggle: {
 			value: boolean;
-			cb: (toggle: boolean) => void;
+			cb: (toggle: boolean) => void | Promise<void>;
 		};
 		input: {
 			value: string;
 			placeholder?: string;
-			cb: (value: string) => void;
+			cb: (value: string) => void | Promise<void>;
 		};
 		select: {
 			options: SO[] | readonly SO[] | Record<string, SO>;
 			value: SO;
-			cb: (value: SO) => void;
+			cb: (value: SO) => void | Promise<void>;
 		};
 		checklist: {
 			options: CL;
-			cb: (value: CL) => void;
+			cb: (value: CL) => void | Promise<void>;
 		};
 	}>,
-) => {
+) {
 	const setting = new Setting(container_el);
 
 	if (config.name) setting.setName(config.name);
@@ -40,13 +40,13 @@ export const new_setting = <
 	} else if (config.input) {
 		setting.addText((text) => {
 			if (config.input?.placeholder) {
-				text.setPlaceholder(config.input!.placeholder);
+				text.setPlaceholder(config.input.placeholder);
 			}
 
 			text.setValue(config.input!.value);
 
 			text.inputEl.onblur = () => {
-				config.input!.cb(text.getValue());
+				void config.input!.cb(text.getValue());
 			};
 		});
 	} else if (config.select) {
@@ -64,14 +64,18 @@ export const new_setting = <
 			dropdown
 				.addOptions(options)
 				.setValue(config.select!.value)
-				.onChange(config.select!.cb as any);
+				.onChange(
+					config.select!.cb as (
+						value: string,
+					) => void | Promise<void>,
+				);
 		});
 	} else if (config.checklist) {
 		const checklist_el = setting.controlEl.createEl("div", {
 			attr: { class: "flex flex-wrap gap-3" },
 		});
 
-		let state = { ...config.checklist.options };
+		const state: CL = { ...config.checklist.options };
 
 		Object.keys(config.checklist.options).forEach((key) => {
 			const attr: DomElementInfo["attr"] = { type: "checkbox" };
@@ -90,13 +94,14 @@ export const new_setting = <
 					el.onchange = (e) => {
 						if (!(e.target instanceof HTMLInputElement)) return;
 
-						state[key as keyof CL] = e.target.checked as any;
+						state[key as keyof CL] = e.target
+							.checked as CL[keyof CL];
 
-						config.checklist!.cb(state);
+						void config.checklist!.cb(state);
 					};
 				});
 		});
 	}
 
 	return setting;
-};
+}

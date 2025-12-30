@@ -1,32 +1,29 @@
 <script lang="ts">
 	import ObsidianLink from "src/components/ObsidianLink.svelte";
-	import type { BCEdge } from "src/graph/MyMultiGraph";
-	import { stringify_node } from "src/graph/utils";
-	import type { ShowNodeOptions } from "src/interfaces/settings";
 	import BreadcrumbsPlugin from "src/main";
+	import type {
+		EdgeStruct,
+		NodeStringifyOptions,
+	} from "wasm/pkg/breadcrumbs_graph_wasm";
 
-	export let edge: Pick<BCEdge, "attr" | "target_id" | "target_attr">;
-	export let plugin: BreadcrumbsPlugin;
-	export let show_node_options: ShowNodeOptions;
-	export let cls = "";
+	interface Props {
+		edge: EdgeStruct;
+		plugin: BreadcrumbsPlugin;
+		node_stringify_options: NodeStringifyOptions;
+		cls?: string;
+	}
 
-	const { dendron_note } = plugin.settings.explicit_edge_sources;
+	let { edge, plugin, node_stringify_options, cls = "" }: Props = $props();
 
-	const display = stringify_node(edge.target_id, edge.target_attr, {
-		show_node_options,
-		trim_basename_delimiter:
-			dendron_note.enabled && dendron_note.display_trimmed
-				? dendron_note.delimiter
-				: undefined,
-	});
+	const display = edge.stringify_target(plugin.graph, node_stringify_options);
 </script>
 
 <ObsidianLink
 	{plugin}
 	{display}
-	path={edge.target_id}
-	resolved={edge.target_attr.resolved}
-	cls="{cls} BC-edge {edge.attr.explicit
+	path={edge.target_path(plugin.graph)}
+	resolved={edge.target_resolved(plugin.graph)}
+	cls="{cls} BC-edge {edge.explicit(plugin.graph)
 		? 'BC-edge-explicit'
-		: `BC-edge-implied BC-edge-implied-${edge.attr.implied_kind}`}"
+		: `BC-edge-implied BC-edge-implied-${edge.edge_source}`}"
 />

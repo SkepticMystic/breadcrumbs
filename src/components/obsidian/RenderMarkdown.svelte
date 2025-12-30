@@ -1,35 +1,66 @@
 <script lang="ts">
-	import { MarkdownRenderer } from "obsidian";
+	import { run } from "svelte/legacy";
+
+	import { Component, MarkdownRenderer } from "obsidian";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
+	import { onDestroy } from "svelte";
 
-	export let cls = "";
-	export let markdown: string;
-	export let plugin: BreadcrumbsPlugin;
-	export let source_path: string | undefined = undefined;
+	interface Props {
+		cls?: string;
+		markdown: string;
+		plugin: BreadcrumbsPlugin;
+		source_path?: string | undefined;
+	}
 
-	let el: HTMLElement | undefined;
+	let {
+		cls = "",
+		markdown,
+		plugin,
+		source_path = undefined,
+	}: Props = $props();
+
+	let el: HTMLElement | undefined = $state();
+	let component: Component | undefined;
+
+	let active_file = $derived($active_file_store);
 
 	// we need to pass both the mermaid string and the target element, so that it re-renders when the mermaid string changes
 	// and for the initial render the target element is undefined, so we need to check for that
-	const render = (markdown: string, el: HTMLElement | undefined) => {
+	async function render(markdown: string): Promise<void> {
 		if (!el) return;
 
 		log.debug("rendering markdown");
 
 		el.empty();
 
-		MarkdownRenderer.render(
+		if (component) {
+			component.unload();
+			component = undefined;
+		}
+		component = new Component();
+		component.load();
+
+		return MarkdownRenderer.render(
 			plugin.app,
 			markdown,
 			el,
-			source_path ?? $active_file_store?.path ?? "",
-			plugin,
+			source_path ?? active_file?.path ?? "",
+			component,
 		);
-	};
+	}
 
-	$: render(markdown, el);
+	$effect(() => {
+		void render(markdown);
+	});
+
+	onDestroy(() => {
+		if (component) {
+			component.unload();
+			component = undefined;
+		}
+	});
 </script>
 
 <div class="markdown-rendered {cls}" bind:this={el}></div>
