@@ -1,14 +1,14 @@
-import { Notice } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type { IDataview } from "src/external/dataview/interfaces";
-import type { BCGraph } from "src/graph/MyMultiGraph";
+// import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { resolve_relative_target_path } from "src/utils/obsidian";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_list_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -85,7 +85,7 @@ const resolve_field_override = (
 	list_item: IDataview.NoteList,
 	path: string,
 ) => {
-	const field = list_item.text.match(FIELD_OVERRIDE_REGEX)?.[1];
+	const field = FIELD_OVERRIDE_REGEX.exec(list_item.text)?.[1];
 
 	// No override, use the list_note_info field
 	if (!field) {
@@ -103,17 +103,17 @@ const resolve_field_override = (
 
 /** If a few conditions are met, add an edge from the current list item to the _next_ one on the same level */
 const handle_neighbour_list_item = ({
-	graph,
 	plugin,
-	source_path,
+	results,
+	source_id,
 	list_note_page,
 	list_note_info,
 	source_list_item_i,
 }: {
-	graph: BCGraph;
-	source_path: string;
+	source_id: string;
 	plugin: BreadcrumbsPlugin;
 	source_list_item_i: number;
+	results: EdgeBuilderResults;
 	list_note_page: IDataview.Page;
 	list_note_info: Extract<
 		ReturnType<typeof get_list_note_info>,
@@ -160,30 +160,32 @@ const handle_neighbour_list_item = ({
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
 	if (!neighbour_link) return;
 
-	const [path, file] = resolve_relative_target_path(
+	const [target_id, file] = resolve_relative_target_path(
 		plugin.app,
 		neighbour_link.path,
 		list_note_page.file.path,
 	);
 
 	if (!file) {
-		graph.safe_add_node(path, { resolved: false });
+		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
 	}
 
 	// NOTE: Currently no support for field overrides for neighbour-fields
-	graph.safe_add_directed_edge(source_path, path, {
-		explicit: true,
-		source: "list_note",
-		field: list_note_info.data.neighbour_field,
-	});
+	results.edges.push(
+		new GCEdgeData(
+			source_id,
+			target_id,
+			list_note_info.data.neighbour_field,
+			"list_note",
+		),
+	);
 };
 
 export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	all_files.obsidian?.forEach(
 		({ file: list_note_file, cache: list_note_cache }) => {
@@ -195,12 +197,19 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				list_note_file.path,
 			);
 			if (!list_note_info.ok) {
-				if (list_note_info.error) errors.push(list_note_info.error);
+				if (list_note_info.error) {
+					results.errors.push(list_note_info.error);
+				}
 				return;
 			} else {
-				new Notice(
-					"list-notes are not implemented without Dataview enabled",
-				);
+				results.errors.push({
+					path: list_note_file.path,
+					code: "missing_other_plugin",
+					message:
+						"list-notes are not implemented without Dataview enabled",
+				});
+
+				return;
 			}
 
 			// TODO: Gonna have to read the contents of the file and parse it pretty manually...
@@ -218,7 +227,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 			list_note_page.file.path,
 		);
 		if (!list_note_info.ok) {
-			if (list_note_info.error) errors.push(list_note_info.error);
+			if (list_note_info.error) results.errors.push(list_note_info.error);
 			return;
 		}
 
@@ -239,7 +248,9 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
-					graph.safe_add_node(source_path, { resolved: false });
+					results.nodes.push(
+						new GCNodeData(source_path, [], false, false, false),
+					);
 				}
 
 				// Then, add the edge from the list_note itself, to the top-level list_items (if it's not excluded)
@@ -257,21 +268,18 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 					if (!source_override_field.ok) {
 						if (source_override_field.error) {
-							errors.push(source_override_field.error);
+							results.errors.push(source_override_field.error);
 						}
 						return;
 					}
 
-					graph.safe_add_directed_edge(
-						list_note_page.file.path,
-						source_path,
-						{
-							explicit: true,
-							source: "list_note",
-							field:
-								source_override_field.data?.field ??
-								list_note_info.data.field,
-						},
+					results.edges.push(
+						new GCEdgeData(
+							list_note_page.file.path,
+							source_path,
+							source_override_field.data?.field ?? list_note_info.data.field,
+							"list_note",
+						),
 					);
 				}
 
@@ -279,14 +287,15 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				// to prevent multiple levels of if statement nesting
 				if (list_note_info.data.neighbour_field) {
 					handle_neighbour_list_item({
-						graph,
 						plugin,
-						source_path,
-						list_note_info,
+						results,
 						list_note_page,
+						list_note_info,
 						source_list_item_i,
+						source_id: source_path,
 					});
 				}
+
 				source_list_item.children.forEach((target_list_item) => {
 					const target_link = target_list_item.outlinks.at(0);
 					if (!target_link) return;
@@ -299,7 +308,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 
 					if (!target_override_field.ok) {
 						if (target_override_field.error) {
-							errors.push(target_override_field.error);
+							results.errors.push(target_override_field.error);
 						}
 						return;
 					}
@@ -316,20 +325,29 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 					// But then I'd need to break up the iteration to first gather all sources, then handle the targets
 					// This way we can guarentee the target exists
 					if (!target_file) {
-						graph.safe_add_node(target_path, { resolved: false });
+						results.nodes.push(
+							new GCNodeData(
+								target_path,
+								[],
+								false,
+								false,
+								false,
+							),
+						);
 					}
 
-					graph.safe_add_directed_edge(source_path, target_path, {
-						explicit: true,
-						source: "list_note",
-						field:
-							target_override_field.data?.field ??
-							list_note_info.data.field,
-					});
+					results.edges.push(
+						new GCEdgeData(
+							source_path,
+							target_path,
+							target_override_field.data?.field ?? list_note_info.data.field,
+							"list_note",
+						),
+					);
 				});
 			},
 		);
 	});
 
-	return { errors };
+	return results;
 };

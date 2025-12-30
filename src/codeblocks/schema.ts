@@ -1,5 +1,5 @@
 import { SIMPLE_EDGE_SORT_FIELDS } from "src/const/graph";
-import { EDGE_ATTRIBUTES } from "src/graph/MyMultiGraph";
+import { EDGE_ATTRIBUTES } from "src/graph/utils";
 import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 import { remove_duplicates } from "src/utils/arrays";
 import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -28,10 +28,10 @@ const FIELDS = [
 ] as const;
 type CodeblockField = (typeof FIELDS)[number];
 
-type InputData = {
+interface InputData {
 	edge_fields: EdgeField[];
 	field_groups: EdgeFieldGroup[];
-};
+}
 
 const BOOLEANS = [true, false] as const;
 
@@ -43,7 +43,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 		.object({
 			title: z
 				.string({
-					message: zod.error.not_string("title", input["title"]),
+					message: zod.error.not_string("title", input.title),
 				})
 				.optional(),
 
@@ -70,7 +70,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					message: zod.error.invalid_enum(
 						"flat",
 						BOOLEANS,
-						input["flat"],
+						input.flat,
 					),
 				})
 				.default(false),
@@ -80,7 +80,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					message: zod.error.invalid_enum(
 						"collapse",
 						BOOLEANS,
-						input["collapse"],
+						input.collapse,
 					),
 				})
 				.default(false),
@@ -100,7 +100,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					message: zod.error.invalid_enum(
 						"content",
 						["open", "closed"],
-						input["content"],
+						input.content,
 					),
 				})
 				.optional(),
@@ -110,7 +110,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					message: zod.error.invalid_enum(
 						"type",
 						["tree", "mermaid", "markmap"],
-						input["type"],
+						input.type,
 					),
 				})
 				.default("tree"),
@@ -154,7 +154,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.optional(),
 
 			fields: zod.schema
-				.dynamic_enum_array("fields", field_labels, input["fields"])
+				.dynamic_enum_array("fields", field_labels, input.fields)
 				.optional(),
 
 			"field-groups": zod.schema
@@ -169,7 +169,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.array(
 					z
 						.number({
-							invalid_type_error: `Expected a number, but got: \`${input["depth"]}\` (${typeof input["depth"]}). _Try using a number (integer)._
+							invalid_type_error: `Expected a number, but got: \`${input.depth}\` (${typeof input.depth}). _Try using a number (integer)._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 						})
 						// NOTE: Doesn't do what I expect. A codeblock with no depth field gets blocked on this check...
@@ -179,17 +179,17 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						// })
 						.min(
 							0,
-							`Minimum depth cannot be less than \`0\`, but got: \`${input["depth"]}\` _Try using a non-negative number (greater than or equal to zero \`0\`)._
-**Example**: \`depth: [0]\`, or possibly: \`depth: [${typeof input["depth"] === "number" ? -1 * input["depth"] : input["depth"]}\`]`,
+							`Minimum depth cannot be less than \`0\`, but got: \`${input.depth}\` _Try using a non-negative number (greater than or equal to zero \`0\`)._
+**Example**: \`depth: [0]\`, or possibly: \`depth: [${typeof input.depth === "number" ? -1 * input.depth : input.depth}\`]`,
 						),
 					{
-						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input["depth"]}\` (${typeof input["depth"]}).  _Try wrapping it in square brackets._
-**Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input["depth"]}]\``,
+						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input.depth}\` (${typeof input.depth}).  _Try wrapping it in square brackets._
+**Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input.depth}]\``,
 					},
 				)
 				.min(
 					1,
-					`At least one item is required, but got: \`[${input["depth"]}]\`. _Try adding a number to the list._
+					`At least one item is required, but got: \`[${input.depth}]\`. _Try adding a number to the list._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 				)
 				.max(
@@ -197,8 +197,8 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					// NOTE: I _could_ do something like:
 					//    or possibly \`depth: [${(<number[] | null>input["depth"])?.slice(0, 2).join(", ")}]\`
 					//    But even that mess isn't safe. What if it's a string or something without join?
-					`Maximum of two items allowed, but got: \`[${input["depth"]}]\`. _Try removing one of the numbers._
-**Example**: \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}]\`, or possibly \`depth: [${(<number[] | null>input["depth"])?.[0] ?? 0}, 3]\``,
+					`Maximum of two items allowed, but got: \`[${input.depth}]\`. _Try removing one of the numbers._
+**Example**: \`depth: [${(input.depth as number[] | null)?.[0] ?? 0}]\`, or possibly \`depth: [${(input.depth as number[] | null)?.[0] ?? 0}, 3]\``,
 				)
 				.transform((v) => {
 					if (v.length === 1) return [v[0], Infinity];
@@ -206,7 +206,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				})
 				.refine((v) => v[0] <= v[1], {
 					message: `Minimum depth cannot be greater than maximum depth. _Try swapping the numbers._
-**Example**: \`depth: [0, 3]\`, or possibly: \`depth: [${(<number[] | null>input["depth"])?.[1] ?? 0}, ${(<number[] | null>input["depth"])?.[0] ?? 3}]\``,
+**Example**: \`depth: [0, 3]\`, or possibly: \`depth: [${(input.depth as number[] | null)?.[1] ?? 0}, ${(input.depth as number[] | null)?.[0] ?? 3}]\``,
 				})
 				.default([0, Infinity]),
 
@@ -311,11 +311,11 @@ export const CodeblockSchema = {
 	build,
 };
 
-export type ICodeblock = {
+export interface ICodeblock {
 	InputData: InputData;
 
 	/** Once resolved, the non-optional fields WILL be there, with a default if missing */
 	Options: z.infer<ReturnType<typeof build>> & {
 		"dataview-from-paths"?: string[];
 	};
-};
+}

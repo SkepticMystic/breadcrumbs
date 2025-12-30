@@ -1,5 +1,5 @@
-import { Notice, Plugin, TFile, WorkspaceLeaf } from "obsidian";
-import { Codeblocks } from "src/codeblocks";
+import type { WorkspaceLeaf } from "obsidian";
+import { Events, Notice, Plugin, TFile } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -7,12 +7,21 @@ import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import { BreadcrumbsSettingTab } from "src/settings/SettingsTab";
 import { active_file_store } from "src/stores/active_file";
 import { MatrixView } from "src/views/matrix";
+import type { NoteGraph } from "../wasm/pkg/breadcrumbs_graph_wasm";
+import init, {
+	create_graph,
+	BatchGraphUpdate,
+	RemoveNoteGraphUpdate,
+	RenameNoteGraphUpdate,
+	AddNoteGraphUpdate,
+	GCNodeData,
+} from "../wasm/pkg/breadcrumbs_graph_wasm";
+import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
 import { BCAPI } from "./api";
 import { CodeblockMDRC } from "./codeblocks/MDRC";
 import { init_all_commands } from "./commands/init";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
-import { BCGraph } from "./graph/MyMultiGraph";
 import type { BreadcrumbsError } from "./interfaces/graph";
 import { log } from "./logger";
 import { migrate_old_settings } from "./settings/migration";
@@ -22,14 +31,28 @@ import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
 
+export enum BCEvent {
+	GRAPH_UPDATE = "graph-update",
+	REDRAW_CODEBLOCKS = "redraw-codeblocks",
+	REDRAW_PAGE_VIEWS = "redraw-page-views",
+	REDRAW_SIDE_VIEWS = "redraw-side-views",
+}
+
 export default class BreadcrumbsPlugin extends Plugin {
 	settings!: BreadcrumbsSettings;
-	graph = new BCGraph();
+	graph!: NoteGraph;
 	api!: BCAPI;
+	events!: Events;
 
 	async onload() {
 		// Settings
 		await this.loadSettings();
+
+		await this.backup_old_settings();
+
+		/// Migrations
+		this.settings = migrate_old_settings(this.settings);
+		await this.saveSettings();
 
 		// Logger
 		log.set_level(this.settings.debug.level);
@@ -39,9 +62,25 @@ export default class BreadcrumbsPlugin extends Plugin {
 		);
 		log.debug("settings >", this.settings);
 
-		/// Migrations
-		this.settings = migrate_old_settings(this.settings);
-		await this.saveSettings();
+		// Init event bus
+		this.events = new Events();
+		// A graph update triggers a redraw of all views
+		this.events.on(BCEvent.GRAPH_UPDATE, () => {
+			this.refreshViews();
+		});
+		this.events.on(BCEvent.REDRAW_PAGE_VIEWS, () => {
+			redraw_page_views(this);
+		});
+
+		// Init wasm
+		await init({ module_or_path: wasmbin });
+		this.graph = create_graph();
+		this.graph.set_update_callback(() => {
+			// funny micro task so that the rust update function finishes before we access the graph again for the visualization
+			// this is needed because otherwise we get an "recursive use of an object detected which would lead to unsafe aliasing in rust" error
+			// see https://github.com/rustwasm/wasm-bindgen/issues/1578
+			queueMicrotask(() => this.events.trigger(BCEvent.GRAPH_UPDATE));
+		});
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
 
@@ -96,14 +135,15 @@ export default class BreadcrumbsPlugin extends Plugin {
 			if (this.app.metadataCache.initialized) {
 				log.debug("metadataCache:initialized");
 
-				await this.refresh();
+				await this.rebuildGraph();
 			} else {
 				const metadatacache_init_event = this.app.metadataCache.on(
 					"initialized",
-					async () => {
+					() => {
 						log.debug("on:metadatacache-initialized");
 
-						await this.refresh();
+						void this.rebuildGraph();
+
 						this.app.metadataCache.offref(metadatacache_init_event);
 					},
 				);
@@ -112,19 +152,22 @@ export default class BreadcrumbsPlugin extends Plugin {
 			// Events
 			/// Workspace
 			this.registerEvent(
-				this.app.workspace.on("layout-change", async () => {
+				this.app.workspace.on("layout-change", () => {
 					log.debug("on:layout-change");
 
-					await this.refresh({
-						rebuild_graph:
-							this.settings.commands.rebuild_graph.trigger
-								.layout_change,
-					});
+					if (
+						this.settings.commands.rebuild_graph.trigger
+							.layout_change
+					) {
+						void this.rebuildGraph();
+					} else {
+						this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
+					}
 				}),
 			);
 
 			this.registerEvent(
-				this.app.workspace.on("active-leaf-change", async (leaf) => {
+				this.app.workspace.on("active-leaf-change", (leaf) => {
 					log.debug("on:active-leaf-change");
 
 					// NOTE: We only want to refresh the store when changing to another md note
@@ -132,11 +175,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 						return;
 					}
 
-					// NOTE: layout-change covers _most_ of the same events, but this is for changing tabs (and possibly other stuff)
-					this.refresh({
-						rebuild_graph: false,
-						redraw_page_views: false,
-					});
+					active_file_store.refresh(this.app);
+					this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
 				}),
 			);
 
@@ -145,12 +185,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("create", (file) => {
 					log.debug("on:create >", file.path);
 
-					if (file instanceof TFile) {
-						// This isn't perfect, but it stops any "node doesn't exist" errors
-						// The user will have to refresh to add any relevant edges
-						this.graph.upsert_node(file.path, { resolved: true });
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+					if (file instanceof TFile && file.extension === "md") {
+						const batch = new BatchGraphUpdate();
+						new AddNoteGraphUpdate(
+							new GCNodeData(file.path, [], true, false, false),
+						).add_to_batch(batch);
+						this.graph.apply_update(batch);
 					}
 				}),
 			);
@@ -159,17 +199,13 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("rename", (file, old_path) => {
 					log.debug("on:rename >", old_path, "->", file.path);
 
-					if (file instanceof TFile) {
-						const res = this.graph.safe_rename_node(
+					if (file instanceof TFile && file.extension === "md") {
+						const batch = new BatchGraphUpdate();
+						new RenameNoteGraphUpdate(
 							old_path,
 							file.path,
-						);
-
-						if (!res.ok) {
-							log.error("safe_rename_node >", res.error.message);
-						}
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+						).add_to_batch(batch);
+						this.graph.apply_update(batch);
 					}
 				}),
 			);
@@ -178,18 +214,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 				this.app.vault.on("delete", (file) => {
 					log.debug("on:delete >", file.path);
 
-					if (file instanceof TFile) {
-						// NOTE: Instead of dropping it, we mark it as unresolved.
-						//   There are pros and cons to both, but unresolving it is less intense.
-						//   There may still be a typed link:: to that file, so it shouldn't drop off the graph.
-						//   So it's not perfect. Rebuilding the graph is the only way to be sure.
-						this.graph.setNodeAttribute(
-							file.path,
-							"resolved",
-							false,
+					if (file instanceof TFile && file.extension === "md") {
+						const batch = new BatchGraphUpdate();
+						new RemoveNoteGraphUpdate(file.path).add_to_batch(
+							batch,
 						);
-
-						// NOTE: No need to this.refresh. The event triggers a layout-change anyway
+						this.graph.apply_update(batch);
 					}
 				}),
 			);
@@ -228,9 +258,9 @@ export default class BreadcrumbsPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = deep_merge_objects(
-			(await this.loadData()) ?? {},
-			DEFAULT_SETTINGS as any,
+		this.settings = deep_merge_objects<BreadcrumbsSettings>(
+			((await this.loadData()) ?? {}) as BreadcrumbsSettings,
+			DEFAULT_SETTINGS,
 		);
 	}
 
@@ -240,103 +270,67 @@ export default class BreadcrumbsPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	/** rebuild_graph, then react by updating active_file_store and redrawing page_views.
-	 * Optionally disable any of these steps.
+	async backup_old_settings(): Promise<void> {
+		const backup_path = `${this.app.vault.configDir}/plugins/${this.manifest.id}/data-backup__no-directions-migration.json`;
+		if (!(await this.app.vault.adapter.exists(backup_path))) {
+			await this.app.vault.adapter.write(
+				backup_path,
+				JSON.stringify(this.settings, null, "\t"),
+			);
+			log.info(`old settings backed up to ${backup_path}`);
+		}
+	}
+
+	/**
+	 * Rebuilds the graph.
+	 * When done, Rust will emit a `graph-update` event.
 	 */
-	refresh = async (options?: {
-		rebuild_graph?: boolean;
-		active_file_store?: boolean;
-		redraw_page_views?: boolean;
-		redraw_side_views?: true;
-		redraw_codeblocks?: boolean;
-	}) => {
-		// Rebuild the graph
-		if (options?.rebuild_graph !== false) {
-			const timer = new Timer();
+	async rebuildGraph() {
+		const timer = new Timer();
 
-			const notice = this.settings.commands.rebuild_graph.notify
-				? new Notice("Rebuilding graph")
-				: null;
+		const notice = this.settings.commands.rebuild_graph.notify
+			? new Notice("Rebuilding graph")
+			: null;
 
-			const rebuild_results = await rebuild_graph(this);
-			this.graph = rebuild_results.graph;
+		const rebuild_results = await rebuild_graph(this);
 
-			const explicit_edge_errors = rebuild_results.explicit_edge_results
-				.filter((result) => result.errors.length)
-				.reduce(
-					(acc, { source, errors }) => {
-						acc[source] = errors;
-						return acc;
-					},
-					{} as Record<string, BreadcrumbsError[]>,
-				);
-
-			const implied_edge_results = Object.fromEntries(
-				Object.entries(rebuild_results.implied_edge_results)
-					.filter(([_, errors]) => errors.length)
-					.map(([implied_kind, errors]) => [implied_kind, errors]),
+		const explicit_edge_errors = rebuild_results.explicit_edge_results
+			.filter(({ results }) => results.errors.length)
+			.reduce(
+				(acc, { source, results }) => {
+					acc[source] = results.errors;
+					return acc;
+				},
+				{} as Record<string, BreadcrumbsError[]>,
 			);
 
-			if (Object.keys(explicit_edge_errors).length) {
-				log.warn("explicit_edge_errors >", explicit_edge_errors);
-			}
-			if (Object.keys(implied_edge_results).length) {
-				log.warn("implied_edge_results >", implied_edge_results);
-			}
-
-			notice?.setMessage(
-				[
-					`Rebuilt graph in ${timer.elapsed_str()}ms`,
-
-					explicit_edge_errors.length
-						? "\nExplicit edge errors (see console for details):"
-						: null,
-
-					...Object.entries(explicit_edge_errors).map(
-						([source, errors]) =>
-							`- ${source}: ${errors.length} errors`,
-					),
-
-					implied_edge_results.length
-						? "\nImplied edge errors (see console for details):"
-						: null,
-
-					...Object.entries(implied_edge_results).map(
-						([implied_kind, errors]) =>
-							`- ${implied_kind}: ${errors.length} errors`,
-					),
-				]
-					.filter(Boolean)
-					.join("\n"),
-			);
+		if (Object.keys(explicit_edge_errors).length) {
+			log.warn("explicit_edge_errors >", explicit_edge_errors);
 		}
 
-		// _Then_ react
-		if (options?.active_file_store !== false) {
-			active_file_store.refresh(this.app);
-		}
+		notice?.setMessage(
+			[
+				`Rebuilt graph in ${timer.elapsed_str()}ms`,
 
-		if (options?.redraw_page_views !== false) {
-			redraw_page_views(this);
-		}
+				explicit_edge_errors.length
+					? "\nExplicit edge errors (see console for details):"
+					: null,
 
-		if (options?.redraw_codeblocks !== false) {
-			Codeblocks.update_all();
-		}
+				...Object.entries(explicit_edge_errors).map(
+					([source, errors]) =>
+						`- ${source}: ${errors.length} errors`,
+				),
+			]
+				.filter(Boolean)
+				.join("\n"),
+		);
+	}
 
-		if (options?.redraw_side_views === true) {
-			this.app.workspace
-				.getLeavesOfType(VIEW_IDS.matrix)
-				.forEach((leaf) => {
-					(leaf.view as MatrixView).onOpen();
-				});
-			this.app.workspace
-				.getLeavesOfType(VIEW_IDS.tree)
-				.forEach((leaf) => {
-					(leaf.view as TreeView).onOpen();
-				});
-		}
-	};
+	refreshViews() {
+		this.events.trigger(BCEvent.REDRAW_PAGE_VIEWS);
+		this.events.trigger(BCEvent.REDRAW_CODEBLOCKS);
+		this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
+	}
 
 	// SOURCE: https://docs.obsidian.md/Plugins/User+interface/Views
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {
@@ -365,6 +359,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		// "Reveal" the leaf in case it is in a collapsed sidebar
-		workspace.revealLeaf(leaf);
+		await workspace.revealLeaf(leaf);
 	}
 }

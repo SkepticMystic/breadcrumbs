@@ -1,4 +1,4 @@
-import BreadcrumbsPlugin from "src/main";
+import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 import { redraw_page_views } from "src/views/page";
 

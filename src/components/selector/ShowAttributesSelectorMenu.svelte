@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { FileJson } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
+	import type { EdgeAttribute } from "src/graph/utils";
 	import { ShowAttributesSelectorMenu } from "src/menus/ShowAttributesMenu";
 
-	export let show_attributes: EdgeAttribute[];
-	export let exclude_attributes: EdgeAttribute[] = [];
-	export let cls = "";
+	interface Props {
+		show_attributes: EdgeAttribute[];
+		exclude_attributes?: EdgeAttribute[];
+		cls?: string;
+	}
+
+	let {
+		show_attributes = $bindable(),
+		exclude_attributes = [],
+		cls = "",
+	}: Props = $props();
 
 	// Remove any excluded items in the initial value
 	// This makes it cleaner to pass in EDGE_ATTRIBUTES as the starter, then immediately exclude some
@@ -20,7 +28,7 @@
 <button
 	class={cls}
 	aria-label="Change which edge attributes show"
-	on:click={(e) => {
+	onclick={(e) => {
 		ShowAttributesSelectorMenu({
 			exclude_attributes,
 			value: show_attributes,

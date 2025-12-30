@@ -1,17 +1,25 @@
 <script lang="ts">
-	import type { EdgeAttribute } from "src/graph/MyMultiGraph";
-	import { createEventDispatcher } from "svelte";
+	import type { EdgeAttribute } from "src/graph/utils";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import SettingItem from "./SettingItem.svelte";
 
-	export let show_attributes: EdgeAttribute[];
-	export let exclude_attributes: EdgeAttribute[] = [];
-
-	const dispatch = createEventDispatcher<{ select: EdgeAttribute[] }>();
-
-	$: if (show_attributes) {
-		dispatch("select", show_attributes);
+	interface Props {
+		show_attributes: EdgeAttribute[];
+		exclude_attributes?: EdgeAttribute[];
+		select_cb?: (value: EdgeAttribute[]) => void;
 	}
+
+	let {
+		show_attributes = $bindable(),
+		exclude_attributes = [],
+		select_cb = () => {},
+	}: Props = $props();
+
+	$effect(() => {
+		if (show_attributes) {
+			select_cb(show_attributes);
+		}
+	});
 </script>
 
 <SettingItem

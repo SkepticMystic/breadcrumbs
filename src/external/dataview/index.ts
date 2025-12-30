@@ -5,9 +5,10 @@ import {
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 
-const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
-	new Promise<void>((resolve) => {
+function await_if_enabled(plugin: BreadcrumbsPlugin) {
+	return new Promise<void>((resolve) => {
 		if (is_enabled(plugin.app)) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			if (get_api(plugin.app)?.index.initialized) {
 				log.debug("dataview > already initialized");
 				resolve();
@@ -28,6 +29,7 @@ const await_if_enabled = (plugin: BreadcrumbsPlugin) =>
 			resolve();
 		}
 	});
+}
 
 export const dataview_plugin = {
 	get_api,

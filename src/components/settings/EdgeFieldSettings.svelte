@@ -5,22 +5,24 @@
 	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import Tag from "../obsidian/tag.svelte";
+	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+	}
 
-	const settings = plugin.settings;
+	let { plugin = $bindable() }: Props = $props();
 
-	let filters = {
+	const settings = $state(plugin.settings);
+
+	let filters = $state({
 		fields: "",
 		groups: "",
-	};
+	});
 
 	const actions = {
 		save: async () => {
-			await Promise.all([
-				plugin.saveSettings(),
-				plugin.refresh({ redraw_side_views: true }),
-			]);
+			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
 			plugin = plugin;
@@ -288,7 +290,7 @@
 
 <div class="flex flex-col">
 	<div class="my-2 flex items-center gap-2">
-		<button class="flex items-center gap-1" on:click={actions.save}>
+		<button class="flex items-center gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
@@ -311,7 +313,7 @@
 				class="w-8"
 				aria-label="Clear Filter"
 				disabled={filters.fields === ""}
-				on:click={() => (filters.fields = "")}
+				onclick={() => (filters.fields = "")}
 			>
 				X
 			</button>
@@ -321,7 +323,7 @@
 			<button
 				class="w-10"
 				aria-label="Jump to bottom"
-				on:click={() =>
+				onclick={() =>
 					actions.fields.scroll_to(
 						settings.edge_fields.last()?.label ?? "",
 					)}
@@ -345,13 +347,13 @@
 						class="w-48 scroll-mt-40"
 						placeholder="Field Label"
 						value={field.label}
-						on:blur={(e) =>
+						onblur={(e) =>
 							actions.fields.rename(field, e.currentTarget.value)}
 					/>
 					<button
 						class="w-8"
 						title="Remove Field"
-						on:click={() => actions.fields.remove(field)}
+						onclick={() => actions.fields.remove(field)}
 					>
 						X
 					</button>
@@ -369,9 +371,9 @@
 								<Tag
 									tag={group_label}
 									title="Jump to group. Right click for more actions."
-									on:click={() =>
+									onclick={() =>
 										actions.groups.scroll_to(group_label)}
-									on:contextmenu={context_menus.field_group(
+									oncontextmenu={context_menus.field_group(
 										field,
 										group_label,
 									)}
@@ -388,7 +390,7 @@
 						<select
 							class="dropdown"
 							value=""
-							on:change={(e) => {
+							onchange={(e) => {
 								if (e.currentTarget.value) {
 									actions.groups.add_field(
 										settings.edge_field_groups.find(
@@ -418,7 +420,7 @@
 			</div>
 		{/each}
 
-		<button class="flex items-center gap-1" on:click={actions.fields.add}>
+		<button class="flex items-center gap-1" onclick={actions.fields.add}>
 			<PlusIcon size={ICON_SIZE} />
 			New Edge Field
 		</button>
@@ -439,7 +441,7 @@
 				class="w-8"
 				aria-label="Clear Filter"
 				disabled={filters.groups === ""}
-				on:click={() => (filters.groups = "")}
+				onclick={() => (filters.groups = "")}
 			>
 				X
 			</button>
@@ -449,7 +451,7 @@
 			<button
 				class="w-10"
 				aria-label="Jump to bottom"
-				on:click={() =>
+				onclick={() =>
 					actions.groups.scroll_to(
 						settings.edge_field_groups.last()?.label ?? "",
 					)}
@@ -469,14 +471,14 @@
 						class="w-48 scroll-mt-40"
 						placeholder="Group Label"
 						value={group.label}
-						on:blur={(e) =>
+						onblur={(e) =>
 							actions.groups.rename(group, e.currentTarget.value)}
 					/>
 
 					<button
 						class="w-8"
 						title="Remove Group"
-						on:click={() => actions.groups.remove(group)}
+						onclick={() => actions.groups.remove(group)}
 					>
 						X
 					</button>
@@ -490,9 +492,9 @@
 							<Tag
 								tag={field_label}
 								title="Jump to field. Right click for more actions."
-								on:click={() =>
+								onclick={() =>
 									actions.fields.scroll_to(field_label)}
-								on:contextmenu={context_menus.group_field(
+								oncontextmenu={context_menus.group_field(
 									group,
 									field_label,
 								)}
@@ -504,35 +506,17 @@
 						<span class="search-empty-state my-0">{"<none>"}</span>
 					{/if}
 
-					<select
-						class="dropdown"
-						value=""
-						on:change={(e) => {
-							if (e.currentTarget.value) {
-								actions.groups.add_field(
-									group,
-									e.currentTarget.value,
-								);
-
-								e.currentTarget.value = "";
-							}
-						}}
-					>
-						<option value="" disabled>Add Field</option>
-
-						{#each settings.edge_fields as edge_field}
-							{#if !group.fields.includes(edge_field.label)}
-								<option value={edge_field.label}>
-									{edge_field.label}
-								</option>
-							{/if}
-						{/each}
-					</select>
+					<EdgeFieldSelector
+						placeholder="Add Field"
+						fields={settings.edge_fields.filter((f) => !group.fields.includes(f.label))}
+						onselect={(f) =>
+							actions.groups.add_field(group, f.label)}
+					/>
 				</div>
 			</div>
 		{/each}
 
-		<button class="flex items-center gap-1" on:click={actions.groups.add}>
+		<button class="flex items-center gap-1" onclick={actions.groups.add}>
 			<PlusIcon size={ICON_SIZE} />
 			New Group
 		</button>

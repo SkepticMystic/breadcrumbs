@@ -1,4 +1,3 @@
-import type { BCEdge } from "src/graph/MyMultiGraph";
 import type { Result } from "src/interfaces/result";
 import type { BreadcrumbsSettings, EdgeField } from "src/interfaces/settings";
 import { url_search_params } from "src/utils/url";
@@ -32,7 +31,7 @@ export const parse_transitive_relation = (
 	Pick<TransitiveRule, "chain" | "close_field" | "close_reversed">,
 	null
 > => {
-	const match = str.match(regex);
+	const match = regex.exec(str);
 
 	if (!match) {
 		return fail(null);
@@ -57,43 +56,4 @@ export const input_transitive_rule_schema = (data: { fields: EdgeField[] }) => {
 
 		close_reversed: z.boolean(),
 	});
-};
-
-/** Create sample edges from a transitive closure rule */
-export const transitive_rule_to_edges = (
-	rule: Pick<
-		TransitiveRule,
-		"chain" | "close_field" | "close_reversed" | "name"
-	>,
-) => {
-	const edges: Omit<BCEdge, "id" | "undirected">[] = [];
-
-	rule.chain.forEach((attr, i) => {
-		edges.push({
-			source_id: i.toString(),
-			target_id: (i + 1).toString(),
-			source_attr: { resolved: true },
-			target_attr: { resolved: true },
-			attr: {
-				explicit: true,
-				field: attr.field ?? "<field>",
-				source: "typed_link",
-			},
-		});
-	});
-
-	edges.push({
-		source_attr: { resolved: true },
-		target_attr: { resolved: true },
-		source_id: rule.close_reversed ? rule.chain.length.toString() : "0",
-		target_id: rule.close_reversed ? "0" : rule.chain.length.toString(),
-		attr: {
-			round: 1,
-			explicit: false,
-			field: rule.close_field,
-			implied_kind: `transitive:${get_transitive_rule_name(rule)}`,
-		},
-	});
-
-	return edges;
 };

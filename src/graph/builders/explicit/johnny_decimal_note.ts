@@ -1,20 +1,20 @@
 import { META_ALIAS } from "src/const/metadata_fields";
-import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_not_ends_with } from "src/utils/strings";
+import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_johnny_decimal_note_info = (
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
 	path: string,
 ) => {
-	// NOTE: Don't return early here. Johnny Decimal notes can be valid without any metadata in them
+	// NOTE: Don't return early here. Johnny.Decimal notes can be valid without any metadata in them
 	//   We just have to iterate and check each note
 	// if (!metadata) return fail(undefined);
 
@@ -48,10 +48,9 @@ const get_johnny_decimal_note_info = (
  */
 const handle_johnny_decimal_note = (
 	plugin: BreadcrumbsPlugin,
-	graph: BCGraph,
+	results: EdgeBuilderResults,
 	source_note: JohnnyDecimalNote,
 	notes: JohnnyDecimalNote[],
-	errors: BreadcrumbsError[],
 ) => {
 	const johnny_decimal_note_info = get_johnny_decimal_note_info(
 		plugin,
@@ -60,7 +59,7 @@ const handle_johnny_decimal_note = (
 	);
 	if (!johnny_decimal_note_info.ok) {
 		if (johnny_decimal_note_info.error) {
-			errors.push(johnny_decimal_note_info.error);
+			results.errors.push(johnny_decimal_note_info.error);
 		}
 		return;
 	}
@@ -85,40 +84,44 @@ const handle_johnny_decimal_note = (
 
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
-		graph.safe_add_node(target_note.path, { resolved: false });
+		results.nodes.push(
+			new GCNodeData(target_note.path, [], false, false, false),
+		);
 	}
 
 	const { field } = johnny_decimal_note_info.data;
 
-	graph.safe_add_directed_edge(source_note.path, target_note.path, {
-		field,
-		explicit: true,
-		source: "johnny_decimal_note",
-	});
+	results.edges.push(
+		new GCEdgeData(
+			source_note.path,
+			target_note.path,
+			field,
+			"johnny_decimal_note",
+		),
+	);
 };
 
-type JohnnyDecimalNote = {
+interface JohnnyDecimalNote {
 	path: string;
 	basename: string;
 	decimals: string;
 	metadata?: Record<string, unknown>;
-};
+}
 
 export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	if (!plugin.settings.explicit_edge_sources.johnny_decimal_note.enabled) {
-		return { errors };
+		return results;
 	}
 
 	const { delimiter } =
 		plugin.settings.explicit_edge_sources.johnny_decimal_note;
 
-	// This regex is actually less strict than the real Johnny Decimal system
+	// This regex is actually less strict than the real Johnny.Decimal system
 	// Match a delimiter-separated list of chars and nums, followed by a space or the delimiter at the end
 	const regex = new RegExp(`^([\\w\\d\\${delimiter}]+)(\\s|\\${delimiter}$)`);
 
@@ -153,14 +156,8 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 	});
 
 	johnny_decimal_notes.forEach((note) => {
-		handle_johnny_decimal_note(
-			plugin,
-			graph,
-			note,
-			johnny_decimal_notes,
-			errors,
-		);
+		handle_johnny_decimal_note(plugin, results, note, johnny_decimal_notes);
 	});
 
-	return { errors };
+	return results;
 };

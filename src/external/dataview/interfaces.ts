@@ -1,22 +1,23 @@
 import type { Pos } from "obsidian";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace IDataview {
-	export type Link = {
+	export interface Link {
 		display: string | undefined;
 		embed: boolean;
 		/** No extension! */
 		path: string;
 		subpath: string | undefined;
 		type: "file";
-	};
+	}
 
 	/** Dataview Proxy wrapper, usually around an array of things */
-	type Proxy<T> = {
+	interface Proxy<T> {
 		values: T[];
-	};
+	}
 
 	// NOTE: Not _all_ fields, but seemingly enough to do list_notes
-	type NoteList = {
+	interface NoteList {
 		annotated: boolean;
 		children: NoteList[];
 		/** Seems to be what's needed for list_notes
@@ -29,7 +30,7 @@ export declare namespace IDataview {
 		text: string;
 
 		position: Pos;
-	};
+	}
 
 	export type Page = {
 		file: {
@@ -57,10 +58,5 @@ export declare namespace IDataview {
 			 */
 			tags: Proxy<string>;
 		};
-	} & {
-		[
-			key: string
-		]: // Add a type that's _not_ a Link, so that TS shouts if we don't check
-		string | Link | Link[] | null;
-	};
+	} & Record<string, string | Link | Link[] | null>;
 }

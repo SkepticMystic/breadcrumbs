@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 import { writable } from "svelte/store";
 
 const store = writable<TFile | null>(null);

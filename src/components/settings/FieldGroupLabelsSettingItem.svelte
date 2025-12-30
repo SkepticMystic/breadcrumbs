@@ -1,21 +1,29 @@
 <script lang="ts">
 	import type { EdgeFieldGroup } from "src/interfaces/settings";
-	import { createEventDispatcher } from "svelte";
 	import FieldGroupLabelsSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import SettingItem from "./SettingItem.svelte";
 
-	export let name = "Field Groups";
-	export let description =
-		"Select the field groups to use for this traversal.";
-
-	export let field_group_labels: string[];
-	export let edge_field_groups: EdgeFieldGroup[];
-
-	const dispatch = createEventDispatcher<{ select: string[] }>();
-
-	$: if (field_group_labels) {
-		dispatch("select", field_group_labels);
+	interface Props {
+		name?: string;
+		description?: string;
+		field_group_labels: string[];
+		edge_field_groups: EdgeFieldGroup[];
+		select_cb?: (value: string[]) => void;
 	}
+
+	let {
+		name = "Field Groups",
+		description = "Select the field groups to use for this traversal.",
+		field_group_labels = $bindable(),
+		edge_field_groups,
+		select_cb = () => {},
+	}: Props = $props();
+
+	$effect(() => {
+		if (field_group_labels) {
+			select_cb(field_group_labels);
+		}
+	});
 </script>
 
 <SettingItem {name} {description}>

@@ -2,14 +2,18 @@
 	import { ChevronsDownUp, ChevronsUpDown } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
 
-	export let cls = "";
-	export let collapse: boolean | null;
+	interface Props {
+		cls?: string;
+		collapse: boolean | null;
+	}
+
+	let { cls = "", collapse = $bindable() }: Props = $props();
 </script>
 
 <button
 	class={cls}
 	aria-label={collapse ? "Expand" : "Collapse"}
-	on:click={() => (collapse = !collapse)}
+	onclick={() => (collapse = !collapse)}
 >
 	{#if collapse}
 		<ChevronsDownUp size={ICON_SIZE} />
