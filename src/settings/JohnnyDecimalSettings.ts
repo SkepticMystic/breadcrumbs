@@ -8,7 +8,7 @@ export const _add_settings_johnny_decimal_note = (
 ) => {
 	new_setting(containerEl, {
 		name: "Enabled",
-		desc: "Look for Johnny Decimal notes to use as edge sources",
+		desc: "Look for Johnny.Decimal notes to use as edge sources",
 		toggle: {
 			value: plugin.settings.explicit_edge_sources.johnny_decimal_note
 				.enabled,
@@ -45,7 +45,7 @@ export const _add_settings_johnny_decimal_note = (
 
 	new_setting(containerEl, {
 		name: "Default Field",
-		desc: "Field to use to point to next note in the Johnny Decimal system",
+		desc: "Field to use to point to next note in the Johnny.Decimal system",
 		select: {
 			value: plugin.settings.explicit_edge_sources.johnny_decimal_note
 				.default_field,

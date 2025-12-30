@@ -10,6 +10,7 @@
 	import type BreadcrumbsPlugin from "src/main";
 	import { log } from "src/logger";
 	import Tag from "../obsidian/tag.svelte";
+	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -600,30 +601,12 @@
 						<span class="search-empty-state my-0">{"<none>"}</span>
 					{/if}
 
-					<select
-						class="dropdown"
-						value=""
-						onchange={(e) => {
-							if (e.currentTarget.value) {
-								actions.groups.add_field(
-									group,
-									e.currentTarget.value,
-								);
-
-								e.currentTarget.value = "";
-							}
-						}}
-					>
-						<option value="" disabled>Add Field</option>
-
-						{#each settings.edge_fields as edge_field}
-							{#if !group.fields.includes(edge_field.label)}
-								<option value={edge_field.label}>
-									{edge_field.label}
-								</option>
-							{/if}
-						{/each}
-					</select>
+					<EdgeFieldSelector
+						placeholder="Add Field"
+						fields={settings.edge_fields.filter((f) => !group.fields.includes(f.label))}
+						onselect={(f) =>
+							actions.groups.add_field(group, f.label)}
+					/>
 				</div>
 			</div>
 		{/each}

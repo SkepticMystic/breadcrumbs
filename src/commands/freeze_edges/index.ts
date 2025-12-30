@@ -15,7 +15,7 @@ export async function freeze_implied_edges_to_note(
 		.get_edges()
 		.filter(
 			// Don't freeze a note to itself (self_is_sibling)
-			(e) => !e.is_self_loop() && !e.explicit,
+			(e) => !e.is_self_loop() && !e.explicit(plugin.graph),
 		);
 
 	await drop_crumbs(plugin, source_file, implied_edges, options);

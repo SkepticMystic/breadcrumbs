@@ -277,7 +277,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						new GCEdgeData(
 							list_note_page.file.path,
 							source_path,
-							list_note_info.data.field,
+							source_override_field.data?.field ?? list_note_info.data.field,
 							"list_note",
 						),
 					);
@@ -340,7 +340,7 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						new GCEdgeData(
 							source_path,
 							target_path,
-							list_note_info.data.field,
+							target_override_field.data?.field ?? list_note_info.data.field,
 							"list_note",
 						),
 					);
