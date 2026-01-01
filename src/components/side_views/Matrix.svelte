@@ -10,13 +10,15 @@
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
 	import { untrack } from "svelte";
+	import { log } from "src/logger";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 	}
 
 	let { plugin }: Props = $props();
-
+  log.debug("Rendering Matrix side view");
+	log.debug(plugin.settings.views.side.matrix);
 	let settings = $state(structuredClone(plugin.settings.views.side.matrix));
 	let is_initial_mount = true;
 
