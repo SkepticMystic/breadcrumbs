@@ -1,9 +1,4 @@
-import { TFile } from "obsidian";
-import type {
-	BCEdge,
-	BCEdgeAttributes,
-	BCNodeAttributes,
-} from "src/graph/MyMultiGraph";
+import type { TFile } from "obsidian";
 import type { CrumbDestination } from "src/interfaces/settings";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
@@ -13,30 +8,28 @@ import {
 	group_projection,
 	remove_duplicates,
 } from "src/utils/arrays";
+import type { EdgeStruct } from "wasm/pkg/breadcrumbs_graph_wasm";
 import { Paths } from "./paths";
 
-const linkify_edge = (
-	plugin: BreadcrumbsPlugin,
-	source_id: string,
-	target_id: string,
-	target_aliases: string[] | undefined,
-) => {
+function linkify_edge(plugin: BreadcrumbsPlugin, struct: EdgeStruct) {
+	const target_path = struct.target_path(plugin.graph);
+
 	// target_id is a full path
-	const target_file = plugin.app.vault.getFileByPath(target_id);
+	const target_file = plugin.app.vault.getFileByPath(target_path);
 
 	if (!target_file) {
-		return `[[${Paths.drop_ext(target_id)}]]`;
+		return `[[${Paths.drop_ext(target_path)}]]`;
 	} else {
 		return plugin.app.fileManager.generateMarkdownLink(
 			target_file,
-			source_id,
+			struct.source_path(plugin.graph),
 			undefined,
-			target_aliases?.at(0),
+			struct.target_data(plugin.graph).aliases?.at(0),
 		);
 	}
-};
+}
 
-export const drop_crumbs = async (
+export async function drop_crumbs(
 	plugin: BreadcrumbsPlugin,
 	destination_file: TFile,
 	crumbs: (Pick<BCEdge, "source_id" | "target_id"> & {
@@ -74,8 +67,8 @@ export const drop_crumbs = async (
 			let mutated = false;
 
 			const frontmatter =
-				plugin.app.metadataCache.getFileCache(destination_file)
-					?.frontmatter ?? {};
+				(plugin.app.metadataCache.getFileCache(destination_file)
+					?.frontmatter as Record<string, unknown>) ?? {};
 
 			Object.entries(links_by_field).forEach(([field, links]) => {
 				if (!links?.length) return;
@@ -105,7 +98,7 @@ export const drop_crumbs = async (
 					destination_file,
 					(old_frontmatter) => {
 						const new_frontmatter = Object.assign(
-							old_frontmatter,
+							old_frontmatter as Record<string, unknown>,
 							frontmatter,
 						);
 
@@ -147,4 +140,4 @@ export const drop_crumbs = async (
 			break;
 		}
 	}
-};
+}

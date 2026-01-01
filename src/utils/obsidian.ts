@@ -1,4 +1,5 @@
-import { Notice, type App } from "obsidian";
+import type { App } from "obsidian";
+import { Notice } from "obsidian";
 import { log } from "src/logger";
 import { Links } from "./links";
 import { Paths } from "./paths";

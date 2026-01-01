@@ -1,19 +1,19 @@
-import { ListIndex } from "src/commands/list_index";
+import { LIST_INDEX_DEFAULT_OPTIONS } from "src/commands/list_index";
 import { META_ALIAS } from "src/const/metadata_fields";
 import { DEFAULT_SETTINGS } from "src/const/settings";
-import {
-	OLD_DIRECTIONS,
-	type BreadcrumbsSettings,
-	type BreadcrumbsSettingsWithDirection,
-	type OLD_BREADCRUMBS_SETTINGS,
-	type OLD_DIRECTION,
-	type OLD_HIERARCHY,
+import type {
+	BreadcrumbsSettings,
+	BreadcrumbsSettingsWithDirection,
+	OLD_BREADCRUMBS_SETTINGS,
+	OLD_DIRECTION,
+	OLD_HIERARCHY,
 } from "src/interfaces/settings";
+import { OLD_DIRECTIONS } from "src/interfaces/settings";
 import { log } from "src/logger";
 import { remove_duplicates, remove_duplicates_by } from "src/utils/arrays";
 import { stringify_transitive_relation } from "src/utils/transitive_rules";
 
-const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
+function get_opposite_direction(dir: OLD_DIRECTION): OLD_DIRECTION {
 	switch (dir) {
 		case "up":
 			return "down";
@@ -26,9 +26,9 @@ const get_opposite_direction = (dir: OLD_DIRECTION): OLD_DIRECTION => {
 		case "prev":
 			return "next";
 	}
-};
+}
 
-export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
+export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	const old = settings as BreadcrumbsSettings &
 		Partial<BreadcrumbsSettingsWithDirection> &
 		Partial<OLD_BREADCRUMBS_SETTINGS>;
@@ -97,7 +97,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			}
 		});
 
-		old.hierarchies.forEach((hier, hier_i) => {
+		old.hierarchies.forEach((hier) => {
 			Object.values(hier.dirs)
 				.flatMap((fields) => fields)
 				.filter(Boolean)
@@ -246,7 +246,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	// !SECTION
-
 	// SECTION: custom_implied_relations
 	if (old.custom_implied_relations) {
 		old.custom_implied_relations.transitive.forEach((rel) => {
@@ -265,7 +264,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		stringify_transitive_relation,
 	);
 	// !SECTION
-
 	// SECTION: Explicit edge sources
 	/// Tag note
 	if (old.tagNoteField !== undefined) {
@@ -329,7 +327,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.dateNoteFormat;
 	}
 	// !SECTION
-
 	// SECTION: Views
 	/// Page
 	if (old.respectReadableLineLength !== undefined) {
@@ -378,13 +375,13 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	// @ts-ignore: This previously wasn't "considered" a view
 	if (settings.codeblocks !== undefined) {
 		// @ts-ignore: This previously wasn't "considered" a view
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		settings.views.codeblocks = settings.codeblocks;
 
 		// @ts-ignore: This previously wasn't "considered" a view
 		delete settings.codeblocks;
 	}
 	// !SECTION
-
 	// SECTION: Commands
 	/// Rebuild Graph
 	if (
@@ -416,7 +413,7 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 			indent: old.createIndexIndent,
 			link_kind: old.wikilinkIndex ? "wiki" : "none",
 			show_node_options: {
-				...ListIndex.DEFAULT_OPTIONS.show_node_options,
+				...LIST_INDEX_DEFAULT_OPTIONS.show_node_options,
 				alias: old.aliasesInIndex,
 			},
 		};
@@ -452,7 +449,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.threadUnderCursor;
 	}
 	// !SECTION
-
 	// SECTION: Suggestors
 	/// Hierarchy Field
 	if (old.enableRelationSuggestor !== undefined) {
@@ -474,7 +470,6 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 		delete old.suggestors.hierarchy_field;
 	}
 	// !SECTION
-
 	// SECTION: Misc
 	if (old.alphaSortAsc !== undefined) {
 		delete old.alphaSortAsc;
@@ -501,6 +496,5 @@ export const migrate_old_settings = (settings: BreadcrumbsSettings) => {
 	}
 
 	// !SECTION
-
 	return settings;
-};
+}

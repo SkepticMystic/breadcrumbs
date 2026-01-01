@@ -2,7 +2,7 @@
  * If both fields are objects, merge them recursively.
  */
 export function deep_merge_objects<T>(obj1: T, obj2: T): T {
-	const result = { ...obj1 } as T;
+	const result = { ...obj1 };
 
 	for (const key in obj2) {
 		const val1 = obj1[key];

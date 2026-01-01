@@ -1,32 +1,37 @@
 import { z } from "zod";
 import { quote_join } from "./strings";
 
-const not_string_msg = (field: string, received: unknown) =>
-	`Expected a string (text), but got: \`${received}\` (${typeof received}). _Try wrapping the value in quotes._
+export type Literal = string | number | boolean;
+
+function not_string_msg(field: string, received: unknown) {
+	return `Expected a string (text), but got: \`${received}\` (${typeof received}). _Try wrapping the value in quotes._
 **Example**: \`${field}: "${received}"\``;
+}
 
-const invalid_enum_msg = (
+function invalid_enum_msg(
 	field: string,
-	options: any[] | readonly any[],
+	options: Literal[] | readonly Literal[],
 	received: unknown,
-) =>
-	`Expected one of the following options: ${quote_join(options, "`", ", or ")}, but got: \`${received}\`.
+) {
+	return `Expected one of the following options: ${quote_join(options, "`", ", or ")}, but got: \`${received}\`.
 **Example**: \`${field}: ${options[0]}\``;
+}
 
-const not_array_msg = (
+function not_array_msg(
 	field: string,
-	options: any[] | readonly any[],
+	options: Literal[] | readonly Literal[],
 	received: unknown,
-) =>
-	`This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
+) {
+	return `This field is now expected to be a YAML list (array), but got: \`${received}\` (${typeof received}). _Try wrapping it in square brackets._
 **Example**: \`${field}: [${options.slice(0, 2).join(", ")}]\`, or possibly: \`${field}: [${received}]\``;
+}
 
-const dynamic_enum_schema = (
+function dynamic_enum_schema(
 	options: string[],
 	/** Optionally override ctx.path (useful in the sort.order/sort.field case) */
 	field?: string,
-) =>
-	z.string().superRefine((received, ctx) => {
+) {
+	return z.string().superRefine((received, ctx) => {
 		if (options.includes(received)) {
 			return true;
 		} else {
@@ -45,15 +50,17 @@ const dynamic_enum_schema = (
 			return false;
 		}
 	});
+}
 
-const dynamic_enum_array_schema = (
+function dynamic_enum_array_schema(
 	field: string,
 	options: string[],
 	received: unknown,
-) =>
-	z.array(dynamic_enum_schema(options), {
+) {
+	return z.array(dynamic_enum_schema(options), {
 		invalid_type_error: not_array_msg(field, options, received),
 	});
+}
 
 export const zod = {
 	error: {

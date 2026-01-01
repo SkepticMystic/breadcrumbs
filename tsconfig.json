@@ -6,14 +6,14 @@
 		"baseUrl": ".",
 		"inlineSources": true,
 		"module": "ESNext",
-		"target": "ES6",
+		"target": "es2018",
 		"allowJs": true,
 		"noImplicitAny": true,
 		"moduleResolution": "node",
 		"importHelpers": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,
-		"lib": ["DOM", "ES5", "ES6", "ES7"]
+		"lib": ["DOM", "es2018"]
 	},
 	"include": ["**/*.ts"]
 }

@@ -1,44 +1,64 @@
 <script lang="ts">
-	import { get_edge_sorter, has_edge_attrs } from "src/graph/utils";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { group_by } from "src/utils/arrays";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
+	import { create_edge_sorter } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
+	import { untrack } from "svelte";
 
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+	}
 
-	let { edge_sort_id, field_group_labels, show_attributes, collapse } =
-		plugin.settings.views.side.matrix;
+	let { plugin }: Props = $props();
 
-	$: edge_field_labels = resolve_field_group_labels(
-		plugin.settings.edge_field_groups,
-		field_group_labels,
+	let settings = $state(structuredClone(plugin.settings.views.side.matrix));
+	let is_initial_mount = true;
+
+	$effect(() => {
+		// We only want to run this when *we* have changed `settings`,
+		// and not when the component is initially mounted into the DOM,
+		// or when the settings have been updated externally.
+		if (is_initial_mount) {
+			is_initial_mount = false;
+			return;
+		}
+		plugin.settings.views.side.matrix = $state.snapshot(settings);
+		untrack(() => void plugin.saveSettings());
+	});
+
+	let edge_field_labels = $derived(
+		resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			settings.field_group_labels,
+		),
 	);
 
-	$: grouped_out_edges =
-		$active_file_store &&
-		// Even tho we ensure the graph is built before the views are registered,
-		// Existing views still try render before the graph is built.
-		plugin.graph.hasNode($active_file_store.path)
-			? group_by(
-					plugin.graph
-						.get_out_edges($active_file_store.path)
-						.filter((e) =>
-							has_edge_attrs(e, {
-								$or_fields: edge_field_labels,
-							}),
-						),
-					(e) => e.attr.field,
-				)
-			: null;
+	let active_file = $derived($active_file_store);
 
-	$: sort = get_edge_sorter(edge_sort_id, plugin.graph);
+	let grouped_out_edges = $derived(
+		active_file &&
+			// Even tho we ensure the graph is built before the views are registered,
+			// Existing views still try render before the graph is built.
+			plugin.graph.has_node(active_file.path)
+			? plugin.graph.get_filtered_grouped_outgoing_edges(
+					active_file.path,
+					edge_field_labels,
+				)
+			: null,
+	);
+
+	let sort = $derived(
+		create_edge_sorter(
+			settings.edge_sort_id.field,
+			settings.edge_sort_id.order === -1,
+		),
+	);
 </script>
 
 <div class="markdown-rendered BC-matrix-view">
@@ -52,25 +72,25 @@
 			<EdgeSortIdSelector
 				cls="clickable-icon nav-action-button"
 				exclude_fields={["field", "neighbour-field:"]}
-				bind:edge_sort_id
+				bind:edge_sort_id={settings.edge_sort_id}
 			/>
 
 			<ChevronCollapseButton
 				cls="clickable-icon nav-action-button"
-				bind:collapse
+				bind:collapse={settings.collapse}
 			/>
 
 			<!-- We can exclude alot of attrs, since they're implied by other info on the Matrix -->
 			<ShowAttributesSelectorMenu
 				cls="clickable-icon nav-action-button"
 				exclude_attributes={["field", "explicit"]}
-				bind:show_attributes
+				bind:show_attributes={settings.show_attributes}
 			/>
 
 			<FieldGroupSelector
 				cls="clickable-icon nav-action-button"
 				edge_field_groups={plugin.settings.edge_field_groups}
-				bind:field_group_labels
+				bind:field_group_labels={settings.field_group_labels}
 			/>
 		</div>
 	</div>
@@ -78,18 +98,20 @@
 	{#key grouped_out_edges}
 		{#if grouped_out_edges}
 			<div>
-				<!-- NOTE: Although it's more efficient, iterating over the Object.entries(grouped_out_edges) doesn't result in a stable order. -->
 				{#each plugin.settings.edge_fields as field}
-					{@const edges = grouped_out_edges[field.label]}
+					{@const edges = grouped_out_edges.get_sorted_edges(
+						field.label,
+						plugin.graph,
+						sort,
+					)}
 
 					{#if edges?.length}
 						<MatrixEdgeField
-							{sort}
 							{edges}
 							{field}
 							{plugin}
-							{show_attributes}
-							open={!collapse}
+							show_attributes={settings.show_attributes}
+							open={!settings.collapse}
 						/>
 					{/if}
 				{/each}

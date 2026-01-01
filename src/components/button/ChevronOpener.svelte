@@ -2,7 +2,11 @@
 	import { ChevronDown, ChevronRight } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
 
-	export let open: boolean;
+	interface Props {
+		open: boolean;
+	}
+
+	let { open }: Props = $props();
 </script>
 
 {#if open}

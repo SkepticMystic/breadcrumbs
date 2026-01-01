@@ -1,27 +1,37 @@
 <script lang="ts">
 	import type { EdgeField } from "src/interfaces/settings";
-	import { createEventDispatcher } from "svelte";
 
-	export let fields: EdgeField[];
-	export let undefine_on_change = true;
-	export let field: EdgeField | undefined = undefined;
+	interface Props {
+		fields: EdgeField[];
+		undefine_on_change?: boolean;
+		field?: EdgeField | undefined;
+		placeholder?: string | undefined;
+		onselect?: (field: EdgeField) => void | undefined;
+	}
 
-	const dispatch = createEventDispatcher<{
-		select: typeof field | undefined;
-	}>();
+	let {
+		fields,
+		undefine_on_change = true,
+		field = $bindable(undefined),
+		placeholder = undefined,
+		onselect = undefined,
+	}: Props = $props();
 </script>
 
 <select
 	class="dropdown"
-	value={field?.label}
-	on:change={(e) => {
+	value={field?.label ?? ""}
+	onchange={(e) => {
 		field = fields.find((field) => field.label === e.currentTarget.value);
-		dispatch("select", field);
+
+		if (field) {
+			onselect?.(field)
+		}
 
 		if (undefine_on_change) field = undefined;
 	}}
 >
-	<option value={undefined} disabled>Select Field</option>
+	<option value="" disabled>{placeholder ?? "Select Field"}</option>
 
 	{#each fields as { label }}
 		<option value={label}>{label}</option>

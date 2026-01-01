@@ -18,20 +18,26 @@
 		input_transitive_rule_schema,
 		parse_transitive_relation,
 		stringify_transitive_relation,
-		transitive_rule_to_edges,
+		// transitive_rule_to_edges,
 	} from "src/utils/transitive_rules";
 	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import RenderExternalCodeblock from "../obsidian/RenderExternalCodeblock.svelte";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
 
-	export let plugin: BreadcrumbsPlugin;
+	interface Props {
+		plugin: BreadcrumbsPlugin;
+	}
 
-	const settings = plugin.settings;
+	let { plugin }: Props = $props();
 
-	let filter = "";
-	let transitives = [...settings.implied_relations.transitive];
-	const opens = transitives.map(() => false);
+	let settings = $state(plugin.settings);
+
+	let filter = $state("");
+	// svelte-ignore state_referenced_locally
+	let transitives = $state([...settings.implied_relations.transitive]);
+	// svelte-ignore state_referenced_locally
+	const opens = $state(transitives.map(() => false));
 
 	const actions = {
 		save: async () => {
@@ -43,13 +49,16 @@
 
 			settings.implied_relations.transitive = transitives;
 
-			await Promise.all([
-				plugin.saveSettings(),
-				plugin.refresh({ redraw_side_views: true }),
-			]);
+			// WORKAROUND: `settings` is a reactive proxy around plugin.settings
+			// that, most importantly, does not pass through mutations. We have
+			// to manually reassign it an un-reactified copy to ensure that
+			// `plugin.saveSettings()` actually uses our updated settings.
+			plugin.settings = $state.snapshot(settings);
+
+			await Promise.all([plugin.saveSettings(), plugin.rebuildGraph()]);
 
 			// NOTE: saveSettings() resets the dirty flag, but now we have to tell Svelte to react
-			plugin = plugin;
+			settings = plugin.settings;
 		},
 
 		make_id: (rule_i: number) => `BC-transitive-rule-${rule_i}`,
@@ -249,7 +258,7 @@
 	</p>
 
 	<div class="my-2 flex items-center gap-2">
-		<button class="flex items-center gap-1" on:click={actions.save}>
+		<button class="flex items-center gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
@@ -264,7 +273,7 @@
 				class="w-8"
 				aria-label="Clear Filter"
 				disabled={filter === ""}
-				on:click={() => (filter = "")}
+				onclick={() => (filter = "")}
 			>
 				X
 			</button>
@@ -274,7 +283,7 @@
 			<button
 				class="w-10"
 				aria-label="Jump to bottom"
-				on:click={() => actions.scroll_to(transitives.length - 1)}
+				onclick={() => actions.scroll_to(transitives.length - 1)}
 			>
 				<ArrowDown size={ICON_SIZE} />
 			</button>
@@ -305,14 +314,14 @@
 					<div class="flex gap-1">
 						<button
 							disabled={rule_i === 0}
-							on:click={() =>
+							onclick={() =>
 								actions.reorder_transitive(rule_i, rule_i - 1)}
 						>
 							<ArrowUp size={ICON_SIZE} />
 						</button>
 						<button
 							disabled={rule_i === transitives.length - 1}
-							on:click={() =>
+							onclick={() =>
 								actions.reorder_transitive(rule_i, rule_i + 1)}
 						>
 							<ArrowDown size={ICON_SIZE} />
@@ -320,14 +329,14 @@
 
 						<button
 							aria-label="Copy Transitive Implied Relation"
-							on:click={() => actions.copy_transitive(rule_i)}
+							onclick={() => actions.copy_transitive(rule_i)}
 						>
 							<ClipboardIcon size={ICON_SIZE} />
 						</button>
 
 						<button
 							aria-label="Delete Transitive Implied Relation"
-							on:click={() => actions.remove_transitive(rule_i)}
+							onclick={() => actions.remove_transitive(rule_i)}
 						>
 							X
 						</button>
@@ -345,7 +354,7 @@
 										<Tag
 											tag={attr.field ?? ""}
 											title="Right click for more actions."
-											on:contextmenu={context_menus.chain_field(
+											oncontextmenu={context_menus.chain_field(
 												rule_i,
 												attr_i,
 											)}
@@ -360,8 +369,8 @@
 
 							<EdgeFieldSelector
 								fields={settings.edge_fields}
-								on:select={(e) =>
-									actions.add_chain_field(rule_i, e.detail)}
+								onselect={(f) =>
+									actions.add_chain_field(rule_i, f)}
 							/>
 						</div>
 
@@ -374,8 +383,8 @@
 								field={settings.edge_fields.find(
 									(f) => f.label === rule.close_field,
 								)}
-								on:select={(e) =>
-									actions.set_close_field(rule_i, e.detail)}
+								onselect={(f) =>
+									actions.set_close_field(rule_i, f)}
 							/>
 						</div>
 
@@ -385,7 +394,7 @@
 							<input
 								type="checkbox"
 								bind:checked={rule.close_reversed}
-								on:click={(e) =>
+								onclick={(e) =>
 									actions.set_close_reversed(
 										rule_i,
 										e.currentTarget.checked,
@@ -401,7 +410,7 @@
 								min={0}
 								max={100}
 								value={rule.rounds}
-								on:blur={(e) =>
+								onblur={(e) =>
 									actions.set_rounds(
 										rule_i,
 										+e.currentTarget.value,
@@ -417,7 +426,7 @@
 									type="text"
 									value={rule.name}
 									placeholder="Rule Name"
-									on:blur={(e) =>
+									onblur={(e) =>
 										actions.rename_transitive(
 											rule_i,
 											e.currentTarget.value,
@@ -426,7 +435,7 @@
 
 								<button
 									aria-label="Reset Name"
-									on:click={() =>
+									onclick={() =>
 										actions.rename_transitive(rule_i, "")}
 								>
 									X
@@ -438,13 +447,8 @@
 							<RenderExternalCodeblock
 								{plugin}
 								type="mermaid"
-								code={Mermaid.from_edges(
-									transitive_rule_to_edges(rule),
-									{
-										show_attributes: ["field"],
-										collapse_opposing_edges: false,
-									},
-								)}
+								code={Mermaid.from_transitive_rule(rule)
+									.mermaid}
 							/>
 						{/if}
 					</div>
@@ -454,7 +458,7 @@
 
 		<button
 			class="flex items-center gap-1"
-			on:click={actions.add_transitive}
+			onclick={actions.add_transitive}
 		>
 			<PlusIcon size={ICON_SIZE} />
 			Add New Transitive Implied Relation
@@ -477,7 +481,7 @@
 					placeholder="[up] <- down"
 				></textarea>
 
-				<button class="w-60" on:click={actions.add_bulk}>
+				<button class="w-60" onclick={actions.add_bulk}>
 					Bulk Add
 				</button>
 			</div>

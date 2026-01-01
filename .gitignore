@@ -18,9 +18,13 @@ styles.css
 
 # obsidian
 data.json
+data-backup__*.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
 
 # test files
 coverage
+
+# build 
+meta.txt

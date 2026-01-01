@@ -1,9 +1,12 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
+import type { EdgeSortId } from "src/const/graph";
+import type { EdgeAttribute } from "src/graph/utils";
 import type BreadcrumbsPlugin from "src/main";
-import { _add_settings_show_node_options } from "./ShowNodeOptions";
 import { new_setting } from "src/utils/settings";
+import { mount } from "svelte";
+import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_matrix = (
 	plugin: BreadcrumbsPlugin,
@@ -17,58 +20,52 @@ export const _add_settings_matrix = (
 			cb: async (checked) => {
 				plugin.settings.views.side.matrix.collapse = checked;
 
-				await Promise.all([
-					plugin.saveSettings(),
-					plugin.refresh({
-						redraw_side_views: true,
-						rebuild_graph: false,
-					}),
-				]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
 			},
 		},
 	});
 
-	new EdgeSortIdSettingItem({
+	mount(EdgeSortIdSettingItem, {
 		target: containerEl,
-		props: { edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id },
-	}).$on("select", async (e) => {
-		plugin.settings.views.side.matrix.edge_sort_id = e.detail;
+		props: {
+			edge_sort_id: plugin.settings.views.side.matrix.edge_sort_id,
+			select_cb: async (value: EdgeSortId) => {
+				plugin.settings.views.side.matrix.edge_sort_id = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
-		]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
 	});
 
-	new ShowAttributesSettingItem({
+	mount(ShowAttributesSettingItem, {
 		target: containerEl,
 		props: {
 			exclude_attributes: ["field", "explicit"],
 			show_attributes: plugin.settings.views.side.matrix.show_attributes,
-		},
-	}).$on("select", async (e) => {
-		plugin.settings.views.side.matrix.show_attributes = e.detail;
+			select_cb: async (value: EdgeAttribute[]) => {
+				plugin.settings.views.side.matrix.show_attributes = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
-		]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
 	});
 
-	new FieldGroupLabelsSettingItem({
+	mount(FieldGroupLabelsSettingItem, {
 		target: containerEl,
 		props: {
 			edge_field_groups: plugin.settings.edge_field_groups,
 			field_group_labels:
 				plugin.settings.views.side.matrix.field_group_labels,
-		},
-	}).$on("select", async (e) => {
-		plugin.settings.views.side.matrix.field_group_labels = e.detail;
+			select_cb: async (value: string[]) => {
+				plugin.settings.views.side.matrix.field_group_labels = value;
 
-		await Promise.all([
-			plugin.saveSettings(),
-			plugin.refresh({ redraw_side_views: true, rebuild_graph: false }),
-		]);
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
 	});
 
 	_add_settings_show_node_options(plugin, containerEl, {

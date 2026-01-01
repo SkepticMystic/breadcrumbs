@@ -2,14 +2,18 @@
 	import { MergeIcon, SplitIcon } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
 
-	export let cls = "";
-	export let merge_fields: boolean;
+	interface Props {
+		cls?: string;
+		merge_fields: boolean;
+	}
+
+	let { cls = "", merge_fields = $bindable() }: Props = $props();
 </script>
 
 <button
 	class={cls}
 	aria-label={merge_fields ? "Separate Fields" : "Merge Fields"}
-	on:click={() => (merge_fields = !merge_fields)}
+	onclick={() => (merge_fields = !merge_fields)}
 >
 	{#if merge_fields}
 		<MergeIcon size={ICON_SIZE} />

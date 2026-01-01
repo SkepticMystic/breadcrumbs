@@ -1,4 +1,4 @@
-import { ListIndex } from "src/commands/list_index";
+import { LIST_INDEX_DEFAULT_OPTIONS } from "src/commands/list_index";
 import type {
 	BreadcrumbsSettings,
 	ShowNodeOptions,
@@ -182,7 +182,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 
 		list_index: {
-			default_options: ListIndex.DEFAULT_OPTIONS,
+			default_options: LIST_INDEX_DEFAULT_OPTIONS,
 		},
 
 		freeze_implied_edges: {

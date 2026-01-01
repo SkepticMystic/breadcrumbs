@@ -13,16 +13,30 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
-            - name: Use Node.js
-              uses: actions/setup-node@v3
+            - name: Install Bun
+              uses: oven-sh/setup-bun@v1
               with:
-                  node-version: "18.x"
+                  bun-version: latest
+
+            - name: Install Rust
+              uses: actions-rust-lang/setup-rust-toolchain@v1
+              with:
+                  toolchain: nightly
+                  target: wasm32-unknown-unknown
+
+            - name: Install wasm-pack
+              run: bun install -g wasm-pack
+
+            - name: Set Nightly
+              run: cd wasm && rustup override set nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu && cd ..
 
             - name: Build plugin
               run: |
-                  npm install
-                  npm test || exit 1
-                  npm run build || exit 1
+                  bun install
+                  bun run wasm:test || exit 1
+                  bun run wasm:build || exit 1
+                  bun run test || exit 1
+                  bun run build || exit 1
 
             - name: Create release
               env:

@@ -1,12 +1,13 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
-	BreadcrumbsError,
+	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
+import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const get_tag_note_info = (
 	plugin: BreadcrumbsPlugin,
@@ -18,6 +19,7 @@ const get_tag_note_info = (
 	let raw_tag = metadata[META_ALIAS["tag-note-tag"]];
 	if (!raw_tag) {
 		raw_tag = metadata["BC-tag-note"];
+
 		if (raw_tag) {
 			log.warn(
 				`'BC-tag-note' is deprecated in favor of ${META_ALIAS["tag-note-tag"]}`,
@@ -62,11 +64,10 @@ const get_tag_note_info = (
 };
 
 export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
-	graph,
 	plugin,
 	all_files,
 ) => {
-	const errors: BreadcrumbsError[] = [];
+	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
 
 	// More efficient than quadratic looping over all_files,
 	// We gather the tag_notes, and the tags the each note has in one go
@@ -84,16 +85,22 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		({ file: tag_note_file, cache: tag_note_cache }) => {
 			if (!tag_note_cache) return;
 
-			// Check if the tag_note itself has any tags for other tags notes
-			tag_note_cache?.tags?.forEach(({ tag }) => {
+			const process_tag = ( tag: string) => {
+				// Ensure consistent tag formatting, since some have the # and some don't
+				const formatted_tag = ensure_starts_with(tag, "#");
 				// Quite happy with this trick :)
 				// Try get the existing_paths, and mutate it if it exists
 				// Push returns the new length (guarenteed to be atleast 1 - truthy)
 				// So it will only be false if the key doesn't exist
-				if (!tag_paths_map.get(tag)?.push(tag_note_file.path)) {
-					tag_paths_map.set(tag, [tag_note_file.path]);
+				if (!tag_paths_map.get(formatted_tag)?.push(tag_note_file.path)) {
+					tag_paths_map.set(formatted_tag, [tag_note_file.path]);
 				}
-			});
+			}
+
+			// Check if the tag_note itself has any tags for other tags notes
+			// We must iterate over both the frontmatter and body tags independently
+			tag_note_cache?.frontmatter?.tags?.forEach(process_tag);
+			tag_note_cache?.tags?.map((item) => item.tag)?.forEach(process_tag)
 
 			const tag_note_info = get_tag_note_info(
 				plugin,
@@ -101,7 +108,8 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				tag_note_file.path,
 			);
 			if (!tag_note_info.ok) {
-				if (tag_note_info.error) errors.push(tag_note_info.error);
+				if (tag_note_info.error)
+					results.errors.push(tag_note_info.error);
 				return;
 			}
 
@@ -132,7 +140,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 			tag_note_file.path,
 		);
 		if (!tag_note_info.ok) {
-			if (tag_note_info.error) errors.push(tag_note_info.error);
+			if (tag_note_info.error) results.errors.push(tag_note_info.error);
 			return;
 		}
 		const { tag, field, exact } = tag_note_info.data;
@@ -161,13 +169,16 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		//   We know the target_path is resolved, since it only gets added to the map
 		//   if it's a resolved note with a tag in it
 		target_paths?.forEach((target_path) => {
-			graph.safe_add_directed_edge(tag_note.source_path, target_path, {
-				explicit: true,
-				source: "tag_note",
-				field: tag_note.field,
-			});
+			results.edges.push(
+				new GCEdgeData(
+					tag_note.source_path,
+					target_path,
+					tag_note.field,
+					"tag_note",
+				),
+			);
 		});
 	});
 
-	return { errors };
+	return results;
 };
