@@ -17,13 +17,14 @@
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { untrack } from "svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
+	import { log } from "src/logger";
 
 	let {
 		plugin,
 	}: {
 		plugin: BreadcrumbsPlugin;
 	} = $props();
-
+	log.debug("Rendering Tree side view");
 	let settings = $state(structuredClone(plugin.settings.views.side.tree));
 	$effect(() => {
 		plugin.settings.views.side.tree = $state.snapshot(settings);

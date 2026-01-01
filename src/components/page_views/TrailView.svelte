@@ -9,6 +9,7 @@
 		TraversalOptions,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { untrack } from "svelte";
+	import { log } from "src/logger";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -16,7 +17,7 @@
 	}
 
 	let { plugin = $bindable(), file_path }: Props = $props();
-
+  log.debug("Rendering Trail page view for file:", file_path);
 	let settings = $state(structuredClone(plugin.settings.views.page.trail));
 	let is_initial_mount = true;
 
