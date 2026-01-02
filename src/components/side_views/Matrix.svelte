@@ -19,7 +19,9 @@
 	let { plugin }: Props = $props();
   log.debug("Rendering Matrix side view");
 	log.debug(plugin.settings.views.side.matrix);
-	let settings = $state(structuredClone(plugin.settings.views.side.matrix));
+	let snapshot = $state.snapshot(plugin.settings.views.side.matrix);
+	let settings = structuredClone(snapshot)
+	// let settings = $state(structuredClone(plugin.settings.views.side.matrix));
 	let is_initial_mount = true;
 
 	$effect(() => {
