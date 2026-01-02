@@ -32,14 +32,34 @@ function linkify_edge(plugin: BreadcrumbsPlugin, struct: EdgeStruct) {
 export async function drop_crumbs(
 	plugin: BreadcrumbsPlugin,
 	destination_file: TFile,
-	crumbs: EdgeStruct[],
-	options: { destination: CrumbDestination | "none" },
-) {
+	crumbs: (Pick<BCEdge, "source_id" | "target_id"> & {
+		attr: Pick<BCEdgeAttributes, "field">;
+		target_attr: Pick<BCNodeAttributes, "aliases">;
+	})[],
+	options: { destination: CrumbDestination | "none" , included_fields?: string[], use_alias?: boolean },
+) => {
 	if (!crumbs.length) return;
-
+	let included_fields: string[] = options.included_fields?.flatMap(key => plugin.settings.edge_field_groups.find(f => f.label === key)?.fields ?? []) ?? [];
 	const links_by_field = group_projection(
-		group_by(crumbs, (e) => e.edge_type),
-		(edges) => edges.map((e) => linkify_edge(plugin, e)),
+		group_by(crumbs, (e) => e.attr.field!),
+		(edges) =>
+			edges.map((e) => {
+				if (options.use_alias === true) {
+					return linkify_edge(
+						plugin,
+						e.source_id,
+						e.target_id,
+						e.target_attr.aliases,
+					);
+				} else {
+					return linkify_edge(
+						plugin,
+						e.source_id,
+						e.target_id,
+						undefined,
+					);
+				}
+			}),
 	);
 
 	switch (options.destination) {
@@ -52,6 +72,9 @@ export async function drop_crumbs(
 
 			Object.entries(links_by_field).forEach(([field, links]) => {
 				if (!links?.length) return;
+				if (included_fields.length && !included_fields.includes(field)) {
+					return;
+				}
 
 				const existing = frontmatter[field];
 				if (existing) {
@@ -95,6 +118,9 @@ export async function drop_crumbs(
 			const dataview_fields = Object.entries(links_by_field)
 				.map(([field, links]) => {
 					if (!links?.length) return "";
+					if (included_fields.length && !included_fields.includes(field)) {
+						return "";
+					}
 					else return `${field}:: ${links.join(", ")}`;
 				})
 				.filter(Boolean);

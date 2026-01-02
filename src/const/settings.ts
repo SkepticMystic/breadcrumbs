@@ -188,6 +188,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		freeze_implied_edges: {
 			default_options: {
 				destination: "frontmatter",
+				included_fields: ["ups", "downs", "sames", "nexts", "prevs"],
+				use_alias: true,
 			},
 		},
 
