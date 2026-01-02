@@ -18,9 +18,7 @@
 
 	let { plugin = $bindable(), file_path }: Props = $props();
   log.debug("Rendering Trail page view for file:", file_path);
-	// let settings = $state(structuredClone(plugin.settings.views.page.trail));
-	let snapshot = $state.snapshot(plugin.settings.views.page.trail);
-	let settings = structuredClone(snapshot)
+	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.page.trail)));
 	let is_initial_mount = true;
 
 	$effect(() => {
