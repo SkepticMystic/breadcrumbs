@@ -25,8 +25,7 @@
 		plugin: BreadcrumbsPlugin;
 	} = $props();
 	log.debug("Rendering Tree side view");
-	let snapshot = $state.snapshot(plugin.settings.views.side.tree);
-	let settings = structuredClone(snapshot)
+	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.side.tree)));
 	$effect(() => {
 		plugin.settings.views.side.tree = $state.snapshot(settings);
 		untrack(() => void plugin.saveSettings());
