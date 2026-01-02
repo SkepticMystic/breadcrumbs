@@ -4,6 +4,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
+	import { log } from "src/logger";
 
 	interface Props {
 		file_path: string;
@@ -35,7 +36,8 @@
 		...edge_field_labels.prev,
 		...edge_field_labels.next,
 	]);
-
+	log.debug("PrevNextView merged_field_labels:", merged_field_labels);
+	log.debug("grouped_out_edges calculation for PrevNextView");
 	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
 				plugin.graph
