@@ -1,5 +1,5 @@
-import type { WorkspaceLeaf } from "obsidian";
-import { Events, Notice, Plugin, TFile } from "obsidian";
+import { Notice, Plugin, TFile, WorkspaceLeaf, Menu, TAbstractFile, TFolder } from "obsidian";
+import { Codeblocks } from "src/codeblocks";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
 import { rebuild_graph } from "src/graph/builders";
@@ -30,6 +30,7 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
+import { freeze_edges_in_folder } from "./commands/freeze_edges/index"
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
@@ -83,6 +84,8 @@ export default class BreadcrumbsPlugin extends Plugin {
 		});
 
 		this.addSettingTab(new BreadcrumbsSettingTab(this.app, this));
+		
+    	this.registerEvent(this.app.workspace.on('file-menu', this.handleFileMenu.bind(this)));
 
 		// API
 		// NOTE: I think this should be done quite early
@@ -262,6 +265,18 @@ export default class BreadcrumbsPlugin extends Plugin {
 			((await this.loadData()) ?? {}) as BreadcrumbsSettings,
 			DEFAULT_SETTINGS,
 		);
+	}
+
+	private handleFileMenu(menu: Menu, file: TAbstractFile): void {
+		if (!(file instanceof TFolder)) {
+		return;
+		}
+
+		menu.addItem((item) => {
+		item.setTitle('Freeze implied edges in folder')
+			.setIcon('pin')
+			.onClick(() => freeze_edges_in_folder(this, file));
+		});
 	}
 
 	async saveSettings() {

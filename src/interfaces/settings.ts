@@ -156,6 +156,8 @@ export interface BreadcrumbsSettings {
 		freeze_implied_edges: {
 			default_options: {
 				destination: CrumbDestination;
+				included_fields: string[];
+				use_alias: boolean;
 			};
 		};
 
