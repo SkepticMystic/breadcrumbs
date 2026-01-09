@@ -5,6 +5,8 @@ import type {
 } from "src/interfaces/graph";
 import { Paths } from "src/utils/paths";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { log } from "src/logger";
+import { Replace, ReplaceAll } from "lucide-svelte";
 
 // TODO: Option to point up to month, (and for month to point up to year?)
 
@@ -83,12 +85,36 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				.plus({ days: 1 })
 				.toFormat(date_note_settings.date_format);
 
+			const tomorrow_year =  date_note.date
+				.plus({ days: 1 })
+				.toFormat("yyyy");
+
+			const tomorrow_month =  date_note.date
+				.plus({ days: 1 })
+				.toFormat("MM");
+
+			let tomorrow_folder = date_note.folder;
+
+			if (tomorrow_year !== date_note.date.toFormat("yyyy")) {
+				tomorrow_folder = tomorrow_folder.replace(
+					date_note.date.toFormat("yyyy"),
+					tomorrow_year,
+				);
+			}
+
+			if (tomorrow_month !== date_note.date.toFormat("MM")) {
+				tomorrow_folder = tomorrow_folder.replace(
+					date_note.date.toFormat("MM"),
+					tomorrow_month,
+				);
+			}
+
 			const target_basename = date_note_settings.stretch_to_existing
 				? (date_notes.at(i + 1)?.basename ?? basename_plus_one_day)
 				: basename_plus_one_day;
-
+			log.debug(`tomorrow_folder: ${tomorrow_folder}`);
 			const target_id = Paths.build(
-				date_note.folder,
+				tomorrow_folder,
 				target_basename,
 				date_note.ext,
 			);
