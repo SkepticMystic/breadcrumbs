@@ -17,6 +17,8 @@
 
 	const no_ext = Paths.drop_ext(path);
 
+	// log.debug("ObsidianLink", { path, no_ext, display, resolved });
+
 	let active_file = $derived($active_file_store);
 </script>
 
