@@ -1,15 +1,25 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { ensure_ends_with } from "./strings";
+import { log } from "src/logger";
 
 function ensure_ext(
 	path: string,
 	/** _Just_ the extension, no '.' */
 	ext: string = "md",
 ) {
+	if (extname(path) ==="base") {
+		log.debug("ensure_ext > already has base", { path });
+		return path;
+	}
+	log.debug("ensure_ext > adding ext", { path: path + " ext: " + ext });
 	return ensure_ends_with(path, "." + ext);
 }
 
 function drop_ext(path: string) {
+	if (extname(path) === "base") {
+		log.debug("normalize > path is base, returning as-is", { path });
+		return path;
+	}
 	return path.replace(/\.[^.]+$/, "");
 }
 
