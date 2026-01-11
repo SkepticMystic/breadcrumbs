@@ -4,6 +4,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import LockViewButton from "../button/LockViewButton.svelte";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
@@ -108,6 +109,11 @@
 				bind:merge_fields={settings.merge_fields}
 			/>
 
+			<LockViewButton
+				cls="clickable-icon nav-action-button"
+				bind:lock_view={settings.lock_view}
+			/>
+
 			<FieldGroupLabelsSelector
 				cls="clickable-icon nav-action-button"
 				edge_field_groups={plugin.settings.edge_field_groups}
@@ -118,7 +124,7 @@
 
 	<div class="BC-tree-view-items">
 		{#key sorted_tree}
-			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
+			{#if sorted_tree.tree && !sorted_tree.tree.is_empty() && settings.lock_view}
 				<NestedEdgeList
 					{plugin}
 					{node_stringify_options}
