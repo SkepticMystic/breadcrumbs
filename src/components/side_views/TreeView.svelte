@@ -50,6 +50,20 @@
 
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
 		if (active_file && plugin.graph.has_node(active_file.path)) {
+			log.debug("Calculating tree for TreeView with active file:", active_file.path);
+			if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
+				log.debug("Using locked path for TreeView:", settings.lock_path);
+				return plugin.graph.rec_traverse_and_process(
+					new TraversalOptions(
+						[settings.lock_path!],
+						edge_field_labels,
+						5,
+						100,
+						!settings.merge_fields,
+					),
+					new TraversalPostprocessOptions(sort, false),
+				);
+			}
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
 					[active_file!.path],
@@ -124,7 +138,7 @@
 
 	<div class="BC-tree-view-items">
 		{#key sorted_tree}
-			{#if sorted_tree.tree && !sorted_tree.tree.is_empty() && settings.lock_view}
+			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
 				<NestedEdgeList
 					{plugin}
 					{node_stringify_options}

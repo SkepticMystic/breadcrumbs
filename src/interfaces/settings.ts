@@ -126,6 +126,8 @@ export interface BreadcrumbsSettings {
 			tree: {
 				collapse: boolean;
 				merge_fields: boolean;
+				lock_view: boolean;
+				lock_path: string;
 				edge_sort_id: EdgeSortId;
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];

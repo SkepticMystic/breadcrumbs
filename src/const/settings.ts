@@ -160,6 +160,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				collapse: false,
 				show_attributes: [],
 				merge_fields: false,
+				lock_view: false,
+				lock_path: "",
 				field_group_labels: ["downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },

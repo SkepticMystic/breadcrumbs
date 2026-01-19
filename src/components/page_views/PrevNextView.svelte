@@ -36,8 +36,7 @@
 		...edge_field_labels.prev,
 		...edge_field_labels.next,
 	]);
-	log.debug("PrevNextView merged_field_labels:", merged_field_labels);
-	log.debug("grouped_out_edges calculation for PrevNextView");
+
 	const grouped_out_edges = plugin.graph.has_node(file_path)
 		? group_by(
 				plugin.graph

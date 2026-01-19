@@ -7,6 +7,7 @@ import { new_setting } from "src/utils/settings";
 import { mount } from "svelte";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
+import { Notice } from "obsidian";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,
@@ -80,6 +81,41 @@ export const _add_settings_tree_view = (
 			},
 		},
 	});
+
+	new_setting(containerEl, {
+		name: "Lock View",
+		desc: "Lock the tree view to the current file",
+		toggle: {
+			value: plugin.settings.views.side.tree.lock_view,
+			cb: async (value) => {
+				plugin.settings.views.side.tree.lock_view = value;
+
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
+	});
+
+		new_setting(containerEl, {
+			name: "Lock Path",
+			desc: "Path to lock the tree view to (overrides current file)",
+			input: {
+				value: plugin.settings.views.side.tree.lock_path,
+				cb: async (value) => {
+					if (!value)
+						plugin.settings.views.side.tree.lock_path =
+							value;
+					else {
+						plugin.settings.views.side.tree.lock_path =
+							value;
+						await Promise.all([
+							plugin.rebuildGraph(),
+							plugin.saveSettings(),
+						]);
+					}
+				},
+			},
+		});
 
 	_add_settings_show_node_options(plugin, containerEl, {
 		get: () => plugin.settings.views.side.tree.show_node_options,

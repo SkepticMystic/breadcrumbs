@@ -225,6 +225,7 @@ describe("migration", () => {
 					tree: {
 						collapse: true,
 						merge_fields: false,
+						lock_view: false,
 						show_attributes: [],
 						field_group_labels: ["downs"],
 						edge_sort_id: {
@@ -413,6 +414,7 @@ describe("migration", () => {
 							order: 1,
 						},
 						merge_fields: false,
+						lock_view: false,
 						field_group_labels: ["downs"],
 					},
 				},
