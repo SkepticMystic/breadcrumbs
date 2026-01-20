@@ -96,26 +96,26 @@ export const _add_settings_tree_view = (
 		},
 	});
 
-		new_setting(containerEl, {
-			name: "Lock Path",
-			desc: "Path to lock the tree view to (overrides current file)",
-			input: {
-				value: plugin.settings.views.side.tree.lock_path,
-				cb: async (value) => {
-					if (!value)
-						plugin.settings.views.side.tree.lock_path =
-							value;
-					else {
-						plugin.settings.views.side.tree.lock_path =
-							value;
-						await Promise.all([
-							plugin.rebuildGraph(),
-							plugin.saveSettings(),
-						]);
-					}
-				},
+	new_setting(containerEl, {
+		name: "Lock Path",
+		desc: "Path to lock the tree view to (overrides current file)",
+		input: {
+			value: plugin.settings.views.side.tree.lock_path,
+			cb: async (value) => {
+				if (!value)
+					plugin.settings.views.side.tree.lock_path =
+						value;
+				else {
+					plugin.settings.views.side.tree.lock_path =
+						value;
+					await Promise.all([
+						plugin.rebuildGraph(),
+						plugin.saveSettings(),
+					]);
+				}
 			},
-		});
+		},
+	});
 
 	_add_settings_show_node_options(plugin, containerEl, {
 		get: () => plugin.settings.views.side.tree.show_node_options,

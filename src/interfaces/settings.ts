@@ -121,17 +121,19 @@ export interface BreadcrumbsSettings {
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				lock_view: boolean;
+				lock_path: string;
 			};
 
 			tree: {
 				collapse: boolean;
 				merge_fields: boolean;
-				lock_view: boolean;
-				lock_path: string;
 				edge_sort_id: EdgeSortId;
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				lock_view: boolean;
+				lock_path: string;
 			};
 		};
 

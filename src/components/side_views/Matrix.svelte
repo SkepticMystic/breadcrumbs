@@ -4,6 +4,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import { create_edge_sorter } from "wasm/pkg/breadcrumbs_graph_wasm";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import LockViewButton from "../button/LockViewButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
 	import FieldGroupSelector from "../selector/FieldGroupLabelsSelector.svelte";
@@ -18,12 +19,13 @@
 
 	let { plugin }: Props = $props();
   log.debug("Rendering Matrix side view");
-	log.debug(plugin.settings.views.side.matrix);
 	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.side.matrix)));
 
 	let is_initial_mount = true;
 
 	$effect(() => {
+		plugin.settings.views.side.matrix = $state.snapshot(settings);
+		untrack(() => void plugin.saveSettings());
 		// We only want to run this when *we* have changed `settings`,
 		// and not when the component is initially mounted into the DOM,
 		// or when the settings have been updated externally.
@@ -31,8 +33,6 @@
 			is_initial_mount = false;
 			return;
 		}
-		plugin.settings.views.side.matrix = $state.snapshot(settings);
-		untrack(() => void plugin.saveSettings());
 	});
 
 	let edge_field_labels = $derived(
@@ -44,17 +44,25 @@
 
 	let active_file = $derived($active_file_store);
 
-	let grouped_out_edges = $derived(
-		active_file &&
+	let grouped_out_edges = $derived.by(() => {
+		if (active_file &&
 			// Even tho we ensure the graph is built before the views are registered,
 			// Existing views still try render before the graph is built.
-			plugin.graph.has_node(active_file.path)
-			? plugin.graph.get_filtered_grouped_outgoing_edges(
+				plugin.graph.has_node(active_file.path)) {
+				if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
+					log.debug("Using locked path for MatrixView:", settings.lock_path);
+					return plugin.graph.get_filtered_grouped_outgoing_edges(
+					  settings.lock_path!,
+					  edge_field_labels,)
+				}
+				return plugin.graph.get_filtered_grouped_outgoing_edges(
 					active_file.path,
 					edge_field_labels,
 				)
-			: null,
-	);
+			} else {
+				return null
+			}
+	});
 
 	let sort = $derived(
 		create_edge_sorter(
@@ -70,6 +78,13 @@
 			<RebuildGraphButton
 				cls="clickable-icon nav-action-button"
 				{plugin}
+			/>
+
+			<LockViewButton
+				cls="clickable-icon nav-action-button"
+				bind:lock_view={settings.lock_view}
+				bind:lock_path={settings.lock_path}
+				active_path={active_file?.path}
 			/>
 
 			<EdgeSortIdSelector

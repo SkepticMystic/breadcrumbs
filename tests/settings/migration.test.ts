@@ -204,6 +204,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						lock_view: false,
+						lock_path: "",
 						edge_sort_id: {
 							field: "basename",
 							order: 1,
@@ -384,6 +386,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						lock_view: false,
+						lock_path: "",
 						show_node_options: {
 							ext: false,
 							folder: false,
