@@ -92,7 +92,11 @@
 </div>
 
 <style>
+
 	.BC-prev-next-view > div {
 		border: 1px solid var(--background-modifier-border);
+	}
+	.BC-prev-next-view .flex-col {
+		background-color: var(--background-primary);
 	}
 </style>
