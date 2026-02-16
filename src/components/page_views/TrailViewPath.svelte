@@ -50,6 +50,7 @@
 		overflow: hidden;
 		border-radius: var(--radius-m);
 		border: 1px solid var(--background-modifier-border);
+		background-color: var(--background-primary);
 	}
 
 	.BC-trail-view-item-separator::before {

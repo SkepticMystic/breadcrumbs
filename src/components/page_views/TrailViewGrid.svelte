@@ -68,6 +68,7 @@ grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
 		overflow: hidden;
 		border-radius: var(--radius-m);
 		border: 1px solid var(--background-modifier-border);
+		background-color: var(--background-primary);
 	}
 
 	.BC-trail-view-item {
