@@ -204,6 +204,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						lock_view: false,
+						lock_path: "",
 						edge_sort_id: {
 							field: "basename",
 							order: 1,
@@ -225,6 +227,8 @@ describe("migration", () => {
 					tree: {
 						collapse: true,
 						merge_fields: false,
+						lock_view: false,
+						lock_path: "",
 						show_attributes: [],
 						field_group_labels: ["downs"],
 						edge_sort_id: {
@@ -382,6 +386,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						lock_view: false,
+						lock_path: "",
 						show_node_options: {
 							ext: false,
 							folder: false,
@@ -413,6 +419,8 @@ describe("migration", () => {
 							order: 1,
 						},
 						merge_fields: false,
+						lock_view: false,
+						lock_path: "",
 						field_group_labels: ["downs"],
 					},
 				},

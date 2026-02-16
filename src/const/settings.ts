@@ -154,12 +154,16 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 				show_attributes: ["source", "implied_kind", "round"],
 				field_group_labels: ["ups", "downs", "sames", "nexts", "prevs"],
+				lock_view: false,
+				lock_path: "",
 			},
 
 			tree: {
 				collapse: false,
 				show_attributes: [],
 				merge_fields: false,
+				lock_view: false,
+				lock_path: "",
 				field_group_labels: ["downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },

@@ -4,6 +4,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import LockViewButton from "../button/LockViewButton.svelte";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
 	import EdgeSortIdSelector from "../selector/EdgeSortIdSelector.svelte";
@@ -49,6 +50,19 @@
 
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
 		if (active_file && plugin.graph.has_node(active_file.path)) {
+			if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
+				log.debug("Using locked path for TreeView:", settings.lock_path);
+				return plugin.graph.rec_traverse_and_process(
+					new TraversalOptions(
+						[settings.lock_path!],
+						edge_field_labels,
+						5,
+						100,
+						!settings.merge_fields,
+					),
+					new TraversalPostprocessOptions(sort, false),
+				);
+			}
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
 					[active_file!.path],
@@ -87,6 +101,14 @@
 				{plugin}
 			/>
 
+			<LockViewButton
+				cls="clickable-icon nav-action-button"
+				bind:lock_view={settings.lock_view}
+				bind:lock_path={settings.lock_path}
+				active_path={active_file?.path}
+			/>
+
+
 			<EdgeSortIdSelector
 				cls="clickable-icon nav-action-button"
 				exclude_fields={[]}
@@ -107,7 +129,6 @@
 				cls="clickable-icon nav-action-button"
 				bind:merge_fields={settings.merge_fields}
 			/>
-
 			<FieldGroupLabelsSelector
 				cls="clickable-icon nav-action-button"
 				edge_field_groups={plugin.settings.edge_field_groups}
