@@ -258,7 +258,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 				// Find contained notes
 				// Days in this period
-				const contained_days = arr.filter(n => n.type === "day" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit]));
+				const contained_days = arr.filter(n => n.type === "day" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit] as import("luxon").DateTimeUnit));
 				contained_days.forEach(day => {
 					results.edges.push(
 						new GCEdgeData(
@@ -272,7 +272,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 				// Months in this period (for week, quarter, year)
 				if (date_note.type !== "month") {
-					const contained_months = arr.filter(n => n.type === "month" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit]));
+					const contained_months = arr.filter(n => n.type === "month" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit] as import("luxon").DateTimeUnit));
 					contained_months.forEach(month => {
 						results.edges.push(
 							new GCEdgeData(
