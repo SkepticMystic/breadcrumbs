@@ -33,108 +33,290 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		return results;
 	}
 
-	const date_notes: {
+
+	type DateNoteType = "day" | "week" | "month" | "quarter" | "year";
+	interface DateNote {
 		ext: string;
 		path: string;
 		folder: string;
 		basename: string;
-		date: DateTime<true>;
-	}[] = [];
+		date: DateTime;
+		type: DateNoteType;
+	}
+
+	const date_notes: DateNote[] = [];
 
 	// Basically just converting the two all_files into a common format of their basic fields...
 	// Maybe generalise this?
-	all_files.obsidian?.forEach(({ file }) => {
-		const date = DateTime.fromFormat(
-			file.basename,
-			date_note_settings.date_format,
-		);
-		if (!date.isValid) return;
 
+	function detectNoteType(basename: string, settings: any): DateNoteType {
+		// You may want to make these formats configurable in settings
+		if (DateTime.fromFormat(basename, settings.date_format).isValid) return "day";
+		if (DateTime.fromFormat(basename, "kkkk-'W'WW").isValid) return "week";
+		if (DateTime.fromFormat(basename, "yyyy-MM").isValid) return "month";
+		if (DateTime.fromFormat(basename, "yyyy-'Q'q").isValid) return "quarter";
+		if (DateTime.fromFormat(basename, "yyyy").isValid) return "year";
+		return "day";
+	}
+
+	all_files.obsidian?.forEach(({ file }) => {
+		const type = detectNoteType(file.basename, date_note_settings);
+		let date: DateTime;
+		switch (type) {
+			case "week":
+				date = DateTime.fromFormat(file.basename, "kkkk-'W'WW");
+				break;
+			case "month":
+				date = DateTime.fromFormat(file.basename, "yyyy-MM");
+				break;
+			case "quarter":
+				date = DateTime.fromFormat(file.basename, "yyyy-'Q'q");
+				break;
+			case "year":
+				date = DateTime.fromFormat(file.basename, "yyyy");
+				break;
+			default:
+				date = DateTime.fromFormat(file.basename, date_note_settings.date_format);
+		}
+		if (!date.isValid) return;
 		date_notes.push({
 			date,
 			path: file.path,
 			ext: file.extension,
 			basename: file.basename,
-			// Not sure why would this be undefined?
-			//   I tested and a file in the root of the vault still has a parent
-			//   _it's_ parent is null, but that only happens if "file" is actually a folder
 			folder: file.parent?.path ?? "",
+			type,
 		});
 	});
 
-	all_files.dataview?.forEach(({ file }) => {
-		const date = DateTime.fromFormat(
-			file.name,
-			date_note_settings.date_format,
-		);
-		if (!date.isValid) return;
 
+	all_files.dataview?.forEach(({ file }) => {
+		const type = detectNoteType(file.name, date_note_settings);
+		let date: DateTime;
+		switch (type) {
+			case "week":
+				date = DateTime.fromFormat(file.name, "kkkk-'W'WW");
+				break;
+			case "month":
+				date = DateTime.fromFormat(file.name, "yyyy-MM");
+				break;
+			case "quarter":
+				date = DateTime.fromFormat(file.name, "yyyy-'Q'q");
+				break;
+			case "year":
+				date = DateTime.fromFormat(file.name, "yyyy");
+				break;
+			default:
+				date = DateTime.fromFormat(file.name, date_note_settings.date_format);
+		}
+		if (!date.isValid) return;
 		date_notes.push({
 			date,
 			ext: file.ext,
 			path: file.path,
 			folder: file.folder,
 			basename: file.name,
+			type,
 		});
 	});
 
+
 	date_notes
 		.sort((a, b) => a.date.toMillis() - b.date.toMillis())
-		.forEach((date_note, i) => {
-			const basename_plus_one_day = date_note.date
-				.plus({ days: 1 })
-				.toFormat(date_note_settings.date_format);
+		.forEach((date_note, i, arr) => {
+			// Prev/Next logic for all types
+			const prev = arr[i - 1];
+			const next = arr[i + 1];
 
-			const tomorrow_year =  date_note.date
-				.plus({ days: 1 })
-				.toFormat("yyyy");
-
-			const tomorrow_month =  date_note.date
-				.plus({ days: 1 })
-				.toFormat("MM");
-
-			let tomorrow_folder = date_note.folder;
-
-			if (tomorrow_year !== date_note.date.toFormat("yyyy")) {
-				tomorrow_folder = tomorrow_folder.replace(
-					date_note.date.toFormat("yyyy"),
-					tomorrow_year,
+			// Prev edge
+			if (prev && prev.type === date_note.type) {
+				const prev_file = plugin.app.vault.getFileByPath(prev.path);
+				if (!prev_file) {
+					results.nodes.push(new GCNodeData(prev.path, [], false, false, false));
+				}
+				results.edges.push(
+					new GCEdgeData(
+						date_note.path,
+						prev.path,
+						"prev",
+						date_note.type + "_note",
+					),
 				);
 			}
 
-			if (tomorrow_month !== date_note.date.toFormat("MM")) {
-				tomorrow_folder = tomorrow_folder.replace(
-					date_note.date.toFormat("MM"),
-					tomorrow_month,
+			// Next edge
+			if (next && next.type === date_note.type) {
+				const next_file = plugin.app.vault.getFileByPath(next.path);
+				if (!next_file) {
+					results.nodes.push(new GCNodeData(next.path, [], false, false, false));
+				}
+				results.edges.push(
+					new GCEdgeData(
+						date_note.path,
+						next.path,
+						"next",
+						date_note.type + "_note",
+					),
 				);
 			}
 
-			const target_basename = date_note_settings.stretch_to_existing
-				? (date_notes.at(i + 1)?.basename ?? basename_plus_one_day)
-				: basename_plus_one_day;
-			log.debug(`tomorrow_folder: ${tomorrow_folder}`);
-			const target_id = Paths.build(
-				tomorrow_folder,
-				target_basename,
-				date_note.ext,
-			);
-
-			// NOTE: We have a full path, so we can go straight to the file without the given source_path
-			const target_file = plugin.app.vault.getFileByPath(target_id);
-			if (!target_file) {
-				results.nodes.push(
-					new GCNodeData(target_id, [], false, false, false),
+			// For day notes, also link to week, month, quarter, year, and yesterday/tomorrow
+			if (date_note.type === "day") {
+				// ...existing code for day notes...
+				// (kept as above)
+				const yesterday = date_note.date.minus({ days: 1 });
+				const tomorrow = date_note.date.plus({ days: 1 });
+				const yesterday_note = arr.find(
+					n => n.type === "day" && n.date.hasSame(yesterday, "day")
 				);
+				const tomorrow_note = arr.find(
+					n => n.type === "day" && n.date.hasSame(tomorrow, "day")
+				);
+				if (yesterday_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							yesterday_note.path,
+							"yesterday",
+							"day_note",
+						),
+					);
+				}
+				if (tomorrow_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							tomorrow_note.path,
+							"tomorrow",
+							"day_note",
+						),
+					);
+				}
+
+				// Week, month, quarter, year containers
+				const weekStr = date_note.date.toFormat("kkkk-'W'WW");
+				const monthStr = date_note.date.toFormat("yyyy-MM");
+				const quarterStr = date_note.date.toFormat("yyyy-'Q'q");
+				const yearStr = date_note.date.toFormat("yyyy");
+
+				const week_note = arr.find(n => n.type === "week" && n.basename === weekStr);
+				const month_note = arr.find(n => n.type === "month" && n.basename === monthStr);
+				const quarter_note = arr.find(n => n.type === "quarter" && n.basename === quarterStr);
+				const year_note = arr.find(n => n.type === "year" && n.basename === yearStr);
+
+				if (week_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							week_note.path,
+							"week",
+							"week_note",
+						),
+					);
+				}
+				if (month_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							month_note.path,
+							"month",
+							"month_note",
+						),
+					);
+				}
+				if (quarter_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							quarter_note.path,
+							"quarter",
+							"quarter_note",
+						),
+					);
+				}
+				if (year_note) {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							year_note.path,
+							"year",
+							"year_note",
+						),
+					);
+				}
 			}
 
-			results.edges.push(
-				new GCEdgeData(
-					date_note.path,
-					target_id,
-					date_note_settings.default_field,
-					"date_note",
-				),
-			);
+			// For week, month, quarter, year notes, link to contained notes and prev/next
+			const typeToUnit = {
+				week: "week",
+				month: "month",
+				quarter: "quarter",
+				year: "year"
+			};
+			if (["week", "month", "quarter", "year"].includes(date_note.type)) {
+				// Prev/next already handled above
+
+				// Find contained notes
+				// Days in this period
+				const contained_days = arr.filter(n => n.type === "day" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit]));
+				contained_days.forEach(day => {
+					results.edges.push(
+						new GCEdgeData(
+							date_note.path,
+							day.path,
+							"day",
+							"day_note",
+						),
+					);
+				});
+
+				// Months in this period (for week, quarter, year)
+				if (date_note.type !== "month") {
+					const contained_months = arr.filter(n => n.type === "month" && n.date.hasSame(date_note.date, typeToUnit[date_note.type as keyof typeof typeToUnit]));
+					contained_months.forEach(month => {
+						results.edges.push(
+							new GCEdgeData(
+								date_note.path,
+								month.path,
+								"month",
+								"month_note",
+							),
+						);
+					});
+				}
+
+				// Quarters in this period (for year)
+				if (date_note.type === "year") {
+					const contained_quarters = arr.filter(n => n.type === "quarter" && n.date.hasSame(date_note.date, "year"));
+					contained_quarters.forEach(quarter => {
+						results.edges.push(
+							new GCEdgeData(
+								date_note.path,
+								quarter.path,
+								"quarter",
+								"quarter_note",
+							),
+						);
+					});
+				}
+
+				// Years in this period (for quarter, month, week: not applicable)
+				// But for week/month/quarter, link to the containing year
+				if (["week", "month", "quarter"].includes(date_note.type)) {
+					const yearStr = date_note.date.toFormat("yyyy");
+					const year_note = arr.find(n => n.type === "year" && n.basename === yearStr);
+					if (year_note) {
+						results.edges.push(
+							new GCEdgeData(
+								date_note.path,
+								year_note.path,
+								"year",
+								"year_note",
+							),
+						);
+					}
+				}
+			}
 		});
 
 	return results;
