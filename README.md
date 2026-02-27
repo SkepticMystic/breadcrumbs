@@ -1,5 +1,7 @@
 > [!IMPORTANT]
-> Breadcrumbs has recently been rewritten from scratch, and is available in the V4 beta (downloadable via the Obsidian BRAT plugin). See here for more info on the changes: https://github.com/SkepticMystic/breadcrumbs/blob/master/V4.md
+> Breadcrumbs is now v4 has recently been rewritten from scratch.
+> See here for more info on the changes: https://github.com/SkepticMystic/breadcrumbs/blob/master/V4.md
+> You can get the latest beta (downloadable via the Obsidian BRAT plugin).
 
 Breadcrumbs is an Obsidian plugin that lets you add _typed links_ to your notes, then view/traverse them in various ways. Internally, Breadcrumbs uses a graph to represent this structure (much like the regular Obsidian graph, except now, links have _types_ to them). You tell Breadcrumbs about the structure of your notes, then it lets you visualise and navigate the graph.
 
@@ -28,6 +30,7 @@ Media related to Breacrumbs. Thanks to everyone for sharing!
 
 -   [mProjectsCode](https://github.com/mProjectsCode): For their PRs, insightful suggestions, and efficiency improvements.
 -   [HEmile](https://github.com/HEmile): For their PRs, and helpful discussions on graph-theory.
+-   [michaelpporter](https://github.com/michaelpporter): For their PRs and issue support
 
 <!-- NOTE: This heading is linked to in the manifest.fundingUrl. Be sure to change that if updating the heading label -->
 
