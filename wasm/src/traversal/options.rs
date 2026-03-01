@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{collections::HashSet, rc::Rc};
 
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -23,6 +23,10 @@ pub struct TraversalOptions {
     /// performed and the results will be combined. if false, one traversal
     /// over all edge types will be performed
     pub separate_edges: bool,
+    /// When set, only edges whose target node path is in this set will be
+    /// traversed. Used for the `dataview-from` codeblock filter.
+    #[wasm_bindgen(getter_with_clone)]
+    pub dataview_from_paths: Option<Vec<String>>,
 }
 
 #[wasm_bindgen]
@@ -34,6 +38,7 @@ impl TraversalOptions {
         max_depth: u32,
         max_traversal_count: u32,
         separate_edges: bool,
+        dataview_from_paths: Option<Vec<String>>,
     ) -> TraversalOptions {
         TraversalOptions {
             entry_nodes,
@@ -41,6 +46,7 @@ impl TraversalOptions {
             max_depth,
             max_traversal_count,
             separate_edges,
+            dataview_from_paths,
         }
     }
 
@@ -68,6 +74,18 @@ impl TraversalOptions {
                     .ok_or(NoteGraphError::new(&format!("Node \"{node}\" not found")))
             })
             .collect()
+    }
+
+    /// Resolves `dataview_from_paths` to a set of node indices for efficient
+    /// lookups during traversal. Paths that don't exist in the graph are
+    /// silently ignored.
+    pub fn dataview_from_indices(&self, graph: &NoteGraph) -> Option<HashSet<NGNodeIndex>> {
+        self.dataview_from_paths.as_ref().map(|paths| {
+            paths
+                .iter()
+                .filter_map(|path| graph.int_get_node_index(path))
+                .collect()
+        })
     }
 }
 

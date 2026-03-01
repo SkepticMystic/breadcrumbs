@@ -11,6 +11,7 @@ import type { z } from "zod";
 import type { ICodeblock } from "./schema";
 import { CodeblockSchema } from "./schema";
 
+
 /** Raw YAML string -> YAML -> zod-parsed */
 function parse_source(
 	source: string,
@@ -127,7 +128,7 @@ function postprocess_options(
 			errors.push({
 				path: "dataview-from",
 				code: "invalid_field_value",
-				message: `Input \`${parsed["dataview-from"]}\` is not a valid Dataview query. 
+				message: `Input \`${parsed["dataview-from"]}\` is not a valid Dataview query.
 You can use \`app.plugins.plugins.dataview.api.pages("<query>")\` to test your query in the console (press \`Ctrl + Shift + I\` to open the console).`,
 			});
 		}

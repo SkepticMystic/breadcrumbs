@@ -62,6 +62,7 @@
 			max_depth,
 			100, // max nodes to traverse
 			!options["merge-fields"],
+			options["dataview-from-paths"],
 		);
 
 		const postprocess_options = new TraversalPostprocessOptions(
@@ -74,7 +75,6 @@
 				traversal_options,
 				postprocess_options,
 			);
-
 			error = undefined;
 		} catch (e) {
 			log.error("Error updating codeblock tree", e);
