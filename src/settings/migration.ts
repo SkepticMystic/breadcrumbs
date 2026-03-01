@@ -164,7 +164,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 						}
 
 						case "same_parent_is_sibling": {
-							if (!fields.up || !fields.down || !fields.down) {
+							if (!fields.up || !fields.same || !fields.down) {
 								return;
 							}
 

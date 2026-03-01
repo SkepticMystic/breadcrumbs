@@ -21,14 +21,14 @@ jobs:
             - name: Install Rust
               uses: actions-rust-lang/setup-rust-toolchain@v1
               with:
-                  toolchain: nightly
+                  toolchain: stable
                   target: wasm32-unknown-unknown
 
             - name: Install wasm-pack
               run: bun install -g wasm-pack
 
-            - name: Set Nightly
-              run: cd wasm && rustup override set nightly && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu && cd ..
+            - name: Set stable
+              run: cd wasm && rustup override set stable && rustup component add rust-src --toolchain stable-x86_64-unknown-linux-gnu && cd ..
 
             - name: Build plugin
               run: |
