@@ -1,3 +1,4 @@
 imports_granularity = "Crate"
 group_imports = "StdExternalCrate"
 wrap_comments = true
+style_edition = "2021"

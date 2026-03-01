@@ -151,7 +151,7 @@ impl NoteGraph {
                 if edge_matches_edge_filter(edge_data, edge_types) {
                     let target = outgoing_edge.target();
 
-                    if let Some(ref allowed) = allowed_targets {
+                    if let Some(allowed) = allowed_targets {
                         if !allowed.contains(&target) {
                             continue;
                         }
@@ -327,7 +327,7 @@ impl NoteGraph {
                 let edge_data = edge.weight();
 
                 if edge_matches_edge_filter(edge_data, edge_types) {
-                    if let Some(ref allowed) = allowed_targets {
+                    if let Some(allowed) = allowed_targets {
                         if !allowed.contains(&target) {
                             continue;
                         }
