@@ -53,10 +53,8 @@ impl NoteGraph {
 
                 let target = edge.target();
 
-                if let Some(ref allowed) = allowed_targets {
-                    if !allowed.contains(&target) {
-                        continue;
-                    }
+                if let Some(ref allowed) = allowed_targets && !allowed.contains(&target) {
+                    continue;
                 }
 
                 let edge_struct = EdgeStruct::new(
@@ -151,10 +149,8 @@ impl NoteGraph {
                 if edge_matches_edge_filter(edge_data, edge_types) {
                     let target = outgoing_edge.target();
 
-                    if let Some(allowed) = allowed_targets {
-                        if !allowed.contains(&target) {
-                            continue;
-                        }
+                    if let Some(allowed) = allowed_targets && !allowed.contains(&target) {
+                        continue;
                     }
 
                     let edge_struct = EdgeStruct::new(
