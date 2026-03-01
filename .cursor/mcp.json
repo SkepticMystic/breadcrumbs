@@ -1,8 +1,0 @@
-{
-     "mcpServers": {
-       "mcp-memory": {
-         "url": "http://localhost:8765/mcp",
-         "disabled": false
-       }
-     }
-   }
