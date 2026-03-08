@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> Breadcrumbs is now v4 has recently been rewritten from scratch.
+> Breadcrumbs is now at v4, after being rewritten from scratch.
 > See here for more info on the changes: https://github.com/SkepticMystic/breadcrumbs/blob/master/V4.md
 > You can get the latest beta (downloadable via the Obsidian BRAT plugin).
 
