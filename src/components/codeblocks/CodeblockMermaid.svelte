@@ -59,6 +59,7 @@
 			max_depth,
 			100, // max nodes to traverse
 			!options["merge-fields"],
+			options["dataview-from-paths"],
 		);
 
 		const flowchart_init = remove_nullish_keys({

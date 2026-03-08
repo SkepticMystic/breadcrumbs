@@ -52,27 +52,29 @@
 		if (active_file && plugin.graph.has_node(active_file.path)) {
 			if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
 				log.debug("Using locked path for TreeView:", settings.lock_path);
-				return plugin.graph.rec_traverse_and_process(
-					new TraversalOptions(
-						[settings.lock_path!],
-						edge_field_labels,
-						5,
-						100,
-						!settings.merge_fields,
-					),
-					new TraversalPostprocessOptions(sort, false),
-				);
-			}
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
-					[active_file!.path],
+					[settings.lock_path!],
 					edge_field_labels,
 					5,
 					100,
 					!settings.merge_fields,
+					undefined,
 				),
 				new TraversalPostprocessOptions(sort, false),
 			);
+		}
+		return plugin.graph.rec_traverse_and_process(
+			new TraversalOptions(
+				[active_file!.path],
+				edge_field_labels,
+				5,
+				100,
+				!settings.merge_fields,
+				undefined,
+			),
+			new TraversalPostprocessOptions(sort, false),
+		);
 		} else {
 			return undefined;
 		}

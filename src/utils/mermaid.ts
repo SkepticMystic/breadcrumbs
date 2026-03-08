@@ -89,7 +89,7 @@ function from_transitive_rule(
 	const graph = wasm_rule.create_example_graph();
 
 	return graph.generate_mermaid_graph(
-		new TraversalOptions(["1"], undefined, 100, 1000, false),
+		new TraversalOptions(["1"], undefined, 100, 1000, false, undefined),
 		new MermaidGraphOptions(
 			undefined,
 			"",

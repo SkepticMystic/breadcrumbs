@@ -48,6 +48,7 @@
 			5, // depth limit
 			100, // max nodes to traverse
 			!settings.merge_fields,
+			undefined,
 		);
 
 		let traversal_data = plugin.graph.rec_traverse(traversal_options);
