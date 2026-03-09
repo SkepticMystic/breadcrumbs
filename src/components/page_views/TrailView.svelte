@@ -9,6 +9,7 @@
 		TraversalOptions,
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { untrack } from "svelte";
+	import { log } from "src/logger";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -16,8 +17,8 @@
 	}
 
 	let { plugin = $bindable(), file_path }: Props = $props();
-
-	let settings = $state(structuredClone(plugin.settings.views.page.trail));
+  log.debug("Rendering Trail page view for file:", file_path);
+	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.page.trail)));
 	let is_initial_mount = true;
 
 	$effect(() => {
@@ -47,6 +48,7 @@
 			5, // depth limit
 			100, // max nodes to traverse
 			!settings.merge_fields,
+			undefined,
 		);
 
 		let traversal_data = plugin.graph.rec_traverse(traversal_options);

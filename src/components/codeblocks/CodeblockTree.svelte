@@ -18,6 +18,7 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
+	import { debug } from "console";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -65,6 +66,7 @@
 			max_depth,
 			100, // max nodes to traverse
 			!options["merge-fields"],
+			options["dataview-from-paths"],
 		);
 
 		const postprocess_options = new TraversalPostprocessOptions(

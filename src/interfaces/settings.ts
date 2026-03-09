@@ -121,6 +121,8 @@ export interface BreadcrumbsSettings {
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				lock_view: boolean;
+				lock_path: string;
 			};
 
 			tree: {
@@ -130,6 +132,8 @@ export interface BreadcrumbsSettings {
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
+				lock_view: boolean;
+				lock_path: string;
 			};
 		};
 

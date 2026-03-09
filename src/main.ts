@@ -327,7 +327,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			[
 				`Rebuilt graph in ${timer.elapsed_str()}ms`,
 
-				explicit_edge_errors.length
+				Object.keys(explicit_edge_errors).length
 					? "\nExplicit edge errors (see console for details):"
 					: null,
 

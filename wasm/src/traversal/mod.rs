@@ -37,6 +37,7 @@ impl NoteGraph {
         let mut traversal_count = 0;
 
         let edge_types = options.edge_types_as_rcs().unwrap_or(self.int_edge_types());
+        let allowed_targets = options.dataview_from_indices(self);
 
         for entry_node in &options.entry_nodes {
             let start_node = self
@@ -51,6 +52,10 @@ impl NoteGraph {
                 }
 
                 let target = edge.target();
+
+                if let Some(ref allowed) = allowed_targets && !allowed.contains(&target) {
+                    continue;
+                }
 
                 let edge_struct = EdgeStruct::new(
                     start_node,
@@ -71,6 +76,7 @@ impl NoteGraph {
                         options.max_depth,
                         &mut traversal_count,
                         options.max_traversal_count,
+                        &allowed_targets,
                     )?);
                 } else {
                     result.push(self.int_rec_traverse(
@@ -81,6 +87,7 @@ impl NoteGraph {
                         options.max_depth,
                         &mut traversal_count,
                         options.max_traversal_count,
+                        &allowed_targets,
                     )?);
                 }
             }
@@ -130,6 +137,7 @@ impl NoteGraph {
         max_depth: u32,
         traversal_count: &mut u32,
         max_traversal_count: u32,
+        allowed_targets: &Option<HashSet<NGNodeIndex>>,
     ) -> Result<TraversalData> {
         let mut new_children = Vec::new();
         let stop_traversal = depth >= max_depth || *traversal_count >= max_traversal_count;
@@ -141,7 +149,9 @@ impl NoteGraph {
                 if edge_matches_edge_filter(edge_data, edge_types) {
                     let target = outgoing_edge.target();
 
-                    // assert!(*self.int_get_node_weight(node).unwrap() == edge.target);
+                    if let Some(allowed) = allowed_targets && !allowed.contains(&target) {
+                        continue;
+                    }
 
                     let edge_struct = EdgeStruct::new(
                         edge.target_index,
@@ -165,6 +175,7 @@ impl NoteGraph {
                         max_depth,
                         traversal_count,
                         max_traversal_count,
+                        allowed_targets,
                     )?)
                 }
             }
@@ -185,6 +196,7 @@ impl NoteGraph {
     ) -> Result<NodeEdgeVec<u32, NGEdgeRef<'_>>> {
         let entry_nodes = options.indices_of_entry_nodes(self)?;
         let opt_edge_types = options.edge_types_as_rcs();
+        let allowed_targets = options.dataview_from_indices(self);
 
         if options.separate_edges {
             let mut node_list = Vec::new();
@@ -198,6 +210,7 @@ impl NoteGraph {
                     entry_nodes.clone(),
                     Some(&vec![edge_type]),
                     options.max_depth,
+                    &allowed_targets,
                     |_, depth| depth,
                     |edge| edge,
                 );
@@ -212,6 +225,7 @@ impl NoteGraph {
                 entry_nodes,
                 opt_edge_types.as_ref(),
                 options.max_depth,
+                &allowed_targets,
                 |_, depth| depth,
                 |edge| edge,
             ))
@@ -232,6 +246,7 @@ impl NoteGraph {
         entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
+        allowed_targets: &Option<HashSet<NGNodeIndex>>,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,
     ) -> NodeEdgeVec<N, E> {
@@ -242,6 +257,7 @@ impl NoteGraph {
             entry_nodes,
             edge_types,
             max_depth,
+            allowed_targets,
             node_callback,
             edge_callback,
         )
@@ -261,6 +277,7 @@ impl NoteGraph {
         entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
+        allowed_targets: &Option<HashSet<NGNodeIndex>>,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,
     ) -> NodeEdgeVec<N, E> {
@@ -271,6 +288,7 @@ impl NoteGraph {
             entry_nodes,
             edge_types,
             max_depth,
+            allowed_targets,
             node_callback,
             edge_callback,
         )
@@ -282,6 +300,7 @@ impl NoteGraph {
         entry_nodes: Vec<NGNodeIndex>,
         edge_types: Option<&Vec<Rc<str>>>,
         max_depth: u32,
+        allowed_targets: &Option<HashSet<NGNodeIndex>>,
         node_callback: fn(NGNodeIndex, u32) -> N,
         edge_callback: fn(NGEdgeRef<'a>) -> E,
     ) -> NodeEdgeVec<N, E> {
@@ -304,6 +323,12 @@ impl NoteGraph {
                 let edge_data = edge.weight();
 
                 if edge_matches_edge_filter(edge_data, edge_types) {
+                    if let Some(allowed) = allowed_targets {
+                        if !allowed.contains(&target) {
+                            continue;
+                        }
+                    }
+
                     let already_visited = visited_nodes.contains(&target);
 
                     // we only add the edge if we are not at the depth limit or if we are at the

@@ -138,6 +138,7 @@ export function build_list_index(
 		options.max_depth ?? 100,
 		options.max_count ?? 1000,
 		false,
+		undefined,
 	);
 
 	const postprocess_options = new TraversalPostprocessOptions(

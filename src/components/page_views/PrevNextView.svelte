@@ -4,6 +4,7 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
+	import { log } from "src/logger";
 
 	interface Props {
 		file_path: string;
@@ -90,7 +91,11 @@
 </div>
 
 <style>
+
 	.BC-prev-next-view > div {
 		border: 1px solid var(--background-modifier-border);
+	}
+	.BC-prev-next-view .flex-col {
+		background-color: var(--background-primary);
 	}
 </style>

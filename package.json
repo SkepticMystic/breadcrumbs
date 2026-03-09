@@ -1,6 +1,6 @@
 {
 	"name": "breadcrumbs",
-	"version": "4.2.41-beta",
+	"version": "4.4.1",
 	"description": "Add typed-links to your Obsidian notes",
 	"main": "main.js",
 	"scripts": {
@@ -42,9 +42,9 @@
 		"esbuild": "^0.25.8",
 		"esbuild-svelte": "^0.9.3",
 		"eslint": "^9.32.0",
+		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-only-warn": "^1.1.0",
 		"eslint-plugin-svelte": "^3.9.3",
-		"eslint-plugin-import": "^2.32.0",
 		"npm-run-all": "^4.1.5",
 		"obsidian": "^1.8.7",
 		"obsidian-dataview": "^0.5.68",
@@ -64,6 +64,7 @@
 	"dependencies": {
 		"lucide-svelte": "^0.537.0",
 		"luxon": "^3.7.1",
+		"obsidian-typings": "^3.13.2",
 		"zod": "^3.25.76"
 	}
 }
