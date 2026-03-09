@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 4.X
+
+### [4.4.2](https://github.com/SkepticMystic/breadcrumbs/compare/4.4.1...4.4.2) (2026-03-09)
+
+### [4.4.1](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.11...4.4.1) (2026-03-08)
+
+## 3.X
+
 ### [3.6.11](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.10...3.6.11) (2024-01-05)
 
 ### [3.6.10](https://github.com/SkepticMystic/breadcrumbs/compare/3.6.9...3.6.10) (2024-01-05)
