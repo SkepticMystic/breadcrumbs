@@ -1,5 +1,7 @@
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import { mount } from "svelte";
 
 export const _add_settings_freeze_implied_edges = (
 	plugin: BreadcrumbsPlugin,
@@ -17,6 +19,35 @@ export const _add_settings_freeze_implied_edges = (
 			cb: async (value) => {
 				settings.commands.freeze_implied_edges.default_options.destination =
 					value;
+
+				await plugin.saveSettings();
+			},
+		},
+	});
+	
+	mount(FieldGroupLabelsSettingItem, {
+		target: contentEl,
+		props: {
+			name: "Included Field Groups",
+			description:
+				"Field groups to include when freezing edges.",
+			edge_field_groups: plugin.settings.edge_field_groups,
+			field_group_labels: plugin.settings.commands.freeze_implied_edges.default_options.included_fields,
+			select_cb: async (value: string[]) => {
+				plugin.settings.commands.freeze_implied_edges.default_options.included_fields = value;
+
+				await plugin.saveSettings();
+			},
+		},
+	});
+
+	new_setting(contentEl, {
+		name: "Use Alias",
+		desc: "Freeze implied edges using the first alias of the target node.",
+		toggle: {
+			value: settings.commands.freeze_implied_edges.default_options.use_alias,
+			cb: async (checked) => {
+				settings.commands.freeze_implied_edges.default_options.use_alias = checked;
 
 				await plugin.saveSettings();
 			},
