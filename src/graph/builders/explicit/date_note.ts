@@ -116,9 +116,9 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				? (next_date_note_basename ?? basename_plus_one_day)
 				: basename_plus_one_day;
 			log.debug(`tomorrow_folder: ${tomorrow_folder}`);
-			const target_path = (date_note_settings.stretch_to_existing || target_basename === next_date_note_basename) ? (next_date_note_folder ?? tomorrow_folder) : tomorrow_folder;
+			const target_folder = (date_note_settings.stretch_to_existing || target_basename === next_date_note_basename) ? (next_date_note_folder ?? tomorrow_folder) : tomorrow_folder;
 			const target_id = Paths.build(
-				target_path,
+				target_folder,
 				target_basename,
 				date_note.ext,
 			);
