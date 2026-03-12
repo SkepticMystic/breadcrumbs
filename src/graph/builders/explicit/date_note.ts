@@ -110,8 +110,8 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			}
 
 			const next_date_note = date_notes.at(i + 1);
-			const next_date_note_folder = next_date_note?.folder ?? "";
-			const next_date_note_basename = next_date_note?.basename ?? "";
+			const next_date_note_folder = next_date_note?.folder;
+			const next_date_note_basename = next_date_note?.basename;
 			const target_basename = date_note_settings.stretch_to_existing
 				? (next_date_note_basename ?? basename_plus_one_day)
 				: basename_plus_one_day;
