@@ -113,13 +113,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			// Set the edge_fields & BC-meta-fields to the right Properties type
 			try {
-				const all_properties =
-					this.app.metadataTypeManager.getAllProperties();
-
 				for (const field of this.settings.edge_fields) {
+					const current_type = this.getMetdataPropertyType(field.label);
 					if (
-						all_properties[field.label]?.widget === "multitext" ||
-						all_properties[field.label]?.widget === "text"
+						current_type === "multitext" ||
+						current_type === "text"
 					) continue;
 					await this.app.metadataTypeManager.setType(
 						field.label,
@@ -130,7 +128,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				for (const [field, { property_type }] of Object.entries(
 					METADATA_FIELDS_MAP,
 				)) {
-					if (all_properties[field]?.type === property_type) continue;
+					if (this.getMetdataPropertyType(field) === property_type) continue;
 					await this.app.metadataTypeManager.setType(
 						field,
 						property_type,
@@ -381,5 +379,14 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// "Reveal" the leaf in case it is in a collapsed sidebar
 		await workspace.revealLeaf(leaf);
+	}
+
+	private getMetdataPropertyType(field: string): string | null {
+		if ("getAssignedWidget" in this.app.metadataTypeManager) {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+			return (this.app.metadataTypeManager as any).getAssignedWidget(field) as string;
+		} else {
+			return this.app.metadataTypeManager.getAssignedType(field);
+		}
 	}
 }
