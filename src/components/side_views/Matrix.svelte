@@ -70,6 +70,30 @@
 			settings.edge_sort_id.order === -1,
 		),
 	);
+
+	let matrix_fields = $derived.by(() => {
+		const fields = plugin.settings.edge_fields;
+
+		if (!settings.custom_sort_fields) return fields;
+
+		const order = settings.custom_sort_field_labels.filter((label) =>
+			fields.some((field) => field.label === label),
+		);
+
+		if (!order.length) return fields;
+
+		const rank = new Map(order.map((label, i) => [label, i] as const));
+
+		return [...fields].sort((a, b) => {
+			const rank_a = rank.get(a.label) ?? Number.MAX_SAFE_INTEGER;
+			const rank_b = rank.get(b.label) ?? Number.MAX_SAFE_INTEGER;
+
+			if (rank_a !== rank_b) return rank_a - rank_b;
+
+			return fields.findIndex((x) => x.label === a.label) -
+				fields.findIndex((x) => x.label === b.label);
+		});
+	});
 </script>
 
 <div class="markdown-rendered BC-matrix-view">
@@ -116,7 +140,7 @@
 	{#key grouped_out_edges}
 		{#if grouped_out_edges}
 			<div>
-				{#each plugin.settings.edge_fields as field}
+				{#each matrix_fields as field}
 					{@const edges = grouped_out_edges.get_sorted_edges(
 						field.label,
 						plugin.graph,

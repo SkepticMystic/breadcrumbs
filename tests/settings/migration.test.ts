@@ -204,6 +204,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						custom_sort_fields: false,
+						custom_sort_field_labels: [],
 						lock_view: false,
 						lock_path: "",
 						edge_sort_id: {
@@ -388,6 +390,8 @@ describe("migration", () => {
 				side: {
 					matrix: {
 						collapse: false,
+						custom_sort_fields: false,
+						custom_sort_field_labels: [],
 						lock_view: false,
 						lock_path: "",
 						show_node_options: {

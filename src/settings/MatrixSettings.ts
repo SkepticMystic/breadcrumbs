@@ -1,5 +1,6 @@
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
+import MatrixFieldOrderSettingItem from "src/components/settings/MatrixFieldOrderSettingItem.svelte";
 import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSettingItem.svelte";
 import type { EdgeSortId } from "src/const/graph";
 import type { EdgeAttribute } from "src/graph/utils";
@@ -19,6 +20,35 @@ export const _add_settings_matrix = (
 			value: plugin.settings.views.side.matrix.collapse,
 			cb: async (checked) => {
 				plugin.settings.views.side.matrix.collapse = checked;
+
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
+	});
+
+	new_setting(containerEl, {
+		name: "Custom Field Sorting",
+		desc: "Sort matrix edge fields by a custom label order.",
+		toggle: {
+			value: plugin.settings.views.side.matrix.custom_sort_fields,
+			cb: async (checked) => {
+				plugin.settings.views.side.matrix.custom_sort_fields = checked;
+
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
+	});
+
+	mount(MatrixFieldOrderSettingItem, {
+		target: containerEl,
+		props: {
+			edge_fields: plugin.settings.edge_fields,
+			custom_sort_field_labels:
+				plugin.settings.views.side.matrix.custom_sort_field_labels,
+			select_cb: async (value: string[]) => {
+				plugin.settings.views.side.matrix.custom_sort_field_labels = value;
 
 				plugin.refreshViews();
 				await plugin.saveSettings();

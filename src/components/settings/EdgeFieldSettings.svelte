@@ -65,6 +65,11 @@
 					(f) => f.label !== edge_field.label,
 				);
 
+				settings.views.side.matrix.custom_sort_field_labels =
+					settings.views.side.matrix.custom_sort_field_labels.filter(
+						(label) => label !== edge_field.label,
+					);
+
 				settings.edge_field_groups.forEach((group) => {
 					group.fields = group.fields.filter(
 						(f) => f !== edge_field.label,
@@ -145,6 +150,12 @@
 						? new_label
 						: settings.explicit_edge_sources.regex_note
 								.default_field;
+
+				settings.views.side.matrix.custom_sort_field_labels =
+					settings.views.side.matrix.custom_sort_field_labels.map(
+						(label) =>
+							label === edge_field.label ? new_label : label,
+					);
 
 				// NOTE: Only rename the field after updating the groups
 				edge_field.label = new_label;
