@@ -118,6 +118,8 @@ export interface BreadcrumbsSettings {
 			matrix: {
 				collapse: boolean;
 				edge_sort_id: EdgeSortId;
+				custom_sort_fields: boolean;
+				custom_sort_field_labels: string[];
 				field_group_labels: string[];
 				show_attributes: EdgeAttribute[];
 				show_node_options: ShowNodeOptions;
