@@ -136,6 +136,8 @@ export interface BreadcrumbsSettings {
 				show_node_options: ShowNodeOptions;
 				lock_view: boolean;
 				lock_path: string;
+				find_root: boolean;
+				find_root_field_group_labels: string[];
 			};
 		};
 

@@ -243,6 +243,8 @@ describe("migration", () => {
 							folder: false,
 							alias: false,
 						},
+						find_root: false,
+						find_root_field_group_labels: ["ups"],
 					},
 				},
 				codeblocks: {
@@ -430,6 +432,8 @@ describe("migration", () => {
 						lock_view: false,
 						lock_path: "",
 						field_group_labels: ["ups", "downs"],
+						find_root: false,
+						find_root_field_group_labels: ["ups"],
 					},
 				},
 				codeblocks: {

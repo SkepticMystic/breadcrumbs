@@ -170,6 +170,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				field_group_labels: ["ups", "downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				find_root: false,
+				find_root_field_group_labels: ["ups"],
 			},
 		},
 

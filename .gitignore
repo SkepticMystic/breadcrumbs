@@ -26,5 +26,8 @@ data-backup__*.json
 # test files
 coverage
 
-# build 
+# build
 meta.txt
+
+#claude
+.claude/*
