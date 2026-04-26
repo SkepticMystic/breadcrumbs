@@ -15,7 +15,9 @@
 
 	let { edge, plugin, node_stringify_options, cls = "" }: Props = $props();
 
-	const display = edge.stringify_target(plugin.graph, node_stringify_options);
+	let display = $derived(
+		edge.stringify_target(plugin.graph, node_stringify_options),
+	);
 </script>
 
 <ObsidianLink

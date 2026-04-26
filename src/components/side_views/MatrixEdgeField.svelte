@@ -29,11 +29,12 @@
 		show_attributes,
 	}: Props = $props();
 
-	let { show_node_options } = plugin.settings.views.side.matrix;
+	let show_node_options = $derived(
+		plugin.settings.views.side.matrix.show_node_options,
+	);
 
-	let node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		show_node_options,
+	let node_stringify_options = $derived(
+		to_node_stringify_options(plugin.settings, show_node_options),
 	);
 </script>
 

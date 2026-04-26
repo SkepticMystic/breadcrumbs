@@ -21,6 +21,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
+			_bc_migrations: { tree_ups_with_downs_default: true },
 			edge_fields: [
 				{ label: "up" },
 				{ label: "down" },
@@ -232,7 +233,7 @@ describe("migration", () => {
 						lock_view: false,
 						lock_path: "",
 						show_attributes: [],
-						field_group_labels: ["downs"],
+						field_group_labels: ["ups", "downs"],
 						edge_sort_id: {
 							field: "basename",
 							order: 1,
@@ -324,6 +325,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
+			_bc_migrations: { tree_ups_with_downs_default: true },
 			explicit_edge_sources: {
 				list_note: {
 					default_neighbour_field: "",
@@ -427,7 +429,7 @@ describe("migration", () => {
 						merge_fields: false,
 						lock_view: false,
 						lock_path: "",
-						field_group_labels: ["downs"],
+						field_group_labels: ["ups", "downs"],
 					},
 				},
 				codeblocks: {

@@ -36,8 +36,8 @@
 		"@types/luxon": "^3.7.1",
 		"@types/node": "^24.2.0",
 		"@types/obsidian-typings": "npm:obsidian-typings@^3.15.0",
-		"@vitest/coverage-v8": "^2.1.9",
-		"@vitest/ui": "^2.1.9",
+		"@vitest/coverage-v8": "^4.1.5",
+		"@vitest/ui": "^4.1.5",
 		"builtin-modules": "5.0.0",
 		"esbuild": "^0.25.8",
 		"esbuild-svelte": "^0.9.3",
@@ -59,9 +59,11 @@
 		"typescript": "^5.9.2",
 		"typescript-eslint": "^8.39.0",
 		"vite-plugin-wasm": "^3.5.0",
-		"vitest": "^2.1.9"
+		"vitest": "^4.1.5"
 	},
 	"dependencies": {
+		"baseline-browser-mapping": "^2.10.22",
+		"caniuse-lite": "^1.0.30001790",
 		"lucide-svelte": "^0.537.0",
 		"luxon": "^3.7.1",
 		"obsidian-typings": "^3.13.2",

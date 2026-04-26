@@ -4,7 +4,6 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import EdgeLink from "../EdgeLink.svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
-	import { log } from "src/logger";
 
 	interface Props {
 		file_path: string;
@@ -13,41 +12,47 @@
 
 	let { file_path, plugin }: Props = $props();
 
-	const { field_group_labels, show_node_options } =
-		plugin.settings.views.page.prev_next;
+	let edge_field_labels = $derived.by(() => {
+		const { field_group_labels } = plugin.settings.views.page.prev_next;
+		return {
+			prev: resolve_field_group_labels(
+				plugin.settings.edge_field_groups,
+				field_group_labels.prev,
+			),
+			next: resolve_field_group_labels(
+				plugin.settings.edge_field_groups,
+				field_group_labels.next,
+			),
+		};
+	});
 
-	let node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		show_node_options,
+	let merged_field_labels = $derived(
+		remove_duplicates([
+			...edge_field_labels.prev,
+			...edge_field_labels.next,
+		]),
 	);
 
-	const edge_field_labels = {
-		prev: resolve_field_group_labels(
-			plugin.settings.edge_field_groups,
-			field_group_labels.prev,
+	let node_stringify_options = $derived(
+		to_node_stringify_options(
+			plugin.settings,
+			plugin.settings.views.page.prev_next.show_node_options,
 		),
-		next: resolve_field_group_labels(
-			plugin.settings.edge_field_groups,
-			field_group_labels.next,
-		),
-	};
+	);
 
-	const merged_field_labels = remove_duplicates([
-		...edge_field_labels.prev,
-		...edge_field_labels.next,
-	]);
-
-	const grouped_out_edges = plugin.graph.has_node(file_path)
-		? group_by(
-				plugin.graph
-					.get_filtered_outgoing_edges(file_path, merged_field_labels)
-					.get_edges(),
-				(e) =>
-					edge_field_labels.prev.includes(e.edge_type)
-						? ("prev" as const)
-						: ("next" as const),
-			)
-		: null;
+	let grouped_out_edges = $derived.by(() => {
+		if (!plugin.graph.has_node(file_path)) return null;
+		const efl = edge_field_labels;
+		return group_by(
+			plugin.graph
+				.get_filtered_outgoing_edges(file_path, merged_field_labels)
+				.get_edges(),
+			(e) =>
+				efl.prev.includes(e.edge_type)
+					? ("prev" as const)
+					: ("next" as const),
+		);
+	});
 </script>
 
 <div class="BC-prev-next-view flex">

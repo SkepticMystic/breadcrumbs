@@ -15,7 +15,6 @@
 	$effect(() => {
 		if (!lock_view && active_path) {
 			lock_path = active_path;
-			log.debug("Setting lock_path to active_path:", lock_path);
 		}
 	});
 </script>

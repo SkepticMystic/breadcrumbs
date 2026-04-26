@@ -16,20 +16,23 @@
 
 	let { plugin, all_paths }: Props = $props();
 
-	const reversed = all_paths.map((path) => path.reverse_edges);
-
-	// this should happen in wasm
-	const square = ensure_square_array(reversed, null, true);
-
-	// this as well
-	const col_runs = transpose(square).map((col) =>
-		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
+	let node_stringify_options = $derived(
+		to_node_stringify_options(
+			plugin.settings,
+			plugin.settings.views.page.trail.show_node_options,
+		),
 	);
 
-	const node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		plugin.settings.views.page.trail.show_node_options,
-	);
+	let trail_grid = $derived.by(() => {
+		const reversed = all_paths.map((path) => path.reverse_edges);
+		const square = ensure_square_array(reversed, null, true);
+		const col_runs = transpose(square).map((col) =>
+			gather_by_runs(col, (e) =>
+				e ? e.target_path(plugin.graph) : null,
+			),
+		);
+		return { square, col_runs };
+	});
 </script>
 
 <!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here
@@ -37,11 +40,11 @@
 <div
 	class="BC-trail-view grid"
 	style="grid-template-rows: min-content;
-grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
+grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 >
-	{#each col_runs as col, j}
+	{#each trail_grid.col_runs as col, j}
 		{#each col as { first, last }}
-			{@const edge = square[first][j]}
+			{@const edge = trail_grid.square[first][j]}
 
 			<div
 				class="BC-trail-view-item flex"

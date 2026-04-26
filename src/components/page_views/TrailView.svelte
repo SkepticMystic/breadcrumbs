@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { BreadcrumbsSettings } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
@@ -10,27 +11,47 @@
 	} from "wasm/pkg/breadcrumbs_graph_wasm";
 	import { untrack } from "svelte";
 	import { log } from "src/logger";
+	import { json_clone } from "src/utils/json_clone";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 		file_path: string;
 	}
 
-	let { plugin = $bindable(), file_path }: Props = $props();
-  log.debug("Rendering Trail page view for file:", file_path);
-	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.page.trail)));
+	let { plugin, file_path }: Props = $props();
+
+	type TrailPageSettings = BreadcrumbsSettings["views"]["page"]["trail"];
+
+	let last_plugin: BreadcrumbsPlugin | null = null;
+	// svelte-ignore state_referenced_locally — seed valid $state for bindings; `$effect.pre` resyncs if `plugin` changes
+	let settings = $state<TrailPageSettings>(
+		json_clone(plugin.settings.views.page.trail),
+	);
+
+	$effect.pre(() => {
+		if (last_plugin !== plugin) {
+			last_plugin = plugin;
+			settings = json_clone(
+				$state.snapshot(plugin.settings.views.page.trail),
+			);
+		}
+	});
+
+	$effect(() => {
+		log.debug("Rendering Trail page view for file:", file_path);
+	});
+
 	let is_initial_mount = true;
 
 	$effect(() => {
-		// We only want to run this when *we* have changed `settings`,
-		// and not when the component is initially mounted into the DOM,
-		// or when the settings have been updated externally.
+		// Keep `plugin.settings.views.page.trail` aligned with the local `settings`
+		// clone (same pattern as Matrix). Skip persisting on the first run only.
+		plugin.settings.views.page.trail = $state.snapshot(settings);
 		if (is_initial_mount) {
 			is_initial_mount = false;
-			return;
+		} else {
+			untrack(() => void plugin.saveSettings());
 		}
-		plugin.settings.views.page.trail = $state.snapshot(settings);
-		untrack(() => void plugin.saveSettings());
 	});
 
 	let data: {
@@ -39,7 +60,7 @@
 	} = $derived.by(() => {
 		let edge_field_labels = resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
-			plugin.settings.views.page.trail.field_group_labels,
+			settings.field_group_labels,
 		);
 
 		let traversal_options = new TraversalOptions(
@@ -66,10 +87,7 @@
 	);
 	let depth = $state(0);
 	$effect(() => {
-		depth = Math.min(
-			MAX_DEPTH,
-			plugin.settings.views.page.trail.default_depth,
-		);
+		depth = Math.min(MAX_DEPTH, settings.default_depth);
 	});
 
 	let sorted_paths = $derived(
@@ -78,75 +96,75 @@
 </script>
 
 <div>
-	{#key sorted_paths}
-		{#if sorted_paths && sorted_paths.length}
-			<div
-				class="mb-1 flex flex-wrap justify-between gap-3"
-				class:hidden={!plugin.settings.views.page.trail.show_controls}
+	{#if sorted_paths && sorted_paths.length}
+		<div
+			class="mb-1 flex flex-wrap justify-between gap-3"
+			class:hidden={!settings.show_controls}
+		>
+			<!-- TODO: make states out of these binds and add an effect to update the actual settings  -->
+			<select
+				class="dropdown"
+				bind:value={settings.format}
+				onchange={async () => await plugin.saveSettings()}
 			>
-				<!-- TODO: make states out of these binds and add an effect to update the actual settings  -->
-				<select
-					class="dropdown"
-					bind:value={settings.format}
-					onchange={async (e) => await plugin.saveSettings()}
+				{#each ["grid", "path"] as format}
+					<option value={format}> {format} </option>
+				{/each}
+			</select>
+
+			<select
+				class="dropdown"
+				bind:value={settings.selection}
+				onchange={async () => await plugin.saveSettings()}
+			>
+				{#each ["all", "shortest", "longest"] as s}
+					<option value={s}> {s} </option>
+				{/each}
+			</select>
+
+			<MergeFieldsButton bind:merge_fields={settings.merge_fields} />
+
+			<div class="flex items-center gap-1">
+				<button
+					class="aspect-square text-lg"
+					aria-label="Decrease max depth"
+					disabled={depth <= 1}
+					onclick={() => (depth = Math.max(1, depth - 1))}
 				>
-					{#each ["grid", "path"] as format}
-						<option value={format}> {format} </option>
-					{/each}
-				</select>
+					-
+				</button>
 
-				<select
-					class="dropdown"
-					bind:value={settings.selection}
-					onchange={async () => await plugin.saveSettings()}
+				<span
+					class="font-mono"
+					aria-label={data.hit_depth_limit
+						? "Some paths have been truncated"
+						: ""}
 				>
-					{#each ["all", "shortest", "longest"] as s}
-						<option value={s}> {s} </option>
-					{/each}
-				</select>
+					{depth}/{MAX_DEPTH}
+					{data.hit_depth_limit ? " (truncated)" : ""}
+				</span>
 
-				<MergeFieldsButton bind:merge_fields={settings.merge_fields} />
-
-				<div class="flex items-center gap-1">
-					<button
-						class="aspect-square text-lg"
-						aria-label="Decrease max depth"
-						disabled={depth <= 1}
-						onclick={() => (depth = Math.max(1, depth - 1))}
-					>
-						-
-					</button>
-
-					<span
-						class="font-mono"
-						aria-label={data.hit_depth_limit
-							? "Some paths have been truncated"
-							: ""}
-					>
-						{depth}/{MAX_DEPTH}
-						{data.hit_depth_limit ? " (truncated)" : ""}
-					</span>
-
-					<button
-						class="aspect-square text-lg"
-						aria-label="Increase max depth"
-						disabled={depth >= MAX_DEPTH}
-						onclick={() => (depth = Math.min(MAX_DEPTH, depth + 1))}
-					>
-						+
-					</button>
-				</div>
+				<button
+					class="aspect-square text-lg"
+					aria-label="Increase max depth"
+					disabled={depth >= MAX_DEPTH}
+					onclick={() => (depth = Math.min(MAX_DEPTH, depth + 1))}
+				>
+					+
+				</button>
 			</div>
+		</div>
 
+		{#key sorted_paths}
 			{#if settings.format === "grid"}
 				<TrailViewGrid {plugin} all_paths={sorted_paths} />
 			{:else if settings.format === "path"}
 				<TrailViewPath {plugin} all_paths={sorted_paths} />
 			{/if}
-		{:else if plugin.settings.views.page.trail.no_path_message}
-			<p class="BC-trail-view-no-path search-empty-state">
-				{plugin.settings.views.page.trail.no_path_message}
-			</p>
-		{/if}
-	{/key}
+		{/key}
+	{:else if settings.no_path_message}
+		<p class="BC-trail-view-no-path search-empty-state">
+			{settings.no_path_message}
+		</p>
+	{/if}
 </div>

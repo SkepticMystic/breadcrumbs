@@ -8,7 +8,7 @@
 	} from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeField } from "src/interfaces/settings";
+	import type { BreadcrumbsSettings, EdgeField } from "src/interfaces/settings";
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { Mermaid } from "src/utils/mermaid";
@@ -31,13 +31,25 @@
 
 	let { plugin }: Props = $props();
 
-	let settings = $state(plugin.settings);
+	type TransitiveRule =
+		BreadcrumbsSettings["implied_relations"]["transitive"][number];
+
+	let last_plugin: BreadcrumbsPlugin | null = null;
+	// svelte-ignore state_referenced_locally — seed valid $state for bindings; `$effect.pre` resyncs if `plugin` changes
+	let settings = $state<BreadcrumbsSettings>(plugin.settings);
+	let transitives = $state<TransitiveRule[]>([]);
+	let opens = $state<boolean[]>([]);
+
+	$effect.pre(() => {
+		if (last_plugin !== plugin) {
+			last_plugin = plugin;
+			settings = plugin.settings;
+			transitives = [...settings.implied_relations.transitive];
+			opens = transitives.map(() => false);
+		}
+	});
 
 	let filter = $state("");
-	// svelte-ignore state_referenced_locally
-	let transitives = $state([...settings.implied_relations.transitive]);
-	// svelte-ignore state_referenced_locally
-	const opens = $state(transitives.map(() => false));
 
 	const actions = {
 		save: async () => {

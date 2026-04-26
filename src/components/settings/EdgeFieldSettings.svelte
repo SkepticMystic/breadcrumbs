@@ -2,7 +2,11 @@
 	import { ArrowDown, PlusIcon, SaveIcon } from "lucide-svelte";
 	import { Menu, Notice } from "obsidian";
 	import { ICON_SIZE } from "src/const";
-	import type { EdgeField, EdgeFieldGroup } from "src/interfaces/settings";
+	import type {
+		BreadcrumbsSettings,
+		EdgeField,
+		EdgeFieldGroup,
+	} from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import Tag from "../obsidian/tag.svelte";
 	import EdgeFieldSelector from "../selector/EdgeFieldSelector.svelte";
@@ -13,7 +17,16 @@
 
 	let { plugin }: Props = $props();
 
-	let settings = $state(plugin.settings);
+	let last_plugin: BreadcrumbsPlugin | null = null;
+	// svelte-ignore state_referenced_locally — seed valid $state for bindings; `$effect.pre` resyncs if `plugin` changes
+	let settings = $state<BreadcrumbsSettings>(plugin.settings);
+
+	$effect.pre(() => {
+		if (last_plugin !== plugin) {
+			last_plugin = plugin;
+			settings = plugin.settings;
+		}
+	});
 
 	let filters = $state({
 		fields: "",

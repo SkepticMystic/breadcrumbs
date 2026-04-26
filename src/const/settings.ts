@@ -166,7 +166,8 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				merge_fields: false,
 				lock_view: false,
 				lock_path: "",
-				field_group_labels: ["downs"],
+				// Include `ups` so Dendron hierarchy (default field `up`) shows parents in the tree.
+				field_group_labels: ["ups", "downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
 			},

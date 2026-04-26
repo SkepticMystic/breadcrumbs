@@ -56,6 +56,9 @@ export const _add_settings_tree_view = (
 	mount(FieldGroupLabelsSettingItem, {
 		target: containerEl,
 		props: {
+			name: "Field Groups",
+			description:
+				"Which edge-type groups this view follows. Include downs so the tree can traverse down (parent → child), including Dendron hubs to their children. With only ups, only up (child → parent) edges are used.",
 			edge_field_groups: plugin.settings.edge_field_groups,
 			field_group_labels:
 				plugin.settings.views.side.tree.field_group_labels,

@@ -16,62 +16,32 @@ import { get_all_files } from "./explicit/files";
 function get_initial_nodes(all_files: AllFiles) {
 	const nodes: GCNodeData[] = [];
 
-	if (all_files.obsidian) {
-		all_files.obsidian.forEach(({ file, cache }) => {
-			let node_aliases: string[] = [];
-			let ignore_in_edges = false;
-			let ignore_out_edges = false;
+	for (const { file, cache } of all_files.obsidian) {
+		let node_aliases: string[] = [];
+		let ignore_in_edges = false;
+		let ignore_out_edges = false;
 
-			const aliases = parseFrontMatterAliases(cache?.frontmatter);
-			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_aliases = aliases;
-			}
+		const aliases = parseFrontMatterAliases(cache?.frontmatter);
+		if (Array.isArray(aliases) && aliases.length > 0) {
+			node_aliases = aliases;
+		}
 
-			if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
-				ignore_in_edges = true;
-			}
-			if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
-				ignore_out_edges = true;
-			}
+		if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
+			ignore_in_edges = true;
+		}
+		if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
+			ignore_out_edges = true;
+		}
 
-			nodes.push(
-				new GCNodeData(
-					file.path,
-					node_aliases,
-					true,
-					ignore_in_edges,
-					ignore_out_edges,
-				),
-			);
-		});
-	} else {
-		all_files.dataview.forEach((page) => {
-			let node_aliases: string[] = [];
-			let ignore_in_edges = false;
-			let ignore_out_edges = false;
-
-			const aliases = page.file.aliases.values;
-			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_aliases = aliases;
-			}
-
-			if (page[META_ALIAS["ignore-in-edges"]]) {
-				ignore_in_edges = true;
-			}
-			if (page[META_ALIAS["ignore-out-edges"]]) {
-				ignore_out_edges = true;
-			}
-
-			nodes.push(
-				new GCNodeData(
-					page.file.path,
-					node_aliases,
-					true,
-					ignore_in_edges,
-					ignore_out_edges,
-				),
-			);
-		});
+		nodes.push(
+			new GCNodeData(
+				file.path,
+				node_aliases,
+				true,
+				ignore_in_edges,
+				ignore_out_edges,
+			),
+		);
 	}
 
 	return nodes;

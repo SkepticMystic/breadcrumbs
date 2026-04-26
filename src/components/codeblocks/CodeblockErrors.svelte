@@ -10,9 +10,9 @@
 
 	let { plugin, errors }: Props = $props();
 
-	const markdown = errors
-		.map((e) => `- **\`${e.path}\`**: ${e.message}`)
-		.join("\n");
+	let markdown = $derived(
+		errors.map((e) => `- **\`${e.path}\`**: ${e.message}`).join("\n"),
+	);
 </script>
 
 {#if errors.length}

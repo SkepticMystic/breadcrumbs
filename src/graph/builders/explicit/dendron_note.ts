@@ -1,3 +1,4 @@
+import { normalizePath } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 // import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
@@ -5,9 +6,19 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
+import { implied_pair_close_field } from "src/utils/implied_pair_close_field";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+
+function dendron_edge_key(source: string, target: string, field: string): string {
+	return `${source}\0${target}\0${field}\0dendron_note`;
+}
+
+type DendronPathMeta = {
+	path: string;
+	metadata: Record<string, unknown> | undefined;
+};
 
 function get_dendron_note_info(
 	plugin: BreadcrumbsPlugin,
@@ -47,11 +58,25 @@ function get_dendron_note_info(
  * Get the field info from the note or default settings
  * Add the directed edge to the target
  */
+function push_dendron_edge(
+	results: EdgeBuilderResults,
+	edge_sig: Set<string>,
+	source: string,
+	target: string,
+	field: string,
+) {
+	const k = dendron_edge_key(source, target, field);
+	if (edge_sig.has(k)) return;
+	edge_sig.add(k);
+	results.edges.push(new GCEdgeData(source, target, field, "dendron_note"));
+}
+
 function handle_dendron_note(
 	plugin: BreadcrumbsPlugin,
 	results: EdgeBuilderResults,
 	source_id: string,
 	source_metadata: Record<string, unknown> | undefined,
+	edge_sig: Set<string>,
 ) {
 	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
 
@@ -74,8 +99,7 @@ function handle_dendron_note(
 	}
 
 	const target_id = Paths.build(
-		// Use the same folder as the source
-		source_id.split("/").slice(0, -1).join("/"),
+		Paths.dirname(source_id),
 		// Go one note up
 		source_basename_splits.slice(0, -1).join(delimiter),
 		"md",
@@ -83,7 +107,7 @@ function handle_dendron_note(
 	const { field } = dendron_note_info.data;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
-	const target_file = plugin.app.vault.getFileByPath(target_id);
+	const target_file = plugin.app.vault.getFileByPath(normalizePath(target_id));
 
 	if (!target_file) {
 		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
@@ -99,12 +123,75 @@ function handle_dendron_note(
 			//   Passing undefined would just use the settings.default field
 			//   But we can propagate the field from the resolved source note
 			{ [META_ALIAS["dendron-note-field"]]: field },
+			edge_sig,
 		);
 	}
 
-	results.edges.push(
-		new GCEdgeData(source_id, target_id, field, "dendron_note"),
-	);
+	push_dendron_edge(results, edge_sig, source_id, target_id, field);
+
+	const return_field = implied_pair_close_field(plugin.settings, field);
+	if (return_field) {
+		push_dendron_edge(results, edge_sig, target_id, source_id, return_field);
+	}
+}
+
+/**
+ * Hub notes like `git.md` never run the multi-segment branch, so they get no
+ * outgoing `down` from child passes alone if children fail earlier. Scan each
+ * folder for `stem` + delimiter + … basenames and add parent → child `down`
+ * (same idea as JD: parent path is known from children).
+ */
+function add_dendron_hub_parent_down_edges(
+	plugin: BreadcrumbsPlugin,
+	results: EdgeBuilderResults,
+	edge_sig: Set<string>,
+	paths: DendronPathMeta[],
+) {
+	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
+	const by_dir = new Map<string, DendronPathMeta[]>();
+	for (const row of paths) {
+		const dir = Paths.dirname(row.path);
+		const list = by_dir.get(dir) ?? [];
+		list.push(row);
+		by_dir.set(dir, list);
+	}
+
+	for (const entries of by_dir.values()) {
+		for (const parent of entries) {
+			const stem_parts = Paths.basename(parent.path).split(delimiter);
+			if (stem_parts.length !== 1) continue;
+
+			const stem = stem_parts[0];
+			const info = get_dendron_note_info(
+				plugin,
+				parent.metadata,
+				parent.path,
+			);
+			if (!info.ok) continue;
+
+			const return_field = implied_pair_close_field(
+				plugin.settings,
+				info.data.field,
+			);
+			if (!return_field) continue;
+
+			for (const child of entries) {
+				if (child.path === parent.path) continue;
+				const child_parts = Paths.basename(child.path).split(delimiter);
+				if (child_parts.length < 2) continue;
+				const child_parent_stem = child_parts.slice(0, -1).join(delimiter);
+				if (child_parent_stem !== stem) continue;
+
+				push_dendron_edge(
+					results,
+					edge_sig,
+					parent.path,
+					child.path,
+					return_field,
+				);
+			}
+		}
+	}
 }
 
 export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
@@ -117,13 +204,38 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 		return results;
 	}
 
+	const edge_sig = new Set<string>();
+	const paths: DendronPathMeta[] = [];
+
 	all_files.obsidian?.forEach(({ file, cache }) => {
-		handle_dendron_note(plugin, results, file.path, cache?.frontmatter);
+		paths.push({
+			path: file.path,
+			metadata: cache?.frontmatter as Record<string, unknown> | undefined,
+		});
+		handle_dendron_note(
+			plugin,
+			results,
+			file.path,
+			cache?.frontmatter as Record<string, unknown> | undefined,
+			edge_sig,
+		);
 	});
 
 	all_files.dataview?.forEach((page) => {
-		handle_dendron_note(plugin, results, page.file.path, page);
+		paths.push({
+			path: page.file.path,
+			metadata: page as unknown as Record<string, unknown>,
+		});
+		handle_dendron_note(
+			plugin,
+			results,
+			page.file.path,
+			page as unknown as Record<string, unknown>,
+			edge_sig,
+		);
 	});
+
+	add_dendron_hub_parent_down_edges(plugin, results, edge_sig, paths);
 
 	return results;
 };

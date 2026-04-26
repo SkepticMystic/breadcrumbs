@@ -1,6 +1,11 @@
 import type { ShowNodeOptions } from "src/interfaces/settings";
 import { ensure_ends_with } from "./strings";
 
+/** Obsidian paths may use `\` on Windows; graph code assumes `/` segments. */
+function slashify(path: string) {
+	return path.replace(/\\/g, "/");
+}
+
 function ensure_ext(
 	path: string,
 	/** _Just_ the extension, no '.' */
@@ -18,21 +23,21 @@ function extname(path: string) {
 }
 
 function drop_folder(path: string) {
-	return path.split("/").pop()!;
+	return slashify(path).split("/").pop()!;
 }
 
 function dirname(path: string) {
-	return path.split("/").slice(0, -1).join("/");
+	return slashify(path).split("/").slice(0, -1).join("/");
 }
 
 /** Drops .ext, like TFile.basename */
 function basename(path: string) {
-	return drop_ext(path.split("/").pop()!);
+	return drop_ext(slashify(path).split("/").pop()!);
 }
 
 /** Replace double slashes within the path, and drop leading slashes */
 function normalize(path: string) {
-	return path.replace(/\/+/g, "/").replace(/^\//, "");
+	return slashify(path).replace(/\/+/g, "/").replace(/^\//, "");
 }
 
 function build(

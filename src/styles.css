@@ -23,6 +23,29 @@ Outputs to /styles.css, for Obsidian to use.
 	background-color: var(--background-primary);
 }
 
+/*
+ * Unpinned page views live inside .cm-scroller (scroll with note, #660).
+ * The scroller is a horizontal flex (gutters | content); without wrap, the
+ * trail sits in a narrow column. Wrap and force a full-width row for .BC-page-views.
+ */
+.cm-scroller.BC-cm-scroller-inline-page-views {
+	flex-wrap: wrap;
+	align-content: flex-start;
+}
+
+.cm-scroller.BC-cm-scroller-inline-page-views > .BC-page-views {
+	box-sizing: border-box;
+	flex: 0 0 100%;
+	width: 100%;
+	max-width: 100%;
+}
+
+/* Pinned strip is a sibling before .cm-editor — block-level full width */
+.markdown-source-view > .BC-page-views {
+	width: 100%;
+	max-width: 100%;
+}
+
 /* Obsidian */
 
 .text-faint {
