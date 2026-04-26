@@ -29,5 +29,5 @@ coverage
 # build
 meta.txt
 
-#claude
-.claude/*
+# Claude settings
+.claude/settings.local.json

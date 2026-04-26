@@ -1,6 +1,110 @@
 import { Notice } from "obsidian";
 import type BreadcrumbsPlugin from "src/main";
+import type { PeriodNoteConfig } from "src/interfaces/settings";
 import { new_setting } from "src/utils/settings";
+
+type PeriodKind = "week" | "month" | "quarter" | "year";
+
+const PERIOD_LABEL: Record<PeriodKind, string> = {
+	week: "Week",
+	month: "Month",
+	quarter: "Quarter",
+	year: "Year",
+};
+
+const PERIOD_FORMAT_HINT: Record<PeriodKind, string> = {
+	week: "kkkk-'W'WW  (e.g. 2024-W03)",
+	month: "yyyy-MM  (e.g. 2024-03)",
+	quarter: "yyyy-'Q'q  (e.g. 2024-Q1)",
+	year: "yyyy  (e.g. 2024)",
+};
+
+function add_period_settings(
+	plugin: BreadcrumbsPlugin,
+	containerEl: HTMLElement,
+	kind: PeriodKind,
+) {
+	const label = PERIOD_LABEL[kind];
+	const cfg = (): PeriodNoteConfig =>
+		plugin.settings.explicit_edge_sources.date_note[kind];
+
+	containerEl.createEl("h6", { text: label });
+
+	new_setting(containerEl, {
+		name: "Enabled",
+		desc: `Look for ${label.toLowerCase()} notes to build period hierarchy edges`,
+		toggle: {
+			value: cfg().enabled,
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.date_note[kind].enabled = value;
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+			},
+		},
+	});
+
+	const format_frag = new DocumentFragment();
+	format_frag.createEl("span", {}, (el) => {
+		el.innerHTML = `<a href="https://moment.github.io/luxon/#/formatting?id=table-of-tokens">Luxon format</a> matching the note filename. Default: <code>${PERIOD_FORMAT_HINT[kind]}</code>`;
+	});
+
+	new_setting(containerEl, {
+		name: "Date Format",
+		desc: format_frag,
+		input: {
+			value: cfg().date_format,
+			placeholder: PERIOD_FORMAT_HINT[kind],
+			cb: async (value) => {
+				if (!value) {
+					new Notice("Date format cannot be empty");
+				} else {
+					plugin.settings.explicit_edge_sources.date_note[kind].date_format = value;
+					await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+				}
+			},
+		},
+	});
+
+	new_setting(containerEl, {
+		name: "Folder",
+		desc: `Vault folder containing ${label.toLowerCase()} notes. Leave empty to match anywhere.`,
+		input: {
+			value: cfg().folder,
+			placeholder: "",
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.date_note[kind].folder = value;
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+			},
+		},
+	});
+
+	const edge_field_options = plugin.settings.edge_fields.map((f) => f.label);
+
+	new_setting(containerEl, {
+		name: "Next Field",
+		desc: `Edge field for sequential next/prev edges between ${label.toLowerCase()} notes`,
+		select: {
+			value: cfg().next_field,
+			options: edge_field_options,
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.date_note[kind].next_field = value;
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+			},
+		},
+	});
+
+	new_setting(containerEl, {
+		name: "Up Field",
+		desc: `Edge field for child-note → ${label.toLowerCase()}-note containment edges`,
+		select: {
+			value: cfg().up_field,
+			options: edge_field_options,
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.date_note[kind].up_field = value;
+				await Promise.all([plugin.rebuildGraph(), plugin.saveSettings()]);
+			},
+		},
+	});
+}
 
 export const _add_settings_date_note = (
 	plugin: BreadcrumbsPlugin,
@@ -25,12 +129,10 @@ export const _add_settings_date_note = (
 		name: "Default Field",
 		desc: "Field used to join date notes together. Breadcrumbs takes the current note's date, adds one day, and joins the two notes with this field.",
 		select: {
-			value: plugin.settings.explicit_edge_sources.date_note
-				.default_field,
+			value: plugin.settings.explicit_edge_sources.date_note.default_field,
 			options: plugin.settings.edge_fields.map((f) => f.label),
 			cb: async (value) => {
-				plugin.settings.explicit_edge_sources.date_note.default_field =
-					value;
+				plugin.settings.explicit_edge_sources.date_note.default_field = value;
 				await Promise.all([
 					plugin.rebuildGraph(),
 					plugin.saveSettings(),
@@ -55,8 +157,7 @@ export const _add_settings_date_note = (
 			cb: async (value) => {
 				if (!value) new Notice("Date format cannot be empty");
 				else {
-					plugin.settings.explicit_edge_sources.date_note.date_format =
-						value;
+					plugin.settings.explicit_edge_sources.date_note.date_format = value;
 					await Promise.all([
 						plugin.rebuildGraph(),
 						plugin.saveSettings(),
@@ -70,11 +171,9 @@ export const _add_settings_date_note = (
 		name: "Stretch to Existing",
 		desc: "If there is a gap from one day to another, should the next note be the unresolved one in one day or should it 'stretch' to the next resolved (existing) note?",
 		toggle: {
-			value: plugin.settings.explicit_edge_sources.date_note
-				.stretch_to_existing,
+			value: plugin.settings.explicit_edge_sources.date_note.stretch_to_existing,
 			cb: async (value) => {
-				plugin.settings.explicit_edge_sources.date_note.stretch_to_existing =
-					value;
+				plugin.settings.explicit_edge_sources.date_note.stretch_to_existing = value;
 				await Promise.all([
 					plugin.rebuildGraph(),
 					plugin.saveSettings(),
@@ -82,4 +181,9 @@ export const _add_settings_date_note = (
 			},
 		},
 	});
+
+	containerEl.createEl("h5", { text: "Period Notes" });
+	for (const kind of ["week", "month", "quarter", "year"] as PeriodKind[]) {
+		add_period_settings(plugin, containerEl, kind);
+	}
 };

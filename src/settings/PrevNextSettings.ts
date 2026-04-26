@@ -2,6 +2,7 @@ import { Setting } from "obsidian";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { mount } from "svelte";
+import { new_setting } from "src/utils/settings";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_prev_next_view = (
@@ -65,4 +66,21 @@ export const _add_settings_prev_next_view = (
 		set: (value) =>
 			(plugin.settings.views.page.prev_next.show_node_options = value),
 	});
+
+	containerEl.createEl("h6", { text: "Period Rows" });
+
+	for (const kind of ["week", "month", "quarter", "year"] as const) {
+		new_setting(containerEl, {
+			name: kind.charAt(0).toUpperCase() + kind.slice(1),
+			desc: `Show a ${kind} period row in the Previous/Next view`,
+			toggle: {
+				value: plugin.settings.views.page.prev_next.period_rows[kind],
+				cb: async (value) => {
+					plugin.settings.views.page.prev_next.period_rows[kind] = value;
+					plugin.refreshViews();
+					await plugin.saveSettings();
+				},
+			},
+		});
+	}
 };

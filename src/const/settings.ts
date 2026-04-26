@@ -117,6 +117,34 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			date_format: "yyyy-MM-dd",
 			default_field: "next",
 			stretch_to_existing: false,
+			week: {
+				enabled: false,
+				date_format: "kkkk-'W'WW",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			month: {
+				enabled: false,
+				date_format: "yyyy-MM",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			quarter: {
+				enabled: false,
+				date_format: "yyyy-'Q'q",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			year: {
+				enabled: false,
+				date_format: "yyyy",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
 		},
 	},
 
@@ -144,6 +172,12 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				field_group_labels: {
 					prev: ["prevs"],
 					next: ["nexts"],
+				},
+				period_rows: {
+					week: false,
+					month: false,
+					quarter: false,
+					year: false,
 				},
 			},
 		},

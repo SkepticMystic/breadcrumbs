@@ -1,14 +1,147 @@
 import { DateTime } from "luxon";
+import type { AllFiles } from "src/graph/builders/explicit/files";
 import type {
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
+import type { PeriodNoteConfig } from "src/interfaces/settings";
+import { log } from "src/logger";
 import { Paths } from "src/utils/paths";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
-import { log } from "src/logger";
-import { Replace, ReplaceAll } from "lucide-svelte";
 
-// TODO: Option to point up to month, (and for month to point up to year?)
+type PeriodKind = "week" | "month" | "quarter" | "year";
+
+const PERIOD_KINDS: PeriodKind[] = ["week", "month", "quarter", "year"];
+
+const CONTAINMENT: Record<PeriodKind, PeriodKind[]> = {
+	week: ["month", "quarter", "year"],
+	month: ["quarter", "year"],
+	quarter: ["year"],
+	year: [],
+};
+
+interface PeriodNote {
+	path: string;
+	basename: string;
+	ext: string;
+	folder: string;
+	date: DateTime<true>;
+}
+
+function collect_period_notes(cfg: PeriodNoteConfig, all_files: AllFiles): PeriodNote[] {
+	const notes: PeriodNote[] = [];
+
+	all_files.obsidian?.forEach(({ file }) => {
+		if (cfg.folder && file.parent?.path !== cfg.folder) return;
+		const date = DateTime.fromFormat(file.basename, cfg.date_format);
+		if (!date.isValid) return;
+		notes.push({ date, path: file.path, basename: file.basename, ext: file.extension, folder: file.parent?.path ?? "" });
+	});
+
+	all_files.dataview?.forEach(({ file }) => {
+		if (cfg.folder && file.folder !== cfg.folder) return;
+		const date = DateTime.fromFormat(file.name, cfg.date_format);
+		if (!date.isValid) return;
+		notes.push({ date, path: file.path, basename: file.name, ext: file.ext, folder: file.folder });
+	});
+
+	return notes.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+}
+
+function add_period_edges(
+	plugin: Parameters<ExplicitEdgeBuilder>[0],
+	all_files: AllFiles,
+	results: EdgeBuilderResults,
+): void {
+	const cfg = plugin.settings.explicit_edge_sources.date_note;
+	const edge_fields = plugin.settings.edge_fields;
+
+	for (const kind of PERIOD_KINDS) {
+		const period_cfg = cfg[kind];
+		if (!period_cfg.enabled) continue;
+
+		if (!edge_fields.find((f) => f.label === period_cfg.next_field)) {
+			results.errors.push({
+				code: "invalid_setting_value",
+				path: `explicit_edge_sources.date_note.${kind}.next_field`,
+				message: `Period note (${kind}) next_field "${period_cfg.next_field}" is not a valid Breadcrumbs Edge field`,
+			});
+		}
+		if (!edge_fields.find((f) => f.label === period_cfg.up_field)) {
+			results.errors.push({
+				code: "invalid_setting_value",
+				path: `explicit_edge_sources.date_note.${kind}.up_field`,
+				message: `Period note (${kind}) up_field "${period_cfg.up_field}" is not a valid Breadcrumbs Edge field`,
+			});
+		}
+	}
+	if (results.errors.length > 0) return;
+
+	const period_notes: Partial<Record<PeriodKind, PeriodNote[]>> = {};
+	for (const kind of PERIOD_KINDS) {
+		if (!cfg[kind].enabled) continue;
+		period_notes[kind] = collect_period_notes(cfg[kind], all_files);
+	}
+
+	// Sequential next edges between period notes of the same kind
+	for (const kind of PERIOD_KINDS) {
+		const notes = period_notes[kind];
+		if (!notes) continue;
+		const period_cfg = cfg[kind];
+		for (let i = 0; i < notes.length - 1; i++) {
+			results.edges.push(new GCEdgeData(notes[i].path, notes[i + 1].path, period_cfg.next_field, "date_note"));
+		}
+	}
+
+	// Daily note → period note up edges
+	if (cfg.enabled) {
+		const daily_notes: PeriodNote[] = [];
+		all_files.obsidian?.forEach(({ file }) => {
+			const date = DateTime.fromFormat(file.basename, cfg.date_format);
+			if (!date.isValid) return;
+			daily_notes.push({ date, path: file.path, basename: file.basename, ext: file.extension, folder: file.parent?.path ?? "" });
+		});
+		all_files.dataview?.forEach(({ file }) => {
+			const date = DateTime.fromFormat(file.name, cfg.date_format);
+			if (!date.isValid) return;
+			daily_notes.push({ date, path: file.path, basename: file.name, ext: file.ext, folder: file.folder });
+		});
+
+		for (const daily of daily_notes) {
+			for (const kind of PERIOD_KINDS) {
+				const notes = period_notes[kind];
+				if (!notes) continue;
+				const period_cfg = cfg[kind];
+				const target_basename = daily.date.toFormat(period_cfg.date_format);
+				const target = notes.find((n) => n.basename === target_basename);
+				if (target) {
+					results.edges.push(new GCEdgeData(daily.path, target.path, period_cfg.up_field, "date_note"));
+				}
+			}
+		}
+	}
+
+	// Finer period → coarser period up edges (week→month, week→quarter, etc.)
+	for (const finer of PERIOD_KINDS) {
+		const finer_notes = period_notes[finer];
+		if (!finer_notes) continue;
+		const finer_cfg = cfg[finer];
+
+		for (const coarser of CONTAINMENT[finer]) {
+			const coarser_notes = period_notes[coarser];
+			if (!coarser_notes) continue;
+			const coarser_cfg = cfg[coarser];
+
+			for (const note of finer_notes) {
+				const target_basename = note.date.toFormat(coarser_cfg.date_format);
+				const target = coarser_notes.find((n) => n.basename === target_basename);
+				if (target) {
+					results.edges.push(new GCEdgeData(note.path, target.path, finer_cfg.up_field, "date_note"));
+				}
+			}
+		}
+	}
+}
 
 export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 	plugin,
@@ -18,6 +151,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 
 	const date_note_settings = plugin.settings.explicit_edge_sources.date_note;
 	if (!date_note_settings.enabled) {
+		add_period_edges(plugin, all_files, results);
 		return results;
 	} else if (
 		!plugin.settings.edge_fields.find(
@@ -41,8 +175,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		date: DateTime<true>;
 	}[] = [];
 
-	// Basically just converting the two all_files into a common format of their basic fields...
-	// Maybe generalise this?
 	all_files.obsidian?.forEach(({ file }) => {
 		const date = DateTime.fromFormat(
 			file.basename,
@@ -55,9 +187,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			path: file.path,
 			ext: file.extension,
 			basename: file.basename,
-			// Not sure why would this be undefined?
-			//   I tested and a file in the root of the vault still has a parent
-			//   _it's_ parent is null, but that only happens if "file" is actually a folder
 			folder: file.parent?.path ?? "",
 		});
 	});
@@ -85,11 +214,11 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				.plus({ days: 1 })
 				.toFormat(date_note_settings.date_format);
 
-			const tomorrow_year =  date_note.date
+			const tomorrow_year = date_note.date
 				.plus({ days: 1 })
 				.toFormat("yyyy");
 
-			const tomorrow_month =  date_note.date
+			const tomorrow_month = date_note.date
 				.plus({ days: 1 })
 				.toFormat("MM");
 
@@ -123,7 +252,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				date_note.ext,
 			);
 
-			// NOTE: We have a full path, so we can go straight to the file without the given source_path
 			const target_file = plugin.app.vault.getFileByPath(target_id);
 			if (!target_file) {
 				results.nodes.push(
@@ -140,6 +268,8 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				),
 			);
 		});
+
+	add_period_edges(plugin, all_files, results);
 
 	return results;
 };

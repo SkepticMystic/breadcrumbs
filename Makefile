@@ -33,3 +33,6 @@ build:
 		bun run wasm:build || exit 1
 		bun run build || exit 1
 		npm i
+
+beta:
+ 		npm run version:beta
