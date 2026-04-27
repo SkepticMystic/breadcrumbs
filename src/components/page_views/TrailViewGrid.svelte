@@ -24,7 +24,35 @@
 	);
 
 	let trail_grid = $derived.by(() => {
-		const reversed = all_paths.map((path) => path.reverse_edges);
+		// Precompute target-path strings once to avoid repeated WASM calls in sort.
+		const path_keys = all_paths.map((path) =>
+			path.reverse_edges.map((e) => e.target_path(plugin.graph)),
+		);
+		const max_len = Math.max(0, ...path_keys.map((k) => k.length));
+		// Left-pad to match ensure_square_array(pre=true) alignment.
+		const padded_keys = path_keys.map((keys) => {
+			const pad = max_len - keys.length;
+			return [...Array<string | null>(pad).fill(null), ...keys];
+		});
+
+		// Sort right-to-left (immediate parent first) so paths sharing ancestors
+		// are adjacent, maximising gather_by_runs rowspans. null sorts last.
+		const sorted = all_paths
+			.map((_, i) => i)
+			.sort((ai, bi) => {
+				for (let col = max_len - 1; col >= 0; col--) {
+					const av = padded_keys[ai][col];
+					const bv = padded_keys[bi][col];
+					if (av === bv) continue;
+					if (av === null) return 1;
+					if (bv === null) return -1;
+					return av < bv ? -1 : 1;
+				}
+				return 0;
+			})
+			.map((i) => all_paths[i]);
+
+		const reversed = sorted.map((path) => path.reverse_edges);
 		const square = ensure_square_array(reversed, null, true);
 		const col_runs = transpose(square).map((col) =>
 			gather_by_runs(col, (e) =>
