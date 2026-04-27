@@ -60,6 +60,9 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl, plugin } = this;
 
+		for (const c of this.components) void unmount(c);
+		this.components = [];
+
 		containerEl.empty();
 
 		containerEl.addClass("BC-settings-tab");
@@ -216,6 +219,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			);
 		}
 
-		this.components.forEach((c) => void unmount(c));
+		for (const c of this.components) void unmount(c);
+		this.components = [];
 	}
 }
