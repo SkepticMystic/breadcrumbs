@@ -1,15 +1,24 @@
 import type { App } from "obsidian";
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { log } from "src/logger";
 import { Links } from "./links";
 import { Paths } from "./paths";
 
-/** Try find a given target_path from a source_path. If not found, resolve_to_absolute_path */
+/**
+ * Try find a given target_path from a source_path. If not found, resolve_to_absolute_path.
+ *
+ * Returns `null` when the link is unresolvable AND the fallback path produced by
+ * resolve_to_absolute_path coincidentally matches an existing vault file (e.g. a
+ * stale link like [[old/folder/Note A]] where Note A.md was moved to the root).
+ * Callers should skip the link entirely in that case — no node, no edge — to avoid
+ * both creating a false connection and crashing the WASM graph with
+ * "There already exists a resolved node with the same name".
+ */
 export const resolve_relative_target_path = (
 	app: App,
 	relative_target_path: string,
 	source_path: string,
-) => {
+): readonly [string, TFile | null] | null => {
 	const extensioned = Paths.ensure_ext(relative_target_path);
 
 	const target_file = app.metadataCache.getFirstLinkpathDest(
@@ -17,11 +26,25 @@ export const resolve_relative_target_path = (
 		source_path,
 	);
 
-	const target_path =
-		target_file?.path ??
-		Links.resolve_to_absolute_path(app, extensioned, source_path);
+	if (target_file) {
+		return [target_file.path, target_file] as const;
+	}
 
-	return [target_path, target_file] as const;
+	const fallback_path = Links.resolve_to_absolute_path(
+		app,
+		extensioned,
+		source_path,
+	);
+
+	// resolve_to_absolute_path uses only the basename, so [[wrong/path/Note A]]
+	// can produce "Note A.md" — a path that may already belong to a real vault
+	// file (e.g. after the note was moved). Treat this as a stale/broken link
+	// and signal callers to ignore it entirely.
+	if (app.vault.getAbstractFileByPath(fallback_path) instanceof TFile) {
+		return null;
+	}
+
+	return [fallback_path, null] as const;
 };
 
 export const copy_to_clipboard = async (

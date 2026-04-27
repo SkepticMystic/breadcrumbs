@@ -161,11 +161,13 @@ const handle_neighbour_list_item = ({
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
 	if (!neighbour_link) return;
 
-	const [target_id, file] = resolve_relative_target_path(
+	const resolved_neighbour = resolve_relative_target_path(
 		plugin.app,
 		neighbour_link.path,
 		list_note_page.file.path,
 	);
+	if (!resolved_neighbour) return;
+	const [target_id, file] = resolved_neighbour;
 
 	if (!file) {
 		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
@@ -209,11 +211,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				const source_link = source_list_item.outlinks.at(0);
 				if (!source_link) return;
 
-				const [source_path, source_file] = resolve_relative_target_path(
+				const resolved_source = resolve_relative_target_path(
 					plugin.app,
 					source_link.path,
 					list_note_page.file.path,
 				);
+				if (!resolved_source) return;
+				const [source_path, source_file] = resolved_source;
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
@@ -282,12 +286,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						return;
 					}
 
-					const [target_path, target_file] =
-						resolve_relative_target_path(
-							plugin.app,
-							target_link.path,
-							list_note_page.file.path,
-						);
+					const resolved_target = resolve_relative_target_path(
+						plugin.app,
+						target_link.path,
+						list_note_page.file.path,
+					);
+					if (!resolved_target) return;
+					const [target_path, target_file] = resolved_target;
 
 					// It's redundant, but easier to just safe_add_node here on the target
 					// Technically, the next iteration of page.file.lists will add it (as a source)

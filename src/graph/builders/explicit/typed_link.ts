@@ -29,11 +29,13 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 				const field = target_link.key.split(".")[0];
 				if (!field_labels.has(field)) return;
 
-				const [target_id, target_file] = resolve_relative_target_path(
+				const resolved = resolve_relative_target_path(
 					plugin.app,
 					target_link.link,
 					source_file.path,
 				);
+				if (!resolved) return;
+				const [target_id, target_file] = resolved;
 
 				if (!target_file) {
 					// Unresolved nodes don't have aliases
@@ -56,6 +58,12 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 	all_files.dataview?.forEach((page) => {
 		const source_file = page.file;
+		// When the Obsidian branch is also active, it already handled frontmatter
+		// links via frontmatterLinks. Only process inline-only fields here to avoid
+		// duplicate edges.
+		const frontmatter_keys = all_files.obsidian
+			? new Set(Object.keys(page.file.frontmatter ?? {}))
+			: null;
 
 		// NOTE: Instead of iterating all keys, I could use the edge_fields...
 		// But I'm assuming there are probably more edge fields than page fields
@@ -65,7 +73,8 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 			//   But Dataview probably enforces that anyway
 			if (
 				!field_labels.has(field) ||
-				["file", "aliases"].includes(field)
+				["file", "aliases"].includes(field) ||
+				frontmatter_keys?.has(field)
 			) {
 				return;
 			}
@@ -108,12 +117,13 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = (
 
 					if (!unsafe_target_path) return;
 
-					const [target_path, target_file] =
-						resolve_relative_target_path(
-							plugin.app,
-							unsafe_target_path,
-							source_file.path,
-						);
+					const resolved = resolve_relative_target_path(
+						plugin.app,
+						unsafe_target_path,
+						source_file.path,
+					);
+					if (!resolved) return;
+					const [target_path, target_file] = resolved;
 
 					if (!target_file) {
 						// It's an unresolved link, so we add a node for it
