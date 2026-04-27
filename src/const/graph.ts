@@ -18,7 +18,9 @@ export const SIMPLE_EDGE_SORT_FIELDS = [
 	// Hidden because I don't think anyone really cares about that order
 	// "graph",
 	"basename",
+	"basename_natural",
 	"path",
+	"path_natural",
 	"field",
 	// Whether the edge is explicit or not
 	// Uses source and implied_kind as tie-breakers for explicit == true and false, respectively
