@@ -117,6 +117,34 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			date_format: "yyyy-MM-dd",
 			default_field: "next",
 			stretch_to_existing: false,
+			week: {
+				enabled: false,
+				date_format: "kkkk-'W'WW",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			month: {
+				enabled: false,
+				date_format: "yyyy-MM",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			quarter: {
+				enabled: false,
+				date_format: "yyyy-'Q'q",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
+			year: {
+				enabled: false,
+				date_format: "yyyy",
+				folder: "",
+				next_field: "next",
+				up_field: "up",
+			},
 		},
 	},
 
@@ -145,6 +173,12 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 					prev: ["prevs"],
 					next: ["nexts"],
 				},
+				period_rows: {
+					week: false,
+					month: false,
+					quarter: false,
+					year: false,
+				},
 			},
 		},
 		side: {
@@ -166,9 +200,12 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				merge_fields: false,
 				lock_view: false,
 				lock_path: "",
-				field_group_labels: ["downs"],
+				// Include `ups` so Dendron hierarchy (default field `up`) shows parents in the tree.
+				field_group_labels: ["ups", "downs"],
 				edge_sort_id: { ...DEFAULT_EDGE_SORT_ID },
 				show_node_options: { ...DEFAULT_SHOW_NODE_OPTIONS },
+				find_root: false,
+				find_root_field_group_labels: ["ups"],
 			},
 		},
 

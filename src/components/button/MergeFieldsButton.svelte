@@ -16,8 +16,8 @@
 	onclick={() => (merge_fields = !merge_fields)}
 >
 	{#if merge_fields}
-		<MergeIcon size={ICON_SIZE} />
-	{:else}
 		<SplitIcon size={ICON_SIZE} />
+	{:else}
+		<MergeIcon size={ICON_SIZE} />
 	{/if}
 </button>

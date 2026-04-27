@@ -18,6 +18,18 @@ export interface ShowNodeOptions {
 	alias: boolean;
 }
 
+export interface PeriodNoteConfig {
+	enabled: boolean;
+	/** Luxon token format matching the period note filename stem */
+	date_format: string;
+	/** Vault folder path; empty string means anywhere */
+	folder: string;
+	/** BC field for sequential next/prev edges between period notes */
+	next_field: string;
+	/** BC field for child-note → period-note "up" edges */
+	up_field: string;
+}
+
 export type CrumbDestination = "frontmatter" | "dataview-inline";
 
 export interface BreadcrumbsSettings {
@@ -77,6 +89,10 @@ export interface BreadcrumbsSettings {
 			// e.g. 2024-03-30 -> 2024-03-31 (unresolved)
 			// vs   2024-03-30 -> 2024-04-01 (resolved)
 			stretch_to_existing: boolean;
+			week: PeriodNoteConfig;
+			month: PeriodNoteConfig;
+			quarter: PeriodNoteConfig;
+			year: PeriodNoteConfig;
 		};
 
 		regex_note: {
@@ -112,6 +128,13 @@ export interface BreadcrumbsSettings {
 					prev: string[];
 					next: string[];
 				};
+
+				period_rows: {
+					week: boolean;
+					month: boolean;
+					quarter: boolean;
+					year: boolean;
+				};
 			};
 		};
 		side: {
@@ -136,6 +159,8 @@ export interface BreadcrumbsSettings {
 				show_node_options: ShowNodeOptions;
 				lock_view: boolean;
 				lock_path: string;
+				find_root: boolean;
+				find_root_field_group_labels: string[];
 			};
 		};
 

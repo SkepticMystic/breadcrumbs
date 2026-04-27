@@ -15,7 +15,7 @@
 
 	let { path, display, resolved, plugin, cls = "" }: Props = $props();
 
-	const no_ext = Paths.drop_ext(path);
+	let no_ext = $derived(Paths.drop_ext(path));
 
 	let active_file = $derived($active_file_store);
 </script>

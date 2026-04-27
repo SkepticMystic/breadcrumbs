@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { BreadcrumbsSettings } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
@@ -12,14 +13,31 @@
 	import MatrixEdgeField from "./MatrixEdgeField.svelte";
 	import { untrack } from "svelte";
 	import { log } from "src/logger";
+	import { json_clone } from "src/utils/json_clone";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
 	}
 
 	let { plugin }: Props = $props();
-  log.debug("Rendering Matrix side view");
-	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.side.matrix)));
+	log.debug("Rendering Matrix side view");
+
+	type MatrixSideSettings = BreadcrumbsSettings["views"]["side"]["matrix"];
+
+	let last_plugin: BreadcrumbsPlugin | null = null;
+	// svelte-ignore state_referenced_locally — seed valid $state for bindings; `$effect.pre` resyncs if `plugin` changes
+	let settings = $state<MatrixSideSettings>(
+		json_clone(plugin.settings.views.side.matrix),
+	);
+
+	$effect.pre(() => {
+		if (last_plugin !== plugin) {
+			last_plugin = plugin;
+			settings = json_clone(
+				$state.snapshot(plugin.settings.views.side.matrix),
+			);
+		}
+	});
 
 	let is_initial_mount = true;
 

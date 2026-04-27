@@ -1,5 +1,6 @@
 import { parseYaml } from "obsidian";
 import { dataview_plugin } from "src/external/dataview";
+import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import { log } from "src/logger";
@@ -113,17 +114,13 @@ function postprocess_options(
 
 	if (parsed["dataview-from"]) {
 		try {
-			/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
-			const pages = dataview_plugin
-				.get_api(plugin.app)
-				?.pages(parsed["dataview-from"], source_path) as
-				| undefined
-				| IDataview.Page[];
+			const pages = dataview_pages_to_plain_array(
+				dataview_plugin
+					.get_api(plugin.app)
+					?.pages(parsed["dataview-from"], source_path),
+			) as IDataview.Page[];
 
-			parsed["dataview-from-paths"] = pages?.map(
-				(page) => page.file.path,
-			);
-			/* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+			parsed["dataview-from-paths"] = pages.map((page) => page.file.path);
 		} catch (_) {
 			errors.push({
 				path: "dataview-from",

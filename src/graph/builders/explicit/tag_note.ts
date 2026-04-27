@@ -9,6 +9,17 @@ import { fail, graph_build_fail, succ } from "src/utils/result";
 import { ensure_starts_with } from "src/utils/strings";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
+const parse_frontmatter_tags = (
+	frontmatter: Record<string, unknown> | undefined,
+): string[] => {
+	const raw = frontmatter?.tags;
+	if (typeof raw === "string") return [raw];
+	if (Array.isArray(raw)) {
+		return raw.filter((tag): tag is string => typeof tag === "string");
+	}
+	return [];
+};
+
 const get_tag_note_info = (
 	plugin: BreadcrumbsPlugin,
 	metadata: Record<string, unknown> | undefined,
@@ -99,7 +110,9 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 
 			// Check if the tag_note itself has any tags for other tags notes
 			// We must iterate over both the frontmatter and body tags independently
-			tag_note_cache?.frontmatter?.tags?.forEach(process_tag);
+			parse_frontmatter_tags(tag_note_cache?.frontmatter).forEach(
+				process_tag,
+			);
 			tag_note_cache?.tags?.map((item) => item.tag)?.forEach(process_tag)
 
 			const tag_note_info = get_tag_note_info(

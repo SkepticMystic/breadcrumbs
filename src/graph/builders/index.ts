@@ -1,6 +1,9 @@
 import { parseFrontMatterAliases } from "obsidian";
 import { EXPLICIT_EDGE_SOURCES } from "src/const/graph";
 import { META_ALIAS } from "src/const/metadata_fields";
+import { dataview_plugin } from "src/external/dataview/index";
+import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
+import type { IDataview } from "src/external/dataview/interfaces";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { Timer } from "src/utils/timer";
@@ -16,62 +19,32 @@ import { get_all_files } from "./explicit/files";
 function get_initial_nodes(all_files: AllFiles) {
 	const nodes: GCNodeData[] = [];
 
-	if (all_files.obsidian) {
-		all_files.obsidian.forEach(({ file, cache }) => {
-			let node_aliases: string[] = [];
-			let ignore_in_edges = false;
-			let ignore_out_edges = false;
+	for (const { file, cache } of all_files.obsidian) {
+		let node_aliases: string[] = [];
+		let ignore_in_edges = false;
+		let ignore_out_edges = false;
 
-			const aliases = parseFrontMatterAliases(cache?.frontmatter);
-			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_aliases = aliases;
-			}
+		const aliases = parseFrontMatterAliases(cache?.frontmatter);
+		if (Array.isArray(aliases) && aliases.length > 0) {
+			node_aliases = aliases;
+		}
 
-			if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
-				ignore_in_edges = true;
-			}
-			if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
-				ignore_out_edges = true;
-			}
+		if (cache?.frontmatter?.[META_ALIAS["ignore-in-edges"]]) {
+			ignore_in_edges = true;
+		}
+		if (cache?.frontmatter?.[META_ALIAS["ignore-out-edges"]]) {
+			ignore_out_edges = true;
+		}
 
-			nodes.push(
-				new GCNodeData(
-					file.path,
-					node_aliases,
-					true,
-					ignore_in_edges,
-					ignore_out_edges,
-				),
-			);
-		});
-	} else {
-		all_files.dataview.forEach((page) => {
-			let node_aliases: string[] = [];
-			let ignore_in_edges = false;
-			let ignore_out_edges = false;
-
-			const aliases = page.file.aliases.values;
-			if (Array.isArray(aliases) && aliases.length > 0) {
-				node_aliases = aliases;
-			}
-
-			if (page[META_ALIAS["ignore-in-edges"]]) {
-				ignore_in_edges = true;
-			}
-			if (page[META_ALIAS["ignore-out-edges"]]) {
-				ignore_out_edges = true;
-			}
-
-			nodes.push(
-				new GCNodeData(
-					page.file.path,
-					node_aliases,
-					true,
-					ignore_in_edges,
-					ignore_out_edges,
-				),
-			);
-		});
+		nodes.push(
+			new GCNodeData(
+				file.path,
+				node_aliases,
+				true,
+				ignore_in_edges,
+				ignore_out_edges,
+			),
+		);
 	}
 
 	return nodes;
@@ -83,6 +56,16 @@ export const rebuild_graph = async (plugin: BreadcrumbsPlugin) => {
 
 	// Get once, send to all builders
 	const all_files = get_all_files(plugin.app);
+
+	// Populate Dataview pages when available so typed_link can read inline fields.
+	// The Obsidian list remains authoritative for node discovery; Dataview is only
+	// used as supplementary field data (inline fields aren't in frontmatterLinks).
+	const dv_api = dataview_plugin.get_api(plugin.app);
+	if (dv_api) {
+		all_files.dataview = dataview_pages_to_plain_array(
+			dv_api.pages(),
+		) as IDataview.Page[];
+	}
 
 	// Add initial nodes
 	const nodes = get_initial_nodes(all_files);

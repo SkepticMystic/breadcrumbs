@@ -1,4 +1,5 @@
 import { META_ALIAS } from "src/const/metadata_fields";
+import { dataview_plugin } from "src/external/dataview";
 import type { IDataview } from "src/external/dataview/interfaces";
 // import type { BCGraph } from "src/graph/MyMultiGraph";
 import type {
@@ -160,11 +161,13 @@ const handle_neighbour_list_item = ({
 	const neighbour_link = neighbour_list_item.outlinks.at(0);
 	if (!neighbour_link) return;
 
-	const [target_id, file] = resolve_relative_target_path(
+	const resolved_neighbour = resolve_relative_target_path(
 		plugin.app,
 		neighbour_link.path,
 		list_note_page.file.path,
 	);
+	if (!resolved_neighbour) return;
+	const [target_id, file] = resolved_neighbour;
 
 	if (!file) {
 		results.nodes.push(new GCNodeData(target_id, [], false, false, false));
@@ -186,49 +189,17 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 	all_files,
 ) => {
 	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
+	const dataview_api = dataview_plugin.get_api(plugin.app);
 
-	all_files.obsidian?.forEach(
-		({ file: list_note_file, cache: list_note_cache }) => {
-			if (!list_note_cache) return;
-
-			const list_note_info = get_list_note_info(
-				plugin,
-				list_note_cache?.frontmatter,
-				list_note_file.path,
-			);
-			if (!list_note_info.ok) {
-				if (list_note_info.error) {
-					results.errors.push(list_note_info.error);
-				}
-				return;
-			} else {
-				results.errors.push({
-					path: list_note_file.path,
-					code: "missing_other_plugin",
-					message:
-						"list-notes are not implemented without Dataview enabled",
-				});
-
-				return;
-			}
-
-			// TODO: Gonna have to read the contents of the file and parse it pretty manually...
-			// Dataview is much easier in this case
-			// list_note_cache?.listItems?.forEach((list_item) => {
-			// 	list_item
-			// });
-		},
-	);
-
-	all_files.dataview?.forEach((list_note_page) => {
+	const process_list_note_page = (list_note_page: IDataview.Page) => {
 		const list_note_info = get_list_note_info(
 			plugin,
-			list_note_page,
+			list_note_page.file.frontmatter,
 			list_note_page.file.path,
 		);
 		if (!list_note_info.ok) {
 			if (list_note_info.error) results.errors.push(list_note_info.error);
-			return;
+			return undefined;
 		}
 
 		// There are two possible approaches here. Dataview represents the list both flat and recursively
@@ -240,11 +211,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				const source_link = source_list_item.outlinks.at(0);
 				if (!source_link) return;
 
-				const [source_path, source_file] = resolve_relative_target_path(
+				const resolved_source = resolve_relative_target_path(
 					plugin.app,
 					source_link.path,
 					list_note_page.file.path,
 				);
+				if (!resolved_source) return;
+				const [source_path, source_file] = resolved_source;
 
 				// The node wouldn't have been added in the simple_loop if it wasn't resolved.
 				if (!source_file) {
@@ -313,12 +286,13 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 						return;
 					}
 
-					const [target_path, target_file] =
-						resolve_relative_target_path(
-							plugin.app,
-							target_link.path,
-							list_note_page.file.path,
-						);
+					const resolved_target = resolve_relative_target_path(
+						plugin.app,
+						target_link.path,
+						list_note_page.file.path,
+					);
+					if (!resolved_target) return;
+					const [target_path, target_file] = resolved_target;
 
 					// It's redundant, but easier to just safe_add_node here on the target
 					// Technically, the next iteration of page.file.lists will add it (as a source)
@@ -347,7 +321,42 @@ export const _add_explicit_edges_list_note: ExplicitEdgeBuilder = (
 				});
 			},
 		);
-	});
+	};
+
+	all_files.obsidian?.forEach(
+		({ file: list_note_file, cache: list_note_cache }) => {
+			if (!list_note_cache) return;
+
+			const list_note_info = get_list_note_info(
+				plugin,
+				list_note_cache.frontmatter,
+				list_note_file.path,
+			);
+			if (!list_note_info.ok) {
+				if (list_note_info.error) {
+					results.errors.push(list_note_info.error);
+				}
+				return;
+			}
+
+			if (!dataview_api) {
+				results.errors.push({
+					path: list_note_file.path,
+					code: "missing_other_plugin",
+					message:
+						"list-notes are not implemented without Dataview enabled",
+				});
+				return;
+			}
+
+			const list_note_page = dataview_api.page?.(
+				list_note_file.path,
+			) as IDataview.Page | undefined;
+			if (!list_note_page) return;
+
+			process_list_note_page(list_note_page);
+		},
+	);
 
 	return results;
 };

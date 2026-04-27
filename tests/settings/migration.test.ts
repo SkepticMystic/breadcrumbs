@@ -21,6 +21,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
+			_bc_migrations: { tree_ups_with_downs_default: true },
 			edge_fields: [
 				{ label: "up" },
 				{ label: "down" },
@@ -160,6 +161,34 @@ describe("migration", () => {
 					date_format: "yyyy-MM-dd 'DN'",
 					default_field: "next",
 					stretch_to_existing: false,
+					week: {
+						enabled: false,
+						date_format: "kkkk-'W'WW",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					month: {
+						enabled: false,
+						date_format: "yyyy-MM",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					quarter: {
+						enabled: false,
+						date_format: "yyyy-'Q'q",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					year: {
+						enabled: false,
+						date_format: "yyyy",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
 				},
 				johnny_decimal_note: {
 					enabled: false,
@@ -199,6 +228,12 @@ describe("migration", () => {
 							prev: ["prevs"],
 							next: ["nexts"],
 						},
+						period_rows: {
+							week: false,
+							month: false,
+							quarter: false,
+							year: false,
+						},
 					},
 				},
 				side: {
@@ -232,7 +267,7 @@ describe("migration", () => {
 						lock_view: false,
 						lock_path: "",
 						show_attributes: [],
-						field_group_labels: ["downs"],
+						field_group_labels: ["ups", "downs"],
 						edge_sort_id: {
 							field: "basename",
 							order: 1,
@@ -242,6 +277,8 @@ describe("migration", () => {
 							folder: false,
 							alias: false,
 						},
+						find_root: false,
+						find_root_field_group_labels: ["ups"],
 					},
 				},
 				codeblocks: {
@@ -324,6 +361,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
+			_bc_migrations: { tree_ups_with_downs_default: true },
 			explicit_edge_sources: {
 				list_note: {
 					default_neighbour_field: "",
@@ -346,6 +384,34 @@ describe("migration", () => {
 					date_format: "yyyy-MM-dd",
 					default_field: "next",
 					stretch_to_existing: false,
+					week: {
+						enabled: false,
+						date_format: "kkkk-'W'WW",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					month: {
+						enabled: false,
+						date_format: "yyyy-MM",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					quarter: {
+						enabled: false,
+						date_format: "yyyy-'Q'q",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
+					year: {
+						enabled: false,
+						date_format: "yyyy",
+						folder: "",
+						next_field: "next",
+						up_field: "up",
+					},
 				},
 				johnny_decimal_note: {
 					enabled: false,
@@ -384,6 +450,12 @@ describe("migration", () => {
 						field_group_labels: {
 							prev: ["prevs"],
 							next: ["nexts"],
+						},
+						period_rows: {
+							week: false,
+							month: false,
+							quarter: false,
+							year: false,
 						},
 					},
 				},
@@ -427,7 +499,9 @@ describe("migration", () => {
 						merge_fields: false,
 						lock_view: false,
 						lock_path: "",
-						field_group_labels: ["downs"],
+						field_group_labels: ["ups", "downs"],
+						find_root: false,
+						find_root_field_group_labels: ["ups"],
 					},
 				},
 				codeblocks: {

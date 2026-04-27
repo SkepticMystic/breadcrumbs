@@ -1,5 +1,6 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
+import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type { IDataview } from "src/external/dataview/interfaces";
 import type {
 	EdgeBuilderResults,
@@ -58,6 +59,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 	all_files,
 ) => {
 	const results: EdgeBuilderResults = { nodes: [], edges: [], errors: [] };
+	const dataview_api = dataview_plugin.get_api(plugin.app);
 
 	all_files.obsidian?.forEach(
 		({ file: dataview_note_file, cache: dataview_note_cache }) => {
@@ -73,7 +75,9 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 					results.errors.push(dataview_note_info.error);
 				}
 				return;
-			} else {
+			}
+
+			if (!dataview_api) {
 				results.errors.push({
 					code: "missing_other_plugin",
 					path: dataview_note_file.path,
@@ -83,30 +87,13 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 				return;
 			}
-		},
-	);
 
-	all_files.dataview?.forEach((dataview_note_page) => {
-		const dataview_note_path = dataview_note_page.file.path;
-
-		const dataview_note_info = get_dataview_note_info(
-			plugin,
-			dataview_note_page,
-			dataview_note_path,
-		);
-		if (!dataview_note_info.ok) {
-			if (dataview_note_info.error)
-				results.errors.push(dataview_note_info.error);
-			return;
-		}
-		const { field, query } = dataview_note_info.data;
-
+			const { field, query } = dataview_note_info.data;
 		let pages: IDataview.Page[] = [];
 		try {
-			/* eslint-disable */
-			pages = dataview_plugin.get_api()!.pages(query, dataview_note_path)
-				.values as IDataview.Page[];
-			/* eslint-enable */
+			pages = dataview_pages_to_plain_array(
+				dataview_api.pages(query, dataview_note_file.path),
+			) as IDataview.Page[];
 		} catch (error) {
 			log.warn(
 				"dataview-note > DV API error:",
@@ -115,7 +102,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 
 			return results.errors.push({
 				code: "invalid_field_value",
-				path: dataview_note_path,
+					path: dataview_note_file.path,
 				message: `dataview-note-query is not a valid dataview query: '${query}'`,
 			});
 		}
@@ -124,14 +111,15 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			// NOTE: I _believe_ we don't need to even safe_add_node, since dv will only return resolved notes
 			results.edges.push(
 				new GCEdgeData(
-					dataview_note_page.file.path,
+						dataview_note_file.path,
 					page.file.path,
 					field,
 					"dataview_note",
 				),
 			);
 		});
-	});
+		},
+	);
 
 	return results;
 };

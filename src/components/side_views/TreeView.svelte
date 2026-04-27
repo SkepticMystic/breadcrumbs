@@ -1,9 +1,11 @@
 <script lang="ts">
+	import type { BreadcrumbsSettings } from "src/interfaces/settings";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import FindRootButton from "../button/FindRootButton.svelte";
 	import LockViewButton from "../button/LockViewButton.svelte";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
@@ -12,6 +14,7 @@
 	import ShowAttributesSelectorMenu from "../selector/ShowAttributesSelectorMenu.svelte";
 	import {
 		FlatTraversalResult,
+		NoteGraph,
 		TraversalOptions,
 		TraversalPostprocessOptions,
 		create_edge_sorter,
@@ -19,6 +22,27 @@
 	import { untrack } from "svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
 	import { log } from "src/logger";
+	import { json_clone } from "src/utils/json_clone";
+
+	function walk_to_root(
+		graph: NoteGraph,
+		start: string,
+		up_field_labels: string[],
+	): string {
+		const visited = new Set<string>([start]);
+		let current = start;
+		for (let i = 0; i < 50; i++) {
+			const edges = graph
+				.get_filtered_outgoing_edges(current, up_field_labels)
+				.to_array();
+			if (edges.length === 0) break;
+			const next = edges[0].target_path(graph);
+			if (visited.has(next)) break;
+			visited.add(next);
+			current = next;
+		}
+		return current;
+	}
 
 	let {
 		plugin,
@@ -26,7 +50,24 @@
 		plugin: BreadcrumbsPlugin;
 	} = $props();
 	log.debug("Rendering Tree side view");
-	let settings = $state(structuredClone($state.snapshot(plugin.settings.views.side.tree)));
+
+	type TreeSideSettings = BreadcrumbsSettings["views"]["side"]["tree"];
+
+	let last_plugin: BreadcrumbsPlugin | null = null;
+	// svelte-ignore state_referenced_locally — seed valid $state for bindings; `$effect.pre` resyncs if `plugin` changes
+	let settings = $state<TreeSideSettings>(
+		json_clone(plugin.settings.views.side.tree),
+	);
+
+	$effect.pre(() => {
+		if (last_plugin !== plugin) {
+			last_plugin = plugin;
+			settings = json_clone(
+				$state.snapshot(plugin.settings.views.side.tree),
+			);
+		}
+	});
+
 	$effect(() => {
 		plugin.settings.views.side.tree = $state.snapshot(settings);
 		untrack(() => void plugin.saveSettings());
@@ -36,6 +77,13 @@
 		resolve_field_group_labels(
 			plugin.settings.edge_field_groups,
 			settings.field_group_labels,
+		),
+	);
+
+	let find_root_field_labels = $derived(
+		resolve_field_group_labels(
+			plugin.settings.edge_field_groups,
+			settings.find_root_field_group_labels,
 		),
 	);
 
@@ -50,31 +98,27 @@
 
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
 		if (active_file && plugin.graph.has_node(active_file.path)) {
+			let entry_path = active_file.path;
+
 			if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
 				log.debug("Using locked path for TreeView:", settings.lock_path);
+				entry_path = settings.lock_path!;
+			} else if (settings.find_root && find_root_field_labels.length > 0) {
+				entry_path = walk_to_root(plugin.graph, active_file.path, find_root_field_labels);
+				log.debug("find_root: walked up to", entry_path);
+			}
+
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
-					[settings.lock_path!],
+					[entry_path],
 					edge_field_labels,
 					5,
 					100,
-					!settings.merge_fields,
+					settings.merge_fields,
 					undefined,
 				),
 				new TraversalPostprocessOptions(sort, false),
 			);
-		}
-		return plugin.graph.rec_traverse_and_process(
-			new TraversalOptions(
-				[active_file!.path],
-				edge_field_labels,
-				5,
-				100,
-				!settings.merge_fields,
-				undefined,
-			),
-			new TraversalPostprocessOptions(sort, false),
-		);
 		} else {
 			return undefined;
 		}

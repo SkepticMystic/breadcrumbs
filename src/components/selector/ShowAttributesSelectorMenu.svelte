@@ -16,13 +16,17 @@
 		cls = "",
 	}: Props = $props();
 
+	let did_strip_excluded = $state(false);
+
 	// Remove any excluded items in the initial value
 	// This makes it cleaner to pass in EDGE_ATTRIBUTES as the starter, then immediately exclude some
-	if (exclude_attributes?.length) {
-		show_attributes = show_attributes.filter(
-			(v) => !exclude_attributes?.includes(v),
-		);
-	}
+	$effect.pre(() => {
+		if (did_strip_excluded) return;
+		const ex = exclude_attributes;
+		if (!ex?.length) return;
+		show_attributes = show_attributes.filter((v) => !ex.includes(v));
+		did_strip_excluded = true;
+	});
 </script>
 
 <button

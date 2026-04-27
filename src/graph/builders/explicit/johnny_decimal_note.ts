@@ -1,3 +1,4 @@
+import { normalizePath } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
 import type {
 	EdgeBuilderResults,
@@ -6,6 +7,7 @@ import type {
 import type BreadcrumbsPlugin from "src/main";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
+import { implied_pair_close_field } from "src/utils/implied_pair_close_field";
 import { ensure_not_ends_with } from "src/utils/strings";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
@@ -80,7 +82,9 @@ const handle_johnny_decimal_note = (
 	if (!target_note) return;
 
 	// target_path is now a full path, so we can check for it directly, instead of getFirstLinkpathDest
-	const target_file = plugin.app.vault.getFileByPath(target_note.path);
+	const target_file = plugin.app.vault.getFileByPath(
+		normalizePath(target_note.path),
+	);
 
 	// NOTE: I don't think this can ever happen... if target_note, then target_file must exist
 	if (!target_file) {
@@ -99,6 +103,18 @@ const handle_johnny_decimal_note = (
 			"johnny_decimal_note",
 		),
 	);
+
+	const return_field = implied_pair_close_field(plugin.settings, field);
+	if (return_field) {
+		results.edges.push(
+			new GCEdgeData(
+				target_note.path,
+				source_note.path,
+				return_field,
+				"johnny_decimal_note",
+			),
+		);
+	}
 };
 
 interface JohnnyDecimalNote {

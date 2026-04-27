@@ -28,11 +28,12 @@
 
 	let { plugin, options, errors, file_path }: Props = $props();
 
-	const sort = create_edge_sorter(
-		options.sort.field,
-		options.sort.order === -1,
+	let sort = $derived(
+		create_edge_sorter(options.sort.field, options.sort.order === -1),
 	);
-	const { show_node_options } = plugin.settings.views.codeblocks;
+	let show_node_options = $derived(
+		plugin.settings.views.codeblocks.show_node_options,
+	);
 
 	const DEFAULT_MAX_DEPTH = 5;
 

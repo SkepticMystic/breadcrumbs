@@ -14,12 +14,14 @@
 
 	let { plugin, all_paths }: Props = $props();
 
-	const node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		plugin.settings.views.page.trail.show_node_options,
+	let node_stringify_options = $derived(
+		to_node_stringify_options(
+			plugin.settings,
+			plugin.settings.views.page.trail.show_node_options,
+		),
 	);
 
-	const reversed = all_paths.map((path) => path.reverse_edges);
+	let reversed = $derived(all_paths.map((path) => path.reverse_edges));
 </script>
 
 <div class="BC-trail-view flex flex-col gap-1 px-3 py-2">

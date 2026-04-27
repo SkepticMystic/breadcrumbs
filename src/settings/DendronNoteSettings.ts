@@ -24,7 +24,7 @@ export const _add_settings_dendron_note = (
 
 	new_setting(containerEl, {
 		name: "Delimiter",
-		desc: "Delimiter to use to split the note name",
+		desc: "Character that splits the note basename into a Dendron-style hierarchy (for example - in git-pull vs . in git.pull). It must match what you actually use in filenames; the wrong delimiter means no Dendron edges are built.",
 		input: {
 			value: plugin.settings.explicit_edge_sources.dendron_note.delimiter,
 			cb: async (value) => {

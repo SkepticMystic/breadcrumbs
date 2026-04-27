@@ -55,20 +55,65 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 			}
 
 			view_parent.insertBefore(page_views_el, view_parent.firstChild);
+
+			// Source mode may have left these on .cm-scroller in older versions.
+			const preview_scroller = markdown_view.containerEl.querySelector(
+				".cm-scroller",
+			) as HTMLElement | null;
+			preview_scroller?.classList.remove("flex-col");
+			preview_scroller?.classList.remove("BC-cm-scroller-inline-page-views");
 		} else {
-			const view_parent =
-				markdown_view.containerEl.querySelector(".cm-scroller");
-			if (!view_parent) {
-				log.info("redraw_page_views > No view_parent (mode=source)");
+			const cm_scroller = markdown_view.containerEl.querySelector(
+				".cm-scroller",
+			) as HTMLElement | null;
+			if (!cm_scroller) {
+				log.info("redraw_page_views > No cm-scroller (mode=source)");
 				return;
 			}
 
-			// See here for an in-depth discussion on why it's done this way:
-			// https://discord.com/channels/686053708261228577/931552763467411487/1198377191994564621
-			// But basically, this shouldn't affect anything, and it's by far the easiest way to do it
-			view_parent.addClass("flex-col");
+			// Never add Tailwind `flex-col` on .cm-scroller — it breaks CM6 drag-selection autoscroll (#660).
+			cm_scroller.classList.remove("flex-col");
+			cm_scroller.classList.remove("BC-cm-scroller-inline-page-views");
 
-			view_parent.insertBefore(page_views_el, view_parent.firstChild);
+			const pin_page_views = plugin.settings.views.page.all.sticky;
+
+			if (pin_page_views) {
+				// Full-width row above `.cm-editor` (not beside gutters inside the editor flex row).
+				const source_view =
+					markdown_view.containerEl.querySelector(
+						".markdown-source-view.mod-cm6",
+					) ??
+					markdown_view.containerEl.querySelector(".markdown-source-view");
+				const cm_editor =
+					markdown_view.containerEl.querySelector(".cm-editor");
+
+				if (
+					source_view &&
+					cm_editor &&
+					source_view.contains(cm_editor)
+				) {
+					source_view.insertBefore(page_views_el, cm_editor);
+				} else {
+					const host = cm_scroller.parentElement;
+					if (!host) {
+						log.info("redraw_page_views > No parent of cm-scroller");
+						return;
+					}
+					host.insertBefore(page_views_el, cm_scroller);
+				}
+			} else {
+				// Inside the scroller so the trail scrolls with the note; layout class wraps a full-width row.
+				cm_scroller.classList.add("BC-cm-scroller-inline-page-views");
+				const gutters = cm_scroller.querySelector(".cm-gutters");
+				if (gutters) {
+					gutters.after(page_views_el);
+				} else {
+					cm_scroller.insertBefore(
+						page_views_el,
+						cm_scroller.firstChild,
+					);
+				}
+			}
 		}
 
 		// Render the component into the container

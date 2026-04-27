@@ -16,20 +16,51 @@
 
 	let { plugin, all_paths }: Props = $props();
 
-	const reversed = all_paths.map((path) => path.reverse_edges);
-
-	// this should happen in wasm
-	const square = ensure_square_array(reversed, null, true);
-
-	// this as well
-	const col_runs = transpose(square).map((col) =>
-		gather_by_runs(col, (e) => (e ? e.target_path(plugin.graph) : null)),
+	let node_stringify_options = $derived(
+		to_node_stringify_options(
+			plugin.settings,
+			plugin.settings.views.page.trail.show_node_options,
+		),
 	);
 
-	const node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		plugin.settings.views.page.trail.show_node_options,
-	);
+	let trail_grid = $derived.by(() => {
+		// Precompute target-path strings once to avoid repeated WASM calls in sort.
+		const path_keys = all_paths.map((path) =>
+			path.reverse_edges.map((e) => e.target_path(plugin.graph)),
+		);
+		const max_len = Math.max(0, ...path_keys.map((k) => k.length));
+		// Left-pad to match ensure_square_array(pre=true) alignment.
+		const padded_keys = path_keys.map((keys) => {
+			const pad = max_len - keys.length;
+			return [...Array<string | null>(pad).fill(null), ...keys];
+		});
+
+		// Sort right-to-left (immediate parent first) so paths sharing ancestors
+		// are adjacent, maximising gather_by_runs rowspans. null sorts last.
+		const sorted = all_paths
+			.map((_, i) => i)
+			.sort((ai, bi) => {
+				for (let col = max_len - 1; col >= 0; col--) {
+					const av = padded_keys[ai][col];
+					const bv = padded_keys[bi][col];
+					if (av === bv) continue;
+					if (av === null) return 1;
+					if (bv === null) return -1;
+					return av < bv ? -1 : 1;
+				}
+				return 0;
+			})
+			.map((i) => all_paths[i]);
+
+		const reversed = sorted.map((path) => path.reverse_edges);
+		const square = ensure_square_array(reversed, null, true);
+		const col_runs = transpose(square).map((col) =>
+			gather_by_runs(col, (e) =>
+				e ? e.target_path(plugin.graph) : null,
+			),
+		);
+		return { square, col_runs };
+	});
 </script>
 
 <!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here
@@ -37,11 +68,11 @@
 <div
 	class="BC-trail-view grid"
 	style="grid-template-rows: min-content;
-grid-template-columns: {'1fr '.repeat(square.at(0)?.length ?? 0)};"
+grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 >
-	{#each col_runs as col, j}
+	{#each trail_grid.col_runs as col, j}
 		{#each col as { first, last }}
-			{@const edge = square[first][j]}
+			{@const edge = trail_grid.square[first][j]}
 
 			<div
 				class="BC-trail-view-item flex"

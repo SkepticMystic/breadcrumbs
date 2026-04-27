@@ -11,8 +11,10 @@
 
 	let { plugin, file_path }: Props = $props();
 
-	const grid_enabled = plugin.settings.views.page.trail.enabled;
-	const prev_next_enabled = plugin.settings.views.page.prev_next.enabled;
+	let grid_enabled = $derived(plugin.settings.views.page.trail.enabled);
+	let prev_next_enabled = $derived(
+		plugin.settings.views.page.prev_next.enabled,
+	);
 </script>
 
 {#if grid_enabled || prev_next_enabled}

@@ -1,15 +1,25 @@
-import {
-	getAPI as get_api,
-	isPluginEnabled as is_enabled,
-} from "obsidian-dataview";
+import type { App } from "obsidian";
+import { getAPI, isPluginEnabled, type DataviewApi } from "obsidian-dataview";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+
+function get_api(app: App): DataviewApi | undefined {
+	return getAPI(app);
+}
+
+function is_enabled(app: App): boolean {
+	return isPluginEnabled(app);
+}
+
+/** `FullIndex.initialized` is set when the vault walk finishes (0.5.x). */
+function dataview_index_already_ready(api: DataviewApi | undefined): boolean {
+	return Boolean(api?.index?.initialized);
+}
 
 function await_if_enabled(plugin: BreadcrumbsPlugin) {
 	return new Promise<void>((resolve) => {
 		if (is_enabled(plugin.app)) {
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			if (get_api(plugin.app)?.index.initialized) {
+			if (dataview_index_already_ready(get_api(plugin.app))) {
 				log.debug("dataview > already initialized");
 				resolve();
 			}
@@ -30,6 +40,8 @@ function await_if_enabled(plugin: BreadcrumbsPlugin) {
 		}
 	});
 }
+
+export type { DataviewApi } from "obsidian-dataview";
 
 export const dataview_plugin = {
 	get_api,

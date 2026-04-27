@@ -18,7 +18,6 @@
 	import CopyToClipboardButton from "../button/CopyToClipboardButton.svelte";
 	import CodeblockErrors from "./CodeblockErrors.svelte";
 	import { to_node_stringify_options } from "src/graph/utils";
-	import { debug } from "console";
 
 	interface Props {
 		plugin: BreadcrumbsPlugin;
@@ -29,13 +28,14 @@
 
 	let { plugin, options, errors, file_path }: Props = $props();
 
-	const sort = create_edge_sorter(
-		options.sort.field,
-		options.sort.order === -1,
+	let sort = $derived(
+		create_edge_sorter(options.sort.field, options.sort.order === -1),
 	);
-	const node_stringify_options = to_node_stringify_options(
-		plugin.settings,
-		plugin.settings.views.codeblocks.show_node_options,
+	let node_stringify_options = $derived(
+		to_node_stringify_options(
+			plugin.settings,
+			plugin.settings.views.codeblocks.show_node_options,
+		),
 	);
 
 	const DEFAULT_MAX_DEPTH = 5;

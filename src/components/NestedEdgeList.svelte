@@ -28,14 +28,18 @@
 		show_attributes,
 	}: Props = $props();
 
-	let opens = $state(Array(items.length).fill(true));
+	let opens = $state<boolean[]>([]);
 
 	$effect(() => {
+		const n = items.length;
+		if (opens.length !== n) {
+			opens = Array(n).fill(true);
+		}
 		if (open_signal === true) {
-			opens = Array(items.length).fill(true);
+			opens = Array(n).fill(true);
 			open_signal = null;
 		} else if (open_signal === false) {
-			opens = Array(items.length).fill(false);
+			opens = Array(n).fill(false);
 			open_signal = null;
 		}
 	});

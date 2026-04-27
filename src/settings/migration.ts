@@ -496,5 +496,24 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	}
 
 	// !SECTION
+	// Tree used to default to only `downs`, which hides Dendron parent edges (field `up` in `ups`).
+	type WithInternalMigrations = BreadcrumbsSettings & {
+		_bc_migrations?: { tree_ups_with_downs_default?: boolean };
+	};
+	const settings_m = settings as WithInternalMigrations;
+	const migrations = (settings_m._bc_migrations ??= {});
+	if (!migrations.tree_ups_with_downs_default) {
+		const tl = settings.views.side.tree.field_group_labels;
+		if (
+			Array.isArray(tl) &&
+			tl.length === 1 &&
+			tl[0] === "downs" &&
+			settings.edge_field_groups.some((g) => g.label === "ups")
+		) {
+			settings.views.side.tree.field_group_labels = ["ups", "downs"];
+		}
+		migrations.tree_ups_with_downs_default = true;
+	}
+
 	return settings;
 }
