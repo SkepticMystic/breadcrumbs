@@ -103,16 +103,13 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 				}
 			} else {
 				// Inside the scroller so the trail scrolls with the note; layout class wraps a full-width row.
+				// Insert as the first child so BC-page-views occupies row 1 (flex: 0 0 100%),
+				// leaving gutters and content to lay out normally on row 2.
 				cm_scroller.classList.add("BC-cm-scroller-inline-page-views");
-				const gutters = cm_scroller.querySelector(".cm-gutters");
-				if (gutters) {
-					gutters.after(page_views_el);
-				} else {
-					cm_scroller.insertBefore(
-						page_views_el,
-						cm_scroller.firstChild,
-					);
-				}
+				cm_scroller.insertBefore(
+					page_views_el,
+					cm_scroller.firstChild,
+				);
 			}
 		}
 
