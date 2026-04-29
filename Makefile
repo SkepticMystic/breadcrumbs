@@ -41,3 +41,4 @@ version_beta:
 version_prod:
 		bun run version-bump.mjs
 		git add manifest.json versions.json package.json
+
