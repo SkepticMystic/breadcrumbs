@@ -264,6 +264,7 @@ describe("migration", () => {
 					tree: {
 						collapse: true,
 						merge_fields: false,
+						default_depth: 5,
 						lock_view: false,
 						lock_path: "",
 						show_attributes: [],
@@ -497,6 +498,7 @@ describe("migration", () => {
 							order: 1,
 						},
 						merge_fields: false,
+						default_depth: 5,
 						lock_view: false,
 						lock_path: "",
 						field_group_labels: ["ups", "downs"],

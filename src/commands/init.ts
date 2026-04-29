@@ -13,6 +13,7 @@ import { freeze_implied_edges_to_note } from "./freeze_edges";
 import { jump_to_neighbour } from "./jump";
 import { get_graph_stats } from "./stats";
 import { thread } from "./thread";
+import { redraw_page_views } from "src/views/page";
 
 export function init_all_commands(plugin: BreadcrumbsPlugin) {
 	plugin.addCommand({
@@ -159,5 +160,19 @@ export function init_all_commands(plugin: BreadcrumbsPlugin) {
 					plugin.settings.commands.thread.default_options,
 				),
 		});
+	});
+
+	plugin.addCommand({
+		id: "breadcrumbs:toggle-sticky-page-views",
+		name: "Toggle sticky page views",
+		callback: async () => {
+			plugin.settings.views.page.all.sticky =
+				!plugin.settings.views.page.all.sticky;
+			await plugin.saveSettings();
+			redraw_page_views(plugin);
+			new Notice(
+				`Page views sticky: ${plugin.settings.views.page.all.sticky ? "on" : "off"}`,
+			);
+		},
 	});
 }

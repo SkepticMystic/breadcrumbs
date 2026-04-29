@@ -198,6 +198,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 				collapse: false,
 				show_attributes: [],
 				merge_fields: false,
+				default_depth: 5,
 				lock_view: false,
 				lock_path: "",
 				// Include `ups` so Dendron hierarchy (default field `up`) shows parents in the tree.
