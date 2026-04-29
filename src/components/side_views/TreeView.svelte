@@ -96,6 +96,11 @@
 
 	let active_file = $derived($active_file_store);
 
+	let depth = $state(0);
+	$effect(() => {
+		depth = settings.default_depth;
+	});
+
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
 		if (active_file && plugin.graph.has_node(active_file.path)) {
 			let entry_path = active_file.path;
@@ -112,7 +117,7 @@
 				new TraversalOptions(
 					[entry_path],
 					edge_field_labels,
-					5,
+					depth,
 					100,
 					settings.merge_fields,
 					undefined,
@@ -180,6 +185,32 @@
 				edge_field_groups={plugin.settings.edge_field_groups}
 				bind:field_group_labels={settings.field_group_labels}
 			/>
+
+			<div class="flex items-center gap-1">
+				<button
+					class="clickable-icon nav-action-button aspect-square text-lg"
+					aria-label="Decrease max depth"
+					disabled={depth <= 1}
+					onclick={() => (depth = Math.max(1, depth - 1))}
+				>
+					-
+				</button>
+
+				<span
+					class="font-mono text-sm"
+					aria-label={tree?.hit_depth_limit ? "Some nodes have been truncated" : ""}
+				>
+					{depth}{tree?.hit_depth_limit ? "+" : ""}
+				</span>
+
+				<button
+					class="clickable-icon nav-action-button aspect-square text-lg"
+					aria-label="Increase max depth"
+					onclick={() => (depth = depth + 1)}
+				>
+					+
+				</button>
+			</div>
 		</div>
 	</div>
 
