@@ -34,5 +34,10 @@ build:
 		bun run build || exit 1
 		npm i
 
-beta:
- 		npm run version:beta
+version_beta:
+		bun run version-bump-beta.mjs
+		git add manifest-beta.json versions.json package.json
+
+version_prod:
+		bun run version-bump.mjs
+		git add manifest.json versions.json package.json

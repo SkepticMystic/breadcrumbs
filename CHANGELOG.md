@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## 4.X
 
+### [4.6.1](https://github.com/SkepticMystic/breadcrumbs/compare/4.6.0...4.6.1) (2026-04-29)
+
 ### [4.6.0](https://github.com/SkepticMystic/breadcrumbs/compare/4.5.0...4.6.0) (2026-04-28)
 
 ### [4.5.0](https://github.com/SkepticMystic/breadcrumbs/compare/4.4.4...4.5.0) (2026-04-21)

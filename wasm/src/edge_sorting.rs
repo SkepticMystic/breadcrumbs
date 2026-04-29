@@ -13,7 +13,9 @@ use crate::{
 #[derive(Clone, Debug)]
 pub enum SortField {
     Path,
+    PathNatural,
     Basename,
+    BasenameNatural,
     EdgeType,
     Implied,
     Neighbour(String),
@@ -25,7 +27,9 @@ impl FromStr for SortField {
     fn from_str(s: &str) -> Result<Self> {
         match s {
             "path" => Ok(SortField::Path),
+            "path_natural" => Ok(SortField::PathNatural),
             "basename" => Ok(SortField::Basename),
+            "basename_natural" => Ok(SortField::BasenameNatural),
             "field" => Ok(SortField::EdgeType),
             "explicit" => Ok(SortField::Implied),
             s if s.starts_with("neighbour-field:") => Ok(SortField::Neighbour(
@@ -122,7 +126,9 @@ impl EdgeSorter {
     fn get_edge_comparer<'a>(&self, graph: &'a NoteGraph) -> Comparer<'a> {
         match self.field.clone() {
             SortField::Path => PathComparer.into(),
+            SortField::PathNatural => PathNaturalComparer.into(),
             SortField::Basename => BasenameComparer.into(),
+            SortField::BasenameNatural => BasenameNaturalComparer.into(),
             SortField::EdgeType => EdgeTypeComparer.into(),
             SortField::Implied => ImpliedComparer.into(),
             SortField::Neighbour(neighbour_field) => {
@@ -165,10 +171,54 @@ pub trait EdgeComparer {
 #[enum_dispatch(EdgeComparer)]
 pub enum Comparer<'a> {
     PathComparer,
+    PathNaturalComparer,
     BasenameComparer,
+    BasenameNaturalComparer,
     EdgeTypeComparer,
     ImpliedComparer,
     NeighbourOrdering(NeighbourComparer<'a>),
+}
+
+/// Compare two strings using natural sort order: numeric segments are compared
+/// numerically so that "note 2" < "note 10" rather than "note 10" < "note 2".
+fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    let mut a_chars = a.chars().peekable();
+    let mut b_chars = b.chars().peekable();
+
+    loop {
+        let a_peek = a_chars.peek().copied();
+        let b_peek = b_chars.peek().copied();
+
+        match (a_peek, b_peek) {
+            (None, None) => return std::cmp::Ordering::Equal,
+            (None, _) => return std::cmp::Ordering::Less,
+            (_, None) => return std::cmp::Ordering::Greater,
+            (Some(a_ch), Some(b_ch)) if a_ch.is_ascii_digit() && b_ch.is_ascii_digit() => {
+                let mut a_num = 0u64;
+                while a_chars.peek().map_or(false, |c| c.is_ascii_digit()) {
+                    a_num = a_num * 10 + (a_chars.next().unwrap() as u64 - '0' as u64);
+                }
+                let mut b_num = 0u64;
+                while b_chars.peek().map_or(false, |c| c.is_ascii_digit()) {
+                    b_num = b_num * 10 + (b_chars.next().unwrap() as u64 - '0' as u64);
+                }
+                match a_num.cmp(&b_num) {
+                    std::cmp::Ordering::Equal => continue,
+                    other => return other,
+                }
+            }
+            (Some(a_ch), Some(b_ch)) => {
+                match a_ch.cmp(&b_ch) {
+                    std::cmp::Ordering::Equal => {
+                        a_chars.next();
+                        b_chars.next();
+                        continue;
+                    }
+                    other => return other,
+                }
+            }
+        }
+    }
 }
 
 #[derive(Default)]
@@ -193,6 +243,32 @@ impl EdgeComparer for BasenameComparer {
         let b_basename = b_target.split('/').next_back().unwrap();
 
         a_basename.cmp(b_basename)
+    }
+}
+
+#[derive(Default)]
+pub struct PathNaturalComparer;
+
+impl EdgeComparer for PathNaturalComparer {
+    fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
+        natural_cmp(
+            a.target_path_ref(graph).unwrap(),
+            b.target_path_ref(graph).unwrap(),
+        )
+    }
+}
+
+#[derive(Default)]
+pub struct BasenameNaturalComparer;
+
+impl EdgeComparer for BasenameNaturalComparer {
+    fn compare(&self, graph: &NoteGraph, a: &EdgeStruct, b: &EdgeStruct) -> std::cmp::Ordering {
+        let a_target = a.target_path_ref(graph).unwrap();
+        let b_target = b.target_path_ref(graph).unwrap();
+        let a_basename = a_target.split('/').next_back().unwrap();
+        let b_basename = b_target.split('/').next_back().unwrap();
+
+        natural_cmp(a_basename, b_basename)
     }
 }
 
