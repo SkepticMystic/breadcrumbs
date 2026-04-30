@@ -45,7 +45,14 @@ function collect_period_notes(cfg: PeriodNoteConfig, all_files: AllFiles): Perio
 		notes.push({ date, path: file.path, basename: file.name, ext: file.ext, folder: file.folder });
 	});
 
-	return notes.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+	const seen = new Set<string>();
+	return notes
+		.filter((n) => {
+			if (seen.has(n.path)) return false;
+			seen.add(n.path);
+			return true;
+		})
+		.sort((a, b) => a.date.toMillis() - b.date.toMillis());
 }
 
 function add_period_edges(
@@ -207,7 +214,14 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		});
 	});
 
-	date_notes
+	const seen_paths = new Set<string>();
+	const unique_date_notes = date_notes.filter((n) => {
+		if (seen_paths.has(n.path)) return false;
+		seen_paths.add(n.path);
+		return true;
+	});
+
+	unique_date_notes
 		.sort((a, b) => a.date.toMillis() - b.date.toMillis())
 		.forEach((date_note, i) => {
 			const basename_plus_one_day = date_note.date
@@ -238,7 +252,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 				);
 			}
 
-			const next_date_note = date_notes.at(i + 1);
+			const next_date_note = unique_date_notes.at(i + 1);
 			const next_date_note_folder = next_date_note?.folder;
 			const next_date_note_basename = next_date_note?.basename;
 			const target_basename = date_note_settings.stretch_to_existing
