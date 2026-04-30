@@ -42,7 +42,5 @@ version_prod:
 release_beta:
 		bun run version-bump-beta.mjs
 		git add manifest-beta.json versions.json package.json
-		git commit -m "release:beta"
-		git push
 		git tag -a $npm_package_version -m "$npm_package_version"
 		git push --tags
