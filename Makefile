@@ -1,7 +1,6 @@
-.PHONY : version version_beta version_prod local_build local_test build
+.PHONY: dev test build version version_beta version_prod
 
-
-local_build:
+dev:
 		bun install -g wasm-pack
 		cd wasm
 		rustup override set stable
@@ -12,7 +11,7 @@ local_build:
 		bun run build || exit 1
 		bun run dev
 
-local_test:
+test:
 		bun install -g wasm-pack
 		cd wasm
 		rustup override set stable
