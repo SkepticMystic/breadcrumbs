@@ -82,7 +82,7 @@ describe("sad", () => {
 		const issue = parsed.error.issues[0];
 
 		t.expect(parsed.success).toEqual(false);
-		t.expect(issue.code).toEqual("invalid_type");
+		t.expect(issue.code).toEqual("invalid_value"); // Zod 4: enum type errors use invalid_value
 		t.expect(issue.path).toStrictEqual(["type"]);
 	});
 
@@ -106,7 +106,7 @@ describe("sad", () => {
 		const issue = parsed.error.issues[0];
 
 		t.expect(parsed.success).toEqual(false);
-		t.expect(issue.code).toEqual("invalid_enum_value");
+		t.expect(issue.code).toEqual("invalid_value"); // Zod 4: invalid_enum_value renamed
 		t.expect(issue.path).toStrictEqual(["type"]);
 	});
 
@@ -118,7 +118,7 @@ describe("sad", () => {
 		const issue = parsed.error.issues[0];
 
 		t.expect(parsed.success).toEqual(false);
-		t.expect(issue.code).toEqual("invalid_enum_value");
+		t.expect(issue.code).toEqual("custom"); // Zod 4: dynamic_enum_schema uses custom issues
 		t.expect(issue.path).toStrictEqual(["fields", 0]);
 	});
 
@@ -213,7 +213,7 @@ describe("sad", () => {
 
 			// Implication is that a single string is interpreted as an edge field with default asc order
 			// ie. it's a sort.field problem, specifically
-			t.expect(issue.code).toEqual("invalid_enum_value");
+			t.expect(issue.code).toEqual("custom"); // Zod 4: dynamic_enum_schema uses custom issues
 			t.expect(issue.path).toStrictEqual(["sort", "field"]);
 		});
 
@@ -226,7 +226,7 @@ describe("sad", () => {
 
 			const issue = parsed.error.issues[0];
 
-			t.expect(issue.code).toEqual("invalid_enum_value");
+			t.expect(issue.code).toEqual("custom"); // Zod 4: dynamic_enum_schema uses custom issues
 			t.expect(issue.path).toStrictEqual(["sort", "field"]);
 		});
 

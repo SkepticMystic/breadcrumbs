@@ -26,7 +26,6 @@ const FIELDS = [
 	"mermaid-renderer",
 	"mermaid-curve",
 ] as const;
-type CodeblockField = (typeof FIELDS)[number];
 
 interface InputData {
 	edge_fields: EdgeField[];
@@ -169,7 +168,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.array(
 					z
 						.number({
-							invalid_type_error: `Expected a number, but got: \`${input.depth}\` (${typeof input.depth}). _Try using a number (integer)._
+							message: `Expected a number, but got: \`${input.depth}\` (${typeof input.depth}). _Try using a number (integer)._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\``,
 						})
 						// NOTE: Doesn't do what I expect. A codeblock with no depth field gets blocked on this check...
@@ -183,7 +182,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 **Example**: \`depth: [0]\`, or possibly: \`depth: [${typeof input.depth === "number" ? -1 * input.depth : input.depth}\`]`,
 						),
 					{
-						invalid_type_error: `Expected a YAML list (array) of one or two numbers, but got: \`${input.depth}\` (${typeof input.depth}).  _Try wrapping it in square brackets._
+						message: `Expected a YAML list (array) of one or two numbers, but got: \`${input.depth}\` (${typeof input.depth}).  _Try wrapping it in square brackets._
 **Example**: \`depth: [0]\`, or \`depth: [0, 3]\`, or possibly: \`depth: [${input.depth}]\``,
 					},
 				)
@@ -211,16 +210,15 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				.default([0, Infinity]),
 
 			sort: z
-				.preprocess(
-					(v) => {
-						if (typeof v === "string") {
-							const [field, order] = v.split(" ");
-
-							return { field, order: order ?? "asc" };
-						} else {
-							return v;
-						}
-					},
+				.unknown()
+				.transform((v) => {
+					if (typeof v === "string") {
+						const [field, order] = v.split(" ");
+						return { field, order: order ?? "asc" };
+					}
+					return v;
+				})
+				.pipe(
 					z.object({
 						// TODO: Use a custom zod schema to retain string template literals here
 						// https://github.com/colinhacks/zod?tab=readme-ov-file#custom-schemas
@@ -235,27 +233,15 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						),
 
 						order: z
-							.union(
-								[
-									z.enum(["asc", "desc"]),
-									// Something very weird happening...
-									// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
-									// So when the `sort` field of the second comes in for parsing,
-									// It's already been transformed, and so sort.order is a number, not a string...
-									z.literal(1),
-									z.literal(-1),
-								],
-								{
-									// SOURCE: https://github.com/colinhacks/zod/issues/117#issuecomment-1595801389
-									errorMap: (_err, ctx) => ({
-										message: zod.error.invalid_enum(
-											"sort.order" as CodeblockField,
-											["asc", "desc"],
-											ctx.data,
-										),
-									}),
-								},
-							)
+							.union([
+								z.enum(["asc", "desc"]),
+								// Something very weird happening...
+								// If a note has two codeblocks, the one that gets rendered first seems to override config in the other?
+								// So when the `sort` field of the second comes in for parsing,
+								// It's already been transformed, and so sort.order is a number, not a string...
+								z.literal(1),
+								z.literal(-1),
+							])
 							.transform((v) =>
 								v === "asc" ? 1 : v === "desc" ? -1 : v,
 							),
@@ -267,7 +253,8 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 				}),
 		})
 		.passthrough()
-		.default({})
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+		.default({} as any)
 
 		.transform((options) => {
 			// If field-groups are given, resolve them to their fields
@@ -297,11 +284,7 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					message: `Cannot specify both a mermaid curve and a renderer. _Try removing one of the fields._
 **Example**: \`mermaid-curve: ${options["mermaid-curve"]}\`, or \`mermaid-renderer: ${options["mermaid-renderer"]}\``,
 				});
-
-				return false;
 			}
-
-			return true;
 		});
 };
 

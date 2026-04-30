@@ -7,7 +7,6 @@ import { new_setting } from "src/utils/settings";
 import { mount } from "svelte";
 import ShowAttributesSettingItem from "../components/settings/ShowAttributesSettingItem.svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
-import { Notice } from "obsidian";
 
 export const _add_settings_tree_view = (
 	plugin: BreadcrumbsPlugin,

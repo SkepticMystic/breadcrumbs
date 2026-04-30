@@ -1,7 +1,7 @@
 import { parseYaml } from "obsidian";
 import { dataview_plugin } from "src/external/dataview";
-import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type { IDataview } from "src/external/dataview/interfaces";
+import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type { BreadcrumbsError } from "src/interfaces/graph";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";

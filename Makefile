@@ -7,8 +7,7 @@ local_build:
 		bun install
 		bun run wasm:build || exit 1
 		bun run build || exit 1
-		npm i
-		npm run dev
+		bun run dev
 
 local_test:
 		bun install -g wasm-pack
@@ -20,8 +19,7 @@ local_test:
 		bun run wasm:build || exit 1
 		bun run build || exit 1
 		bun run test || exit 1
-		npm i
-		npm run dev
+		bun run dev
 
 build:
 		bun install -g wasm-pack
@@ -32,7 +30,6 @@ build:
 		bun install
 		bun run wasm:build || exit 1
 		bun run build || exit 1
-		npm i
 
 version_beta:
 		bun run version-bump-beta.mjs
@@ -41,4 +38,3 @@ version_beta:
 version_prod:
 		bun run version-bump.mjs
 		git add manifest.json versions.json package.json
-

@@ -46,6 +46,9 @@ impl NoteGraph {
                     "Node \"{entry_node}\" not found"
                 )))?;
 
+            let mut visited: HashSet<NGNodeIndex> = HashSet::new();
+            visited.insert(start_node);
+
             for edge in self.graph.edges(start_node) {
                 if !edge_matches_edge_filter(edge.weight(), Some(&edge_types)) {
                     continue;
@@ -54,6 +57,10 @@ impl NoteGraph {
                 let target = edge.target();
 
                 if let Some(ref allowed) = allowed_targets && !allowed.contains(&target) {
+                    continue;
+                }
+
+                if visited.contains(&target) {
                     continue;
                 }
 
@@ -67,6 +74,8 @@ impl NoteGraph {
 
                 traversal_count += 1;
 
+                visited.insert(target);
+
                 if options.separate_edges {
                     result.push(self.int_rec_traverse(
                         target,
@@ -77,6 +86,7 @@ impl NoteGraph {
                         &mut traversal_count,
                         options.max_traversal_count,
                         &allowed_targets,
+                        &mut visited,
                     )?);
                 } else {
                     result.push(self.int_rec_traverse(
@@ -88,6 +98,7 @@ impl NoteGraph {
                         &mut traversal_count,
                         options.max_traversal_count,
                         &allowed_targets,
+                        &mut visited,
                     )?);
                 }
             }
@@ -138,6 +149,7 @@ impl NoteGraph {
         traversal_count: &mut u32,
         max_traversal_count: u32,
         allowed_targets: &Option<HashSet<NGNodeIndex>>,
+        visited: &mut HashSet<NGNodeIndex>,
     ) -> Result<TraversalData> {
         let mut new_children = Vec::new();
         let stop_traversal = depth >= max_depth || *traversal_count >= max_traversal_count;
@@ -150,6 +162,10 @@ impl NoteGraph {
                     let target = outgoing_edge.target();
 
                     if let Some(allowed) = allowed_targets && !allowed.contains(&target) {
+                        continue;
+                    }
+
+                    if visited.contains(&target) {
                         continue;
                     }
 
@@ -167,6 +183,8 @@ impl NoteGraph {
                         return Err(NoteGraphError::new("Traversal exceeded limit of 10,000 nodes. Try decreasing the max depth."));
                     }
 
+                    visited.insert(target);
+
                     new_children.push(self.int_rec_traverse(
                         target,
                         edge_struct,
@@ -176,6 +194,7 @@ impl NoteGraph {
                         traversal_count,
                         max_traversal_count,
                         allowed_targets,
+                        visited,
                     )?)
                 }
             }

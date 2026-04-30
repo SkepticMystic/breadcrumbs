@@ -5,7 +5,9 @@
 	import { resolve_field_group_labels } from "src/utils/edge_fields";
 	import NestedEdgeList from "../NestedEdgeList.svelte";
 	import ChevronCollapseButton from "../button/ChevronCollapseButton.svelte";
+	import ChevronOpener from "../button/ChevronOpener.svelte";
 	import FindRootButton from "../button/FindRootButton.svelte";
+	import ObsidianLink from "../ObsidianLink.svelte";
 	import LockViewButton from "../button/LockViewButton.svelte";
 	import MergeFieldsButton from "../button/MergeFieldsButton.svelte";
 	import RebuildGraphButton from "../button/RebuildGraphButton.svelte";
@@ -101,18 +103,30 @@
 		depth = settings.default_depth;
 	});
 
+	let entry_path = $derived.by(() => {
+		if (!active_file || !plugin.graph.has_node(active_file.path)) return undefined;
+		if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
+			log.debug("Using locked path for TreeView:", settings.lock_path);
+			return settings.lock_path!;
+		} else if (settings.find_root && find_root_field_labels.length > 0) {
+			const root = walk_to_root(plugin.graph, active_file.path, find_root_field_labels);
+			log.debug("find_root: walked up to", root);
+			return root;
+		}
+		return active_file.path;
+	});
+
+	let entry_node_data = $derived(
+		entry_path ? plugin.graph.get_node(entry_path) : undefined,
+	);
+
+	let root_open = $state(true);
+	$effect(() => {
+		root_open = !settings.collapse;
+	});
+
 	let tree: FlatTraversalResult | undefined = $derived.by(() => {
-		if (active_file && plugin.graph.has_node(active_file.path)) {
-			let entry_path = active_file.path;
-
-			if (settings.lock_view && plugin.graph.has_node(settings.lock_path!)) {
-				log.debug("Using locked path for TreeView:", settings.lock_path);
-				entry_path = settings.lock_path!;
-			} else if (settings.find_root && find_root_field_labels.length > 0) {
-				entry_path = walk_to_root(plugin.graph, active_file.path, find_root_field_labels);
-				log.debug("find_root: walked up to", entry_path);
-			}
-
+		if (entry_path) {
 			return plugin.graph.rec_traverse_and_process(
 				new TraversalOptions(
 					[entry_path],
@@ -217,14 +231,45 @@
 	<div class="BC-tree-view-items">
 		{#key sorted_tree}
 			{#if sorted_tree.tree && !sorted_tree.tree.is_empty()}
-				<NestedEdgeList
-					{plugin}
-					{node_stringify_options}
-					show_attributes={settings.show_attributes}
-					data={sorted_tree.tree}
-					items={sorted_tree.tree.entry_nodes}
-					open_signal={!settings.collapse}
-				/>
+				{#if entry_node_data && entry_path}
+					<details class="tree-item" bind:open={root_open}>
+						<summary class="tree-item-self is-clickable flex items-center">
+							<div class="tree-item-icon collapse-icon mod-collapsible">
+								<ChevronOpener open={root_open} />
+							</div>
+							<div class="tree-item-inner">
+								<ObsidianLink
+									{plugin}
+									display={node_stringify_options.stringify_node(entry_node_data)}
+									path={entry_path}
+									resolved={true}
+									cls="tree-item-inner-text"
+								/>
+							</div>
+						</summary>
+						{#if root_open}
+							<div class="tree-item-children">
+								<NestedEdgeList
+									{plugin}
+									{node_stringify_options}
+									show_attributes={settings.show_attributes}
+									data={sorted_tree.tree}
+									items={sorted_tree.tree.entry_nodes}
+									open_signal={!settings.collapse}
+								/>
+							</div>
+						{/if}
+					</details>
+				{:else}
+					<NestedEdgeList
+						{plugin}
+						{node_stringify_options}
+						show_attributes={settings.show_attributes}
+						data={sorted_tree.tree}
+						items={sorted_tree.tree.entry_nodes}
+						open_signal={!settings.collapse}
+					/>
+				{/if}
 			{:else}
 				<div class="search-empty-state">No paths found</div>
 			{/if}

@@ -21,7 +21,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
-			_bc_migrations: { tree_ups_with_downs_default: true },
+			_bc_migrations: { tree_ups_with_downs_default: true, tree_find_root_default: true },
 			edge_fields: [
 				{ label: "up" },
 				{ label: "down" },
@@ -278,7 +278,7 @@ describe("migration", () => {
 							folder: false,
 							alias: false,
 						},
-						find_root: false,
+						find_root: true,
 						find_root_field_group_labels: ["ups"],
 					},
 				},
@@ -362,7 +362,7 @@ describe("migration", () => {
 
 		expect(migrated, JSON.stringify(old, null, 2)).toStrictEqual({
 			is_dirty: false,
-			_bc_migrations: { tree_ups_with_downs_default: true },
+			_bc_migrations: { tree_ups_with_downs_default: true, tree_find_root_default: true },
 			explicit_edge_sources: {
 				list_note: {
 					default_neighbour_field: "",
@@ -502,7 +502,7 @@ describe("migration", () => {
 						lock_view: false,
 						lock_path: "",
 						field_group_labels: ["ups", "downs"],
-						find_root: false,
+						find_root: true,
 						find_root_field_group_labels: ["ups"],
 					},
 				},

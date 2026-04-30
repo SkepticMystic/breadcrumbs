@@ -1,4 +1,5 @@
-import { TFile, type App, type CachedMetadata } from "obsidian";
+import type {App, CachedMetadata} from "obsidian";
+import { TFile   } from "obsidian";
 import type { IDataview } from "src/external/dataview/interfaces";
 
 interface TFileWithCache {
@@ -35,11 +36,11 @@ function collect_markdown_files(app: App): TFile[] {
  * `dataview` is always `null` here; optional `all_files.dataview?.forEach` in
  * builders remains a no-op. The old dual-source shape is not used for rebuild.
  */
-export type AllFiles = {
+export interface AllFiles {
 	obsidian: TFileWithCache[];
 	/** Not populated during rebuild; optional Dataview page list for legacy branches. */
 	dataview: IDataview.Page[] | null;
-};
+}
 
 export const get_all_files = (app: App): AllFiles => ({
 	obsidian: collect_markdown_files(app).map((file) => ({

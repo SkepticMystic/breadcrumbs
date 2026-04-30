@@ -5,9 +5,7 @@ Outputs to /styles.css, for Obsidian to use.
 
 */
 
-/* @tailwind base; */
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/utilities";
 
 /* Breadcrumbs */
 

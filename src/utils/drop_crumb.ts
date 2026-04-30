@@ -36,7 +36,7 @@ export async function drop_crumbs(
 	options: { destination: CrumbDestination | "none" , included_fields?: string[], use_alias?: boolean },
 ) {
 	if (!crumbs.length) return;
-	let included_fields: string[] = options.included_fields?.flatMap(key => plugin.settings.edge_field_groups.find(f => f.label === key)?.fields ?? []) ?? [];
+	const included_fields: string[] = options.included_fields?.flatMap(key => plugin.settings.edge_field_groups.find(f => f.label === key)?.fields ?? []) ?? [];
 	const links_by_field = group_projection(
 		group_by(crumbs, (e) => e.edge_type),
 		(edges) => edges.map((e) => linkify_edge(plugin, e, options.use_alias ?? false)),

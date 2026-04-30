@@ -59,13 +59,13 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 			// Source mode may have left these on .cm-scroller in older versions.
 			const preview_scroller = markdown_view.containerEl.querySelector(
 				".cm-scroller",
-			) as HTMLElement | null;
+			);
 			preview_scroller?.classList.remove("flex-col");
 			preview_scroller?.classList.remove("BC-cm-scroller-inline-page-views");
 		} else {
 			const cm_scroller = markdown_view.containerEl.querySelector(
 				".cm-scroller",
-			) as HTMLElement | null;
+			);
 			if (!cm_scroller) {
 				log.info("redraw_page_views > No cm-scroller (mode=source)");
 				return;
