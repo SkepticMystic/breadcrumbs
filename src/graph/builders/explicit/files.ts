@@ -7,20 +7,33 @@ interface TFileWithCache {
 	cache: CachedMetadata | null;
 }
 
-/**
- * Collect markdown notes from the vault for graph rebuild.
- *
- * `getMarkdownFiles()` is normally authoritative; if it is empty while the vault
- * already has files (startup / indexing race; see Obsidian API FAQ), fall back
- * to `getFiles()` so explicit builders (Dendron, JD, etc.) still run.
- */
-function collect_markdown_files(app: App): TFile[] {
-	const from_index = app.vault.getMarkdownFiles();
-	if (from_index.length > 0) return from_index;
+const NON_MD_EXTENSIONS = ["canvas", "base"] as const;
 
-	return app.vault
-		.getFiles()
-		.filter((f): f is TFile => f instanceof TFile && f.extension === "md");
+/**
+ * Collect markdown, canvas, and base files from the vault for graph rebuild.
+ *
+ * `getMarkdownFiles()` is normally authoritative for markdown; if it is empty
+ * while the vault already has files (startup / indexing race; see Obsidian API
+ * FAQ), fall back to `getFiles()` so explicit builders still run. Non-markdown
+ * types are always collected via `getFiles()` since there is no dedicated API.
+ */
+function collect_vault_files(app: App): TFile[] {
+	const all = app.vault.getFiles();
+	const non_md = all.filter(
+		(f): f is TFile =>
+			f instanceof TFile &&
+			(NON_MD_EXTENSIONS as readonly string[]).includes(f.extension),
+	);
+
+	const md = app.vault.getMarkdownFiles();
+	if (md.length > 0 || non_md.length > 0) return [...md, ...non_md];
+
+	return all.filter(
+		(f): f is TFile =>
+			f instanceof TFile &&
+			(f.extension === "md" ||
+				(NON_MD_EXTENSIONS as readonly string[]).includes(f.extension)),
+	);
 }
 
 /**
@@ -43,7 +56,7 @@ export interface AllFiles {
 }
 
 export const get_all_files = (app: App): AllFiles => ({
-	obsidian: collect_markdown_files(app).map((file) => ({
+	obsidian: collect_vault_files(app).map((file) => ({
 		file,
 		cache: app.metadataCache.getFileCache(file),
 	})),

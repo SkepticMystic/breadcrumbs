@@ -19,17 +19,38 @@ export const resolve_relative_target_path = (
 	relative_target_path: string,
 	source_path: string,
 ): readonly [string, TFile | null] | null => {
-	const extensioned = Paths.ensure_ext(relative_target_path);
-
-	const target_file = app.metadataCache.getFirstLinkpathDest(
-		extensioned,
-		source_path,
-	);
+	// Try raw path first — handles canvas/pdf/other non-md links like [[A.canvas]]
+	const target_file =
+		app.metadataCache.getFirstLinkpathDest(
+			relative_target_path,
+			source_path,
+		) ??
+		app.metadataCache.getFirstLinkpathDest(
+			Paths.ensure_ext(relative_target_path),
+			source_path,
+		);
 
 	if (target_file) {
 		return [target_file.path, target_file] as const;
 	}
 
+	// Use [a-zA-Z0-9]+ so dotted names like "Dr. Smith" are NOT treated as having an extension.
+	const has_non_md_ext =
+		/\.[a-zA-Z0-9]+$/.test(relative_target_path) &&
+		!relative_target_path.endsWith(".md");
+
+	if (has_non_md_ext) {
+		// resolve_to_absolute_path always strips extension and adds .md, which
+		// would turn "A.canvas" into "A.md". Bypass it for non-markdown files.
+		// Try vault.getAbstractFileByPath in case metadataCache hasn't indexed the link yet.
+		const direct = app.vault.getAbstractFileByPath(relative_target_path);
+		if (direct instanceof TFile) {
+			return [direct.path, direct] as const;
+		}
+		return [relative_target_path, null] as const;
+	}
+
+	const extensioned = Paths.ensure_ext(relative_target_path);
 	const fallback_path = Links.resolve_to_absolute_path(
 		app,
 		extensioned,
