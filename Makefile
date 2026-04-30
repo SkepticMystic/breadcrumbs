@@ -1,3 +1,6 @@
+.PHONY : version version_beta version_prod local_build local_test build
+
+
 local_build:
 		bun install -g wasm-pack
 		cd wasm
@@ -30,6 +33,8 @@ build:
 		bun install
 		bun run wasm:build || exit 1
 		bun run build || exit 1
+
+version: version_beta version_prod
 
 version_beta:
 		bun run version-bump-beta.mjs
