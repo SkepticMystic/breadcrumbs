@@ -4,12 +4,12 @@
 	"compilerOptions": {
 		"types": ["svelte", "node", "obsidian-typings"],
 		"baseUrl": ".",
+		"ignoreDeprecations": "6.0",
 		"inlineSources": true,
     "module": "ESNext",
     "target": "ES6",
 		"allowJs": true,
 		"noImplicitAny": true,
-		"moduleResolution": "node",
 		"importHelpers": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,

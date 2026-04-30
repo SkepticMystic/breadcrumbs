@@ -1,5 +1,5 @@
-import type { Literal } from "./zod";
 import { deep_access } from "./objects";
+import type { Literal } from "./zod";
 
 export function split_and_trim(str: string, delimiter = ","): string[] {
 	if (!str || str === "") return [];

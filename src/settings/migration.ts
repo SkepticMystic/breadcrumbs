@@ -498,7 +498,10 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	// !SECTION
 	// Tree used to default to only `downs`, which hides Dendron parent edges (field `up` in `ups`).
 	type WithInternalMigrations = BreadcrumbsSettings & {
-		_bc_migrations?: { tree_ups_with_downs_default?: boolean };
+		_bc_migrations?: {
+			tree_ups_with_downs_default?: boolean;
+			tree_find_root_default?: boolean;
+		};
 	};
 	const settings_m = settings as WithInternalMigrations;
 	const migrations = (settings_m._bc_migrations ??= {});
@@ -513,6 +516,13 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 			settings.views.side.tree.field_group_labels = ["ups", "downs"];
 		}
 		migrations.tree_ups_with_downs_default = true;
+	}
+
+	// find_root was off by default; enable it so the tree always starts from the root,
+	// preventing reversed/ancestor-only output when navigating to a leaf note.
+	if (!migrations.tree_find_root_default) {
+		settings.views.side.tree.find_root = true;
+		migrations.tree_find_root_default = true;
 	}
 
 	return settings;

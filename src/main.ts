@@ -1,4 +1,5 @@
-import { type WorkspaceLeaf, type Menu, type TAbstractFile, TFolder } from "obsidian";
+import type {WorkspaceLeaf, Menu, TAbstractFile} from "obsidian";
+import {    TFolder } from "obsidian";
 import { Events, Notice, Plugin, TFile } from "obsidian";
 import { DEFAULT_SETTINGS } from "src/const/settings";
 import { VIEW_IDS } from "src/const/views";
@@ -19,6 +20,7 @@ import init, {
 import wasmbin from "../wasm/pkg/breadcrumbs_graph_wasm_bg.wasm";
 import { BCAPI } from "./api";
 import { CodeblockMDRC } from "./codeblocks/MDRC";
+import { freeze_edges_in_folder } from "./commands/freeze_edges/index";
 import { init_all_commands } from "./commands/init";
 import { METADATA_FIELDS_MAP } from "./const/metadata_fields";
 import { dataview_plugin } from "./external/dataview";
@@ -30,7 +32,6 @@ import { deep_merge_objects } from "./utils/objects";
 import { Timer } from "./utils/timer";
 import { redraw_page_views } from "./views/page";
 import { TreeView } from "./views/tree";
-import { freeze_edges_in_folder } from "./commands/freeze_edges/index";
 
 export enum BCEvent {
 	GRAPH_UPDATE = "graph-update",
@@ -355,6 +356,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {
 		const { workspace } = this.app;
 
+		// eslint-disable-next-line no-useless-assignment
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(view_id);
 

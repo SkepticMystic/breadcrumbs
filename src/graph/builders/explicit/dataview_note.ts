@@ -1,7 +1,7 @@
 import { META_ALIAS } from "src/const/metadata_fields";
 import { dataview_plugin } from "src/external/dataview/index";
-import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type { IDataview } from "src/external/dataview/interfaces";
+import { dataview_pages_to_plain_array } from "src/external/dataview/pages_to_array";
 import type {
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
@@ -89,6 +89,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			}
 
 			const { field, query } = dataview_note_info.data;
+		// eslint-disable-next-line no-useless-assignment
 		let pages: IDataview.Page[] = [];
 		try {
 			pages = dataview_pages_to_plain_array(

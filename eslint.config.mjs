@@ -4,7 +4,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import only_warn from 'eslint-plugin-only-warn';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
-import plugin_import from 'eslint-plugin-import';
+import plugin_import from 'eslint-plugin-import-x';
 
 export default tseslint.config(
 	{
@@ -57,6 +57,22 @@ export default tseslint.config(
 			'@typescript-eslint/no-inferrable-types': 'off',
 			'@typescript-eslint/require-await': 'off',
             '@typescript-eslint/no-base-to-string': 'off',
+		},
+	},
+	{
+		// Dataview API types are externally unresolvable — suppress unsafe-* rules for these files
+		files: [
+			'src/external/dataview/**/*.ts',
+			'src/graph/builders/explicit/dataview_note.ts',
+			'src/graph/builders/explicit/list_note.ts',
+			'src/graph/builders/index.ts',
+			'src/codeblocks/index.ts',
+		],
+		rules: {
+			'@typescript-eslint/no-unsafe-assignment': 'off',
+			'@typescript-eslint/no-unsafe-call': 'off',
+			'@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-redundant-type-constituents': 'off',
 		},
 	},
 );

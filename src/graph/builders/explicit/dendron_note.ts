@@ -15,10 +15,10 @@ function dendron_edge_key(source: string, target: string, field: string): string
 	return `${source}\0${target}\0${field}\0dendron_note`;
 }
 
-type DendronPathMeta = {
+interface DendronPathMeta {
 	path: string;
 	metadata: Record<string, unknown> | undefined;
-};
+}
 
 function get_dendron_note_info(
 	plugin: BreadcrumbsPlugin,
@@ -210,13 +210,13 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	all_files.obsidian?.forEach(({ file, cache }) => {
 		paths.push({
 			path: file.path,
-			metadata: cache?.frontmatter as Record<string, unknown> | undefined,
+			metadata: cache?.frontmatter,
 		});
 		handle_dendron_note(
 			plugin,
 			results,
 			file.path,
-			cache?.frontmatter as Record<string, unknown> | undefined,
+			cache?.frontmatter,
 			edge_sig,
 		);
 	});
@@ -224,13 +224,13 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	all_files.dataview?.forEach((page) => {
 		paths.push({
 			path: page.file.path,
-			metadata: page as unknown as Record<string, unknown>,
+			metadata: page,
 		});
 		handle_dendron_note(
 			plugin,
 			results,
 			page.file.path,
-			page as unknown as Record<string, unknown>,
+			page,
 			edge_sig,
 		);
 	});

@@ -1,8 +1,8 @@
 import { Setting } from "obsidian";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
-import { mount } from "svelte";
 import { new_setting } from "src/utils/settings";
+import { mount } from "svelte";
 import { _add_settings_show_node_options } from "./ShowNodeOptions";
 
 export const _add_settings_prev_next_view = (

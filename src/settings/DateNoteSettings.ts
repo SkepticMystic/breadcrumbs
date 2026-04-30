@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
-import type BreadcrumbsPlugin from "src/main";
 import type { PeriodNoteConfig } from "src/interfaces/settings";
+import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
 
 type PeriodKind = "week" | "month" | "quarter" | "year";

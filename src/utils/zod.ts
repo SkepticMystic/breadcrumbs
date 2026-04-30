@@ -28,27 +28,14 @@ function not_array_msg(
 
 function dynamic_enum_schema(
 	options: string[],
-	/** Optionally override ctx.path (useful in the sort.order/sort.field case) */
+	/** Optionally provide the field name for the error message */
 	field?: string,
 ) {
 	return z.string().superRefine((received, ctx) => {
-		if (options.includes(received)) {
-			return true;
-		} else {
-			ctx.addIssue({
-				options,
-				received: received,
-				code: "invalid_enum_value",
-				// NOTE: Leave the default path on _this_ object, but pass the override into the error message
-				message: invalid_enum_msg(
-					field ?? ctx.path.join("."),
-					options,
-					received,
-				),
-			});
-
-			return false;
-		}
+		if (options.includes(received)) return;
+		ctx.addIssue(
+			invalid_enum_msg(field ?? "value", options, received),
+		);
 	});
 }
 
@@ -58,7 +45,7 @@ function dynamic_enum_array_schema(
 	received: unknown,
 ) {
 	return z.array(dynamic_enum_schema(options), {
-		invalid_type_error: not_array_msg(field, options, received),
+		message: not_array_msg(field, options, received),
 	});
 }
 

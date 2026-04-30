@@ -1,6 +1,6 @@
+import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type BreadcrumbsPlugin from "src/main";
 import { new_setting } from "src/utils/settings";
-import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import { mount } from "svelte";
 
 export const _add_settings_freeze_implied_edges = (

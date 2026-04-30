@@ -1,5 +1,6 @@
 // import type { TFile } from "obsidian";
-import { TFile, TFolder, Vault, Notice} from "obsidian";
+import type { TFolder} from "obsidian";
+import { TFile, Vault, Notice} from "obsidian";
 import type { BreadcrumbsSettings } from "src/interfaces/settings";
 import type BreadcrumbsPlugin from "src/main";
 import { drop_crumbs } from "src/utils/drop_crumb";

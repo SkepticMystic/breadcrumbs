@@ -5,9 +5,9 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type BreadcrumbsPlugin from "src/main";
+import { implied_pair_close_field } from "src/utils/implied_pair_close_field";
 import { Paths } from "src/utils/paths";
 import { fail, graph_build_fail, succ } from "src/utils/result";
-import { implied_pair_close_field } from "src/utils/implied_pair_close_field";
 import { ensure_not_ends_with } from "src/utils/strings";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 

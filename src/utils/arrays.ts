@@ -29,7 +29,7 @@ export function ensure_square_array<T, F>(
 		if (pre) {
 			return Array(diff).fill(fill).concat(row) as (T | F)[];
 		} else {
-			return row.concat(Array(diff).fill(fill)) as (T | F)[];
+			return row.concat(Array(diff).fill(fill));
 		}
 	});
 }
@@ -71,7 +71,7 @@ export function gather_by_runs<I, V extends Primitive>(
 		const last_run = runs.at(-1);
 		const value = get_value(arr[i]);
 
-		if (last_run && last_run.value === value) {
+		if (last_run?.value === value) {
 			last_run.last = i;
 		} else {
 			runs.push({ value, first: i, last: i });
@@ -84,7 +84,7 @@ export function gather_by_runs<I, V extends Primitive>(
 export function group_by<T extends P, S extends string, P = T>(
 	list: T[],
 	get_value: (item: T) => S,
-	project: (item: T) => P = (item) => item as P,
+	project: (item: T) => P = (item) => item,
 ) {
 	const grouped: Partial<Record<S, P[]>> = {};
 
