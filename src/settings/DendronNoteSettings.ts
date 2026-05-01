@@ -60,6 +60,24 @@ export const _add_settings_dendron_note = (
 	});
 
 	new_setting(containerEl, {
+		name: "Default Sibling Field",
+		desc: "Field to use for sibling edges between notes at the same level in the hierarchy. Leave empty to disable.",
+		select: {
+			value: plugin.settings.explicit_edge_sources.dendron_note
+				.default_sibling_field,
+			options: ["", ...plugin.settings.edge_fields.map((f) => f.label)],
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.dendron_note.default_sibling_field =
+					value;
+				await Promise.all([
+					plugin.rebuildGraph(),
+					plugin.saveSettings(),
+				]);
+			},
+		},
+	});
+
+	new_setting(containerEl, {
 		name: "Display Trimmed",
 		desc: "Display Dendron note names as the right-most split of the delimiter. e.g. `a.b.c` -> `c`",
 		toggle: {

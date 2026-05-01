@@ -60,4 +60,22 @@ export const _add_settings_johnny_decimal_note = (
 			},
 		},
 	});
+
+	new_setting(containerEl, {
+		name: "Default Sibling Field",
+		desc: "Field to use for sibling edges between notes at the same level in the hierarchy. Leave empty to disable.",
+		select: {
+			value: plugin.settings.explicit_edge_sources.johnny_decimal_note
+				.default_sibling_field,
+			options: ["", ...plugin.settings.edge_fields.map((f) => f.label)],
+			cb: async (value) => {
+				plugin.settings.explicit_edge_sources.johnny_decimal_note.default_sibling_field =
+					value;
+				await Promise.all([
+					plugin.rebuildGraph(),
+					plugin.saveSettings(),
+				]);
+			},
+		},
+	});
 };

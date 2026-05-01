@@ -175,5 +175,39 @@ export const _add_explicit_edges_johnny_decimal_note: ExplicitEdgeBuilder = (
 		handle_johnny_decimal_note(plugin, results, note, johnny_decimal_notes);
 	});
 
+	const sibling_field =
+		plugin.settings.explicit_edge_sources.johnny_decimal_note
+			.default_sibling_field;
+	if (sibling_field && johnny_decimal_notes.length > 1) {
+		// Group notes by parent decimal prefix — notes sharing the same parent are siblings
+		const by_parent = new Map<string, JohnnyDecimalNote[]>();
+		for (const note of johnny_decimal_notes) {
+			const parent_decimals = note.decimals
+				.split(delimiter)
+				.slice(0, -1)
+				.join(delimiter);
+			if (!parent_decimals) continue;
+			const list = by_parent.get(parent_decimals) ?? [];
+			list.push(note);
+			by_parent.set(parent_decimals, list);
+		}
+
+		for (const siblings of by_parent.values()) {
+			if (siblings.length < 2) continue;
+			for (let i = 0; i < siblings.length; i++) {
+				for (let j = i + 1; j < siblings.length; j++) {
+					results.edges.push(
+						new GCEdgeData(
+							siblings[i]!.path,
+							siblings[j]!.path,
+							sibling_field,
+							"johnny_decimal_note",
+						),
+					);
+				}
+			}
+		}
+	}
+
 	return results;
 };

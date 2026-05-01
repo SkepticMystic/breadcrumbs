@@ -4,6 +4,7 @@ export const METADATA_FIELDS_LIST = [
 	"BC-tag-note-tag",
 	"BC-tag-note-field",
 	"BC-tag-note-exact",
+	"BC-tag-note-sibling-field",
 	//
 	"BC-regex-note-regex",
 	"BC-regex-note-flags",
@@ -43,6 +44,9 @@ export const METADATA_FIELDS_MAP: Record<
 	},
 	"BC-tag-note-exact": {
 		property_type: "checkbox",
+	},
+	"BC-tag-note-sibling-field": {
+		property_type: "text",
 	},
 	//
 	"BC-regex-note-regex": {
@@ -99,6 +103,7 @@ export const META_ALIAS = {
 	"tag-note-tag": "BC-tag-note-tag",
 	"tag-note-field": "BC-tag-note-field",
 	"tag-note-exact": "BC-tag-note-exact",
+	"tag-note-sibling-field": "BC-tag-note-sibling-field",
 	//
 	"regex-note-regex": "BC-regex-note-regex",
 	"regex-note-flags": "BC-regex-note-flags",
