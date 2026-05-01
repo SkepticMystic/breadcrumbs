@@ -61,6 +61,7 @@ export interface BreadcrumbsSettings {
 		typed_link: object;
 		tag_note: {
 			default_field: string;
+			default_sibling_field: string;
 		};
 		list_note: {
 			default_neighbour_field: string;
@@ -71,6 +72,7 @@ export interface BreadcrumbsSettings {
 			// With the current setup, it would only apply to a single edge per note
 			delimiter: string;
 			default_field: string;
+			default_sibling_field: string;
 			display_trimmed: boolean;
 		};
 
@@ -78,6 +80,7 @@ export interface BreadcrumbsSettings {
 			enabled: boolean;
 			delimiter: string;
 			default_field: string;
+			default_sibling_field: string;
 		};
 
 		date_note: {

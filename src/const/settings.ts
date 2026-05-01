@@ -97,6 +97,7 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 		},
 		tag_note: {
 			default_field: "up",
+			default_sibling_field: "",
 		},
 		regex_note: {
 			default_field: "up",
@@ -105,12 +106,14 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 			enabled: false,
 			delimiter: ".",
 			default_field: "up",
+			default_sibling_field: "",
 			display_trimmed: false,
 		},
 		johnny_decimal_note: {
 			enabled: false,
 			delimiter: ".",
 			default_field: "up",
+			default_sibling_field: "",
 		},
 		date_note: {
 			enabled: false,

@@ -299,6 +299,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 		settings.explicit_edge_sources.dendron_note = {
 			enabled: old.addDendronNotes,
 			default_field: old.dendronNoteField,
+			default_sibling_field: "",
 			delimiter: old.dendronNoteDelimiter,
 			display_trimmed: old.trimDendronNotes,
 		};

@@ -146,6 +146,7 @@ describe("migration", () => {
 				typed_link: {},
 				tag_note: {
 					default_field: "up",
+					default_sibling_field: "",
 				},
 				regex_note: {
 					default_field: "up",
@@ -154,6 +155,7 @@ describe("migration", () => {
 					enabled: true,
 					delimiter: ".",
 					default_field: "up",
+					default_sibling_field: "",
 					display_trimmed: true,
 				},
 				date_note: {
@@ -194,6 +196,7 @@ describe("migration", () => {
 					enabled: false,
 					delimiter: ".",
 					default_field: "up",
+					default_sibling_field: "",
 				},
 			},
 			views: {
@@ -370,6 +373,7 @@ describe("migration", () => {
 				typed_link: {},
 				tag_note: {
 					default_field: "up",
+					default_sibling_field: "",
 				},
 				regex_note: {
 					default_field: "up",
@@ -378,6 +382,7 @@ describe("migration", () => {
 					enabled: false,
 					delimiter: ".",
 					default_field: "up",
+					default_sibling_field: "",
 					display_trimmed: false,
 				},
 				date_note: {
@@ -418,6 +423,7 @@ describe("migration", () => {
 					enabled: false,
 					delimiter: ".",
 					default_field: "up",
+					default_sibling_field: "",
 				},
 			},
 			views: {

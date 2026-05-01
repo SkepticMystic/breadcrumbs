@@ -71,7 +71,31 @@ const get_tag_note_info = (
 
 	const exact = Boolean(metadata[META_ALIAS["tag-note-exact"]]);
 
-	return succ({ tag, field, exact });
+	const raw_sibling_field =
+		metadata[META_ALIAS["tag-note-sibling-field"]] ??
+		plugin.settings.explicit_edge_sources.tag_note.default_sibling_field;
+
+	let sibling_field: string | undefined;
+	if (raw_sibling_field) {
+		if (typeof raw_sibling_field !== "string") {
+			return graph_build_fail({
+				path,
+				code: "invalid_field_value",
+				message: `tag-note-sibling-field is not a string: '${raw_sibling_field}'`,
+			});
+		} else if (
+			!plugin.settings.edge_fields.find((f) => f.label === raw_sibling_field)
+		) {
+			return graph_build_fail({
+				path,
+				code: "invalid_field_value",
+				message: `tag-note-sibling-field is not a valid BC field: '${raw_sibling_field}'`,
+			});
+		}
+		sibling_field = raw_sibling_field;
+	}
+
+	return succ({ tag, field, exact, sibling_field });
 };
 
 export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
@@ -87,6 +111,7 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 		field: string;
 		exact: boolean;
 		source_path: string;
+		sibling_field: string | undefined;
 	}[] = [];
 
 	// From tag, to paths with that tag
@@ -126,13 +151,14 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				return;
 			}
 
-			const { tag, field, exact } = tag_note_info.data;
+			const { tag, field, exact, sibling_field } = tag_note_info.data;
 
 			tag_notes.push({
 				tag,
 				exact,
 				field,
 				source_path: tag_note_file.path,
+				sibling_field,
 			});
 		},
 	);
@@ -156,13 +182,14 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 			if (tag_note_info.error) results.errors.push(tag_note_info.error);
 			return;
 		}
-		const { tag, field, exact } = tag_note_info.data;
+		const { tag, field, exact, sibling_field } = tag_note_info.data;
 
 		tag_notes.push({
 			tag,
 			exact,
 			field,
 			source_path: tag_note_file.path,
+			sibling_field,
 		});
 	});
 
@@ -191,6 +218,21 @@ export const _add_explicit_edges_tag_note: ExplicitEdgeBuilder = (
 				),
 			);
 		});
+
+		if (tag_note.sibling_field && target_paths && target_paths.length > 1) {
+			for (let i = 0; i < target_paths.length; i++) {
+				for (let j = i + 1; j < target_paths.length; j++) {
+					results.edges.push(
+						new GCEdgeData(
+							target_paths[i]!,
+							target_paths[j]!,
+							tag_note.sibling_field,
+							"tag_note",
+						),
+					);
+				}
+			}
+		}
 	});
 
 	return results;

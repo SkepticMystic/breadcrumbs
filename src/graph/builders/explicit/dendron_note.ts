@@ -194,6 +194,52 @@ function add_dendron_hub_parent_down_edges(
 	}
 }
 
+function add_dendron_sibling_edges(
+	plugin: BreadcrumbsPlugin,
+	results: EdgeBuilderResults,
+	edge_sig: Set<string>,
+	paths: DendronPathMeta[],
+) {
+	const sibling_field =
+		plugin.settings.explicit_edge_sources.dendron_note.default_sibling_field;
+	if (!sibling_field) return;
+
+	const { delimiter } = plugin.settings.explicit_edge_sources.dendron_note;
+
+	// Group notes by (dir, parent_stem) — notes sharing the same parent are siblings
+	const by_parent = new Map<string, string[]>();
+	for (const { path } of paths) {
+		const stem_parts = Paths.basename(path).split(delimiter);
+		if (stem_parts.length < 2) continue;
+		const parent_key =
+			Paths.dirname(path) +
+			"\0" +
+			stem_parts.slice(0, -1).join(delimiter);
+		const list = by_parent.get(parent_key) ?? [];
+		list.push(path);
+		by_parent.set(parent_key, list);
+	}
+
+	for (const siblings of by_parent.values()) {
+		if (siblings.length < 2) continue;
+		for (let i = 0; i < siblings.length; i++) {
+			for (let j = i + 1; j < siblings.length; j++) {
+				const k = dendron_edge_key(siblings[i]!, siblings[j]!, sibling_field);
+				if (edge_sig.has(k)) continue;
+				edge_sig.add(k);
+				results.edges.push(
+					new GCEdgeData(
+						siblings[i]!,
+						siblings[j]!,
+						sibling_field,
+						"dendron_note",
+					),
+				);
+			}
+		}
+	}
+}
+
 export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	plugin,
 	all_files,
@@ -236,6 +282,7 @@ export const _add_explicit_edges_dendron_note: ExplicitEdgeBuilder = (
 	});
 
 	add_dendron_hub_parent_down_edges(plugin, results, edge_sig, paths);
+	add_dendron_sibling_edges(plugin, results, edge_sig, paths);
 
 	return results;
 };
