@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import EdgeSortIdSettingItem from "src/components/settings/EdgeSortIdSettingItem.svelte";
 import FieldGroupLabelsSettingItem from "src/components/settings/FieldGroupLabelsSettingItem.svelte";
 import type { EdgeSortId } from "src/const/graph";
@@ -19,6 +20,29 @@ export const _add_settings_tree_view = (
 			value: plugin.settings.views.side.tree.collapse,
 			cb: async (checked) => {
 				plugin.settings.views.side.tree.collapse = checked;
+
+				plugin.refreshViews();
+				await plugin.saveSettings();
+			},
+		},
+	});
+
+	new_setting(containerEl, {
+		name: "Default depth",
+		desc: "Default depth of the tree view",
+		input: {
+			value: plugin.settings.views.side.tree.default_depth.toString(),
+			cb: async (value) => {
+				const int = parseInt(value);
+				if (isNaN(int)) {
+					new Notice("Depth must be a number");
+					return;
+				} else if (int < 0) {
+					new Notice("Depth must be a non-negative number");
+					return;
+				}
+
+				plugin.settings.views.side.tree.default_depth = int;
 
 				plugin.refreshViews();
 				await plugin.saveSettings();
