@@ -1,5 +1,20 @@
 import type { App } from "obsidian";
 import { Notice, TFile } from "obsidian";
+
+interface NotebookNavigatorPlugin {
+	reveal: (file: TFile) => Promise<boolean>;
+}
+
+export const reveal_in_notebook_navigator = async (
+	app: App,
+	file: TFile,
+): Promise<void> => {
+	const nn = (app as any).plugins?.getPlugin(
+		"notebook-navigator",
+	) as NotebookNavigatorPlugin | null;
+	if (!nn?.reveal) return;
+	await nn.reveal(file);
+};
 import { log } from "src/logger";
 import { Links } from "./links";
 import { Paths } from "./paths";
