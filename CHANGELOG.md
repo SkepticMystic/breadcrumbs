@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## 4.X
 
+### [4.8.1](https://github.com/SkepticMystic/breadcrumbs/compare/4.8.0...4.8.1) (2026-05-02)
+
+### Features
+
+* Add default depth setting to tree view (default: 5) [673](https://github.com/SkepticMystic/breadcrumbs/issues/673)
+* support for Notebook Navigator [614](https://github.com/SkepticMystic/breadcrumbs/issues/614)
+
+### [4.8.0](https://github.com/SkepticMystic/breadcrumbs/compare/4.7.2...4.8.0) (2026-05-02)
+
+### [4.7.2](https://github.com/SkepticMystic/breadcrumbs/compare/4.7.1...4.7.2) (2026-04-30)
+
 ### [4.7.1](https://github.com/SkepticMystic/breadcrumbs/compare/4.7.0...4.7.1) (2026-04-30)
 
 ### [4.7.0](https://github.com/SkepticMystic/breadcrumbs/compare/4.6.3...4.7.0) (2026-04-30)
