@@ -4,6 +4,7 @@
 	import BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
 	import { Paths } from "src/utils/paths";
+	import { reveal_in_notebook_navigator } from "src/utils/obsidian";
 
 	interface Props {
 		path: string;
@@ -57,9 +58,11 @@
 			plugin.app.workspace.openLinkText(path, "", "tab");
 		}
 	}}
-	onclick={(e) => {
+	onclick={async (e) => {
 		// NOTE: We openLinkText from vault root, since it's a full path already
-		plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
+		await plugin.app.workspace.openLinkText(path, "", Keymap.isModEvent(e));
+		const file = plugin.app.vault.getFileByPath(path);
+		if (file) await reveal_in_notebook_navigator(plugin.app, file);
 	}}
 >
 	{display}

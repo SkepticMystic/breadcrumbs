@@ -57,3 +57,11 @@ Outputs to /styles.css, for Obsidian to use.
 .text-error {
 	color: var(--text-error);
 }
+
+.BC-field.pr-2 {
+	padding-left: 0.5rem;
+}
+
+.BC-field.pl-2 {
+	padding-right: 0.5rem;
+}
