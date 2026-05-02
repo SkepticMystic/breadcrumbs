@@ -25,6 +25,7 @@ const FIELDS = [
 	"mermaid-direction",
 	"mermaid-renderer",
 	"mermaid-curve",
+	"mermaid-arrow",
 ] as const;
 
 interface InputData {
@@ -138,6 +139,15 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 						"mermaid-curve",
 						Mermaid.CURVE_STYLES,
 						input["mermaid-curve"],
+					),
+				})
+				.optional(),
+			"mermaid-arrow": z
+				.boolean({
+					message: zod.error.invalid_enum(
+						"mermaid-arrow",
+						BOOLEANS,
+						input["mermaid-arrow"],
 					),
 				})
 				.optional(),

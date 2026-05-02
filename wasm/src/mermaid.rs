@@ -49,6 +49,8 @@ pub struct MermaidGraphOptions {
     pub node_label_fn: Option<js_sys::Function>,
     #[wasm_bindgen(skip)]
     pub link_nodes: bool,
+    #[wasm_bindgen(skip)]
+    pub show_arrow_points: bool,
 }
 
 #[wasm_bindgen]
@@ -64,6 +66,7 @@ impl MermaidGraphOptions {
         edge_sorter: Option<EdgeSorter>,
         node_label_fn: Option<js_sys::Function>,
         link_nodes: bool,
+        show_arrow_points: bool,
     ) -> MermaidGraphOptions {
         MermaidGraphOptions {
             active_node,
@@ -75,6 +78,7 @@ impl MermaidGraphOptions {
             edge_sorter,
             node_label_fn,
             link_nodes,
+            show_arrow_points,
         }
     }
 
@@ -96,6 +100,7 @@ impl Default for MermaidGraphOptions {
             edge_sorter: Some(EdgeSorter::default()),
             node_label_fn: None,
             link_nodes: false,
+            show_arrow_points: false,
         }
     }
 }
@@ -276,11 +281,13 @@ impl NoteGraph {
                 EitherOrBoth::Right(b) => b.explicit,
             });
 
-        let arrow_type = match (backward.is_empty(), all_implied) {
-            (true, true) => "-.->",
-            (true, false) => "-->",
-            (false, true) => "-.-",
-            (false, false) => "---",
+        let arrow_type = match (backward.is_empty(), all_implied, diagram_options.show_arrow_points) {
+            (true, true, _) => "-.->",
+            (true, false, _) => "-->",
+            (false, true, true) => "<-.->",
+            (false, false, true) => "<--->",
+            (false, true, false) => "-.-",
+            (false, false, false) => "---",
         };
 
         label.push_str(

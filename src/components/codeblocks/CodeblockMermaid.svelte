@@ -99,6 +99,7 @@
 				}
 			},
 			true,
+			options["mermaid-arrow"] ?? false,
 		);
 
 		try {
