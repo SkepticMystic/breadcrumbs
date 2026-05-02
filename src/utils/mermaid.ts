@@ -100,6 +100,7 @@ function from_transitive_rule(
 			undefined,
 			(node: NodeData) => node.path,
 			false,
+			false,
 		),
 	);
 }
