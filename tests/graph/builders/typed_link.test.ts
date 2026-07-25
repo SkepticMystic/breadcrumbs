@@ -217,6 +217,17 @@ describe("typed_link builder — body inline fields", () => {
 		t.expect(r.edges).toHaveLength(1);
 		t.expect(r.edges[0]!.target).toBe("y.md");
 	});
+
+	// A callout/blockquote line (e.g. Obsidian's `> [!note]`) still opens with
+	// a bare inline field.
+	test("blockquote field builds an edge, trailing link stays prose", async (t) => {
+		const { plugin, all_files } = inline_case("> (up:: [[Note]]) [[Other]]");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.edge_type).toBe("up");
+		t.expect(r.edges[0]!.target).toBe("Note.md");
+	});
 });
 
 describe("parse_inline_fields", () => {
@@ -234,6 +245,8 @@ describe("parse_inline_fields", () => {
 		["paren wrapper", "(down:: [[X]])", "down"],
 		["bracket wrapper", "[down:: [[X]]]", "down"],
 		["indented list marker", "  - down:: [[X]]", "down"],
+		["blockquote", "> down:: [[X]]", "down"],
+		["blockquote with list marker", "> - down:: [[X]]", "down"],
 		["hyphenated field", "my-field:: [[X]]", "my-field"],
 		// Pinned behaviour: the field-name char class allows internal spaces,
 		// so a prose prefix ending in `word:: ` is captured verbatim. Harmless
@@ -247,7 +260,6 @@ describe("parse_inline_fields", () => {
 	test.each([
 		["single colon", "down: [[X]]"],
 		["no field name", ":: [[X]]"],
-		["non-word line start (blockquote)", "> down:: [[X]]"],
 		["plain prose", "just a normal sentence"],
 		["empty line", ""],
 	])("returns null — %s", (_label, line) => {
