@@ -12,38 +12,7 @@ See my global conventions for how to work. Project-specific gate before calling 
 
 ## Commands
 
-All commands use `bun` as the package manager.
-
-```bash
-# Development (watches TypeScript + CSS in parallel)
-bun run dev
-
-# Production build (type-checks, svelte-check, then bundles)
-bun run build
-
-# Run all tests (vitest)
-bun run test
-
-# Run a single test file
-bun run test tests/settings/migration.test.ts
-
-# Type-check only (no emit)
-bun run tsc -noEmit -skipLibCheck
-
-# Svelte type-check
-bun run svelte-check
-
-# Lint (ESLint + cargo clippy)
-bun run lint
-
-# Format (prettier + cargo fmt)
-bun run fmt
-
-# WASM — rebuild after any Rust changes
-bun run wasm:build          # release
-bun run wasm:dev            # debug (faster, larger)
-bun run wasm:test           # Rust unit tests via wasm-pack
-```
+All commands use `bun` as the package manager; the scripts are in `package.json`.
 
 The build output is `main.js` and `styles.css` in the repo root. These are loaded directly by Obsidian from `.obsidian/plugins/breadcrumbs/`.
 
@@ -53,47 +22,17 @@ The build output is `main.js` and `styles.css` in the repo root. These are loade
 
 ## Architecture
 
-### Stack
-
-- **TypeScript + Svelte 5** for all UI (runes syntax: `$state`, `$derived`, `$effect`)
-- **Rust/WebAssembly** (`wasm/`) for the graph engine — compiled with `wasm-pack`
-- **Tailwind CSS** for styles
-- **esbuild** bundles everything into a single `main.js`
-- **Vitest** for unit tests (TypeScript only; WASM tests use `wasm-pack test`)
+All UI is **Svelte 5 runes** syntax (`$state`, `$derived`, `$effect`) — not Svelte 4 stores or `export let`.
 
 ### The Graph Engine (WASM boundary)
 
-The core graph lives in Rust (`wasm/src/`). TypeScript calls into it via the generated bindings in `wasm/pkg/breadcrumbs_graph_wasm.d.ts`. Key types:
+The core graph lives in Rust (`wasm/src/`). TypeScript calls into it via the generated bindings in `wasm/pkg/breadcrumbs_graph_wasm.d.ts`. One type carries behavior the signatures don't express:
 
-- `NoteGraph` — the graph itself; holds nodes (vault files) and typed directed edges
 - `TraversalOptions` — controls `rec_traverse_and_process()`: entry nodes, edge types to follow, max depth, and `separate_edges` (when `true`, each first-hop edge's subtree is restricted to that edge type; when `false`, all edge types are mixed)
-- `FlatTraversalResult` / `FlatTraversalData` — the flattened traversal output consumed by `NestedEdgeList`
-- `GCNodeData` / `GCEdgeData` — data transfer objects for building the graph from TS
 
 The graph is a singleton on `plugin.graph`. It is rebuilt from scratch on `rebuild_graph()` (in `src/graph/builders/index.ts`) and updated incrementally via `BatchGraphUpdate` for file create/rename/delete events.
 
-### Edge Building Pipeline
-
-`rebuild_graph()` runs **10 explicit edge builders** in parallel, each returning `{ nodes, edges, errors }`:
-
-| Builder | Source |
-|---|---|
-| `typed_link` | Frontmatter properties matching a field label |
-| `tag_note` | Notes whose tag matches a BC-tag-note-tag field |
-| `list_note` | Markdown list items treated as children |
-| `dendron_note` | Dot/dash-delimited basename hierarchy |
-| `johnny_decimal_note` | Numeric prefix hierarchy (e.g. `01.02 Title`) |
-| `dataview_note` | Dataview query results |
-| `date_note` | Sequential date-based notes |
-| `folder_note` | Folder → note containment |
-| `regex_note` | Regex matches on basenames |
-| `traverse_note` | DFS walk of vault links from a root note |
-
-Builder implementations live in `src/graph/builders/explicit/` (one file per builder + `index.ts` exporting the `add_explicit_edges` record). The coordinator is `src/graph/builders/index.ts`.
-
-After explicit edges are collected, `TransitiveGraphRule`s (stored in settings as `implied_relations.transitive`) are applied inside the WASM engine to generate implied edges (e.g. the `up`↔`down` pair).
-
-Each explicit builder can read a per-note override from frontmatter via the `BC-*-field` metadata keys (see `src/const/metadata_fields.ts`). The fallback is `plugin.settings.explicit_edge_sources.<source>.default_field`.
+Edge-builder specifics live in `src/graph/CLAUDE.md`.
 
 ### Settings
 
@@ -104,18 +43,6 @@ Each explicit builder can read a per-note override from frontmatter via the `BC-
 
 ### Views
 
-**Side views** (Obsidian leaf panels):
-- `TreeView` — recursive tree from active file; uses `rec_traverse_and_process`
-- `Matrix` — shows incoming/outgoing edges grouped by field
-
-**Page views** (rendered inside notes):
-- `TrailView` — breadcrumb trail at top of note (grid or path format)
-- `PrevNextView` — previous/next navigation buttons
-
-**Codeblocks** (`src/codeblocks/`): ` ```breadcrumbs ``` ` blocks in notes, parsed by `CodeblockSchema` (zod), rendered as `CodeblockTree`, `CodeblockMermaid`, or `CodeblockMarkmap`
+Views live in `src/views/` (side panels and page views) and `src/codeblocks/` (` ```breadcrumbs ``` ` blocks, parsed by `CodeblockSchema` with zod).
 
 All Svelte side-view components hold a local `$state` copy of their slice of `plugin.settings` and write it back to `plugin.settings` via `$effect`. Settings panel changes (`src/settings/`) write directly to `plugin.settings` and call `plugin.refreshViews()`.
-
-### `implied_pair_close_field`
-
-Used by Dendron and Johnny.Decimal builders to automatically generate a reverse edge. If the `up` field has a single-step transitive rule with `close_field: "down"`, calling `implied_pair_close_field(settings, "up")` returns `"down"`, and the builder adds a `down` edge from parent → child alongside the explicit `up` edge from child → parent.
