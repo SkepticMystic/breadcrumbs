@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## 4.X
 
+### [4.14.4](https://github.com/michaelpporter/breadcrumbs/compare/4.14.3...4.14.4) (2026-07-25)
+
+### Bug Fixes
+
+* **typed_link** — inline Dataview fields no longer claim links that sit outside them. `(down:: [[y]]) [[x]]` in `x.md` made **both** `[[y]]` and `[[x]]` `down` children, including a self-loop from the note to itself. Bracketed fields now end at their closing bracket, matching Dataview, and multiple fields on one line are parsed separately. Bare line-level fields (`down:: [[y]], [[x]]`) are unchanged — their value is still the rest of the line. The blockquoted and mid-sentence wrapped fields added in 4.14.3 keep working (#731).
+* **links** — links carrying a block or heading reference now point at the note itself. `down:: [[2#^71f2d9]]` in `1.md` created an edge to a phantom `2#^71f2d9.md` node, so `1.md`'s tree looked right while `2.md` never showed `1.md` as its parent. The reference is stripped before resolving, for frontmatter and inline fields alike and in list notes, whatever folders the notes live in (#734).
+* **styles** — restored every missing margin, padding, gap, width and offset. The stylesheet imported only Tailwind's utilities layer, but the numeric spacing scale those resolve against lives in its theme layer, so 39 classes used across 15 files were silently dropped at build time. Expect slightly roomier spacing in the settings tab and side views.
+* **codeblocks** — the tree codeblock's copy button rendered on top of the first row's collapse arrow; it now floats in the top-right, and the mermaid and markmap copy buttons were aligned to match (#736).
+
+Promotes 4.14.4-beta.1 to stable. Backport of the fixes released on the Obsidian 1.13 line as 4.21.2.
+
+### [4.14.4-beta.1](https://github.com/michaelpporter/breadcrumbs/compare/4.14.3...4.14.4-beta.1) (2026-07-25)
+
+Prerelease of the above, published for testing on Obsidian 1.12 before promoting to stable.
+
 ### [4.14.3](https://github.com/michaelpporter/breadcrumbs/compare/4.14.2...4.14.3) (2026-07-06)
 
 ### Bug Fixes
