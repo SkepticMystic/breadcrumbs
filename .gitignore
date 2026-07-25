@@ -37,3 +37,6 @@ meta.txt
 
 .codegraph/*
 _notes/*
+
+# Local implementation plans (not for the repo)
+plans/

@@ -122,7 +122,7 @@
 
 	{#if data && !data.is_empty()}
 		<div class="BC-codeblock-tree-items relative">
-			<div class="absolute bottom-2 right-2 flex">
+			<div class="absolute top-2 right-2 z-10 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
 					text={() =>

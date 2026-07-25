@@ -123,6 +123,31 @@ function inline_plugin(body: string) {
 	);
 }
 
+/**
+ * Scan a body for `[[wikilinks]]`, producing the cache.links entries Obsidian
+ * would — including the column each link starts at, which the builder uses to
+ * decide which inline field's value the link belongs to.
+ */
+function scan_links(body: string) {
+	return body.split("\n").flatMap((line, line_num) =>
+		[...line.matchAll(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g)].map((m) => ({
+			line: line_num,
+			col: m.index,
+			link: m[1]!,
+		})),
+	);
+}
+
+/** A single-file vault whose only note, `a.md`, has `body` as its content. */
+function inline_case(body: string) {
+	return {
+		plugin: inline_plugin(body),
+		all_files: make_all_files([
+			mock_file("a.md", { links: scan_links(body) }),
+		]),
+	};
+}
+
 describe("typed_link builder — body inline fields", () => {
 	test.each([
 		["plain", "down:: [[Convolutions]]"],
@@ -132,23 +157,65 @@ describe("typed_link builder — body inline fields", () => {
 		["paren wrapper, no space", "- (down::[[Convolutions]])"],
 		["bracket wrapper", "- [down:: [[Convolutions]]]"],
 	])("detects inline field — %s", async (_label, line) => {
-		const files = [mock_file("a.md", { links: [{ line: 0, link: "Convolutions" }] })];
-		const r = await _add_explicit_edges_typed_link(
-			inline_plugin(line),
-			make_all_files(files),
-		);
+		const { plugin, all_files } = inline_case(line);
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
 		expect(r.edges, `no edge for: ${line}`).toHaveLength(1);
 		expect(r.edges[0]!.edge_type, line).toBe("down");
 		expect(r.edges[0]!.target).toBe("Convolutions.md");
 	});
 
 	test("field not in edge_fields → no edge", async (t) => {
-		const files = [mock_file("a.md", { links: [{ line: 0, link: "X" }] })];
-		const r = await _add_explicit_edges_typed_link(
-			inline_plugin("(unknown:: [[X]])"),
-			make_all_files(files),
-		);
+		const { plugin, all_files } = inline_case("(unknown:: [[X]])");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
 		t.expect(r.edges).toHaveLength(0);
+	});
+
+	// #731: a link trailing a wrapped inline field is ordinary prose, not part
+	// of the field's value.
+	test("link after a wrapped field → only the wrapped link becomes an edge", async (t) => {
+		const { plugin, all_files } = inline_case("(down:: [[y]]) [[x]]");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.target).toBe("y.md");
+	});
+
+	test("link before a wrapped field → no edge", async (t) => {
+		const { plugin, all_files } = inline_case("[[x]] (down:: [[y]])");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.target).toBe("y.md");
+	});
+
+	test("two wrapped fields on one line → each link gets its own field", async (t) => {
+		const { plugin, all_files } = inline_case("(up:: [[p]]) (down:: [[c]])");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges.map((e) => [e.edge_type, e.target])).toEqual([
+			["up", "p.md"],
+			["down", "c.md"],
+		]);
+	});
+
+	test("bare line-level field still claims every link on the line", async (t) => {
+		const { plugin, all_files } = inline_case("down:: [[y]], [[x]]");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges.map((e) => e.target)).toEqual(["y.md", "x.md"]);
+	});
+
+	// Blockquote support is specific to this branch — keep it working alongside
+	// the span-scoped parsing.
+	test("blockquote field does not claim a trailing prose link", async (t) => {
+		const { plugin, all_files } = inline_case("> (up:: [[Note]]) [[Other]]");
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.edge_type).toBe("up");
+		t.expect(r.edges[0]!.target).toBe("Note.md");
 	});
 
 	test("blockquote-wrapped field at line start", async (t) => {
