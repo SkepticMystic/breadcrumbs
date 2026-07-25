@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+* Inline Dataview fields no longer claim links that sit outside them ([#731](https://github.com/michaelpporter/breadcrumbs/issues/731)). `(down:: [[y]]) [[x]]` in `x.md` used to make **both** `[[y]]` and `[[x]]` `down` children — including a self-loop from the note to itself — because the builder attributed every link on a line to whichever field opened that line. Bracketed fields now end at their closing bracket, matching Dataview, so only `[[y]]` becomes an edge and links elsewhere on the line stay ordinary prose. Multiple fields on one line (`(up:: [[p]]) (down:: [[c]])`) are also parsed separately now. Bare line-level fields (`down:: [[y]], [[x]]`) are unchanged — their value is still the rest of the line.
+
 ## 4.X
 
 ### [4.21.1](https://github.com/michaelpporter/breadcrumbs/compare/4.21.0...4.21.1) (2026-07-05)
