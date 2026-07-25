@@ -163,6 +163,28 @@ Outputs to /styles.css, for Obsidian to use.
 	width: 100%;
 }
 
+/* Float the tree codeblock's copy button in the top-right corner.
+   Written by hand rather than with Tailwind's `top-2 right-2`: this repo
+   imports only `tailwindcss/utilities`, so the numeric spacing scale (which
+   lives in the theme layer) is unavailable and those utilities compile to
+   nothing — leaving the button at its static position, over the first row. */
+.BC-codeblock-tree-items {
+	position: relative;
+}
+
+.BC-codeblock-tree-buttons {
+	position: absolute;
+	top: var(--size-4-2);
+	right: var(--size-4-2);
+	z-index: 1;
+	display: flex;
+}
+
+/* Keep tree rows (and their flair) clear of the floating button */
+.BC-codeblock-tree-content {
+	padding-right: var(--size-4-10, 2.5rem);
+}
+
 /* markmap node text — inherit Obsidian's theme colour so dark mode is readable */
 .BC-codeblock-markmap svg foreignObject div {
 	color: var(--text-normal);
