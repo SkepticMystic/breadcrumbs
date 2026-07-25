@@ -3,8 +3,9 @@
 
 	"compilerOptions": {
 		"types": ["svelte", "node", "obsidian-typings"],
-		"baseUrl": ".",
-		"ignoreDeprecations": "6.0",
+		// Resolves repo-root-relative imports ("src/…", "wasm/pkg/…"). Replaces
+		// `baseUrl: "."`, which TypeScript 7 removed.
+		"paths": { "*": ["./*"] },
 		"inlineSources": true,
     "module": "ESNext",
     "target": "ES2022",
