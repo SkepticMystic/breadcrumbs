@@ -70,7 +70,11 @@
 	},
 	"overrides": {
 		"vite": "8.0.16",
-		"undici": "^6.27.0"
+		"undici": "^6.27.0",
+		"postcss": "^8.5.23",
+		"brace-expansion": "^5.0.8",
+		"fast-uri": "^4.1.1",
+		"linkify-it": "^5.0.2"
 	},
 	"dependencies": {
 		"baseline-browser-mapping": "^2.11.0",
