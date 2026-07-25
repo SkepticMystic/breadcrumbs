@@ -43,7 +43,7 @@ export const resolve_relative_target_path = (
 	// mint a bogus unresolved node ("2#^71f2d9.md") and the real target note
 	// would never see the reverse edge. `#` is illegal in vault filenames, so
 	// the first one always starts a subpath.
-	const linkpath = relative_target_path.split("#")[0]!.trim();
+	const linkpath = relative_target_path.split("#")[0].trim();
 
 	// [[#^block]] / [[#Heading]] point back into the source note — not an edge.
 	if (!linkpath) return null;
