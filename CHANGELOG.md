@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.3](https://github.com/michaelpporter/breadcrumbs/compare/4.21.2...4.21.3) (2026-07-25)
+
+### Changed
+
+* Two strings in the date-note setup modal now follow Obsidian's sentence-case convention: the heading reads "Set up date notes", and "etc." was reworded to "and so on". No other user-facing behaviour changes in this release.
+
+### Build
+
+* The community directory's plugin scan passes again. `eslint-plugin-obsidianmd` added rules that forbid undescribed `eslint-disable` comments, require a matching `eslint-enable` for file-level ones, and ban suppressing certain rules inline at all — among them `no-explicit-any` and `no-deprecated`. Every remaining suppression now carries a `-- reason`. The ones that couldn't stay inline were either fixed properly or scoped in `eslint.config.mjs`, where an exemption is reviewable instead of scattered through the source.
+* Removed the `any` behind three of those suppressions rather than silencing it. The codeblock field check compares against a widened `string[]`; the settings tab types its Svelte sub-pages as `Component<{ plugin }>` instead of `any`, which also cleared the unchecked `mount()` call; and the logger takes `unknown[]` rather than `any[]`.
+* The generated WASM bindings no longer contain `any`. The `wasm:postbuild` step rewrites it to `unknown` — every call site already casts the result, so nothing downstream changes — which lets the suppression header drop `no-explicit-any` entirely and keeps `wasm/pkg` clean on regeneration.
+* Codeblock options are built with Zod's `prefault` instead of `default`. `default` short-circuits parsing, so a fully absent options object would have yielded a bare `{}` with none of the per-field defaults applied. That path is unreachable today — the YAML is coalesced to `{}` before parsing — so there is no behaviour change, but the schema no longer needs an `as any` to typecheck and a test now pins the semantics.
+* The `sentence-case` check is configured with `ISO` and `US` as known acronyms and day names as ignored words, so it stops rewriting correct copy while still catching real title-case slips.
+
 ### [4.21.2](https://github.com/michaelpporter/breadcrumbs/compare/4.21.1...4.21.2) (2026-07-25)
 
 ### Fixed
