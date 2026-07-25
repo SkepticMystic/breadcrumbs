@@ -38,14 +38,21 @@ export const resolve_relative_target_path = (
 	relative_target_path: string,
 	source_path: string,
 ): readonly [string, TFile | null] | null => {
+	// Drop the subpath: [[2#^71f2d9]] and [[2#Heading]] both target 2.md.
+	// Obsidian's linkpath resolution rejects the subpath, so keeping it would
+	// mint a bogus unresolved node ("2#^71f2d9.md") and the real target note
+	// would never see the reverse edge. `#` is illegal in vault filenames, so
+	// the first one always starts a subpath.
+	const linkpath = relative_target_path.split("#")[0]!.trim();
+
+	// [[#^block]] / [[#Heading]] point back into the source note — not an edge.
+	if (!linkpath) return null;
+
 	// Try raw path first — handles canvas/pdf/other non-md links like [[A.canvas]]
 	const target_file =
+		app.metadataCache.getFirstLinkpathDest(linkpath, source_path) ??
 		app.metadataCache.getFirstLinkpathDest(
-			relative_target_path,
-			source_path,
-		) ??
-		app.metadataCache.getFirstLinkpathDest(
-			Paths.ensure_ext(relative_target_path),
+			Paths.ensure_ext(linkpath),
 			source_path,
 		);
 
@@ -55,21 +62,20 @@ export const resolve_relative_target_path = (
 
 	// Use [a-zA-Z0-9]+ so dotted names like "Dr. Smith" are NOT treated as having an extension.
 	const has_non_md_ext =
-		/\.[a-zA-Z0-9]+$/.test(relative_target_path) &&
-		!relative_target_path.endsWith(".md");
+		/\.[a-zA-Z0-9]+$/.test(linkpath) && !linkpath.endsWith(".md");
 
 	if (has_non_md_ext) {
 		// resolve_to_absolute_path always strips extension and adds .md, which
 		// would turn "A.canvas" into "A.md". Bypass it for non-markdown files.
 		// Try vault.getAbstractFileByPath in case metadataCache hasn't indexed the link yet.
-		const direct = app.vault.getAbstractFileByPath(relative_target_path);
+		const direct = app.vault.getAbstractFileByPath(linkpath);
 		if (direct instanceof TFile) {
 			return [direct.path, direct] as const;
 		}
-		return [relative_target_path, null] as const;
+		return [linkpath, null] as const;
 	}
 
-	const extensioned = Paths.ensure_ext(relative_target_path);
+	const extensioned = Paths.ensure_ext(linkpath);
 	const fallback_path = Links.resolve_to_absolute_path(
 		app,
 		extensioned,
