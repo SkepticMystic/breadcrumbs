@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* Links with a block or heading reference now point at the note itself ([#734](https://github.com/michaelpporter/breadcrumbs/issues/734)). `down:: [[2#^71f2d9]]` in `1.md` used to create an edge to a phantom `2#^71f2d9.md` node, so `1.md`'s tree looked right while `2.md` never showed `1.md` as its parent. The subpath is now stripped before resolving, for both frontmatter and inline fields and in list notes, and regardless of which folders the notes live in. A subpath-only link (`[[#^71f2d9]]`, pointing inside the same note) creates no edge.
 * Inline Dataview fields no longer claim links that sit outside them ([#731](https://github.com/michaelpporter/breadcrumbs/issues/731)). `(down:: [[y]]) [[x]]` in `x.md` used to make **both** `[[y]]` and `[[x]]` `down` children — including a self-loop from the note to itself — because the builder attributed every link on a line to whichever field opened that line. Bracketed fields now end at their closing bracket, matching Dataview, so only `[[y]]` becomes an edge and links elsewhere on the line stay ordinary prose. Multiple fields on one line (`(up:: [[p]]) (down:: [[c]])`) are also parsed separately now. Bare line-level fields (`down:: [[y]], [[x]]`) are unchanged — their value is still the rest of the line.
 
 ## 4.X
