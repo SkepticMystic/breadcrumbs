@@ -120,8 +120,8 @@
 	{/if}
 
 	{#if data && !data.is_empty()}
-		<div class="BC-codeblock-tree-items">
-			<div class="BC-codeblock-tree-buttons">
+		<div class="BC-codeblock-tree-items relative">
+			<div class="absolute top-2 right-2 z-10 flex">
 				<CopyToClipboardButton
 					cls="clickable-icon nav-action-button"
 					text={() =>
@@ -141,7 +141,7 @@
 			</div>
 
 			<!-- NOTE: Padded so that the flair doesn't interfere with the floating buttons -->
-			<div class="BC-codeblock-tree-content">
+			<div class="pr-10">
 				<NestedEdgeList
 					{plugin}
 					{node_stringify_options}
