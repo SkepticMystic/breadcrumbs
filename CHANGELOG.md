@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 4.X
+
+### [4.21.2](https://github.com/michaelpporter/breadcrumbs/compare/4.21.1...4.21.2) (2026-07-25)
+
 ### Fixed
 
 * Restored every missing margin, padding, gap, width and offset across the plugin. The stylesheet imported only Tailwind's utilities layer, but the numeric spacing scale that `p-2`, `gap-1`, `w-48`, `top-2` and friends resolve against lives in its theme layer — so all 39 of those classes, used in 15 files, were silently dropped at build time. Importing the theme layer brings them back. Expect slightly roomier spacing in the settings tab and the side views, and correctly positioned floating buttons in codeblocks. Preflight (Tailwind's browser reset) is deliberately still excluded, so nothing about Obsidian's own styling changes.
@@ -15,7 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Links with a block or heading reference now point at the note itself ([#734](https://github.com/michaelpporter/breadcrumbs/issues/734)). `down:: [[2#^71f2d9]]` in `1.md` used to create an edge to a phantom `2#^71f2d9.md` node, so `1.md`'s tree looked right while `2.md` never showed `1.md` as its parent. The subpath is now stripped before resolving, for both frontmatter and inline fields and in list notes, and regardless of which folders the notes live in. A subpath-only link (`[[#^71f2d9]]`, pointing inside the same note) creates no edge.
 * Inline Dataview fields no longer claim links that sit outside them ([#731](https://github.com/michaelpporter/breadcrumbs/issues/731)). `(down:: [[y]]) [[x]]` in `x.md` used to make **both** `[[y]]` and `[[x]]` `down` children — including a self-loop from the note to itself — because the builder attributed every link on a line to whichever field opened that line. Bracketed fields now end at their closing bracket, matching Dataview, so only `[[y]]` becomes an edge and links elsewhere on the line stay ordinary prose. Multiple fields on one line (`(up:: [[p]]) (down:: [[c]])`) are also parsed separately now. Bare line-level fields (`down:: [[y]], [[x]]`) are unchanged — their value is still the rest of the line.
 
-## 4.X
+### Security
+
+* Pinned four transitive dependencies to clear high advisories flagged by `bun audit`: `linkify-it` (5.0.1 → 5.0.2), `postcss`, `brace-expansion` and `fast-uri`. Only `linkify-it` is on a runtime path — it ships inside `main.js` via markmap — but markmap builds its markdown parser with link auto-detection turned off, so the reported quadratic `mailto:` scan was never reachable. The other three are build-time only (eslint, vite, vitest). No runtime exposure in any case; the pins just move the lockfile out of the flagged ranges.
+
+### Build
+
+* TypeScript is pinned to 6.x. A dependency bump had moved it to 7, which removed the `baseUrl` compiler option and broke `svelte-check`, failing every CI run. `tsconfig.json` now uses the forward-compatible `paths` form, so the pin can be lifted once the Svelte and ESLint toolchains support TypeScript 7.
 
 ### [4.21.1](https://github.com/michaelpporter/breadcrumbs/compare/4.21.0...4.21.1) (2026-07-05)
 
