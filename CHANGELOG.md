@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+* Inline Dataview fields are now recognized inside blockquotes and callouts — `> up:: [[Note]]` (and `> - up:: [[Note]]`) now creates the `up` edge, matching the behavior already shipped on the 1.12 maintenance line (4.14.3, #724). A trailing link on the same line still stays ordinary prose, per the #731 fix.
+
 ## 4.X
 
 ### [4.21.3](https://github.com/michaelpporter/breadcrumbs/compare/4.21.2...4.21.3) (2026-07-25)

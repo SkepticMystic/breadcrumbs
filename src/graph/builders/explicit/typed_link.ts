@@ -14,9 +14,11 @@ export interface InlineField {
 	value_end: number;
 }
 
-// A bare inline field opening a line: "same:: ...", "- same:: ...", "up :: ...".
+// A bare inline field opening a line, optionally behind blockquote and/or list
+// markers: "same:: ...", "- same:: ...", "> same:: ...", "up :: ...".
 // Its value runs to the end of the line.
-const LINE_FIELD_REGEX = /^(?:\s*[-*+\d.]+\s+)?([\w][\w\s-]*)\s*::\s*/;
+const LINE_FIELD_REGEX =
+	/^(?:\s*>+\s*)?(?:\s*[-*+\d.]+\s+)?([\w][\w\s-]*)\s*::\s*/;
 
 // Dataview's bracket/paren wrappers, anywhere on the line: "(down:: ...)" /
 // "[down:: ...]". The value ends at the matching close bracket.
