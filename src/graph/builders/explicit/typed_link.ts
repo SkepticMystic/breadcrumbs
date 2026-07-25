@@ -6,13 +6,13 @@ import { resolve_relative_target_path } from "src/utils/obsidian";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
 /** A Dataview inline field found on a line, with the span its value occupies. */
-export type InlineField = {
+export interface InlineField {
 	field: string;
 	/** Column of the first character of the value (inclusive). */
 	value_start: number;
 	/** Column just past the last character of the value (exclusive). */
 	value_end: number;
-};
+}
 
 // A bare inline field opening a line: "same:: ...", "- same:: ...", "up :: ...".
 // Its value runs to the end of the line.
@@ -28,7 +28,7 @@ const WRAPPED_FIELD_REGEX = /[([]\s*([\w][\w\s-]*)\s*::\s*/g;
  * (`[down:: [[X]]]`) and markdown links (`(down:: [X](y))`) close correctly.
  */
 const find_close_bracket = (line: string, open_index: number): number => {
-	const open = line[open_index]!;
+	const open = line[open_index];
 	const close = open === "(" ? ")" : "]";
 
 	let depth = 0;
