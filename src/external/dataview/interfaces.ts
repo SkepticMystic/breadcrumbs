@@ -1,6 +1,6 @@
 import type { Pos } from "obsidian";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace -- Mirrors the shape Dataview publishes; a namespace keeps the nested interface names grouped.
 export declare namespace IDataview {
 	export interface Link {
 		display: string | undefined;

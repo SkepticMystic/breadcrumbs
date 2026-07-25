@@ -1,6 +1,5 @@
 import { TFile, TFolder } from "obsidian";
 import { META_ALIAS } from "src/const/metadata_fields";
-import { NON_MD_EXTENSIONS } from "./files";
 import type {
 	BreadcrumbsError,
 	EdgeBuilderResults,
@@ -10,6 +9,7 @@ import type { Result } from "src/interfaces/result";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, succ } from "src/utils/result";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
+import { NON_MD_EXTENSIONS } from "./files";
 import { read_edge_field } from "./read_edge_field";
 
 interface FolderNoteData {

@@ -10,14 +10,12 @@ import { Timer } from "src/utils/timer";
 import { mount, unmount } from "svelte";
 import { Codeblocks } from ".";
 
-/* The three components currently share a mount return type, so the union reads
-   as duplicated; keep it explicit for when they diverge. */
-/* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents -- The three components currently share a mount return type, so the union reads as duplicated; keep it explicit for when they diverge. */
 type SvelteComponent =
 	| ReturnType<typeof CodeblockTree>
 	| ReturnType<typeof CodeblockMermaid>
 	| ReturnType<typeof CodeblockMarkmap>;
-/* eslint-enable @typescript-eslint/no-duplicate-type-constituents */
+/* eslint-enable @typescript-eslint/no-duplicate-type-constituents -- Re-enable for the rest of the file. */
 
 export class CodeblockMDRC extends MarkdownRenderChild {
 	source: string;
@@ -45,7 +43,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 
 		if (this.component) {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-call -- `update` is present on every component in the union, but the mount return type does not express it.
 				this.component.update();
 			} catch (e) {
 				log.error("CodeblockMDRC.update error >", e);

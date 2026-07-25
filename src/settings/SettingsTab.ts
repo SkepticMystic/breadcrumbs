@@ -2,6 +2,7 @@ import type { App, SettingDefinitionItem } from "obsidian";
 import { PluginSettingTab, Setting, SettingPage } from "obsidian";
 import { LOG_LEVELS, log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
+import type { Component } from "svelte";
 import { mount, unmount } from "svelte";
 import EdgeFieldSettings from "../components/settings/EdgeFieldSettings.svelte";
 import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
@@ -28,6 +29,9 @@ import { _add_settings_thread } from "./ThreadSettings";
 import { _add_settings_traverse_note } from "./TraverseNoteSettings";
 import { _add_settings_tree_view } from "./TreeViewSettings";
 
+/** A Svelte component that a settings sub-page can mount. */
+type SettingPageComponent = Component<{ plugin: BreadcrumbsPlugin }>;
+
 /** Sub-page that mounts a Svelte component into the framework-owned page container. */
 class SvelteSettingPage extends SettingPage {
 	private comp: ReturnType<typeof mount> | undefined;
@@ -35,8 +39,7 @@ class SvelteSettingPage extends SettingPage {
 	constructor(
 		private plugin: BreadcrumbsPlugin,
 		title: string,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		private Component: any,
+		private Component: SettingPageComponent,
 	) {
 		super();
 		this.title = title;
@@ -44,7 +47,6 @@ class SvelteSettingPage extends SettingPage {
 
 	display() {
 		this.containerEl.empty();
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		this.comp = mount(this.Component, {
 			props: { plugin: this.plugin },
 			target: this.containerEl,
@@ -92,8 +94,7 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		// the page() factory. (An earlier items[]+render() approach rendered blank
 		// on Obsidian 1.13.1 — see SvelteSettingPage / ImperativeSettingPage.)
 		const svelte_page =
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(name: string, Component: any) => () =>
+			(name: string, Component: SettingPageComponent) => () =>
 				new SvelteSettingPage(plugin, name, Component);
 
 		const imp_page =

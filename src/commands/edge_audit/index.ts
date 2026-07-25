@@ -6,12 +6,13 @@ import type {
 	NodeData,
 	NoteGraph,
 } from "wasm/pkg/breadcrumbs_graph_wasm";
+import type {EdgeAuditReport, EdgeFact, GraphFacts, NodeFact} from "./analyze";
 import {
-	build_edge_audit,
-	type EdgeAuditReport,
-	type EdgeFact,
-	type GraphFacts,
-	type NodeFact,
+	build_edge_audit
+	
+	
+	
+	
 } from "./analyze";
 
 /**

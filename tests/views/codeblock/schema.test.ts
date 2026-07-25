@@ -31,6 +31,23 @@ describe("happy", () => {
 		});
 	});
 
+	test("undefined options still get every default", (t) => {
+		const parsed = CodeblockSchema.build({}, data).safeParse(undefined);
+
+		t.expect(parsed.success).toEqual(true);
+		t.expect(parsed.data).toStrictEqual({
+			flat: false,
+			type: "tree",
+			collapse: false,
+			depth: [0, 5],
+			"merge-fields": true,
+			sort: {
+				field: "basename",
+				order: 1,
+			},
+		});
+	});
+
 	test("maximal options", (t) => {
 		const input: z.input<ReturnType<typeof CodeblockSchema.build>> = {
 			flat: true,

@@ -373,7 +373,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	// @ts-ignore: This previously wasn't "considered" a view
 	if (settings.codeblocks !== undefined) {
 		// @ts-ignore: This previously wasn't "considered" a view
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- `settings.codeblocks` is an untyped legacy field, reached only via the -ignore above.
 		settings.views.codeblocks = settings.codeblocks;
 
 		// @ts-ignore: This previously wasn't "considered" a view

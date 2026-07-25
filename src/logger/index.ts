@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, obsidianmd/rule-custom-message */
-
 export const LOG_LEVELS = [
 	"DEBUG",
 	"INFO",
@@ -37,19 +35,19 @@ class Logger {
 		this.set_level(level);
 	}
 
-	debug(...args: any[]) {
+	debug(...args: unknown[]) {
 		if (this.level_i <= 0) {
 			console.log(...build_prefix("DEBUG"), ...args);
 		}
 	}
 
-	info(...args: any[]) {
+	info(...args: unknown[]) {
 		if (this.level_i <= 1) {
 			console.log(...build_prefix("INFO"), ...args);
 		}
 	}
 
-	warn(...args: any[]) {
+	warn(...args: unknown[]) {
 		if (this.level_i <= 2) {
 			// NOTE: Don't actually console.warn
 			// The user doesn't need a stack trace
@@ -57,13 +55,13 @@ class Logger {
 		}
 	}
 
-	error(...args: any[]) {
+	error(...args: unknown[]) {
 		if (this.level_i <= 3) {
 			console.log(...build_prefix("ERROR"), ...args);
 		}
 	}
 
-	feat(...args: any[]) {
+	feat(...args: unknown[]) {
 		if (this.level_i <= 4) {
 			console.log(...build_prefix("FEAT"), ...args);
 		}

@@ -18,6 +18,7 @@ export function resolve_codeblock_source(
 	default_max_depth: number,
 ): ResolvedCodeblockSource {
 	const source_path =
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- Falsy (empty-string) entries must fall through too, not just null/undefined.
 		options["start-note"] || file_path || active_file_path || "";
 
 	const max_depth =

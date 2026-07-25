@@ -83,4 +83,51 @@ export default tseslint.config(
 			'@typescript-eslint/no-redundant-type-constituents': 'off',
 		},
 	},
+	{
+		// `acronyms` REPLACES the plugin's default list rather than extending it,
+		// so the defaults are repeated here with ISO/US appended. Day names are
+		// proper nouns that the sentence-case check otherwise wants lowercased.
+		files: ['src/**/*.ts'],
+		rules: {
+			'obsidianmd/ui/sentence-case': [
+				'error',
+				{
+					acronyms: [
+						'API', 'HTTP', 'HTTPS', 'URL', 'DNS', 'TCP', 'IP', 'SSH',
+						'TLS', 'SSL', 'FTP', 'SFTP', 'SMTP', 'JSON', 'XML', 'HTML',
+						'CSS', 'PDF', 'CSV', 'YAML', 'SQL', 'PNG', 'JPG', 'JPEG',
+						'GIF', 'SVG', 'MFA', 'OAuth', 'JWT', 'LDAP', 'SAML', 'SDK',
+						'IDE', 'CLI', 'GUI', 'CRUD', 'REST', 'SOAP', 'CPU', 'GPU',
+						'RAM', 'SSD', 'USB', 'UI', 'OK', 'RSS', 'S3', 'ID', 'UUID',
+						'GUID', 'SHA', 'MD5', 'ASCII', 'DOM', 'CDN', 'FAQ', 'AI',
+						'ML', 'LLM',
+						// Breadcrumbs additions
+						'ISO', 'US',
+					],
+					ignoreWords: [
+						'Monday', 'Mondays', 'Sunday', 'Sundays',
+					],
+				},
+			],
+		},
+	},
+	{
+		// These files *define* the deprecated legacy settings/edge shapes and the
+		// migrations that read them, so they necessarily reference deprecated
+		// types. `no-deprecated` is on obsidianmd's `no-restricted-disable` list,
+		// so it can't be silenced inline — it has to be scoped here.
+		files: ['src/graph/utils.ts', 'src/interfaces/settings.ts'],
+		rules: {
+			'@typescript-eslint/no-deprecated': 'off',
+		},
+	},
+	{
+		// The logger is the one place console output is intentional; every call is
+		// gated behind a user-configurable log level. `obsidianmd/*` rules are on
+		// the `no-restricted-disable` list, so this must be scoped here.
+		files: ['src/logger/index.ts'],
+		rules: {
+			'obsidianmd/rule-custom-message': 'off',
+		},
+	},
 );

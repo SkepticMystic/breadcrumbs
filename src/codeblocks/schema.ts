@@ -261,8 +261,10 @@ const build = (input: Record<string, unknown>, data: InputData) => {
 					}),
 			})
 			.loose()
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-			.default({} as any)
+			// `prefault`, not `default`: an empty codeblock has to be *parsed* as
+			// `{}` so every field's own default applies. `.default({})` would
+			// short-circuit parsing and yield a bare `{}`.
+			.prefault({})
 
 			.transform((options) => {
 				// Coalesce the deprecated `dataview-from` alias into `from` so

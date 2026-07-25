@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new -- wasm-bindgen generates bare `Function` params and a static `new`; the bindings are generated, not hand-written. */
 export function create_edge_sorter(field: string, reverse: boolean): EdgeSorter;
 export function sort_traversal_data(graph: NoteGraph, traversal_data: TraversalData[], sorter: EdgeSorter): TraversalData[];
 export function sort_edges(graph: NoteGraph, edges: EdgeStruct[], sorter: EdgeSorter): EdgeStruct[];
@@ -77,7 +77,7 @@ export class FlatTraversalData {
   private constructor();
   free(): void;
   get_attribute_label(graph: NoteGraph, attributes: string[]): string;
-  to_js_rendering_obj(graph: NoteGraph, str_opt: NodeStringifyOptions, attributes: string[]): any;
+  to_js_rendering_obj(graph: NoteGraph, str_opt: NodeStringifyOptions, attributes: string[]): unknown;
   /**
    * the edge struct that was traversed
    */
@@ -102,7 +102,7 @@ export class FlatTraversalResult {
   data_at_index(index: number): FlatTraversalData | undefined;
   toString(): string;
   children_at_index(index: number): Uint32Array | undefined;
-  rendering_obj_at_index(index: number, graph: NoteGraph, str_opt: NodeStringifyOptions, attributes: string[]): any;
+  rendering_obj_at_index(index: number, graph: NoteGraph, str_opt: NodeStringifyOptions, attributes: string[]): unknown;
   /**
    * Sorts the flat traversal data with a given edge sorter.
    * This is not as efficient as sorting the traversal data before flattening
@@ -433,12 +433,12 @@ export interface InitOutput {
   readonly notegraph_get_outgoing_edges: (a: number, b: number, c: number) => number;
   readonly notegraph_has_node: (a: number, b: number, c: number) => number;
   readonly notegraph_is_node_resolved: (a: number, b: number, c: number) => number;
-  readonly notegraph_iterate_edges: (a: number, b: any) => void;
-  readonly notegraph_iterate_nodes: (a: number, b: any) => void;
+  readonly notegraph_iterate_edges: (a: number, b: unknown) => void;
+  readonly notegraph_iterate_nodes: (a: number, b: unknown) => void;
   readonly notegraph_log: (a: number) => void;
   readonly notegraph_new: () => number;
   readonly notegraph_notify_update: (a: number) => void;
-  readonly notegraph_set_update_callback: (a: number, b: any) => void;
+  readonly notegraph_set_update_callback: (a: number, b: unknown) => void;
   readonly create_graph: () => number;
   readonly __wbg_gcedgedata_free: (a: number, b: number) => void;
   readonly __wbg_gcnodedata_free: (a: number, b: number) => void;
@@ -656,3 +656,4 @@ export function initSync(module: { module: SyncInitInput } | SyncInitInput): Ini
 * @returns {Promise<InitOutput>}
 */
 export default function __wbg_init (module_or_path?: { module_or_path: InitInput | Promise<InitInput> } | InitInput | Promise<InitInput>): Promise<InitOutput>;
+/* eslint-enable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new -- End of generated bindings. */

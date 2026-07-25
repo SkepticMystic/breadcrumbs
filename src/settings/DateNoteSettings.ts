@@ -45,7 +45,7 @@ function add_period_settings(
 	});
 
 	const format_frag = new DocumentFragment();
-	const format_frag_span = format_frag.createEl("span");
+	const format_frag_span = format_frag.createSpan();
 	format_frag_span.createEl("a", {
 		text: "Luxon format",
 		href: "https://moment.github.io/luxon/#/formatting?id=table-of-tokens",
@@ -160,7 +160,7 @@ export const _add_settings_date_note = (
 	});
 
 	const date_format_fragment = new DocumentFragment();
-	const date_format_span = date_format_fragment.createEl("span");
+	const date_format_span = date_format_fragment.createSpan();
 	date_format_span.createEl("a", {
 		text: "Luxon date format",
 		href: "https://moment.github.io/luxon/#/formatting?id=table-of-tokens",

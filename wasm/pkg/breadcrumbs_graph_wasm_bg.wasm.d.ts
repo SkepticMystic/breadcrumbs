@@ -1,5 +1,5 @@
 /* tslint:disable */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new -- wasm-bindgen generates bare `Function` params and a static `new`; the bindings are generated, not hand-written. */
 export const memory: WebAssembly.Memory;
 export const __wbg_batchgraphupdate_free: (a: number, b: number) => void;
 export const batchgraphupdate_new: () => number;
@@ -36,12 +36,12 @@ export const notegraph_get_node: (a: number, b: number, c: number) => number;
 export const notegraph_get_outgoing_edges: (a: number, b: number, c: number) => number;
 export const notegraph_has_node: (a: number, b: number, c: number) => number;
 export const notegraph_is_node_resolved: (a: number, b: number, c: number) => number;
-export const notegraph_iterate_edges: (a: number, b: any) => void;
-export const notegraph_iterate_nodes: (a: number, b: any) => void;
+export const notegraph_iterate_edges: (a: number, b: unknown) => void;
+export const notegraph_iterate_nodes: (a: number, b: unknown) => void;
 export const notegraph_log: (a: number) => void;
 export const notegraph_new: () => number;
 export const notegraph_notify_update: (a: number) => void;
-export const notegraph_set_update_callback: (a: number, b: any) => void;
+export const notegraph_set_update_callback: (a: number, b: unknown) => void;
 export const create_graph: () => number;
 export const __wbg_gcedgedata_free: (a: number, b: number) => void;
 export const __wbg_gcnodedata_free: (a: number, b: number) => void;
@@ -237,3 +237,4 @@ export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) =>
 export const __externref_table_dealloc: (a: number) => void;
 export const __externref_drop_slice: (a: number, b: number) => void;
 export const __wbindgen_start: () => void;
+/* eslint-enable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new -- End of generated bindings. */
