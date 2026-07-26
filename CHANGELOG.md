@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [Unreleased]
 
+### Fixed
+
+* Opening a note no longer rewrites `data.json` (Refs #744). The lock button in the tree and matrix side views kept `lock_path` primed to the active file while the view was *unlocked*, so every file switch wrote settings back to disk — polluting the history of anyone tracking their vault with Git, and pushing a needless change to every synced device. `lock_path` is only ever read while the view is locked, so it's now captured at the moment you click the lock instead of continuously. Locking behaves exactly as before. Same fix as main.
+* One edge case changed with the above: toggling **Lock view** from the settings tab (rather than the lock button) no longer implicitly locks to the file you happen to have open. It uses the **Lock path** value set alongside it, which is what that pair of settings was always meant to do. If **Lock path** is empty, the view keeps following the active file as usual.
+
 ### Build
 
 * Removed `manifest-beta.json` and the separate `version-bump-beta.mjs` script — and the `cp manifest.json manifest-beta.json` step the release workflow ran for every stable release to keep it in sync. BRAT (v1.1.0+) ignores `manifest-beta.json` entirely and reads `manifest.json` straight from a pinned release's assets, so the whole mechanism was dead weight; confirmed against BRAT's own developer guide. `version:beta` now bumps `manifest.json` exactly like `version:prod` does.
