@@ -78,5 +78,14 @@
 		"markmap-view": "^0.18.12",
 		"obsidian-typings": "^6.13.0",
 		"zod": "^4.4.3"
+	},
+	"overrides": {
+		"vite": "8.0.16",
+		"undici": "^6.27.0",
+		"postcss": "^8.5.23",
+		"brace-expansion": "^5.0.8",
+		"fast-uri": "^4.1.1",
+		"linkify-it": "^5.0.2",
+		"shell-quote": "^1.9.0"
 	}
 }
