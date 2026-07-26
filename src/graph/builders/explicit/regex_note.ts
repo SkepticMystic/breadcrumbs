@@ -3,7 +3,6 @@ import type {
 	EdgeBuilderResults,
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
-import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { fail, graph_build_fail, succ } from "src/utils/result";
 import { GCEdgeData } from "wasm/pkg/breadcrumbs_graph_wasm";
@@ -41,7 +40,6 @@ function get_regex_note_info(
 	try {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- An empty-string `flags` must also fall back to "", so `||` is deliberate.
 		regex = new RegExp(regex_str, (flags || "") as string);
-		log.debug(`get_regex_note_info > regex:`, regex);
 	} catch {
 		return graph_build_fail({
 			path,

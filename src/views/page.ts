@@ -29,7 +29,7 @@ export function cleanup_page_views(plugin: BreadcrumbsPlugin) {
 export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 	const markdown_views = plugin.app.workspace.getLeavesOfType("markdown");
 	if (!markdown_views.length) {
-		log.info("redraw_page_views > No markdown views found");
+		log.debug("redraw_page_views > No markdown views found");
 		return;
 	}
 
@@ -113,7 +113,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 				".markdown-reading-view > .markdown-preview-view > .markdown-preview-sizer",
 			);
 			if (!view_parent) {
-				log.info("redraw_page_views > No view_parent (mode=preview)");
+				log.debug("redraw_page_views > No view_parent (mode=preview)");
 				return;
 			}
 
@@ -135,7 +135,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 			const cm_scroller =
 				markdown_view.containerEl.querySelector(".cm-scroller");
 			if (!cm_scroller) {
-				log.info("redraw_page_views > No cm-scroller (mode=source)");
+				log.debug("redraw_page_views > No cm-scroller (mode=source)");
 				return;
 			}
 
@@ -166,7 +166,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 				} else {
 					const host = cm_scroller.parentElement;
 					if (!host) {
-						log.info(
+						log.debug(
 							"redraw_page_views > No parent of cm-scroller",
 						);
 						return;

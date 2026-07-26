@@ -23,8 +23,6 @@ function parse_source(
 	let yaml: Record<string, unknown>;
 	try {
 		yaml = (parseYaml(source) as Record<string, unknown>) ?? {};
-
-		log.debug("Codeblock > parsed_yaml >", yaml);
 	} catch (error) {
 		log.error("Codeblock > parse_source > ", error);
 

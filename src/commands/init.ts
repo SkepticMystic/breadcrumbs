@@ -125,10 +125,6 @@ export function init_all_commands(plugin: BreadcrumbsPlugin) {
 										),
 								);
 
-								log.debug(
-									`freeze-implied-edges-to-vault > took ${timer.elapsed_str()}ms`,
-								);
-
 								notice.setMessage(
 									`Implied edges frozen to all notes in ${timer.elapsed_str()}ms`,
 								);

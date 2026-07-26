@@ -33,7 +33,6 @@
 	}: {
 		plugin: BreadcrumbsPlugin;
 	} = $props();
-	log.debug("Rendering Tree side view");
 
 	// svelte-ignore state_referenced_locally — `plugin` is a constant singleton per instance
 	const settings = useViewSettings(plugin, {

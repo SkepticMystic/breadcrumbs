@@ -31,7 +31,6 @@
 	const tick_trail_log = effect_counter("TrailView.log");
 	$effect(() => {
 		tick_trail_log();
-		log.debug("Rendering Trail page view for file:", file_path);
 	});
 
 	let data: {

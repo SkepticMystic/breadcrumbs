@@ -52,8 +52,6 @@
 		menu.showAtMouseEvent(e);
 	}}
 	onauxclick={(e) => {
-		log.debug("on:auxclick e.button", e.button);
-
 		if (e.button === 1) {
 			plugin.app.workspace.openLinkText(path, "", "tab");
 		}

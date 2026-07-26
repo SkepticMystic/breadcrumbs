@@ -8,7 +8,6 @@ import ShowAttributesSettingItem from "src/components/settings/ShowAttributesSet
 import type { EdgeSortId } from "src/const/graph";
 import { LINK_KINDS } from "src/const/links";
 import type { EdgeAttribute } from "src/graph/utils";
-import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { _add_settings_show_node_options } from "src/settings/ShowNodeOptions";
 import { active_file_store } from "src/stores/active_file";
@@ -113,8 +112,6 @@ export class CreateListIndexModal extends Modal {
 				.setButtonText("Build & copy to clipboard")
 				.setCta()
 				.onClick(async () => {
-					log.debug("build_list_index options", this.options);
-
 					const list_index = build_list_index(
 						plugin.graph,
 						this.active_file!.path,

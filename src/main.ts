@@ -157,8 +157,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 		}
 
 		this.app.workspace.onLayoutReady(async () => {
-			log.debug("on:layout-ready");
-
 			// Set the edge_fields & BC-meta-fields to the right Properties type
 			try {
 				for (const field of this.settings.edge_fields) {
@@ -191,15 +189,11 @@ export default class BreadcrumbsPlugin extends Plugin {
 			await dataview_plugin.await_if_enabled(this);
 
 			if (this.app.metadataCache.initialized) {
-				log.debug("metadataCache:initialized");
-
 				await this.rebuildGraph();
 			} else {
 				const metadatacache_init_event = this.app.metadataCache.on(
 					"initialized",
 					() => {
-						log.debug("on:metadatacache-initialized");
-
 						void this.rebuildGraph();
 
 						this.app.metadataCache.offref(metadatacache_init_event);
@@ -211,8 +205,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Workspace
 			this.registerEvent(
 				this.app.workspace.on("layout-change", () => {
-					log.debug("on:layout-change");
-
 					if (
 						this.settings.commands.rebuild_graph.trigger
 							.layout_change
@@ -226,8 +218,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.workspace.on("active-leaf-change", (leaf) => {
-					log.debug("on:active-leaf-change");
-
 					// NOTE: We only want to refresh the store when changing to another md note
 					if (leaf?.getViewState().type !== "markdown") {
 						return;
@@ -241,8 +231,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 			/// Vault
 			this.registerEvent(
 				this.app.vault.on("create", (file) => {
-					log.debug("on:create >", file.path);
-
 					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new AddNoteGraphUpdate(
@@ -255,8 +243,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.vault.on("rename", (file, old_path) => {
-					log.debug("on:rename >", old_path, "->", file.path);
-
 					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new RenameNoteGraphUpdate(
@@ -270,8 +256,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.vault.on("delete", (file) => {
-					log.debug("on:delete >", file.path);
-
 					if (file instanceof TFile && file.extension === "md") {
 						const batch = new BatchGraphUpdate();
 						new RemoveNoteGraphUpdate(file.path).add_to_batch(
@@ -284,9 +268,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			/// MetadataCache
 			this.registerEvent(
-				this.app.metadataCache.on("changed", (file) => {
-					log.debug("on:metadatacache-changed >", file.path);
-
+				this.app.metadataCache.on("changed", () => {
 					if (
 						this.settings.commands.rebuild_graph.trigger.note_save
 					) {
@@ -297,8 +279,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 			this.registerEvent(
 				this.app.metadataCache.on("resolved", () => {
-					log.debug("on:metadatacache-resolved");
-
 					if (this._pending_rebuild) {
 						this._pending_rebuild = false;
 						this.rebuildGraphDebounced();
@@ -333,8 +313,6 @@ export default class BreadcrumbsPlugin extends Plugin {
 
 		// Commands
 		init_all_commands(this);
-
-		log.debug("loaded Breadcrumbs plugin");
 	}
 
 	onunload() {

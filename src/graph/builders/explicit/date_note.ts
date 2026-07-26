@@ -5,7 +5,6 @@ import type {
 	ExplicitEdgeBuilder,
 } from "src/interfaces/graph";
 import type { PeriodNoteConfig } from "src/interfaces/settings";
-import { log } from "src/logger";
 import { Paths } from "src/utils/paths";
 import { GCEdgeData, GCNodeData } from "wasm/pkg/breadcrumbs_graph_wasm";
 
@@ -300,7 +299,6 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 			const target_basename = date_note_settings.stretch_to_existing
 				? (next_date_note_basename ?? basename_plus_one_day)
 				: basename_plus_one_day;
-			log.debug(`tomorrow_folder: ${tomorrow_folder}`);
 			const target_folder =
 				date_note_settings.stretch_to_existing ||
 				target_basename === next_date_note_basename

@@ -5,7 +5,6 @@
 	import { log } from "src/logger";
 	import type BreadcrumbsPlugin from "src/main";
 	import { active_file_store } from "src/stores/active_file";
-	import { Timer } from "src/utils/timer";
 	import { onMount, onDestroy } from "svelte";
 	import {
 		FlatTraversalResult,
@@ -99,11 +98,7 @@
 	}
 
 	onMount(() => {
-		const timer = new Timer();
-
 		update();
-
-		log.debug(timer.elapsedMessage("CodeblockTree initial traversal"));
 	});
 
 	// Free final FlatTraversalResult when component unmounts.

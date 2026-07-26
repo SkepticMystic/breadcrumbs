@@ -1,6 +1,5 @@
 import type { TFile } from "obsidian";
 import type { CrumbDestination } from "src/interfaces/settings";
-import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import {
 	ensure_is_array,
@@ -94,14 +93,9 @@ export async function drop_crumbs(
 				await plugin.app.fileManager.processFrontMatter(
 					destination_file,
 					(old_frontmatter) => {
-						const new_frontmatter = Object.assign(
+						Object.assign(
 							old_frontmatter as Record<string, unknown>,
 							frontmatter,
-						);
-
-						log.debug(
-							"drop_crumbs > processed frontmatter",
-							new_frontmatter,
 						);
 					},
 				);

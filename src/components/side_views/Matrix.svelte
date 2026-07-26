@@ -25,7 +25,6 @@
 	}
 
 	let { plugin }: Props = $props();
-	log.debug("Rendering Matrix side view");
 
 	// svelte-ignore state_referenced_locally — `plugin` is a constant singleton per instance
 	const settings = useViewSettings(plugin, {

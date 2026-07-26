@@ -32,8 +32,6 @@
 	async function render(markdown: string): Promise<void> {
 		if (!el) return;
 
-		log.debug("rendering markdown");
-
 		el.empty();
 
 		if (component && !parent_component) {
