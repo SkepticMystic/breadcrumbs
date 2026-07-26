@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 4.X
+
+### [4.21.4](https://github.com/michaelpporter/breadcrumbs/compare/4.21.3...4.21.4) (2026-07-26)
+
 ### Fixed
 
 * Inline Dataview fields are now recognized inside blockquotes and callouts — `> up:: [[Note]]` (and `> - up:: [[Note]]`) now creates the `up` edge, matching the behavior already shipped on the 1.12 maintenance line (4.14.3, #724). A trailing link on the same line still stays ordinary prose, per the #731 fix.
@@ -19,8 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `release:beta` no longer pushes to a hardcoded branch — it pushes whatever branch is currently checked out. The hardcoded `main:main` was harmless on `main` but had been copied verbatim onto the `1.12-compat` branch as `master:master`, a branch that doesn't exist, silently breaking the script there.
 * CI now runs on push to `main` and `1.12-compat`, not only on pull requests. A broken TypeScript pin sat on `main` for two months because nothing ever ran CI against the branch directly.
 * `EdgeAttrFilters` no longer derives from the deprecated `BCEdgeAttributes`. It describes `implied_relations.transitive[].chain` — live settings data, not legacy — so it was mismarked, and defining it via a `Pick` of a deprecated type meant the directory scan flagged current config code as deprecated. The two fields are spelled out instead; the resulting type is identical (verified by type-level assertion). The deprecation on the migration-only `BreadcrumbsSettingsWithDirection` is accurate and stays.
-
-## 4.X
+* Dependabot now also opens PRs against `1.12-compat`. It only reads its config from the default branch, so the permanent 1.12.x maintenance line — which never merges into `main` — had never received a single dependency update.
+* Bumped JS dependencies (3 updates: `eslint`, `svelte`, `baseline-browser-mapping`), and pinned TypeScript major-version bumps out of Dependabot's grouped updates — a prior TS 7 bump broke `build` for two months before anyone noticed (see the previous release's TypeScript pin).
 
 ### [4.21.3](https://github.com/michaelpporter/breadcrumbs/compare/4.21.2...4.21.3) (2026-07-25)
 
