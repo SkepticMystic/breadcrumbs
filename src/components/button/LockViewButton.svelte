@@ -2,7 +2,6 @@
 	import { LockKeyholeIcon, LockKeyholeOpenIcon } from "lucide-svelte";
 	import { ICON_SIZE } from "src/const";
 	import { log } from "src/logger";
-	import { effect_counter } from "src/utils/perf";
 
 	interface Props {
 		cls?: string;
@@ -18,19 +17,27 @@
 		active_path,
 	}: Props = $props();
 
-	const tick_lock = effect_counter("LockViewButton");
-	$effect(() => {
-		tick_lock();
+	/**
+	 * Capture the path at the moment of locking, not continuously.
+	 *
+	 * This used to be an `$effect` that kept `lock_path` primed to the active
+	 * file whenever the view was unlocked. But `lock_path` is only ever read
+	 * while locked, so priming it just rewrote settings on every file switch —
+	 * which churned `data.json` on every navigation (#744).
+	 */
+	const toggle_lock = () => {
 		if (!lock_view && active_path) {
 			lock_path = active_path;
 		}
-	});
+
+		lock_view = !lock_view;
+	};
 </script>
 
 <button
 	class={cls}
 	aria-label={lock_view ? "Locked View" : "Dynamic View"}
-	onclick={() => (lock_view = !lock_view)}
+	onclick={toggle_lock}
 >
 	{#if lock_view}
 		<LockKeyholeIcon size={ICON_SIZE} />

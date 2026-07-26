@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * Inline Dataview fields are now recognized inside blockquotes and callouts — `> up:: [[Note]]` (and `> - up:: [[Note]]`) now creates the `up` edge, matching the behavior already shipped on the 1.12 maintenance line (4.14.3, #724). A trailing link on the same line still stays ordinary prose, per the #731 fix.
+* Opening a note no longer rewrites `data.json` (Refs #744). The lock button in the tree and matrix side views kept `lock_path` primed to the active file while the view was *unlocked*, so every file switch wrote settings back to disk — polluting the history of anyone tracking their vault with Git, and pushing a needless change to every synced device. `lock_path` is only ever read while the view is locked, so it's now captured at the moment you click the lock instead of continuously. Locking behaves exactly as before.
+* One edge case changed with the above: toggling **Lock view** from the settings tab (rather than the lock button) no longer implicitly locks to the file you happen to have open. It uses the **Lock path** value set alongside it, which is what that pair of settings was always meant to do. If **Lock path** is empty, the view keeps following the active file as usual.
 
 ### Build
 
