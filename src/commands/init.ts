@@ -51,13 +51,11 @@ export function init_all_commands(plugin: BreadcrumbsPlugin) {
 			const stats = get_graph_stats(plugin.graph, {
 				groups: plugin.settings.edge_field_groups,
 			});
-			log.feat("Graph stats >", stats);
+			log.debug("Graph stats >", stats);
 
 			await navigator.clipboard.writeText(JSON.stringify(stats, null, 2));
 
-			new Notice(
-				"Graph stats printed to console and copied to clipboard",
-			);
+			new Notice("Graph stats copied to clipboard");
 		},
 	});
 

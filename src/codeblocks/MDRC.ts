@@ -57,7 +57,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		});
 
 		if (!parsed) {
-			log.warn(
+			log.debug(
 				"fatal codeblock errors\n" +
 					errors
 						.map((e) => `  [${e.code}] ${e.path}: ${e.message}`)
@@ -80,7 +80,7 @@ export class CodeblockMDRC extends MarkdownRenderChild {
 		);
 		// Although the postprocessing could also have errors,
 		// they're not fatal at this point, so we can still render the codeblock (which renders the errors as well)
-		if (errors.length) log.warn("non-fatal codeblock errors", errors);
+		if (errors.length) log.debug("non-fatal codeblock errors", errors);
 
 		if (options.type === "tree") {
 			this.component = mount(CodeblockTree, {

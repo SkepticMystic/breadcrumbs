@@ -55,7 +55,7 @@ impl UpdateableGraph for NoteGraph {
 
                 if !node_weight.resolved {
                     LOGGER.with(|l| {
-                        l.warn(&format!(
+                        l.debug(&format!(
                             "Attempted to remove unresolved node {} from the graph",
                             node_weight.path
                         ))

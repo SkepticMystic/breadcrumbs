@@ -168,11 +168,66 @@ function debugString(val) {
     // TODO we could test for more things here, like `Set`s and `Map`s.
     return className;
 }
+/**
+ * @returns {NoteGraph}
+ */
+export function create_graph() {
+    const ret = wasm.create_graph();
+    return NoteGraph.__wrap(ret);
+}
+
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+}
 
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_2.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_2.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    for (let i = 0; i < array.length; i++) {
+        const add = addToExternrefTable0(array[i]);
+        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
+let cachedUint32ArrayMemory0 = null;
+
+function getUint32ArrayMemory0() {
+    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
+        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
+    }
+    return cachedUint32ArrayMemory0;
+}
+
+function getArrayU32FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
+}
+
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
 }
 /**
  * @param {string} field
@@ -189,32 +244,6 @@ export function create_edge_sorter(field, reverse) {
     return EdgeSorter.__wrap(ret[0]);
 }
 
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
-    }
-}
-
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    for (let i = 0; i < array.length; i++) {
-        const add = addToExternrefTable0(array[i]);
-        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
-}
-
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_2.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
-}
 /**
  * @param {NoteGraph} graph
  * @param {TraversalData[]} traversal_data
@@ -253,35 +282,6 @@ export function sort_edges(graph, edges, sorter) {
     var v2 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
     return v2;
-}
-
-/**
- * @returns {NoteGraph}
- */
-export function create_graph() {
-    const ret = wasm.create_graph();
-    return NoteGraph.__wrap(ret);
-}
-
-let cachedUint32ArrayMemory0 = null;
-
-function getUint32ArrayMemory0() {
-    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
-        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
-    }
-    return cachedUint32ArrayMemory0;
-}
-
-function getArrayU32FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
-}
-
-function passArray32ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 4, 4) >>> 0;
-    getUint32ArrayMemory0().set(arg, ptr / 4);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
 }
 
 const AddEdgeGraphUpdateFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -1918,6 +1918,22 @@ export class NoteGraph {
         wasm.__wbg_notegraph_free(ptr, 0);
     }
     /**
+     * @param {TraversalOptions} traversal_options
+     * @param {MermaidGraphOptions} diagram_options
+     * @returns {MermaidGraphData}
+     */
+    generate_mermaid_graph(traversal_options, diagram_options) {
+        _assertClass(traversal_options, TraversalOptions);
+        var ptr0 = traversal_options.__destroy_into_raw();
+        _assertClass(diagram_options, MermaidGraphOptions);
+        var ptr1 = diagram_options.__destroy_into_raw();
+        const ret = wasm.notegraph_generate_mermaid_graph(this.__wbg_ptr, ptr0, ptr1);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return MermaidGraphData.__wrap(ret[0]);
+    }
+    /**
      * Returns all edge types that are present in the graph.
      * @returns {string[]}
      */
@@ -2085,22 +2101,6 @@ export class NoteGraph {
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.notegraph_has_node(this.__wbg_ptr, ptr0, len0);
         return ret !== 0;
-    }
-    /**
-     * @param {TraversalOptions} traversal_options
-     * @param {MermaidGraphOptions} diagram_options
-     * @returns {MermaidGraphData}
-     */
-    generate_mermaid_graph(traversal_options, diagram_options) {
-        _assertClass(traversal_options, TraversalOptions);
-        var ptr0 = traversal_options.__destroy_into_raw();
-        _assertClass(diagram_options, MermaidGraphOptions);
-        var ptr1 = diagram_options.__destroy_into_raw();
-        const ret = wasm.notegraph_generate_mermaid_graph(this.__wbg_ptr, ptr0, ptr1);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return MermaidGraphData.__wrap(ret[0]);
     }
     /**
      * Runs a recursive traversal of the graph.
@@ -3239,6 +3239,9 @@ function __wbg_get_imports() {
         const ret = EdgeStruct.__unwrap(arg0);
         return ret;
     };
+    imports.wbg.__wbg_error_3ca53ff4a54cf621 = function(arg0, arg1, arg2) {
+        arg0.error(getStringFromWasm0(arg1, arg2));
+    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -3265,9 +3268,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_gcnodedata_unwrap = function(arg0) {
         const ret = GCNodeData.__unwrap(arg0);
         return ret;
-    };
-    imports.wbg.__wbg_info_398bf5d211409814 = function(arg0, arg1, arg2) {
-        arg0.info(getStringFromWasm0(arg1, arg2));
     };
     imports.wbg.__wbg_new_405e22f390576ce2 = function() {
         const ret = new Object();
@@ -3343,9 +3343,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_traversaldata_unwrap = function(arg0) {
         const ret = TraversalData.__unwrap(arg0);
         return ret;
-    };
-    imports.wbg.__wbg_warn_4a2380c6903b0443 = function(arg0, arg1, arg2) {
-        arg0.warn(getStringFromWasm0(arg1, arg2));
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
         const ret = debugString(arg1);

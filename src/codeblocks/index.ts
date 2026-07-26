@@ -111,7 +111,7 @@ function postprocess_options(
 	}
 
 	if (parsed["dataview-from"]) {
-		log.warn(
+		log.debug(
 			"Codeblock field `dataview-from` is deprecated; use `from` instead.",
 		);
 	}

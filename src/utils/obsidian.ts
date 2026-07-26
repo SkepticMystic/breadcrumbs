@@ -100,12 +100,12 @@ export const copy_to_clipboard = async (
 	const resolved = Object.assign({ notify: true, log: true }, options);
 
 	if (resolved.log) {
-		log.feat(text);
+		log.debug(text);
 	}
 
 	await navigator.clipboard.writeText(text);
 
 	if (resolved.notify) {
-		new Notice("Copied to clipboard and logged to console.");
+		new Notice("Copied to clipboard.");
 	}
 };

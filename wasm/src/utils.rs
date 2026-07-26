@@ -12,13 +12,7 @@ extern "C" {
 
     pub type Logger;
     #[wasm_bindgen(method)]
-    pub fn feat(this: &Logger, message: &str);
-    #[wasm_bindgen(method)]
     pub fn debug(this: &Logger, message: &str);
-    #[wasm_bindgen(method)]
-    pub fn info(this: &Logger, message: &str);
-    #[wasm_bindgen(method)]
-    pub fn warn(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
     pub fn error(this: &Logger, message: &str);
 }
@@ -30,14 +24,8 @@ extern "C" {
     pub static LOGGER: Logger;
 
     pub type Logger;
-    #[wasm_bindgen(method, js_name = log)]
-    pub fn feat(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
     pub fn debug(this: &Logger, message: &str);
-    #[wasm_bindgen(method, js_name = log)]
-    pub fn info(this: &Logger, message: &str);
-    #[wasm_bindgen(method)]
-    pub fn warn(this: &Logger, message: &str);
     #[wasm_bindgen(method)]
     pub fn error(this: &Logger, message: &str);
 }
@@ -78,7 +66,7 @@ impl PerfLogger {
 
     pub fn stop(&mut self) {
         if self.stopped() {
-            LOGGER.with(|l| l.warn(&format!("PerfLogger {} is already stopped", self.name)));
+            LOGGER.with(|l| l.debug(&format!("PerfLogger {} is already stopped", self.name)));
         } else {
             self.elapsed = Some(self.start.elapsed().as_micros());
             self.stop_split();
