@@ -12,6 +12,13 @@ updates:
     groups:
       js-dependencies:
         patterns: ["*"]
+    ignore:
+      # TypeScript 7 is not supported by svelte-check or typescript-eslint yet.
+      # The bump was merged once and broke `bun run build` on main; reverted in
+      # PR #741. Drop this entry only after confirming both tools claim TS7
+      # support -- minor/patch updates within v6 still come through.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Rust/WASM graph engine
   - package-ecosystem: "cargo"
