@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.5](https://github.com/michaelpporter/breadcrumbs/compare/4.21.4...4.21.5) (2026-07-25)
+
+### Fixed
+
+* Console logging now defaults to errors only, per Obsidian's plugin guidelines. `debug.level` defaulted to `INFO`, letting info/warn messages through unconditionally on every install; it now defaults to `ERROR`. Separately, `feat()` logged at every level regardless of the selected setting — its threshold check was always true — and now only logs when Debug level is explicitly set to `FEAT`.
+
 ### [4.21.4](https://github.com/michaelpporter/breadcrumbs/compare/4.21.3...4.21.4) (2026-07-26)
 
 ### Fixed
