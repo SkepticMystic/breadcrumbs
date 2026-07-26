@@ -66,7 +66,9 @@ jobs:
                   fi
 
                   # Obsidian only downloads main.js, manifest.json, styles.css.
-                  # manifest-beta.json lives in the repo root for BRAT and is not a release asset.
+                  # BRAT (v1.1.0+) reads manifest.json from the release assets directly
+                  # and ignores manifest-beta.json entirely — there's no separate beta
+                  # manifest to publish.
                   gh release create "$tag" \
                     --title="$tag" \
                     $prerelease_flag \

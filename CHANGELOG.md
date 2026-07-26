@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Inline Dataview fields are now recognized inside blockquotes and callouts — `> up:: [[Note]]` (and `> - up:: [[Note]]`) now creates the `up` edge, matching the behavior already shipped on the 1.12 maintenance line (4.14.3, #724). A trailing link on the same line still stays ordinary prose, per the #731 fix.
 
+### Build
+
+* Retired `manifest-beta.json` and the separate `version-bump-beta.mjs` script. The 4.15.0 changelog noted BRAT reads `manifest-beta.json` from the repo root, which was true of older BRAT versions; as of BRAT v1.1.0 it's ignored entirely — beta installs are resolved by pinning a release tag and reading that release's `manifest.json` directly. `version:beta` now bumps `manifest.json` the same way `version:prod` does; the only thing that still needs to differ going into a beta release is `package.json`'s version carrying a `-beta.N` suffix.
+* `release:beta` no longer pushes to a hardcoded branch — it pushes whatever branch is currently checked out. The hardcoded `main:main` was harmless on `main` but had been copied verbatim onto the `1.12-compat` branch as `master:master`, a branch that doesn't exist, silently breaking the script there.
+* CI now runs on push to `main` and `1.12-compat`, not only on pull requests. A broken TypeScript pin sat on `main` for two months because nothing ever ran CI against the branch directly.
+
 ## 4.X
 
 ### [4.21.3](https://github.com/michaelpporter/breadcrumbs/compare/4.21.2...4.21.3) (2026-07-25)
