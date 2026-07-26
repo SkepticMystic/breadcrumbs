@@ -281,6 +281,6 @@ export const DEFAULT_SETTINGS: BreadcrumbsSettings = {
 	},
 
 	debug: {
-		level: "INFO",
+		level: "ERROR",
 	},
 };

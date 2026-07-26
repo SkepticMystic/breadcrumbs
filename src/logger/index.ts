@@ -62,7 +62,7 @@ class Logger {
 	}
 
 	feat(...args: unknown[]) {
-		if (this.level_i <= 4) {
+		if (this.level_i === 4) {
 			console.log(...build_prefix("FEAT"), ...args);
 		}
 	}
