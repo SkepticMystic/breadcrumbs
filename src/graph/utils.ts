@@ -24,13 +24,17 @@ export function to_node_stringify_options(
 }
 
 /**
- * Legacy type
+ * The filter shape stored in `implied_relations.transitive[].chain`.
  *
- * @deprecated
+ * Spelled out rather than `Pick`ed from the deprecated {@link BCEdgeAttributes}:
+ * this is live settings data, so it should not be defined in terms of a legacy
+ * type. Resolves identically to the previous `Partial<Pick<BCEdgeAttributes,
+ * "explicit" | "field">>`.
  */
-export type EdgeAttrFilters = Partial<
-	Pick<BCEdgeAttributes, "explicit" | "field">
-> &
+export type EdgeAttrFilters = Partial<{
+	field: string;
+	explicit: boolean;
+}> &
 	Partial<{
 		$or_fields: string[];
 		$or_target_ids: string[];

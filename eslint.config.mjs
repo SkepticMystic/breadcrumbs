@@ -112,11 +112,11 @@ export default tseslint.config(
 		},
 	},
 	{
-		// These files *define* the deprecated legacy settings/edge shapes and the
-		// migrations that read them, so they necessarily reference deprecated
-		// types. `no-deprecated` is on obsidianmd's `no-restricted-disable` list,
-		// so it can't be silenced inline — it has to be scoped here.
-		files: ['src/graph/utils.ts', 'src/interfaces/settings.ts'],
+		// `BreadcrumbsSettingsWithDirection` is a migration-only type describing an
+		// old on-disk settings shape, so it necessarily references the deprecated
+		// `BCEdgeAttributes`. `no-deprecated` is on obsidianmd's
+		// `no-restricted-disable` list, so it can't be silenced inline.
+		files: ['src/interfaces/settings.ts'],
 		rules: {
 			'@typescript-eslint/no-deprecated': 'off',
 		},
