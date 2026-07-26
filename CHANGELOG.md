@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.8](https://github.com/michaelpporter/breadcrumbs/compare/4.21.7...4.21.8) (2026-07-26)
+
+### Fixed
+
+* Breadcrumbs no longer writes anything to the developer console on a default install. `debug.level` previously defaulted to `ERROR`, which still let every caught exception through unconditionally; a new `SILENT` level is now the default, and `DEBUG`/`ERROR` remain available as opt-in choices under Settings → Debug level. Existing vaults keep whatever level they had explicitly set.
+* Each log level now uses the matching console method — `debug()` writes via `console.debug` and `error()` via `console.error`, where both previously went through `console.log`. Error output is categorized correctly in the developer tools console instead of appearing as ordinary log output.
+
+### Chores
+
+* Added a `.gitignore` rule for the repo-root `target/` directory that rust-analyzer creates for its `cargo check` output. Only `wasm/target/` was ignored previously, so the editor's flycheck logs showed up as untracked files.
+
 ### [4.21.7](https://github.com/michaelpporter/breadcrumbs/compare/4.21.6...4.21.7) (2026-07-26)
 
 ### Refactors
