@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.7](https://github.com/michaelpporter/breadcrumbs/compare/4.21.6...4.21.7) (2026-07-26)
+
+### Refactors
+
+* Simplified logging to two levels, `error` and `debug`, on both sides of the WASM boundary. The previous five-level scheme (`DEBUG`/`INFO`/`WARN`/`ERROR`/`FEAT`) collapsed `warn`/`info`/`feat` call sites into `debug` (internal diagnostics) or `error` (genuine caught exceptions). This also fixes a latent bug: the Rust side calls methods directly on the TS logger singleton across the WASM boundary via `wasm_bindgen`, so a prior TS-only edit to that class would have broken `NoteGraph.build_graph` and other graph operations at runtime for every user.
+
 ### [4.21.6](https://github.com/michaelpporter/breadcrumbs/compare/4.21.5...4.21.6) (2026-07-25)
 
 ### Chores
