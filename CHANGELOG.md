@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [Unreleased]
+## 4.X
+
+### [4.14.6](https://github.com/michaelpporter/breadcrumbs/compare/4.14.5...4.14.6) (2026-07-26)
+
+### Build
+
+* Bumped 21 packages via dependabot, including `svelte-check` to 4.7.3 — which changed its default config discovery to require a Vite config with `@sveltejs/vite-plugin-svelte` registered. This branch's `vite.config.mjs` only configures Vitest, so svelte-check errored on every `.svelte` file; added an empty `svelte.config.mjs` to restore plain TS diagnostics for Svelte files, matching pre-4.7 behavior (#753).
+* Ported the security `overrides` block from `main` — `1.12-compat` had none at all, so advisories already pinned on `main` (`brace-expansion`, `postcss`, `linkify-it`, `undici`, `vite`, `fast-uri`) resurfaced here. Also pinned `shell-quote` (build tooling only, via `npm-run-all2`), which `main` resolved to a safe version naturally but this branch didn't. `bun audit`: 15 vulnerabilities → 0 (#754, Refs #748).
+* Bumped `actions/checkout` from 6 to 7 (#752).
+
+### [4.14.5](https://github.com/michaelpporter/breadcrumbs/compare/4.14.4...4.14.5) (2026-07-25)
 
 ### Fixed
 
@@ -18,8 +28,6 @@ All notable changes to this project will be documented in this file. See [standa
 * The generated WASM bindings no longer contain `any` — the `wasm:postbuild` step rewrites it to `unknown`, as on main.
 * `EdgeAttrFilters` no longer derives from the deprecated `BCEdgeAttributes`; it describes live settings data and was mismarked. The resulting type is identical.
 * One exemption is specific to this branch and must **not** be ported to main: `PluginSettingTab.display()` is deprecated only since Obsidian 1.13.0, in favour of `getSettingDefinitions`. On the 1.12.x line `display()` is the correct API, so `no-deprecated` is scoped off for `SettingsTab.ts` here.
-
-## 4.X
 
 ### [4.14.4](https://github.com/michaelpporter/breadcrumbs/compare/4.14.3...4.14.4) (2026-07-25)
 
