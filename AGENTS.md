@@ -110,8 +110,7 @@ Tests live in `tests/`. No test framework for Svelte components — TypeScript l
 
 ## Versioning & releases
 
-- Use `bun run version:prod` or `bun run version:beta` to bump versions.
-- Beta releases use `manifest-beta.json`.
+- Use `bun run version:prod` or `bun run version:beta` to bump versions — both bump `manifest.json`; `version:beta` just expects `package.json`'s version to carry a `-beta.N` suffix, which is what marks the release a prerelease.
 - Release tags must match `manifest.json` version exactly (no leading `v`).
 - Attach `main.js`, `manifest.json`, `styles.css` to the GitHub release.
 

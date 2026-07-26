@@ -68,9 +68,9 @@ All of the above are generated automatically by wasm-bindgen and are not written
 #### Beta
 
 1. Push all previous changes to the actual project
-2. Bump version in `package.json`
-3. `bun run version:beta` to update `manifest-beta.json` and `versions.json` accordingly
-4. `git tag -a x.x.x-beta -m 'x.x.x-beta'` to tag the build
+2. Bump version in `package.json` — the version must carry a `-beta.N` suffix
+3. `bun run version:beta` to update `manifest.json` and `versions.json` accordingly
+4. `git tag -a x.x.x-beta.N -m 'x.x.x-beta.N'` to tag the build
 5. `git push origin x.x.x-beta` to push the release and trigger the action
 
 Or, do steps 3-5 in one go with `bun run release:beta`

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [Unreleased]
+
+### Build
+
+* Removed `manifest-beta.json` and the separate `version-bump-beta.mjs` script — and the `cp manifest.json manifest-beta.json` step the release workflow ran for every stable release to keep it in sync. BRAT (v1.1.0+) ignores `manifest-beta.json` entirely and reads `manifest.json` straight from a pinned release's assets, so the whole mechanism was dead weight; confirmed against BRAT's own developer guide. `version:beta` now bumps `manifest.json` exactly like `version:prod` does.
+* `release:beta` no longer pushes to a hardcoded branch. It said `master:master` — a branch that doesn't exist on this repo, so the script silently failed. Now pushes whatever branch is currently checked out.
+* CI now also runs on push to `main`, matching the same fix applied there.
+
 ## 4.X
 
 ### [4.14.4](https://github.com/michaelpporter/breadcrumbs/compare/4.14.3...4.14.4) (2026-07-25)
