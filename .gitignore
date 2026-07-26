@@ -41,3 +41,6 @@ _notes/
 
 # Local implementation plans (not for the repo)
 plans/
+
+# rust-analyzer flycheck output (runs cargo check from the repo root)
+/target/
