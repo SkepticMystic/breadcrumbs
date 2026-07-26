@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.6](https://github.com/michaelpporter/breadcrumbs/compare/4.21.5...4.21.6) (2026-07-25)
+
+### Chores
+
+* Removed roughly 30 low-value debug console logs — bare event-name traces, per-render "rendering X view" markers, and one-off internal value dumps that duplicated what's already obvious from the surrounding code. A few call sites that were logging at `info` level but were really internal diagnostics got relabeled to `debug`. Warn/error logging and the graph-rebuild performance timers are unaffected.
+
 ### [4.21.5](https://github.com/michaelpporter/breadcrumbs/compare/4.21.4...4.21.5) (2026-07-25)
 
 ### Fixed
