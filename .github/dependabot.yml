@@ -42,3 +42,46 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+
+  # 1.12-compat: a permanent parallel release line (Obsidian 1.12.x), never
+  # merged into main -- Dependabot reads config from the default branch only,
+  # so this branch gets no updates unless targeted explicitly here. See #748
+  # for the advisory gap this leaves today.
+  - package-ecosystem: "bun"
+    directory: "/"
+    target-branch: "1.12-compat"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      js-dependencies:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "cargo"
+    directory: "/wasm"
+    target-branch: "1.12-compat"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      cargo-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "1.12-compat"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      github-actions:
+        patterns: ["*"]
