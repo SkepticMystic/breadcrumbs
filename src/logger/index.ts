@@ -28,7 +28,7 @@ class Logger {
 
 	debug(...args: unknown[]) {
 		if (this.level_i <= 0) {
-			console.log(...build_prefix("DEBUG"), ...args);
+			console.debug(...build_prefix("DEBUG"), ...args);
 		}
 	}
 
