@@ -1,19 +1,30 @@
 // Post-process wasm-pack output (run by the `wasm:postbuild` npm script).
 //
 // 1. Write wasm/pkg/.gitignore so the auto-generated README isn't committed.
-// 2. Normalize the lint-suppression header in the generated `*.d.ts` files.
-//    wasm-bindgen emits a blanket `/* eslint-disable */`, which the Obsidian
-//    community scorecard flags ("specify some rule names"). We replace it with a
-//    disable scoped to exactly the rules that fire on the generated bindings, so
-//    the suppression is explicit and the scorecard is satisfied. Idempotent.
+// 2. Rewrite `any` to `unknown` in the generated `*.d.ts`. wasm-bindgen emits
+//    `any` for raw wasm exports and for `JsValue` returns; every TS/Svelte call
+//    site already casts the result, so `unknown` is a drop-in. This matters
+//    because the Obsidian community scanner forbids suppressing
+//    `@typescript-eslint/no-explicit-any` inline, so the `any` has to go rather
+//    than be silenced.
+// 3. Normalize the lint-suppression header. wasm-bindgen emits a blanket
+//    `/* eslint-disable */`; we replace it with a described disable scoped to
+//    the two rules that still fire, plus the matching `eslint-enable` the
+//    scanner's `disable-enable-pair` rule requires.
+//
+// All steps are idempotent.
 
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const PKG_DIR = "wasm/pkg";
 
-const SCOPED_DISABLE =
-	"/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new */";
+const RULES =
+	"@typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new";
+
+const SCOPED_DISABLE = `/* eslint-disable ${RULES} -- wasm-bindgen generates bare \`Function\` params and a static \`new\`; the bindings are generated, not hand-written. */`;
+
+const SCOPED_ENABLE = `/* eslint-enable ${RULES} -- End of generated bindings. */`;
 
 writeFileSync(
 	join(PKG_DIR, ".gitignore"),
@@ -26,11 +37,23 @@ writeFileSync(
 const HEADER_RE =
 	/(\/\* tslint:disable \*\/\n)(?:\/\* eslint-disable[^\n]*\*\/\n)?/;
 
+// Only ever appears as a type annotation in generated bindings.
+const ANY_RE = /: any(?=[;,)\s])/g;
+
 for (const name of readdirSync(PKG_DIR)) {
 	if (!name.endsWith(".d.ts")) continue;
+
 	const path = join(PKG_DIR, name);
 	const src = readFileSync(path, "utf8");
 	if (!HEADER_RE.test(src)) continue;
-	const next = src.replace(HEADER_RE, `$1${SCOPED_DISABLE}\n`);
+
+	let next = src
+		.replace(ANY_RE, ": unknown")
+		.replace(HEADER_RE, `$1${SCOPED_DISABLE}\n`);
+
+	// Trailing `eslint-enable`, replacing one from a previous run if present.
+	next = next.replace(/\n?\/\* eslint-enable[^\n]*\*\/\n?$/, "\n");
+	next = `${next.replace(/\n+$/, "\n")}${SCOPED_ENABLE}\n`;
+
 	if (next !== src) writeFileSync(path, next);
 }

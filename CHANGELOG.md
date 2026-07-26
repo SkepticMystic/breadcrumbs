@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file. See [standa
 * Removed `manifest-beta.json` and the separate `version-bump-beta.mjs` script — and the `cp manifest.json manifest-beta.json` step the release workflow ran for every stable release to keep it in sync. BRAT (v1.1.0+) ignores `manifest-beta.json` entirely and reads `manifest.json` straight from a pinned release's assets, so the whole mechanism was dead weight; confirmed against BRAT's own developer guide. `version:beta` now bumps `manifest.json` exactly like `version:prod` does.
 * `release:beta` no longer pushes to a hardcoded branch. It said `master:master` — a branch that doesn't exist on this repo, so the script silently failed. Now pushes whatever branch is currently checked out.
 * CI now also runs on push to `main`, matching the same fix applied there.
+* Reapplied main's lint hygiene work (4.21.3) on this line. `eslint-plugin-obsidianmd` (bumped here to 0.4.1, matching main) added rules that forbid undescribed `eslint-disable` comments, require a matching `eslint-enable` for file-level ones, and ban suppressing certain rules inline at all — including `no-explicit-any` and `no-deprecated`. The community directory scans this branch's releases too, so the same 46 findings applied. Every remaining suppression now carries a written reason; the rest were either fixed properly (the codeblock field check, the settings tab's Svelte component typing, the logger's `unknown[]` args) or scoped in `eslint.config.mjs`.
+* The generated WASM bindings no longer contain `any` — the `wasm:postbuild` step rewrites it to `unknown`, as on main.
+* `EdgeAttrFilters` no longer derives from the deprecated `BCEdgeAttributes`; it describes live settings data and was mismarked. The resulting type is identical.
+* One exemption is specific to this branch and must **not** be ported to main: `PluginSettingTab.display()` is deprecated only since Obsidian 1.13.0, in favour of `getSettingDefinitions`. On the 1.12.x line `display()` is the correct API, so `no-deprecated` is scoped off for `SettingsTab.ts` here.
 
 ## 4.X
 

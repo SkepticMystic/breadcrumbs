@@ -99,7 +99,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 			}
 
 			const { field, query } = dataview_note_info.data;
-			// eslint-disable-next-line no-useless-assignment
+			// eslint-disable-next-line no-useless-assignment -- The initialiser is the fallback if the `try` below throws.
 			let pages: IDataview.Page[] = [];
 			try {
 				pages = dataview_pages_to_plain_array(

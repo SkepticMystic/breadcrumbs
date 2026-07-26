@@ -1,12 +1,12 @@
 import { parseYaml } from "obsidian";
 import type { BreadcrumbsError } from "src/interfaces/graph";
-import { dataview_from_query } from "./dataview_from";
 import { log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { remove_duplicates_by } from "src/utils/arrays";
 import { Paths } from "src/utils/paths";
 import { quote_join } from "src/utils/strings";
 import type { z } from "zod";
+import { dataview_from_query } from "./dataview_from";
 import type { ICodeblock } from "./schema";
 import { CodeblockSchema } from "./schema";
 
@@ -62,9 +62,12 @@ function parse_source(
 		};
 	}
 
+	// Widened to string[] so arbitrary YAML keys can be tested against the
+	// literal-typed FIELDS tuple.
+	const valid_fields: readonly string[] = CodeblockSchema.FIELDS;
+
 	const invalid_fields = Object.keys(parsed.data).filter(
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-		(key) => !CodeblockSchema.FIELDS.includes(key as any),
+		(key) => !valid_fields.includes(key),
 	);
 
 	if (invalid_fields.length) {

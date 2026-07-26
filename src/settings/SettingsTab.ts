@@ -3,6 +3,7 @@ import { Notice, PluginSettingTab, Setting } from "obsidian";
 import { LOG_LEVELS, log } from "src/logger";
 import type BreadcrumbsPlugin from "src/main";
 import { perf_start, perf_end, perf_sync } from "src/utils/perf";
+import type { Component } from "svelte";
 import { mount, unmount } from "svelte";
 import EdgeFieldSettings from "../components/settings/EdgeFieldSettings.svelte";
 import TransitiveImpliedRelations from "../components/settings/TransitiveImpliedRelations.svelte";
@@ -40,7 +41,7 @@ function make_details_el(
 		...o?.s,
 	});
 
-	const children: HTMLDivElement = details.createEl("div", {
+	const children: HTMLDivElement = details.createDiv({
 		cls: "tree-item-children pl-4",
 	});
 
@@ -66,14 +67,14 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		// Sentinel row: invisible, mounts a Svelte component into the page container,
 		// returns cleanup. Using items[] instead of page() factory ensures Obsidian's
 		// search navigation calls display correctly.
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const svelte_items = (Component: any): SettingDefinitionItem[] => [
+		const svelte_items = (
+			Component: Component<{ plugin: BreadcrumbsPlugin }>,
+		): SettingDefinitionItem[] => [
 			{
 				name: "",
 				searchable: false,
 				render: (setting, group) => {
 					setting.settingEl.detach();
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 					const comp = mount(Component, {
 						props: { plugin },
 						target: group.listEl,
@@ -293,7 +294,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 		} catch (error) {
 			log.error("BreadcrumbsSettingTab.display threw >", error);
 			new Notice(
-				// eslint-disable-next-line obsidianmd/ui/sentence-case -- URL embedded in string; capitalising breaks the link
 				"Breadcrumbs: failed to render settings tab. See developer console and report at https://github.com/michaelpporter/breadcrumbs/issues",
 			);
 
@@ -316,7 +316,6 @@ export class BreadcrumbsSettingTab extends PluginSettingTab {
 			const retry = fallback.createEl("button", {
 				text: "Reload settings",
 			});
-			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			retry.onclick = () => this.display();
 		}
 		perf_end("SettingsTab.display");

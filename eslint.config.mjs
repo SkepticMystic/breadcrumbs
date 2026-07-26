@@ -83,4 +83,64 @@ export default tseslint.config(
 			'@typescript-eslint/no-redundant-type-constituents': 'off',
 		},
 	},
+	{
+		// `acronyms` REPLACES the plugin's default list rather than extending it,
+		// so the defaults are repeated here with ISO/US appended. Day names are
+		// proper nouns that the sentence-case check otherwise wants lowercased,
+		// and `ignoreRegex` skips strings carrying a URL (it would "correct"
+		// https://github.com/... to HTTPS://GitHub.com/...).
+		files: ['src/**/*.ts'],
+		rules: {
+			'obsidianmd/ui/sentence-case': [
+				'error',
+				{
+					acronyms: [
+						'API', 'HTTP', 'HTTPS', 'URL', 'DNS', 'TCP', 'IP', 'SSH',
+						'TLS', 'SSL', 'FTP', 'SFTP', 'SMTP', 'JSON', 'XML', 'HTML',
+						'CSS', 'PDF', 'CSV', 'YAML', 'SQL', 'PNG', 'JPG', 'JPEG',
+						'GIF', 'SVG', 'MFA', 'OAuth', 'JWT', 'LDAP', 'SAML', 'SDK',
+						'IDE', 'CLI', 'GUI', 'CRUD', 'REST', 'SOAP', 'CPU', 'GPU',
+						'RAM', 'SSD', 'USB', 'UI', 'OK', 'RSS', 'S3', 'ID', 'UUID',
+						'GUID', 'SHA', 'MD5', 'ASCII', 'DOM', 'CDN', 'FAQ', 'AI',
+						'ML', 'LLM',
+						// Breadcrumbs additions
+						'ISO', 'US',
+					],
+					ignoreWords: [
+						'Monday', 'Mondays', 'Sunday', 'Sundays',
+					],
+					ignoreRegex: ['https?://'],
+				},
+			],
+		},
+	},
+	{
+		// `BreadcrumbsSettingsWithDirection` is a migration-only type describing an
+		// old on-disk settings shape, so it necessarily references the deprecated
+		// `BCEdgeAttributes`. `no-deprecated` is on obsidianmd's
+		// `no-restricted-disable` list, so it can't be silenced inline.
+		files: ['src/interfaces/settings.ts'],
+		rules: {
+			'@typescript-eslint/no-deprecated': 'off',
+		},
+	},
+	{
+		// This is the 1.12 maintenance line: `PluginSettingTab.display()` is
+		// deprecated only *since 1.13.0*, in favour of `getSettingDefinitions`.
+		// On Obsidian 1.12.x `display()` is the correct API, so the deprecation
+		// warning does not apply to this branch. Do not port this block to main.
+		files: ['src/settings/SettingsTab.ts'],
+		rules: {
+			'@typescript-eslint/no-deprecated': 'off',
+		},
+	},
+	{
+		// The logger is the one place console output is intentional; every call is
+		// gated behind a user-configurable log level. `obsidianmd/*` rules are on
+		// the `no-restricted-disable` list, so this must be scoped here.
+		files: ['src/logger/index.ts'],
+		rules: {
+			'obsidianmd/rule-custom-message': 'off',
+		},
+	},
 );

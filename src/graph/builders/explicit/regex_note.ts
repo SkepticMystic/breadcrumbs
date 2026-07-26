@@ -39,7 +39,7 @@ function get_regex_note_info(
 
 	let regex: RegExp;
 	try {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- An empty-string `flags` must also fall back to "", so `||` is deliberate.
 		regex = new RegExp(regex_str, (flags || "") as string);
 		log.debug(`get_regex_note_info > regex:`, regex);
 	} catch {

@@ -60,7 +60,7 @@ export class DateNoteSetupModal extends Modal {
 			);
 		}
 
-		contentEl.createEl("h2", { text: "Set up Date Notes" });
+		contentEl.createEl("h2", { text: "Set up date notes" });
 		contentEl.createEl("p", {
 			text: "Configure date note edge sources and transitive hierarchy rules.",
 		});
@@ -93,7 +93,7 @@ export class DateNoteSetupModal extends Modal {
 		new Setting(contentEl)
 			.setName("Period-specific fields")
 			.setDesc(
-				"Use next_week/prev_week, next_month/prev_month, etc. instead of generic next/prev. Fields are created automatically.",
+				"Use next_week/prev_week, next_month/prev_month and so on instead of generic next/prev. Fields are created automatically.",
 			)
 			.addToggle((t) =>
 				t.setValue(this.period_specific).onChange((v) => {

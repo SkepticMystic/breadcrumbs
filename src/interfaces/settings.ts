@@ -60,7 +60,6 @@ export interface BreadcrumbsSettings {
 		transitive: {
 			name: string;
 			rounds: number;
-			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			chain: EdgeAttrFilters[];
 			/** The transitive closure field */
 			close_field: string;
@@ -266,7 +265,6 @@ export interface BreadcrumbsSettingsWithDirection {
 	custom_implied_relations: {
 		transitive: {
 			rounds: number;
-			// eslint-disable-next-line @typescript-eslint/no-deprecated
 			chain: Partial<BCEdgeAttributes>[];
 			/** The transitive closure field */
 			close_field: string;

@@ -20,8 +20,7 @@ export const reactive_settings = {
 	},
 
 	snapshot(): BreadcrumbsSettings {
-		// preserve cast — see PR #685 reactive-loops fix
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- Preserve the cast; see PR #685 reactive-loops fix.
 		return $state.snapshot(_settings) as BreadcrumbsSettings;
 	},
 };

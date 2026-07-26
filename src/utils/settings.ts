@@ -71,7 +71,7 @@ export function new_setting<
 				);
 		});
 	} else if (config.checklist) {
-		const checklist_el = setting.controlEl.createEl("div", {
+		const checklist_el = setting.controlEl.createDiv({
 			attr: { class: "flex flex-wrap gap-3" },
 		});
 

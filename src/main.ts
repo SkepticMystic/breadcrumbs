@@ -429,7 +429,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 	async activateView(view_id: string, options?: { side?: "left" | "right" }) {
 		const { workspace } = this.app;
 
-		// eslint-disable-next-line no-useless-assignment
+		// eslint-disable-next-line no-useless-assignment -- The initialiser is the fallback for the branches below that never assign.
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(view_id);
 
