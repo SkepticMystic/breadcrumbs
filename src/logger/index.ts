@@ -1,9 +1,10 @@
-export const LOG_LEVELS = ["DEBUG", "ERROR"] as const;
+export const LOG_LEVELS = ["DEBUG", "ERROR", "SILENT"] as const;
 export type LogLevels = (typeof LOG_LEVELS)[number];
 
 const LEVEL_COLOURS: Record<LogLevels, string | null> = {
 	DEBUG: "#999",
 	ERROR: "#f00",
+	SILENT: null,
 };
 
 const build_prefix = (level: LogLevels) => {
@@ -27,13 +28,13 @@ class Logger {
 
 	debug(...args: unknown[]) {
 		if (this.level_i <= 0) {
-			console.log(...build_prefix("DEBUG"), ...args);
+			console.debug(...build_prefix("DEBUG"), ...args);
 		}
 	}
 
 	error(...args: unknown[]) {
 		if (this.level_i <= 1) {
-			console.log(...build_prefix("ERROR"), ...args);
+			console.error(...build_prefix("ERROR"), ...args);
 		}
 	}
 
@@ -42,4 +43,4 @@ class Logger {
 	}
 }
 
-export const log = new Logger("ERROR");
+export const log = new Logger("SILENT");
