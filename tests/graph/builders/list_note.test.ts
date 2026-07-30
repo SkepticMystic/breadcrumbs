@@ -88,4 +88,110 @@ describe("list_note builder", () => {
 		);
 		t.expect(r.errors[0]!.code).toBe("invalid_edge_field");
 	});
+
+	test("BC-list-note-section scopes edges to one heading", async (t) => {
+		const content = "# Index\n- [[A]]\n- [[B]]\n# Other\n- [[C]]";
+		const list = mock_file("list.md", {
+			frontmatter: {
+				"BC-list-note-field": "down",
+				"BC-list-note-section": "Index",
+			},
+			headings: [
+				{ line: 0, level: 1, heading: "Index" },
+				{ line: 3, level: 1, heading: "Other" },
+			],
+			listItems: [
+				{ line: 1, col: 0, parent: -1 },
+				{ line: 2, col: 0, parent: -1 },
+				{ line: 4, col: 0, parent: -1 },
+			],
+			links: [
+				{ line: 1, link: "A" },
+				{ line: 2, link: "B" },
+				{ line: 4, link: "C" },
+			],
+		});
+
+		const r = await _add_explicit_edges_list_note(
+			make_plugin(
+				{ edge_fields: EDGE_FIELDS, explicit_edge_sources: {} as never },
+				[],
+				link_resolver(["A", "B", "C"]),
+				{ cachedRead: async () => content },
+			),
+			make_all_files([list]),
+		);
+
+		const targets = r.edges.map((e) => e.target);
+		t.expect(targets).toContainEqual("A.md");
+		t.expect(targets).toContainEqual("B.md");
+		t.expect(targets).not.toContainEqual("C.md");
+		t.expect(r.errors).toHaveLength(0);
+	});
+
+	test("section boundary stops at next equal/higher-level heading, not sub-headings", async (t) => {
+		const content = "# Index\n- [[A]]\n## Sub\n- [[B]]\n# Other\n- [[C]]";
+		const list = mock_file("list.md", {
+			frontmatter: {
+				"BC-list-note-field": "down",
+				"BC-list-note-section": "Index",
+			},
+			headings: [
+				{ line: 0, level: 1, heading: "Index" },
+				{ line: 2, level: 2, heading: "Sub" },
+				{ line: 4, level: 1, heading: "Other" },
+			],
+			listItems: [
+				{ line: 1, col: 0, parent: -1 },
+				{ line: 3, col: 0, parent: -1 },
+				{ line: 5, col: 0, parent: -1 },
+			],
+			links: [
+				{ line: 1, link: "A" },
+				{ line: 3, link: "B" },
+				{ line: 5, link: "C" },
+			],
+		});
+
+		const r = await _add_explicit_edges_list_note(
+			make_plugin(
+				{ edge_fields: EDGE_FIELDS, explicit_edge_sources: {} as never },
+				[],
+				link_resolver(["A", "B", "C"]),
+				{ cachedRead: async () => content },
+			),
+			make_all_files([list]),
+		);
+
+		const targets = r.edges.map((e) => e.target);
+		t.expect(targets).toContainEqual("A.md");
+		t.expect(targets).toContainEqual("B.md");
+		t.expect(targets).not.toContainEqual("C.md");
+	});
+
+	test("BC-list-note-section with no matching heading → 0 edges, 0 errors", async (t) => {
+		const content = "# Index\n- [[A]]";
+		const list = mock_file("list.md", {
+			frontmatter: {
+				"BC-list-note-field": "down",
+				"BC-list-note-section": "Nope",
+			},
+			headings: [{ line: 0, level: 1, heading: "Index" }],
+			listItems: [{ line: 1, col: 0, parent: -1 }],
+			links: [{ line: 1, link: "A" }],
+		});
+
+		const r = await _add_explicit_edges_list_note(
+			make_plugin(
+				{ edge_fields: EDGE_FIELDS, explicit_edge_sources: {} as never },
+				[],
+				link_resolver(["A"]),
+				{ cachedRead: async () => content },
+			),
+			make_all_files([list]),
+		);
+
+		t.expect(r.edges).toHaveLength(0);
+		t.expect(r.errors).toHaveLength(0);
+	});
 });

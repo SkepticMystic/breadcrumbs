@@ -16,6 +16,7 @@ export const METADATA_FIELDS_LIST = [
 	"BC-list-note-field",
 	"BC-list-note-neighbour-field",
 	"BC-list-note-exclude-index",
+	"BC-list-note-section",
 	//
 	"BC-dendron-note-field",
 	//
@@ -77,6 +78,9 @@ export const METADATA_FIELDS_MAP: Record<
 	"BC-list-note-exclude-index": {
 		property_type: "checkbox",
 	},
+	"BC-list-note-section": {
+		property_type: "text",
+	},
 	//
 	"BC-dendron-note-field": {
 		property_type: "text",
@@ -121,6 +125,7 @@ export const META_ALIAS = {
 	"list-note-field": "BC-list-note-field",
 	"list-note-neighbour-field": "BC-list-note-neighbour-field",
 	"list-note-exclude-index": "BC-list-note-exclude-index",
+	"list-note-section": "BC-list-note-section",
 	//
 	"dendron-note-field": "BC-dendron-note-field",
 	//
