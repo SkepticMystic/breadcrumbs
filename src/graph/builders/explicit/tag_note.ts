@@ -33,7 +33,7 @@ const get_tag_note_info = (
 		raw_tag = metadata["BC-tag-note"];
 
 		if (raw_tag) {
-			log.warn(
+			log.debug(
 				`'BC-tag-note' is deprecated in favor of ${META_ALIAS["tag-note-tag"]}`,
 			);
 		}

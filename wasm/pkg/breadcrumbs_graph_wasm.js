@@ -168,23 +168,11 @@ function debugString(val) {
     // TODO we could test for more things here, like `Set`s and `Map`s.
     return className;
 }
-/**
- * @returns {NoteGraph}
- */
-export function create_graph() {
-    const ret = wasm.create_graph();
-    return NoteGraph.__wrap(ret);
-}
 
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_2.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_2.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
 }
 
 function passArrayJsValueToWasm0(array, malloc) {
@@ -203,12 +191,6 @@ function _assertClass(instance, klass) {
     }
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_2.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-
 let cachedUint32ArrayMemory0 = null;
 
 function getUint32ArrayMemory0() {
@@ -223,27 +205,23 @@ function getArrayU32FromWasm0(ptr, len) {
     return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
 }
 
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_2.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
+}
+
 function passArray32ToWasm0(arg, malloc) {
     const ptr = malloc(arg.length * 4, 4) >>> 0;
     getUint32ArrayMemory0().set(arg, ptr / 4);
     WASM_VECTOR_LEN = arg.length;
     return ptr;
 }
-/**
- * @param {string} field
- * @param {boolean} reverse
- * @returns {EdgeSorter}
- */
-export function create_edge_sorter(field, reverse) {
-    const ptr0 = passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.create_edge_sorter(ptr0, len0, reverse);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return EdgeSorter.__wrap(ret[0]);
-}
-
 /**
  * @param {NoteGraph} graph
  * @param {TraversalData[]} traversal_data
@@ -282,6 +260,29 @@ export function sort_edges(graph, edges, sorter) {
     var v2 = getArrayJsValueFromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
     return v2;
+}
+
+/**
+ * @param {string} field
+ * @param {boolean} reverse
+ * @returns {EdgeSorter}
+ */
+export function create_edge_sorter(field, reverse) {
+    const ptr0 = passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.create_edge_sorter(ptr0, len0, reverse);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return EdgeSorter.__wrap(ret[0]);
+}
+
+/**
+ * @returns {NoteGraph}
+ */
+export function create_graph() {
+    const ret = wasm.create_graph();
+    return NoteGraph.__wrap(ret);
 }
 
 const AddEdgeGraphUpdateFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -960,6 +961,49 @@ export class FlatTraversalData {
         wasm.__wbg_flattraversaldata_free(ptr, 0);
     }
     /**
+     * @param {NoteGraph} graph
+     * @param {string[]} attributes
+     * @returns {string}
+     */
+    get_attribute_label(graph, attributes) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            _assertClass(graph, NoteGraph);
+            const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.flattraversaldata_get_attribute_label(this.__wbg_ptr, graph.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * @param {NoteGraph} graph
+     * @param {NodeStringifyOptions} str_opt
+     * @param {string[]} attributes
+     * @returns {any}
+     */
+    to_js_rendering_obj(graph, str_opt, attributes) {
+        _assertClass(graph, NoteGraph);
+        _assertClass(str_opt, NodeStringifyOptions);
+        const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.flattraversaldata_to_js_rendering_obj(this.__wbg_ptr, graph.__wbg_ptr, str_opt.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
      * the edge struct that was traversed
      * @returns {EdgeStruct}
      */
@@ -1038,49 +1082,6 @@ export class FlatTraversalData {
     set has_cut_of_children(arg0) {
         wasm.__wbg_set_flattraversaldata_has_cut_of_children(this.__wbg_ptr, arg0);
     }
-    /**
-     * @param {NoteGraph} graph
-     * @param {string[]} attributes
-     * @returns {string}
-     */
-    get_attribute_label(graph, attributes) {
-        let deferred3_0;
-        let deferred3_1;
-        try {
-            _assertClass(graph, NoteGraph);
-            const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
-            const len0 = WASM_VECTOR_LEN;
-            const ret = wasm.flattraversaldata_get_attribute_label(this.__wbg_ptr, graph.__wbg_ptr, ptr0, len0);
-            var ptr2 = ret[0];
-            var len2 = ret[1];
-            if (ret[3]) {
-                ptr2 = 0; len2 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred3_0 = ptr2;
-            deferred3_1 = len2;
-            return getStringFromWasm0(ptr2, len2);
-        } finally {
-            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-        }
-    }
-    /**
-     * @param {NoteGraph} graph
-     * @param {NodeStringifyOptions} str_opt
-     * @param {string[]} attributes
-     * @returns {any}
-     */
-    to_js_rendering_obj(graph, str_opt, attributes) {
-        _assertClass(graph, NoteGraph);
-        _assertClass(str_opt, NodeStringifyOptions);
-        const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.flattraversaldata_to_js_rendering_obj(this.__wbg_ptr, graph.__wbg_ptr, str_opt.__wbg_ptr, ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
 }
 
 const FlatTraversalResultFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -1107,6 +1108,82 @@ export class FlatTraversalResult {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_flattraversalresult_free(ptr, 0);
+    }
+    /**
+     * @param {number} index
+     * @returns {FlatTraversalData | undefined}
+     */
+    data_at_index(index) {
+        const ret = wasm.flattraversalresult_data_at_index(this.__wbg_ptr, index);
+        return ret === 0 ? undefined : FlatTraversalData.__wrap(ret);
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.flattraversalresult_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {number} index
+     * @returns {Uint32Array | undefined}
+     */
+    children_at_index(index) {
+        const ret = wasm.flattraversalresult_children_at_index(this.__wbg_ptr, index);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        }
+        return v1;
+    }
+    /**
+     * @param {number} index
+     * @param {NoteGraph} graph
+     * @param {NodeStringifyOptions} str_opt
+     * @param {string[]} attributes
+     * @returns {any}
+     */
+    rendering_obj_at_index(index, graph, str_opt, attributes) {
+        _assertClass(graph, NoteGraph);
+        _assertClass(str_opt, NodeStringifyOptions);
+        const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.flattraversalresult_rendering_obj_at_index(this.__wbg_ptr, index, graph.__wbg_ptr, str_opt.__wbg_ptr, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Sorts the flat traversal data with a given edge sorter.
+     * This is not as efficient as sorting the traversal data before flattening
+     * it, but it's still a lot better than sorting then re-flatten.
+     * @param {NoteGraph} graph
+     * @param {EdgeSorter} sorter
+     */
+    sort(graph, sorter) {
+        _assertClass(graph, NoteGraph);
+        _assertClass(sorter, EdgeSorter);
+        const ret = wasm.flattraversalresult_sort(this.__wbg_ptr, graph.__wbg_ptr, sorter.__wbg_ptr);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @returns {boolean}
+     */
+    is_empty() {
+        const ret = wasm.flattraversalresult_is_empty(this.__wbg_ptr);
+        return ret !== 0;
     }
     /**
      * @returns {FlatTraversalData[]}
@@ -1193,82 +1270,6 @@ export class FlatTraversalResult {
         const ptr0 = passArray32ToWasm0(arg0, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.__wbg_set_flattraversalresult_entry_nodes(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {number} index
-     * @returns {FlatTraversalData | undefined}
-     */
-    data_at_index(index) {
-        const ret = wasm.flattraversalresult_data_at_index(this.__wbg_ptr, index);
-        return ret === 0 ? undefined : FlatTraversalData.__wrap(ret);
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.flattraversalresult_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {number} index
-     * @returns {Uint32Array | undefined}
-     */
-    children_at_index(index) {
-        const ret = wasm.flattraversalresult_children_at_index(this.__wbg_ptr, index);
-        let v1;
-        if (ret[0] !== 0) {
-            v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
-            wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-        }
-        return v1;
-    }
-    /**
-     * @param {number} index
-     * @param {NoteGraph} graph
-     * @param {NodeStringifyOptions} str_opt
-     * @param {string[]} attributes
-     * @returns {any}
-     */
-    rendering_obj_at_index(index, graph, str_opt, attributes) {
-        _assertClass(graph, NoteGraph);
-        _assertClass(str_opt, NodeStringifyOptions);
-        const ptr0 = passArrayJsValueToWasm0(attributes, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.flattraversalresult_rendering_obj_at_index(this.__wbg_ptr, index, graph.__wbg_ptr, str_opt.__wbg_ptr, ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Sorts the flat traversal data with a given edge sorter.
-     * This is not as efficient as sorting the traversal data before flattening
-     * it, but it's still a lot better than sorting then re-flatten.
-     * @param {NoteGraph} graph
-     * @param {EdgeSorter} sorter
-     */
-    sort(graph, sorter) {
-        _assertClass(graph, NoteGraph);
-        _assertClass(sorter, EdgeSorter);
-        const ret = wasm.flattraversalresult_sort(this.__wbg_ptr, graph.__wbg_ptr, sorter.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * @returns {boolean}
-     */
-    is_empty() {
-        const ret = wasm.flattraversalresult_is_empty(this.__wbg_ptr);
-        return ret !== 0;
     }
 }
 
@@ -1560,6 +1561,21 @@ export class MermaidGraphData {
     /**
      * @returns {string}
      */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.mermaidgraphdata_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
     get mermaid() {
         let deferred1_0;
         let deferred1_1;
@@ -1605,21 +1621,6 @@ export class MermaidGraphData {
      */
     set total_time(arg0) {
         wasm.__wbg_set_mermaidgraphdata_total_time(this.__wbg_ptr, arg0);
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.mermaidgraphdata_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
     }
 }
 
@@ -1852,20 +1853,6 @@ export class NodeStringifyOptions {
         wasm.__wbg_nodestringifyoptions_free(ptr, 0);
     }
     /**
-     * @param {boolean} extension
-     * @param {boolean} folder
-     * @param {boolean} alias
-     * @param {string | null} [trim_basename_delimiter]
-     */
-    constructor(extension, folder, alias, trim_basename_delimiter) {
-        var ptr0 = isLikeNone(trim_basename_delimiter) ? 0 : passStringToWasm0(trim_basename_delimiter, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        const ret = wasm.nodestringifyoptions_new(extension, folder, alias, ptr0, len0);
-        this.__wbg_ptr = ret >>> 0;
-        NodeStringifyOptionsFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @param {NodeData} node
      * @returns {string}
      */
@@ -1881,6 +1868,20 @@ export class NodeStringifyOptions {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @param {boolean} extension
+     * @param {boolean} folder
+     * @param {boolean} alias
+     * @param {string | null} [trim_basename_delimiter]
+     */
+    constructor(extension, folder, alias, trim_basename_delimiter) {
+        var ptr0 = isLikeNone(trim_basename_delimiter) ? 0 : passStringToWasm0(trim_basename_delimiter, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        const ret = wasm.nodestringifyoptions_new(extension, folder, alias, ptr0, len0);
+        this.__wbg_ptr = ret >>> 0;
+        NodeStringifyOptionsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -1916,22 +1917,6 @@ export class NoteGraph {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_notegraph_free(ptr, 0);
-    }
-    /**
-     * @param {TraversalOptions} traversal_options
-     * @param {MermaidGraphOptions} diagram_options
-     * @returns {MermaidGraphData}
-     */
-    generate_mermaid_graph(traversal_options, diagram_options) {
-        _assertClass(traversal_options, TraversalOptions);
-        var ptr0 = traversal_options.__destroy_into_raw();
-        _assertClass(diagram_options, MermaidGraphOptions);
-        var ptr1 = diagram_options.__destroy_into_raw();
-        const ret = wasm.notegraph_generate_mermaid_graph(this.__wbg_ptr, ptr0, ptr1);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return MermaidGraphData.__wrap(ret[0]);
     }
     /**
      * Returns all edge types that are present in the graph.
@@ -2101,6 +2086,22 @@ export class NoteGraph {
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.notegraph_has_node(this.__wbg_ptr, ptr0, len0);
         return ret !== 0;
+    }
+    /**
+     * @param {TraversalOptions} traversal_options
+     * @param {MermaidGraphOptions} diagram_options
+     * @returns {MermaidGraphData}
+     */
+    generate_mermaid_graph(traversal_options, diagram_options) {
+        _assertClass(traversal_options, TraversalOptions);
+        var ptr0 = traversal_options.__destroy_into_raw();
+        _assertClass(diagram_options, MermaidGraphOptions);
+        var ptr1 = diagram_options.__destroy_into_raw();
+        const ret = wasm.notegraph_generate_mermaid_graph(this.__wbg_ptr, ptr0, ptr1);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return MermaidGraphData.__wrap(ret[0]);
     }
     /**
      * Runs a recursive traversal of the graph.
@@ -2663,6 +2664,50 @@ export class TraversalData {
         wasm.__wbg_traversaldata_free(ptr, 0);
     }
     /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.traversaldata_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {NoteGraph} graph
+     * @param {EdgeSorter} sorter
+     */
+    rec_sort_children(graph, sorter) {
+        _assertClass(graph, NoteGraph);
+        _assertClass(sorter, EdgeSorter);
+        const ret = wasm.traversaldata_rec_sort_children(this.__wbg_ptr, graph.__wbg_ptr, sorter.__wbg_ptr);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @param {EdgeStruct} edge
+     * @param {number} depth
+     * @param {number} number_of_children
+     * @param {TraversalData[]} children
+     * @param {boolean} has_cut_of_children
+     */
+    constructor(edge, depth, number_of_children, children, has_cut_of_children) {
+        _assertClass(edge, EdgeStruct);
+        var ptr0 = edge.__destroy_into_raw();
+        const ptr1 = passArrayJsValueToWasm0(children, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.traversaldata_new(ptr0, depth, number_of_children, ptr1, len1, has_cut_of_children);
+        this.__wbg_ptr = ret >>> 0;
+        TraversalDataFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
      * the edge struct that was traversed
      * @returns {EdgeStruct}
      */
@@ -2745,50 +2790,6 @@ export class TraversalData {
     set has_cut_of_children(arg0) {
         wasm.__wbg_set_flattraversaldata_has_cut_of_children(this.__wbg_ptr, arg0);
     }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.traversaldata_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {NoteGraph} graph
-     * @param {EdgeSorter} sorter
-     */
-    rec_sort_children(graph, sorter) {
-        _assertClass(graph, NoteGraph);
-        _assertClass(sorter, EdgeSorter);
-        const ret = wasm.traversaldata_rec_sort_children(this.__wbg_ptr, graph.__wbg_ptr, sorter.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * @param {EdgeStruct} edge
-     * @param {number} depth
-     * @param {number} number_of_children
-     * @param {TraversalData[]} children
-     * @param {boolean} has_cut_of_children
-     */
-    constructor(edge, depth, number_of_children, children, has_cut_of_children) {
-        _assertClass(edge, EdgeStruct);
-        var ptr0 = edge.__destroy_into_raw();
-        const ptr1 = passArrayJsValueToWasm0(children, wasm.__wbindgen_malloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.traversaldata_new(ptr0, depth, number_of_children, ptr1, len1, has_cut_of_children);
-        this.__wbg_ptr = ret >>> 0;
-        TraversalDataFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
 }
 
 const TraversalOptionsFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -2807,6 +2808,41 @@ export class TraversalOptions {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_traversaloptions_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.traversaloptions_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {string[]} entry_nodes
+     * @param {string[] | null | undefined} edge_types
+     * @param {number} max_depth
+     * @param {number} max_traversal_count
+     * @param {boolean} separate_edges
+     * @param {string[] | null} [dataview_from_paths]
+     */
+    constructor(entry_nodes, edge_types, max_depth, max_traversal_count, separate_edges, dataview_from_paths) {
+        const ptr0 = passArrayJsValueToWasm0(entry_nodes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        var ptr1 = isLikeNone(edge_types) ? 0 : passArrayJsValueToWasm0(edge_types, wasm.__wbindgen_malloc);
+        var len1 = WASM_VECTOR_LEN;
+        var ptr2 = isLikeNone(dataview_from_paths) ? 0 : passArrayJsValueToWasm0(dataview_from_paths, wasm.__wbindgen_malloc);
+        var len2 = WASM_VECTOR_LEN;
+        const ret = wasm.traversaloptions_new(ptr0, len0, ptr1, len1, max_depth, max_traversal_count, separate_edges, ptr2, len2);
+        this.__wbg_ptr = ret >>> 0;
+        TraversalOptionsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {string[]}
@@ -2915,41 +2951,6 @@ export class TraversalOptions {
         var ptr0 = isLikeNone(arg0) ? 0 : passArrayJsValueToWasm0(arg0, wasm.__wbindgen_malloc);
         var len0 = WASM_VECTOR_LEN;
         wasm.__wbg_set_traversaloptions_dataview_from_paths(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.traversaloptions_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {string[]} entry_nodes
-     * @param {string[] | null | undefined} edge_types
-     * @param {number} max_depth
-     * @param {number} max_traversal_count
-     * @param {boolean} separate_edges
-     * @param {string[] | null} [dataview_from_paths]
-     */
-    constructor(entry_nodes, edge_types, max_depth, max_traversal_count, separate_edges, dataview_from_paths) {
-        const ptr0 = passArrayJsValueToWasm0(entry_nodes, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        var ptr1 = isLikeNone(edge_types) ? 0 : passArrayJsValueToWasm0(edge_types, wasm.__wbindgen_malloc);
-        var len1 = WASM_VECTOR_LEN;
-        var ptr2 = isLikeNone(dataview_from_paths) ? 0 : passArrayJsValueToWasm0(dataview_from_paths, wasm.__wbindgen_malloc);
-        var len2 = WASM_VECTOR_LEN;
-        const ret = wasm.traversaloptions_new(ptr0, len0, ptr1, len1, max_depth, max_traversal_count, separate_edges, ptr2, len2);
-        this.__wbg_ptr = ret >>> 0;
-        TraversalOptionsFinalization.register(this, this.__wbg_ptr, this);
-        return this;
     }
 }
 
@@ -3071,6 +3072,47 @@ export class TraversalResult {
         wasm.__wbg_traversalresult_free(ptr, 0);
     }
     /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.traversalresult_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {TraversalData[]} data
+     * @param {bigint} traversal_time
+     */
+    constructor(data, traversal_time) {
+        const ptr0 = passArrayJsValueToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.traversalresult_new(ptr0, len0, traversal_time);
+        this.__wbg_ptr = ret >>> 0;
+        TraversalResultFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {boolean}
+     */
+    is_empty() {
+        const ret = wasm.flattraversalresult_is_empty(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {PathList}
+     */
+    to_paths() {
+        const ret = wasm.traversalresult_to_paths(this.__wbg_ptr);
+        return PathList.__wrap(ret);
+    }
+    /**
      * @returns {TraversalData[]}
      */
     get data() {
@@ -3139,47 +3181,6 @@ export class TraversalResult {
     set traversal_time(arg0) {
         wasm.__wbg_set_flattraversalresult_traversal_time(this.__wbg_ptr, arg0);
     }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.traversalresult_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {TraversalData[]} data
-     * @param {bigint} traversal_time
-     */
-    constructor(data, traversal_time) {
-        const ptr0 = passArrayJsValueToWasm0(data, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.traversalresult_new(ptr0, len0, traversal_time);
-        this.__wbg_ptr = ret >>> 0;
-        TraversalResultFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {boolean}
-     */
-    is_empty() {
-        const ret = wasm.flattraversalresult_is_empty(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * @returns {PathList}
-     */
-    to_paths() {
-        const ret = wasm.traversalresult_to_paths(this.__wbg_ptr);
-        return PathList.__wrap(ret);
-    }
 }
 
 async function __wbg_load(module, imports) {
@@ -3239,6 +3240,9 @@ function __wbg_get_imports() {
         const ret = EdgeStruct.__unwrap(arg0);
         return ret;
     };
+    imports.wbg.__wbg_error_3ca53ff4a54cf621 = function(arg0, arg1, arg2) {
+        arg0.error(getStringFromWasm0(arg1, arg2));
+    };
     imports.wbg.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
         let deferred0_0;
         let deferred0_1;
@@ -3265,9 +3269,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_gcnodedata_unwrap = function(arg0) {
         const ret = GCNodeData.__unwrap(arg0);
         return ret;
-    };
-    imports.wbg.__wbg_info_398bf5d211409814 = function(arg0, arg1, arg2) {
-        arg0.info(getStringFromWasm0(arg1, arg2));
     };
     imports.wbg.__wbg_new_405e22f390576ce2 = function() {
         const ret = new Object();
@@ -3343,9 +3344,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_traversaldata_unwrap = function(arg0) {
         const ret = TraversalData.__unwrap(arg0);
         return ret;
-    };
-    imports.wbg.__wbg_warn_4a2380c6903b0443 = function(arg0, arg1, arg2) {
-        arg0.warn(getStringFromWasm0(arg1, arg2));
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
         const ret = debugString(arg1);

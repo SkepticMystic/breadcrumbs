@@ -1,9 +1,9 @@
 /* tslint:disable */
 /* eslint-disable @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-misused-new -- wasm-bindgen generates bare `Function` params and a static `new`; the bindings are generated, not hand-written. */
-export function create_graph(): NoteGraph;
-export function create_edge_sorter(field: string, reverse: boolean): EdgeSorter;
 export function sort_traversal_data(graph: NoteGraph, traversal_data: TraversalData[], sorter: EdgeSorter): TraversalData[];
 export function sort_edges(graph: NoteGraph, edges: EdgeStruct[], sorter: EdgeSorter): EdgeStruct[];
+export function create_edge_sorter(field: string, reverse: boolean): EdgeSorter;
+export function create_graph(): NoteGraph;
 export class AddEdgeGraphUpdate {
   free(): void;
   add_to_batch(batch: BatchGraphUpdate): void;
@@ -166,8 +166,8 @@ export class NodeData {
 }
 export class NodeStringifyOptions {
   free(): void;
-  constructor(extension: boolean, folder: boolean, alias: boolean, trim_basename_delimiter?: string | null);
   stringify_node(node: NodeData): string;
+  constructor(extension: boolean, folder: boolean, alias: boolean, trim_basename_delimiter?: string | null);
 }
 /**
  * A graph that stores notes and their relationships.
@@ -181,7 +181,6 @@ export class NodeStringifyOptions {
 export class NoteGraph {
   private constructor();
   free(): void;
-  generate_mermaid_graph(traversal_options: TraversalOptions, diagram_options: MermaidGraphOptions): MermaidGraphData;
   /**
    * Returns all edge types that are present in the graph.
    */
@@ -247,6 +246,7 @@ export class NoteGraph {
    * Checks if a node exists in the graph.
    */
   has_node(node: string): boolean;
+  generate_mermaid_graph(traversal_options: TraversalOptions, diagram_options: MermaidGraphOptions): MermaidGraphData;
   /**
    * Runs a recursive traversal of the graph.
    */
@@ -398,91 +398,14 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly create_graph: () => number;
-  readonly __wbg_get_path_edges: (a: number) => [number, number];
-  readonly __wbg_path_free: (a: number, b: number) => void;
-  readonly __wbg_pathlist_free: (a: number, b: number) => void;
-  readonly __wbg_set_path_edges: (a: number, b: number, c: number) => void;
-  readonly path_equals: (a: number, b: number) => number;
-  readonly path_get_first_target: (a: number, b: number) => [number, number, number, number];
-  readonly path_length: (a: number) => number;
-  readonly path_reverse_edges: (a: number) => [number, number];
-  readonly path_toString: (a: number) => [number, number];
-  readonly path_truncate: (a: number, b: number) => number;
-  readonly pathlist_max_depth: (a: number) => number;
-  readonly pathlist_process: (a: number, b: number, c: number) => [number, number, number, number];
-  readonly pathlist_select: (a: number, b: number, c: number) => number;
-  readonly pathlist_toString: (a: number) => [number, number];
-  readonly pathlist_to_paths: (a: number) => [number, number];
-  readonly __wbg_edgedata_free: (a: number, b: number) => void;
-  readonly __wbg_get_edgedata_explicit: (a: number) => number;
-  readonly __wbg_get_edgedata_round: (a: number) => number;
-  readonly __wbg_set_edgedata_explicit: (a: number, b: number) => void;
-  readonly __wbg_set_edgedata_round: (a: number, b: number) => void;
-  readonly edgedata_edge_source: (a: number) => [number, number];
-  readonly edgedata_edge_type: (a: number) => [number, number];
-  readonly edgedata_toString: (a: number) => [number, number];
-  readonly __wbg_get_mermaidgraphdata_mermaid: (a: number) => [number, number];
-  readonly __wbg_get_mermaidgraphdata_total_time: (a: number) => bigint;
-  readonly __wbg_get_mermaidgraphdata_traversal_time: (a: number) => bigint;
-  readonly __wbg_mermaidgraphdata_free: (a: number, b: number) => void;
-  readonly __wbg_mermaidgraphoptions_free: (a: number, b: number) => void;
-  readonly __wbg_set_mermaidgraphdata_mermaid: (a: number, b: number, c: number) => void;
-  readonly __wbg_set_mermaidgraphdata_total_time: (a: number, b: bigint) => void;
-  readonly __wbg_set_mermaidgraphdata_traversal_time: (a: number, b: bigint) => void;
-  readonly mermaidgraphdata_toString: (a: number) => [number, number];
-  readonly mermaidgraphoptions_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => number;
-  readonly mermaidgraphoptions_toString: (a: number) => [number, number];
-  readonly notegraph_generate_mermaid_graph: (a: number, b: number, c: number) => [number, number, number];
-  readonly __wbg_batchgraphupdate_free: (a: number, b: number) => void;
-  readonly batchgraphupdate_new: () => number;
+  readonly __wbg_transitivegraphrule_free: (a: number, b: number) => void;
+  readonly transitivegraphrule_create_example_graph: (a: number) => [number, number, number];
+  readonly transitivegraphrule_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly transitivegraphrule_toString: (a: number) => [number, number];
   readonly __wbg_notegrapherror_free: (a: number, b: number) => void;
   readonly notegrapherror_message: (a: number) => [number, number];
   readonly notegrapherror_new: (a: number, b: number) => number;
   readonly notegrapherror_toString: (a: number) => [number, number];
-  readonly __wbg_edgestruct_free: (a: number, b: number) => void;
-  readonly edgestruct_edge_data: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_edge_source: (a: number, b: number) => [number, number, number, number];
-  readonly edgestruct_edge_type: (a: number) => [number, number];
-  readonly edgestruct_explicit: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_get_attribute_label: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-  readonly edgestruct_is_self_loop: (a: number) => number;
-  readonly edgestruct_matches_edge_filter: (a: number, b: number, c: number, d: number) => [number, number, number];
-  readonly edgestruct_round: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_source_data: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_source_path: (a: number, b: number) => [number, number, number, number];
-  readonly edgestruct_source_resolved: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_stringify_source: (a: number, b: number, c: number) => [number, number, number, number];
-  readonly edgestruct_stringify_target: (a: number, b: number, c: number) => [number, number, number, number];
-  readonly edgestruct_target_data: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_target_path: (a: number, b: number) => [number, number, number, number];
-  readonly edgestruct_target_resolved: (a: number, b: number) => [number, number, number];
-  readonly edgestruct_toString: (a: number) => [number, number];
-  readonly __wbg_edgelist_free: (a: number, b: number) => void;
-  readonly __wbg_groupededgelist_free: (a: number, b: number) => void;
-  readonly edgelist_first: (a: number) => number;
-  readonly edgelist_get_edges: (a: number) => [number, number];
-  readonly edgelist_get_sorted_edges: (a: number, b: number, c: number) => [number, number, number, number];
-  readonly edgelist_group_by_type: (a: number) => number;
-  readonly edgelist_last: (a: number) => number;
-  readonly edgelist_toString: (a: number) => [number, number];
-  readonly edgelist_to_array: (a: number) => [number, number];
-  readonly groupededgelist_get_edges: (a: number, b: number, c: number) => [number, number];
-  readonly groupededgelist_get_sorted_edges: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
-  readonly groupededgelist_toString: (a: number) => [number, number];
-  readonly __wbg_nodestringifyoptions_free: (a: number, b: number) => void;
-  readonly nodestringifyoptions_new: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly nodestringifyoptions_stringify_node: (a: number, b: number) => [number, number];
-  readonly __wbg_gcedgedata_free: (a: number, b: number) => void;
-  readonly __wbg_gcnodedata_free: (a: number, b: number) => void;
-  readonly gcedgedata_edge_source: (a: number) => [number, number];
-  readonly gcedgedata_edge_type: (a: number) => [number, number];
-  readonly gcedgedata_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly gcedgedata_source: (a: number) => [number, number];
-  readonly gcedgedata_target: (a: number) => [number, number];
-  readonly gcedgedata_toString: (a: number) => [number, number];
-  readonly gcnodedata_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-  readonly gcnodedata_toString: (a: number) => [number, number];
   readonly __wbg_flattraversaldata_free: (a: number, b: number) => void;
   readonly __wbg_flattraversalresult_free: (a: number, b: number) => void;
   readonly __wbg_get_flattraversaldata_children: (a: number) => [number, number];
@@ -544,6 +467,25 @@ export interface InitOutput {
   readonly __wbg_get_traversaldata_depth: (a: number) => number;
   readonly __wbg_get_traversaldata_number_of_children: (a: number) => number;
   readonly __wbg_get_traversalresult_traversal_time: (a: number) => bigint;
+  readonly __wbg_nodestringifyoptions_free: (a: number, b: number) => void;
+  readonly nodestringifyoptions_new: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly nodestringifyoptions_stringify_node: (a: number, b: number) => [number, number];
+  readonly __wbg_gcedgedata_free: (a: number, b: number) => void;
+  readonly __wbg_gcnodedata_free: (a: number, b: number) => void;
+  readonly gcedgedata_edge_source: (a: number) => [number, number];
+  readonly gcedgedata_edge_type: (a: number) => [number, number];
+  readonly gcedgedata_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly gcedgedata_source: (a: number) => [number, number];
+  readonly gcedgedata_target: (a: number) => [number, number];
+  readonly gcedgedata_toString: (a: number) => [number, number];
+  readonly gcnodedata_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly gcnodedata_toString: (a: number) => [number, number];
+  readonly __wbg_edgesorter_free: (a: number, b: number) => void;
+  readonly create_edge_sorter: (a: number, b: number, c: number) => [number, number, number];
+  readonly sort_edges: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+  readonly sort_traversal_data: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+  readonly __wbg_batchgraphupdate_free: (a: number, b: number) => void;
+  readonly batchgraphupdate_new: () => number;
   readonly __wbg_notegraph_free: (a: number, b: number) => void;
   readonly notegraph_apply_update: (a: number, b: number) => [number, number];
   readonly notegraph_build_graph: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number];
@@ -561,26 +503,31 @@ export interface InitOutput {
   readonly notegraph_new: () => number;
   readonly notegraph_notify_update: (a: number) => void;
   readonly notegraph_set_update_callback: (a: number, b: unknown) => void;
-  readonly __wbg_addedgegraphupdate_free: (a: number, b: number) => void;
-  readonly __wbg_addnotegraphupdate_free: (a: number, b: number) => void;
-  readonly __wbg_removeedgegraphupdate_free: (a: number, b: number) => void;
-  readonly __wbg_removenotegraphupdate_free: (a: number, b: number) => void;
-  readonly __wbg_renamenotegraphupdate_free: (a: number, b: number) => void;
-  readonly __wbg_transitiverulesgraphupdate_free: (a: number, b: number) => void;
-  readonly addedgegraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly addedgegraphupdate_new: (a: number) => number;
-  readonly addnotegraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly addnotegraphupdate_new: (a: number) => number;
-  readonly removeedgegraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly removeedgegraphupdate_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
-  readonly removenotegraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly removenotegraphupdate_new: (a: number, b: number) => number;
-  readonly renamenotegraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly renamenotegraphupdate_new: (a: number, b: number, c: number, d: number) => number;
-  readonly transitiverulesgraphupdate_add_to_batch: (a: number, b: number) => void;
-  readonly transitiverulesgraphupdate_new: (a: number, b: number) => number;
-  readonly notegraph_rec_traverse: (a: number, b: number) => [number, number, number];
-  readonly notegraph_rec_traverse_and_process: (a: number, b: number, c: number) => [number, number, number];
+  readonly __wbg_get_mermaidgraphdata_mermaid: (a: number) => [number, number];
+  readonly __wbg_get_mermaidgraphdata_total_time: (a: number) => bigint;
+  readonly __wbg_get_mermaidgraphdata_traversal_time: (a: number) => bigint;
+  readonly __wbg_mermaidgraphdata_free: (a: number, b: number) => void;
+  readonly __wbg_mermaidgraphoptions_free: (a: number, b: number) => void;
+  readonly __wbg_set_mermaidgraphdata_mermaid: (a: number, b: number, c: number) => void;
+  readonly __wbg_set_mermaidgraphdata_total_time: (a: number, b: bigint) => void;
+  readonly __wbg_set_mermaidgraphdata_traversal_time: (a: number, b: bigint) => void;
+  readonly mermaidgraphdata_toString: (a: number) => [number, number];
+  readonly mermaidgraphoptions_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number, m: number, n: number, o: number, p: number, q: number, r: number, s: number) => number;
+  readonly mermaidgraphoptions_toString: (a: number) => [number, number];
+  readonly notegraph_generate_mermaid_graph: (a: number, b: number, c: number) => [number, number, number];
+  readonly __wbg_edgelist_free: (a: number, b: number) => void;
+  readonly __wbg_groupededgelist_free: (a: number, b: number) => void;
+  readonly edgelist_first: (a: number) => number;
+  readonly edgelist_get_edges: (a: number) => [number, number];
+  readonly edgelist_get_sorted_edges: (a: number, b: number, c: number) => [number, number, number, number];
+  readonly edgelist_group_by_type: (a: number) => number;
+  readonly edgelist_last: (a: number) => number;
+  readonly edgelist_toString: (a: number) => [number, number];
+  readonly edgelist_to_array: (a: number) => [number, number];
+  readonly groupededgelist_get_edges: (a: number, b: number, c: number) => [number, number];
+  readonly groupededgelist_get_sorted_edges: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+  readonly groupededgelist_toString: (a: number) => [number, number];
+  readonly create_graph: () => number;
   readonly __wbg_get_nodedata_aliases: (a: number) => [number, number];
   readonly __wbg_get_nodedata_ignore_in_edges: (a: number) => number;
   readonly __wbg_get_nodedata_ignore_out_edges: (a: number) => number;
@@ -594,14 +541,24 @@ export interface InitOutput {
   readonly __wbg_set_nodedata_resolved: (a: number, b: number) => void;
   readonly nodedata_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
   readonly nodedata_toString: (a: number) => [number, number];
-  readonly __wbg_edgesorter_free: (a: number, b: number) => void;
-  readonly create_edge_sorter: (a: number, b: number, c: number) => [number, number, number];
-  readonly sort_edges: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-  readonly sort_traversal_data: (a: number, b: number, c: number, d: number) => [number, number, number, number];
-  readonly __wbg_transitivegraphrule_free: (a: number, b: number) => void;
-  readonly transitivegraphrule_create_example_graph: (a: number) => [number, number, number];
-  readonly transitivegraphrule_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
-  readonly transitivegraphrule_toString: (a: number) => [number, number];
+  readonly __wbg_edgestruct_free: (a: number, b: number) => void;
+  readonly edgestruct_edge_data: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_edge_source: (a: number, b: number) => [number, number, number, number];
+  readonly edgestruct_edge_type: (a: number) => [number, number];
+  readonly edgestruct_explicit: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_get_attribute_label: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+  readonly edgestruct_is_self_loop: (a: number) => number;
+  readonly edgestruct_matches_edge_filter: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly edgestruct_round: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_source_data: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_source_path: (a: number, b: number) => [number, number, number, number];
+  readonly edgestruct_source_resolved: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_stringify_source: (a: number, b: number, c: number) => [number, number, number, number];
+  readonly edgestruct_stringify_target: (a: number, b: number, c: number) => [number, number, number, number];
+  readonly edgestruct_target_data: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_target_path: (a: number, b: number) => [number, number, number, number];
+  readonly edgestruct_target_resolved: (a: number, b: number) => [number, number, number];
+  readonly edgestruct_toString: (a: number) => [number, number];
   readonly __wbg_get_traversaloptions_dataview_from_paths: (a: number) => [number, number];
   readonly __wbg_get_traversaloptions_edge_types: (a: number) => [number, number];
   readonly __wbg_get_traversaloptions_entry_nodes: (a: number) => [number, number];
@@ -625,14 +582,57 @@ export interface InitOutput {
   readonly traversalpostprocessoptions_new: (a: number, b: number) => number;
   readonly traversalpostprocessoptions_toString: (a: number) => [number, number];
   readonly traversalpostprocessoptions_without_sorter: (a: number) => number;
+  readonly __wbg_edgedata_free: (a: number, b: number) => void;
+  readonly __wbg_get_edgedata_explicit: (a: number) => number;
+  readonly __wbg_get_edgedata_round: (a: number) => number;
+  readonly __wbg_set_edgedata_explicit: (a: number, b: number) => void;
+  readonly __wbg_set_edgedata_round: (a: number, b: number) => void;
+  readonly edgedata_edge_source: (a: number) => [number, number];
+  readonly edgedata_edge_type: (a: number) => [number, number];
+  readonly edgedata_toString: (a: number) => [number, number];
+  readonly __wbg_get_path_edges: (a: number) => [number, number];
+  readonly __wbg_path_free: (a: number, b: number) => void;
+  readonly __wbg_pathlist_free: (a: number, b: number) => void;
+  readonly __wbg_set_path_edges: (a: number, b: number, c: number) => void;
+  readonly path_equals: (a: number, b: number) => number;
+  readonly path_get_first_target: (a: number, b: number) => [number, number, number, number];
+  readonly path_length: (a: number) => number;
+  readonly path_reverse_edges: (a: number) => [number, number];
+  readonly path_toString: (a: number) => [number, number];
+  readonly path_truncate: (a: number, b: number) => number;
+  readonly pathlist_max_depth: (a: number) => number;
+  readonly pathlist_process: (a: number, b: number, c: number) => [number, number, number, number];
+  readonly pathlist_select: (a: number, b: number, c: number) => number;
+  readonly pathlist_toString: (a: number) => [number, number];
+  readonly pathlist_to_paths: (a: number) => [number, number];
+  readonly __wbg_addedgegraphupdate_free: (a: number, b: number) => void;
+  readonly __wbg_addnotegraphupdate_free: (a: number, b: number) => void;
+  readonly __wbg_removeedgegraphupdate_free: (a: number, b: number) => void;
+  readonly __wbg_removenotegraphupdate_free: (a: number, b: number) => void;
+  readonly __wbg_renamenotegraphupdate_free: (a: number, b: number) => void;
+  readonly __wbg_transitiverulesgraphupdate_free: (a: number, b: number) => void;
+  readonly addedgegraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly addedgegraphupdate_new: (a: number) => number;
+  readonly addnotegraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly addnotegraphupdate_new: (a: number) => number;
+  readonly removeedgegraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly removeedgegraphupdate_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly removenotegraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly removenotegraphupdate_new: (a: number, b: number) => number;
+  readonly renamenotegraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly renamenotegraphupdate_new: (a: number, b: number, c: number, d: number) => number;
+  readonly transitiverulesgraphupdate_add_to_batch: (a: number, b: number) => void;
+  readonly transitiverulesgraphupdate_new: (a: number, b: number) => number;
+  readonly notegraph_rec_traverse: (a: number, b: number) => [number, number, number];
+  readonly notegraph_rec_traverse_and_process: (a: number, b: number, c: number) => [number, number, number];
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __externref_table_dealloc: (a: number) => void;
+  readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
 }
 

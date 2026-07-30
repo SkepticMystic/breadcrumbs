@@ -1,19 +1,10 @@
-export const LOG_LEVELS = [
-	"DEBUG",
-	"INFO",
-	"WARN",
-	"ERROR",
-	// Some features log data
-	"FEAT",
-] as const;
+export const LOG_LEVELS = ["DEBUG", "ERROR", "SILENT"] as const;
 export type LogLevels = (typeof LOG_LEVELS)[number];
 
 const LEVEL_COLOURS: Record<LogLevels, string | null> = {
 	DEBUG: "#999",
-	INFO: null,
-	WARN: "#f90",
 	ERROR: "#f00",
-	FEAT: "#0f0",
+	SILENT: null,
 };
 
 const build_prefix = (level: LogLevels) => {
@@ -37,33 +28,13 @@ class Logger {
 
 	debug(...args: unknown[]) {
 		if (this.level_i <= 0) {
-			console.log(...build_prefix("DEBUG"), ...args);
-		}
-	}
-
-	info(...args: unknown[]) {
-		if (this.level_i <= 1) {
-			console.log(...build_prefix("INFO"), ...args);
-		}
-	}
-
-	warn(...args: unknown[]) {
-		if (this.level_i <= 2) {
-			// NOTE: Don't actually console.warn
-			// The user doesn't need a stack trace
-			console.log(...build_prefix("WARN"), ...args);
+			console.debug(...build_prefix("DEBUG"), ...args);
 		}
 	}
 
 	error(...args: unknown[]) {
-		if (this.level_i <= 3) {
-			console.log(...build_prefix("ERROR"), ...args);
-		}
-	}
-
-	feat(...args: unknown[]) {
-		if (this.level_i <= 4) {
-			console.log(...build_prefix("FEAT"), ...args);
+		if (this.level_i <= 1) {
+			console.error(...build_prefix("ERROR"), ...args);
 		}
 	}
 
@@ -72,4 +43,4 @@ class Logger {
 	}
 }
 
-export const log = new Logger("INFO");
+export const log = new Logger("SILENT");

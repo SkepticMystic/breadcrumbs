@@ -106,7 +106,7 @@ export const _add_explicit_edges_dataview_note: ExplicitEdgeBuilder = (
 					dataview_api.pages(query, dataview_note_file.path),
 				) as IDataview.Page[];
 			} catch (error) {
-				log.warn(
+				log.debug(
 					"dataview-note > DV API error:",
 					error instanceof Error ? error.message : error,
 				);

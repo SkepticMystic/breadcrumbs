@@ -89,7 +89,7 @@ impl NoteGraph {
             match callback.call0(&JsValue::NULL) {
                 Ok(_) => {}
                 Err(e) => LOGGER.with(|l| {
-                    l.warn(&format!(
+                    l.error(&format!(
                         "Error calling update notification function: {e:?}"
                     ))
                 }),
@@ -105,7 +105,7 @@ impl NoteGraph {
         edges: Vec<GCEdgeData>,
         transitive_rules: Vec<TransitiveGraphRule>,
     ) -> Result<()> {
-        LOGGER.with(|l| l.info("Building Graph"));
+        LOGGER.with(|l| l.debug("Building Graph"));
 
         self.graph = StableGraph::<NodeData, EdgeData, Directed, u32>::default();
         self.edge_types = VecSet::empty();
@@ -166,7 +166,7 @@ impl NoteGraph {
             match f.call1(&this, &node.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER
-                    .with(|l| l.warn(&format!("Error calling node iteration callback: {e:?}"))),
+                    .with(|l| l.error(&format!("Error calling node iteration callback: {e:?}"))),
             }
         });
     }
@@ -180,7 +180,7 @@ impl NoteGraph {
             match f.call1(&this, &edge.weight().clone().into()) {
                 Ok(_) => {}
                 Err(e) => LOGGER
-                    .with(|l| l.warn(&format!("Error calling edge iteration callback: {e:?}",))),
+                    .with(|l| l.error(&format!("Error calling edge iteration callback: {e:?}",))),
             }
         });
     }
@@ -265,7 +265,7 @@ impl NoteGraph {
     }
 
     pub fn log(&self) {
-        LOGGER.with(|l| l.info(&format!("{:#?}", self.graph)));
+        LOGGER.with(|l| l.debug(&format!("{:#?}", self.graph)));
     }
 }
 

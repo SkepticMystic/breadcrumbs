@@ -281,7 +281,7 @@ export function migrate_old_settings(settings: BreadcrumbsSettings) {
 	) {
 		if (old.hierarchyNotes.length > 0) {
 			const msg = `DEPRECATED: The central Hierarchy Notes setting is deprecated in favour of the "${META_ALIAS["list-note-field"]}" field in each hierarchy note.`;
-			log.warn(msg);
+			log.debug(msg);
 		}
 
 		delete old.HNUpField;

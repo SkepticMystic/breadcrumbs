@@ -31,7 +31,7 @@ export async function thread(
 			folder: source_file.parent?.path ?? "",
 		},
 	};
-	log.info("thread > template_data", template_data);
+	log.debug("thread > template_data", template_data);
 
 	const target_path = Paths.normalize(
 		Paths.ensure_ext(

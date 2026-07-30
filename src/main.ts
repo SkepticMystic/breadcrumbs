@@ -102,7 +102,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 		// Logger
 		log.set_level(this.settings.debug.level);
 
-		log.info(
+		log.debug(
 			`loading plugin "${this.manifest.name}" plugin v${this.manifest.version}`,
 		);
 		log.debug("settings >", this.settings);
@@ -370,7 +370,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 				backup_path,
 				JSON.stringify(this.settings, null, "\t"),
 			);
-			log.info(`old settings backed up to ${backup_path}`);
+			log.debug(`old settings backed up to ${backup_path}`);
 		}
 	}
 
@@ -398,7 +398,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 			);
 
 		if (Object.keys(explicit_edge_errors).length) {
-			log.warn("explicit_edge_errors >", explicit_edge_errors);
+			log.debug("explicit_edge_errors >", explicit_edge_errors);
 		}
 
 		notice?.setMessage(
@@ -445,7 +445,7 @@ export default class BreadcrumbsPlugin extends Plugin {
 					: workspace.getRightLeaf(false);
 
 			if (!leaf) {
-				log.warn("activate_view > no leaf found");
+				log.debug("activate_view > no leaf found");
 				return;
 			}
 
