@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## 4.X
 
+### [4.14.7](https://github.com/michaelpporter/breadcrumbs/compare/4.14.6...4.14.7) (2026-07-30)
+
+### Bug Fixes
+
+* **list_note** — `BC-list-note-section` now actually scopes the list-note builder to the targeted heading, instead of being silently ignored. This branch's `list_note` builder predated the feature on `main`, so every list item in the note was processed regardless of section — including numbered lists in unrelated sections, whose `1.` markers got misread as field-override attempts and threw `invalid_edge_field` (#755). Ported `main`'s section-line resolution and filtering.
+* **logging** — the plugin no longer logs to the console by default. This branch's logger predated `main`'s recent overhaul: it kept a five-level DEBUG/INFO/WARN/ERROR/FEAT scheme routed entirely through `console.log` and defaulted to INFO, so ordinary operation (graph builds, settings loads, view redraws) was chatty by default. Collapsed to DEBUG/ERROR/SILENT, defaulting to SILENT, with `console.debug`/`console.error` used per level — matching `main` and Obsidian's plugin guidelines. Ported across the WASM boundary as well, so Rust-side logging (`Building Graph`, edge/node iteration errors) follows the same levels.
+
 ### [4.14.6](https://github.com/michaelpporter/breadcrumbs/compare/4.14.5...4.14.6) (2026-07-26)
 
 ### Build
