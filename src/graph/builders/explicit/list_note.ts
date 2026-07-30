@@ -51,7 +51,11 @@ function build_native_list_items(
 	section?: string,
 ): NativeListItem[] {
 	let list_item_caches = cache.listItems ?? [];
-	const links = cache.links ?? [];
+	// `[[wikilink]]` and `![[embed]]` land in separate cache arrays, but a list
+	// item's outlink can be either (e.g. `- ![[Note]]`).
+	const links = [...(cache.links ?? []), ...(cache.embeds ?? [])].sort(
+		(a, b) => a.position.start.col - b.position.start.col,
+	);
 	const lines = content.split("\n");
 
 	if (section) {

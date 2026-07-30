@@ -24,6 +24,8 @@ export function mock_file(
 		listItems?: { line: number; col: number; parent: number }[];
 		/** Body wikilinks keyed by line (list_note, typed_link builders) */
 		links?: { line: number; link: string; col?: number }[];
+		/** Body embeds keyed by line — `![[note]]` (typed_link builder) */
+		embeds?: { line: number; link: string; col?: number }[];
 		/** Headings (list_note section scoping): one per line */
 		headings?: { line: number; level: number; heading: string }[];
 	} = {},
@@ -49,6 +51,7 @@ export function mock_file(
 		opts.frontmatterLinks ||
 		opts.listItems ||
 		opts.links ||
+		opts.embeds ||
 		opts.headings;
 
 	const cache = has_cache
@@ -67,6 +70,13 @@ export function mock_file(
 					parent: li.parent,
 				})),
 				links: opts.links?.map((l) => ({
+					link: l.link,
+					position: {
+						start: { line: l.line, col: l.col ?? 0, offset: 0 },
+						end: { line: l.line, col: l.col ?? 0, offset: 0 },
+					},
+				})),
+				embeds: opts.embeds?.map((l) => ({
 					link: l.link,
 					position: {
 						start: { line: l.line, col: l.col ?? 0, offset: 0 },

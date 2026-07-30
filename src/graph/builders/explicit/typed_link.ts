@@ -157,14 +157,18 @@ export const _add_explicit_edges_typed_link: ExplicitEdgeBuilder = async (
 		(all_files.obsidian ?? []).map(
 			async ({ file, cache }) => {
 				if (file.extension !== "md") return;
-				if (!cache?.links?.length) return;
+
+				// `[[wikilink]]` and `![[embed]]` land in separate cache arrays, but
+				// a Dataview field can hold either (e.g. `down:: ![[note]]`).
+				const links = [...(cache?.links ?? []), ...(cache?.embeds ?? [])];
+				if (!links.length) return;
 
 				const content = await plugin.app.vault.cachedRead(file);
 				const lines = content.split("\n");
 
 				const fields_by_line = new Map<number, InlineField[]>();
 
-				for (const link_cache of cache.links) {
+				for (const link_cache of links) {
 					const line_num = link_cache.position.start.line;
 
 					let fields = fields_by_line.get(line_num);

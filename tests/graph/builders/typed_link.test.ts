@@ -228,6 +228,38 @@ describe("typed_link builder — body inline fields", () => {
 		t.expect(r.edges[0]!.edge_type).toBe("up");
 		t.expect(r.edges[0]!.target).toBe("Note.md");
 	});
+
+	// #760: `![[note]]` (an embed) lands in cache.embeds, not cache.links —
+	// it must still be picked up as a field value.
+	test("embedded wikilink value → edge", async (t) => {
+		const body = "down:: ![[Convolutions]]";
+		const plugin = inline_plugin(body);
+		const all_files = make_all_files([
+			mock_file("a.md", {
+				embeds: [{ line: 0, link: "Convolutions", col: body.indexOf("!") }],
+			}),
+		]);
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.edge_type).toBe("down");
+		t.expect(r.edges[0]!.target).toBe("Convolutions.md");
+	});
+
+	test("wrapped field with embedded wikilink → edge", async (t) => {
+		const body = "(down:: ![[Convolutions]])";
+		const plugin = inline_plugin(body);
+		const all_files = make_all_files([
+			mock_file("a.md", {
+				embeds: [{ line: 0, link: "Convolutions", col: body.indexOf("!") }],
+			}),
+		]);
+		const r = await _add_explicit_edges_typed_link(plugin, all_files);
+
+		t.expect(r.edges).toHaveLength(1);
+		t.expect(r.edges[0]!.edge_type).toBe("down");
+		t.expect(r.edges[0]!.target).toBe("Convolutions.md");
+	});
 });
 
 describe("parse_inline_fields", () => {
