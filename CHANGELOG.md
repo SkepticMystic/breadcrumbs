@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.9](https://github.com/michaelpporter/breadcrumbs/compare/4.21.8...4.21.9) (2026-07-30)
+
+### Fixed
+
+* `down:: ![[note]]` (an embedded wikilink used as a Dataview-style inline field value) now creates an edge, both bare and wrapped (`(down:: ![[note]])`). Obsidian stores `[[wikilink]]` and `![[embed]]` links in separate metadata-cache arrays; the `typed_link` builder only read the wikilink array, so an embed silently produced no edge. Refs #760
+* `list_note` list items written as `- ![[Note]]` now become child edges too, for the same reason.
+
 ### [4.21.8](https://github.com/michaelpporter/breadcrumbs/compare/4.21.7...4.21.8) (2026-07-26)
 
 ### Fixed
