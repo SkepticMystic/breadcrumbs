@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 See my global conventions for how to work. Project-specific gate before calling any change done: `bun run build && bun run test` must pass (and `bun run wasm:test` after any Rust change).
 
-> `1.12-compat` is a permanent parallel branch for Obsidian 1.12.x — never merge into main; reapply shared fixes on both.
+> `1.12-compat` is frozen as of 2026-08-03 (last release: 4.14.7) — Obsidian 1.13 is now a full stable release, so the branch no longer receives backported fixes. Never merge it into `main`; it's kept on GitHub purely as historical reference for 1.12.x users who haven't upgraded.
 
 ---
 
