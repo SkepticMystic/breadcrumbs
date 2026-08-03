@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.10](https://github.com/michaelpporter/breadcrumbs/compare/4.21.9...4.21.10) (2026-08-03)
+
+### Fixed
+
+* Breadcrumbs' bundled CSS no longer ships bare, one-word Tailwind utility classes (`.static`, `.flex`, `.grow`, etc.) applied globally across the whole Obsidian DOM. Excalidraw's own canvas element carries a literal class `static` for an unrelated purpose; at equal CSS specificity, Breadcrumbs' later-loaded stylesheet won, forcing the canvas to `position: static` and leaving Excalidraw drawings blank/invisible. Every Breadcrumbs utility class is now namespaced with a `bc:` prefix (`bc:static`, `bc:flex`, ...), so it can no longer collide with another plugin's own class names. Refs #761
+
 ### [4.21.9](https://github.com/michaelpporter/breadcrumbs/compare/4.21.8...4.21.9) (2026-07-30)
 
 ### Fixed
