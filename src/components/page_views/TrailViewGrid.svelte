@@ -68,7 +68,7 @@
 <!-- TODO: sailKite says using grid-template-rows: subgrid could work some magic here
 			https://discord.com/channels/686053708261228577/702656734631821413/1234871810185629859 -->
 <div
-	class="BC-trail-view grid"
+	class="BC-trail-view bc:grid"
 	style="grid-template-rows: min-content;
 grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 >
@@ -77,7 +77,7 @@ grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 			{@const edge = trail_grid.square[first][j]}
 
 			<div
-				class="BC-trail-view-item flex"
+				class="BC-trail-view-item bc:flex"
 				style="
 					grid-area: {first + 1} / {j + 1} / {last + 2} / {j + 2};"
 			>
@@ -85,7 +85,7 @@ grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 					<EdgeLink
 						{edge}
 						{plugin}
-						cls="p-1 grow flex justify-center items-center"
+						cls="bc:p-1 bc:grow bc:flex bc:justify-center bc:items-center"
 						{node_stringify_options}
 					/>
 				{/if}

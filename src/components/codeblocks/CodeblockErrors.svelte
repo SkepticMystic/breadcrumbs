@@ -16,7 +16,7 @@
 </script>
 
 {#if errors.length}
-	<p class="text-warning text-lg font-semibold">
+	<p class="text-warning bc:text-lg bc:font-semibold">
 		Breadcrumbs Codeblock Errors
 	</p>
 

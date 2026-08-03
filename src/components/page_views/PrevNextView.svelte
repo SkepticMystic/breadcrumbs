@@ -139,21 +139,21 @@
 	let period_rows = $derived(period_rows_derived());
 </script>
 
-<div class="BC-prev-next-view flex flex-col">
+<div class="BC-prev-next-view bc:flex bc:flex-col">
 	{#if grouped_out_edges?.prev?.length || grouped_out_edges?.next?.length}
-		<div class="BC-prev-next-daily flex">
+		<div class="BC-prev-next-daily bc:flex">
 			<div
-				class="flex w-full flex-col"
+				class="bc:flex bc:w-full bc:flex-col"
 				style="border-radius: var(--radius-m) 0 0 var(--radius-m)"
 			>
 				{#each grouped_out_edges?.prev ?? [] as edge}
 					<div
-						class="BC-next-prev-item flex gap-3 py-1 pl-2 pr-1 text-left"
+						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:pl-2 bc:pr-1 bc:text-left"
 					>
-						<span class="BC-field px-2">{edge.edge_type}</span>
+						<span class="BC-field bc:px-2">{edge.edge_type}</span>
 
 						<EdgeLink
-							cls="grow"
+							cls="bc:grow"
 							{edge}
 							{plugin}
 							{node_stringify_options}
@@ -163,21 +163,21 @@
 			</div>
 
 			<div
-				class="flex w-full flex-col"
+				class="bc:flex bc:w-full bc:flex-col"
 				style="border-radius:  0 var(--radius-m) var(--radius-m) 0"
 			>
 				{#each grouped_out_edges?.next ?? [] as edge}
 					<div
-						class="BC-next-prev-item flex gap-3 py-1 pl-1 pr-2 text-right"
+						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:pl-1 bc:pr-2 bc:text-right"
 					>
 						<EdgeLink
-							cls="grow"
+							cls="bc:grow"
 							{edge}
 							{plugin}
 							{node_stringify_options}
 						/>
 
-						<span class="BC-field px-2">{edge.edge_type}</span>
+						<span class="BC-field bc:px-2">{edge.edge_type}</span>
 					</div>
 				{/each}
 			</div>
@@ -185,11 +185,11 @@
 	{/if}
 
 	{#each period_rows as row}
-		<div class="BC-period-row flex items-center gap-1 py-1 px-2">
-			<span class="BC-period-kind text-xs opacity-60">{row.kind}</span>
+		<div class="BC-period-row bc:flex bc:items-center bc:gap-1 bc:py-1 bc:px-2">
+			<span class="BC-period-kind bc:text-xs bc:opacity-60">{row.kind}</span>
 
-			<div class="flex grow items-center justify-between">
-				<div class="flex-1 text-left">
+			<div class="bc:flex bc:grow bc:items-center bc:justify-between">
+				<div class="bc:flex-1 bc:text-left">
 					{#if row.prev_path}
 						<EdgeLink
 							cls=""
@@ -208,14 +208,14 @@
 					{/if}
 				</div>
 
-				<span class="BC-period-current mx-2 font-medium">
+				<span class="BC-period-current bc:mx-2 bc:font-medium">
 					{row.period_path
 						.split("/")
 						.pop()
 						?.replace(/\.[^.]+$/, "") ?? ""}
 				</span>
 
-				<div class="flex-1 text-right">
+				<div class="bc:flex-1 bc:text-right">
 					{#if row.next_path}
 						<EdgeLink
 							cls=""
@@ -239,7 +239,7 @@
 	.BC-prev-next-view > div {
 		border: 1px solid var(--background-modifier-border);
 	}
-	.BC-prev-next-view .flex-col {
+	.BC-prev-next-view .bc\:flex-col {
 		background-color: var(--background-primary);
 	}
 	.BC-period-row {

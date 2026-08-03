@@ -89,8 +89,9 @@
 {#if sorted_paths && sorted_paths.length}
 	<div>
 		<div
-			class="mb-1 flex flex-wrap justify-between gap-3"
-			class:hidden={!settings.show_controls}
+			class="bc:mb-1 bc:flex bc:flex-wrap bc:justify-between bc:gap-3 {settings.show_controls
+				? ''
+				: 'bc:hidden'}"
 		>
 			<select class="dropdown" bind:value={settings.format}>
 				{#each ["grid", "path"] as format}
@@ -106,9 +107,9 @@
 
 			<MergeFieldsButton bind:merge_fields={settings.merge_fields} />
 
-			<div class="flex items-center gap-1">
+			<div class="bc:flex bc:items-center bc:gap-1">
 				<button
-					class="aspect-square text-lg"
+					class="bc:aspect-square bc:text-lg"
 					aria-label="Decrease max depth"
 					disabled={depth <= 1}
 					onclick={() => (depth = Math.max(1, depth - 1))}
@@ -117,7 +118,7 @@
 				</button>
 
 				<span
-					class="font-mono"
+					class="bc:font-mono"
 					aria-label={data.hit_depth_limit
 						? "Some paths have been truncated"
 						: ""}
@@ -127,7 +128,7 @@
 				</span>
 
 				<button
-					class="aspect-square text-lg"
+					class="bc:aspect-square bc:text-lg"
 					aria-label="Increase max depth"
 					disabled={depth >= MAX_DEPTH}
 					onclick={() => (depth = Math.min(MAX_DEPTH, depth + 1))}

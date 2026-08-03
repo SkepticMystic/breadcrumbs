@@ -224,9 +224,9 @@
 				bind:field_group_labels={settings.field_group_labels}
 			/>
 
-			<div class="flex items-center gap-1">
+			<div class="bc:flex bc:items-center bc:gap-1">
 				<button
-					class="clickable-icon nav-action-button aspect-square text-lg"
+					class="clickable-icon nav-action-button bc:aspect-square bc:text-lg"
 					aria-label="Decrease max depth"
 					disabled={depth <= 1}
 					onclick={() => (depth = Math.max(1, depth - 1))}
@@ -235,7 +235,7 @@
 				</button>
 
 				<span
-					class="font-mono text-sm"
+					class="bc:font-mono bc:text-sm"
 					aria-label={tree?.hit_depth_limit
 						? "Some nodes have been truncated"
 						: ""}
@@ -244,7 +244,7 @@
 				</span>
 
 				<button
-					class="clickable-icon nav-action-button aspect-square text-lg"
+					class="clickable-icon nav-action-button bc:aspect-square bc:text-lg"
 					aria-label="Increase max depth"
 					onclick={() => (depth = depth + 1)}
 				>
@@ -278,7 +278,7 @@
 				{#if entry_node_data && entry_path}
 					<details class="tree-item" bind:open={root_open}>
 						<summary
-							class="tree-item-self is-clickable flex items-center"
+							class="tree-item-self is-clickable bc:flex bc:items-center"
 						>
 							<div
 								class="tree-item-icon collapse-icon mod-collapsible"

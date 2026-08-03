@@ -71,7 +71,7 @@
 			: `BC-edge BC-edge-implied BC-edge-implied-${render_data.edge_source}`}
 
 		<details class="tree-item" bind:open={opens[i]}>
-			<summary class="tree-item-self is-clickable flex items-center">
+			<summary class="tree-item-self is-clickable bc:flex bc:items-center">
 				{#if children.length || render_data.has_cut_of_children}
 					<div class="tree-item-icon collapse-icon mod-collapsible">
 						<ChevronOpener open={opens[i]} />
@@ -117,7 +117,7 @@
 			{#if render_data.has_cut_of_children && opens[i]}
 				<div class="tree-item-children">
 					<details class="tree-item">
-						<summary class="tree-item-self flex items-center">
+						<summary class="tree-item-self bc:flex bc:items-center">
 							<div class="tree-item-inner">
 								<span>Traversal limit reached...</span>
 							</div>

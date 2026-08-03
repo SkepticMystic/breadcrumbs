@@ -26,9 +26,9 @@
 	let reversed = $derived(all_paths.map((path) => path.reverse_edges));
 </script>
 
-<div class="BC-trail-view flex flex-col gap-1 px-3 py-2">
+<div class="BC-trail-view bc:flex bc:flex-col bc:gap-1 bc:px-3 bc:py-2">
 	{#each reversed as path}
-		<div class="BC-trail-view-path flex gap-1.5">
+		<div class="BC-trail-view-path bc:flex bc:gap-1.5">
 			{#each path as edge, j}
 				<div class="BC-trail-view-item">
 					{#if j !== 0}

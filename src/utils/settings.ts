@@ -72,7 +72,7 @@ export function new_setting<
 		});
 	} else if (config.checklist) {
 		const checklist_el = setting.controlEl.createDiv({
-			attr: { class: "flex flex-wrap gap-3" },
+			attr: { class: "bc:flex bc:flex-wrap bc:gap-3" },
 		});
 
 		const state: CL = { ...config.checklist.options };
@@ -86,10 +86,10 @@ export function new_setting<
 			checklist_el
 				.createEl("label", {
 					text: key,
-					cls: "flex items-center gap-1.5 grow",
+					cls: "bc:flex bc:items-center bc:gap-1.5 bc:grow",
 				})
 				.createEl("input", { attr }, (el) => {
-					el.classList.add("shrink");
+					el.classList.add("bc:shrink");
 
 					el.onchange = (e) => {
 						if (!(e.target instanceof HTMLInputElement)) return;

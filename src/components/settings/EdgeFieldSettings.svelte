@@ -297,9 +297,9 @@
 	};
 </script>
 
-<div class="flex flex-col">
-	<div class="my-2 flex items-center gap-2">
-		<button class="flex items-center gap-1" onclick={actions.save}>
+<div class="bc:flex bc:flex-col">
+	<div class="bc:my-2 bc:flex bc:items-center bc:gap-2">
+		<button class="bc:flex bc:items-center bc:gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
@@ -309,17 +309,17 @@
 		{/if}
 	</div>
 
-	<div class="flex items-center gap-4">
+	<div class="bc:flex bc:items-center bc:gap-4">
 		<h4>Fields</h4>
 
-		<div class="flex gap-1">
+		<div class="bc:flex bc:gap-1">
 			<input
 				type="text"
 				placeholder="Filter Fields by Name"
 				bind:value={filters.fields}
 			/>
 			<button
-				class="w-8"
+				class="bc:w-8"
 				aria-label="Clear Filter"
 				disabled={filters.fields === ""}
 				onclick={() => (filters.fields = "")}
@@ -330,7 +330,7 @@
 
 		{#if settings.edge_fields.length > 3}
 			<button
-				class="w-10"
+				class="bc:w-10"
 				aria-label="Jump to bottom"
 				onclick={() =>
 					actions.fields.scroll_to(
@@ -342,7 +342,7 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col">
+	<div class="bc:flex bc:flex-col">
 		{#each settings.edge_fields.filter( (f) => f.label.includes(filters.fields.toLowerCase()), ) as field, i}
 			{@const group_labels = settings.edge_field_groups
 				.filter((group) => group.fields.includes(field.label))
@@ -350,25 +350,25 @@
 			{@const field_i = settings.edge_fields.indexOf(field)}
 
 			{#if i > 0}
-				<hr class="my-1 opacity-20" />
+				<hr class="bc:my-1 bc:opacity-20" />
 			{/if}
 
 			<!-- TODO: I don't think this key even does what I'm looking for
 			The intention is to update the groups_label references when the groups themselves change
 			To replicate an issue this cause, context-menu > remove field from group, then do that again. It doesn't remove the second time -->
 			{#key settings.edge_field_groups}
-				<div class="flex flex-wrap items-center gap-1">
+				<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-1">
 					<input
 						id={actions.fields.make_id(field.label)}
 						type="text"
-						class="w-48 scroll-mt-40"
+						class="bc:w-48 bc:scroll-mt-40"
 						placeholder="Field Label"
 						value={field.label}
 						onblur={(e) =>
 							actions.fields.rename(field, e.currentTarget.value)}
 					/>
 					<button
-						class="w-8"
+						class="bc:w-8"
 						title="Remove field"
 						onclick={() => actions.fields.remove(field)}
 					>
@@ -407,7 +407,7 @@
 					</select>
 
 					<label
-						class="flex items-center gap-1"
+						class="bc:flex bc:items-center bc:gap-1"
 						title="Hide this field from the Matrix and Tree side views"
 					>
 						<input
@@ -436,7 +436,7 @@
 					{/each}
 
 					<button
-						class="w-6"
+						class="bc:w-6"
 						title="Add to group"
 						onclick={context_menus.add_to_group(field)}
 					>
@@ -447,7 +447,7 @@
 		{/each}
 
 		<button
-			class="mt-2 flex items-center gap-1"
+			class="bc:mt-2 bc:flex bc:items-center bc:gap-1"
 			onclick={actions.fields.add}
 		>
 			<PlusIcon size={ICON_SIZE} />
@@ -457,17 +457,17 @@
 
 	<hr />
 
-	<div class="flex items-center gap-4">
+	<div class="bc:flex bc:items-center bc:gap-4">
 		<h4>Groups</h4>
 
-		<div class="flex gap-1">
+		<div class="bc:flex bc:gap-1">
 			<input
 				type="text"
 				placeholder="Filter Groups by Name"
 				bind:value={filters.groups}
 			/>
 			<button
-				class="w-8"
+				class="bc:w-8"
 				aria-label="Clear Filter"
 				disabled={filters.groups === ""}
 				onclick={() => (filters.groups = "")}
@@ -478,7 +478,7 @@
 
 		{#if settings.edge_field_groups.length > 3}
 			<button
-				class="w-10"
+				class="bc:w-10"
 				aria-label="Jump to bottom"
 				onclick={() =>
 					actions.groups.scroll_to(
@@ -490,14 +490,14 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col gap-7">
+	<div class="bc:flex bc:flex-col bc:gap-7">
 		{#each settings.edge_field_groups.filter( (group) => group.label.includes(filters.groups.toLowerCase()), ) as group}
-			<div class="flex flex-col gap-2">
-				<div class="flex flex-wrap items-center gap-1">
+			<div class="bc:flex bc:flex-col bc:gap-2">
+				<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-1">
 					<input
 						id={actions.groups.make_id(group.label)}
 						type="text"
-						class="w-48 scroll-mt-40"
+						class="bc:w-48 bc:scroll-mt-40"
 						placeholder="Group Label"
 						value={group.label}
 						onblur={(e) =>
@@ -505,7 +505,7 @@
 					/>
 
 					<button
-						class="w-8"
+						class="bc:w-8"
 						title="Remove Group"
 						onclick={() => actions.groups.remove(group)}
 					>
@@ -513,11 +513,11 @@
 					</button>
 				</div>
 
-				<div class="flex flex-wrap items-center gap-1.5">
+				<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-1.5">
 					<span>Fields</span>
 
 					{#each group.fields as field_label}
-						<div class="flex items-center gap-0.5">
+						<div class="bc:flex bc:items-center bc:gap-0.5">
 							<Tag
 								tag={field_label}
 								title="Jump to field. Right click for more actions."
@@ -532,7 +532,7 @@
 					{/each}
 
 					{#if !group.fields.length}
-						<span class="search-empty-state my-0">{"<none>"}</span>
+						<span class="search-empty-state bc:my-0">{"<none>"}</span>
 					{/if}
 
 					<EdgeFieldSelector
@@ -547,7 +547,7 @@
 			</div>
 		{/each}
 
-		<button class="flex items-center gap-1" onclick={actions.groups.add}>
+		<button class="bc:flex bc:items-center bc:gap-1" onclick={actions.groups.add}>
 			<PlusIcon size={ICON_SIZE} />
 			New Group
 		</button>

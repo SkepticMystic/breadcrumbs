@@ -27,7 +27,7 @@
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <span
 	role="link"
-	class="internal-link cursor-pointer {cls}"
+	class="internal-link bc:cursor-pointer {cls}"
 	class:is-unresolved={!resolved}
 	class:BC-active-note={active_file?.path === path}
 	data-href={path}

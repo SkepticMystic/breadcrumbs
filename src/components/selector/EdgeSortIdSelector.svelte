@@ -18,7 +18,7 @@
 </script>
 
 <button
-	class="flex gap-1 {cls}"
+	class="bc:flex bc:gap-1 {cls}"
 	aria-label="Change sort field/order"
 	onclick={(e) => {
 		EdgeSortIdMenu({

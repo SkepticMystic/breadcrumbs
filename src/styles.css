@@ -9,9 +9,14 @@ Outputs to /styles.css, for Obsidian to use.
    (p-2, gap-1, top-2, w-10, …) resolves against — without it Tailwind silently
    drops them all at build time. Imported deliberately instead of the full
    `@import "tailwindcss"` bundle: that also pulls in Preflight, a browser
-   reset that would fight Obsidian's own app styling. */
-@import "tailwindcss/theme" layer(theme);
-@import "tailwindcss/utilities";
+   reset that would fight Obsidian's own app styling.
+
+   `prefix(bc)` renders every utility as `bc:foo` (e.g. `bc:static`, `bc:flex`)
+   instead of bare `foo`/`static`/`flex` — unprefixed one-word utility classes
+   collide with unrelated plugins' own class names (#761: Tailwind's `.static`
+   utility clobbered Excalidraw's own `.static` canvas class). */
+@import "tailwindcss/theme" layer(theme) prefix(bc);
+@import "tailwindcss/utilities" prefix(bc);
 
 /* Breadcrumbs */
 

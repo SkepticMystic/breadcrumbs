@@ -18,7 +18,7 @@
 </script>
 
 {#if grid_enabled || prev_next_enabled}
-	<div class="markdown-rendered mb-4 flex flex-col gap-2">
+	<div class="markdown-rendered bc:mb-4 bc:flex bc:flex-col bc:gap-2">
 		{#if grid_enabled}
 			<TrailView {plugin} {file_path} />
 		{/if}

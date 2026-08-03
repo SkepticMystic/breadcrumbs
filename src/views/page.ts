@@ -81,7 +81,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 				".BC-page-views",
 			) ??
 			markdown_view.containerEl.createDiv({
-				cls: "BC-page-views w-full mx-auto",
+				cls: "BC-page-views bc:w-full bc:mx-auto",
 			});
 
 		// Reset inline styles from any prior render. Width is handled by CSS
@@ -127,7 +127,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 			// Source mode may have left these on .cm-scroller in older versions.
 			const preview_scroller =
 				markdown_view.containerEl.querySelector(".cm-scroller");
-			preview_scroller?.classList.remove("flex-col");
+			preview_scroller?.classList.remove("bc:flex-col");
 			preview_scroller?.classList.remove(
 				"BC-cm-scroller-inline-page-views",
 			);
@@ -139,8 +139,8 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 				return;
 			}
 
-			// Never add Tailwind `flex-col` on .cm-scroller — it breaks CM6 drag-selection autoscroll (#660).
-			cm_scroller.classList.remove("flex-col");
+			// Never add Tailwind `bc:flex-col` on .cm-scroller — it breaks CM6 drag-selection autoscroll (#660).
+			cm_scroller.classList.remove("bc:flex-col");
 			cm_scroller.classList.remove("BC-cm-scroller-inline-page-views");
 
 			const pin_page_views = plugin.settings.views.page.all.sticky;

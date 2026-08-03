@@ -14,7 +14,7 @@
 	let value = $state("");
 </script>
 
-<div class="flex flex-col gap-1">
+<div class="bc:flex bc:flex-col bc:gap-1">
 	{#if label}
 		<label for="input">
 			{label}

@@ -259,20 +259,20 @@
 		</code>. In other words, your spouse's sibling is your sibling-in-law.
 	</p>
 
-	<div class="my-2 flex items-center gap-2">
-		<button class="flex items-center gap-1" onclick={actions.save}>
+	<div class="bc:my-2 bc:flex bc:items-center bc:gap-2">
+		<button class="bc:flex bc:items-center bc:gap-1" onclick={actions.save}>
 			<SaveIcon size={ICON_SIZE} />
 			Save
 		</button>
 
-		<div class="flex gap-1">
+		<div class="bc:flex bc:gap-1">
 			<input
 				type="text"
 				placeholder="Filter Rules by Name"
 				bind:value={filter}
 			/>
 			<button
-				class="w-8"
+				class="bc:w-8"
 				aria-label="Clear Filter"
 				disabled={filter === ""}
 				onclick={() => (filter = "")}
@@ -283,7 +283,7 @@
 
 		{#if transitives.length > 3}
 			<button
-				class="w-10"
+				class="bc:w-10"
 				aria-label="Jump to bottom"
 				onclick={() => actions.scroll_to(transitives.length - 1)}
 			>
@@ -296,24 +296,24 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col gap-3">
+	<div class="bc:flex bc:flex-col bc:gap-3">
 		{#each transitives
 			.map( (rule, rule_i) => ({ rule, rule_i, name: get_transitive_rule_name(rule) }), )
 			.filter( (r) => r.name.includes(filter.toLowerCase()), ) as { rule, rule_i, name } (name + rule_i)}
 			<!--  -->
 			<details
 				id={actions.make_id(rule_i)}
-				class="scroll-mt-40 border p-2"
+				class="bc:scroll-mt-40 bc:border bc:p-2"
 				bind:open={opens[rule_i]}
 			>
-				<summary class="flex items-center justify-between gap-2">
-					<div class="flex items-center gap-2">
+				<summary class="bc:flex bc:items-center bc:justify-between bc:gap-2">
+					<div class="bc:flex bc:items-center bc:gap-2">
 						<ChevronOpener open={opens[rule_i]} />
 
 						<code> {name} </code>
 					</div>
 
-					<div class="flex gap-1">
+					<div class="bc:flex bc:gap-1">
 						<button
 							disabled={rule_i === 0}
 							onclick={() =>
@@ -346,12 +346,12 @@
 				</summary>
 
 				{#key rule}
-					<div class="my-2 flex flex-col gap-3 px-4 py-2">
-						<div class="flex flex-wrap items-center gap-3">
-							<span class="font-semibold">Edge Chain:</span>
+					<div class="bc:my-2 bc:flex bc:flex-col bc:gap-3 bc:px-4 bc:py-2">
+						<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-3">
+							<span class="bc:font-semibold">Edge Chain:</span>
 
 							{#if rule.chain.length}
-								<div class="flex flex-wrap gap-3">
+								<div class="bc:flex bc:flex-wrap bc:gap-3">
 									{#each rule.chain as attr, attr_i (attr_i + (attr.field ?? ""))}
 										<Tag
 											tag={attr.field ?? ""}
@@ -364,7 +364,7 @@
 									{/each}
 								</div>
 							{:else}
-								<span class="search-empty-state my-0">
+								<span class="search-empty-state bc:my-0">
 									No fields in the chain.
 								</span>
 							{/if}
@@ -377,7 +377,7 @@
 						</div>
 
 						<div>
-							<span class="font-semibold">Closing Field: </span>
+							<span class="bc:font-semibold">Closing Field: </span>
 
 							<EdgeFieldSelector
 								undefine_on_change={false}
@@ -390,8 +390,8 @@
 							/>
 						</div>
 
-						<div class="flex items-center gap-2">
-							<span class="font-semibold">Close Reversed: </span>
+						<div class="bc:flex bc:items-center bc:gap-2">
+							<span class="bc:font-semibold">Close Reversed: </span>
 
 							<input
 								type="checkbox"
@@ -405,7 +405,7 @@
 						</div>
 
 						<div>
-							<span class="font-semibold">Rounds: </span>
+							<span class="bc:font-semibold">Rounds: </span>
 
 							<input
 								type="number"
@@ -420,10 +420,10 @@
 							/>
 						</div>
 
-						<div class="flex flex-wrap items-center gap-3">
-							<span class="font-semibold">Name (optional):</span>
+						<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-3">
+							<span class="bc:font-semibold">Name (optional):</span>
 
-							<div class="flex gap-1">
+							<div class="bc:flex bc:gap-1">
 								<input
 									type="text"
 									value={rule.name}
@@ -458,7 +458,7 @@
 		{/each}
 
 		<button
-			class="flex items-center gap-1"
+			class="bc:flex bc:items-center bc:gap-1"
 			onclick={actions.add_transitive}
 		>
 			<PlusIcon size={ICON_SIZE} />
@@ -468,7 +468,7 @@
 		<details>
 			<summary>Bulk Add Rules (Advanced)</summary>
 
-			<div class="flex flex-col gap-1">
+			<div class="bc:flex bc:flex-col bc:gap-1">
 				<p>
 					Quickly add multiple rules using the shorthand syntax: <code
 					>
@@ -478,26 +478,26 @@
 
 				<textarea
 					id="BC-transitive-bulk-str"
-					class="h-32 w-60"
+					class="bc:h-32 bc:w-60"
 					placeholder="[up] <- down"
 				></textarea>
 
-				<button class="w-60" onclick={actions.add_bulk}>
+				<button class="bc:w-60" onclick={actions.add_bulk}>
 					Bulk Add
 				</button>
 			</div>
 		</details>
 
 		<div
-			class="mt-4 border p-2"
+			class="bc:mt-4 bc:border bc:p-2"
 			style="border-radius: var(--radius-m); border: var(--modal-border-width) solid var(--background-modifier-border);"
 		>
-			<div class="mb-1 font-semibold">Self is sibling</div>
-			<p class="text-sm mb-2">
+			<div class="bc:mb-1 bc:font-semibold">Self is sibling</div>
+			<p class="bc:text-sm bc:mb-2">
 				Notes with any outgoing edge of these fields get an implied
 				self-loop — they appear in their own sibling list.
 			</p>
-			<div class="flex flex-wrap items-center gap-1.5">
+			<div class="bc:flex bc:flex-wrap bc:items-center bc:gap-1.5">
 				{#each settings.self_is_sibling as label (label)}
 					<Tag
 						tag={label}
@@ -538,7 +538,7 @@
 </div>
 
 <style>
-	.border {
+	.bc\:border {
 		border-radius: var(--radius-m);
 		border: var(--modal-border-width) solid
 			var(--background-modifier-border);

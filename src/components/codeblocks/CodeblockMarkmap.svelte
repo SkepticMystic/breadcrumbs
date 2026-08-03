@@ -269,8 +269,8 @@
 	{/if}
 
 	{#if code}
-		<div class="relative">
-			<div class="absolute top-2 right-2 z-10 flex">
+		<div class="bc:relative">
+			<div class="bc:absolute bc:top-2 bc:right-2 bc:z-10 bc:flex">
 				<CopyToClipboardButton
 					text={code}
 					cls="clickable-icon nav-action-button"
@@ -278,7 +278,7 @@
 			</div>
 			<div
 				bind:this={toolbar_el}
-				class="absolute bottom-2 right-2 z-10"
+				class="bc:absolute bc:bottom-2 bc:right-2 bc:z-10"
 			></div>
 			<svg
 				bind:this={svg_el}

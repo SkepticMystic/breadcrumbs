@@ -46,7 +46,7 @@
 >
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<summary class="tree-item-self is-clickable mod-collapsible text-lg">
+	<summary class="tree-item-self is-clickable mod-collapsible bc:text-lg">
 		<div class="tree-item-icon collapse-icon">
 			<ChevronOpener {open} />
 		</div>
@@ -58,28 +58,28 @@
 		</div>
 
 		<div class="tree-item-flair-outer">
-			<span class="tree-item-flair font-mono text-lg">
+			<span class="tree-item-flair bc:font-mono bc:text-lg">
 				{edges.length}
 			</span>
 		</div>
 	</summary>
 
-	<div class="tree-item-children flex flex-col">
+	<div class="tree-item-children bc:flex bc:flex-col">
 		{#key edges}
 			{#each edges as edge}
 				<div class="tree-item">
 					<div class="tree-item-self is-clickable">
-						<div class="tree-item-inner flex grow">
+						<div class="tree-item-inner bc:flex bc:grow">
 							<EdgeLink
 								{edge}
 								{plugin}
 								{node_stringify_options}
-								cls="grow tree-item-inner-text"
+								cls="bc:grow tree-item-inner-text"
 							/>
 						</div>
 
 						<TreeItemFlair
-							cls="font-mono"
+							cls="bc:font-mono"
 							label={edge.explicit(plugin.graph) ? "x" : "i"}
 							aria_label={edge.get_attribute_label(
 								plugin.graph,
