@@ -42,7 +42,7 @@
 		"@eslint/js": "^10.0.1",
 		"@tailwindcss/cli": "^4.3.3",
 		"@tsconfig/svelte": "^5.0.8",
-		"@types/luxon": "^3.7.2",
+		"@types/luxon": "^3.7.3",
 		"@types/node": "^26.1.2",
 		"@types/obsidian-typings": "npm:obsidian-typings@^6.13.0",
 		"@vitest/coverage-v8": "4.1.10",
@@ -70,7 +70,7 @@
 		"vitest": "4.1.10"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.11.6",
+		"baseline-browser-mapping": "^2.11.10",
 		"caniuse-lite": "^1.0.30001806",
 		"lucide-svelte": "^1.0.1",
 		"luxon": "^3.7.2",
