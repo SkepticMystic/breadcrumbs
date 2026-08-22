@@ -74,14 +74,31 @@
 		depth = settings.default_depth;
 	});
 
-	let entry_paths = $derived(
-		resolve_tree_entry_paths(plugin.graph, active_file?.path, {
+	// resolve_tree_entry_paths builds a fresh array on every call, so without
+	// this cache a stable result (e.g. a locked path) would still look like a
+	// change to Svelte's derived tracking, forcing a full tree rebuild/remount
+	// (and losing expand/collapse state) on every note navigation. See #768.
+	let entry_paths_cache: string[] | undefined;
+	let entry_paths = $derived.by(() => {
+		const next = resolve_tree_entry_paths(plugin.graph, active_file?.path, {
 			lock_view: settings.lock_view,
 			lock_path: settings.lock_path,
 			find_root: settings.find_root,
 			find_root_field_labels,
-		}),
-	);
+		});
+
+		if (
+			next &&
+			entry_paths_cache &&
+			next.length === entry_paths_cache.length &&
+			next.every((path, i) => path === entry_paths_cache![i])
+		) {
+			return entry_paths_cache;
+		}
+
+		entry_paths_cache = next;
+		return next;
+	});
 
 	let entry_path = $derived(
 		entry_paths?.length === 1 ? entry_paths[0] : undefined,
