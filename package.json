@@ -44,8 +44,8 @@
 		"@tsconfig/svelte": "^5.0.8",
 		"@types/luxon": "^3.7.4",
 		"@types/node": "^26.2.0",
-		"@vitest/coverage-v8": "4.1.10",
-		"@vitest/ui": "4.1.10",
+		"@vitest/coverage-v8": "4.1.11",
+		"@vitest/ui": "4.1.11",
 		"esbuild": "^0.28.2",
 		"esbuild-svelte": "^0.9.5",
 		"eslint": "^10.8.1",
@@ -66,7 +66,7 @@
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.67.0",
 		"vite-plugin-wasm": "^3.6.0",
-		"vitest": "4.1.10"
+		"vitest": "4.1.11"
 	},
 	"overrides": {
 		"vite": "8.0.16",
@@ -77,7 +77,7 @@
 		"linkify-it": "^5.0.2"
 	},
 	"dependencies": {
-		"baseline-browser-mapping": "^2.11.14",
+		"baseline-browser-mapping": "^2.11.15",
 		"caniuse-lite": "^1.0.30001809",
 		"lucide-svelte": "^1.0.1",
 		"luxon": "^3.7.2",
