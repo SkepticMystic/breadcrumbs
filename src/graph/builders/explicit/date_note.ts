@@ -24,7 +24,7 @@ interface PeriodNote {
 	basename: string;
 	ext: string;
 	folder: string;
-	date: DateTime<true>;
+	date: DateTime<boolean>;
 }
 
 function collect_period_notes(
@@ -236,7 +236,7 @@ export const _add_explicit_edges_date_note: ExplicitEdgeBuilder = (
 		path: string;
 		folder: string;
 		basename: string;
-		date: DateTime<true>;
+		date: DateTime<boolean>;
 	}[] = [];
 
 	all_files.obsidian?.forEach(({ file }) => {
