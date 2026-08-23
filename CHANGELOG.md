@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.21.11](https://github.com/michaelpporter/breadcrumbs/compare/4.21.10...4.21.11) (2026-08-22)
+
+### Fixed
+
+* Tree View and Matrix View no longer reset expand/collapse state when locked to a note and navigating between other notes. Three separate causes contributed: `resolve_tree_entry_paths` returned a fresh array on every call even when the locked path was unchanged, defeating Svelte's change detection; `active-leaf-change` fired a redundant full remount on every navigation even though both views already react to the active-file store on their own; and Matrix's `grouped_out_edges` read the active file unconditionally even while locked, forcing an unnecessary rebuild and remount of its per-field expand state. Refs #768
+* Widened a `date_note` builder type from `DateTime<true>` to `DateTime<boolean>` after a `@types/luxon` update changed how `DateTime.fromFormat`'s return type narrows, which broke the type check without any behavior change.
+* Replaced deprecated `Setting.setWarning()` with `setDestructive()` for the canvas-overwrite confirmation button.
+
+### Chores
+
+* Bumped `undici`, `brace-expansion`, `fast-uri`, and `nanoid` overrides past versions flagged by the community plugin directory's vulnerability scan.
+* Removed the `1.12-compat` target-branch entries from Dependabot config; that branch is frozen and no longer takes dependency updates.
+
 ### [4.21.10](https://github.com/michaelpporter/breadcrumbs/compare/4.21.9...4.21.10) (2026-08-03)
 
 ### Fixed
