@@ -47,28 +47,25 @@
 
 	let active_file = $derived($active_file_store);
 
+	// Resolve to a single effective path first, so that -- while locked --
+	// grouped_out_edges only depends on the (unchanging) lock_path instead of
+	// re-deriving from active_file on every note navigation. Otherwise the
+	// resulting object is rebuilt on every navigation even though the locked
+	// data hasn't changed, forcing the `{#key grouped_out_edges}` remount
+	// below to discard each field's expand/collapse state. See #768.
+	let effective_path = $derived(
+		settings.lock_view && plugin.graph.has_node(settings.lock_path!)
+			? settings.lock_path!
+			: active_file?.path,
+	);
+
 	let grouped_out_edges = $derived.by(() => {
-		if (
-			active_file &&
-			// Even tho we ensure the graph is built before the views are registered,
-			// Existing views still try render before the graph is built.
-			plugin.graph.has_node(active_file.path)
-		) {
-			if (
-				settings.lock_view &&
-				plugin.graph.has_node(settings.lock_path!)
-			) {
-				log.debug(
-					"Using locked path for MatrixView:",
-					settings.lock_path,
-				);
-				return plugin.graph.get_filtered_grouped_outgoing_edges(
-					settings.lock_path!,
-					edge_field_labels,
-				);
-			}
+		// Even tho we ensure the graph is built before the views are registered,
+		// Existing views still try render before the graph is built.
+		if (effective_path && plugin.graph.has_node(effective_path)) {
+			log.debug("Using path for MatrixView:", effective_path);
 			return plugin.graph.get_filtered_grouped_outgoing_edges(
-				active_file.path,
+				effective_path,
 				edge_field_labels,
 			);
 		} else {

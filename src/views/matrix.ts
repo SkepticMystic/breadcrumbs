@@ -26,7 +26,12 @@ export class MatrixView extends ItemView {
 	icon = "blinds";
 
 	onload(): void {
-		const redraw = debounce(() => void this.onOpen(), 100);
+		const redraw = debounce(() => {
+			// Locked views already reflect the locked note reactively --
+			// skip the destructive remount so expand/collapse state survives.
+			if (this.plugin.settings.views.side.matrix.lock_view) return;
+			void this.onOpen();
+		}, 100);
 		this.registerEvent(
 			this.plugin.events.on(BCEvent.REDRAW_SIDE_VIEWS, redraw),
 		);

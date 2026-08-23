@@ -220,8 +220,12 @@ export default class BreadcrumbsPlugin extends Plugin {
 						return;
 					}
 
+					// Side views (Tree, Matrix) already react to this store on
+					// their own -- triggering REDRAW_SIDE_VIEWS here forces a
+					// full unmount/remount on every navigation, which wipes
+					// their local UI state (e.g. Tree View's expand/collapse).
+					// See #768.
 					active_file_store.refresh(this.app);
-					this.events.trigger(BCEvent.REDRAW_SIDE_VIEWS);
 				}),
 			);
 
