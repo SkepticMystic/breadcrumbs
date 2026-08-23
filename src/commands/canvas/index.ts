@@ -68,7 +68,7 @@ export async function export_to_canvas(
 			.addButton((btn) =>
 				btn
 					.setButtonText("Overwrite")
-					.setWarning()
+					.setDestructive()
 					.onClick(async () => {
 						modal.close();
 						await plugin.app.vault.modify(existing, content);
