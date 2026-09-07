@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.22.0-beta.1](https://github.com/michaelpporter/breadcrumbs/compare/4.21.11...4.22.0-beta.1) (2026-09-07)
+
+### Fixed
+
+* Views and codeblocks now use CSS logical properties (`padding-inline`, `inset-inline-end`, `text-align: start/end`, logical border corners) instead of hard-coded left/right rules. Obsidian 1.14 flips the workspace for right-to-left interface languages, so the Prev/Next view arrows, the Trail View grid cell borders, and the copy/toolbar overlays on the Tree, Mermaid, and Markmap codeblocks now follow the container direction rather than staying pinned to the physical right edge.
+
+### Chores
+
+* Bumped the `fast-uri` override from `^4.1.2` to `^4.1.3` (resolves to 4.1.4), past the range flagged by advisory GHSA-5jgf-p345-68v8. It is a build-time-only transitive dependency and is not part of the shipped bundle.
+
 ### [4.21.11](https://github.com/michaelpporter/breadcrumbs/compare/4.21.10...4.21.11) (2026-08-22)
 
 ### Fixed
