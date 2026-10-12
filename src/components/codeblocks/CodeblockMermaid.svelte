@@ -163,7 +163,7 @@
 
 	{#if code}
 		<div class="bc:relative">
-			<div class="bc:absolute bc:top-2 bc:right-2 bc:z-10 bc:flex">
+			<div class="bc:absolute bc:top-2 bc:end-2 bc:z-10 bc:flex">
 				<CopyToClipboardButton
 					text={code}
 					cls="clickable-icon nav-action-button"

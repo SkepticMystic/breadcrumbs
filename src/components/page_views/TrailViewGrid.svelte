@@ -105,10 +105,11 @@ grid-template-columns: {'1fr '.repeat(trail_grid.square.at(0)?.length ?? 0)};"
 	}
 
 	.BC-trail-view-item {
-		/* Undo the effect of the double border on the top and right side */
-		margin: -1px -1px 0 0;
-		/* Only add borders on the top and right sides, to avoid inner duplications, and some outer duplicates */
-		border-right: 1px solid var(--background-modifier-border);
+		/* Undo the effect of the double border on the top and inline-end side */
+		margin-top: -1px;
+		margin-inline-end: -1px;
+		/* Only add borders on the top and inline-end sides, to avoid inner duplications, and some outer duplicates */
+		border-inline-end: 1px solid var(--background-modifier-border);
 		border-top: 1px solid var(--background-modifier-border);
 	}
 </style>

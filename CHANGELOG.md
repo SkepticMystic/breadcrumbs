@@ -9,6 +9,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.22.0](https://github.com/michaelpporter/breadcrumbs/compare/4.21.14...4.22.0) (2026-10-11)
+
+First stable release for Obsidian 1.14. Rolls up 4.22.0-beta.1 through beta.4 (below); it includes every fix from 4.21.12–4.21.14.
+
+### Changed
+
+* `minAppVersion` raised to `1.14.0`. Users still on Obsidian 1.13 stay on 4.21.14.
+
+### Added
+
+* Every Breadcrumbs settings page has a stable `id` (Obsidian 1.14's `SettingDefinitionItem#id`), so deep links and search references survive renames.
+
+### Fixed
+
+* Views and codeblocks use CSS logical properties, so arrows, grid borders, and codeblock toolbars follow Obsidian 1.14's right-to-left workspace layout.
+
+### Chores
+
+* Routine JS and Cargo dependency bumps (vitest 5.0.3, eslint 10.12.0, typescript-eslint 8.71.0, obsidian-typings 6.38.0, smallvec 1.16.2).
+* Pinned overrides past advisories flagged by the community plugin directory's scan: `undici`, `brace-expansion`, `fast-uri`, `markdown-it`, `moment`, `postcss-selector-parser`, `shell-quote`, `source-map-js`, and `katex` (0.18, bundled for markmap math rendering).
+
+### [4.22.0-beta.4](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0-beta.3...4.22.0-beta.4) (2026-09-27)
+
+Ports everything from 4.21.13 and 4.21.14 to the Obsidian 1.14 line.
+
+### Features
+
+* **Export to canvas: Semantic edge anchors.** A new toggle (off by default) in the export dialog and in Settings → Commands → Create canvas. When on, edges are anchored by the field group their field belongs to instead of by layout direction: `ups` top → bottom, `downs` bottom → top, `nexts` right → left, `prevs`/`sames` left → right. Custom field names work; fields outside those groups keep the direction default. Refs #782
+
+### Fixed
+
+* **Export to canvas** and **Create list index** now resolve fields from the selected field groups when they run, instead of from a list saved when the groups were picked. Fields added to a group later are no longer silently skipped. Refs #781
+* A malformed transitive implied-relation rule (missing its closing field or a chain field) no longer aborts the whole graph rebuild; it is skipped with a console error. Refs #778
+
+### Chores
+
+* Pinned the `devalue` override past GHSA-9rgm-9g3h-6x36; routine JS, Cargo, and GitHub Actions dependency bumps.
+
+### [4.22.0-beta.3](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0-beta.2...4.22.0-beta.3) (2026-09-13)
+
+### Fixed
+
+* `list_note` builder now recognizes ordered list markers (`1.`, `2)`, etc.), not just `- * +` bullets. An ordered item's numeric prefix was previously left un-stripped and misread as an invalid field-override label, silently dropping the edge. Refs #773
+
+### [4.22.0-beta.2](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0-beta.1...4.22.0-beta.2) (2026-09-10)
+
+### Added
+
+* Every page in the Breadcrumbs settings tab now has a stable `id`, using Obsidian 1.14's new `SettingDefinitionItem#id`. This keeps deep links and search references to a settings page working even if the page is later renamed, and disambiguates settings that share a display name.
+
+### [4.22.0-beta.1](https://github.com/michaelpporter/breadcrumbs/compare/4.21.11...4.22.0-beta.1) (2026-09-07)
+
+### Fixed
+
+* Views and codeblocks now use CSS logical properties (`padding-inline`, `inset-inline-end`, `text-align: start/end`, logical border corners) instead of hard-coded left/right rules. Obsidian 1.14 flips the workspace for right-to-left interface languages, so the Prev/Next view arrows, the Trail View grid cell borders, and the copy/toolbar overlays on the Tree, Mermaid, and Markmap codeblocks now follow the container direction rather than staying pinned to the physical right edge.
+
+### Changed
+
+* `minAppVersion` raised to `1.14.0`. The 4.22 line targets Obsidian 1.14; users on 1.13 stay on 4.21.11.
+
+### Chores
+
+* Bumped the `fast-uri` override from `^4.1.2` to `^4.1.3` (resolves to 4.1.4), past the range flagged by advisory GHSA-5jgf-p345-68v8. It is a build-time-only transitive dependency and is not part of the shipped bundle.
+
 ### [4.21.14](https://github.com/michaelpporter/breadcrumbs/compare/4.21.13...4.21.14) (2026-09-27)
 
 ### Features

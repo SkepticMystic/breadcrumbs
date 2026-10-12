@@ -144,11 +144,11 @@
 		<div class="BC-prev-next-daily bc:flex">
 			<div
 				class="bc:flex bc:w-full bc:flex-col"
-				style="border-radius: var(--radius-m) 0 0 var(--radius-m)"
+				style="border-start-start-radius: var(--radius-m); border-end-start-radius: var(--radius-m)"
 			>
 				{#each grouped_out_edges?.prev ?? [] as edge}
 					<div
-						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:pl-2 bc:pr-1 bc:text-left"
+						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:ps-2 bc:pe-1 bc:text-start"
 					>
 						<span class="BC-field bc:px-2">{edge.edge_type}</span>
 
@@ -164,11 +164,11 @@
 
 			<div
 				class="bc:flex bc:w-full bc:flex-col"
-				style="border-radius:  0 var(--radius-m) var(--radius-m) 0"
+				style="border-start-end-radius: var(--radius-m); border-end-end-radius: var(--radius-m)"
 			>
 				{#each grouped_out_edges?.next ?? [] as edge}
 					<div
-						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:pl-1 bc:pr-2 bc:text-right"
+						class="BC-next-prev-item bc:flex bc:gap-3 bc:py-1 bc:ps-1 bc:pe-2 bc:text-end"
 					>
 						<EdgeLink
 							cls="bc:grow"
@@ -189,7 +189,7 @@
 			<span class="BC-period-kind bc:text-xs bc:opacity-60">{row.kind}</span>
 
 			<div class="bc:flex bc:grow bc:items-center bc:justify-between">
-				<div class="bc:flex-1 bc:text-left">
+				<div class="bc:flex-1 bc:text-start">
 					{#if row.prev_path}
 						<EdgeLink
 							cls=""
@@ -215,7 +215,7 @@
 						?.replace(/\.[^.]+$/, "") ?? ""}
 				</span>
 
-				<div class="bc:flex-1 bc:text-right">
+				<div class="bc:flex-1 bc:text-end">
 					{#if row.next_path}
 						<EdgeLink
 							cls=""
