@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.22.1](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0...4.22.1) (2026-10-11)
+
+### Fixed
+
+* **Page views in Reading view** no longer disappear and make the note jump when Obsidian re-lays out the note (popovers, window resizes, scrolling). The block was placed inside an element Obsidian rebuilds; it now sits just before it and keeps the readable-line-width alignment. Regression since 4.9.0. Refs #791
+* **Sticky page views in Reading view** now pin to the top again. Obsidian's `--file-margins` became a two-value property, which silently broke the sticky offset.
+* **"Jump to first neighbour"** opens the first matching field in the note, not the last. Since the graph moved to WASM, a note's edges were returned newest-first; they're now in document order. This also affects anything else that picks the first edge, such as the Prev/Next view. Refs #790
+* The `traverse_note` builder keeps link order for a note's children.
+* **Create list index**, **Export to canvas**, and the **edge audit** report no longer include the self-loop edges added by "self is sibling". The list index no longer lists a note as its own child with its siblings repeated, the canvas no longer draws a note→itself edge, and the audit no longer reports them as dangling edges. Refs #785
+
+### Chores
+
+* Upgraded `wasm-bindgen` 0.2.100 → 0.2.129. The generated bindings no longer use `new Function(...)`, which the community plugin directory's scan flagged as dynamic code execution.
+
 ### [4.22.0](https://github.com/michaelpporter/breadcrumbs/compare/4.21.14...4.22.0) (2026-10-11)
 
 First stable release for Obsidian 1.14. Rolls up 4.22.0-beta.1 through beta.4 (below); it includes every fix from 4.21.12–4.21.14.
