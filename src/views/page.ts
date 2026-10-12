@@ -85,7 +85,7 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 			});
 
 		// Reset inline styles from any prior render. Width is handled by CSS
-		// (source modes) or by the parent .markdown-preview-sizer (preview).
+		// keyed on .is-readable-line-width (source and preview modes).
 		page_views_el.removeAttribute("style");
 
 		// Stickyness
@@ -107,17 +107,20 @@ export function redraw_page_views(plugin: BreadcrumbsPlugin) {
 		if (mode === "preview") {
 			// NOTE: Embedded notes also match ".markdown-preview-view", so we anchor
 			//   on ".markdown-reading-view", which doesn't exist on embedded notes.
-			//   Insert inside .markdown-preview-sizer so we inherit Obsidian's
-			//   readable-line-width centering instead of fighting it with margin math.
-			const view_parent = markdown_view.containerEl.querySelector(
+			//   Insert *before* .markdown-preview-sizer, never inside it: Obsidian rebuilds
+			//   the sizer's children with setChildrenInPlace() on every virtual-display
+			//   update, which drops foreign nodes (#791). Readable-line-width centering
+			//   comes from CSS keyed on .is-readable-line-width (#679).
+			const sizer = markdown_view.containerEl.querySelector(
 				".markdown-reading-view > .markdown-preview-view > .markdown-preview-sizer",
 			);
-			if (!view_parent) {
+			const view_parent = sizer?.parentElement;
+			if (!sizer || !view_parent) {
 				log.debug("redraw_page_views > No view_parent (mode=preview)");
 				return;
 			}
 
-			view_parent.insertBefore(page_views_el, view_parent.firstChild);
+			view_parent.insertBefore(page_views_el, sizer);
 
 			// Clear any stale inline margins/padding left over from a prior source-mode render.
 			page_views_el.style.removeProperty("margin-left");
