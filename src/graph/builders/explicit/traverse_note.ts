@@ -24,7 +24,8 @@ function dfs_edges(
 		if (visited.has(item.node)) continue;
 		visited.add(item.node);
 		if (item.parent !== null) edges.push([item.parent, item.node]);
-		for (const child of Object.keys(links[item.node] ?? {})) {
+		// Push in reverse so the stack pops children in link order (#790).
+		for (const child of Object.keys(links[item.node] ?? {}).reverse()) {
 			if (!visited.has(child)) {
 				stack.push({ node: child, parent: item.node });
 			}

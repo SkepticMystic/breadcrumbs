@@ -1604,7 +1604,8 @@ export class NoteGraph {
         return GroupedEdgeList.__wrap(ret);
     }
     /**
-     * Get all outgoing edges from a node, filtered by edge type.
+     * Get all outgoing edges from a node, filtered by edge type, in insertion
+     * (document) order.
      * @param {string} node
      * @param {string[] | null} [edge_types]
      * @returns {EdgeList}
@@ -1639,7 +1640,7 @@ export class NoteGraph {
         return ret === 0 ? undefined : NodeData.__wrap(ret);
     }
     /**
-     * Get all outgoing edges from a node.
+     * Get all outgoing edges from a node, in insertion (document) order.
      * @param {string} node
      * @returns {EdgeList}
      */

@@ -37,6 +37,14 @@ describe("traverse_note builder", () => {
 		t.expect(r.edges.every((e) => e.edge_type === "up")).toBe(true);
 	});
 
+	test("children are emitted in link order (#790)", async (t) => {
+		const r = await _add_explicit_edges_traverse_note(
+			plugin({ "A.md": { "B.md": 1, "C.md": 1, "D.md": 1 } }),
+			make_all_files([mock_file("A.md", { frontmatter: FIELD })]),
+		);
+		t.expect(r.edges.map((e) => e.target)).toEqual(["B.md", "C.md", "D.md"]);
+	});
+
 	test("cycles are not revisited", async (t) => {
 		const r = await _add_explicit_edges_traverse_note(
 			plugin({ "A.md": { "B.md": 1 }, "B.md": { "A.md": 1 } }),

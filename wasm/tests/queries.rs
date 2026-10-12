@@ -270,6 +270,53 @@ fn test_get_filtered_outgoing_edges_selects_one_of_two_types() {
     assert_eq!(down_edges.edges.len(), 1);
 }
 
+// ---- outgoing edge order (#790) ----
+
+fn targets(g: &NoteGraph, edges: &[breadcrumbs_graph_wasm::data::edge_struct::EdgeStruct]) -> Vec<String> {
+    edges.iter().map(|e| e.target_path(g).unwrap()).collect()
+}
+
+/// `2026-W38` from #790: two `next` fields, in that order in the note.
+fn week_graph() -> NoteGraph {
+    let mut g = NoteGraph::new();
+    g.build_graph(
+        vec![node("W38"), node("2026-09"), node("W37"), node("W39"), node("My weeks")],
+        vec![
+            edge("W38", "2026-09", "up"),
+            edge("W38", "W37", "prev"),
+            edge("W38", "W39", "next"),
+            edge("W38", "My weeks", "next"),
+        ],
+        vec![],
+    )
+    .unwrap();
+    g
+}
+
+#[wasm_bindgen_test]
+fn test_get_outgoing_edges_keeps_insertion_order() {
+    let g = week_graph();
+    let edges = g.get_outgoing_edges("W38".to_owned()).edges;
+    assert_eq!(targets(&g, &edges), vec!["2026-09", "W37", "W39", "My weeks"]);
+}
+
+#[wasm_bindgen_test]
+fn test_get_filtered_outgoing_edges_keeps_insertion_order() {
+    let g = week_graph();
+    let edges = g
+        .get_filtered_outgoing_edges("W38".to_owned(), Some(vec!["next".to_owned()]))
+        .edges;
+    assert_eq!(targets(&g, &edges), vec!["W39", "My weeks"]);
+}
+
+#[wasm_bindgen_test]
+fn test_get_filtered_grouped_outgoing_edges_keeps_insertion_order() {
+    let g = week_graph();
+    let grouped = g.get_filtered_grouped_outgoing_edges("W38".to_owned(), None);
+    let next = grouped.get_edges("next").unwrap();
+    assert_eq!(targets(&g, &next), vec!["W39", "My weeks"]);
+}
+
 // ---- edge_matches_edge_filter (Rc<str> variant) ----
 
 #[wasm_bindgen_test]
