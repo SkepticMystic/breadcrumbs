@@ -36,6 +36,9 @@ export const collect_graph_facts = (graph: NoteGraph): GraphFacts => {
 			.get_outgoing_edges(path)
 			.get_edges()
 			.forEach((edge: EdgeStruct) => {
+				// self_is_sibling self-loops would show up as dangling edges on
+				// unresolved notes and block mergeable-field matches (#785).
+				if (edge.is_self_loop()) return;
 				edges.push({
 					field: edge.edge_type,
 					source: edge.source_path(graph),

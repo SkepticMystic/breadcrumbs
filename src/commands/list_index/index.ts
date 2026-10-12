@@ -101,6 +101,10 @@ function edge_tree_to_list_index_inner(
 	current_nodes.forEach((datum) => {
 		const { edge, children, depth } = datum;
 
+		// self_is_sibling adds a note→itself edge for the views; following it here
+		// lists the note as its own child and repeats its siblings (#785).
+		if (edge.is_self_loop()) return;
+
 		const display = edge.stringify_target(graph, stringify_options);
 
 		const link = Links.ify(edge.target_path(graph), display, {

@@ -102,6 +102,18 @@ export function build_canvas(
 
 	const data = result.data;
 
+	// self_is_sibling adds a note→itself edge for the views. Leave out each
+	// self-loop and the subtree the traversal followed back through it (#785).
+	const skipped = new Set<number>();
+	const skip = (index: number) => {
+		if (skipped.has(index)) return;
+		skipped.add(index);
+		for (const c of data[index].children) skip(c);
+	};
+	data.forEach((datum, i) => {
+		if (datum.edge.is_self_loop()) skip(i);
+	});
+
 	// Forest roots = data entries that are nobody's child (the first hops).
 	const is_child = new Set<number>();
 	for (const datum of data) {
@@ -121,7 +133,7 @@ export function build_canvas(
 		const existing = placements.get(path);
 		if (existing) return existing.cross;
 
-		const kids = Array.from(datum.children);
+		const kids = Array.from(datum.children).filter((c) => !skipped.has(c));
 		let cross: number;
 		if (kids.length === 0) {
 			cross = next_slot++;
@@ -137,7 +149,7 @@ export function build_canvas(
 
 	const root_crosses = data
 		.map((_, i) => i)
-		.filter((i) => !is_child.has(i))
+		.filter((i) => !is_child.has(i) && !skipped.has(i))
 		.map(layout);
 
 	// The source note sits at depth 0, centred over its roots.
@@ -164,7 +176,8 @@ export function build_canvas(
 	const edges: CanvasEdge[] = [];
 	const edge_ids = new Set<string>();
 
-	for (const datum of data) {
+	for (const [i, datum] of data.entries()) {
+		if (skipped.has(i)) continue;
 		const from = datum.edge.source_path(graph);
 		const to = datum.edge.target_path(graph);
 
