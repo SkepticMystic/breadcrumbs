@@ -38,7 +38,8 @@ Outputs to /styles.css, for Obsidian to use.
 .BC-page-views.BC-page-views-sticky {
 	z-index: 50;
 	position: sticky;
-	top: calc(var(--file-margins) * -1);
+	/* --file-margins is "y x" on current Obsidian, which makes calc() invalid (top: auto). */
+	top: calc(var(--file-margins-y, var(--file-margins)) * -1);
 	background-color: var(--background-primary);
 }
 
@@ -106,12 +107,14 @@ Outputs to /styles.css, for Obsidian to use.
 
 /*
  * Follow Obsidian's "Readable line length" setting. When on, Obsidian adds
- * .is-readable-line-width to .markdown-source-view. Constrain the pinned strip
- * and the unpinned inner wrapper to match note body width, so BC views stay
- * aligned with the content rather than spanning the full editor.
+ * .is-readable-line-width to .markdown-source-view / .markdown-preview-view.
+ * Constrain the pinned strip, the unpinned inner wrapper, and the reading-view
+ * block (a sibling of .markdown-preview-sizer, #791) to match note body width,
+ * so BC views stay aligned with the content rather than spanning the full editor.
  */
 .markdown-source-view.is-readable-line-width > .BC-page-views,
-.markdown-source-view.is-readable-line-width .BC-page-views-inner {
+.markdown-source-view.is-readable-line-width .BC-page-views-inner,
+.markdown-preview-view.is-readable-line-width > .BC-page-views {
 	max-width: var(--file-line-width);
 	margin-left: auto;
 	margin-right: auto;
