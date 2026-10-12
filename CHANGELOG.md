@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 4.X
 
+### [4.22.0](https://github.com/michaelpporter/breadcrumbs/compare/4.21.14...4.22.0) (2026-10-11)
+
+First stable release for Obsidian 1.14. Rolls up 4.22.0-beta.1 through beta.4 (below); it includes every fix from 4.21.12–4.21.14.
+
+### Changed
+
+* `minAppVersion` raised to `1.14.0`. Users still on Obsidian 1.13 stay on 4.21.14.
+
+### Added
+
+* Every Breadcrumbs settings page has a stable `id` (Obsidian 1.14's `SettingDefinitionItem#id`), so deep links and search references survive renames.
+
+### Fixed
+
+* Views and codeblocks use CSS logical properties, so arrows, grid borders, and codeblock toolbars follow Obsidian 1.14's right-to-left workspace layout.
+
+### Chores
+
+* Routine JS and Cargo dependency bumps (vitest 5.0.3, eslint 10.12.0, typescript-eslint 8.71.0, obsidian-typings 6.38.0, smallvec 1.16.2).
+
 ### [4.22.0-beta.4](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0-beta.3...4.22.0-beta.4) (2026-09-27)
 
 Ports everything from 4.21.13 and 4.21.14 to the Obsidian 1.14 line.
@@ -51,6 +71,38 @@ Ports everything from 4.21.13 and 4.21.14 to the Obsidian 1.14 line.
 ### Chores
 
 * Bumped the `fast-uri` override from `^4.1.2` to `^4.1.3` (resolves to 4.1.4), past the range flagged by advisory GHSA-5jgf-p345-68v8. It is a build-time-only transitive dependency and is not part of the shipped bundle.
+
+### [4.21.14](https://github.com/michaelpporter/breadcrumbs/compare/4.21.13...4.21.14) (2026-09-27)
+
+### Features
+
+* **Export to canvas: Semantic edge anchors.** A new toggle (off by default) in the export dialog and in Settings → Commands → Create canvas. When on, edges are anchored by the field group their field belongs to instead of by layout direction: `ups` top → bottom, `downs` bottom → top, `nexts` right → left, `prevs`/`sames` left → right. Canvases you rearrange by hand then keep clean, orthogonal edges. The lookup uses the field's group, so custom field names work; fields outside those groups keep the direction default. Refs #782
+
+### Fixed
+
+* **Export to canvas** now follows every field in the selected field groups. The command used a list of fields saved when the groups were picked, so a field added to a group later (e.g. a custom `same` field) was silently skipped — the group still showed as selected, but those edges and notes were missing from the canvas. Fields are now resolved from the selected groups at export time. Refs #781
+* **Create list index** had the same stale field list and now resolves fields from the selected groups when building. The `create_list_index` API still uses the `fields` passed to it. Refs #781
+
+### [4.21.13](https://github.com/michaelpporter/breadcrumbs/compare/4.21.12...4.21.13) (2026-09-22)
+
+### Fixed
+
+* A malformed transitive implied-relation rule (missing its closing field or a chain field, e.g. from a hand-edited or synced `data.json`) no longer aborts the whole graph rebuild. Previously the undefined value threw inside the WASM bindings, so no page views or `breadcrumbs` codeblocks rendered and the "Rebuilding graph" notice never finished. Such rules are now skipped with a console error, and a rule missing only its name falls back to an empty name. Refs #778
+
+### Chores
+
+* Pinned the `devalue` override past a version flagged by the community plugin directory's vulnerability scan (GHSA-9rgm-9g3h-6x36; a Svelte compiler dependency).
+* Routine dependency bumps for JS, Cargo, and GitHub Actions; CI no longer runs on the frozen `1.12-compat` branch.
+
+### [4.21.12](https://github.com/michaelpporter/breadcrumbs/compare/4.21.11...4.21.12) (2026-09-13)
+
+### Fixed
+
+* `list_note` builder now recognizes ordered list markers (`1.`, `2)`, etc.), not just `- * +` bullets. An ordered item's numeric prefix was previously left un-stripped and misread as an invalid field-override label, silently dropping the edge. Refs #773
+
+### Chores
+
+* Bumped the `fast-uri` override past a version flagged by the community plugin directory's vulnerability scan (build-time only; tree-shaken from the shipped bundle).
 
 ### [4.21.11](https://github.com/michaelpporter/breadcrumbs/compare/4.21.10...4.21.11) (2026-08-22)
 
