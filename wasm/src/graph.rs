@@ -185,20 +185,13 @@ impl NoteGraph {
         });
     }
 
-    /// Get all outgoing edges from a node.
+    /// Get all outgoing edges from a node, in insertion (document) order.
     pub fn get_outgoing_edges(&self, node: String) -> EdgeList {
-        let node_index = self.int_get_node_index(&node);
-
-        EdgeList::from_vec(match node_index {
-            Some(node_index) => self
-                .int_iter_outgoing_edges(node_index)
-                .map(|edge| EdgeStruct::from_edge_ref(edge, self))
-                .collect(),
-            None => Vec::new(),
-        })
+        self.get_filtered_outgoing_edges(node, None)
     }
 
-    /// Get all outgoing edges from a node, filtered by edge type.
+    /// Get all outgoing edges from a node, filtered by edge type, in insertion
+    /// (document) order.
     pub fn get_filtered_outgoing_edges(
         &self,
         node: String,
@@ -207,13 +200,20 @@ impl NoteGraph {
         let node_index = self.int_get_node_index(&node);
 
         EdgeList::from_vec(match node_index {
-            Some(node_index) => self
-                .int_iter_outgoing_edges(node_index)
-                .filter(|edge_ref| {
-                    edge_matches_edge_filter_string(edge_ref.weight(), edge_types.as_ref())
-                })
-                .map(|edge| EdgeStruct::from_edge_ref(edge, self))
-                .collect(),
+            Some(node_index) => {
+                let mut edges: Vec<EdgeStruct> = self
+                    .int_iter_outgoing_edges(node_index)
+                    .filter(|edge_ref| {
+                        edge_matches_edge_filter_string(edge_ref.weight(), edge_types.as_ref())
+                    })
+                    .map(|edge| EdgeStruct::from_edge_ref(edge, self))
+                    .collect();
+                // petgraph prepends each new edge to the node's adjacency list, so
+                // iteration is newest-first. Reverse to restore insertion order,
+                // which is the order the builders read fields from the note (#790).
+                edges.reverse();
+                edges
+            }
             None => Vec::new(),
         })
     }

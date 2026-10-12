@@ -235,7 +235,8 @@ export class NoteGraph {
      */
     get_filtered_grouped_outgoing_edges(node: string, edge_types?: string[] | null): GroupedEdgeList;
     /**
-     * Get all outgoing edges from a node, filtered by edge type.
+     * Get all outgoing edges from a node, filtered by edge type, in insertion
+     * (document) order.
      */
     get_filtered_outgoing_edges(node: string, edge_types?: string[] | null): EdgeList;
     /**
@@ -244,7 +245,7 @@ export class NoteGraph {
     get_incoming_edges(node: string): EdgeList;
     get_node(node: string): NodeData | undefined;
     /**
-     * Get all outgoing edges from a node.
+     * Get all outgoing edges from a node, in insertion (document) order.
      */
     get_outgoing_edges(node: string): EdgeList;
     /**
