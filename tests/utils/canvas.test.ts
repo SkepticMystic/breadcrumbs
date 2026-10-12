@@ -109,4 +109,24 @@ describe("build_canvas semantic sides", () => {
 			"a→c": "right/left",
 		});
 	});
+
+	test("self-loop edges are left out (#785)", () => {
+		const graph = graph_of([
+			["Hub", "Sibling", "same"],
+			["Hub", "Twin", "same"],
+			["Hub", "Hub", "same"],
+		]);
+		const result = traverse(graph, {
+			entry: ["Hub"],
+			depth: 5,
+			separateEdges: false,
+			flatten: true,
+		});
+		const canvas = build_canvas(graph, result, "Hub", "LR");
+		result.free();
+
+		expect(
+			canvas.edges.map((e) => `${e.fromNode}→${e.toNode}`).sort(),
+		).toEqual(["Hub→Sibling", "Hub→Twin"]);
+	});
 });

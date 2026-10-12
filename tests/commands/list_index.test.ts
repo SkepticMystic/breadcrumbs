@@ -139,4 +139,31 @@ describe("build", () => {
 			].join("\n"),
 		);
 	});
+
+	test("self-loop edges are left out (#785)", () => {
+		const graph = create_graph();
+		graph.build_graph(
+			["Hub.md", "Sibling.md", "Twin.md"].map(
+				(p) => new GCNodeData(p, [], true, false, false),
+			),
+			[
+				new GCEdgeData("Hub.md", "Sibling.md", "same", ""),
+				new GCEdgeData("Hub.md", "Twin.md", "same", ""),
+				new GCEdgeData("Hub.md", "Hub.md", "same", "implied"),
+			],
+			[],
+		);
+
+		const list_index = build_list_index(graph, "Hub.md", undefined, {
+			indent: " ",
+			fields: ["same"],
+			show_attributes: [],
+			field_group_labels: [],
+			link_kind: "none",
+			edge_sort_id: { order: 1, field: "basename" },
+			show_node_options: { ext: false, alias: false, folder: false },
+		});
+
+		expect(list_index).toBe(["- Sibling", "- Twin", ""].join("\n"));
+	});
 });

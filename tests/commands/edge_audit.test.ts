@@ -10,7 +10,14 @@ import {
 	type GraphFacts,
 	type NodeFact,
 } from "src/commands/edge_audit/analyze";
-import { describe, expect, test } from "vitest";
+import { collect_graph_facts } from "src/commands/edge_audit";
+import fs from "node:fs/promises";
+import { beforeEach, describe, expect, test } from "vitest";
+import init, {
+	create_graph,
+	GCEdgeData,
+	GCNodeData,
+} from "wasm/pkg/breadcrumbs_graph_wasm";
 
 const node = (path: string, resolved = true): NodeFact => ({ path, resolved });
 
@@ -268,5 +275,35 @@ describe("build_edge_audit", () => {
 
 		expect(report.orphan_notes).toStrictEqual([]);
 		expect(report.dangling_edges).toStrictEqual([]);
+	});
+});
+
+describe("collect_graph_facts", () => {
+	beforeEach(async () => {
+		const wasmSource = await fs.readFile(
+			"wasm/pkg/breadcrumbs_graph_wasm_bg.wasm",
+		);
+		// @ts-ignore TS2345
+		const wasmModule = await WebAssembly.compile(wasmSource);
+		await init(wasmModule);
+	});
+
+	test("leaves out self_is_sibling self-loops (#785)", () => {
+		const graph = create_graph();
+		graph.build_graph(
+			[new GCNodeData("Hub.md", [], true, false, false)],
+			[
+				new GCEdgeData("Hub.md", "Missing.md", "same", ""),
+				new GCEdgeData("Hub.md", "Hub.md", "same", "implied"),
+				new GCEdgeData("Missing.md", "Missing.md", "same", "implied"),
+			],
+			[],
+		);
+
+		const facts = collect_graph_facts(graph);
+
+		expect(facts.edges.map((e) => `${e.source}→${e.target}`)).toEqual([
+			"Hub.md→Missing.md",
+		]);
 	});
 });
