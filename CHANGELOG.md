@@ -28,7 +28,7 @@ First stable release for Obsidian 1.14. Rolls up 4.22.0-beta.1 through beta.4 (b
 ### Chores
 
 * Routine JS and Cargo dependency bumps (vitest 5.0.3, eslint 10.12.0, typescript-eslint 8.71.0, obsidian-typings 6.38.0, smallvec 1.16.2).
-* Pinned overrides past advisories flagged by the community plugin directory's scan: `undici`, `brace-expansion`, `fast-uri`, `markdown-it`, `moment`, `postcss-selector-parser`, `shell-quote`, `source-map-js`, and `katex` (0.18, bundled for markmap math rendering).
+* Pinned overrides past advisories flagged by the community plugin directory's scan: `undici`, `brace-expansion`, `fast-uri`, `markdown-it`, `moment`, `postcss-selector-parser`, `shell-quote`, `source-map-js`, `katex` (0.18, bundled for markmap math rendering), and `@parcel/watcher` (2.6 drops `micromatch`, removing `braces` from the tree).
 
 ### [4.22.0-beta.4](https://github.com/michaelpporter/breadcrumbs/compare/4.22.0-beta.3...4.22.0-beta.4) (2026-09-27)
 
